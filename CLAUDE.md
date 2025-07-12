@@ -9,8 +9,15 @@ This is the AI-First SDLC Practices framework - a comprehensive methodology for 
 ## Repository Structure
 
 ```
+├── .github/           # GitHub Actions workflows and configs
+│   ├── workflows/     # CI/CD pipelines
+│   └── dependabot.yml # Automated dependency updates
 ├── docs/              # Framework documentation
+│   ├── feature-proposals/  # Feature proposal documents
+│   └── ci-cd-platforms.md  # CI/CD integration guide
 ├── examples/          # Implementation examples
+│   └── ci-cd/         # Platform-specific CI/CD configs
+├── retrospectives/    # Post-implementation reviews
 ├── templates/         # Reusable templates (CLAUDE.md, proposals, etc.)
 ├── tools/             # Framework tools
 │   ├── automation/    # Workflow automation scripts
@@ -98,9 +105,64 @@ When modifying framework tools:
 3. Include proper error handling
 4. Document in QUICK-REFERENCE.md
 
+## CI/CD Integration
+
+The repository includes comprehensive CI/CD configurations:
+
+### GitHub Actions (Active)
+- **ai-sdlc-validation.yml**: Main validation pipeline for PRs and commits
+- **test-ci-examples.yml**: Validates CI/CD configuration examples
+- **security-and-dependencies.yml**: Security scanning and dependency checks
+- **release.yml**: Automated release process
+- **documentation.yml**: Documentation validation and generation
+
+### Platform Examples
+Located in `examples/ci-cd/`:
+- GitLab CI (`.gitlab-ci.yml`)
+- Jenkins (`Jenkinsfile`)
+- Azure DevOps (`azure-pipelines.yml`)
+- CircleCI (`.circleci/config.yml`)
+
+## Workflow Standards
+
+### 1. Feature Development Process
+```bash
+# 1. Create feature proposal FIRST
+docs/feature-proposals/XX-feature-name.md
+
+# 2. Create feature branch
+git checkout -b feature/feature-name
+
+# 3. Implement changes
+
+# 4. Run validation
+python tools/validation/validate-pipeline.py --ci
+
+# 5. Create retrospective
+retrospectives/XX-feature-name.md
+
+# 6. Push and create PR
+git push -u origin feature/feature-name
+```
+
+### 2. Validation Requirements
+All code changes must pass:
+- Branch compliance check
+- Feature proposal validation
+- Security scanning
+- Code quality checks
+- Documentation validation
+
+### 3. Known Issues
+- **Validation Bug**: Line 319 in `validate-pipeline.py` uses `.contains()` instead of `in` operator
+  - Fix: `if commit and not any(prefix in commit.lower() for prefix in prefixes):`
+
 ## Important Notes
 
 - This framework is designed to be language and platform agnostic
 - Tools are implemented in Python but work with any codebase
 - The framework enforces its own practices (dogfooding)
 - All contributions should follow the framework's own guidelines
+- The repository has active GitHub Actions that enforce these standards
+- Always create feature proposals before implementing changes
+- Always create retrospectives after completing features
