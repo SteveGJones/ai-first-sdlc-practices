@@ -72,7 +72,7 @@ The framework consists of three main components:
 ## Testing
 
 When modifying framework tools:
-- Ensure Python 3.7+ compatibility
+- Ensure Python 3.8+ compatibility
 - Test with example projects in `/examples/`
 - Validate against the 9-point pipeline criteria
 - Update relevant documentation

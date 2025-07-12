@@ -35,7 +35,7 @@ The AI-First SDLC framework provides validation tools that can be integrated int
 
 **Setup**:
 1. Copy `.gitlab-ci.yml` to your repository root
-2. Configure GitLab runners with Python 3.7+ support
+2. Configure GitLab runners with Python 3.8+ support
 3. Enable merge request pipelines in project settings
 4. Optionally configure pipeline badges
 
@@ -56,7 +56,7 @@ The AI-First SDLC framework provides validation tools that can be integrated int
 **Setup**:
 1. Create a new Pipeline job in Jenkins
 2. Point to the Jenkinsfile in your repository
-3. Ensure Jenkins nodes have Python 3.7+ installed
+3. Ensure Jenkins nodes have Python 3.8+ installed
 4. Configure branch sources for multibranch pipelines
 
 **Required Plugins**:
@@ -140,7 +140,7 @@ python tools/validation/validate-pipeline.py --ci --format markdown
 ### Environment Setup
 
 All platforms need:
-1. Python 3.7 or higher
+1. Python 3.8 or higher
 2. pip for package management
 3. Git for repository operations
 4. Optional: pre-commit for code quality checks

@@ -185,7 +185,7 @@ Create CI/CD configuration files for major platforms that run the AI-First SDLC 
 | Risk | Probability | Impact | Mitigation Strategy |
 |------|------------|--------|-------------------|
 | Platform API changes | Low | Medium | Version-lock CI/CD syntax where possible |
-| Python version incompatibility | Medium | Low | Test with Python 3.7-3.11 |
+| Python version incompatibility | Medium | Low | Test with Python 3.8-3.12 |
 | Platform-specific limitations | Medium | Medium | Document workarounds in setup guides |
 
 ---

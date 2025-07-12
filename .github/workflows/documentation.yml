@@ -30,7 +30,6 @@ jobs:
     - name: Install markdown linter
       run: |
         npm install -g markdownlint-cli
-        pip install linkchecker-markdown
     
     - name: Lint markdown files
       run: |
@@ -39,9 +38,13 @@ jobs:
     
     - name: Check for broken links
       run: |
+        # Install markdown-link-check
+        npm install -g markdown-link-check
+        
+        # Check all markdown files
         find . -name "*.md" -not -path "./node_modules/*" -not -path "./.github/*" | while read -r file; do
           echo "Checking links in: $file"
-          linkchecker-markdown "$file" || true
+          markdown-link-check "$file" || true
         done
       continue-on-error: true
     

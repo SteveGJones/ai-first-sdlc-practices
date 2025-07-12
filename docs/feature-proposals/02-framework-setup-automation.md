@@ -149,7 +149,7 @@ Transform the setup process to be AI-autonomous by creating a smart installer th
 
 - Setup completes in < 30 seconds
 - Downloads < 1MB of data
-- Works on Python 3.7+
+- Works on Python 3.8+
 
 ---
 

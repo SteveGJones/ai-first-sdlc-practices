@@ -60,7 +60,7 @@ curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 
 ## 📋 Requirements
 
-- Python 3.7+
+- Python 3.8+
 - Git 2.0+
 - Optional: pre-commit (for hooks)
 
