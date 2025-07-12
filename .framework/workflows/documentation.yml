@@ -1,0 +1,138 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'templates/**'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'templates/**'
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install markdown linter
+      run: |
+        npm install -g markdownlint-cli
+        pip install linkchecker-markdown
+    
+    - name: Lint markdown files
+      run: |
+        markdownlint '**/*.md' --ignore node_modules --ignore .github
+      continue-on-error: true
+    
+    - name: Check for broken links
+      run: |
+        find . -name "*.md" -not -path "./node_modules/*" -not -path "./.github/*" | while read -r file; do
+          echo "Checking links in: $file"
+          linkchecker-markdown "$file" || true
+        done
+      continue-on-error: true
+    
+    - name: Validate template placeholders
+      run: |
+        echo "Checking for unfilled template placeholders..."
+        
+        # Common placeholders to check for
+        PLACEHOLDERS=(
+          "[Your Name]"
+          "[CUSTOMIZE"
+          "[Feature Name]"
+          "[XX]"
+          "[YYYY-MM-DD]"
+          "[Component]"
+          "[type of user]"
+        )
+        
+        FOUND_ISSUES=0
+        for placeholder in "${PLACEHOLDERS[@]}"; do
+          if grep -r "$placeholder" docs/ templates/ --include="*.md" | grep -v "template"; then
+            echo "⚠️  Found unfilled placeholder: $placeholder"
+            FOUND_ISSUES=1
+          fi
+        done
+        
+        if [ $FOUND_ISSUES -eq 0 ]; then
+          echo "✅ No unfilled placeholders found in documentation"
+        fi
+    
+    - name: Build documentation index
+      run: |
+        echo "# Documentation Index" > docs/INDEX.md
+        echo "" >> docs/INDEX.md
+        echo "## Guides" >> docs/INDEX.md
+        find docs -name "*.md" -not -name "INDEX.md" | sort | while read -r file; do
+          title=$(head -n 1 "$file" | sed 's/^# //')
+          echo "- [$title]($file)" >> docs/INDEX.md
+        done
+        
+        echo "" >> docs/INDEX.md
+        echo "## Templates" >> docs/INDEX.md
+        find templates -name "*.md" | sort | while read -r file; do
+          title=$(head -n 1 "$file" | sed 's/^# //')
+          echo "- [$title]($file)" >> docs/INDEX.md
+        done
+        
+        cat docs/INDEX.md
+    
+    - name: Check documentation completeness
+      run: |
+        # Check if all tools have documentation
+        echo "## Documentation Coverage Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### Tool Documentation" >> $GITHUB_STEP_SUMMARY
+        for tool in tools/automation/*.py tools/validation/*.py; do
+          if [[ -f "$tool" && "$tool" != *"__"* ]]; then
+            tool_name=$(basename "$tool" .py)
+            if grep -q "$tool_name" docs/*.md; then
+              echo "- ✅ $tool_name" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- ❌ $tool_name (missing documentation)" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+        done
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### CI/CD Platform Documentation" >> $GITHUB_STEP_SUMMARY
+        for platform in "GitHub Actions" "GitLab CI" "Jenkins" "Azure DevOps" "CircleCI"; do
+          if grep -q "$platform" docs/ci-cd-platforms.md; then
+            echo "- ✅ $platform" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ $platform" >> $GITHUB_STEP_SUMMARY
+          fi
+        done
+
+  generate-readme-toc:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Generate Table of Contents
+      uses: technote-space/toc-generator@v4
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TARGET_PATHS: 'README.md,docs/*.md'
+        COMMIT_MESSAGE: 'docs: update table of contents'
+        COMMIT_NAME: 'github-actions[bot]'
+        COMMIT_EMAIL: 'github-actions[bot]@users.noreply.github.com'

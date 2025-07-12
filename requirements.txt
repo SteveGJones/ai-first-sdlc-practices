@@ -1,0 +1,5 @@
+# AI-First SDLC Practices Requirements
+pyyaml>=5.4
+requests>=2.25
+click>=8.0
+pre-commit>=2.15
