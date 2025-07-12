@@ -2,12 +2,15 @@ name: Test CI/CD Examples
 
 on:
   push:
+    branches: [ main, develop, 'feature/**' ]
     paths:
       - 'examples/ci-cd/**'
       - '.github/workflows/test-ci-examples.yml'
   pull_request:
+    branches: [ main, develop ]
     paths:
       - 'examples/ci-cd/**'
+  workflow_dispatch:
 
 jobs:
   validate-yaml-syntax:

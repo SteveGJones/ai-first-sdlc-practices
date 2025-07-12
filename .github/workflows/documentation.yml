@@ -2,18 +2,21 @@ name: Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop, 'feature/**' ]
     paths:
       - 'docs/**'
       - 'README.md'
       - 'CONTRIBUTING.md'
       - 'templates/**'
+      - '.github/workflows/documentation.yml'
   pull_request:
+    branches: [ main, develop ]
     paths:
       - 'docs/**'
       - 'README.md'
       - 'CONTRIBUTING.md'
       - 'templates/**'
+  workflow_dispatch:
 
 jobs:
   validate-docs:
