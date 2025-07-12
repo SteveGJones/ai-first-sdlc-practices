@@ -87,14 +87,14 @@ validate-pipeline.py --ci
 ## 🛡️ Branch Protection
 
 ```bash
-# Auto-configure
-setup-branch-protection.py
+# Recommended: Using GitHub CLI (secure)
+setup-branch-protection-gh.py
 
-# Manual setup
+# Alternative: Using token
 setup-branch-protection.py --platform github --repo owner/repo --token TOKEN
 
 # Dry run
-setup-branch-protection.py --dry-run
+setup-branch-protection-gh.py --dry-run
 ```
 
 ---
@@ -220,8 +220,12 @@ pre-commit run --all     # Run manually
 git commit --no-verify   # Emergency bypass
 ```
 
-### Environment Variables
+### Authentication Setup
 ```bash
+# Recommended (most secure):
+gh auth login             # GitHub CLI authentication
+
+# Alternative (less secure):
 export GITHUB_TOKEN=xxx   # For branch protection
 export GITLAB_TOKEN=xxx   # For GitLab
 export BITBUCKET_TOKEN=xxx # For Bitbucket

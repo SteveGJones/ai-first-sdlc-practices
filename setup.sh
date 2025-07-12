@@ -91,11 +91,14 @@ if command -v git &> /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
     fi
 fi
 
-# Check for GitHub token
-if [ -n "${GITHUB_TOKEN}" ]; then
-    echo -e "${GREEN}✅ Found GITHUB_TOKEN - will set up branch protection${NC}"
+# Check for GitHub CLI or token
+if command -v gh &> /dev/null && gh auth status &> /dev/null 2>&1; then
+    echo -e "${GREEN}✅ GitHub CLI authenticated - will set up branch protection securely${NC}"
+elif [ -n "${GITHUB_TOKEN}" ]; then
+    echo -e "${YELLOW}⚠️  Found GITHUB_TOKEN - will use token-based setup (less secure)${NC}"
+    echo -e "${YELLOW}   Recommend: Install gh CLI and run 'gh auth login' for better security${NC}"
 else
-    echo -e "${YELLOW}💡 Tip: Set GITHUB_TOKEN environment variable to enable automatic branch protection${NC}"
+    echo -e "${YELLOW}💡 Tip: Install GitHub CLI and run 'gh auth login' for automatic branch protection${NC}"
 fi
 
 # Run the setup script

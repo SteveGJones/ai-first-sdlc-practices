@@ -49,7 +49,10 @@ python tools/automation/context-manager.py handoff --current "Working on X" --ne
 # Check feature proposal
 python tools/validation/check-feature-proposal.py <proposal-file>
 
-# Setup branch protection
+# Setup branch protection (secure method)
+python tools/automation/setup-branch-protection-gh.py
+
+# Alternative (if gh not available)
 python tools/automation/setup-branch-protection.py
 ```
 
@@ -65,7 +68,8 @@ The framework consists of three main components:
    - `progress-tracker.py`: Task management system
    - `context-manager.py`: Preserves state between AI sessions
    - `check-feature-proposal.py`: Validates proposal format
-   - `setup-branch-protection.py`: Configures git branch rules
+   - `setup-branch-protection-gh.py`: Configures git branch rules (secure, uses gh CLI)
+   - `setup-branch-protection.py`: Configures git branch rules (fallback, uses token)
 
 3. **Examples**: Demonstrate framework implementation across different project types (simple, complex, enterprise, CI/CD integration).
 

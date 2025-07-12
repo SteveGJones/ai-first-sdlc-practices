@@ -7,6 +7,7 @@ Get your project ready for AI-driven development in 5 minutes! 🚀
 - Git repository initialized
 - Basic project structure in place
 - Admin access to configure branch protection
+- (Recommended) GitHub CLI installed: `gh auth login`
 
 ## Step 1: Copy Templates (1 minute)
 
@@ -48,7 +49,18 @@ Edit `CLAUDE.md` in your project root:
 
 ## Step 3: Set Up Branch Protection (1 minute)
 
-### GitHub
+### GitHub (Recommended: Using CLI)
+```bash
+# Most secure - using GitHub CLI
+gh auth login  # One-time setup
+python tools/setup-branch-protection-gh.py
+
+# Alternative - using token (less secure)
+export GITHUB_TOKEN=your_token
+python tools/setup-branch-protection.py
+```
+
+### GitHub (Manual via UI)
 1. Go to Settings → Branches
 2. Add rule for `main` branch
 3. Enable:
