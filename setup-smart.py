@@ -317,13 +317,17 @@ Implement AI-First SDLC framework with:
         print("\n🔍 Running initial validation...")
         self.run_validation()
         
-        # Setup branch protection if token provided
+        # Setup branch protection for GitHub repos
         detected_platform = self.detect_ci_platform() or "github"
-        if github_token and detected_platform == "github":
-            print("\n🔒 Setting up branch protection...")
-            self.setup_branch_protection(github_token)
-        elif not github_token and detected_platform == "github":
-            print("\n💡 Tip: Provide GITHUB_TOKEN to automatically set up branch protection")
+        if detected_platform == "github":
+            if self.check_gh_cli():
+                print("\n🔒 Setting up branch protection using GitHub CLI...")
+                self.setup_branch_protection()
+            elif github_token:
+                print("\n🔒 Setting up branch protection using token...")
+                self.setup_branch_protection(github_token)
+            else:
+                print("\n💡 Tip: Install 'gh' CLI or provide GITHUB_TOKEN for automatic branch protection")
         
         if self.errors:
             print("\n⚠️  Setup completed with errors:")
@@ -442,9 +446,59 @@ Implement AI-First SDLC framework with:
             self.errors.append(f"Could not run validation: {e}")
             return False
     
-    def setup_branch_protection(self, github_token: str) -> bool:
-        """Setup GitHub branch protection rules"""
+    def check_gh_cli(self) -> bool:
+        """Check if gh CLI is available and authenticated"""
         try:
+            # Check if gh is installed
+            subprocess.run(
+                ["gh", "--version"],
+                capture_output=True,
+                check=True
+            )
+            
+            # Check if authenticated
+            result = subprocess.run(
+                ["gh", "auth", "status"],
+                capture_output=True,
+                check=True
+            )
+            
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return False
+    
+    def setup_branch_protection(self, github_token: str = None) -> bool:
+        """Setup GitHub branch protection rules (prefers gh CLI for security)"""
+        try:
+            # First, try to use gh CLI if available (more secure)
+            if self.check_gh_cli():
+                print("   Using GitHub CLI (gh) for secure setup...")
+                
+                # Download the gh-based protection script
+                gh_script_url = f"{self.GITHUB_RAW_BASE}/tools/automation/setup-branch-protection-gh.py"
+                gh_script_path = self.project_dir / "tools" / "setup-branch-protection-gh.py"
+                
+                if self.download_file("tools/automation/setup-branch-protection-gh.py", gh_script_path):
+                    result = subprocess.run(
+                        ["python", str(gh_script_path), "--branch", "main"],
+                        cwd=self.project_dir,
+                        capture_output=True,
+                        text=True
+                    )
+                    
+                    if result.returncode == 0:
+                        return True
+                    else:
+                        print(f"   ⚠️  gh-based setup failed: {result.stderr}")
+                        # Fall through to token-based method
+                else:
+                    print("   ⚠️  Could not download gh-based script")
+                    # Fall through to token-based method
+            
+            # Fallback to token-based setup if gh not available or failed
+            if not github_token:
+                print("   ℹ️  No GitHub token provided and gh CLI not available")
+                return False
             # Get repository info from git remote
             result = subprocess.run(
                 ["git", "remote", "get-url", "origin"],

@@ -14,6 +14,14 @@ curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 
 # Or with project purpose
 curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash -s -- "building a REST API"
+
+# For automatic branch protection (most secure - recommended):
+gh auth login  # One-time setup
+curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
+
+# Or with token (less secure):
+export GITHUB_TOKEN=your_token
+curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
 ```
 
 ### What This Does
