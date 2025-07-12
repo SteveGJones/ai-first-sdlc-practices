@@ -4,38 +4,45 @@ A comprehensive framework for integrating AI agents as primary developers while 
 
 ## 🚀 Quick Start
 
-### For AI Agents
-Simply tell the AI: **"Start new project using https://github.com/SteveGJones/ai-first-sdlc-practices.git for [your project purpose]"**
+### For AI Agents (Enhanced Branch Protection Education)
+Simply tell the AI: 
+```
+Set up a new project for [purpose] using the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices.
 
-### For Humans
+Download and run: python setup-smart.py "[project purpose]"
+
+Then read CLAUDE.md and run the repository health check to verify main branch protection.
+```
+
+### For Humans (Smart Setup)
 ```bash
-# One-liner setup in your project directory
-curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
+# Download smart setup script
+curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
 
-# Or with project purpose
+# Run with your project purpose
+python setup-smart.py "building a REST API with FastAPI"
+
+# This will:
+# 1. Download enhanced CLAUDE.md with branch protection education
+# 2. Set up branch protection using gh CLI (prompts for auth if needed)
+# 3. Create all necessary directories and templates
+# 4. Generate initial feature proposal on ai-first-kick-start branch
+```
+
+### Legacy One-liner (if setup.sh exists)
+```bash
 curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash -s -- "building a REST API"
-
-# Setup will interactively guide you through branch protection:
-curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
-# If gh CLI is installed but not authenticated, it will prompt you to log in
-
-# Or pre-authenticate for fully automatic setup:
-gh auth login  # One-time setup
-curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
-
-# Or use token (less secure):
-export GITHUB_TOKEN=your_token
-curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
 ```
 
 ### What This Does
-1. Downloads only necessary framework files (no repo cloning)
-2. Creates `ai-first-kick-start` branch automatically
-3. Generates project-specific CLAUDE.md
-4. Sets up CI/CD for your platform
-5. Creates initial feature proposal
-6. Configures validation tools
-7. **Protects main branch** (interactive auth if needed)
+1. **Downloads enhanced CLAUDE.md** with branch protection education for AI agents
+2. **Creates `ai-first-kick-start` branch** automatically 
+3. **Generates project-specific CLAUDE.md** with your project details
+4. **Sets up branch protection** using secure gh CLI (prompts for auth if needed)
+5. **Creates initial feature proposal** to kickstart the workflow
+6. **Configures validation tools** and framework scripts
+7. **Provides AI education** on branch protection verification and troubleshooting
+8. **Sets up CI/CD** for your platform (GitHub, GitLab, etc.)
 
 ## 📚 Documentation
 

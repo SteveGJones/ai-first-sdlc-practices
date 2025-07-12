@@ -57,31 +57,41 @@ def setup_branch_protection(branch: str = "main", required_checks: list = None) 
         required_checks = ["validate", "test-framework-tools (3.8)"]
     
     try:
-        # Build the protection rules
+        # Build the protection rules using JSON for proper types
+        protection_json = {
+            "required_status_checks": {
+                "strict": True,
+                "contexts": required_checks
+            },
+            "enforce_admins": True,
+            "required_pull_request_reviews": {
+                "required_approving_review_count": 1,
+                "dismiss_stale_reviews": True,
+                "require_code_owner_reviews": False
+            },
+            "restrictions": None,
+            "allow_force_pushes": False,
+            "allow_deletions": False,
+            "required_conversation_resolution": True
+        }
+        
+        # Build the protection command with proper JSON
         protection_cmd = [
             "gh", "api",
             f"repos/:owner/:repo/branches/{branch}/protection",
             "--method", "PUT",
-            "-f", "required_status_checks[strict]=true",
-            "-f", "enforce_admins=true",
-            "-f", "required_pull_request_reviews[required_approving_review_count]=1",
-            "-f", "required_pull_request_reviews[dismiss_stale_reviews]=true",
-            "-f", "required_pull_request_reviews[require_code_owner_reviews]=false",
-            "-f", "restrictions=null",
-            "-f", "allow_force_pushes=false",
-            "-f", "allow_deletions=false",
-            "-f", "required_conversation_resolution=true",
-            "-f", "lock_branch=false",
-            "-f", "allow_fork_syncing=true"
+            "--input", "-"
         ]
         
-        # Add required status checks
-        for check in required_checks:
-            protection_cmd.extend(["-f", f"required_status_checks[contexts][]={check}"])
+        # Debug: print the command
+        if "--dry-run" not in sys.argv:
+            print(f"Debug: Running command: {' '.join(protection_cmd[:4])}...")
+            print(f"Debug: JSON input:\n{json.dumps(protection_json, indent=2)}")
         
-        # Execute the command
+        # Execute the command with JSON input via stdin
         result = subprocess.run(
             protection_cmd,
+            input=json.dumps(protection_json),
             capture_output=True,
             text=True
         )
@@ -100,8 +110,10 @@ def setup_branch_protection(branch: str = "main", required_checks: list = None) 
                 print("   Branch might not exist yet. Push the branch first.")
             elif "401" in result.stderr or "403" in result.stderr:
                 print("   Permission denied. You need admin access to the repository.")
+                print(f"   Full error: {result.stderr}")
             else:
                 print(f"   Error: {result.stderr}")
+                print(f"   Stdout: {result.stdout}")
             return False
             
     except Exception as e:

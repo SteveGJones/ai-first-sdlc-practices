@@ -4,7 +4,10 @@ This file provides guidance to AI agents working on this codebase. Adherence to 
 
 ## Project Overview
 
-[CUSTOMIZE: Provide a brief description of your project's purpose, main technologies, and architecture]
+**Project**: [Your Project Name]
+**Purpose**: [Brief description of what this project does]
+
+[CUSTOMIZE: Brief overview of your project and its main purpose]
 
 Example:
 > This is a Python web service using FastAPI that provides authentication and user management. The project follows a clean architecture pattern with separate layers for API, business logic, and data access.
@@ -19,6 +22,7 @@ Example:
 3. **ALWAYS** create a retrospective after completing work
 4. **NEVER** use `git push origin main` or `git push` when on main branch
 5. **ALWAYS** submit changes via Pull Request
+6. **VERIFY** main branch protection is enabled (see Branch Protection section)
 
 ### Branch Naming Convention
 ```
@@ -41,6 +45,77 @@ git push -u origin feature/user-authentication
 # git checkout main
 # git commit -m "..."
 # git push  # This would push to main!
+```
+
+## Branch Protection
+
+### Understanding Main Branch Protection
+The main branch MUST be protected to prevent direct pushes and ensure all changes go through PR review. This is critical for:
+- **Code Quality**: All changes reviewed before merge
+- **Process Compliance**: Forces feature proposal → implementation → retrospective flow
+- **Rollback Safety**: Clean main branch history for easy rollbacks
+- **Team Coordination**: Prevents conflicts from simultaneous direct pushes
+
+### Verifying Protection Status
+**ALWAYS check** if main branch protection is properly configured:
+
+```bash
+# Check if protection exists (GitHub CLI method - preferred)
+gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts'
+
+# Expected output: ["validate", "test-framework-tools (3.8)"]
+# If command fails or returns empty, protection is NOT enabled
+```
+
+### Setting Up Protection (for New Repositories)
+If you discover main branch is not protected, run:
+
+```bash
+# Using secure GitHub CLI method
+python tools/setup-branch-protection-gh.py
+
+# This will:
+# 1. Check if gh CLI is authenticated (prompt if not)
+# 2. Configure protection with required status checks
+# 3. Require PR reviews (1 approval minimum)
+# 4. Prevent direct pushes to main
+```
+
+### What Happens When Protection Fails
+If you try to push directly to main with protection enabled:
+```bash
+# This will be BLOCKED:
+git push origin main
+
+# Error: "required status checks have not succeeded"
+# Error: "branch is protected"
+```
+
+**Correct response**: Always use feature branches and PRs.
+
+### Troubleshooting Protection Issues
+1. **"Protection not found"**: Run setup script to enable protection
+2. **"Permission denied"**: Need admin access to repository 
+3. **"Required checks failing"**: Fix validation/test issues before merge
+4. **"Authentication failed"**: Run `gh auth login` to authenticate
+
+### Quick Repository Health Check
+Before starting any work, run this verification:
+
+```bash
+# 1. Verify you're not on main branch
+git branch --show-current
+# Should NOT show "main"
+
+# 2. Verify main branch protection exists
+gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts' 2>/dev/null
+# Should show: ["validate", "test-framework-tools (3.8)"]
+
+# 3. Check if framework tools are present
+ls tools/setup-branch-protection-gh.py tools/validate-pipeline.py 2>/dev/null
+# Should list both files without errors
+
+# If any check fails, inform the user and request setup completion
 ```
 
 ## Development Workflow

@@ -31,6 +31,7 @@ class SmartFrameworkSetup:
         "tools/automation/context-manager.py": "tools/context-manager.py",
         "tools/automation/progress-tracker.py": "tools/progress-tracker.py",
         "tools/automation/setup-branch-protection.py": "tools/setup-branch-protection.py",
+        "tools/automation/setup-branch-protection-gh.py": "tools/setup-branch-protection-gh.py",
         "tools/validation/check-feature-proposal.py": "tools/check-feature-proposal.py",
         "tools/validation/validate-pipeline.py": "tools/validate-pipeline.py"
     }
@@ -105,8 +106,31 @@ class SmartFrameworkSetup:
         return None
     
     def generate_claude_md(self) -> str:
-        """Generate project-specific CLAUDE.md content"""
-        return f"""# CLAUDE.md
+        """Generate project-specific CLAUDE.md content using full template"""
+        try:
+            # Download the full template
+            template_url = f"{self.GITHUB_RAW_BASE}/templates/CLAUDE.md"
+            response = urllib.request.urlopen(template_url)
+            template_content = response.read().decode('utf-8')
+            
+            # Customize the template with project-specific information
+            customized_content = template_content.replace(
+                "**Project**: [Your Project Name]", 
+                f"**Project**: {self.project_name}"
+            ).replace(
+                "**Purpose**: [Brief description of what this project does]",
+                f"**Purpose**: {self.project_purpose}"
+            ).replace(
+                "[CUSTOMIZE: Brief overview of your project and its main purpose]",
+                f"This project focuses on {self.project_purpose.lower()}."
+            )
+            
+            return customized_content
+            
+        except Exception as e:
+            print(f"⚠️  Could not download template, using fallback: {e}")
+            # Fallback to simplified version if template download fails
+            return f"""# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -116,52 +140,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Purpose**: {self.project_purpose}
 **Framework**: AI-First SDLC Practices (https://github.com/SteveGJones/ai-first-sdlc-practices)
 
+⚠️  **Note**: This is a simplified CLAUDE.md. For full features, download the complete template from the framework repository.
+
 ## Development Workflow
 
 ### MANDATORY: Follow AI-First SDLC Practices
 
-1. **Never push directly to main branch**
+1. **Never push directly to main branch** - Main branch should be protected
 2. **Always create feature proposals before implementing**
-3. **Track progress with the progress tracker**
+3. **Always use feature branches** (feature/name, fix/name, etc.)
 4. **Create retrospectives after completing features**
 
-### Quick Commands
-
+### Quick Repository Health Check
 ```bash
-# Create feature branch
-git checkout -b feature/feature-name
+# Verify you're not on main branch
+git branch --show-current
 
-# Track progress
-python tools/progress-tracker.py add "Task description"
-python tools/progress-tracker.py list
-python tools/progress-tracker.py complete <task_id>
-
-# Validate work
-python tools/validate-pipeline.py --ci
-
-# Save context
-python tools/context-manager.py handoff --current "Working on X" --next "Continue with Y"
+# Check if main branch protection exists  
+gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts' 2>/dev/null
 ```
-
-## Project-Specific Configuration
-
-[TODO: Add project-specific build commands, dependencies, and architecture notes here]
-
-## Git Workflow
-
-1. Create feature proposal: `docs/feature-proposals/XX-feature-name.md`
-2. Create feature branch: `git checkout -b feature/feature-name`
-3. Implement changes
-4. Run validation: `python tools/validate-pipeline.py`
-5. Create retrospective: `retrospectives/XX-feature-name.md`
-6. Push and create PR: `git push -u origin feature/feature-name`
 
 ## Important Notes
 
 - This project follows AI-First SDLC practices
-- All changes must go through feature branches
-- Feature proposals are required before implementation
-- Retrospectives document lessons learned
+- All changes must go through feature branches with PR review
+- Main branch protection should be enabled
+- Feature proposals and retrospectives are required
 """
     
     def create_initial_feature_proposal(self) -> bool:

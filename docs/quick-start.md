@@ -49,15 +49,22 @@ Edit `CLAUDE.md` in your project root:
 
 ## Step 3: Set Up Branch Protection (1 minute)
 
-### GitHub (Automated with Setup)
+### Automated Setup (Recommended)
 ```bash
-# The setup script handles this automatically!
-# If gh is installed but not authenticated, it will prompt you:
-# "Would you like to authenticate now? [Y/n]:"
+# Use the smart setup script (includes branch protection)
+python setup-smart.py "your project purpose"
+# This will:
+# 1. Download enhanced CLAUDE.md with branch protection education
+# 2. Set up all framework tools
+# 3. Configure branch protection using gh CLI (prompts for auth if needed)
+# 4. Create initial feature proposal
+```
 
-# Or manually run:
+### Manual Branch Protection Setup
+```bash
+# If you need to set up protection manually:
 python tools/setup-branch-protection-gh.py
-# This will also prompt for auth if needed
+# This will prompt for gh auth login if not authenticated
 
 # Alternative - using token (less secure)
 export GITHUB_TOKEN=your_token
@@ -96,13 +103,27 @@ cp docs/feature-proposals/feature-proposal.md \
 
 ### For AI Agents
 
-Add to your AI agent's context:
+Use this prompt to set up Claude with full branch protection education:
 ```
-Please read and follow CLAUDE.md in the project root.
-Key rules:
-1. Never push to main branch
-2. Always create feature proposals
-3. Always create retrospectives
+Please read and follow CLAUDE.md in the project root. This project uses AI-First SDLC practices with enhanced branch protection education.
+
+CRITICAL FIRST STEPS:
+1. Run the repository health check from CLAUDE.md to verify main branch protection
+2. Never push to main branch - always use feature branches
+3. Always create feature proposals before implementing
+4. Always create retrospectives after completing work
+
+If you discover the main branch is not protected, run:
+python tools/setup-branch-protection-gh.py
+
+Key commands to verify protection:
+- Check branch: git branch --show-current  
+- Verify protection: gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts'
+```
+
+### Simplified Prompt for AI Agents
+```
+Follow CLAUDE.md. Run the repository health check first. Never push to main.
 ```
 
 ### For Human Developers

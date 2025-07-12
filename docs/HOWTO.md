@@ -18,16 +18,24 @@ This guide explains how to use the AI-First SDLC Framework in your daily develop
 
 ### 1. Initial Setup (5 minutes)
 
+#### Smart Setup (Recommended)
+```bash
+# Download and run smart setup (no cloning needed)
+curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
+python setup-smart.py "building a todo app with React and Node.js"
+```
+
+#### Manual Setup (Alternative)
 ```bash
 # Clone the framework
-git clone https://github.com/your-org/ai-first-sdlc-framework.git
+git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git
 
-# Run the setup script in your project
+# Copy templates to your project
 cd your-project
-python /path/to/ai-first-sdlc-framework/tools/setup.py
+cp ai-first-sdlc-practices/templates/* .
 
-# Initialize pre-commit hooks
-pre-commit install
+# Set up branch protection
+python ai-first-sdlc-practices/tools/automation/setup-branch-protection-gh.py
 ```
 
 ### 2. Create Your First Feature
@@ -125,6 +133,40 @@ cp retrospectives/template-retrospective.md \
 
 ---
 
+## Prompting Claude for AI-First SDLC
+
+### Initial Setup Prompt
+When starting a new project, use this prompt:
+
+```
+Set up a new [technology] project for [purpose] using the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices.
+
+Download and run: python setup-smart.py "[project purpose]"
+
+Then read CLAUDE.md and run the repository health check to verify main branch protection is enabled.
+```
+
+### Development Session Prompt  
+For ongoing development work:
+
+```
+Please read and follow CLAUDE.md in the project root. 
+
+CRITICAL FIRST STEPS:
+1. Run the repository health check to verify main branch protection
+2. Confirm you're not on the main branch
+3. Review current feature proposals and retrospectives
+
+If main branch protection is missing, run: python tools/setup-branch-protection-gh.py
+```
+
+### Quick Prompt (Experienced Users)
+```
+Follow CLAUDE.md. Run health check first. Never push to main.
+```
+
+---
+
 ## For AI Agents
 
 ### Understanding CLAUDE.md
@@ -140,6 +182,13 @@ The `CLAUDE.md` file is your primary instruction set. It contains:
 
 #### Session Start
 ```bash
+# CRITICAL: Run repository health check from CLAUDE.md
+git branch --show-current  # Should NOT be "main"
+gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts' 2>/dev/null
+
+# If protection missing, set it up:
+# python tools/setup-branch-protection-gh.py
+
 # Load previous context
 python tools/context-manager.py load
 
