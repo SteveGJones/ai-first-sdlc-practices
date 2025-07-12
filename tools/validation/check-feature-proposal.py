@@ -9,11 +9,13 @@ import subprocess
 import sys
 from pathlib import Path
 import re
+import argparse
 
 
 def get_current_branch():
     """Get the current git branch name"""
     try:
+        # Try to get symbolic ref (normal case)
         result = subprocess.run(
             ["git", "symbolic-ref", "--short", "HEAD"],
             capture_output=True,
@@ -22,6 +24,31 @@ def get_current_branch():
         )
         return result.stdout.strip()
     except subprocess.CalledProcessError:
+        # In CI or detached HEAD, try to get branch from environment or git describe
+        # GitHub Actions
+        branch = os.environ.get('GITHUB_HEAD_REF') or os.environ.get('GITHUB_REF_NAME')
+        if branch:
+            return branch
+            
+        # GitLab CI
+        branch = os.environ.get('CI_MERGE_REQUEST_SOURCE_BRANCH_NAME') or os.environ.get('CI_COMMIT_BRANCH')
+        if branch:
+            return branch
+            
+        # Try git describe as last resort
+        try:
+            result = subprocess.run(
+                ["git", "describe", "--all", "--exact-match"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            branch = result.stdout.strip()
+            if branch.startswith('heads/'):
+                return branch[6:]
+        except subprocess.CalledProcessError:
+            pass
+            
         return None
 
 
@@ -101,11 +128,20 @@ def check_proposal_content(proposal_file, branch_name):
 
 def main():
     """Main validation logic"""
-    # Get current branch
-    branch = get_current_branch()
-    if not branch:
-        print("❌ Could not determine current branch")
-        sys.exit(1)
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="Check for feature proposal")
+    parser.add_argument("--branch", help="Branch name to check (default: current branch)")
+    args = parser.parse_args()
+    
+    # Get branch name
+    if args.branch:
+        branch = args.branch
+    else:
+        branch = get_current_branch()
+        if not branch:
+            print("❌ Could not determine current branch")
+            print("   In CI environments, use --branch parameter")
+            sys.exit(1)
     
     # Skip check for main/master branches
     if branch in ["main", "master", "develop"]:
