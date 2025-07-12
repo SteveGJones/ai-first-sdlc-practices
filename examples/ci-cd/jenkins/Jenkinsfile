@@ -1,0 +1,167 @@
+// AI-First SDLC Jenkins Pipeline
+// Declarative Pipeline for enforcing AI-First SDLC practices
+
+pipeline {
+    agent any
+    
+    options {
+        // Keep builds for 30 days
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '50'))
+        // Timeout after 30 minutes
+        timeout(time: 30, unit: 'MINUTES')
+        // Don't allow concurrent builds
+        disableConcurrentBuilds()
+    }
+    
+    environment {
+        PYTHON_VERSION = '3.9'
+        PIP_CACHE_DIR = "${WORKSPACE}/.cache/pip"
+    }
+    
+    stages {
+        stage('Setup') {
+            steps {
+                echo 'Setting up Python environment...'
+                sh '''
+                    # Ensure Python is available
+                    python${PYTHON_VERSION} --version || python3 --version || python --version
+                    
+                    # Create virtual environment
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    
+                    # Upgrade pip
+                    python -m pip install --upgrade pip
+                    
+                    # Install dependencies
+                    if [ -f requirements.txt ]; then
+                        pip install -r requirements.txt
+                    fi
+                    pip install pre-commit
+                '''
+                
+                // Clone AI-First SDLC tools if not present
+                script {
+                    if (!fileExists('tools/validation/validate-pipeline.py')) {
+                        sh '''
+                            git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git /tmp/ai-sdlc
+                            cp -r /tmp/ai-sdlc/tools .
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('AI-SDLC Validation') {
+            steps {
+                echo 'Running AI-First SDLC validation pipeline...'
+                sh '''
+                    . venv/bin/activate
+                    python tools/validation/validate-pipeline.py --ci --format json > validation-report.json
+                    python tools/validation/validate-pipeline.py --ci
+                '''
+            }
+            post {
+                always {
+                    // Archive validation reports
+                    archiveArtifacts artifacts: 'validation-report.*', allowEmptyArchive: true
+                    
+                    // Publish test results if available
+                    junit allowEmptyResults: true, testResults: '**/test-results/*.xml'
+                }
+            }
+        }
+        
+        stage('Feature Proposal Check') {
+            when {
+                // Only run for feature branches
+                expression { 
+                    env.BRANCH_NAME.startsWith('feature/') || 
+                    env.CHANGE_BRANCH?.startsWith('feature/')
+                }
+            }
+            steps {
+                echo 'Checking for feature proposal...'
+                sh '''
+                    . venv/bin/activate
+                    BRANCH=${CHANGE_BRANCH:-$BRANCH_NAME}
+                    python tools/validation/check-feature-proposal.py --branch "$BRANCH"
+                '''
+            }
+        }
+        
+        stage('Code Quality') {
+            parallel {
+                stage('Pre-commit Hooks') {
+                    steps {
+                        sh '''
+                            . venv/bin/activate
+                            pre-commit run --all-files || true
+                        '''
+                    }
+                }
+                
+                stage('Security Scan') {
+                    steps {
+                        sh '''
+                            . venv/bin/activate
+                            python tools/validation/validate-pipeline.py --check security --ci
+                        '''
+                    }
+                }
+                
+                stage('Test Coverage') {
+                    steps {
+                        sh '''
+                            . venv/bin/activate
+                            python tools/validation/validate-pipeline.py --check tests --ci
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Progress Report') {
+            when {
+                expression { fileExists('tools/automation/progress-tracker.py') }
+            }
+            steps {
+                sh '''
+                    . venv/bin/activate
+                    python tools/automation/progress-tracker.py list --format markdown > progress-report.md || true
+                '''
+                archiveArtifacts artifacts: 'progress-report.md', allowEmptyArchive: true
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Clean workspace selectively
+            cleanWs(patterns: [[pattern: 'venv/**', type: 'EXCLUDE']])
+        }
+        success {
+            echo 'AI-First SDLC validation passed!'
+        }
+        failure {
+            echo 'AI-First SDLC validation failed. Please check the validation report.'
+        }
+        unstable {
+            echo 'Build is unstable. Some quality checks may have failed.'
+        }
+    }
+}
+
+// Scripted Pipeline section for advanced users
+// Can be used for custom validation logic
+def runCustomValidation() {
+    // Example: Run specific validation based on changed files
+    def changedFiles = sh(
+        script: "git diff --name-only HEAD~1",
+        returnStdout: true
+    ).trim().split('\n')
+    
+    if (changedFiles.any { it.endsWith('.py') }) {
+        sh 'python tools/validation/validate-pipeline.py --check code-quality --ci'
+    }
+}
