@@ -116,6 +116,13 @@ This removes the need for multiple human prompts and ensures consistent applicat
 ### Updated Metrics
 
 - **Total Files Created/Modified**: 15+
-- **New Setup Features**: Smart download, AI detection, auto-configuration
+- **New Setup Features**: Smart download, AI detection, auto-configuration, interactive auth
 - **Setup Time**: < 30 seconds (vs full repo clone)
 - **Download Size**: < 1MB (vs full repo)
+
+### Security Enhancements
+
+1. **GitHub CLI Integration**: Prefers secure `gh` CLI over token-based authentication
+2. **Interactive Authentication**: Prompts users to authenticate when gh is available but not logged in
+3. **Main Branch Protection**: Always protects `main` branch (not feature branches)
+4. **No Token Exposure**: Avoids tokens in command line arguments or process lists

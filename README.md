@@ -15,11 +15,15 @@ curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 # Or with project purpose
 curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash -s -- "building a REST API"
 
-# For automatic branch protection (most secure - recommended):
+# Setup will interactively guide you through branch protection:
+curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
+# If gh CLI is installed but not authenticated, it will prompt you to log in
+
+# Or pre-authenticate for fully automatic setup:
 gh auth login  # One-time setup
 curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
 
-# Or with token (less secure):
+# Or use token (less secure):
 export GITHUB_TOKEN=your_token
 curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
 ```
@@ -31,7 +35,7 @@ curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 4. Sets up CI/CD for your platform
 5. Creates initial feature proposal
 6. Configures validation tools
-7. Sets up branch protection (if GITHUB_TOKEN provided)
+7. **Protects main branch** (interactive auth if needed)
 
 ## 📚 Documentation
 
