@@ -91,6 +91,13 @@ if command -v git &> /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
     fi
 fi
 
+# Check for GitHub token
+if [ -n "${GITHUB_TOKEN}" ]; then
+    echo -e "${GREEN}✅ Found GITHUB_TOKEN - will set up branch protection${NC}"
+else
+    echo -e "${YELLOW}💡 Tip: Set GITHUB_TOKEN environment variable to enable automatic branch protection${NC}"
+fi
+
 # Run the setup script
 echo "🔧 Running setup..."
 echo "=================================================="

@@ -127,6 +127,7 @@ Transform the setup process to be AI-autonomous by creating a smart installer th
 - [ ] Initial feature proposal is created and requires AI verification
 - [ ] Framework development files are clearly separated from user templates
 - [ ] No full repository clone is required
+- [ ] Branch protection is automatically configured if GITHUB_TOKEN is provided
 
 ### Testing Strategy
 

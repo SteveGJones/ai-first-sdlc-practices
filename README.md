@@ -23,6 +23,7 @@ curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 4. Sets up CI/CD for your platform
 5. Creates initial feature proposal
 6. Configures validation tools
+7. Sets up branch protection (if GITHUB_TOKEN provided)
 
 ## 📚 Documentation
 

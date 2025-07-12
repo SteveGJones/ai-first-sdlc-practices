@@ -30,6 +30,7 @@ class SmartFrameworkSetup:
         "templates/retrospective.md": "retrospectives/template-retrospective.md",
         "tools/automation/context-manager.py": "tools/context-manager.py",
         "tools/automation/progress-tracker.py": "tools/progress-tracker.py",
+        "tools/automation/setup-branch-protection.py": "tools/setup-branch-protection.py",
         "tools/validation/check-feature-proposal.py": "tools/check-feature-proposal.py",
         "tools/validation/validate-pipeline.py": "tools/validate-pipeline.py"
     }
@@ -239,7 +240,7 @@ Implement AI-First SDLC framework with:
             
         return True
     
-    def setup_project(self, skip_ci: bool = False) -> bool:
+    def setup_project(self, skip_ci: bool = False, github_token: str = None) -> bool:
         """Run the complete setup process"""
         print("🚀 AI-First SDLC Smart Setup")
         print("=" * 50)
@@ -315,6 +316,14 @@ Implement AI-First SDLC framework with:
         # Run initial validation
         print("\n🔍 Running initial validation...")
         self.run_validation()
+        
+        # Setup branch protection if token provided
+        detected_platform = self.detect_ci_platform() or "github"
+        if github_token and detected_platform == "github":
+            print("\n🔒 Setting up branch protection...")
+            self.setup_branch_protection(github_token)
+        elif not github_token and detected_platform == "github":
+            print("\n💡 Tip: Provide GITHUB_TOKEN to automatically set up branch protection")
         
         if self.errors:
             print("\n⚠️  Setup completed with errors:")
@@ -433,6 +442,76 @@ Implement AI-First SDLC framework with:
             self.errors.append(f"Could not run validation: {e}")
             return False
     
+    def setup_branch_protection(self, github_token: str) -> bool:
+        """Setup GitHub branch protection rules"""
+        try:
+            # Get repository info from git remote
+            result = subprocess.run(
+                ["git", "remote", "get-url", "origin"],
+                cwd=self.project_dir,
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode != 0:
+                print("❌ Could not determine repository URL")
+                return False
+                
+            remote_url = result.stdout.strip()
+            
+            # Extract owner/repo from URL
+            # Handle both HTTPS and SSH URLs
+            import re
+            if "github.com" in remote_url:
+                if remote_url.startswith("git@"):
+                    # SSH: git@github.com:owner/repo.git
+                    match = re.search(r'github\.com:(.+?)(?:\.git)?$', remote_url)
+                else:
+                    # HTTPS: https://github.com/owner/repo.git
+                    match = re.search(r'github\.com/(.+?)(?:\.git)?$', remote_url)
+                
+                if match:
+                    repo_path = match.group(1)
+                    owner, repo = repo_path.split('/')
+                    
+                    # Download and run the branch protection script
+                    protection_script = self.project_dir / "tools" / "setup-branch-protection.py"
+                    if protection_script.exists():
+                        result = subprocess.run(
+                            [
+                                "python", str(protection_script),
+                                "--platform", "github",
+                                "--repo", repo_path,
+                                "--token", github_token
+                            ],
+                            cwd=self.project_dir,
+                            capture_output=True,
+                            text=True
+                        )
+                        
+                        if result.returncode == 0:
+                            print("✅ Branch protection enabled for main branch")
+                            print("   - Require pull request reviews")
+                            print("   - Require status checks to pass")
+                            print("   - No direct pushes allowed")
+                            return True
+                        else:
+                            print(f"❌ Failed to set up branch protection: {result.stderr}")
+                            return False
+                    else:
+                        print("⚠️  Branch protection tool not found")
+                        return False
+                else:
+                    print("❌ Could not parse repository information")
+                    return False
+            else:
+                print("ℹ️  Branch protection is only supported for GitHub repositories")
+                return False
+                
+        except Exception as e:
+            self.errors.append(f"Could not set up branch protection: {e}")
+            return False
+    
     def print_next_steps(self):
         """Print next steps for the user"""
         print("\n📋 Next Steps:")
@@ -478,6 +557,11 @@ def main():
         default="main",
         help="Framework version/branch to use"
     )
+    parser.add_argument(
+        "--github-token",
+        default=os.environ.get('GITHUB_TOKEN'),
+        help="GitHub token for branch protection (or set GITHUB_TOKEN env var)"
+    )
     
     args = parser.parse_args()
     
@@ -498,7 +582,7 @@ def main():
         setup.GITHUB_RAW_BASE = setup.GITHUB_RAW_BASE.replace("/main", f"/{args.version}")
     
     # Run setup
-    success = setup.setup_project(args.skip_ci)
+    success = setup.setup_project(args.skip_ci, args.github_token)
     
     sys.exit(0 if success else 1)
 
