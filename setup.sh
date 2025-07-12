@@ -92,13 +92,19 @@ if command -v git &> /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
 fi
 
 # Check for GitHub CLI or token
-if command -v gh &> /dev/null && gh auth status &> /dev/null 2>&1; then
-    echo -e "${GREEN}✅ GitHub CLI authenticated - will set up branch protection securely${NC}"
+if command -v gh &> /dev/null; then
+    if gh auth status &> /dev/null 2>&1; then
+        echo -e "${GREEN}✅ GitHub CLI authenticated - will set up branch protection securely${NC}"
+    else
+        echo -e "${YELLOW}🔐 GitHub CLI is installed but not authenticated${NC}"
+        echo -e "${YELLOW}   The setup will prompt you to authenticate for branch protection${NC}"
+    fi
 elif [ -n "${GITHUB_TOKEN}" ]; then
     echo -e "${YELLOW}⚠️  Found GITHUB_TOKEN - will use token-based setup (less secure)${NC}"
-    echo -e "${YELLOW}   Recommend: Install gh CLI and run 'gh auth login' for better security${NC}"
+    echo -e "${YELLOW}   Recommend: Install gh CLI for better security${NC}"
 else
-    echo -e "${YELLOW}💡 Tip: Install GitHub CLI and run 'gh auth login' for automatic branch protection${NC}"
+    echo -e "${YELLOW}💡 Tip: Install GitHub CLI for automatic branch protection${NC}"
+    echo -e "${YELLOW}   brew install gh (macOS) or see https://cli.github.com${NC}"
 fi
 
 # Run the setup script

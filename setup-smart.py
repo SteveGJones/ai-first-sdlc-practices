@@ -464,8 +464,24 @@ Implement AI-First SDLC framework with:
             )
             
             return True
-        except (subprocess.CalledProcessError, FileNotFoundError):
+        except FileNotFoundError:
             return False
+        except subprocess.CalledProcessError:
+            # gh is installed but not authenticated
+            print("\n🔐 GitHub CLI is installed but not authenticated")
+            response = input("Would you like to authenticate now? [Y/n]: ").strip().lower()
+            
+            if response == '' or response == 'y':
+                print("Running 'gh auth login'...")
+                try:
+                    subprocess.run(["gh", "auth", "login"], check=True)
+                    print("✅ Authentication successful!")
+                    return True
+                except subprocess.CalledProcessError:
+                    print("❌ Authentication failed or cancelled")
+                    return False
+            else:
+                return False
     
     def setup_branch_protection(self, github_token: str = None) -> bool:
         """Setup GitHub branch protection rules (prefers gh CLI for security)"""
