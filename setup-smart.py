@@ -10,11 +10,9 @@ import json
 import subprocess
 import argparse
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 import urllib.request
 import urllib.error
-import tempfile
-import shutil
 
 
 class SmartFrameworkSetup:
@@ -67,9 +65,9 @@ class SmartFrameworkSetup:
             with open(local_path, 'wb') as f:
                 f.write(content)
                 
-            # Make executable if it's a Python script
+            # Make executable if it's a Python script (owner only)
             if local_path.suffix == '.py':
-                os.chmod(local_path, 0o755)
+                os.chmod(local_path, 0o700)  # Owner read/write/execute only
                 
             return True
             
@@ -403,6 +401,9 @@ Implement AI-First SDLC framework with:
             local_path = self.project_dir / "azure-pipelines.yml"
         elif platform == "circleci":
             local_path = self.project_dir / ".circleci" / "config.yml"
+        else:
+            # This should never happen due to the check above, but be safe
+            return False
         
         if self.download_file(remote_path, local_path):
             print(f"✅ Configured {platform} CI/CD")
@@ -461,7 +462,7 @@ Implement AI-First SDLC framework with:
             )
             
             # Check if authenticated
-            result = subprocess.run(
+            subprocess.run(
                 ["gh", "auth", "status"],
                 capture_output=True,
                 check=True
@@ -495,7 +496,6 @@ Implement AI-First SDLC framework with:
                 print("   Using GitHub CLI (gh) for secure setup...")
                 
                 # Download the gh-based protection script
-                gh_script_url = f"{self.GITHUB_RAW_BASE}/tools/automation/setup-branch-protection-gh.py"
                 gh_script_path = self.project_dir / "tools" / "setup-branch-protection-gh.py"
                 
                 if self.download_file("tools/automation/setup-branch-protection-gh.py", gh_script_path):
@@ -536,17 +536,19 @@ Implement AI-First SDLC framework with:
             # Extract owner/repo from URL
             # Handle both HTTPS and SSH URLs
             import re
-            if "github.com" in remote_url:
-                if remote_url.startswith("git@"):
-                    # SSH: git@github.com:owner/repo.git
-                    match = re.search(r'github\.com:(.+?)(?:\.git)?$', remote_url)
-                else:
-                    # HTTPS: https://github.com/owner/repo.git
-                    match = re.search(r'github\.com/(.+?)(?:\.git)?$', remote_url)
+            # Use proper URL parsing to avoid security issues
+            if remote_url.startswith("git@github.com:"):
+                # SSH: git@github.com:owner/repo.git
+                match = re.search(r'^git@github\.com:(.+?)(?:\.git)?$', remote_url)
+            elif remote_url.startswith("https://github.com/"):
+                # HTTPS: https://github.com/owner/repo.git
+                match = re.search(r'^https://github\.com/(.+?)(?:\.git)?$', remote_url)
+            else:
+                print("❌ Repository URL is not from github.com")
+                return False
                 
-                if match:
+            if match:
                     repo_path = match.group(1)
-                    owner, repo = repo_path.split('/')
                     
                     # Download and run the branch protection script
                     protection_script = self.project_dir / "tools" / "setup-branch-protection.py"

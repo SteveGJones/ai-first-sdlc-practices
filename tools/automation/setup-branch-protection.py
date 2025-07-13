@@ -191,11 +191,12 @@ def detect_git_platform() -> Optional[str]:
         )
         remote_url = result.stdout.strip()
         
-        if "github.com" in remote_url:
+        # Use proper URL parsing to avoid security issues
+        if remote_url.startswith("git@github.com:") or remote_url.startswith("https://github.com/"):
             return "github"
-        elif "gitlab.com" in remote_url:
+        elif remote_url.startswith("git@gitlab.com:") or remote_url.startswith("https://gitlab.com/"):
             return "gitlab"
-        elif "bitbucket.org" in remote_url:
+        elif remote_url.startswith("git@bitbucket.org:") or remote_url.startswith("https://bitbucket.org/"):
             return "bitbucket"
         else:
             return None

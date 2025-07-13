@@ -14,7 +14,8 @@
       "Bash(gh api:*)",
       "Bash(rm:*)",
       "Bash(git cherry-pick:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(git branch:*)"
     ],
     "deny": []
   }

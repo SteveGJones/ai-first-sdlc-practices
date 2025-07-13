@@ -193,3 +193,34 @@ This removes the need for multiple human prompts and ensures consistent applicat
 - Context understanding guidelines for script output
 
 **Key Insight**: The framework's own CLAUDE.md needed the same level of detailed guidance that we provide to end users. AI agents need explicit context awareness rules to avoid misinterpreting setup instructions as development instructions.
+
+### Security Vulnerabilities Fixed (CodeQL Analysis)
+
+**Critical Security Issues Resolved**:
+
+1. **Overly Permissive File Permissions (2 instances - HIGH)**:
+   - `setup-smart.py:72`: Changed from `0o755` to `0o700` (owner-only access)
+   - `tools/setup.py:214`: Changed from `0o755` to `0o700` (owner-only access)
+   - **Impact**: Prevented world-readable executable scripts that could expose sensitive logic
+
+2. **Incomplete URL Substring Sanitization (4 instances - HIGH)**:
+   - `setup-smart.py:539`: Fixed by using `startswith()` instead of `in` operator
+   - `tools/automation/setup-branch-protection.py:194,196,198`: Fixed by using proper URL prefix matching
+   - **Impact**: Prevented potential URL injection attacks where malicious URLs containing "github.com" could bypass security checks
+
+3. **Potentially Uninitialized Variable (1 instance - ERROR)**:
+   - `setup-smart.py:407`: Added explicit `else` clause to ensure `local_path` is always initialized
+   - **Impact**: Prevented potential runtime crashes
+
+4. **Code Quality Improvements**:
+   - Removed unused imports in multiple files
+   - Removed unused variables (`result`, `gh_script_url`, `owner`, `repo`)
+   - Fixed variable assignment redundancy
+
+**Security Best Practices Applied**:
+- Used principle of least privilege for file permissions
+- Implemented proper URL validation with explicit prefix matching
+- Ensured all code paths initialize variables before use
+- Removed unnecessary code that could introduce future vulnerabilities
+
+**Remaining Alerts**: 32 notes (mostly unused imports and broad exception handling) - lower priority, non-security issues.

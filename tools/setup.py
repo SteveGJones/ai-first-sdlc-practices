@@ -210,8 +210,8 @@ class AIFirstSDLCSetup:
             
             try:
                 shutil.copy2(source, target)
-                # Make executable
-                os.chmod(target, 0o755)
+                # Make executable (owner only)
+                os.chmod(target, 0o700)  # Owner read/write/execute only
                 print(f"   ✅ Installed {target_name}")
             except Exception as e:
                 print(f"   ❌ Error copying {target_name}: {e}")
