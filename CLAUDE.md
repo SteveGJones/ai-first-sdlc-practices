@@ -134,17 +134,27 @@ When modifying framework tools:
    - Do NOT create or switch to `ai-first-kick-start`
    - Complete work on one feature before starting another
 
-### Retrospective Management
-1. **Update retrospectives incrementally** throughout work:
+### Retrospective Management (MANDATORY BEFORE PR)
+1. **Create retrospective file immediately** when starting work:
+   - Create `retrospectives/XX-feature-name.md` at the beginning
+   - Update it incrementally throughout work
+   - MUST be complete before creating Pull Request
+
+2. **Update retrospectives incrementally** throughout work:
    - After discovering significant issues
    - When implementing major changes
    - Upon finding bugs or making corrections
    - Not just at the end of the feature
 
-2. **Link retrospectives to progress**:
+3. **Link retrospectives to progress**:
    - Update retrospective when marking todos as completed
    - Document lessons learned in real-time
    - Add "What Could Be Improved" items as you discover them
+
+4. **PR will be REJECTED without retrospective**:
+   - Validation pipeline checks for retrospective existence
+   - Must mention the current branch/feature name
+   - Must include: what went well, what could improve, lessons learned
 
 ## Common Tasks
 

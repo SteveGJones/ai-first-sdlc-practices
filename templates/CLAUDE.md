@@ -19,10 +19,19 @@ Example:
 ### Mandatory Workflow
 1. **ALWAYS** create a feature branch for ANY work
 2. **ALWAYS** create a feature proposal before starting implementation
-3. **ALWAYS** create a retrospective after completing work
+3. **ALWAYS** create a retrospective BEFORE creating the Pull Request
 4. **NEVER** use `git push origin main` or `git push` when on main branch
 5. **ALWAYS** submit changes via Pull Request
 6. **VERIFY** main branch protection is enabled (see Branch Protection section)
+
+### 📋 Pull Request Checklist (MANDATORY)
+Before creating any PR, ensure:
+- [ ] Feature proposal exists in `docs/feature-proposals/`
+- [ ] All tests pass
+- [ ] Documentation is updated
+- [ ] **Retrospective is created in `retrospectives/`**
+- [ ] Validation pipeline passes (`python tools/validate-pipeline.py`)
+- [ ] No direct commits to main branch
 
 ### Branch Naming Convention
 ```
@@ -39,6 +48,7 @@ git checkout -b feature/user-authentication
 git add .
 git commit -m "feat: implement user authentication"
 git push -u origin feature/user-authentication
+# Complete retrospective BEFORE creating PR
 # Create PR via GitHub/GitLab
 
 # NEVER DO THIS:
@@ -120,6 +130,18 @@ ls tools/setup-branch-protection-gh.py tools/validate-pipeline.py 2>/dev/null
 
 ## Development Workflow
 
+### 📊 Workflow Visualization
+```
+┌─────────────────┐     ┌──────────────┐     ┌───────────────┐     ┌──────────────┐     ┌─────────┐
+│ Feature Proposal│ ──► │Implementation│ ──► │ Retrospective │ ──► │ Pull Request │ ──► │  Merge  │
+│   (REQUIRED)    │     │  (on branch) │     │  (REQUIRED)   │     │   (Review)   │     │ (main)  │
+└─────────────────┘     └──────────────┘     └───────────────┘     └──────────────┘     └─────────┘
+       ↑                                              ↑
+       └──────────── MUST happen first ───────────────┘
+                                                      │
+                                          MUST happen BEFORE PR ───┘
+```
+
 ### Required Documentation Flow
 
 1. **Feature Proposal** (REQUIRED)
@@ -137,10 +159,11 @@ ls tools/setup-branch-protection-gh.py tools/validate-pipeline.py 2>/dev/null
    - Commit frequently with clear messages
    - Run tests after each change
 
-4. **Retrospective** (REQUIRED)
+4. **Retrospective** (REQUIRED BEFORE PR)
    - Create in `retrospectives/`
    - Document what went well/poorly
    - Capture lessons learned
+   - **MUST be completed before creating Pull Request**
 
 ## Code Style and Conventions
 

@@ -34,7 +34,8 @@ class ValidationPipeline:
             "security": self.check_security_scan,
             "code-quality": self.check_code_quality,
             "dependencies": self.check_dependencies,
-            "commit-history": self.check_commit_compliance
+            "commit-history": self.check_commit_compliance,
+            "retrospective": self.check_retrospective
         }
         
         # Default to all checks
@@ -332,6 +333,52 @@ class ValidationPipeline:
                 
         except subprocess.CalledProcessError:
             self.add_skip("Commit Compliance", "No commit history")
+    
+    def check_retrospective(self):
+        """Check for retrospective document"""
+        branch = self._get_current_branch()
+        if not branch or branch in ["main", "master"]:
+            self.add_skip("Retrospective", "Not on feature branch")
+            return
+        
+        # Look for retrospective
+        retro_dirs = ["retrospectives", "docs/retrospectives", "retros"]
+        found = False
+        
+        for dir_path in retro_dirs:
+            if Path(dir_path).exists():
+                for file in Path(dir_path).glob("*.md"):
+                    try:
+                        with open(file, 'r') as f:
+                            content = f.read()
+                            # Check if retrospective mentions the branch or feature
+                            branch_name = branch.replace("feature/", "").replace("fix/", "")
+                            if branch_name in content or branch in content:
+                                found = True
+                                self.add_success("Retrospective", f"Found in {file}")
+                                break
+                    except:
+                        continue
+                if found:
+                    break
+        
+        if not found:
+            # Check if this is a PR validation (CI environment)
+            is_pr = os.environ.get('GITHUB_EVENT_NAME') == 'pull_request' or \
+                    os.environ.get('CI') == 'true'
+            
+            if is_pr:
+                self.add_error(
+                    "Retrospective",
+                    "No retrospective found for current branch",
+                    "Create a retrospective in retrospectives/ before creating PR"
+                )
+            else:
+                self.add_warning(
+                    "Retrospective",
+                    "No retrospective found for current branch",
+                    "Remember to create a retrospective before PR"
+                )
     
     def _get_current_branch(self) -> Optional[str]:
         """Get current git branch"""
