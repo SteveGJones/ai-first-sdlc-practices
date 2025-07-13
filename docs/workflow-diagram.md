@@ -26,12 +26,13 @@ graph TD
     Handoff --> Commit[Commit Changes]
     Commit --> Push[Push to Feature Branch]
     
-    Push --> Review{Code Review}
+    Push --> Retro[Create/Update Retrospective]
+    Retro --> PR[Create Pull Request]
+    PR --> Review{Code Review}
     Review -->|Changes Needed| Session
-    Review -->|Approved| Merge[Merge PR]
+    Review -->|Approved| Merge[Merge to Main]
     
-    Merge --> Retro[Create Retrospective]
-    Retro --> End([Feature Complete])
+    Merge --> End([Feature Complete])
 ```
 
 ## Tool Interaction Flow

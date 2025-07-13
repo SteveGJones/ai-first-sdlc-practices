@@ -62,8 +62,8 @@ jobs:
       uses: trufflesecurity/trufflehog@main
       with:
         path: ./
-        base: ${{ github.event.repository.default_branch }}
-        head: HEAD
+        base: ${{ github.event.before || github.event.pull_request.base.sha || github.event.repository.default_branch }}
+        head: ${{ github.event.after || github.event.pull_request.head.sha || 'HEAD' }}
         extra_args: --debug --only-verified
 
   # CodeQL analysis for Python

@@ -379,3 +379,39 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 - Complete autonomous workflow from proposal to PR
 
 **Impact**: This would make the AI-First SDLC workflow truly autonomous, eliminating the last manual step in the development process.
+
+### CI/CD Workflow Fixes
+
+**Errors Reported**: Multiple CI/CD workflow failures after merge to main.
+
+**Issues Fixed**:
+1. **TruffleHog Security Scan**: Was comparing BASE and HEAD as the same commit on push events. Fixed by using `github.event.before` and `github.event.after` for proper comparison.
+
+2. **Missing requirements.txt**: Multiple workflows expected this file but it didn't exist. Created comprehensive requirements.txt with framework dependencies.
+
+3. **ToC Generator Permissions**: GitHub Actions bot lacked write permissions to push to main. Added `permissions: contents: write` to the job.
+
+4. **YAML Syntax Error**: Multiline Python code blocks in test-ci-examples.yml were incorrectly formatted. Converted to single-line Python commands.
+
+**Key Learning**: CI/CD workflows need thorough testing before merge, especially permission-related configurations and file dependencies.
+
+### Workflow Diagram Corrections
+
+**Issue Identified**: The workflow diagrams in various documents didn't consistently show retrospective as a required step before PR creation.
+
+**Fixes Applied**:
+1. **docs/workflow-diagram.md**: Updated main workflow to show: Push → Retrospective → PR → Review → Merge
+2. **docs/HOWTO.md**: 
+   - Fixed workflow diagram to include retrospective before PR
+   - Added explicit Step 4 for retrospective creation
+   - Added Step 6 for PR creation
+   - Emphasized retrospective is REQUIRED before PR
+
+**Documents Reviewed**:
+- ✅ templates/CLAUDE.md - Already correct
+- ✅ docs/workflow-retrospective-first.md - Already correct  
+- ✅ docs/workflow-diagram.md - Fixed
+- ✅ docs/HOWTO.md - Fixed
+- ✅ Feature proposals show correct workflow
+
+**Key Insight**: Consistency across all documentation is critical for both human developers and AI agents to follow the correct workflow.
