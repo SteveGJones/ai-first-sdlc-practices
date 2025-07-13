@@ -317,7 +317,7 @@ class ValidationPipeline:
                        "test:", "chore:", "perf:", "ci:", "build:"]
             
             for commit in commits:
-                if commit and not any(commit.lower().contains(prefix) for prefix in prefixes):
+                if commit and not any(prefix in commit.lower() for prefix in prefixes):
                     parts = commit.split(' ', 1)
                     if len(parts) > 1:
                         non_compliant.append(parts[1][:50])
@@ -485,7 +485,7 @@ def main():
         "--checks",
         nargs="+",
         choices=["branch", "proposal", "plan", "ai-docs", "tests", 
-                "security", "code-quality", "dependencies", "commit-history"],
+                "security", "code-quality", "dependencies", "commit-history", "retrospective"],
         help="Specific checks to run (default: all)"
     )
     parser.add_argument(
