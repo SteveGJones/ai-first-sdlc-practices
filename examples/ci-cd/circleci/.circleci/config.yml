@@ -133,7 +133,7 @@ workflows:
           filters:
             branches:
               only: /.*/
-      
+
       # Parallel quality checks
       - code-quality:
           requires:
@@ -141,7 +141,7 @@ workflows:
           filters:
             branches:
               ignore: main
-      
+
       - security-scan:
           filters:
             branches:
@@ -150,12 +150,12 @@ workflows:
                 - develop
                 - /feature\/.*/
                 - /fix\/.*/
-      
+
       - test-validation:
           filters:
             branches:
               only: /.*/
-      
+
       # Progress reporting for feature branches
       - progress-report:
           requires:
