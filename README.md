@@ -14,25 +14,27 @@ Download and run: python setup-smart.py "[project purpose]"
 Then read CLAUDE.md and run the repository health check to verify main branch protection.
 ```
 
-### For Humans (Smart Setup)
+### For Humans (One-liner Setup)
 ```bash
-# Download smart setup script
-curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
-
-# Run with your project purpose
-python setup-smart.py "building a REST API with FastAPI"
-
-# This will:
-# 1. Download enhanced CLAUDE.md with branch protection education
-# 2. Set up branch protection using gh CLI (prompts for auth if needed)
-# 3. Create all necessary directories and templates
-# 4. Generate initial feature proposal on ai-first-kick-start branch
-```
-
-### Legacy One-liner (if setup.sh exists)
-```bash
+# Quick setup with curl (recommended)
 curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash -s -- "building a REST API"
+
+# Or without project purpose (uses default)
+curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
 ```
+
+### Alternative: Direct Python Setup
+```bash
+# If you prefer to download and run manually
+curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
+python setup-smart.py "building a REST API with FastAPI"
+```
+
+Both methods will:
+1. Download enhanced CLAUDE.md with branch protection education
+2. Set up branch protection using gh CLI (prompts for auth if needed)
+3. Create all necessary directories and templates
+4. Generate initial feature proposal on ai-first-kick-start branch
 
 ### What This Does
 1. **Downloads enhanced CLAUDE.md** with branch protection education for AI agents
