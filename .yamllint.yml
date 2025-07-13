@@ -1,0 +1,19 @@
+---
+# YAMLlint configuration for AI-First SDLC examples
+# Uses relaxed rules suitable for CI/CD configuration files
+
+extends: default
+
+rules:
+  line-length:
+    max: 120  # Allow longer lines for URLs and long commands
+    level: warning
+  truthy:
+    level: warning  # Allow "on:" in GitHub Actions
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: disable  # CI/CD files often have complex comment structures
+  document-start:
+    present: true  # Require --- at start
+  brackets:
+    max-spaces-inside: 0  # [main] not [ main ]

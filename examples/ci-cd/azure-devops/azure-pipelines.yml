@@ -24,141 +24,134 @@ variables:
   pipCacheDir: $(Pipeline.Workspace)/.pip
 
 stages:
-- stage: Validate
-  displayName: 'AI-First SDLC Validation'
-  jobs:
-  - job: ValidationPipeline
-    displayName: 'Run Validation Pipeline'
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(pythonVersion)'
-        addToPath: true
-      displayName: 'Use Python $(pythonVersion)'
+  - stage: Validate
+    displayName: 'AI-First SDLC Validation'
+    jobs:
+      - job: ValidationPipeline
+        displayName: 'Run Validation Pipeline'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+            displayName: 'Use Python $(pythonVersion)'
 
-    - task: Cache@2
-      inputs:
-        key: 'python | "$(Agent.OS)" | requirements.txt'
-        restoreKeys: |
-          python | "$(Agent.OS)"
-        path: $(pipCacheDir)
-      displayName: 'Cache pip packages'
+          - task: Cache@2
+            inputs:
+              key: 'python | "$(Agent.OS)" | requirements.txt'
+              restoreKeys: |
+                python | "$(Agent.OS)"
+              path: $(pipCacheDir)
+            displayName: 'Cache pip packages'
 
-    - script: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then
-          pip install -r requirements.txt
-        fi
-        pip install pre-commit
-      displayName: 'Install dependencies'
+          - script: |
+              python -m pip install --upgrade pip
+              if [ -f requirements.txt ]; then
+                pip install -r requirements.txt
+              fi
+              pip install pre-commit
+            displayName: 'Install dependencies'
 
-    - script: |
-        # Clone AI-First SDLC tools if not present
-        if [ ! -f "tools/validation/validate-pipeline.py" ]; then
-          git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git $(Agent.TempDirectory)/ai-sdlc
-          cp -r $(Agent.TempDirectory)/ai-sdlc/tools .
-        fi
-      displayName: 'Setup AI-First SDLC tools'
+          - script: |
+              # Clone AI-First SDLC tools if not present
+              if [ ! -f "tools/validation/validate-pipeline.py" ]; then
+                git clone \
+                  https://github.com/SteveGJones/ai-first-sdlc-practices.git \
+                  $(Agent.TempDirectory)/ai-sdlc
+                cp -r $(Agent.TempDirectory)/ai-sdlc/tools .
+              fi
+            displayName: 'Setup AI-First SDLC tools'
 
-    - script: |
-        python tools/validation/validate-pipeline.py --ci --format json > $(Build.ArtifactStagingDirectory)/validation-report.json
-        python tools/validation/validate-pipeline.py --ci
-      displayName: 'Run validation pipeline'
-      continueOnError: false
+          - script: |
+              python tools/validation/validate-pipeline.py --ci \
+                --format json \
+                > $(Build.ArtifactStagingDirectory)/validation-report.json
+              python tools/validation/validate-pipeline.py --ci
+            displayName: 'Run validation pipeline'
 
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)/validation-report.json'
-        artifactName: 'validation-reports'
-      condition: always()
-      displayName: 'Publish validation report'
+          - script: |
+              # Check feature proposal for PR builds
+              if [ -n "$(System.PullRequest.PullRequestId)" ]; then
+                echo "Checking feature proposal for PR branch..."
+                python tools/validation/check-feature-proposal.py \
+                  --branch "$(System.PullRequest.SourceBranch)"
+              fi
+            displayName: 'Check feature proposal (PR only)'
+            condition: eq(variables['Build.Reason'], 'PullRequest')
 
-    - script: |
-        # Check feature proposal for PR builds
-        if [ -n "$(System.PullRequest.SourceBranch)" ]; then
-          BRANCH=$(echo "$(System.PullRequest.SourceBranch)" | sed 's/refs\/heads\///')
-          python tools/validation/check-feature-proposal.py --branch "$BRANCH"
-        fi
-      displayName: 'Check feature proposal'
-      condition: eq(variables['Build.Reason'], 'PullRequest')
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: |
+                $(Build.ArtifactStagingDirectory)/validation-report.json
+              artifactName: 'validation-report'
+            displayName: 'Publish validation report'
+            condition: always()
 
-  - job: CodeQuality
-    displayName: 'Code Quality Checks'
-    dependsOn: []  # Run in parallel with validation
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(pythonVersion)'
-        addToPath: true
-      displayName: 'Use Python $(pythonVersion)'
+      - job: PreCommitChecks
+        displayName: 'Pre-commit Checks'
+        dependsOn: ValidationPipeline
+        condition: succeeded()
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+            displayName: 'Use Python $(pythonVersion)'
 
-    - script: |
-        python -m pip install --upgrade pip
-        pip install pre-commit
-      displayName: 'Install pre-commit'
+          - script: |
+              python -m pip install --upgrade pip
+              pip install pre-commit
+            displayName: 'Install pre-commit'
 
-    - script: |
-        pre-commit run --all-files
-      displayName: 'Run pre-commit hooks'
-      continueOnError: true
+          - script: |
+              pre-commit run --all-files
+            displayName: 'Run pre-commit hooks'
 
-    - script: |
-        # Setup tools if needed
-        if [ ! -f "tools/validation/validate-pipeline.py" ]; then
-          git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git $(Agent.TempDirectory)/ai-sdlc
-          cp -r $(Agent.TempDirectory)/ai-sdlc/tools .
-        fi
-        
-        # Run specific validation checks
-        python tools/validation/validate-pipeline.py --check security --ci
-        python tools/validation/validate-pipeline.py --check tests --ci
-        python tools/validation/validate-pipeline.py --check code-quality --ci
-      displayName: 'Run quality checks'
+  - stage: Reporting
+    displayName: 'Progress Reporting'
+    dependsOn: Validate
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: ProgressReport
+        displayName: 'Generate Progress Report'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+            displayName: 'Use Python $(pythonVersion)'
 
-- stage: Reporting
-  displayName: 'Generate Reports'
-  dependsOn: Validate
-  condition: always()
-  jobs:
-  - job: ProgressReport
-    displayName: 'Progress Tracking Report'
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(pythonVersion)'
-        addToPath: true
-      displayName: 'Use Python $(pythonVersion)'
+          - script: |
+              if [ -f "tools/automation/progress-tracker.py" ]; then
+                python tools/automation/progress-tracker.py list \
+                  --format markdown > $(Build.ArtifactStagingDirectory)/progress-report.md
+                echo "## Progress Report" >> $(System.DefaultWorkingDirectory)/pr-comment.md
+                echo "" >> $(System.DefaultWorkingDirectory)/pr-comment.md
+                cat $(Build.ArtifactStagingDirectory)/progress-report.md \
+                  >> $(System.DefaultWorkingDirectory)/pr-comment.md
+              fi
+            displayName: 'Generate progress report'
 
-    - script: |
-        if [ -f "tools/automation/progress-tracker.py" ]; then
-          python tools/automation/progress-tracker.py list --format markdown > $(Build.ArtifactStagingDirectory)/progress-report.md
-          echo "## Progress Report" >> $(Build.SourcesDirectory)/$(Build.BuildId)-summary.md
-          cat $(Build.ArtifactStagingDirectory)/progress-report.md >> $(Build.SourcesDirectory)/$(Build.BuildId)-summary.md
-        fi
-      displayName: 'Generate progress report'
-      continueOnError: true
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: |
+                $(Build.ArtifactStagingDirectory)/progress-report.md
+              artifactName: 'progress-report'
+            displayName: 'Publish progress report'
+            condition: always()
 
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)/progress-report.md'
-        artifactName: 'progress-reports'
-      condition: always()
-      displayName: 'Publish progress report'
-
-    # Azure DevOps specific: Update PR with validation status
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: |
-          if ($env:SYSTEM_PULLREQUEST_PULLREQUESTID) {
-            Write-Host "##vso[task.logissue type=warning]AI-First SDLC validation completed. Check artifacts for detailed reports."
-          }
-      condition: eq(variables['Build.Reason'], 'PullRequest')
-      displayName: 'Update PR status'
-
-# Build validation policies (configured in Azure DevOps UI)
-# Recommended settings:
-# - Required for PRs to main/develop
-# - Block completion on failure
-# - Reset on source branch changes
-# - Valid for 7 days
+# Optional: Context handoff template
+# To use, add a manual trigger or schedule
+# - stage: ContextHandoff
+#   displayName: 'Context Handoff'
+#   dependsOn: []
+#   jobs:
+#     - job: SaveContext
+#       displayName: 'Save Context'
+#       steps:
+#         - script: |
+#             if [ -f "tools/automation/context-manager.py" ]; then
+#               python tools/automation/context-manager.py save \
+#                 --artifacts "$(Build.ArtifactStagingDirectory)/*.md"
+#             fi
+#           displayName: 'Save context'
