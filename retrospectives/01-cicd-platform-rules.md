@@ -250,3 +250,26 @@ This removes the need for multiple human prompts and ensures consistent applicat
 3. Verified syntax with `python -m py_compile`
 
 **Impact**: This was a critical bug that would prevent anyone from using the framework setup. Now fixed and tested.
+
+### Non-Interactive Mode Support
+
+**Issue Discovered**: When running via `curl | bash`, interactive prompts don't work because stdin is occupied by the curl output. This prevented:
+1. CI/CD platform selection prompt
+2. GitHub CLI authentication prompt
+
+**Root Cause**: The script assumed interactive TTY availability but didn't check or handle piped execution.
+
+**Fix Applied**:
+1. Added `--non-interactive` flag to setup-smart.py
+2. Added `--ci-platform` flag for pre-selecting CI/CD platform
+3. Added TTY detection using `sys.stdin.isatty()`
+4. Modified setup.sh to detect piped execution with `[ ! -t 0 ]`
+5. Auto-detect CI/CD platform from current directory structure
+6. Skip interactive prompts in non-interactive mode with helpful messages
+
+**Behavior**:
+- Interactive mode: Prompts work as expected
+- Non-interactive mode: Uses sensible defaults (GitHub Actions) and skips prompts
+- Shows clear messages about skipped prompts and how to authenticate manually
+
+**Impact**: Framework can now be properly installed via `curl | bash` one-liner without hanging on prompts.

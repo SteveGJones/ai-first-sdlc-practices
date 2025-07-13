@@ -107,12 +107,33 @@ else
     echo -e "${YELLOW}   brew install gh (macOS) or see https://cli.github.com${NC}"
 fi
 
+# Detect if we're running interactively
+INTERACTIVE_ARGS=""
+if [ ! -t 0 ]; then
+    # No TTY attached (running via pipe)
+    echo "📋 Running in non-interactive mode"
+    INTERACTIVE_ARGS="--non-interactive"
+    
+    # Try to detect CI platform from current directory
+    if [ -d ".github/workflows" ]; then
+        INTERACTIVE_ARGS="${INTERACTIVE_ARGS} --ci-platform github"
+    elif [ -f ".gitlab-ci.yml" ]; then
+        INTERACTIVE_ARGS="${INTERACTIVE_ARGS} --ci-platform gitlab"
+    elif [ -f "Jenkinsfile" ]; then
+        INTERACTIVE_ARGS="${INTERACTIVE_ARGS} --ci-platform jenkins"
+    elif [ -f "azure-pipelines.yml" ]; then
+        INTERACTIVE_ARGS="${INTERACTIVE_ARGS} --ci-platform azure"
+    elif [ -d ".circleci" ]; then
+        INTERACTIVE_ARGS="${INTERACTIVE_ARGS} --ci-platform circleci"
+    fi
+fi
+
 # Run the setup script
 echo "🔧 Running setup..."
 echo "=================================================="
 echo ""
 
-python3 "${TEMP_DIR}/setup-smart.py" "${PROJECT_PURPOSE}"
+python3 "${TEMP_DIR}/setup-smart.py" "${PROJECT_PURPOSE}" ${INTERACTIVE_ARGS}
 
 SETUP_EXIT_CODE=$?
 
