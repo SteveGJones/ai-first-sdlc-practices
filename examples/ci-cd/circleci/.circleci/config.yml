@@ -32,7 +32,9 @@ commands:
           name: Clone AI-First SDLC tools if needed
           command: |
             if [ ! -f "tools/validation/validate-pipeline.py" ]; then
-              git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git /tmp/ai-sdlc
+              git clone \
+                https://github.com/SteveGJones/ai-first-sdlc-practices.git \
+                /tmp/ai-sdlc
               cp -r /tmp/ai-sdlc/tools .
             fi
 
@@ -51,7 +53,8 @@ jobs:
       - run:
           name: Run AI-First SDLC validation pipeline
           command: |
-            python tools/validation/validate-pipeline.py --ci --format json > validation-report.json
+            python tools/validation/validate-pipeline.py --ci \
+              --format json > validation-report.json
             python tools/validation/validate-pipeline.py --ci
       - run:
           name: Check feature proposal for PRs
@@ -60,7 +63,8 @@ jobs:
               # Extract branch name from PR
               BRANCH=${CIRCLE_BRANCH}
               echo "Checking feature proposal for branch: $BRANCH"
-              python tools/validation/check-feature-proposal.py --branch "$BRANCH"
+              python tools/validation/check-feature-proposal.py \
+                --branch "$BRANCH"
             fi
       - save_cache:
           paths:
@@ -177,6 +181,6 @@ workflows:
       - security-scan
       - test-validation
 
-# CircleCI-specific optimizations
-# Uses parallelism and caching for faster builds
-# Artifacts are stored for 30 days by default
+  # CircleCI-specific optimizations
+  # Uses parallelism and caching for faster builds
+  # Artifacts are stored for 30 days by default

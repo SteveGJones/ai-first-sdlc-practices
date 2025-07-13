@@ -21,11 +21,11 @@ before_script:
   - python -m pip install --upgrade pip
   - pip install -r requirements.txt || echo "No requirements.txt found"
   - pip install pre-commit
-  
   # Clone the AI-First SDLC tools if not in repo
   - |
     if [ ! -f "tools/validation/validate-pipeline.py" ]; then
-      git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git /tmp/ai-sdlc
+      git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git \
+        /tmp/ai-sdlc
       cp -r /tmp/ai-sdlc/tools .
     fi
 
@@ -36,12 +36,12 @@ validate:ai-sdlc:
   script:
     # Run the comprehensive validation pipeline
     - python tools/validation/validate-pipeline.py --ci
-    
     # For merge requests, check feature proposal
     - |
       if [ -n "$CI_MERGE_REQUEST_ID" ]; then
         echo "Checking feature proposal for MR branch..."
-        python tools/validation/check-feature-proposal.py --branch "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+        python tools/validation/check-feature-proposal.py \
+          --branch "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
       fi
   artifacts:
     when: always
@@ -90,7 +90,8 @@ progress:report:
   script:
     - |
       if [ -f "tools/automation/progress-tracker.py" ]; then
-        python tools/automation/progress-tracker.py list --format markdown > progress-report.md
+        python tools/automation/progress-tracker.py list \
+          --format markdown > progress-report.md
         cat progress-report.md
       fi
   artifacts:
