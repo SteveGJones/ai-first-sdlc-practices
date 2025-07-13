@@ -26,6 +26,23 @@ This is the AI-First SDLC Practices framework - a comprehensive methodology for 
 └── requirements.txt  # Python dependencies
 ```
 
+## 🤖 AI Agent Quick Start
+
+When asked to use this framework in a new project:
+```bash
+# 1. Download and run setup (non-interactive mode for AI agents)
+curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
+python setup-smart.py "[project purpose]" --non-interactive --ci-platform github
+
+# 2. Verify setup is complete
+bash tools/test-setup.sh
+
+# 3. Read the generated CLAUDE.md for project-specific instructions
+cat CLAUDE.md
+```
+
+See `AI-AUTONOMY.md` for detailed autonomous usage guide.
+
 ## Development Commands
 
 ```bash
