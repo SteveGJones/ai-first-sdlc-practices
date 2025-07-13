@@ -1,0 +1,119 @@
+# AI-First SDLC GitLab CI Pipeline
+# This pipeline enforces AI-First SDLC practices for GitLab projects
+
+stages:
+  - validate
+  - quality
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PYTHON_VERSION: "3.9"
+
+# Cache Python dependencies between runs
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+before_script:
+  # Install Python dependencies
+  - python -m pip install --upgrade pip
+  - pip install -r requirements.txt || echo "No requirements.txt found"
+  - pip install pre-commit
+  
+  # Clone the AI-First SDLC tools if not in repo
+  - |
+    if [ ! -f "tools/validation/validate-pipeline.py" ]; then
+      git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git /tmp/ai-sdlc
+      cp -r /tmp/ai-sdlc/tools .
+    fi
+
+# Main validation job - runs on all branches
+validate:ai-sdlc:
+  stage: validate
+  image: python:${PYTHON_VERSION}
+  script:
+    # Run the comprehensive validation pipeline
+    - python tools/validation/validate-pipeline.py --ci
+    
+    # For merge requests, check feature proposal
+    - |
+      if [ -n "$CI_MERGE_REQUEST_ID" ]; then
+        echo "Checking feature proposal for MR branch..."
+        python tools/validation/check-feature-proposal.py --branch "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      fi
+  artifacts:
+    when: always
+    reports:
+      junit: validation-report.xml
+    paths:
+      - validation-report.*
+    expire_in: 1 week
+
+# Code quality checks
+quality:pre-commit:
+  stage: quality
+  image: python:${PYTHON_VERSION}
+  script:
+    - pre-commit run --all-files
+  except:
+    - main
+    - master
+
+# Specific validation subsets for different scenarios
+validate:tests:
+  stage: validate
+  image: python:${PYTHON_VERSION}
+  script:
+    - python tools/validation/validate-pipeline.py --check tests --ci
+  only:
+    changes:
+      - "**/*.py"
+      - "**/*.js"
+      - "**/*.go"
+      - "**/test*"
+      - "**/spec*"
+
+validate:security:
+  stage: validate
+  image: python:${PYTHON_VERSION}
+  script:
+    - python tools/validation/validate-pipeline.py --check security --ci
+  only:
+    - merge_requests
+
+# Optional: Progress tracking job (for long-running MRs)
+progress:report:
+  stage: quality
+  image: python:${PYTHON_VERSION}
+  script:
+    - |
+      if [ -f "tools/automation/progress-tracker.py" ]; then
+        python tools/automation/progress-tracker.py list --format markdown > progress-report.md
+        cat progress-report.md
+      fi
+  artifacts:
+    paths:
+      - progress-report.md
+    expire_in: 1 week
+  only:
+    - merge_requests
+  allow_failure: true
+
+# Template for manual context handoff
+.context-handoff:
+  stage: quality
+  image: python:${PYTHON_VERSION}
+  when: manual
+  script:
+    - |
+      if [ -f "tools/automation/context-manager.py" ]; then
+        python tools/automation/context-manager.py save \
+          --artifacts "$CI_PROJECT_DIR/context-*.md" \
+          --progress "$CI_PROJECT_DIR/progress-*.md"
+      fi
+  artifacts:
+    paths:
+      - context-*.md
+      - progress-*.md
+    expire_in: 1 month

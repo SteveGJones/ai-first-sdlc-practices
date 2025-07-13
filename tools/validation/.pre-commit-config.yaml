@@ -1,0 +1,101 @@
+# AI-First SDLC Pre-commit Hooks
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Branch protection - prevent direct commits to main
+  - repo: local
+    hooks:
+      - id: no-commit-to-main
+        name: Block commits to main branch
+        entry: bash -c 'if [[ $(git symbolic-ref HEAD) == "refs/heads/main" ]]; then echo "❌ Direct commits to main branch are forbidden!"; echo "📝 Create a feature branch: git checkout -b feature/your-feature"; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Feature proposal check
+  - repo: local
+    hooks:
+      - id: feature-proposal-exists
+        name: Check feature proposal exists
+        entry: python tools/validation/check-feature-proposal.py
+        language: python
+        pass_filenames: false
+        always_run: true
+        additional_dependencies: [pyyaml]
+
+  # CLAUDE.md compliance check
+  - repo: local
+    hooks:
+      - id: claude-md-exists
+        name: Verify CLAUDE.md exists
+        entry: bash -c 'if [[ ! -f "CLAUDE.md" && ! -f "GEMINI.md" && ! -f "GPT.md" ]]; then echo "⚠️  Warning: No AI instruction file found (CLAUDE.md, GEMINI.md, or GPT.md)"; echo "📝 Create one from templates/CLAUDE.md"; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Commit message format
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.13.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  # Python code quality
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.11
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: ['--max-line-length=88', '--extend-ignore=E203']
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ['--profile=black']
+
+  # Security checks
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+
+  # YAML validation
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  # Documentation checks
+  - repo: local
+    hooks:
+      - id: documentation-updated
+        name: Check if documentation needs updating
+        entry: bash -c 'if git diff --cached --name-only | grep -E "\.(py|js|go|java)$" > /dev/null; then echo "📝 Reminder: Update documentation if needed (README.md, API docs, etc.)"; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Test reminder
+  - repo: local
+    hooks:
+      - id: test-reminder
+        name: Remind to run tests
+        entry: bash -c 'echo "🧪 Reminder: Have you run the tests? (make test or pytest)"'
+        language: system
+        pass_filenames: false
+        always_run: true

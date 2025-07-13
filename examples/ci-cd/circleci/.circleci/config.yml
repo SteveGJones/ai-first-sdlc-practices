@@ -1,0 +1,181 @@
+# AI-First SDLC CircleCI Configuration
+# Enforces AI-First SDLC practices in CircleCI
+
+version: 2.1
+
+# Reusable executors
+executors:
+  python-executor:
+    docker:
+      - image: cimg/python:3.9
+    working_directory: ~/project
+
+# Reusable commands
+commands:
+  setup-python-env:
+    description: "Setup Python environment and dependencies"
+    steps:
+      - run:
+          name: Install Python dependencies
+          command: |
+            python -m pip install --upgrade pip
+            if [ -f requirements.txt ]; then
+              pip install -r requirements.txt
+            fi
+            pip install pre-commit
+
+  setup-ai-sdlc-tools:
+    description: "Setup AI-First SDLC tools"
+    steps:
+      - run:
+          name: Clone AI-First SDLC tools if needed
+          command: |
+            if [ ! -f "tools/validation/validate-pipeline.py" ]; then
+              git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git /tmp/ai-sdlc
+              cp -r /tmp/ai-sdlc/tools .
+            fi
+
+# Jobs
+jobs:
+  validate-ai-sdlc:
+    executor: python-executor
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-pip-deps-{{ checksum "requirements.txt" }}
+            - v1-pip-deps-
+      - setup-python-env
+      - setup-ai-sdlc-tools
+      - run:
+          name: Run AI-First SDLC validation pipeline
+          command: |
+            python tools/validation/validate-pipeline.py --ci --format json > validation-report.json
+            python tools/validation/validate-pipeline.py --ci
+      - run:
+          name: Check feature proposal for PRs
+          command: |
+            if [ -n "$CIRCLE_PULL_REQUEST" ]; then
+              # Extract branch name from PR
+              BRANCH=${CIRCLE_BRANCH}
+              echo "Checking feature proposal for branch: $BRANCH"
+              python tools/validation/check-feature-proposal.py --branch "$BRANCH"
+            fi
+      - save_cache:
+          paths:
+            - ~/.cache/pip
+          key: v1-pip-deps-{{ checksum "requirements.txt" }}
+      - store_artifacts:
+          path: validation-report.json
+          destination: validation-reports
+      - store_test_results:
+          path: test-results
+
+  code-quality:
+    executor: python-executor
+    steps:
+      - checkout
+      - setup-python-env
+      - run:
+          name: Run pre-commit hooks
+          command: pre-commit run --all-files
+          when: always
+
+  security-scan:
+    executor: python-executor
+    steps:
+      - checkout
+      - setup-python-env
+      - setup-ai-sdlc-tools
+      - run:
+          name: Run security validation
+          command: python tools/validation/validate-pipeline.py --check security --ci
+
+  test-validation:
+    executor: python-executor
+    steps:
+      - checkout
+      - setup-python-env
+      - setup-ai-sdlc-tools
+      - run:
+          name: Validate test coverage
+          command: python tools/validation/validate-pipeline.py --check tests --ci
+
+  progress-report:
+    executor: python-executor
+    steps:
+      - checkout
+      - setup-python-env
+      - run:
+          name: Generate progress report
+          command: |
+            if [ -f "tools/automation/progress-tracker.py" ]; then
+              python tools/automation/progress-tracker.py list --format markdown > progress-report.md
+              cat progress-report.md
+            fi
+          when: always
+      - store_artifacts:
+          path: progress-report.md
+          destination: progress-reports
+
+# Workflows
+workflows:
+  version: 2
+  ai-first-sdlc:
+    jobs:
+      # Main validation - always runs
+      - validate-ai-sdlc:
+          filters:
+            branches:
+              only: /.*/
+      
+      # Parallel quality checks
+      - code-quality:
+          requires:
+            - validate-ai-sdlc
+          filters:
+            branches:
+              ignore: main
+      
+      - security-scan:
+          filters:
+            branches:
+              only:
+                - main
+                - develop
+                - /feature\/.*/
+                - /fix\/.*/
+      
+      - test-validation:
+          filters:
+            branches:
+              only: /.*/
+      
+      # Progress reporting for feature branches
+      - progress-report:
+          requires:
+            - validate-ai-sdlc
+          filters:
+            branches:
+              only:
+                - /feature\/.*/
+                - /fix\/.*/
+
+  # Scheduled validation (daily)
+  nightly-validation:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - main
+                - develop
+    jobs:
+      - validate-ai-sdlc
+      - security-scan
+      - test-validation
+
+# CircleCI-specific optimizations
+# Uses parallelism and caching for faster builds
+# Artifacts are stored for 30 days by default
