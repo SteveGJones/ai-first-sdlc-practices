@@ -1,3 +1,45 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC - Quick Reference Card](#ai-first-sdlc---quick-reference-card)
+  - [🚀 Essential Commands](#-essential-commands)
+    - [Starting Work](#starting-work)
+    - [During Development](#during-development)
+    - [Ending Session](#ending-session)
+  - [📋 Progress Tracking](#-progress-tracking)
+  - [💾 Context Management](#-context-management)
+  - [✅ Validation](#-validation)
+  - [🛡️ Branch Protection](#-branch-protection)
+  - [📝 Templates](#-templates)
+    - [Feature Proposal](#feature-proposal)
+    - [Task Format](#task-format)
+  - [🔄 Workflow States](#-workflow-states)
+    - [Task Status Flow](#task-status-flow)
+    - [Branch Naming](#branch-naming)
+  - [⚡ Common Workflows](#-common-workflows)
+    - [New Feature (Human)](#new-feature-human)
+    - [Continue Work (AI)](#continue-work-ai)
+    - [Quick Validation](#quick-validation)
+  - [🚫 Things to NEVER Do](#-things-to-never-do)
+  - [🆘 Quick Fixes](#-quick-fixes)
+    - [On wrong branch?](#on-wrong-branch)
+    - [Forgot proposal?](#forgot-proposal)
+    - [Lost context?](#lost-context)
+  - [📊 Status Icons](#-status-icons)
+  - [🔗 Integration](#-integration)
+    - [Pre-commit Hook](#pre-commit-hook)
+    - [Authentication Setup](#authentication-setup)
+  - [🔧 CI/CD Integration](#-cicd-integration)
+    - [GitHub Actions](#github-actions)
+    - [GitLab CI](#gitlab-ci)
+    - [Jenkins](#jenkins)
+    - [Azure DevOps](#azure-devops)
+    - [CircleCI](#circleci)
+    - [Common CI Commands](#common-ci-commands)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC - Quick Reference Card
 
 ## 🚀 Essential Commands

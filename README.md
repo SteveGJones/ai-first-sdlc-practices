@@ -1,3 +1,29 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC Practices](#ai-first-sdlc-practices)
+  - [🚀 Quick Start](#-quick-start)
+    - [For AI Agents (Claude)](#for-ai-agents-claude)
+    - [For Humans (One-liner Setup)](#for-humans-one-liner-setup)
+    - [Alternative: Direct Python Setup](#alternative-direct-python-setup)
+    - [What This Does](#what-this-does)
+  - [📚 Documentation](#-documentation)
+  - [🎯 Core Principles](#-core-principles)
+  - [🛠️ Components](#-components)
+    - [Templates](#templates)
+    - [Tools](#tools)
+    - [Examples](#examples)
+  - [📋 Requirements](#-requirements)
+  - [🏗️ Framework Development vs Usage](#-framework-development-vs-usage)
+    - [Using the Framework (You're Starting a New Project)](#using-the-framework-youre-starting-a-new-project)
+    - [Developing the Framework (Contributing to This Repo)](#developing-the-framework-contributing-to-this-repo)
+  - [🤝 Contributing](#-contributing)
+  - [📄 License](#-license)
+  - [🙏 Acknowledgments](#-acknowledgments)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC Practices
 
 A comprehensive framework for integrating AI agents as primary developers while maintaining quality and process compliance.
