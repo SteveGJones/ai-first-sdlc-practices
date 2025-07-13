@@ -415,3 +415,21 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 - ✅ Feature proposals show correct workflow
 
 **Key Insight**: Consistency across all documentation is critical for both human developers and AI agents to follow the correct workflow.
+
+### YAML Formatting Fixes for CI/CD Examples
+
+**Error Reported**: yamllint validation failures in example CI/CD configurations.
+
+**Issues Fixed**:
+1. **Missing document start**: Added `---` at the beginning of all YAML files
+2. **Bracket spacing**: Changed `[ main, develop ]` to `[main, develop]`
+3. **Indentation**: Fixed steps indentation from 4 spaces to 6 spaces under jobs
+4. **Trailing spaces**: Removed all trailing whitespace
+
+**Files Updated**:
+- examples/ci-cd/.github/workflows/ai-sdlc.yml
+- examples/ci-cd/gitlab/.gitlab-ci.yml
+- examples/ci-cd/azure-devops/azure-pipelines.yml
+- examples/ci-cd/circleci/.circleci/config.yml
+
+**Key Learning**: Example files should follow strict YAML linting rules as they serve as templates for users.
