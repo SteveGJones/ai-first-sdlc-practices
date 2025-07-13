@@ -241,6 +241,55 @@ All code changes must pass:
 ### 3. Known Issues
 - **Validation Bug**: Line 319 in `validate-pipeline.py` uses `.contains()` instead of `in` operator
   - Fix: `if commit and not any(prefix in commit.lower() for prefix in prefixes):`
+  - **Note**: This bug has been fixed in PR #4 (feature/cicd-platform-rules branch)
+
+## Branch Protection and Repository Setup
+
+### Configuring Branch Protection
+When setting up a new repository or working with an unprotected main branch:
+
+1. **Check Current Protection Status**:
+   ```bash
+   gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts' 2>/dev/null || echo "No protection"
+   ```
+
+2. **Set Up Protection**:
+   ```bash
+   python tools/automation/setup-branch-protection-gh.py  # Preferred: uses gh CLI
+   # OR
+   python tools/automation/setup-branch-protection.py     # Fallback: uses token
+   ```
+
+3. **Why Branch Protection Matters**:
+   - Ensures code review and validation before merge
+   - Prevents accidental direct pushes to main
+   - Maintains audit trail and rollback capability
+   - Enforces AI-First SDLC process compliance
+
+### TOC Generator Configuration
+- The Table of Contents generator creates PRs instead of pushing directly
+- Runs on feature branches, not main
+- Creates branches with prefix `toc-update/`
+- Compatible with branch protection rules
+
+## Recent Framework Updates
+
+### CONTRIBUTING.md Addition
+- Comprehensive contribution guidelines for humans and AI agents
+- Emphasizes retrospective-first workflow
+- Now included in setup-smart.py essential files
+- Provides clear PR checklist and commit standards
+
+### Validation Pipeline Fixes
+- Fixed `.contains()` AttributeError (line 320)
+- Updated CLI arguments: `--checks` instead of `--check`
+- Added `retrospective` to validation check choices
+- Fixed report generation with `--export` and `--output` flags
+
+### Workflow Enhancements
+- All workflow diagrams now show retrospective before PR
+- Retrospectives are mandatory and validated by pipeline
+- PR creation can be automated with `gh pr create`
 
 ## Important Notes
 
@@ -250,4 +299,6 @@ All code changes must pass:
 - All contributions should follow the framework's own guidelines
 - The repository has active GitHub Actions that enforce these standards
 - Always create feature proposals before implementing changes
-- Always create retrospectives after completing features
+- Always create retrospectives BEFORE creating pull requests
+- Branch protection should be enabled on all repositories using this framework
+- The framework supports 5 major CI/CD platforms with native configurations
