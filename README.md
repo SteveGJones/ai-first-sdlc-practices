@@ -8,17 +8,10 @@ A comprehensive framework for integrating AI agents as primary developers while 
 To have Claude set up the AI-First SDLC framework in your current project, use this prompt:
 
 ```
-Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project for [your purpose].
-
-First, download and run the setup script:
-curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
-python setup-smart.py "[your purpose]" --non-interactive
-
-Then verify the setup with:
-bash tools/test-setup.sh
-
-Note: I may need you to run "gh auth login" if GitHub CLI isn't authenticated.
+Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project.
 ```
+
+Claude will ask you for your project's purpose and then proceed with the setup automatically.
 
 ### For Humans (One-liner Setup)
 ```bash

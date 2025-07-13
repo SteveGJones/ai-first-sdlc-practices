@@ -9,14 +9,16 @@ Navigate to your project directory where you want to implement AI-First SDLC pra
 ### Step 2: Give Claude this prompt
 
 ```
-Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices 
-in this project for [your project purpose].
+Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project.
+```
 
-For example:
+Claude will ask you: "What is the purpose of this project?"
+
+You can then respond with something like:
 - "building a REST API with FastAPI"
 - "creating a React web application"
 - "developing a CLI tool in Python"
-```
+- "implementing a machine learning pipeline"
 
 ### Step 3: What Claude will do
 
@@ -45,13 +47,24 @@ After setup, Claude will run verification and show you:
 
 **You**: 
 ```
-Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices 
-in this project for building a task management API.
+Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project.
 ```
 
 **Claude**: 
 ```
-I'll set up the AI-First SDLC framework for your task management API project...
+I'll help you set up the AI-First SDLC framework. First, I need to know:
+
+What is the purpose of this project? (e.g., "building a REST API", "creating a web app", etc.)
+```
+
+**You**: 
+```
+Building a task management API with FastAPI
+```
+
+**Claude**: 
+```
+Perfect! I'll set up the AI-First SDLC framework for your task management API project...
 [Downloads and runs setup]
 ```
 
