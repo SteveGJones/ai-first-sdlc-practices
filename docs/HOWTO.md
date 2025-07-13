@@ -64,9 +64,9 @@ python tools/progress-tracker.py add "Add session management"
 ### The AI-First Development Cycle
 
 ```
-1. Feature Proposal → 2. Implementation Plan → 3. Development → 4. Retrospective
-     ↑                                                               ↓
-     └─────────────────── Continuous Improvement ←─────────────────┘
+1. Feature Proposal → 2. Implementation Plan → 3. Development → 4. Retrospective → 5. Pull Request
+     ↑                                                                                      ↓
+     └────────────────────────── Continuous Improvement ←──────────────────────────────────┘
 ```
 
 ### Step-by-Step Process
@@ -110,26 +110,50 @@ python tools/context-manager.py handoff \
   --next "Add password reset" "Write tests"
 ```
 
-#### 4. Validate Your Work
+#### 4. Create Retrospective (REQUIRED Before PR)
+
+```bash
+# Create retrospective document
+cp retrospectives/template-retrospective.md \
+   retrospectives/your-feature-retrospective.md
+
+# Edit with your lessons learned
+vim retrospectives/your-feature-retrospective.md
+
+# Commit the retrospective
+git add retrospectives/your-feature-retrospective.md
+git commit -m "docs: add retrospective for feature implementation"
+```
+
+**Important**: PRs without retrospectives will be rejected by validation!
+
+#### 5. Validate Your Work
 
 ```bash
 # Run the validation pipeline
 python tools/validate-pipeline.py
 
 # Run specific checks
-python tools/validate-pipeline.py --checks branch proposal tests
+python tools/validate-pipeline.py --checks branch proposal tests retrospective
 
 # Export results for CI
 python tools/validate-pipeline.py --export json --output validation.json
 ```
 
-#### 5. Complete with Retrospective
+#### 6. Create Pull Request
 
 ```bash
-# After feature completion
-cp retrospectives/template-retrospective.md \
-   retrospectives/your-feature-retrospective.md
+# Push your branch
+git push -u origin feature/your-feature-name
+
+# Create PR using gh CLI (if available)
+gh pr create --title "feat: your feature name" \
+  --body "Summary of changes. See retrospective: retrospectives/your-feature-retrospective.md"
+
+# Or create PR on your platform's web interface
 ```
+
+**Note**: The retrospective MUST be complete before creating the PR!
 
 ---
 
