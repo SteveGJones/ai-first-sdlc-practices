@@ -64,7 +64,8 @@ stages:
 
           - script: |
               python tools/validation/validate-pipeline.py --ci \
-                --format json > $(Build.ArtifactStagingDirectory)/validation-report.json
+                --format json \
+                > $(Build.ArtifactStagingDirectory)/validation-report.json
               python tools/validation/validate-pipeline.py --ci
             displayName: 'Run validation pipeline'
 
@@ -80,7 +81,8 @@ stages:
 
           - task: PublishBuildArtifacts@1
             inputs:
-              pathToPublish: '$(Build.ArtifactStagingDirectory)/validation-report.json'
+              pathToPublish: |
+                $(Build.ArtifactStagingDirectory)/validation-report.json
               artifactName: 'validation-report'
             displayName: 'Publish validation report'
             condition: always()
@@ -132,7 +134,8 @@ stages:
 
           - task: PublishBuildArtifacts@1
             inputs:
-              pathToPublish: '$(Build.ArtifactStagingDirectory)/progress-report.md'
+              pathToPublish: |
+                $(Build.ArtifactStagingDirectory)/progress-report.md
               artifactName: 'progress-report'
             displayName: 'Publish progress report'
             condition: always()
