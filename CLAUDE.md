@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🎯 Recommended User Prompt
+
+To have Claude set up this framework in your project, use:
+```
+Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices 
+in this project for [describe your project purpose].
+```
+
+Claude will download the setup script and guide you through any authentication steps needed.
+
 ## Project Overview
 
 This is the AI-First SDLC Practices framework - a comprehensive methodology for integrating AI agents as primary developers while maintaining quality and process compliance. The framework provides tools, templates, and automation to enforce best practices in AI-assisted software development.

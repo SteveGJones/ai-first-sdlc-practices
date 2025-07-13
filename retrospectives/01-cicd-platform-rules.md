@@ -315,3 +315,34 @@ This removes the need for multiple human prompts and ensures consistent applicat
 - Report status clearly to users
 
 This completes the framework's evolution from human-assisted to fully AI-autonomous.
+
+### Clarification of Claude Usage Instructions
+
+**Issue Identified**: Instructions weren't clear about:
+1. Claude works in the existing repo (no cloning needed)
+2. The exact prompt users should give Claude
+3. When human interaction is needed (gh auth, etc.)
+
+**Improvements Made**:
+
+1. **Updated README.md** with clear Claude prompt:
+   ```
+   Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices 
+   in this project for [your purpose].
+   ```
+
+2. **Created QUICKSTART.md** with:
+   - Step-by-step user guide
+   - Example complete interaction
+   - Clear expectations of when Claude needs help
+
+3. **Enhanced AI-AUTONOMY.md** with:
+   - Human-Claude interaction points
+   - Specific messages Claude should use
+   - Clear starting point (just the GitHub URL)
+
+4. **Added to CLAUDE.md**:
+   - Recommended user prompt at the top
+   - Clarification that setup happens in current directory
+
+**Result**: Users now have a clear, simple prompt to give Claude, and Claude knows exactly what to do when given just the repository URL.

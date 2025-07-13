@@ -1,10 +1,19 @@
 # AI Autonomy Guide - Using AI-First SDLC Framework
 
-This guide enables Claude (or other AI agents) to autonomously set up and use the AI-First SDLC framework without human intervention.
+This guide enables Claude (or other AI agents) to set up and use the AI-First SDLC framework in existing projects.
+
+## 🌐 Starting Point
+
+When a user provides this URL to Claude:
+```
+https://github.com/SteveGJones/ai-first-sdlc-practices
+```
+
+Claude should understand this means: "Set up the AI-First SDLC framework in my current project"
 
 ## 🤖 Quick Start for Claude
 
-When asked to use this framework, follow these steps:
+When given the framework URL, follow these steps in the user's current directory:
 
 ```bash
 # 1. Download the smart setup script
@@ -20,6 +29,34 @@ cat CLAUDE.md
 git branch --show-current  # Should NOT be "main"
 gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts' 2>/dev/null || echo "Branch protection not set up yet"
 ```
+
+## 🤝 Human-Claude Interaction Points
+
+Claude may need to ask the user to:
+
+1. **Authenticate GitHub CLI** (most common):
+   ```
+   "The GitHub CLI needs authentication to set up branch protection.
+   Please run: gh auth login
+   Then let me know when you're done."
+   ```
+
+2. **Choose CI/CD Platform** (if can't detect):
+   ```
+   "Which CI/CD platform does this project use?
+   1. GitHub Actions
+   2. GitLab CI
+   3. Jenkins
+   4. Azure DevOps
+   5. CircleCI"
+   ```
+
+3. **Provide Admin Access** (for branch protection):
+   ```
+   "Branch protection requires admin access to the repository.
+   Please ensure I have admin permissions or run this command yourself:
+   python tools/setup-branch-protection-gh.py"
+   ```
 
 ## 📋 Decision Matrix for Autonomous Setup
 
