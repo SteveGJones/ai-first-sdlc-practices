@@ -1,3 +1,33 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [CI/CD Platform Integration Guide](#cicd-platform-integration-guide)
+  - [Overview](#overview)
+  - [Platform Configurations](#platform-configurations)
+    - [GitHub Actions](#github-actions)
+    - [GitLab CI](#gitlab-ci)
+    - [Jenkins](#jenkins)
+    - [Azure DevOps](#azure-devops)
+    - [CircleCI](#circleci)
+  - [Common Configuration Options](#common-configuration-options)
+    - [Validation Pipeline Flags](#validation-pipeline-flags)
+    - [Environment Setup](#environment-setup)
+    - [Caching Strategies](#caching-strategies)
+  - [Platform-Specific Features](#platform-specific-features)
+    - [Secret Management](#secret-management)
+    - [Artifact Storage](#artifact-storage)
+    - [PR/MR Integration](#prmr-integration)
+  - [Troubleshooting](#troubleshooting)
+    - [Common Issues](#common-issues)
+    - [Debugging Tips](#debugging-tips)
+  - [Best Practices](#best-practices)
+  - [Migration Guide](#migration-guide)
+    - [From Existing CI/CD](#from-existing-cicd)
+  - [Support](#support)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # CI/CD Platform Integration Guide
 
 This guide explains how to integrate the AI-First SDLC validation pipeline with various CI/CD platforms.

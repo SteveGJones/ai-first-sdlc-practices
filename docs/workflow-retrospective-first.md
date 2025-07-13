@@ -1,3 +1,24 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC Workflow: Retrospective-First Approach](#ai-first-sdlc-workflow-retrospective-first-approach)
+  - [Why Retrospectives Before PR?](#why-retrospectives-before-pr)
+  - [The Complete Workflow](#the-complete-workflow)
+  - [Step-by-Step Process](#step-by-step-process)
+    - [1. Create Feature Proposal](#1-create-feature-proposal)
+    - [2. Start Retrospective Immediately](#2-start-retrospective-immediately)
+    - [3. Update Retrospective During Development](#3-update-retrospective-during-development)
+    - [4. Complete Retrospective Before PR](#4-complete-retrospective-before-pr)
+    - [5. Validation Will Check](#5-validation-will-check)
+  - [Example Retrospective Update Flow](#example-retrospective-update-flow)
+  - [Benefits of This Approach](#benefits-of-this-approach)
+  - [Common Mistakes to Avoid](#common-mistakes-to-avoid)
+  - [Integration with AI Agents](#integration-with-ai-agents)
+  - [Enforcement](#enforcement)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC Workflow: Retrospective-First Approach
 
 ## Why Retrospectives Before PR?
