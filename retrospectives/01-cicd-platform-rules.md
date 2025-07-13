@@ -224,3 +224,16 @@ This removes the need for multiple human prompts and ensures consistent applicat
 - Removed unnecessary code that could introduce future vulnerabilities
 
 **Remaining Alerts**: 32 notes (mostly unused imports and broad exception handling) - lower priority, non-security issues.
+
+### Documentation Correction
+
+**Incorrect "Legacy" Label**: During documentation updates, I incorrectly labeled `setup.sh` as "legacy". This was a misunderstanding.
+
+**Actual Purpose of setup.sh**:
+- It's the **primary entry point** for the one-liner installation
+- Acts as a wrapper that downloads and runs `setup-smart.py`
+- Provides prerequisite checks (Python 3, Git)
+- Handles the curl pipe to bash workflow that users expect
+- NOT legacy - it's the recommended installation method
+
+**Correction Applied**: Updated README.md to properly present `setup.sh` as the recommended one-liner setup method, with direct Python setup as an alternative.
