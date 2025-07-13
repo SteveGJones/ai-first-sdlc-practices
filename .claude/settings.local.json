@@ -12,7 +12,9 @@
       "Bash(cp:*)",
       "Bash(chmod:*)",
       "Bash(gh api:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git stash:*)"
     ],
     "deny": []
   }
