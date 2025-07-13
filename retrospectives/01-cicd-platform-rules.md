@@ -450,3 +450,25 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 3. Fixed remaining trailing spaces in CircleCI config
 
 **Result**: All CI/CD examples now pass validation while maintaining readability and functionality.
+
+### Missing CONTRIBUTING.md
+
+**Issue Discovered**: The framework was missing a CONTRIBUTING.md file, which is essential for open source projects.
+
+**Solution Implemented**: Created comprehensive CONTRIBUTING.md that:
+1. Provides guidelines for both human and AI contributors
+2. Documents the full contribution process including:
+   - Feature proposal requirement
+   - Testing standards  
+   - PR checklist with retrospective requirement
+   - Commit message format
+3. Includes specific workflows for different contribution types
+4. Emphasizes AI agents as first-class contributors
+
+**Key Features**:
+- Clear distinction between framework usage and framework development
+- Explicit requirement for retrospectives before PRs
+- AI-specific contribution guidelines
+- Security and documentation standards
+
+**Note**: The setup-smart.py script should be updated to include CONTRIBUTING.md in projects that use the framework, helping them establish good contribution practices from the start.
