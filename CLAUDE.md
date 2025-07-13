@@ -6,11 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 To have Claude set up this framework in your project, use:
 ```
-Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices 
-in this project for [describe your project purpose].
+Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project.
 ```
 
-Claude will download the setup script and guide you through any authentication steps needed.
+Claude will ask you for your project's purpose and then download the setup script and guide you through any authentication steps needed.
 
 ## Project Overview
 

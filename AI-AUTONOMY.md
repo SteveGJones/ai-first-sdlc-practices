@@ -9,23 +9,34 @@ When a user provides this URL to Claude:
 https://github.com/SteveGJones/ai-first-sdlc-practices
 ```
 
-Claude should understand this means: "Set up the AI-First SDLC framework in my current project"
+Claude should:
+1. Understand this means: "Set up the AI-First SDLC framework in my current project"
+2. Ask the user: "What is the purpose of this project?"
+3. Use their response as the project purpose for setup
 
 ## 🤖 Quick Start for Claude
 
-When given the framework URL, follow these steps in the user's current directory:
+When given the framework URL, follow these steps:
 
+### 1. First, ask the user for project purpose:
+```
+I'll help you set up the AI-First SDLC framework. First, I need to know:
+
+What is the purpose of this project? (e.g., "building a REST API", "creating a web app", etc.)
+```
+
+### 2. After receiving their response, proceed with setup:
 ```bash
-# 1. Download the smart setup script
+# Download the smart setup script
 curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
 
-# 2. Run with non-interactive mode (since you can't respond to prompts)
-python setup-smart.py "[project purpose]" --non-interactive --ci-platform github
+# Run with their project purpose
+python setup-smart.py "[their response]" --non-interactive --ci-platform github
 
-# 3. Read the generated CLAUDE.md
+# Read the generated CLAUDE.md
 cat CLAUDE.md
 
-# 4. Run repository health check
+# Run repository health check
 git branch --show-current  # Should NOT be "main"
 gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts' 2>/dev/null || echo "Branch protection not set up yet"
 ```
