@@ -89,6 +89,37 @@ When modifying framework tools:
 4. **Context Preservation**: Enable seamless handoffs
 5. **Automated Validation**: Continuous compliance checking
 
+## 🚨 CRITICAL: Branch Management Rules
+
+### Framework Development vs Project Setup
+1. **NEVER switch branches without understanding the context**:
+   - `feature/*` branches: For framework development work
+   - `ai-first-kick-start`: Created by setup script for NEW projects only
+   - `main`: Protected, never work directly on it
+
+2. **ALWAYS verify current branch context**:
+   ```bash
+   git branch --show-current  # Check which branch you're on
+   git log --oneline -3      # Understand the branch's purpose
+   ```
+
+3. **When working on the framework itself**:
+   - Continue on the current feature branch
+   - Do NOT create or switch to `ai-first-kick-start`
+   - Complete work on one feature before starting another
+
+### Retrospective Management
+1. **Update retrospectives incrementally** throughout work:
+   - After discovering significant issues
+   - When implementing major changes
+   - Upon finding bugs or making corrections
+   - Not just at the end of the feature
+
+2. **Link retrospectives to progress**:
+   - Update retrospective when marking todos as completed
+   - Document lessons learned in real-time
+   - Add "What Could Be Improved" items as you discover them
+
 ## Common Tasks
 
 ### Adding New Validation Rules
@@ -131,23 +162,37 @@ Located in `examples/ci-cd/`:
 
 ### 1. Feature Development Process
 ```bash
+# 0. VERIFY current branch context
+git branch --show-current
+# If already on feature branch, continue there
+# Do NOT switch to ai-first-kick-start
+
 # 1. Create feature proposal FIRST
 docs/feature-proposals/XX-feature-name.md
 
-# 2. Create feature branch
+# 2. Create feature branch (ONLY if not already on one)
 git checkout -b feature/feature-name
 
 # 3. Implement changes
 
-# 4. Run validation
+# 4. UPDATE retrospective after major changes
+# Don't wait until the end!
+
+# 5. Run validation
 python tools/validation/validate-pipeline.py --ci
 
-# 5. Create retrospective
+# 6. Final retrospective update
 retrospectives/XX-feature-name.md
 
-# 6. Push and create PR
+# 7. Push and create PR
 git push -u origin feature/feature-name
 ```
+
+### Understanding Script Output
+When scripts mention `ai-first-kick-start`:
+- This is for NEW PROJECT setup, not framework development
+- If you see this while developing the framework, you're in the wrong context
+- Always verify: "Am I developing ON the framework or WITH the framework?"
 
 ### 2. Validation Requirements
 All code changes must pass:

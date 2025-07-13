@@ -169,3 +169,27 @@ This removes the need for multiple human prompts and ensures consistent applicat
 - ✅ Branch protection script now works correctly with proper JSON formatting
 - ✅ Claude receives comprehensive branch protection education in both full template and fallback versions
 - ✅ Humans have clear prompts to give Claude for both setup and development sessions
+
+### Lessons Learned from Claude Errors
+
+**Branch Confusion Issue**: During implementation, Claude incorrectly switched to `ai-first-kick-start` branch instead of continuing on `feature/cicd-platform-rules`. This revealed critical missing rules in the framework's own CLAUDE.md.
+
+**Root Causes Identified**:
+1. **Missing Context Awareness**: No explicit rule about staying on current feature branch during framework development
+2. **Ambiguous Branch References**: Setup script references to `ai-first-kick-start` were misinterpreted as instructions
+3. **No Branch Verification Step**: Missing "verify current branch context" in workflow
+
+**Retrospective Update Gap**: Claude didn't update this retrospective incrementally during work, only at the end.
+
+**Root Causes**:
+1. **End-only Documentation**: Templates show retrospectives as final documents, not living ones
+2. **No Update Triggers**: No guidance on when to update (after bugs, major changes, etc.)
+3. **Missing Todo Integration**: Retrospectives not linked to progress tracking
+
+**Framework CLAUDE.md Enhanced** with:
+- Critical branch management rules distinguishing framework development from project setup
+- Explicit "verify current branch" steps in workflow
+- Incremental retrospective update requirements
+- Context understanding guidelines for script output
+
+**Key Insight**: The framework's own CLAUDE.md needed the same level of detailed guidance that we provide to end users. AI agents need explicit context awareness rules to avoid misinterpreting setup instructions as development instructions.
