@@ -39,41 +39,19 @@ jobs:
         echo "=== Validating GitLab CI configuration ==="
         yamllint examples/ci-cd/gitlab/.gitlab-ci.yml
         # Also validate with Python to check structure
-        python -c "
-import yaml
-with open('examples/ci-cd/gitlab/.gitlab-ci.yml', 'r') as f:
-    config = yaml.safe_load(f)
-    assert 'stages' in config, 'Missing stages in GitLab CI'
-    assert 'validate:ai-sdlc' in config, 'Missing main validation job'
-    print('✅ GitLab CI configuration is valid')
-        "
+        python -c "import yaml; f = open('examples/ci-cd/gitlab/.gitlab-ci.yml', 'r'); config = yaml.safe_load(f); f.close(); assert 'stages' in config, 'Missing stages in GitLab CI'; assert 'validate:ai-sdlc' in config, 'Missing main validation job'; print('✅ GitLab CI configuration is valid')"
     
     - name: Validate Azure Pipelines configuration
       run: |
         echo "=== Validating Azure Pipelines configuration ==="
         yamllint examples/ci-cd/azure-devops/azure-pipelines.yml
-        python -c "
-import yaml
-with open('examples/ci-cd/azure-devops/azure-pipelines.yml', 'r') as f:
-    config = yaml.safe_load(f)
-    assert 'trigger' in config, 'Missing trigger in Azure Pipelines'
-    assert 'stages' in config, 'Missing stages in Azure Pipelines'
-    print('✅ Azure Pipelines configuration is valid')
-        "
+        python -c "import yaml; f = open('examples/ci-cd/azure-devops/azure-pipelines.yml', 'r'); config = yaml.safe_load(f); f.close(); assert 'trigger' in config, 'Missing trigger in Azure Pipelines'; assert 'stages' in config, 'Missing stages in Azure Pipelines'; print('✅ Azure Pipelines configuration is valid')"
     
     - name: Validate CircleCI configuration
       run: |
         echo "=== Validating CircleCI configuration ==="
         yamllint examples/ci-cd/circleci/.circleci/config.yml
-        python -c "
-import yaml
-with open('examples/ci-cd/circleci/.circleci/config.yml', 'r') as f:
-    config = yaml.safe_load(f)
-    assert config.get('version') == 2.1, 'CircleCI config should use version 2.1'
-    assert 'workflows' in config, 'Missing workflows in CircleCI'
-    assert 'jobs' in config, 'Missing jobs in CircleCI'
-    print('✅ CircleCI configuration is valid')
-        "
+        python -c "import yaml; f = open('examples/ci-cd/circleci/.circleci/config.yml', 'r'); config = yaml.safe_load(f); f.close(); assert config.get('version') == 2.1, 'CircleCI config should use version 2.1'; assert 'workflows' in config, 'Missing workflows in CircleCI'; assert 'jobs' in config, 'Missing jobs in CircleCI'; print('✅ CircleCI configuration is valid')"
     
     - name: Validate Jenkins Pipeline
       run: |

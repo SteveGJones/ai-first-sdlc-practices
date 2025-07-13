@@ -379,3 +379,18 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 - Complete autonomous workflow from proposal to PR
 
 **Impact**: This would make the AI-First SDLC workflow truly autonomous, eliminating the last manual step in the development process.
+
+### CI/CD Workflow Fixes
+
+**Errors Reported**: Multiple CI/CD workflow failures after merge to main.
+
+**Issues Fixed**:
+1. **TruffleHog Security Scan**: Was comparing BASE and HEAD as the same commit on push events. Fixed by using `github.event.before` and `github.event.after` for proper comparison.
+
+2. **Missing requirements.txt**: Multiple workflows expected this file but it didn't exist. Created comprehensive requirements.txt with framework dependencies.
+
+3. **ToC Generator Permissions**: GitHub Actions bot lacked write permissions to push to main. Added `permissions: contents: write` to the job.
+
+4. **YAML Syntax Error**: Multiline Python code blocks in test-ci-examples.yml were incorrectly formatted. Converted to single-line Python commands.
+
+**Key Learning**: CI/CD workflows need thorough testing before merge, especially permission-related configurations and file dependencies.

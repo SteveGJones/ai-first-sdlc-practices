@@ -1,5 +1,22 @@
-# AI-First SDLC Practices Requirements
-pyyaml>=5.4
-requests>=2.25
-click>=8.0
-pre-commit>=2.15
+# AI-First SDLC Framework Requirements
+# These are the dependencies for the framework tools
+
+# Core dependencies
+PyYAML>=6.0
+requests>=2.31.0
+click>=8.1.0
+
+# Development dependencies
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.7.0
+flake8>=6.1.0
+mypy>=1.5.0
+
+# Security scanning
+safety>=2.3.0
+bandit>=1.7.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.2.0
