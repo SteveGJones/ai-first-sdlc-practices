@@ -617,7 +617,11 @@ Implement AI-First SDLC framework with:
         print("   git add .")
         print("   git commit -m \"feat: implement AI-First SDLC framework\"")
         print("   git push -u origin ai-first-kick-start")
-        print("\n5. Create a pull request to merge into main")
+        print("\n5. Create retrospective (REQUIRED before PR):")
+        print("   Create file: retrospectives/00-ai-first-setup.md")
+        print("   Document what went well, what could improve, and lessons learned")
+        print("\n6. Create a pull request to merge into main")
+        print("   Note: PR will be rejected without a retrospective!")
         print("\n📚 Framework Documentation:")
         print("   https://github.com/SteveGJones/ai-first-sdlc-practices")
 

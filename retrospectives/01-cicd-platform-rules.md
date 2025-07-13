@@ -346,3 +346,36 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
    - Clarification that setup happens in current directory
 
 **Result**: Users now have a clear, simple prompt to give Claude, and Claude knows exactly what to do when given just the repository URL.
+
+### Making Retrospectives Mandatory Before PR
+
+**User Feedback**: Claude didn't create retrospectives automatically, suggesting they should be an explicit TODO item and part of the "definition of done" before PR creation.
+
+**Improvements Implemented**:
+1. **Enhanced CLAUDE.md Template**: 
+   - Added explicit PR checklist with retrospective as mandatory
+   - Created visual workflow showing retrospective before PR
+   - Added "REQUIRED BEFORE PR" labels throughout
+
+2. **Updated Setup Script**: Added retrospective creation to the "Next Steps" output with clear warning that PRs will be rejected without it
+
+3. **Validation Pipeline Enhancement**: Added `check_retrospective()` that:
+   - Errors in CI/PR environments (blocking merges)
+   - Warns in local development
+   - Checks for branch/feature name in retrospective content
+
+4. **Comprehensive Documentation**: Created `workflow-retrospective-first.md` explaining the philosophy and process
+
+**Key Insight**: Retrospectives should be treated as a "definition of done" requirement for any branch, not an optional post-merge activity. This ensures lessons are captured while fresh and shared before merge.
+
+### Automated PR Creation Proposal
+
+**Next Evolution**: User suggested extending the definition of done to include automated PR creation using `gh pr create` for more autonomous working.
+
+**Feature Proposal Created**: `02-automated-pr-creation.md` to implement:
+- Automated PR creation after retrospective completion
+- Dynamic PR descriptions pulling from proposals and retrospectives
+- Graceful fallback when gh CLI unavailable
+- Complete autonomous workflow from proposal to PR
+
+**Impact**: This would make the AI-First SDLC workflow truly autonomous, eliminating the last manual step in the development process.
