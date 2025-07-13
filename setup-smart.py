@@ -43,11 +43,14 @@ class SmartFrameworkSetup:
         "circleci": "examples/ci-cd/circleci/.circleci/config.yml"
     }
     
-    def __init__(self, project_dir: Optional[Path] = None, project_purpose: str = None):
+    def __init__(self, project_dir: Optional[Path] = None, project_purpose: str = None, 
+                 non_interactive: bool = False, ci_platform: str = None):
         self.project_dir = project_dir or Path.cwd()
         self.project_purpose = project_purpose or "AI-assisted software development"
         self.project_name = self.project_dir.name
         self.errors = []
+        self.non_interactive = non_interactive or not sys.stdin.isatty()
+        self.ci_platform = ci_platform
         
     def download_file(self, remote_path: str, local_path: Path) -> bool:
         """Download a file from the framework repository"""
@@ -362,6 +365,15 @@ Implement AI-First SDLC framework with:
     
     def ask_ci_platform(self) -> Optional[str]:
         """Ask user which CI/CD platform they're using"""
+        # If we have a pre-specified platform, use it
+        if self.ci_platform:
+            return self.ci_platform if self.ci_platform != "none" else None
+            
+        # In non-interactive mode, default to GitHub Actions
+        if self.non_interactive:
+            print("\n⚙️  Non-interactive mode: defaulting to GitHub Actions")
+            return "github"
+            
         print("\nWhich CI/CD platform are you using?")
         print("1. GitHub Actions")
         print("2. GitLab CI")
@@ -474,6 +486,12 @@ Implement AI-First SDLC framework with:
         except subprocess.CalledProcessError:
             # gh is installed but not authenticated
             print("\n🔐 GitHub CLI is installed but not authenticated")
+            
+            if self.non_interactive:
+                print("   ℹ️  Non-interactive mode: skipping gh auth login prompt")
+                print("   💡 To authenticate: gh auth login")
+                return False
+                
             response = input("Would you like to authenticate now? [Y/n]: ").strip().lower()
             
             if response == '' or response == 'y':
@@ -635,6 +653,16 @@ def main():
         default=os.environ.get('GITHUB_TOKEN'),
         help="GitHub token for branch protection (or set GITHUB_TOKEN env var)"
     )
+    parser.add_argument(
+        "--non-interactive",
+        action="store_true",
+        help="Run without prompts (use defaults)"
+    )
+    parser.add_argument(
+        "--ci-platform",
+        choices=["github", "gitlab", "jenkins", "azure", "circleci", "none"],
+        help="CI/CD platform to configure (for non-interactive mode)"
+    )
     
     args = parser.parse_args()
     
@@ -648,7 +676,8 @@ def main():
             args.purpose = "AI-assisted software development"
     
     # Create setup instance
-    setup = SmartFrameworkSetup(args.project_dir, args.purpose)
+    setup = SmartFrameworkSetup(args.project_dir, args.purpose, 
+                                args.non_interactive, args.ci_platform)
     
     # Update version if specified
     if args.version != "main":

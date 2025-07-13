@@ -4,14 +4,20 @@ A comprehensive framework for integrating AI agents as primary developers while 
 
 ## 🚀 Quick Start
 
-### For AI Agents (Enhanced Branch Protection Education)
-Simply tell the AI: 
+### For AI Agents (Claude)
+To have Claude set up the AI-First SDLC framework in your current project, use this prompt:
+
 ```
-Set up a new project for [purpose] using the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices.
+Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project for [your purpose].
 
-Download and run: python setup-smart.py "[project purpose]"
+First, download and run the setup script:
+curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
+python setup-smart.py "[your purpose]" --non-interactive
 
-Then read CLAUDE.md and run the repository health check to verify main branch protection.
+Then verify the setup with:
+bash tools/test-setup.sh
+
+Note: I may need you to run "gh auth login" if GitHub CLI isn't authenticated.
 ```
 
 ### For Humans (One-liner Setup)

@@ -250,3 +250,99 @@ This removes the need for multiple human prompts and ensures consistent applicat
 3. Verified syntax with `python -m py_compile`
 
 **Impact**: This was a critical bug that would prevent anyone from using the framework setup. Now fixed and tested.
+
+### Non-Interactive Mode Support
+
+**Issue Discovered**: When running via `curl | bash`, interactive prompts don't work because stdin is occupied by the curl output. This prevented:
+1. CI/CD platform selection prompt
+2. GitHub CLI authentication prompt
+
+**Root Cause**: The script assumed interactive TTY availability but didn't check or handle piped execution.
+
+**Fix Applied**:
+1. Added `--non-interactive` flag to setup-smart.py
+2. Added `--ci-platform` flag for pre-selecting CI/CD platform
+3. Added TTY detection using `sys.stdin.isatty()`
+4. Modified setup.sh to detect piped execution with `[ ! -t 0 ]`
+5. Auto-detect CI/CD platform from current directory structure
+6. Skip interactive prompts in non-interactive mode with helpful messages
+
+**Behavior**:
+- Interactive mode: Prompts work as expected
+- Non-interactive mode: Uses sensible defaults (GitHub Actions) and skips prompts
+- Shows clear messages about skipped prompts and how to authenticate manually
+
+**Impact**: Framework can now be properly installed via `curl | bash` one-liner without hanging on prompts.
+
+### AI Autonomy Enhancement
+
+**Question Asked**: "Would Claude have everything needed to use this framework autonomously?"
+
+**Gap Identified**: While the framework had good documentation, it lacked:
+1. A comprehensive guide for AI autonomous usage
+2. A verification script to check setup status
+3. Clear decision matrices for non-interactive scenarios
+
+**Solution Implemented**:
+
+1. **Created `AI-AUTONOMY.md`**: Comprehensive guide for Claude including:
+   - Step-by-step autonomous workflow
+   - Decision matrix for CI/CD platform selection
+   - Error handling strategies
+   - Pre-setup verification steps
+   - Complete code examples for common scenarios
+
+2. **Created `tools/test-setup.sh`**: Verification script that checks:
+   - Git repository status
+   - Current branch (warns if on main)
+   - CLAUDE.md existence
+   - All framework tools presence
+   - CI/CD configuration
+   - GitHub CLI authentication
+   - Branch protection status
+   - Required directories
+
+3. **Updated Framework CLAUDE.md**: Added AI Agent Quick Start section with:
+   - Non-interactive setup commands
+   - Verification step using test-setup.sh
+   - Reference to AI-AUTONOMY.md
+
+**Impact**: Claude can now autonomously:
+- Set up the framework without human intervention
+- Make appropriate decisions in non-interactive mode
+- Verify setup completeness
+- Handle common errors gracefully
+- Report status clearly to users
+
+This completes the framework's evolution from human-assisted to fully AI-autonomous.
+
+### Clarification of Claude Usage Instructions
+
+**Issue Identified**: Instructions weren't clear about:
+1. Claude works in the existing repo (no cloning needed)
+2. The exact prompt users should give Claude
+3. When human interaction is needed (gh auth, etc.)
+
+**Improvements Made**:
+
+1. **Updated README.md** with clear Claude prompt:
+   ```
+   Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices 
+   in this project for [your purpose].
+   ```
+
+2. **Created QUICKSTART.md** with:
+   - Step-by-step user guide
+   - Example complete interaction
+   - Clear expectations of when Claude needs help
+
+3. **Enhanced AI-AUTONOMY.md** with:
+   - Human-Claude interaction points
+   - Specific messages Claude should use
+   - Clear starting point (just the GitHub URL)
+
+4. **Added to CLAUDE.md**:
+   - Recommended user prompt at the top
+   - Clarification that setup happens in current directory
+
+**Result**: Users now have a clear, simple prompt to give Claude, and Claude knows exactly what to do when given just the repository URL.
