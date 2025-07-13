@@ -548,40 +548,37 @@ Implement AI-First SDLC framework with:
                 return False
                 
             if match:
-                    repo_path = match.group(1)
+                repo_path = match.group(1)
+                
+                # Download and run the branch protection script
+                protection_script = self.project_dir / "tools" / "setup-branch-protection.py"
+                if protection_script.exists():
+                    result = subprocess.run(
+                        [
+                            "python", str(protection_script),
+                            "--platform", "github",
+                            "--repo", repo_path,
+                            "--token", github_token
+                        ],
+                        cwd=self.project_dir,
+                        capture_output=True,
+                        text=True
+                    )
                     
-                    # Download and run the branch protection script
-                    protection_script = self.project_dir / "tools" / "setup-branch-protection.py"
-                    if protection_script.exists():
-                        result = subprocess.run(
-                            [
-                                "python", str(protection_script),
-                                "--platform", "github",
-                                "--repo", repo_path,
-                                "--token", github_token
-                            ],
-                            cwd=self.project_dir,
-                            capture_output=True,
-                            text=True
-                        )
-                        
-                        if result.returncode == 0:
-                            print("✅ Branch protection enabled for main branch")
-                            print("   - Require pull request reviews")
-                            print("   - Require status checks to pass")
-                            print("   - No direct pushes allowed")
-                            return True
-                        else:
-                            print(f"❌ Failed to set up branch protection: {result.stderr}")
-                            return False
+                    if result.returncode == 0:
+                        print("✅ Branch protection enabled for main branch")
+                        print("   - Require pull request reviews")
+                        print("   - Require status checks to pass")
+                        print("   - No direct pushes allowed")
+                        return True
                     else:
-                        print("⚠️  Branch protection tool not found")
+                        print(f"❌ Failed to set up branch protection: {result.stderr}")
                         return False
                 else:
-                    print("❌ Could not parse repository information")
+                    print("⚠️  Branch protection tool not found")
                     return False
             else:
-                print("ℹ️  Branch protection is only supported for GitHub repositories")
+                print("❌ Could not parse repository information")
                 return False
                 
         except Exception as e:

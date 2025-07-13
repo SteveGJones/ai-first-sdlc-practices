@@ -237,3 +237,16 @@ This removes the need for multiple human prompts and ensures consistent applicat
 - NOT legacy - it's the recommended installation method
 
 **Correction Applied**: Updated README.md to properly present `setup.sh` as the recommended one-liner setup method, with direct Python setup as an alternative.
+
+### Critical Bug Fix: IndentationError in setup-smart.py
+
+**Issue Discovered**: Testing in another repository revealed an IndentationError at line 580.
+
+**Root Cause**: During the URL sanitization security fix, incorrect indentation was introduced in the `if match:` block (lines 551-582). The block content had extra indentation, and there was a duplicate `else` statement.
+
+**Fix Applied**:
+1. Corrected indentation for the entire `if match:` block
+2. Removed duplicate `else` statement
+3. Verified syntax with `python -m py_compile`
+
+**Impact**: This was a critical bug that would prevent anyone from using the framework setup. Now fixed and tested.
