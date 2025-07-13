@@ -472,3 +472,44 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 - Security and documentation standards
 
 **Note**: The setup-smart.py script should be updated to include CONTRIBUTING.md in projects that use the framework, helping them establish good contribution practices from the start.
+
+### TOC Generator Branch Protection Fix
+
+**Issue Discovered**: The Table of Contents generator workflow was trying to push directly to the protected main branch.
+
+**Error Message**:
+```
+remote: error: GH006: Protected branch update failed for refs/heads/main.
+remote: - Changes must be made through a pull request.
+```
+
+**Root Cause**: The workflow was configured to commit and push directly to the repository when running on main branch, which violates branch protection rules.
+
+**Solution Implemented**: Updated `.github/workflows/documentation.yml` to:
+1. Run on feature branches and develop (not on main)
+2. Create pull requests instead of direct pushes
+3. Added PR creation configuration:
+   - `CREATE_PR: true`
+   - `PR_BRANCH_PREFIX: 'toc-update/'`
+   - Descriptive PR title and body
+   - Targets PR to current branch
+
+**Impact**: TOC updates now follow the proper PR review process, maintaining consistency with AI-First SDLC principles.
+
+### Setup Script Enhancement
+
+**Enhancement**: Added CONTRIBUTING.md to the essential files downloaded by setup-smart.py.
+
+**Rationale**: Projects using the AI-First SDLC framework should have contribution guidelines from the start to establish good practices for both human and AI contributors.
+
+**Implementation**: Added `"CONTRIBUTING.md": "CONTRIBUTING.md"` to the `ESSENTIAL_FILES` dictionary in setup-smart.py.
+
+## Summary of Session Work
+
+This session focused on enhancing the AI-First SDLC framework based on user feedback about CI/CD errors and missing contribution guidelines:
+
+1. **Created CONTRIBUTING.md**: Comprehensive contribution guidelines emphasizing AI as first-class contributors
+2. **Fixed TOC Generator**: Updated workflow to create PRs instead of pushing to protected main branch
+3. **Enhanced Setup Script**: Added CONTRIBUTING.md to essential downloaded files
+
+All changes maintain the framework's core principle of treating AI agents as autonomous contributors while ensuring robust development practices.

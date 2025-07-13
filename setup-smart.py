@@ -31,7 +31,8 @@ class SmartFrameworkSetup:
         "tools/automation/setup-branch-protection.py": "tools/setup-branch-protection.py",
         "tools/automation/setup-branch-protection-gh.py": "tools/setup-branch-protection-gh.py",
         "tools/validation/check-feature-proposal.py": "tools/check-feature-proposal.py",
-        "tools/validation/validate-pipeline.py": "tools/validate-pipeline.py"
+        "tools/validation/validate-pipeline.py": "tools/validate-pipeline.py",
+        "CONTRIBUTING.md": "CONTRIBUTING.md"
     }
     
     # CI/CD configurations by platform
