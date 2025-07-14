@@ -103,7 +103,11 @@ Enhance the AI-First SDLC framework's initial setup process by providing compreh
   - Improvement: Add validation to check for plans on complex features
 
 ### Communication Gaps
-- **[In Progress]**: [To be documented during implementation]
+- **Setup Instructions Clarity**: 
+  - What happened: AI agents were trying to clone the framework repository instead of running setup in the user's project
+  - Impact: Setup would fail or create confusion
+  - Root cause: Instructions weren't explicit enough about running IN the user's project
+  - Improvement: Added clear warnings and explicit instructions in CLAUDE.md and README.md
 
 ---
 

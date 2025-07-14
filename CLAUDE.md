@@ -4,12 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🎯 Recommended User Prompt
 
-To have Claude set up this framework in your project, use:
+To have Claude set up this framework in your EXISTING project, use:
 ```
-Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project.
+Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this current project directory.
 ```
 
-Claude will ask you for your project's purpose and then download the setup script and guide you through any authentication steps needed.
+**IMPORTANT**: This framework is designed to be added to YOUR existing project. Claude should NOT clone this repository. The setup script will download necessary files into your current project directory.
+
+Claude will ask you for your project's purpose and then download the setup script to enhance your existing project with AI-First SDLC practices.
 
 ## Project Overview
 
@@ -37,18 +39,33 @@ This is the AI-First SDLC Practices framework - a comprehensive methodology for 
 
 ## 🤖 AI Agent Quick Start
 
-When asked to use this framework in a new project:
+**⚠️ IMPORTANT**: Run these commands IN THE USER'S EXISTING PROJECT DIRECTORY, not in a clone of this framework repository.
+
+When asked to add this framework to an existing project:
 ```bash
-# 1. Download and run setup (non-interactive mode for AI agents)
+# 1. Ensure you're in the user's project directory (NOT the framework repo)
+pwd  # Should show the user's project path, not ai-first-sdlc-practices
+
+# 2. Download and run setup (non-interactive mode for AI agents)
 curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
 python setup-smart.py "[project purpose]" --non-interactive --ci-platform github
 
-# 2. Verify setup is complete
+# 3. Verify setup is complete
 bash tools/test-setup.sh
 
-# 3. Read the generated CLAUDE.md for project-specific instructions
+# 4. Read the generated CLAUDE.md for project-specific instructions
 cat CLAUDE.md
 ```
+
+**DO NOT**:
+- Clone the ai-first-sdlc-practices repository
+- Work inside the framework repository
+- Copy the entire framework into the user's project
+
+**DO**:
+- Run the setup script in the user's existing project root
+- Let the setup script download only the necessary files
+- Customize the generated files for the specific project
 
 See `AI-AUTONOMY.md` for detailed autonomous usage guide.
 

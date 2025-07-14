@@ -28,14 +28,18 @@
 
 A comprehensive framework for integrating AI agents as primary developers while maintaining quality and process compliance.
 
+**⚠️ IMPORTANT**: This framework is designed to be ADDED TO your existing project, not cloned separately. Run the setup commands in YOUR project directory.
+
 ## 🚀 Quick Start
 
 ### For AI Agents (Claude)
-To have Claude set up the AI-First SDLC framework in your current project, use this prompt:
+To have Claude set up the AI-First SDLC framework in your EXISTING project, use this prompt:
 
 ```
-Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project.
+Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this current project directory.
 ```
+
+**Note**: Claude should run the setup IN YOUR PROJECT, not clone this repository. The setup script downloads only the necessary files.
 
 Claude will ask you for your project's purpose and then proceed with the setup automatically.
 
