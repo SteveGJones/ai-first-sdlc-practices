@@ -1,0 +1,85 @@
+# Go specific .gitignore patterns
+# Based on GitHub's Go gitignore template
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (when vendoring deps with dep or go mod vendor)
+vendor/
+
+# Go workspace file
+go.work
+
+# Build output
+bin/
+pkg/
+dist/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Air (live reload for Go apps)
+tmp/
+
+# Delve debugger
+debug
+__debug_bin
+
+# GoLand
+.idea/
+
+# Environment files
+.env
+.env.local
+
+# Log files
+*.log
+
+# Test coverage
+profile.out
+coverage.out
+coverage.html
+
+# Benchmarking
+*.bench
+
+# Profiling files
+*.prof
+*.mem
+*.cpu
+
+# Mock files (if using gomock)
+*_mock.go
+
+# Generated files
+*.pb.go
+*.gen.go
+
+# Terraform (often used with Go infrastructure projects)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Docker
+Dockerfile.local
+docker-compose.override.yml
+
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db

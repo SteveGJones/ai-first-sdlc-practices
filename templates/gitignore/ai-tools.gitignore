@@ -1,0 +1,108 @@
+# AI Development Tools
+# Comprehensive patterns for AI-assisted development environments
+# Part of AI-First SDLC framework v1.4.0+
+
+# Claude (Anthropic)
+.claude/
+*.claude.bak
+.claude-sessions/
+.claude-context/
+claude-chat-*.txt
+claude-context.md
+
+# Cursor (Anysphere)
+.cursor/
+.cursor-tutor/
+.cursor-settings/
+cursor-composer-*/
+.cursorrules
+
+# Aider (Paul McGuire)
+.aider*
+.aider.tags.cache.v3/
+.aider.tags.cache.v2/
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache
+
+# GitHub Copilot
+.copilot/
+.github-copilot/
+copilot-chat-*.md
+
+# Continue (Continue.dev)
+.continue/
+continue-session-*/
+
+# Windsurf (Codeium)
+.windsurf/
+windsurf-context.md
+
+# Tabnine
+.tabnine/
+tabnine-chat-*/
+
+# Codeium
+.codeium/
+codeium-chat-*/
+
+# General AI Context and Session Files
+.ai-context/
+.ai-sessions/
+.ai-chat-history/
+.ai-cache/
+.ai-temp/
+ai-conversation-*/
+ai-context-*.md
+ai-session-*.json
+
+# Common AI-generated temporary files
+CONTEXT_*.md
+HANDOFF_*.md
+AI_NOTES_*.md
+SESSION_*.md
+CHAT_HISTORY_*.md
+.ai-assistant-*/
+
+# LLM prompt caching
+.prompt-cache/
+.llm-cache/
+.model-cache/
+
+# AI code generation artifacts
+ai-generated-*.py
+ai-temp-*.js
+llm-output-*.md
+.ai-drafts/
+
+# Voice-to-code tools
+.whisper-cache/
+.speech-to-code/
+
+# AI pair programming sessions
+.pair-ai/
+.ai-collab/
+
+# Local AI model files (often large)
+*.gguf
+*.bin
+*.safetensors
+models/
+local-models/
+
+# AI training data (if accidentally placed in project)
+training-data/
+.datasets/
+
+# IDE AI plugins temporary files
+.vscode-ai/
+.intellij-ai/
+.neovim-ai/
+
+# AI documentation generators
+.ai-docs/
+ai-readme-drafts/
+
+# Automated commit message generators
+.gitmoji-ai/
+.commit-ai/

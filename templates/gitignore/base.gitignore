@@ -1,0 +1,78 @@
+# Base .gitignore patterns for AI-First SDLC framework
+# Common patterns that apply to most projects
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp
+
+# Log files
+*.log
+logs/
+log/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.envrc
+
+# Security and credentials
+*.key
+*.pem
+*.p12
+*.crt
+*.cer
+id_rsa*
+id_dsa*
+id_ed25519*
+config.json
+secrets.json
+credentials.json
+
+# Cache directories
+.cache/
+cache/
+.temp/
+temp/
+tmp/
+
+# Documentation build outputs
+docs/_build/
+site/
+_site/
+
+# Coverage reports
+coverage/
+.coverage
+htmlcov/
+.nyc_output
+lcov.info
+
+# Dependency directories (language-agnostic)
+vendor/
+third_party/

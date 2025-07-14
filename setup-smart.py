@@ -32,7 +32,18 @@ class SmartFrameworkSetup:
         "tools/automation/setup-branch-protection-gh.py": "tools/setup-branch-protection-gh.py",
         "tools/validation/check-feature-proposal.py": "tools/check-feature-proposal.py",
         "tools/validation/validate-pipeline.py": "tools/validate-pipeline.py",
-        "CONTRIBUTING.md": "CONTRIBUTING.md"
+        "CONTRIBUTING.md": "CONTRIBUTING.md",
+        # Gitignore templates
+        "templates/gitignore/base.gitignore": None,  # Downloaded but not placed directly
+        "templates/gitignore/ai-tools.gitignore": None,
+        "templates/gitignore/python.gitignore": None,
+        "templates/gitignore/node.gitignore": None,
+        "templates/gitignore/go.gitignore": None,
+        "templates/gitignore/general.gitignore": None,
+        # Test templates
+        "templates/tests/test_framework_setup.py": None,
+        "templates/tests/framework.test.js": None,
+        "templates/tests/test-framework.sh": None
     }
     
     # CI/CD configurations by platform
@@ -52,18 +63,25 @@ class SmartFrameworkSetup:
         self.errors = []
         self.non_interactive = non_interactive or not sys.stdin.isatty()
         self.ci_platform = ci_platform
+        self.detected_language = None
         
-    def download_file(self, remote_path: str, local_path: Path) -> bool:
+    def download_file(self, remote_path: str, local_path: Optional[Path]) -> bool:
         """Download a file from the framework repository"""
         url = f"{self.GITHUB_RAW_BASE}/{remote_path}"
         
         try:
-            # Create parent directory if needed
-            local_path.parent.mkdir(parents=True, exist_ok=True)
-            
             # Download file
             with urllib.request.urlopen(url) as response:
                 content = response.read()
+            
+            # If local_path is None, save to temp directory for templates
+            if local_path is None:
+                temp_dir = self.project_dir / '.ai-sdlc-temp'
+                temp_dir.mkdir(parents=True, exist_ok=True)
+                local_path = temp_dir / Path(remote_path).name
+            
+            # Create parent directory if needed
+            local_path.parent.mkdir(parents=True, exist_ok=True)
                 
             # Write to local file
             with open(local_path, 'wb') as f:
@@ -106,6 +124,33 @@ class SmartFrameworkSetup:
             return 'circleci'
             
         return None
+    
+    def detect_project_language(self) -> str:
+        """Detect the primary language of the project"""
+        import glob
+        
+        # Language indicators with priority (check in order)
+        indicators = [
+            ('python', ['*.py', 'requirements.txt', 'setup.py', 'pyproject.toml', 'Pipfile']),
+            ('node', ['*.js', '*.ts', '*.jsx', '*.tsx', 'package.json', 'yarn.lock', 'package-lock.json']),
+            ('go', ['*.go', 'go.mod', 'go.sum']),
+            ('rust', ['*.rs', 'Cargo.toml', 'Cargo.lock']),
+            ('java', ['*.java', 'pom.xml', 'build.gradle', 'build.gradle.kts']),
+            ('csharp', ['*.cs', '*.csproj', '*.sln']),
+            ('ruby', ['*.rb', 'Gemfile', 'Gemfile.lock']),
+            ('php', ['*.php', 'composer.json', 'composer.lock']),
+        ]
+        
+        for lang, patterns in indicators:
+            for pattern in patterns:
+                # Check both root and subdirectories
+                if glob.glob(str(self.project_dir / pattern)) or \
+                   glob.glob(str(self.project_dir / '**' / pattern), recursive=True):
+                    self.detected_language = lang
+                    return lang
+        
+        self.detected_language = 'general'
+        return 'general'
     
     def generate_claude_md(self) -> str:
         """Generate project-specific CLAUDE.md content using full template"""
@@ -246,13 +291,172 @@ Implement AI-First SDLC framework with:
             
         return True
     
-    def setup_project(self, skip_ci: bool = False, github_token: str = None) -> bool:
+    def create_gitignore(self) -> bool:
+        """Create comprehensive .gitignore file"""
+        gitignore_path = self.project_dir / ".gitignore"
+        
+        # Check if .gitignore already exists
+        existing_content = ""
+        if gitignore_path.exists():
+            with open(gitignore_path, 'r') as f:
+                existing_content = f.read()
+            print("📝 Updating existing .gitignore...")
+        else:
+            print("📝 Creating new .gitignore...")
+        
+        # Detect language if not already done
+        if not self.detected_language:
+            self.detect_project_language()
+        
+        # Load gitignore templates
+        templates_to_combine = [
+            'base.gitignore',
+            'ai-tools.gitignore',
+            f'{self.detected_language}.gitignore' if self.detected_language != 'general' else 'general.gitignore'
+        ]
+        
+        combined_content = []
+        for template_name in templates_to_combine:
+            try:
+                # Read from downloaded templates
+                template_path = self.project_dir / '.ai-sdlc-temp' / template_name
+                if template_path.exists():
+                    with open(template_path, 'r') as f:
+                        content = f.read()
+                        if content.strip():  # Only add non-empty templates
+                            combined_content.append(f"# === {template_name.replace('.gitignore', '').title()} Patterns ===")
+                            combined_content.append(content.strip())
+                            combined_content.append("")  # Empty line between sections
+            except Exception as e:
+                self.errors.append(f"Could not read template {template_name}: {e}")
+        
+        # Combine with existing content if any
+        if existing_content:
+            # Add a separator before new content
+            combined_content.insert(0, existing_content.strip())
+            combined_content.insert(1, "\n# === AI-First SDLC Framework Patterns (Added) ===\n")
+        
+        # Write the combined content
+        final_content = "\n".join(combined_content)
+        with open(gitignore_path, 'w') as f:
+            f.write(final_content)
+        
+        print(f"✅ Created comprehensive .gitignore (detected language: {self.detected_language})")
+        return True
+    
+    def create_initial_test(self) -> bool:
+        """Create initial framework verification test based on detected language"""
+        if not self.detected_language:
+            self.detect_project_language()
+        
+        # Map language to test file
+        test_mappings = {
+            'python': ('test_framework_setup.py', 'test_framework_setup.py'),
+            'node': ('framework.test.js', 'test/framework.test.js'),
+            'go': ('test-framework.sh', 'test-framework.sh'),
+            'general': ('test-framework.sh', 'test-framework.sh')
+        }
+        
+        # Get test file info
+        template_name, target_path = test_mappings.get(self.detected_language, test_mappings['general'])
+        
+        # Create test directory if needed
+        test_file_path = self.project_dir / target_path
+        test_file_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Copy test from downloaded templates
+        template_path = self.project_dir / '.ai-sdlc-temp' / template_name
+        if template_path.exists():
+            with open(template_path, 'r') as f:
+                content = f.read()
+            with open(test_file_path, 'w') as f:
+                f.write(content)
+            
+            # Make shell script executable
+            if template_name.endswith('.sh'):
+                os.chmod(test_file_path, 0o755)
+            
+            print(f"✅ Created initial test: {target_path}")
+            return True
+        else:
+            self.errors.append(f"Test template not found: {template_name}")
+            return False
+    
+    def create_readme(self) -> bool:
+        """Create initial README.md if it doesn't exist"""
+        readme_path = self.project_dir / "README.md"
+        if readme_path.exists():
+            print("ℹ️  README.md already exists, skipping...")
+            return True
+        
+        content = f"""# {self.project_name}
+
+{self.project_purpose}
+
+## Overview
+
+This project uses the AI-First SDLC framework for development. AI agents and developers should refer to [CLAUDE.md](CLAUDE.md) for development guidelines.
+
+## Getting Started
+
+1. Review [CLAUDE.md](CLAUDE.md) for AI-First development practices
+2. Check `docs/feature-proposals/` for planned features
+3. Run validation: `python tools/validate-pipeline.py`
+
+## Project Structure
+
+```
+{self.project_name}/
+├── CLAUDE.md              # AI agent instructions
+├── docs/
+│   └── feature-proposals/ # Feature proposals
+├── plan/                  # Implementation plans
+├── retrospectives/        # Feature retrospectives
+└── tools/                 # Framework tools
+```
+
+## Development Workflow
+
+1. Create feature proposal in `docs/feature-proposals/`
+2. Create feature branch: `git checkout -b feature/name`
+3. Implement changes
+4. Update retrospective
+5. Create Pull Request
+
+## Testing
+
+```bash
+# Run framework verification
+python test_framework_setup.py  # or appropriate test file
+```
+
+## Contributing
+
+This project follows AI-First SDLC practices. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+---
+
+Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdlc-practices)
+"""
+        
+        with open(readme_path, 'w') as f:
+            f.write(content)
+        
+        print("✅ Created README.md")
+        return True
+    
+    def setup_project(self, skip_ci: bool = False, github_token: str = None, quickstart: bool = False) -> bool:
         """Run the complete setup process"""
         print("🚀 AI-First SDLC Smart Setup")
         print("=" * 50)
         print(f"Project: {self.project_name}")
         print(f"Purpose: {self.project_purpose}")
         print()
+        
+        # Create README if quickstart mode
+        if quickstart and not (self.project_dir / "README.md").exists():
+            print("\n📄 Creating README.md...")
+            self.create_readme()
         
         # Check git repository
         if not self.check_git_repo():
@@ -271,11 +475,16 @@ Implement AI-First SDLC framework with:
         # Download essential files
         print("\n📥 Downloading framework files...")
         for remote, local in self.ESSENTIAL_FILES.items():
-            local_path = self.project_dir / local
-            if self.download_file(remote, local_path):
-                print(f"✅ Downloaded {local}")
+            if local is not None:
+                local_path = self.project_dir / local
             else:
-                print(f"❌ Failed to download {local}")
+                local_path = None  # Will be saved to temp directory
+            
+            if self.download_file(remote, local_path):
+                if local is not None:
+                    print(f"✅ Downloaded {local}")
+            else:
+                print(f"❌ Failed to download {remote}")
         
         # Create directory structure
         print("\n📁 Creating directory structure...")
@@ -283,6 +492,11 @@ Implement AI-First SDLC framework with:
         for dir_path in dirs:
             (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
             print(f"✅ Created {dir_path}/")
+        
+        # Detect project language
+        print("\n🔍 Detecting project language...")
+        language = self.detect_project_language()
+        print(f"✅ Detected language: {language}")
         
         # Generate CLAUDE.md
         print("\n📝 Generating project-specific CLAUDE.md...")
@@ -297,6 +511,14 @@ Implement AI-First SDLC framework with:
             if not target.exists():
                 target.symlink_to("CLAUDE.md")
                 print(f"✅ Created {ai_file} → CLAUDE.md")
+        
+        # Create comprehensive .gitignore
+        print("\n📝 Setting up .gitignore...")
+        self.create_gitignore()
+        
+        # Create initial test
+        print("\n🧪 Creating initial test...")
+        self.create_initial_test()
         
         # Setup CI/CD if not skipped
         if not skip_ci:
@@ -334,6 +556,13 @@ Implement AI-First SDLC framework with:
                 self.setup_branch_protection(github_token)
             else:
                 print("\n💡 Tip: Install 'gh' CLI or provide GITHUB_TOKEN for automatic branch protection")
+        
+        # Clean up temp directory
+        temp_dir = self.project_dir / '.ai-sdlc-temp'
+        if temp_dir.exists():
+            import shutil
+            shutil.rmtree(temp_dir)
+            print("\n🧹 Cleaned up temporary files")
         
         if self.errors:
             print("\n⚠️  Setup completed with errors:")
@@ -668,6 +897,11 @@ def main():
         choices=["github", "gitlab", "jenkins", "azure", "circleci", "none"],
         help="CI/CD platform to configure (for non-interactive mode)"
     )
+    parser.add_argument(
+        "--quickstart",
+        action="store_true",
+        help="Quick start mode: creates README, .gitignore, and initial test"
+    )
     
     args = parser.parse_args()
     
@@ -689,7 +923,7 @@ def main():
         setup.GITHUB_RAW_BASE = setup.GITHUB_RAW_BASE.replace("/main", f"/{args.version}")
     
     # Run setup
-    success = setup.setup_project(args.skip_ci, args.github_token)
+    success = setup.setup_project(args.skip_ci, args.github_token, args.quickstart)
     
     sys.exit(0 if success else 1)
 
