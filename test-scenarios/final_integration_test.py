@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Final integration test - simulate full workflow"""
 
-import sys
+
 from pathlib import Path
 import tempfile
 import subprocess
