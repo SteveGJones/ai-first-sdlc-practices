@@ -36,11 +36,16 @@ A comprehensive framework for integrating AI agents as primary developers while 
 To have Claude set up the AI-First SDLC framework in your EXISTING project, use this prompt:
 
 ```
-Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this current project directory.
+I want to add AI-First SDLC practices to this project. Please:
+1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE.md (especially the "AI Agent Quick Start" section)
+2. Then download and run: curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
+3. Run: python setup-smart.py "[describe your project]" --non-interactive
+Do NOT clone the repository - we're adding the framework to THIS project.
 ```
 
 **⚠️ CRITICAL**: 
-- Claude MUST use the official setup-smart.py script
+- Claude MUST read the instructions FIRST before running anything
+- Claude MUST use the official setup-smart.py script from the MAIN branch
 - Claude MUST NOT create custom directory structures like `.claud/` or `.claude/`
 - All framework directories (docs/, retrospectives/, plan/, tools/) go at PROJECT ROOT
 - The setup script handles everything - Claude should not manually recreate the structure

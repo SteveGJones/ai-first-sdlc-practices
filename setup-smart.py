@@ -372,9 +372,9 @@ Implement AI-First SDLC framework with:
             with open(test_file_path, 'w') as f:
                 f.write(content)
             
-            # Make shell script executable
+            # Make shell script executable by owner only
             if template_name.endswith('.sh'):
-                os.chmod(test_file_path, 0o755)
+                os.chmod(test_file_path, 0o700)  # Owner: rwx, Group: ---, Others: ---
             
             print(f"✅ Created initial test: {target_path}")
             return True

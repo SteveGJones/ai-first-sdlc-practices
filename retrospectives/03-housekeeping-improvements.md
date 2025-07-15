@@ -143,6 +143,8 @@ Enhance the AI-First SDLC framework's initial setup process by providing compreh
 2. **Instruction Clarity**: Need to emphasize plan creation for complex features in CLAUDE.md
 3. **Testing Strategy**: AI needs reminders about E2E testing - user correctly identified gap in testing approach
 4. **AI-Friendliness Validation**: Created specific tests to ensure templates guide AI agents properly
+5. **Prompt Engineering**: Clear, step-by-step prompts that read instructions FIRST prevent AI confusion
+6. **Real-World Testing Essential**: Both test runs revealed critical gaps that unit tests missed
 
 ---
 
@@ -293,6 +295,9 @@ Based on this retrospective, the following documentation should be updated:
 - 2025-07-13 15:20: Updated root .gitignore with comprehensive AI tool patterns
 - 2025-07-14 10:30: User tested setup - AI created wrong directory structure (.claud/)
 - 2025-07-14 10:45: Updated instructions to be MUCH more explicit about directory structure
+- 2025-07-14 11:00: User tested again - retrospective now in correct location!
+- 2025-07-14 11:15: Updated prompt to force reading CLAUDE.md FIRST before running
+- 2025-07-14 11:20: Added comprehensive troubleshooting for all issues found in testing
 - All phases and testing completed successfully!
 
 ### B. Code Samples
