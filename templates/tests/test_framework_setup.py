@@ -10,7 +10,6 @@ Replace this test with real project tests as you develop your application.
 
 import os
 import sys
-from pathlib import Path
 
 
 def test_framework_structure():
