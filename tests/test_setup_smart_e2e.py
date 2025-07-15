@@ -289,7 +289,7 @@ HANDOFF_*.md"""
         # Try to create test without templates
         result = setup.create_initial_test()
         self.assertFalse(result)
-        self.assertTrue(len(setup.errors) > 0)
+        self.assertGreater(len(setup.errors), 0)
         self.assertIn('template not found', setup.errors[-1])
 
 
