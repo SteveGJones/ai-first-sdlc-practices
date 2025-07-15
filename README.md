@@ -39,9 +39,13 @@ To have Claude set up the AI-First SDLC framework in your EXISTING project, use 
 Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this current project directory.
 ```
 
-**Note**: Claude should run the setup IN YOUR PROJECT, not clone this repository. The setup script downloads only the necessary files.
+**⚠️ CRITICAL**: 
+- Claude MUST use the official setup-smart.py script
+- Claude MUST NOT create custom directory structures like `.claud/` or `.claude/`
+- All framework directories (docs/, retrospectives/, plan/, tools/) go at PROJECT ROOT
+- The setup script handles everything - Claude should not manually recreate the structure
 
-Claude will ask you for your project's purpose and then proceed with the setup automatically.
+Claude will ask you for your project's purpose and then proceed with the setup automatically using the official script.
 
 ### For Humans (One-liner Setup)
 ```bash

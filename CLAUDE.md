@@ -39,33 +39,63 @@ This is the AI-First SDLC Practices framework - a comprehensive methodology for 
 
 ## 🤖 AI Agent Quick Start
 
-**⚠️ IMPORTANT**: Run these commands IN THE USER'S EXISTING PROJECT DIRECTORY, not in a clone of this framework repository.
+**⚠️ CRITICAL SETUP INSTRUCTIONS - READ CAREFULLY**
 
-When asked to add this framework to an existing project:
+When asked to add this framework to an existing project, you MUST:
+
+### Step 1: Verify You're in the User's Project Root
 ```bash
-# 1. Ensure you're in the user's project directory (NOT the framework repo)
-pwd  # Should show the user's project path, not ai-first-sdlc-practices
-
-# 2. Download and run setup (non-interactive mode for AI agents)
-curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
-python setup-smart.py "[project purpose]" --non-interactive --ci-platform github
-
-# 3. Verify setup is complete
-bash tools/test-setup.sh
-
-# 4. Read the generated CLAUDE.md for project-specific instructions
-cat CLAUDE.md
+pwd  # Should show /path/to/user/project (NOT ai-first-sdlc-practices)
+ls   # Should show the user's project files
 ```
 
-**DO NOT**:
-- Clone the ai-first-sdlc-practices repository
-- Work inside the framework repository
-- Copy the entire framework into the user's project
+### Step 2: Download and Run the Official Setup Script
+```bash
+# Download the setup script TO THE PROJECT ROOT
+curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
 
-**DO**:
-- Run the setup script in the user's existing project root
-- Let the setup script download only the necessary files
-- Customize the generated files for the specific project
+# Run it with the project description
+python setup-smart.py "[project purpose]" --non-interactive --ci-platform github
+```
+
+### Step 3: Verify the Correct Structure Was Created
+The setup script will create these directories AT THE PROJECT ROOT:
+```
+user-project/
+├── docs/
+│   └── feature-proposals/     # Feature proposals go here
+├── plan/                      # Implementation plans go here  
+├── retrospectives/            # Retrospectives go here
+├── tools/                     # Framework tools
+│   ├── automation/
+│   └── validation/
+├── CLAUDE.md                  # AI instructions (at root)
+├── README.md                  # Project readme (at root)
+└── .gitignore                 # Updated with AI patterns
+```
+
+**❌ NEVER DO THIS**:
+- Create a `.claud/` or `.claude/` directory for framework files
+- Put proposals/retrospectives in hidden directories
+- Create your own directory structure
+- Clone the ai-first-sdlc-practices repository
+- Manually recreate the framework structure
+
+**✅ ALWAYS DO THIS**:
+- Use the official setup-smart.py script
+- Create directories at the PROJECT ROOT level
+- Follow the exact directory names: `docs/feature-proposals/`, `retrospectives/`, `plan/`
+- Let the setup script handle all file creation
+
+### Common Mistakes to Avoid
+1. **Wrong**: Creating `.claud/proposals/` or `.claude/retrospectives/`
+   **Right**: Creating `docs/feature-proposals/` and `retrospectives/` at project root
+
+2. **Wrong**: Manually creating a simplified framework structure
+   **Right**: Running setup-smart.py which creates the complete structure
+
+3. **Wrong**: Putting framework files in any hidden directory
+   **Right**: All framework directories are visible at the project root
 
 See `AI-AUTONOMY.md` for detailed autonomous usage guide.
 

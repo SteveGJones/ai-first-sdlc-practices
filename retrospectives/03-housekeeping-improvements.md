@@ -114,7 +114,11 @@ Enhance the AI-First SDLC framework's initial setup process by providing compreh
 ## What Went Wrong 🔴
 
 ### Critical Issues
-[To be documented if any major issues occur]
+- **Directory Structure Misunderstanding**:
+  - What happened: During real-world testing, AI created `.claud/proposals/` instead of `docs/feature-proposals/` at project root
+  - Impact: Completely wrong framework structure that wouldn't work with validation tools
+  - Root cause: Instructions weren't explicit enough about exact directory locations
+  - Fix: Made instructions VERY explicit with visual directory trees and DO/DON'T lists
 
 ### Near Misses
 - **Process Skip**: Almost proceeded without implementation plan until user intervened
@@ -287,6 +291,8 @@ Based on this retrospective, the following documentation should be updated:
 - 2025-07-13 15:00: Final integration test passed
 - 2025-07-13 15:15: User identified missing AI patterns in root .gitignore
 - 2025-07-13 15:20: Updated root .gitignore with comprehensive AI tool patterns
+- 2025-07-14 10:30: User tested setup - AI created wrong directory structure (.claud/)
+- 2025-07-14 10:45: Updated instructions to be MUCH more explicit about directory structure
 - All phases and testing completed successfully!
 
 ### B. Code Samples
