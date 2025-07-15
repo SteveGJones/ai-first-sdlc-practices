@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Test complex feature detection and retrospective staleness"""
 
-import sys
+
 from pathlib import Path
 import tempfile
 import subprocess
