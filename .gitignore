@@ -8,10 +8,66 @@ env/
 venv/
 .env
 
-# AI Context (local to each project)
+# AI Tools and Context
 .ai-context/
 .ai-progress/
 HANDOFF_*.md
+
+# Claude (Anthropic)
+.claude/
+*.claude.bak
+.claude-sessions/
+.claude-conversations/
+claude.json
+.claude-cache/
+.claude-history/
+
+# Cursor (Anysphere)
+.cursor/
+.cursor-tutor/
+*.cursor
+.cursorignore
+.cursor-server/
+
+# Aider (Paul Gauthier)
+.aider*
+.aider.tags.cache.v3/
+.aider.chat.history.md
+.aider.input.history
+aider.chat.history.md
+
+# Continue (Continue.dev)
+.continue/
+.continuerc.json
+.continue-sessions/
+
+# Windsurf (Codeium)
+.windsurf/
+.windsurf-session/
+.windsurf-cache/
+
+# Copilot (GitHub)
+.copilot/
+.copilot-suggestions/
+github-copilot/
+
+# Tabnine
+.tabnine/
+tabnine.json
+.tn/
+
+# Codeium (General)
+.codeium/
+codeium.json
+
+# Cody (Sourcegraph)
+.cody/
+.cody-cache/
+cody.json
+
+# IntelliJ AI Assistant
+.ai-assistant/
+.jetbrains-ai/
 
 # IDE
 .vscode/
@@ -19,9 +75,6 @@ HANDOFF_*.md
 *.swp
 *.swo
 *~
-
-# Claude local settings
-.claude/settings.local.json
 
 # OS
 .DS_Store

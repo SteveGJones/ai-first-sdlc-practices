@@ -22,6 +22,7 @@ class ValidationPipeline:
         self.results = []
         self.has_errors = False
         self.has_warnings = False
+        self.is_empty_repo = False
     
     def run_validation(self, checks: List[str] = None) -> bool:
         """Run validation checks"""
@@ -42,8 +43,14 @@ class ValidationPipeline:
         if not checks:
             checks = list(available_checks.keys())
         
+        # Check if this is an empty repository
+        self._detect_empty_repository()
+        
         print("🔍 AI-First SDLC Validation Pipeline")
         print("=" * 50)
+        
+        if self.is_empty_repo:
+            print("\n📦 Empty repository detected - adjusting validation...")
         
         for check_name in checks:
             if check_name in available_checks:
@@ -119,25 +126,60 @@ class ValidationPipeline:
     
     def check_implementation_plan(self):
         """Check for implementation plan"""
+        # First check if we have a complex feature proposal
+        branch = self._get_current_branch()
+        requires_plan = False
+        proposal_content = ""
+        
+        if branch and branch not in ["main", "master"]:
+            # Look for current feature proposal
+            proposal_dirs = ["docs/feature-proposals", "feature-proposals", "proposals"]
+            for dir_path in proposal_dirs:
+                path = self.project_root / dir_path
+                if path.exists():
+                    for file in path.glob("*.md"):
+                        try:
+                            content = file.read_text().lower()
+                            # Check if proposal indicates complexity
+                            complexity_indicators = [
+                                'complex', 'multi-phase', 'multiple components',
+                                'architecture change', 'breaking change',
+                                'phases', 'migration', 'refactor'
+                            ]
+                            if any(indicator in content for indicator in complexity_indicators):
+                                requires_plan = True
+                                proposal_content = file.name
+                                break
+                        except:
+                            continue
+                if requires_plan:
+                    break
+        
+        # Now check for plans
         plan_dir = self.project_root / "plan"
         
         if not plan_dir.exists():
-            self.add_warning(
-                "Implementation Plan",
-                "No plan directory found",
-                "Create plan/ directory for implementation plans"
-            )
+            if requires_plan:
+                self.add_error(
+                    "Implementation Plan",
+                    f"Complex feature '{proposal_content}' requires plan directory",
+                    "Create plan/ directory and implementation plan"
+                )
+            else:
+                self.add_skip("Implementation Plan", "No plans required (simple feature)")
             return
         
         plans = list(plan_dir.glob("*.md"))
-        if plans:
+        if requires_plan and not plans:
+            self.add_error(
+                "Implementation Plan",
+                f"Complex feature '{proposal_content}' requires implementation plan",
+                "Create plan in plan/ directory before implementing"
+            )
+        elif plans:
             self.add_success("Implementation Plan", f"Found {len(plans)} plan(s)")
         else:
-            self.add_warning(
-                "Implementation Plan",
-                "No implementation plans found",
-                "Create plans in plan/ directory"
-            )
+            self.add_skip("Implementation Plan", "No plans required (simple feature)")
     
     def check_ai_documentation(self):
         """Check for AI instruction files"""
@@ -159,7 +201,46 @@ class ValidationPipeline:
     
     def check_test_coverage(self):
         """Check test coverage"""
-        # Try different test runners
+        # Check for framework verification test in empty repos
+        if self.is_empty_repo:
+            framework_tests = [
+                'test_framework_setup.py',
+                'test/framework.test.js',
+                'tests/framework.test.js',
+                'test-framework.sh'
+            ]
+            
+            for test_file in framework_tests:
+                if (self.project_root / test_file).exists():
+                    # Try to run the framework test
+                    if test_file.endswith('.py'):
+                        cmd = ["python", test_file]
+                    elif test_file.endswith('.js'):
+                        cmd = ["node", test_file]
+                    elif test_file.endswith('.sh'):
+                        cmd = ["bash", test_file]
+                    else:
+                        continue
+                    
+                    try:
+                        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                        if result.returncode == 0:
+                            self.add_success("Test Coverage", "Framework verification test passing")
+                        else:
+                            self.add_warning("Test Coverage", "Framework test failing", f"Fix {test_file}")
+                        return
+                    except:
+                        continue
+            
+            # No framework test found
+            self.add_warning(
+                "Test Coverage",
+                "No framework verification test found",
+                "Run setup-smart.py --quickstart to create initial test"
+            )
+            return
+        
+        # Regular test checking for non-empty repos
         test_commands = [
             (["pytest", "--version"], ["pytest", "--cov", "--cov-report=term-missing"]),
             (["go", "version"], ["go", "test", "-cover", "./..."]),
@@ -233,6 +314,11 @@ class ValidationPipeline:
     
     def check_code_quality(self):
         """Check code quality with linters"""
+        # Skip linting in empty repos
+        if self.is_empty_repo:
+            self.add_skip("Code Quality", "Empty repository - no code to lint")
+            return
+            
         linters = [
             (["flake8", "--version"], ["flake8", "."]),
             (["pylint", "--version"], ["pylint", "*.py"]),
@@ -266,6 +352,24 @@ class ValidationPipeline:
     
     def check_dependencies(self):
         """Check for dependency issues"""
+        # Skip or adjust for empty repos
+        if self.is_empty_repo:
+            # Just check if dependency file exists and is valid
+            dep_files = [
+                ("requirements.txt", None),
+                ("package.json", None),
+                ("go.mod", None),
+                ("Gemfile", None)
+            ]
+            
+            for dep_file, _ in dep_files:
+                if (self.project_root / dep_file).exists():
+                    self.add_skip("Dependencies", f"Empty repository - {dep_file} exists but no code to check")
+                    return
+            
+            self.add_skip("Dependencies", "Empty repository - no dependencies")
+            return
+            
         dep_files = [
             ("requirements.txt", "pip check"),
             ("package.json", "npm audit"),
@@ -317,7 +421,7 @@ class ValidationPipeline:
                        "test:", "chore:", "perf:", "ci:", "build:"]
             
             for commit in commits:
-                if commit and not any(commit.lower().contains(prefix) for prefix in prefixes):
+                if commit and not any(prefix in commit.lower() for prefix in prefixes):
                     parts = commit.split(' ', 1)
                     if len(parts) > 1:
                         non_compliant.append(parts[1][:50])
@@ -355,7 +459,23 @@ class ValidationPipeline:
                             branch_name = branch.replace("feature/", "").replace("fix/", "")
                             if branch_name in content or branch in content:
                                 found = True
-                                self.add_success("Retrospective", f"Found in {file}")
+                                # Check retrospective freshness
+                                try:
+                                    from datetime import datetime, timedelta
+                                    file_mtime = datetime.fromtimestamp(file.stat().st_mtime)
+                                    now = datetime.now()
+                                    days_old = (now - file_mtime).days
+                                    
+                                    if days_old > 3:
+                                        self.add_warning(
+                                            "Retrospective",
+                                            f"Retrospective not updated in {days_old} days",
+                                            "Update retrospective with recent progress"
+                                        )
+                                    else:
+                                        self.add_success("Retrospective", f"Found in {file}")
+                                except:
+                                    self.add_success("Retrospective", f"Found in {file}")
                                 break
                     except:
                         continue
@@ -392,6 +512,31 @@ class ValidationPipeline:
             return result.stdout.strip()
         except:
             return None
+    
+    def _detect_empty_repository(self):
+        """Detect if this is an empty repository with only framework files"""
+        import glob
+        
+        # Code file patterns
+        code_patterns = [
+            '*.py', '*.js', '*.ts', '*.jsx', '*.tsx',
+            '*.go', '*.rs', '*.java', '*.cs', '*.cpp',
+            '*.c', '*.h', '*.rb', '*.php', '*.swift'
+        ]
+        
+        # Count code files (excluding framework tools)
+        code_file_count = 0
+        for pattern in code_patterns:
+            files = glob.glob(f'**/{pattern}', recursive=True)
+            # Exclude framework tools directory
+            code_files = [f for f in files if not f.startswith(('tools/', '.ai-sdlc-temp/'))]
+            code_file_count += len(code_files)
+        
+        # Check if we only have framework files
+        framework_files = ['CLAUDE.md', 'README.md', '.gitignore']
+        has_framework = all((self.project_root / f).exists() for f in framework_files[:2])  # At least CLAUDE.md and README
+        
+        self.is_empty_repo = code_file_count == 0 and has_framework
     
     def add_success(self, check: str, message: str):
         """Add success result"""
