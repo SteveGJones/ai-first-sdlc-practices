@@ -144,7 +144,7 @@ class TestAIFriendlyTemplates(unittest.TestCase):
         guidance_keywords = [
             'What Went Well',
             'What Could Be Improved',
-            'Lessons Learned',
+            'Key Learnings',  # Template uses "Key Learnings" not "Lessons Learned"
             'Action Items'
         ]
         
