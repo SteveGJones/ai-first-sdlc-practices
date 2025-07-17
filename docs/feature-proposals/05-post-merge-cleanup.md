@@ -9,12 +9,14 @@
 
 Fix test failures and code quality issues introduced to main branch after PR #16 merge, and add mixed content guidelines based on lessons learned from other projects.
 
-## Problem Statement
+## Motivation
 
 After merging the housekeeping improvements PR, several issues were present on main:
 1. Test failure due to wording mismatch ("Lessons Learned" vs "Key Learnings")
 2. 85 flake8 code quality issues in test-scenarios
 3. Missing guidelines for handling mixed content that caused issues in other projects
+
+These issues prevent clean CI/CD runs and the missing guidelines could lead to documentation breakage when AI agents perform bulk updates.
 
 ## Proposed Solution
 
