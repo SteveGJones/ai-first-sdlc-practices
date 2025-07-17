@@ -630,7 +630,7 @@ def main():
         "--checks",
         nargs="+",
         choices=["branch", "proposal", "plan", "ai-docs", "tests", 
-                "security", "code-quality", "dependencies", "commit-history"],
+                "security", "code-quality", "dependencies", "commit-history", "retrospective"],
         help="Specific checks to run (default: all)"
     )
     parser.add_argument(

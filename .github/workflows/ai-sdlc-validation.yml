@@ -51,19 +51,19 @@ jobs:
       run: |
         # Run individual checks to pinpoint issues
         echo "=== Branch Compliance ==="
-        python tools/validation/validate-pipeline.py --check branch --ci || true
+        python tools/validation/validate-pipeline.py --checks branch --ci || true
         
         echo "=== Security Scan ==="
-        python tools/validation/validate-pipeline.py --check security --ci || true
+        python tools/validation/validate-pipeline.py --checks security --ci || true
         
         echo "=== Test Check ==="
-        python tools/validation/validate-pipeline.py --check tests --ci || true
+        python tools/validation/validate-pipeline.py --checks tests --ci || true
     
     - name: Generate validation report
       if: always()
       run: |
-        python tools/validation/validate-pipeline.py --ci --format json > validation-report.json || true
-        python tools/validation/validate-pipeline.py --ci --format markdown > validation-report.md || true
+        python tools/validation/validate-pipeline.py --ci --export json --output validation-report.json || true
+        python tools/validation/validate-pipeline.py --ci --export markdown --output validation-report.md || true
     
     - name: Upload validation reports
       if: always()
