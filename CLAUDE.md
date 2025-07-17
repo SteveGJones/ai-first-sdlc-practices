@@ -4,12 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🎯 Recommended User Prompt
 
-To have Claude set up this framework in your project, use:
+To have Claude set up this framework in your EXISTING project, use:
 ```
-Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project.
+I want to add AI-First SDLC practices to this project. Please:
+1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE.md (especially the "AI Agent Quick Start" section)
+2. Then download and run: curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
+3. Run: python setup-smart.py "[describe your project]" --non-interactive
+Do NOT clone the repository - we're adding the framework to THIS project.
 ```
 
-Claude will ask you for your project's purpose and then download the setup script and guide you through any authentication steps needed.
+**WHY THIS WORKS**: By reading the instructions FIRST, Claude will understand:
+- This is about enhancing an existing project, not cloning
+- The exact directory structure to expect
+- Common mistakes to avoid
+- The proper workflow to follow
+
+Claude will ask you for your project's purpose and then proceed with setup using the official script.
 
 ## Project Overview
 
@@ -37,18 +47,63 @@ This is the AI-First SDLC Practices framework - a comprehensive methodology for 
 
 ## 🤖 AI Agent Quick Start
 
-When asked to use this framework in a new project:
+**⚠️ CRITICAL SETUP INSTRUCTIONS - READ CAREFULLY**
+
+When asked to add this framework to an existing project, you MUST:
+
+### Step 1: Verify You're in the User's Project Root
 ```bash
-# 1. Download and run setup (non-interactive mode for AI agents)
-curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
-python setup-smart.py "[project purpose]" --non-interactive --ci-platform github
-
-# 2. Verify setup is complete
-bash tools/test-setup.sh
-
-# 3. Read the generated CLAUDE.md for project-specific instructions
-cat CLAUDE.md
+pwd  # Should show /path/to/user/project (NOT ai-first-sdlc-practices)
+ls   # Should show the user's project files
 ```
+
+### Step 2: Download and Run the Official Setup Script
+```bash
+# Download the setup script TO THE PROJECT ROOT
+curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
+
+# Run it with the project description
+python setup-smart.py "[project purpose]" --non-interactive --ci-platform github
+```
+
+### Step 3: Verify the Correct Structure Was Created
+The setup script will create these directories AT THE PROJECT ROOT:
+```
+user-project/
+├── docs/
+│   └── feature-proposals/     # Feature proposals go here
+├── plan/                      # Implementation plans go here  
+├── retrospectives/            # Retrospectives go here
+├── tools/                     # Framework tools
+│   ├── automation/
+│   └── validation/
+├── CLAUDE.md                  # AI instructions (at root)
+├── README.md                  # Project readme (at root)
+└── .gitignore                 # Updated with AI patterns
+```
+
+**❌ NEVER DO THIS**:
+- Create a `.claud/` or `.claude/` directory for framework files
+- Put proposals/retrospectives in hidden directories
+- Create your own directory structure
+- Clone the ai-first-sdlc-practices repository
+- Manually recreate the framework structure
+
+**✅ ALWAYS DO THIS**:
+- Use the official setup-smart.py script
+- Create directories at the PROJECT ROOT level
+- Follow the exact directory names: `docs/feature-proposals/`, `retrospectives/`, `plan/`
+- Let the setup script handle all file creation
+
+### Common Mistakes to Avoid
+1. **Wrong**: Creating `.claud/proposals/` or `.claude/retrospectives/`
+   **Right**: Creating `docs/feature-proposals/` and `retrospectives/` at project root
+
+2. **Wrong**: Manually creating a simplified framework structure
+   **Right**: Running setup-smart.py which creates the complete structure
+
+3. **Wrong**: Putting framework files in any hidden directory
+   **Right**: All framework directories are visible at the project root
 
 See `AI-AUTONOMY.md` for detailed autonomous usage guide.
 
@@ -241,6 +296,55 @@ All code changes must pass:
 ### 3. Known Issues
 - **Validation Bug**: Line 319 in `validate-pipeline.py` uses `.contains()` instead of `in` operator
   - Fix: `if commit and not any(prefix in commit.lower() for prefix in prefixes):`
+  - **Note**: This bug has been fixed in PR #4 (feature/cicd-platform-rules branch)
+
+## Branch Protection and Repository Setup
+
+### Configuring Branch Protection
+When setting up a new repository or working with an unprotected main branch:
+
+1. **Check Current Protection Status**:
+   ```bash
+   gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts' 2>/dev/null || echo "No protection"
+   ```
+
+2. **Set Up Protection**:
+   ```bash
+   python tools/automation/setup-branch-protection-gh.py  # Preferred: uses gh CLI
+   # OR
+   python tools/automation/setup-branch-protection.py     # Fallback: uses token
+   ```
+
+3. **Why Branch Protection Matters**:
+   - Ensures code review and validation before merge
+   - Prevents accidental direct pushes to main
+   - Maintains audit trail and rollback capability
+   - Enforces AI-First SDLC process compliance
+
+### TOC Generator Configuration
+- The Table of Contents generator creates PRs instead of pushing directly
+- Runs on feature branches, not main
+- Creates branches with prefix `toc-update/`
+- Compatible with branch protection rules
+
+## Recent Framework Updates
+
+### CONTRIBUTING.md Addition
+- Comprehensive contribution guidelines for humans and AI agents
+- Emphasizes retrospective-first workflow
+- Now included in setup-smart.py essential files
+- Provides clear PR checklist and commit standards
+
+### Validation Pipeline Fixes
+- Fixed `.contains()` AttributeError (line 320)
+- Updated CLI arguments: `--checks` instead of `--check`
+- Added `retrospective` to validation check choices
+- Fixed report generation with `--export` and `--output` flags
+
+### Workflow Enhancements
+- All workflow diagrams now show retrospective before PR
+- Retrospectives are mandatory and validated by pipeline
+- PR creation can be automated with `gh pr create`
 
 ## Important Notes
 
@@ -250,4 +354,6 @@ All code changes must pass:
 - All contributions should follow the framework's own guidelines
 - The repository has active GitHub Actions that enforce these standards
 - Always create feature proposals before implementing changes
-- Always create retrospectives after completing features
+- Always create retrospectives BEFORE creating pull requests
+- Branch protection should be enabled on all repositories using this framework
+- The framework supports 5 major CI/CD platforms with native configurations

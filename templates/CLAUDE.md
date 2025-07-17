@@ -226,6 +226,9 @@ python -m uvicorn app.main:app --reload
 - Update documentation with code changes
 - Use descriptive commit messages
 - Ask for clarification when requirements are unclear
+- Validate context before bulk updates (e.g., distinguish ```mermaid from ```json blocks)
+- Create validation scripts before making widespread changes
+- Test one file first before bulk operations
 
 ### ❌ DON'T
 - Make assumptions about requirements
@@ -233,6 +236,8 @@ python -m uvicorn app.main:app --reload
 - Commit large, unrelated changes together
 - Modify core architecture without discussion
 - Add dependencies without justification
+- Apply patterns across different content types without context awareness
+- Use broad pattern matching without understanding file structure
 
 ## Error Handling
 
@@ -316,6 +321,57 @@ Update README.md when:
 - Changing setup instructions
 - Modifying API contracts
 - Adding dependencies
+
+## Working with Mixed Content (CRITICAL)
+
+### Context Awareness for Bulk Updates
+When updating files with mixed content types (e.g., Mermaid diagrams + code examples):
+
+1. **Identify Content Types First**
+   ```bash
+   # List all code block types in files
+   grep -h '```[a-z]*' docs/*.md | sort | uniq
+   ```
+
+2. **Be Explicit About Scope**
+   - ❌ "Update all diagrams to use blue colors"
+   - ✅ "Update ONLY ```mermaid blocks to use blue colors, do NOT modify ```json or ```yaml blocks"
+
+3. **Create Validation Before Changes**
+   ```python
+   # Example: Validate Mermaid syntax
+   def validate_mermaid_blocks(content):
+       # Extract only mermaid blocks
+       # Check syntax validity
+       # Ensure no mermaid syntax in other code blocks
+   ```
+
+4. **Test Incrementally**
+   - Update ONE file first
+   - Validate the changes work correctly
+   - Only then apply to multiple files
+
+### Example Safe Bulk Update Request
+```
+I need to update Mermaid diagrams across multiple documentation files.
+
+Context:
+- Files contain both Mermaid diagrams (```mermaid) and code examples (```json, ```yaml)
+- Mermaid syntax must NEVER appear in code example blocks
+
+Requirements:
+1. ONLY modify content within ```mermaid blocks
+2. Do NOT touch ```json, ```yaml, or other code blocks
+3. Create a validation script first that checks:
+   - All Mermaid blocks have valid syntax
+   - No Mermaid syntax appears in non-Mermaid blocks
+4. Show me changes on ONE file first for review
+5. Include rollback capability in case of errors
+
+Changes needed:
+- Update lineColor from #oldcolor to #newcolor
+- Add any new directives ONLY at the end of Mermaid blocks
+```
 
 ## Dependency Management
 

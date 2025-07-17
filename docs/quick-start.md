@@ -1,3 +1,33 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC Quick Start Guide](#ai-first-sdlc-quick-start-guide)
+  - [Prerequisites](#prerequisites)
+  - [Step 1: Copy Templates (1 minute)](#step-1-copy-templates-1-minute)
+  - [Step 2: Customize CLAUDE.md (2 minutes)](#step-2-customize-claudemd-2-minutes)
+  - [Step 3: Set Up Branch Protection (1 minute)](#step-3-set-up-branch-protection-1-minute)
+    - [Automated Setup (Recommended)](#automated-setup-recommended)
+    - [Manual Branch Protection Setup](#manual-branch-protection-setup)
+    - [GitHub (Manual via UI)](#github-manual-via-ui)
+    - [GitLab](#gitlab)
+  - [Step 4: Create First Feature Proposal (1 minute)](#step-4-create-first-feature-proposal-1-minute)
+  - [Step 5: Brief Your Team](#step-5-brief-your-team)
+    - [For AI Agents](#for-ai-agents)
+    - [Simplified Prompt for AI Agents](#simplified-prompt-for-ai-agents)
+    - [For Human Developers](#for-human-developers)
+  - [Verification Checklist](#verification-checklist)
+  - [Next Steps](#next-steps)
+    - [Start Using the Framework](#start-using-the-framework)
+  - [Common Issues & Solutions](#common-issues--solutions)
+    - ["AI agent pushed to main"](#ai-agent-pushed-to-main)
+    - ["Feature proposal too detailed"](#feature-proposal-too-detailed)
+    - ["Retrospectives being skipped"](#retrospectives-being-skipped)
+  - [Quick Command Reference](#quick-command-reference)
+  - [Getting Help](#getting-help)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC Quick Start Guide
 
 Get your project ready for AI-driven development in 5 minutes! 🚀
