@@ -213,6 +213,51 @@ When modifying framework tools:
    - Must mention the current branch/feature name
    - Must include: what went well, what could improve, lessons learned
 
+## 🔄 Checking for Framework Updates
+
+### For AI Agents (Claude)
+
+When a user wants to update the framework, they will give you a prompt like:
+"Check for updates to the AI-First SDLC framework"
+
+Follow these steps:
+
+1. **Check Current Version**:
+   ```bash
+   cat VERSION
+   ```
+
+2. **Check Latest Version**:
+   ```bash
+   curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/VERSION
+   ```
+
+3. **If Update Available**:
+   - Read the appropriate migration guide
+   - Follow instructions exactly as written
+   - Verify each update before proceeding
+   - Update VERSION file last
+
+### Update Process Example
+
+If current version is 1.4.0 and latest is 1.5.0:
+```bash
+# Read migration guide
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/docs/releases/v1.4.0-to-v1.5.0.md
+
+# Follow each instruction in the guide
+# Update files as instructed
+# Verify updates
+# Finally update VERSION
+echo "1.5.0" > VERSION
+```
+
+### Important Notes
+- Migration guides are written FOR AI agents with exact commands
+- Always verify each update succeeded before continuing
+- If any update fails, stop and report the issue
+- Update VERSION only after all other updates succeed
+
 ## Common Tasks
 
 ### Adding New Validation Rules
