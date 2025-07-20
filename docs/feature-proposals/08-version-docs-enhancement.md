@@ -13,9 +13,10 @@ Enhance version management documentation to ensure AI agents fully understand th
 
 ---
 
-## Problem Statement
+## Motivation
 
-### Current Situation
+### Problem Statement
+
 The recently implemented version management system (PR #20) has functional documentation, but post-implementation review identified several gaps that could confuse AI agents:
 
 1. **Missing Philosophy Context**: No explanation of WHY we use prompts instead of scripts
@@ -28,6 +29,13 @@ The recently implemented version management system (PR #20) has functional docum
 - Confusion handling pre-1.3.0 installations
 - Uncertainty when applying multiple sequential updates
 - No clear guidance when updates fail
+
+### User Stories
+
+- As an AI agent, I want to understand WHY updates use prompts so that I don't suggest automating with scripts
+- As an AI agent, I want clear bootstrap instructions so that I can handle pre-VERSION installations
+- As an AI agent, I want sequential update examples so that I can correctly apply multiple updates
+- As an AI agent, I want comprehensive troubleshooting so that I can handle failures gracefully
 
 ---
 
