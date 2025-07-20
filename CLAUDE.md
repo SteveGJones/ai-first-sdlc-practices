@@ -215,6 +215,14 @@ When modifying framework tools:
 
 ## 🔄 Checking for Framework Updates
 
+### Understanding the AI-First Update Philosophy
+
+**CRITICAL**: This framework uses an AI-first update approach. This means:
+- Users give YOU (the AI) prompts to check and apply updates
+- You execute the update process using commands provided in migration guides
+- NO Python scripts or automated tools - updates are AI-guided conversations
+- This maintains the framework's core principle: AI agents as primary actors
+
 ### For AI Agents (Claude)
 
 When a user wants to update the framework, they will give you a prompt like:
@@ -238,6 +246,22 @@ Follow these steps:
    - Verify each update before proceeding
    - Update VERSION file last
 
+### Bootstrap: Determining Version for Existing Installations
+
+If the project has no VERSION file (pre-1.3.0 installation):
+1. Check for the presence of key features to determine version:
+   ```bash
+   # Check for v1.2.0 features (self-review)
+   grep -q "Self-Review Process" CLAUDE.md && echo "At least v1.2.0"
+   
+   # Check for v1.1.0 features (CI/CD examples)
+   ls examples/ci-cd/ 2>/dev/null && echo "At least v1.1.0"
+   
+   # If neither exists, assume v1.0.0
+   ```
+2. Start updates from the determined version
+3. Create VERSION file as part of first update
+
 ### Update Process Example
 
 If current version is 1.4.0 and latest is 1.5.0:
@@ -252,11 +276,38 @@ curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 echo "1.5.0" > VERSION
 ```
 
+### Sequential Updates (Multiple Versions Behind)
+
+If current version is 1.3.0 and latest is 1.5.0:
+```bash
+# First, apply 1.3.0 to 1.4.0
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/docs/releases/v1.3.0-to-v1.4.0.md
+# Follow all instructions, verify success
+
+# Then, apply 1.4.0 to 1.5.0
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/docs/releases/v1.4.0-to-v1.5.0.md
+# Follow all instructions, verify success
+
+# Update VERSION to final version only
+echo "1.5.0" > VERSION
+```
+
 ### Important Notes
+- **VERSION file purpose**: Local tracking of installed framework version
 - Migration guides are written FOR AI agents with exact commands
 - Always verify each update succeeded before continuing
 - If any update fails, stop and report the issue
 - Update VERSION only after all other updates succeed
+- For sequential updates, apply each migration in order
+
+### Troubleshooting Update Failures
+
+If verification steps fail during an update:
+1. **Stop immediately** - do not proceed with further updates
+2. **Report the specific failure** to the user
+3. **Check for partial downloads**: Look for files with .1 extension
+4. **Suggest manual verification**: Have user check file contents
+5. **DO NOT update VERSION** until all issues are resolved
 
 ## Common Tasks
 
