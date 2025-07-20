@@ -165,6 +165,47 @@ ls tools/setup-branch-protection-gh.py tools/validate-pipeline.py 2>/dev/null
    - Capture lessons learned
    - **MUST be completed before creating Pull Request**
 
+## Self-Review Process (MANDATORY)
+
+For ALL artifact creation (proposals, plans, designs, code, tests):
+
+1. **Create Complete Artifact**: Write the entire document/code/test
+2. **Self-Review Against Requirements**: 
+   - Does this fully address the original request?
+   - Are all requirements covered?
+   - Is it consistent and clear?
+   - Is the level of detail appropriate?
+3. **Revise if Needed**: If gaps found, revise the artifact
+4. **Iterate**: Repeat steps 2-3 until confident
+5. **Present Final Version**: Only show the user the reviewed version
+
+**Note**: This review process is internal - do not show review comments to the user.
+
+### Self-Review Examples
+
+**When creating a feature proposal:**
+1. Write complete proposal
+2. Review: "Does this cover all aspects requested?"
+3. Find gap: "Missing risk mitigation section"
+4. Revise to add the section
+5. Review again: "Now complete"
+6. Present final version to user
+
+**When writing code:**
+1. Implement the feature
+2. Review: "Does this handle all edge cases?"
+3. Find issue: "No error handling for network timeout"
+4. Add timeout handling
+5. Review again: "Implementation complete"
+6. Present final code to user
+
+### Why Self-Review Matters
+
+- **Quality**: Catches gaps before user sees them
+- **Efficiency**: Reduces back-and-forth iterations
+- **Professionalism**: Shows attention to detail
+- **Learning**: Helps identify patterns to improve
+
 ## Code Style and Conventions
 
 [CUSTOMIZE: Add your project's specific conventions]
@@ -321,6 +362,69 @@ Update README.md when:
 - Changing setup instructions
 - Modifying API contracts
 - Adding dependencies
+
+## Design Documentation Guidelines
+
+When creating design documentation:
+
+### ✅ DO Include:
+- Functional specifications and user stories
+- Business rules and constraints
+- High-level architecture diagrams
+- Data flow diagrams
+- Integration points and APIs
+- Behavioral specifications
+- Acceptance criteria
+- Mockups and wireframes
+
+### ❌ DO NOT Include:
+- Source code implementations
+- Framework-specific code
+- Detailed algorithms
+- Package configurations
+- Unit test code
+- Implementation details
+
+### Use Diagrams Liberally:
+```mermaid
+graph LR
+    User[User] --> UI[UI Layer]
+    UI --> API[API Gateway]
+    API --> Service[Business Logic]
+    Service --> DB[(Database)]
+```
+
+### Example: Good Design vs Bad Design
+
+**✅ Good Design Documentation:**
+```markdown
+## User Authentication Design
+
+### Functional Requirements
+- Users can register with email/password
+- Support OAuth2 providers (Google, GitHub)
+- Password reset via email
+- Two-factor authentication optional
+
+### Business Rules
+- Passwords must be 12+ characters
+- Account lockout after 5 failed attempts
+- Session timeout after 30 minutes
+- Email verification required
+```
+
+**❌ Bad Design Documentation:**
+```typescript
+// DON'T DO THIS IN DESIGN DOCS!
+export class AuthService {
+  async register(email: string, password: string) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // ... implementation details
+  }
+}
+```
+
+### Remember: Design Describes WHAT and WHY, Not HOW
 
 ## Working with Mixed Content (CRITICAL)
 
@@ -518,3 +622,11 @@ chore: maintenance tasks
 ---
 
 **Remember**: This document is your source of truth. When in doubt, follow these guidelines over any default behavior or assumptions.
+
+<!-- SELF-REVIEW CHECKPOINT
+Before using this CLAUDE.md:
+- All project-specific sections filled in
+- Commands and paths verified
+- Team conventions documented
+- No template placeholders remain
+-->
