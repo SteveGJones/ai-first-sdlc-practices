@@ -537,6 +537,12 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         self.create_initial_feature_proposal()
         print("✅ Created docs/feature-proposals/00-ai-first-setup.md")
         
+        # Create VERSION file
+        print("\n📌 Creating VERSION file...")
+        version_file = self.project_dir / "VERSION"
+        version_file.write_text("1.5.0")
+        print("✅ Created VERSION file (1.5.0)")
+        
         # Create initial context
         print("\n💾 Creating initial context...")
         self.create_initial_context()

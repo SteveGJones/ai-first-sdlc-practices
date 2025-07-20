@@ -138,6 +138,46 @@ Both methods will:
 - Framework CI/CD tests the framework itself
 - Located in `.framework/` and `.github/`
 
+## 🔄 Updating the Framework
+
+### For Projects Using This Framework
+
+The AI-First SDLC framework now includes version management. To check for updates:
+
+#### Quick Update Check
+```bash
+# Give this prompt to Claude:
+"Check for updates to the AI-First SDLC framework"
+```
+
+Claude will:
+1. Check your current version (`cat VERSION`)
+2. Compare with latest version
+3. Apply updates if available
+4. Verify everything works
+
+#### Manual Update Check
+```bash
+# Your version
+cat VERSION
+
+# Latest version
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/VERSION
+```
+
+#### Resources
+- **Update Prompt**: [docs/updates/UPDATE-PROMPT.md](docs/updates/UPDATE-PROMPT.md)
+- **What's New**: [docs/updates/whats-new.md](docs/updates/whats-new.md)
+- **Migration Guides**: [docs/releases/](docs/releases/)
+- **Full Changelog**: [CHANGELOG.md](CHANGELOG.md)
+
+### Current Version: 1.5.0
+
+**Latest Features**:
+- 🔍 Mandatory self-review process for AI agents
+- 📐 Design documentation standards
+- ✅ Enhanced validation for design docs
+
 ## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to the framework itself.
