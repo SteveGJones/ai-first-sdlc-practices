@@ -1,148 +1,189 @@
-# Feature Proposal: Version Management and Update Infrastructure
+# Feature Proposal: AI-First Version Management and Update System
 
 **Date:** 2025-07-20  
 **Author:** Claude (AI Agent)  
-**Status:** Proposed  
+**Status:** Revised  
 **Target Branch:** `feature/version-management-updates`
 
 ## Summary
 
-Implement a comprehensive version management and update infrastructure to help existing framework users discover, understand, and apply updates as the framework evolves. This addresses the gap between new users (who get current version) and existing users (who need migration support).
+Implement an AI-first version management system that provides Claude (or other AI agents) with clear instructions to discover, understand, and apply framework updates. This maintains the paradigm where AI agents are the primary developers, not just users of automated tools.
 
 ## Motivation
 
-As discussed with the user, we have a critical challenge:
-- New users get the latest version automatically via setup script
-- Existing users have no clear way to discover or apply updates
-- The framework is evolving rapidly with new features
-- Users need both discovery mechanisms and migration support
+As the user correctly identified, the original proposal had a fundamental flaw:
+- It proposed a Python script that would automatically update files
+- This bypasses the AI agent, breaking the AI-first paradigm
+- We need to **inform** Claude about updates, not execute them automatically
 
-Currently, there's no way for existing users to:
-1. Know their current framework version
-2. Discover what updates are available
-3. Understand what changed between versions
-4. Apply updates safely with migration support
+The core insight: **Claude is the developer**, not a consumer of our automation. The update system should provide instructions for Claude to follow, maintaining the same pattern as our installation process.
+
+Current gaps:
+1. No way for Claude to check the current framework version
+2. No standardized prompt for users to request updates
+3. No clear instructions for Claude to follow when updating
+4. No verification process Claude can use to confirm success
 
 ## Proposed Solution
 
-### Multi-Tiered Information Architecture
+### AI-First Update Architecture
 
 ```
 ├── VERSION                     # Version tracking file
-├── CHANGELOG.md               # Standard changelog
+├── CHANGELOG.md               # Human-readable changelog
 ├── docs/
-│   ├── releases/             # Detailed migration guides
-│   │   └── vX.Y.Z-*.md      # Per-release guides
-│   └── updates/             # Quick reference
-│       └── whats-new.md    # Recent highlights
+│   ├── releases/             # AI-readable migration instructions
+│   │   └── vX.Y.Z-*.md      # Step-by-step for Claude
+│   └── updates/             
+│       ├── whats-new.md    # Recent changes summary
+│       └── UPDATE-PROMPT.md # Standard prompt for users
 └── tools/
-    └── update-framework.py  # Automated updater
+    └── verify-update.py     # Verification helper for Claude
 ```
 
 ### Core Components
 
 1. **Version Tracking**
    - `VERSION` file in every installation
-   - Semantic versioning (X.Y.Z)
-   - Setup script writes current version
+   - Simple format Claude can read: "1.5.0"
+   - Setup script creates initial VERSION
 
-2. **Discovery Mechanisms**
-   - "What's New" section in README
-   - Dedicated what's-new.md page
-   - Update script shows available updates
+2. **Update Prompt Template**
+   - Standardized prompt users give to Claude
+   - Similar to installation prompt pattern
+   - Clear, copy-paste ready
 
-3. **Update Automation**
-   - Check current vs latest version
-   - Show release summaries
-   - Download updated files
-   - Preserve user customizations
+3. **Claude-Readable Instructions**
+   - Migration guides written FOR Claude
+   - Explicit file lists with curl commands
+   - Verification steps Claude can execute
+   - Success criteria Claude can check
 
-4. **Migration Support**
-   - Step-by-step guides per release
-   - Breaking change warnings
-   - Rollback procedures
-   - Example implementations
+4. **Discovery Mechanism**
+   - Claude checks VERSION files
+   - Compares local vs remote
+   - Reads appropriate migration guide
+   - Reports findings to user
 
 ## Implementation Details
 
-### VERSION File
-```
-1.5.0
-```
-Simple, parseable, trackable.
+### Standard Update Prompt (UPDATE-PROMPT.md)
+```markdown
+I want to check for AI-First SDLC framework updates. Please:
 
-### Update Script Features
-- Detect framework installation
-- Compare versions
-- Show changelog summary
-- Download updates selectively
-- Update VERSION file
-- Show next steps
+1. Check current version: cat VERSION
+2. Check latest: curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/VERSION
+3. If update available:
+   - Read migration guide: https://raw.githubusercontent.com/.../docs/releases/v{VERSION}-*.md
+   - Follow the instructions in that guide
+   - Update VERSION file when complete
+4. Report what changed
+```
+
+### Migration Guide Format (for Claude)
+```markdown
+# Migration Guide: v1.4.0 to v1.5.0
+
+## Overview
+[Brief description for Claude]
+
+## Files to Update
+
+### 1. Update CLAUDE.md
+```bash
+curl -sSL https://raw.githubusercontent.com/.../CLAUDE.md > CLAUDE.md
+```
+
+### 2. Update Templates
+```bash
+curl -sSL https://raw.githubusercontent.com/.../templates/feature-proposal.md > templates/feature-proposal.md
+# ... more files
+```
+
+## Verification Steps
+1. Check that CLAUDE.md contains "Self-Review Process"
+2. Verify templates have review checkpoints
+3. Run: python tools/validation/validate-pipeline.py
+
+## Update VERSION
+```bash
+echo "1.5.0" > VERSION
+```
+```
 
 ### Information Flow
 ```
-User runs update-framework.py
-    ├─> Checks current VERSION
-    ├─> Fetches latest VERSION from GitHub
-    ├─> Shows releases between versions
-    ├─> Offers to apply updates
-    └─> Updates files and VERSION
+User gives update prompt to Claude
+    ├─> Claude checks current VERSION
+    ├─> Claude fetches latest VERSION
+    ├─> Claude compares versions
+    ├─> Claude reads migration guide
+    ├─> Claude executes update commands
+    ├─> Claude verifies success
+    └─> Claude reports to user
 ```
 
 ## Success Criteria
 
-- [ ] Users can check their framework version easily
-- [ ] Update discovery is obvious and accessible
-- [ ] Migration guides prevent breaking changes
-- [ ] Update process is safe and reversible
-- [ ] Works across all supported platforms
+- [ ] Claude can check framework version with simple command
+- [ ] Users have clear prompt to give Claude for updates
+- [ ] Claude can successfully apply updates following guides
+- [ ] Migration guides are written for AI comprehension
+- [ ] Verification steps confirm successful updates
+- [ ] Process maintains AI-first philosophy
 
 ## Risks and Mitigation
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Breaking user customizations | High | Selective file updates, preserve custom files |
-| Version conflicts | Medium | Clear compatibility matrix |
-| Network dependencies | Low | Graceful offline handling |
-| Update failures | Medium | Atomic updates, rollback support |
+| Claude misunderstands instructions | High | Clear, explicit commands with examples |
+| Partial updates | Medium | Verification steps after each change |
+| Network failures | Low | Claude reports specific failures |
+| User gives wrong prompt | Low | Standardized prompt template |
 
 ## Estimated Effort
 
-- Version infrastructure: 2 hours
-- Update script: 3-4 hours
-- Documentation: 2 hours
-- Testing: 2 hours
+- Version infrastructure: 1 hour
+- Update prompt template: 1 hour
+- Migration guide templates: 2 hours
+- Rewrite existing guides for Claude: 2 hours
+- Testing with Claude: 2 hours
 
-Total: 1-2 days
+Total: 1 day
 
 ## Dependencies
 
-- Requires VERSION in setup-smart.py
-- GitHub API for version checking
-- Python standard library only
+- VERSION file in setup-smart.py
+- Migration guides written for AI agents
+- No Python dependencies (Claude does the work)
 
 ## Rollout Strategy
 
 1. Add VERSION to new installations
-2. Create update infrastructure
-3. Document in README
-4. Announce to existing users
-5. Monitor adoption and feedback
+2. Create UPDATE-PROMPT.md template
+3. Rewrite migration guides for Claude
+4. Test with Claude on real updates
+5. Add to README with clear instructions
+6. Announce new update process
 
 ## Future Enhancements
 
-1. **Version Detection** for pre-VERSION installations
-2. **Selective Updates** (security only, features only)
-3. **Update Notifications** in validation pipeline
-4. **Dependency Management** for tool versions
-5. **Automated Changelog** generation from PRs
+1. **Smart Detection**: Claude infers version from file signatures
+2. **Selective Updates**: Claude asks user which components to update
+3. **Update Reminders**: Validation pipeline reminds about updates
+4. **Batch Operations**: Claude updates multiple projects
+5. **Custom Prompts**: Organization-specific update workflows
 
 ## Alternative Approaches Considered
 
-1. **Git Tags Only**: Rejected - not visible in installations
-2. **Package Manager**: Rejected - adds dependencies
-3. **Manual Only**: Rejected - poor user experience
-4. **Config File**: Rejected - VERSION simpler
+1. **Automated Python Script**: Rejected - breaks AI-first paradigm
+2. **Git Submodules**: Rejected - too complex for Claude
+3. **Web Dashboard**: Rejected - adds infrastructure
+4. **Config Management**: Rejected - overkill for simple updates
+
+## Key Insight
+
+The user identified the critical flaw: we were designing a traditional update system when we need an AI-first approach. Just as installation uses a prompt to Claude, updates should too. This maintains consistency and keeps Claude as the primary developer, not a consumer of our automation.
 
 <!-- SELF-REVIEW CHECKPOINT
 Before finalizing, verify:
