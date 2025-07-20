@@ -141,18 +141,18 @@ python tools/automation/setup-branch-protection.py
 
 The framework consists of three main components:
 
-1. **Templates**: Provide standardized formats for AI instructions, feature proposals, implementation plans, and retrospectives. The CLAUDE.md template is the core instruction set that overrides default AI behavior.
+1. **Templates**: Provide standardized formats for AI instructions, feature proposals, implementation plans, retrospectives, and design documentation. The CLAUDE.md template is the core instruction set that overrides default AI behavior. All templates include self-review checkpoints.
 
 2. **Tools**: Python scripts that automate workflow enforcement:
    - `setup.py` (in tools/): Initializes framework in new projects
-   - `validate-pipeline.py`: Runs 9-point validation checks
+   - `validate-pipeline.py`: Runs validation checks including design documentation
    - `progress-tracker.py`: Task management system
    - `context-manager.py`: Preserves state between AI sessions
    - `check-feature-proposal.py`: Validates proposal format
    - `setup-branch-protection-gh.py`: Configures git branch rules (secure, uses gh CLI)
    - `setup-branch-protection.py`: Configures git branch rules (fallback, uses token)
 
-3. **Examples**: Demonstrate framework implementation across different project types (simple, complex, enterprise, CI/CD integration).
+3. **Examples**: Demonstrate framework implementation across different project types (simple, complex, enterprise, CI/CD integration). Includes self-review examples and design documentation samples.
 
 ## Testing
 
@@ -169,6 +169,8 @@ When modifying framework tools:
 3. **Progress Tracking**: Maintain visibility of work
 4. **Context Preservation**: Enable seamless handoffs
 5. **Automated Validation**: Continuous compliance checking
+6. **Self-Review Process**: AI agents must review all artifacts before presenting
+7. **Design Documentation Standards**: Clear separation between WHAT/WHY and HOW
 
 ## 🚨 CRITICAL: Branch Management Rules
 
@@ -248,6 +250,38 @@ Located in `examples/ci-cd/`:
 - Jenkins (`Jenkinsfile`)
 - Azure DevOps (`azure-pipelines.yml`)
 - CircleCI (`.circleci/config.yml`)
+
+## Self-Review Process (MANDATORY)
+
+All AI agents must internally review their work before presenting to users:
+
+1. **Create Complete Artifact First**
+2. **Review Against Requirements**: Check for gaps, consistency, completeness
+3. **Revise if Needed**: Fix any issues found during review
+4. **Present Final Version**: User only sees the reviewed, polished version
+
+**Note**: This review process is internal - users should not see review comments.
+
+## Design Documentation Standards
+
+When creating design documentation:
+
+### ✅ DO Include:
+- Functional specifications and user stories
+- Business rules and constraints  
+- Architecture diagrams (Mermaid, PlantUML, ASCII)
+- Data flow and state diagrams
+- Integration points and APIs
+- Acceptance criteria
+
+### ❌ DO NOT Include:
+- Source code implementations
+- Framework-specific code
+- Detailed algorithms
+- Package configurations
+- Technology stack specifics
+
+**Remember**: Design docs describe WHAT and WHY, not HOW.
 
 ## Workflow Standards
 

@@ -36,7 +36,8 @@ class ValidationPipeline:
             "code-quality": self.check_code_quality,
             "dependencies": self.check_dependencies,
             "commit-history": self.check_commit_compliance,
-            "retrospective": self.check_retrospective
+            "retrospective": self.check_retrospective,
+            "design-docs": self.check_design_documentation
         }
         
         # Default to all checks
@@ -500,6 +501,101 @@ class ValidationPipeline:
                     "Remember to create a retrospective before PR"
                 )
     
+    def check_design_documentation(self):
+        """Check design documents for excessive implementation details"""
+        if self.is_empty_repo:
+            return
+            
+        import glob
+        import re
+        
+        print("\n8️⃣  Checking Design Documentation...")
+        
+        # Find design documentation files
+        design_patterns = [
+            '**/design-*.md',
+            '**/design_*.md',
+            '**/designs/*.md',
+            '**/architecture/*.md',
+            '**/specs/*.md'
+        ]
+        
+        design_files = []
+        for pattern in design_patterns:
+            design_files.extend(glob.glob(pattern, recursive=True))
+        
+        if not design_files:
+            print("   No design documentation found")
+            return
+        
+        for file_path in design_files:
+            # Skip template files
+            if 'templates/' in file_path or 'examples/' in file_path:
+                continue
+                
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # Count total lines (excluding empty lines)
+                lines = content.splitlines()
+                total_lines = len([line for line in lines if line.strip()])
+                
+                if total_lines == 0:
+                    continue
+                
+                # Find code blocks (excluding mermaid/diagram blocks)
+                code_block_pattern = r'```(?!mermaid|diagram|plantuml|graphviz|dot|svg|ascii)[^\n]*\n([\s\S]*?)```'
+                code_blocks = re.findall(code_block_pattern, content, re.MULTILINE)
+                
+                # Count lines in code blocks
+                code_lines = 0
+                for block in code_blocks:
+                    block_lines = block.splitlines()
+                    code_lines += len([line for line in block_lines if line.strip()])
+                
+                # Calculate ratio
+                code_ratio = code_lines / total_lines if total_lines > 0 else 0
+                
+                # Check if too much code
+                if code_ratio > 0.2:  # More than 20% code
+                    relative_path = os.path.relpath(file_path, self.project_root)
+                    self.add_warning(
+                        "Design Documentation",
+                        f"{relative_path} contains {code_ratio:.0%} code content",
+                        "Consider moving implementation details to technical docs or code comments"
+                    )
+                    
+                # Check for specific implementation patterns
+                impl_patterns = [
+                    (r'\bclass\s+\w+', "class definitions"),
+                    (r'\bdef\s+\w+\s*\(', "function definitions"),
+                    (r'\bimport\s+\w+', "import statements"),
+                    (r'\bCREATE\s+TABLE', "SQL DDL statements"),
+                    (r'\bSELECT\s+.*\s+FROM', "SQL queries"),
+                    (r'npm\s+install', "package installation commands"),
+                    (r'pip\s+install', "package installation commands")
+                ]
+                
+                for pattern, description in impl_patterns:
+                    if re.search(pattern, content, re.IGNORECASE):
+                        # Check if it's in a code block (which we already warned about)
+                        if not any(re.search(pattern, block, re.IGNORECASE) for block in code_blocks):
+                            relative_path = os.path.relpath(file_path, self.project_root)
+                            self.add_warning(
+                                "Design Documentation",
+                                f"{relative_path} contains {description}",
+                                "Design docs should focus on WHAT and WHY, not HOW"
+                            )
+                            break  # Only warn once per file
+                            
+            except Exception as e:
+                self.add_warning(
+                    "Design Documentation",
+                    f"Could not analyze {file_path}",
+                    str(e)
+                )
+    
     def _get_current_branch(self) -> Optional[str]:
         """Get current git branch"""
         try:
@@ -630,7 +726,7 @@ def main():
         "--checks",
         nargs="+",
         choices=["branch", "proposal", "plan", "ai-docs", "tests", 
-                "security", "code-quality", "dependencies", "commit-history", "retrospective"],
+                "security", "code-quality", "dependencies", "commit-history", "retrospective", "design-docs"],
         help="Specific checks to run (default: all)"
     )
     parser.add_argument(
