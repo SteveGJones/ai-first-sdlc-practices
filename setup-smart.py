@@ -39,11 +39,17 @@ class SmartFrameworkSetup:
         "templates/gitignore/python.gitignore": None,
         "templates/gitignore/node.gitignore": None,
         "templates/gitignore/go.gitignore": None,
+        "templates/gitignore/java.gitignore": None,
+        "templates/gitignore/ruby.gitignore": None,
+        "templates/gitignore/rust.gitignore": None,
         "templates/gitignore/general.gitignore": None,
         # Test templates
         "templates/tests/test_framework_setup.py": None,
         "templates/tests/framework.test.js": None,
-        "templates/tests/test-framework.sh": None
+        "templates/tests/test-framework.sh": None,
+        "templates/tests/FrameworkTest.java": None,
+        "templates/tests/framework_test.rb": None,
+        "templates/tests/framework_test.rs": None
     }
     
     # CI/CD configurations by platform
@@ -56,7 +62,7 @@ class SmartFrameworkSetup:
     }
     
     def __init__(self, project_dir: Optional[Path] = None, project_purpose: str = None, 
-                 non_interactive: bool = False, ci_platform: str = None):
+                 non_interactive: bool = False, ci_platform: str = None, quickstart: bool = False):
         self.project_dir = project_dir or Path.cwd()
         self.project_purpose = project_purpose or "AI-assisted software development"
         self.project_name = self.project_dir.name
@@ -64,6 +70,7 @@ class SmartFrameworkSetup:
         self.non_interactive = non_interactive or not sys.stdin.isatty()
         self.ci_platform = ci_platform
         self.detected_language = None
+        self.quickstart = quickstart
         
     def download_file(self, remote_path: str, local_path: Optional[Path]) -> bool:
         """Download a file from the framework repository"""
@@ -136,11 +143,13 @@ class SmartFrameworkSetup:
             ('go', ['*.go', 'go.mod', 'go.sum']),
             ('rust', ['*.rs', 'Cargo.toml', 'Cargo.lock']),
             ('java', ['*.java', 'pom.xml', 'build.gradle', 'build.gradle.kts']),
+            ('ruby', ['*.rb', 'Gemfile', 'Gemfile.lock', 'Rakefile']),
             ('csharp', ['*.cs', '*.csproj', '*.sln']),
-            ('ruby', ['*.rb', 'Gemfile', 'Gemfile.lock']),
             ('php', ['*.php', 'composer.json', 'composer.lock']),
         ]
         
+        # Check if any language files exist
+        language_detected = False
         for lang, patterns in indicators:
             for pattern in patterns:
                 # Check both root and subdirectories
@@ -149,6 +158,40 @@ class SmartFrameworkSetup:
                     self.detected_language = lang
                     return lang
         
+        # If no language detected and not in quickstart/non-interactive mode, ask user
+        if not language_detected and not self.quickstart and not self.non_interactive:
+            print("\n🤔 No programming language detected in the project.")
+            print("What type of project is this?")
+            print("1. Python")
+            print("2. Node.js/JavaScript/TypeScript") 
+            print("3. Go")
+            print("4. Rust")
+            print("5. Java")
+            print("6. Ruby")
+            print("7. General/Other")
+            
+            while True:
+                try:
+                    choice = input("\nSelect language (1-7) [7]: ").strip() or "7"
+                    choice_map = {
+                        "1": "python",
+                        "2": "node",
+                        "3": "go",
+                        "4": "rust",
+                        "5": "java",
+                        "6": "ruby",
+                        "7": "general"
+                    }
+                    if choice in choice_map:
+                        self.detected_language = choice_map[choice]
+                        return self.detected_language
+                    else:
+                        print("Please enter a number between 1 and 7")
+                except KeyboardInterrupt:
+                    print("\nUsing general language settings")
+                    break
+        
+        # Default to general
         self.detected_language = 'general'
         return 'general'
     
@@ -298,6 +341,14 @@ Implement AI-First SDLC framework with:
         # Check if .gitignore already exists
         existing_content = ""
         if gitignore_path.exists():
+            # Create backup
+            import shutil
+            from datetime import datetime
+            backup_name = f".gitignore.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            backup_path = self.project_dir / backup_name
+            shutil.copy2(gitignore_path, backup_path)
+            print(f"📁 Created backup: {backup_name}")
+            
             with open(gitignore_path, 'r') as f:
                 existing_content = f.read()
             print("📝 Updating existing .gitignore...")
@@ -332,9 +383,31 @@ Implement AI-First SDLC framework with:
         
         # Combine with existing content if any
         if existing_content:
-            # Add a separator before new content
-            combined_content.insert(0, existing_content.strip())
-            combined_content.insert(1, "\n# === AI-First SDLC Framework Patterns (Added) ===\n")
+            # Parse existing patterns to avoid duplicates
+            existing_patterns = set()
+            for line in existing_content.strip().split('\n'):
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    existing_patterns.add(line)
+            
+            # Filter out duplicate patterns from new content
+            filtered_content = []
+            for section in combined_content:
+                if section.startswith('# ==='):
+                    filtered_content.append(section)
+                else:
+                    # Filter individual patterns
+                    filtered_lines = []
+                    for line in section.split('\n'):
+                        line_stripped = line.strip()
+                        if not line_stripped or line_stripped.startswith('#') or line_stripped not in existing_patterns:
+                            filtered_lines.append(line)
+                    if filtered_lines:
+                        filtered_content.append('\n'.join(filtered_lines))
+            
+            # Combine existing and new content
+            combined_content = [existing_content.strip(), 
+                              "\n# === AI-First SDLC Framework Patterns (Added) ===\n"] + filtered_content
         
         # Write the combined content
         final_content = "\n".join(combined_content)
@@ -354,6 +427,9 @@ Implement AI-First SDLC framework with:
             'python': ('test_framework_setup.py', 'test_framework_setup.py'),
             'node': ('framework.test.js', 'test/framework.test.js'),
             'go': ('test-framework.sh', 'test-framework.sh'),
+            'java': ('FrameworkTest.java', 'src/test/java/FrameworkTest.java'),
+            'ruby': ('framework_test.rb', 'test/framework_test.rb'),
+            'rust': ('framework_test.rs', 'tests/framework_test.rs'),
             'general': ('test-framework.sh', 'test-framework.sh')
         }
         
@@ -453,10 +529,85 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         print(f"Purpose: {self.project_purpose}")
         print()
         
-        # Create README if quickstart mode
-        if quickstart and not (self.project_dir / "README.md").exists():
-            print("\n📄 Creating README.md...")
-            self.create_readme()
+        # Quickstart mode - minimal setup
+        if quickstart:
+            print("\n⚡ Running in quickstart mode...")
+            
+            # Download only necessary templates for quickstart
+            print("📥 Downloading templates...")
+            quickstart_files = [
+                "templates/gitignore/base.gitignore",
+                "templates/gitignore/ai-tools.gitignore",
+                "templates/gitignore/general.gitignore",
+                "templates/tests/test-framework.sh",
+                "tools/validation/validate-pipeline.py"
+            ]
+            
+            # Always detect language first
+            print("🔍 Detecting project language...")
+            language = self.detect_project_language()
+            print(f"✅ Detected language: {language}")
+            
+            # Add language-specific templates
+            if language != 'general':
+                quickstart_files.append(f"templates/gitignore/{language}.gitignore")
+                # Add language-specific test template
+                test_map = {
+                    'python': 'templates/tests/test_framework_setup.py',
+                    'node': 'templates/tests/framework.test.js',
+                    'java': 'templates/tests/FrameworkTest.java',
+                    'ruby': 'templates/tests/framework_test.rb',
+                    'rust': 'templates/tests/framework_test.rs',
+                    'go': 'templates/tests/test-framework.sh'
+                }
+                if language in test_map:
+                    quickstart_files.append(test_map[language])
+            
+            # Download quickstart files
+            for file in quickstart_files:
+                self.download_file(file, None)
+            
+            # Create minimal directory structure
+            print("📁 Creating minimal directory structure...")
+            minimal_dirs = ["docs", "tools"]
+            for dir_path in minimal_dirs:
+                (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
+            
+            # Create README if doesn't exist
+            if not (self.project_dir / "README.md").exists():
+                print("📄 Creating README.md...")
+                self.create_readme()
+            
+            # Create .gitignore
+            print("📝 Setting up .gitignore...")
+            self.create_gitignore()
+            
+            # Create initial test
+            print("🧪 Creating initial test...")
+            self.create_initial_test()
+            
+            # Create VERSION file
+            print("📌 Creating VERSION file...")
+            version_file = self.project_dir / "VERSION"
+            version_file.write_text("1.5.0")
+            
+            # Run validation
+            print("🔍 Running validation...")
+            self.run_validation()
+            
+            # Clean up temp directory
+            temp_dir = self.project_dir / '.ai-sdlc-temp'
+            if temp_dir.exists():
+                import shutil
+                shutil.rmtree(temp_dir)
+            
+            print("\n✅ Quickstart setup completed in < 10 seconds!")
+            print("\n📚 Next steps:")
+            print("  1. Review the generated files")
+            print(f"  2. Run the full setup with: python setup-smart.py \"{self.project_purpose}\"")
+            print("  3. Commit your changes: git add . && git commit -m 'Initial AI-First SDLC setup'")
+            
+            return True
         
         # Check git repository
         if not self.check_git_repo():
@@ -922,7 +1073,7 @@ def main():
     
     # Create setup instance
     setup = SmartFrameworkSetup(args.project_dir, args.purpose, 
-                                args.non_interactive, args.ci_platform)
+                                args.non_interactive, args.ci_platform, args.quickstart)
     
     # Update version if specified
     if args.version != "main":

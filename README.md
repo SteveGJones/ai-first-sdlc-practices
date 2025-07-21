@@ -74,6 +74,18 @@ curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/
 python setup-smart.py "building a REST API with FastAPI"
 ```
 
+### 🚀 Quickstart Mode (NEW!)
+```bash
+# Ultra-fast setup in < 10 seconds
+python setup-smart.py --quickstart
+
+# Creates only:
+# - README.md (if missing)
+# - .gitignore (smart language-specific)
+# - Initial test file
+# - VERSION file
+```
+
 Both methods will:
 1. Download enhanced CLAUDE.md with branch protection education
 2. Set up branch protection using gh CLI (prompts for auth if needed)
@@ -89,6 +101,34 @@ Both methods will:
 6. **Configures validation tools** and framework scripts
 7. **Provides AI education** on branch protection verification and troubleshooting
 8. **Sets up CI/CD** for your platform (GitHub, GitLab, etc.)
+
+### 🆕 Enhanced Setup Features (Phase 2)
+
+#### Smart Language Detection
+- Automatically detects: Python, Node.js, Go, Java, Ruby, Rust
+- Prompts for language selection in blank projects
+- Creates language-specific .gitignore and test files
+
+#### Intelligent .gitignore Assembly
+- Merges base + AI-tools + language-specific patterns
+- Backs up existing .gitignore files automatically
+- Removes duplicate entries during merge
+
+#### Language-Specific Test Templates
+- Python: `test_framework_setup.py`
+- Node.js: `test/framework.test.js`
+- Java: `src/test/java/FrameworkTest.java`
+- Ruby: `test/framework_test.rb`
+- Rust: `tests/framework_test.rs`
+- Go/General: `test-framework.sh`
+
+#### Quickstart Mode
+```bash
+python setup-smart.py --quickstart
+# - Auto-detects everything possible
+# - Creates minimal setup in < 10 seconds
+# - Perfect for rapid prototyping
+```
 
 ## 📚 Documentation
 
