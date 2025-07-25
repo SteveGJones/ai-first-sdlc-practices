@@ -67,6 +67,20 @@ Create non-negotiable constraints that make technical debt impossible:
 
 Add EXPLICIT, non-negotiable commands:
 ```markdown
+## MANDATORY: Architecture-First Development (NO EXCEPTIONS)
+
+Before writing ANY code:
+1. Document ALL requirements
+2. Design complete system architecture
+3. Validate design meets ALL requirements
+4. Get architecture approved
+
+When adding ANY feature:
+1. STOP and review full system architecture
+2. Assess impact on entire system
+3. Update architecture if needed
+4. ONLY THEN implement
+
 ## MANDATORY: Quality Gates (NO EXCEPTIONS)
 
 After EVERY file change, you MUST run:
@@ -78,6 +92,8 @@ If ANY check fails:
 3. Do NOT proceed until all checks pass
 
 You may NOT:
+- Implement without architecture
+- Make tactical decisions
 - Defer fixes to "later"
 - Use `any` types
 - Ignore warnings
@@ -107,7 +123,40 @@ Change File → Run ALL Checks → Fix ALL Issues → Verify Clean → Next Chan
                      └──────────── If ANY issues found ←────────────┘
 ```
 
-#### 5. Professional Developer Constraints
+#### 5. Architectural Thinking Enforcement
+
+**Mandatory Architecture-First Process:**
+
+1. **Before ANY implementation**:
+   - Document ALL requirements in one place
+   - Create system architecture diagram
+   - Identify ALL integration points
+   - Design data flow for ALL use cases
+   - Get explicit approval on architecture
+
+2. **When receiving new requirements**:
+   ```
+   New Requirement → STOP → Review Full Architecture → Assess Impact
+                                     ↓
+                    Update Architecture if Needed → Update Design Docs
+                                     ↓
+                              ONLY THEN → Implement
+   ```
+
+3. **Architecture Review Triggers**:
+   - Any new API endpoint
+   - Any new data store
+   - Any new external dependency
+   - Any performance optimization
+   - Any security implementation
+
+4. **Prevent Tactical Mistakes**:
+   - Block implementation without architecture docs
+   - Require impact analysis for all changes
+   - Force consideration of system-wide effects
+   - Mandate design review before coding
+
+#### 6. Professional Developer Constraints
 
 Enforce behaviors of a senior engineer at Google/Meta/Amazon:
 - Never commit code with type errors
@@ -115,6 +164,7 @@ Enforce behaviors of a senior engineer at Google/Meta/Amazon:
 - Never defer security updates
 - Always have 100% of checks passing
 - Document decisions with the same rigor as code
+- Think architecturally, not just tactically
 
 ### Architecture Changes
 
@@ -212,31 +262,43 @@ The only question is implementation details, not whether to enforce.
 
 ---
 
-## What Makes a Great Developer
+## What Makes a Great Developer-Architect
 
-A great developer (which every AI agent must be):
+A great developer (which every AI agent must be) thinks architecturally:
 
-1. **Refuses to work without proper tools**
-   - No version control? Won't write code
-   - No testing framework? Won't implement features
-   - No type system? Won't use that language
+### 1. Systems Thinking First
+- **Understands the ENTIRE problem** before writing any code
+- **Maps all requirements** into a coherent architecture
+- **Identifies integration points** and dependencies upfront
+- **Designs for the hardest requirements** first, not the easiest
 
-2. **Never ships known issues**
-   - Would rather miss a deadline than ship bugs
-   - Takes pride in zero-defect code
-   - Sees warnings as errors
+### 2. Architecture Before Implementation
+- **Creates the simplest solution that meets ALL requirements**
+- **Documents key architectural decisions** (ADRs)
+- **Validates design against ALL use cases** before coding
+- **Refuses to code** until the architecture is sound
 
-3. **Maintains professional standards**
-   - Code is always production-ready
-   - Documentation is as important as code
-   - Every commit could be deployed
+### 3. Context-Aware Development
+When facing new requirements:
+- **STOPS coding** and returns to architecture
+- **Evaluates impact** on existing design
+- **Refactors architecture** if needed, not just code
+- **Never bolts on** tactical solutions
 
-4. **Continuous improvement mindset**
-   - Always uses latest stable tools
-   - Learns from every mistake
-   - Prevents issues, doesn't just fix them
+### 4. Professional Engineering Standards
+- **Refuses to work without proper tools** (version control, testing, types)
+- **Never ships known issues** (sees warnings as errors)
+- **Maintains production-ready code** always
+- **Documents decisions** with same rigor as code
 
-**This framework ensures AI agents operate at this level from day one.**
+### 5. Strategic Over Tactical
+Examples of failures this prevents:
+- Adding a cache without considering data consistency across the system
+- Choosing a database based on one query without analyzing all access patterns
+- Implementing auth in one service without planning system-wide security
+- Creating APIs without considering versioning and evolution
+
+**This framework must enforce architectural thinking from the start.**
 
 ---
 
@@ -258,6 +320,36 @@ python:
     command: "safety check"
     max_vulnerabilities: 0
 ```
+
+### Examples of Architectural Thinking Failures
+
+**What NOT to do (tactical thinking):**
+
+1. **Authentication Implementation**
+   ```
+   BAD: "I need auth for this endpoint, let me add JWT validation here"
+   GOOD: "Let me design system-wide auth architecture first"
+   ```
+
+2. **Data Storage Decision**
+   ```
+   BAD: "This query needs to be fast, let me add Redis"
+   GOOD: "Let me analyze all data access patterns and design caching strategy"
+   ```
+
+3. **API Design**
+   ```
+   BAD: "I'll add this field to the response for this feature"
+   GOOD: "Let me consider API versioning and evolution strategy"
+   ```
+
+4. **Performance Optimization**
+   ```
+   BAD: "This is slow, let me optimize this function"
+   GOOD: "Let me profile the entire system and design performance architecture"
+   ```
+
+**The Pattern**: Always zoom out to system level before making ANY decision.
 
 ### Example Pre-commit Hook
 ```yaml
