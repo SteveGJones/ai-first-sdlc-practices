@@ -128,18 +128,187 @@ ls tools/setup-branch-protection-gh.py tools/validate-pipeline.py 2>/dev/null
 # If any check fails, inform the user and request setup completion
 ```
 
+## 🚨 Zero Technical Debt Policy
+
+**MANDATORY**: This project enforces a strict Zero Technical Debt policy. Read [ZERO-TECHNICAL-DEBT.md](ZERO-TECHNICAL-DEBT.md) for full details.
+
+### Core Principles
+1. **Never defer fixes** - Security vulnerabilities, deprecations, and type errors must be fixed immediately
+2. **Continuous validation** - Run ALL checks after EVERY change
+3. **Quality gates** - No task is complete until all checks pass with zero warnings
+4. **Production-ready always** - Every commit must be deployable
+
+### Required Checks Before ANY Commit
+
+```bash
+# Python projects
+flake8 . && mypy . && pytest && safety check
+
+# Node.js/TypeScript projects  
+npm run lint && npm run typecheck && npm test && npm audit
+
+# Go projects
+go fmt ./... && go vet ./... && go test ./... && go mod verify
+
+# Rust projects
+cargo fmt -- --check && cargo clippy -- -D warnings && cargo test && cargo audit
+
+# Ruby projects
+rubocop && ruby -c **/*.rb && rspec && bundle audit
+
+# Java projects
+mvn clean compile && mvn checkstyle:check && mvn test && mvn dependency-check:check
+```
+
+### Definition of "Done"
+A task is ONLY complete when:
+- ✅ All code is written with proper types (no `any` types)
+- ✅ All linting passes with zero warnings
+- ✅ All tests pass with appropriate coverage
+- ✅ Security audit shows zero vulnerabilities  
+- ✅ No deprecation warnings exist
+- ✅ Documentation is updated
+- ✅ Code is production-ready
+
+**Remember**: Build quality in, don't add it later. Act like a senior engineer who would never ship code with known issues.
+
+## 🏗️ MANDATORY: Architecture-First Development
+
+**CRITICAL**: NO CODE may be written until ALL architectural documents are completed. This is MANDATORY with ZERO exceptions.
+
+### Required Architecture Documents (BEFORE ANY CODE)
+
+1. **Requirements Traceability Matrix (RTM)**
+   - Location: `docs/architecture/requirements-matrix.md`
+   - Template: `templates/architecture/requirements-traceability-matrix.md`
+   - MUST map EVERY requirement to design, implementation, and tests
+   - NO orphaned requirements allowed
+   - NO untraceable implementations allowed
+
+2. **What-If Analysis**
+   - Location: `docs/architecture/what-if-analysis.md`
+   - Template: `templates/architecture/what-if-analysis.md`
+   - MUST document ALL edge cases and failure scenarios
+   - EVERY "What if..." question must have a mitigation strategy
+   - Think like a chaos engineer - assume everything will fail
+
+3. **Architecture Decision Records (ADRs)**
+   - Location: `docs/architecture/decisions/`
+   - Template: `templates/architecture/architecture-decision-record.md`
+   - EVERY architectural choice needs documented reasoning
+   - MUST include alternatives considered and trade-offs
+   - Number sequentially: ADR-001, ADR-002, etc.
+
+4. **System Invariants**
+   - Location: `docs/architecture/system-invariants.md`
+   - Template: `templates/architecture/system-invariants.md`
+   - Define conditions that must ALWAYS be true
+   - Include verification methods for each invariant
+   - These are non-negotiable system constraints
+
+5. **Integration Design**
+   - Location: `docs/architecture/integration-design.md`
+   - Template: `templates/architecture/integration-design.md`
+   - Start with the HARDEST integrations first
+   - Document all external dependencies and APIs
+   - Include failure modes and fallback strategies
+
+6. **Failure Mode Analysis (FMEA)**
+   - Location: `docs/architecture/failure-analysis.md`
+   - Template: `templates/architecture/failure-mode-analysis.md`
+   - Calculate Risk Priority Numbers (RPN) for each failure
+   - Identify mitigation strategies for high-risk items
+   - Include detection methods and recovery procedures
+
+### Architecture Validation Command
+
+```bash
+# Run BEFORE writing any code
+python tools/validation/validate-architecture.py
+
+# This checks:
+# - All 6 architecture documents exist
+# - Requirements are fully traced
+# - All edge cases are considered
+# - System invariants are defined
+# - Integration points are documented
+# - Failure modes are analyzed
+
+# You CANNOT proceed if this fails
+```
+
+### Architectural Thinking Principles
+
+1. **Design the Whole System First**
+   - Consider ALL requirements, not just the immediate task
+   - Think about interactions between components
+   - Plan for scale, security, and failure from day one
+
+2. **Start with the Hard Parts**
+   - Design integrations before internal logic
+   - Solve distributed system challenges first
+   - Address security and compliance upfront
+
+3. **Document Every Decision**
+   - If you're choosing between options, write an ADR
+   - If you're making assumptions, document them
+   - If you're accepting trade-offs, make them explicit
+
+4. **Think Like an Architect**
+   - What would happen at 10x scale?
+   - How would this work across multiple regions?
+   - What if every dependency failed simultaneously?
+   - How would we migrate away from this decision?
+
+### Example Architecture Workflow
+
+```bash
+# 1. Create architecture directory structure
+mkdir -p docs/architecture/decisions
+
+# 2. Copy templates
+cp templates/architecture/*.md docs/architecture/
+
+# 3. Fill out each document completely
+# Start with requirements-matrix.md
+# Then what-if-analysis.md
+# Continue through all 6 documents
+
+# 4. Validate architecture
+python tools/validation/validate-architecture.py
+
+# 5. ONLY NOW can you write code
+git checkout -b feature/your-feature
+```
+
+### Red Flags - STOP if you're thinking:
+- ❌ "I'll document the architecture after coding"
+- ❌ "This is a simple feature, I don't need all these docs"
+- ❌ "I can figure out the edge cases as I code"
+- ❌ "The architecture is obvious"
+- ❌ "We can refactor the design later"
+
+### Remember for AI Agents
+You have UNIQUE advantages over human developers:
+- Perfect memory to track all requirements
+- Ability to consider every edge case systematically
+- No time pressure to skip architecture
+- Can analyze all failure modes exhaustively
+
+USE these advantages. Your architecture documents should be so thorough that implementation becomes trivial.
+
 ## Development Workflow
 
 ### 📊 Workflow Visualization
 ```
-┌─────────────────┐     ┌──────────────┐     ┌───────────────┐     ┌──────────────┐     ┌─────────┐
-│ Feature Proposal│ ──► │Implementation│ ──► │ Retrospective │ ──► │ Pull Request │ ──► │  Merge  │
-│   (REQUIRED)    │     │  (on branch) │     │  (REQUIRED)   │     │   (Review)   │     │ (main)  │
-└─────────────────┘     └──────────────┘     └───────────────┘     └──────────────┘     └─────────┘
-       ↑                                              ↑
-       └──────────── MUST happen first ───────────────┘
-                                                      │
-                                          MUST happen BEFORE PR ───┘
+┌─────────────────┐     ┌─────────────────┐     ┌──────────────┐     ┌───────────────┐     ┌──────────────┐     ┌─────────┐
+│ Feature Proposal│ ──► │  Architecture   │ ──► │Implementation│ ──► │ Retrospective │ ──► │ Pull Request │ ──► │  Merge  │
+│   (REQUIRED)    │     │  (MANDATORY)    │     │  (on branch) │     │  (REQUIRED)   │     │   (Review)   │     │ (main)  │
+└─────────────────┘     └─────────────────┘     └──────────────┘     └───────────────┘     └──────────────┘     └─────────┘
+                               ↑                                              ↑
+                               │                                              │
+                        ALL 6 DOCS REQUIRED                      MUST happen BEFORE PR ───┘
+                        BEFORE ANY CODE!
 ```
 
 ### Required Documentation Flow
@@ -149,17 +318,26 @@ ls tools/setup-branch-protection-gh.py tools/validate-pipeline.py 2>/dev/null
    - Include target branch name
    - Define success criteria
    
-2. **Implementation Plan** (For complex features)
+2. **Architecture Documents** (MANDATORY - ALL 6)
+   - Requirements Traceability Matrix
+   - What-If Analysis
+   - Architecture Decision Records
+   - System Invariants
+   - Integration Design
+   - Failure Mode Analysis
+   
+3. **Implementation Plan** (For complex features)
    - Create in `plan/`
    - Break down into phases
    - Identify dependencies
 
-3. **Implementation**
+4. **Implementation**
    - Use TODO tracking for progress
    - Commit frequently with clear messages
    - Run tests after each change
+   - Follow Zero Technical Debt policy
 
-4. **Retrospective** (REQUIRED BEFORE PR)
+5. **Retrospective** (REQUIRED BEFORE PR)
    - Create in `retrospectives/`
    - Document what went well/poorly
    - Capture lessons learned

@@ -216,16 +216,58 @@ def setup_ai_first_sdlc(project_purpose):
     
     # 8. Start work
     run_command("git checkout -b feature/initial-implementation")
+    
+    # 9. Create architecture documents (Zero Technical Debt)
+    create_architecture_documents()
+    
+    # 10. Validate architecture before coding
+    run_command("python tools/validation/validate-architecture.py --strict")
+```
+
+## 🚫 Zero Technical Debt Workflow (MANDATORY)
+
+When starting any implementation:
+
+```bash
+# 1. Create all 6 architecture documents FIRST
+# Use templates from templates/architecture/
+- requirements-traceability-matrix.md
+- what-if-analysis.md
+- architecture-decision-record.md
+- system-invariants.md
+- integration-design.md
+- failure-mode-analysis.md
+
+# 2. Validate architecture (MUST pass before coding)
+python tools/validation/validate-architecture.py --strict
+
+# 3. During implementation - Zero tolerance for:
+- TODOs, FIXMEs, HACKs
+- Commented out code
+- 'any' types
+- Error suppressions
+- Incomplete error handling
+
+# 4. Validate zero technical debt
+python tools/validation/check-technical-debt.py --threshold 0
+
+# 5. Full validation before PR
+python tools/validation/validate-pipeline.py --ci \
+  --checks architecture technical-debt type-safety
 ```
 
 ## 📝 Key Commands for Claude
 
 ```bash
 # Always available after setup
-python tools/progress-tracker.py list           # View tasks
-python tools/validate-pipeline.py               # Validate compliance
-python tools/context-manager.py handoff         # Save context
-python tools/setup-branch-protection-gh.py      # Set up protection
+python tools/automation/progress-tracker.py list     # View tasks
+python tools/validation/validate-pipeline.py         # Validate compliance
+python tools/automation/context-manager.py handoff   # Save context
+python tools/automation/setup-branch-protection-gh.py # Set up protection
+
+# Zero Technical Debt commands
+python tools/validation/validate-architecture.py     # Validate architecture docs
+python tools/validation/check-technical-debt.py      # Check for debt indicators
 
 # Verification commands
 git branch --show-current                       # Check current branch
@@ -239,10 +281,12 @@ When Claude identifies issues or improvements:
 
 1. Create feature proposal: `docs/feature-proposals/XX-improvement.md`
 2. Create feature branch: `git checkout -b feature/improvement-name`
-3. Implement changes
-4. Update retrospective as you work
-5. Run validation: `python tools/validate-pipeline.py`
-6. Commit and push to feature branch
+3. **Create architecture documents** (all 6, even for small changes)
+4. Validate architecture: `python tools/validation/validate-architecture.py --strict`
+5. Implement changes with zero technical debt
+6. Update retrospective as you work
+7. Run full validation: `python tools/validation/validate-pipeline.py --ci --checks architecture technical-debt type-safety`
+8. Commit and push to feature branch
 
 ## 💡 Tips for Success
 

@@ -32,6 +32,21 @@ class SmartFrameworkSetup:
         "tools/automation/setup-branch-protection-gh.py": "tools/setup-branch-protection-gh.py",
         "tools/validation/check-feature-proposal.py": "tools/check-feature-proposal.py",
         "tools/validation/validate-pipeline.py": "tools/validate-pipeline.py",
+        # Zero Technical Debt additions
+        "ZERO-TECHNICAL-DEBT.md": "ZERO-TECHNICAL-DEBT.md",
+        "LANGUAGE-SPECIFIC-VALIDATORS.md": "LANGUAGE-SPECIFIC-VALIDATORS.md",
+        "tools/validation/validate-architecture.py": "tools/validation/validate-architecture.py",
+        "tools/validation/check-technical-debt.py": "tools/validation/check-technical-debt.py",
+        "templates/quality-gates.yaml": "templates/quality-gates.yaml",
+        # Architecture templates
+        "templates/architecture/requirements-traceability-matrix.md": "templates/architecture/requirements-traceability-matrix.md",
+        "templates/architecture/what-if-analysis.md": "templates/architecture/what-if-analysis.md",
+        "templates/architecture/architecture-decision-record.md": "templates/architecture/architecture-decision-record.md",
+        "templates/architecture/system-invariants.md": "templates/architecture/system-invariants.md",
+        "templates/architecture/integration-design.md": "templates/architecture/integration-design.md",
+        "templates/architecture/failure-mode-analysis.md": "templates/architecture/failure-mode-analysis.md",
+        # Pre-commit configuration
+        "templates/.pre-commit-config.yaml": ".pre-commit-config.yaml",
         "CONTRIBUTING.md": "CONTRIBUTING.md",
         # Gitignore templates
         "templates/gitignore/base.gitignore": None,  # Downloaded but not placed directly
@@ -569,7 +584,7 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
             
             # Create minimal directory structure
             print("📁 Creating minimal directory structure...")
-            minimal_dirs = ["docs", "tools"]
+            minimal_dirs = ["docs", "docs/architecture", "tools"]
             for dir_path in minimal_dirs:
                 (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
             
@@ -589,7 +604,7 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
             # Create VERSION file
             print("📌 Creating VERSION file...")
             version_file = self.project_dir / "VERSION"
-            version_file.write_text("1.5.0")
+            version_file.write_text("1.6.0")
             
             # Run validation
             print("🔍 Running validation...")
@@ -639,7 +654,14 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         
         # Create directory structure
         print("\n📁 Creating directory structure...")
-        dirs = ["docs/feature-proposals", "plan", "retrospectives", ".claude"]
+        dirs = [
+            "docs/feature-proposals", 
+            "docs/architecture/decisions",  # New for Zero Technical Debt
+            "plan", 
+            "retrospectives", 
+            ".claude",
+            "templates/architecture"  # New for architecture templates
+        ]
         for dir_path in dirs:
             (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
             print(f"✅ Created {dir_path}/")
@@ -691,8 +713,8 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         # Create VERSION file
         print("\n📌 Creating VERSION file...")
         version_file = self.project_dir / "VERSION"
-        version_file.write_text("1.5.0")
-        print("✅ Created VERSION file (1.5.0)")
+        version_file.write_text("1.6.0")
+        print("✅ Created VERSION file (1.6.0)")
         
         # Create initial context
         print("\n💾 Creating initial context...")
@@ -994,23 +1016,37 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         """Print next steps for the user"""
         print("\n📋 Next Steps:")
         print("=" * 50)
+        print("\n🚨 NEW: Zero Technical Debt Policy Enforced!")
+        print("   - Complete ALL 6 architecture documents before coding")
+        print("   - Run: python tools/validation/validate-architecture.py")
+        print("   - Zero tolerance for TODOs, any types, or commented code")
         print("\n1. Review the initial feature proposal:")
         print("   cat docs/feature-proposals/00-ai-first-setup.md")
-        print("\n2. Customize CLAUDE.md with project-specific details:")
+        print("\n2. Create architecture documents (MANDATORY):")
+        print("   - Copy templates from templates/architecture/")
+        print("   - Fill out ALL 6 documents completely")
+        print("   - Validate: python tools/validation/validate-architecture.py")
+        print("\n3. Create language-specific validator (MANDATORY):")
+        print("   - Read LANGUAGE-SPECIFIC-VALIDATORS.md")
+        print("   - Create tools/validation/validate-[your-language].py")
+        print("   - Configure for ZERO tolerance")
+        print("\n4. Customize CLAUDE.md with project-specific details:")
         print("   edit CLAUDE.md")
-        print("\n3. Complete the setup tasks:")
+        print("\n5. Complete the setup tasks:")
         print("   python tools/progress-tracker.py list")
-        print("\n4. When ready, push the branch:")
+        print("\n6. When ready, push the branch:")
         print("   git add .")
-        print("   git commit -m \"feat: implement AI-First SDLC framework\"")
+        print("   git commit -m \"feat: implement AI-First SDLC framework with Zero Technical Debt\"")
         print("   git push -u origin ai-first-kick-start")
-        print("\n5. Create retrospective (REQUIRED before PR):")
+        print("\n7. Create retrospective (REQUIRED before PR):")
         print("   Create file: retrospectives/00-ai-first-setup.md")
         print("   Document what went well, what could improve, and lessons learned")
-        print("\n6. Create a pull request to merge into main")
-        print("   Note: PR will be rejected without a retrospective!")
+        print("\n8. Create a pull request to merge into main")
+        print("   Note: PR will be rejected without retrospective AND architecture docs!")
         print("\n📚 Framework Documentation:")
         print("   https://github.com/SteveGJones/ai-first-sdlc-practices")
+        print("\n📖 Zero Technical Debt Policy:")
+        print("   cat ZERO-TECHNICAL-DEBT.md")
 
 
 def main():

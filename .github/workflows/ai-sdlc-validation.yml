@@ -53,6 +53,15 @@ jobs:
         echo "=== Branch Compliance ==="
         python tools/validation/validate-pipeline.py --checks branch --ci || true
         
+        echo "=== Architecture Validation ==="
+        python tools/validation/validate-architecture.py --strict || true
+        
+        echo "=== Technical Debt Check ==="
+        python tools/validation/check-technical-debt.py --threshold 0 || true
+        
+        echo "=== Type Safety Check ==="
+        python tools/validation/validate-pipeline.py --checks type-safety --ci || true
+        
         echo "=== Security Scan ==="
         python tools/validation/validate-pipeline.py --checks security --ci || true
         

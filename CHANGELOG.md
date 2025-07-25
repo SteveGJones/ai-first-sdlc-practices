@@ -7,11 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2025-07-25
+
 ### Added
-- AI-first version management system
-- UPDATE-PROMPT.md for guided updates by Claude
-- Migration guides written for AI agents
-- VERSION file tracking in all installations
+- **Zero Technical Debt Policy (MANDATORY)**: Architecture-first development with zero tolerance
+  - 6 mandatory architecture documents required before ANY code
+  - Technical debt detector with 8 categories of checks
+  - Architecture validation tool that blocks code without docs
+  - Zero-tolerance enforcement (0 TODOs, 0 any types, 0 debt)
+- **Architecture Templates**: 6 comprehensive templates for mandatory documents
+  - Requirements Traceability Matrix
+  - What-If Analysis
+  - Architecture Decision Records
+  - System Invariants
+  - Integration Design
+  - Failure Mode Analysis
+- **Technical Debt Detection Tool**: Cross-language debt scanner
+  - Detects TODOs, FIXMEs, commented code, any types
+  - Security issues, deprecated usage, complexity
+  - Zero-threshold enforcement
+- **Enhanced Validation Pipeline**: New checks for architecture, debt, and type safety
+- **Example Architecture Documents**: Complete e-commerce checkout system examples
+- **Language-Specific Validator Guide**: Template for AI agents to create validators for any language
+  - Implementation examples for Python, TypeScript, Go, Rust, Java
+  - Zero-tolerance configuration requirements
+  - Integration with validation pipeline
+
+### Changed
+- Updated CLAUDE.md with mandatory Zero Technical Debt rules
+- Enhanced setup-smart.py to create architecture directories
+- Modified all CI/CD templates to include architecture validation
+- Simplified architecture templates for AI clarity
+- Made all error messages directive, not suggestive
+
+### Fixed
+- setup-smart.py tool paths (was copying to wrong location)
+- Pre-commit configuration paths
+- Example GitHub Actions workflow missing architecture checks
+
+### Documentation
+- Created ZERO-TECHNICAL-DEBT.md policy document
+- Updated README.md with Zero Technical Debt section
+- Enhanced QUICK-REFERENCE.md with new commands
+- Updated AI-AUTONOMY.md with architecture-first workflow
+- Created migration guide for v1.5.0 to v1.6.0
 
 ## [1.5.0] - 2025-07-20
 

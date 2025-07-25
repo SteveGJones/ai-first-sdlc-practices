@@ -8,6 +8,7 @@ import subprocess
 import sys
 import json
 import os
+import re
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 import argparse
@@ -37,7 +38,10 @@ class ValidationPipeline:
             "dependencies": self.check_dependencies,
             "commit-history": self.check_commit_compliance,
             "retrospective": self.check_retrospective,
-            "design-docs": self.check_design_documentation
+            "design-docs": self.check_design_documentation,
+            "technical-debt": self.check_technical_debt,
+            "type-safety": self.check_type_safety,
+            "architecture": self.check_architecture_documentation
         }
         
         # Default to all checks
@@ -596,6 +600,217 @@ class ValidationPipeline:
                     str(e)
                 )
     
+    def check_technical_debt(self):
+        """Check for technical debt indicators"""
+        if self.is_empty_repo:
+            self.add_skip("Technical Debt", "Empty repository - no code to check")
+            return
+        
+        debt_indicators = []
+        files_checked = 0
+        
+        # Check all code files
+        code_patterns = ['**/*.py', '**/*.js', '**/*.ts', '**/*.jsx', '**/*.tsx',
+                        '**/*.go', '**/*.rs', '**/*.java', '**/*.rb', '**/*.cpp']
+        
+        for pattern in code_patterns:
+            for file_path in Path(self.project_root).glob(pattern):
+                # Skip framework tools and node_modules
+                if any(skip in str(file_path) for skip in ['node_modules', '.git', '__pycache__', 'venv']):
+                    continue
+                
+                files_checked += 1
+                try:
+                    content = file_path.read_text(encoding='utf-8')
+                    
+                    # Check for TODO/FIXME comments
+                    todos = len(re.findall(r'(TODO|FIXME|HACK|XXX|BUG):', content, re.IGNORECASE))
+                    if todos > 0:
+                        debt_indicators.append(f"{file_path.name}: {todos} TODO/FIXME comments")
+                    
+                    # Check for commented-out code (simple heuristic)
+                    comment_patterns = {
+                        '.py': r'^\s*#\s*(import|def|class|if|for|while|return)',
+                        '.js': r'^\s*//\s*(import|function|class|if|for|while|return)',
+                        '.ts': r'^\s*//\s*(import|function|class|if|for|while|return)',
+                        '.go': r'^\s*//\s*(import|func|type|if|for|return)',
+                    }
+                    
+                    suffix = file_path.suffix
+                    if suffix in comment_patterns:
+                        commented_code = len(re.findall(comment_patterns[suffix], content, re.MULTILINE))
+                        if commented_code > 0:
+                            debt_indicators.append(f"{file_path.name}: {commented_code} lines of commented code")
+                    
+                    # Check for any types (TypeScript)
+                    if suffix in ['.ts', '.tsx']:
+                        any_types = len(re.findall(r':\s*any\b', content))
+                        if any_types > 0:
+                            debt_indicators.append(f"{file_path.name}: {any_types} 'any' types")
+                    
+                    # Check for ignored errors
+                    ignore_patterns = [
+                        r'@ts-ignore',
+                        r'@ts-nocheck',
+                        r'# type: ignore',
+                        r'# noqa',
+                        r'# pylint: disable',
+                        r'// eslint-disable',
+                    ]
+                    
+                    for pattern in ignore_patterns:
+                        ignores = len(re.findall(pattern, content))
+                        if ignores > 0:
+                            debt_indicators.append(f"{file_path.name}: {ignores} error suppressions")
+                            break
+                
+                except Exception:
+                    continue
+        
+        if debt_indicators:
+            self.add_error(
+                "Technical Debt",
+                f"Found {len(debt_indicators)} debt indicators",
+                "Remove all TODOs, commented code, and type suppressions"
+            )
+            # Show first 5 examples
+            for indicator in debt_indicators[:5]:
+                print(f"   - {indicator}")
+            if len(debt_indicators) > 5:
+                print(f"   ... and {len(debt_indicators) - 5} more")
+        elif files_checked > 0:
+            self.add_success("Technical Debt", f"No debt indicators in {files_checked} files")
+        else:
+            self.add_skip("Technical Debt", "No code files to check")
+    
+    def check_type_safety(self):
+        """Check for type safety issues"""
+        if self.is_empty_repo:
+            self.add_skip("Type Safety", "Empty repository - no code to check")
+            return
+        
+        type_issues = []
+        
+        # TypeScript/JavaScript projects
+        ts_config = self.project_root / "tsconfig.json"
+        if ts_config.exists():
+            try:
+                config_content = ts_config.read_text()
+                config_json = json.loads(config_content)
+                
+                # Check strict mode
+                compiler_options = config_json.get('compilerOptions', {})
+                if not compiler_options.get('strict', False):
+                    type_issues.append("TypeScript strict mode is disabled")
+                
+                # Check for weak type settings
+                weak_settings = {
+                    'noImplicitAny': False,
+                    'strictNullChecks': False,
+                    'strictFunctionTypes': False,
+                    'strictBindCallApply': False,
+                    'strictPropertyInitialization': False,
+                    'noImplicitThis': False,
+                    'alwaysStrict': False
+                }
+                
+                for setting, expected in weak_settings.items():
+                    if compiler_options.get(setting, True) == expected:
+                        type_issues.append(f"TypeScript {setting} is not enabled")
+                
+            except Exception:
+                type_issues.append("Could not parse tsconfig.json")
+        
+        # Python projects
+        mypy_ini = self.project_root / "mypy.ini"
+        setup_cfg = self.project_root / "setup.cfg"
+        pyproject_toml = self.project_root / "pyproject.toml"
+        
+        if any(f.exists() for f in [mypy_ini, setup_cfg, pyproject_toml]):
+            # Check if mypy is configured strictly
+            mypy_config_found = False
+            
+            if mypy_ini.exists():
+                content = mypy_ini.read_text()
+                if "disallow_untyped_defs" not in content or "False" in content:
+                    type_issues.append("mypy not configured for strict type checking")
+                else:
+                    mypy_config_found = True
+            
+            if not mypy_config_found and setup_cfg.exists():
+                content = setup_cfg.read_text()
+                if "[mypy]" not in content:
+                    type_issues.append("mypy configuration missing")
+        
+        # Check actual code for type annotations (Python)
+        py_files = list(Path(self.project_root).glob("**/*.py"))
+        py_files = [f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)]
+        
+        if py_files:
+            missing_annotations = 0
+            for py_file in py_files[:10]:  # Sample first 10 files
+                try:
+                    content = py_file.read_text()
+                    # Simple heuristic: functions without type hints
+                    functions = re.findall(r'def\s+\w+\s*\([^)]*\)\s*:', content)
+                    typed_functions = re.findall(r'def\s+\w+\s*\([^)]*\)\s*->\s*\w+\s*:', content)
+                    
+                    if functions and len(typed_functions) < len(functions) * 0.8:
+                        missing_annotations += 1
+                except Exception:
+                    continue
+            
+            if missing_annotations > len(py_files) * 0.2:
+                type_issues.append(f"{missing_annotations} Python files lack type annotations")
+        
+        if type_issues:
+            self.add_error(
+                "Type Safety",
+                f"Found {len(type_issues)} type safety issues",
+                "Enable strict type checking in all languages"
+            )
+            for issue in type_issues:
+                print(f"   - {issue}")
+        else:
+            self.add_success("Type Safety", "Strong typing enforced")
+    
+    def check_architecture_documentation(self):
+        """Check if architecture documents exist and are complete"""
+        arch_dir = self.project_root / "docs" / "architecture"
+        
+        if not arch_dir.exists():
+            self.add_error(
+                "Architecture Documentation",
+                "Architecture directory missing",
+                "Run: python tools/validation/validate-architecture.py for details"
+            )
+            return
+        
+        # Run architecture validator
+        try:
+            result = subprocess.run(
+                ["python", "tools/validation/validate-architecture.py"],
+                capture_output=True,
+                text=True,
+                cwd=self.project_root
+            )
+            
+            if result.returncode != 0:
+                self.add_error(
+                    "Architecture Documentation",
+                    "Architecture validation failed",
+                    "Complete all architecture documents before coding"
+                )
+            else:
+                self.add_success("Architecture Documentation", "All architecture documents complete")
+                
+        except FileNotFoundError:
+            self.add_warning(
+                "Architecture Documentation",
+                "Architecture validator not found",
+                "Ensure validate-architecture.py exists"
+            )
+    
     def _get_current_branch(self) -> Optional[str]:
         """Get current git branch"""
         try:
@@ -726,7 +941,8 @@ def main():
         "--checks",
         nargs="+",
         choices=["branch", "proposal", "plan", "ai-docs", "tests", 
-                "security", "code-quality", "dependencies", "commit-history", "retrospective", "design-docs"],
+                "security", "code-quality", "dependencies", "commit-history", "retrospective", "design-docs",
+                "technical-debt", "type-safety", "architecture"],
         help="Specific checks to run (default: all)"
     )
     parser.add_argument(
