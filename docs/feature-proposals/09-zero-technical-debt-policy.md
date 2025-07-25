@@ -69,17 +69,28 @@ Add EXPLICIT, non-negotiable commands:
 ```markdown
 ## MANDATORY: Architecture-First Development (NO EXCEPTIONS)
 
-Before writing ANY code:
-1. Document ALL requirements
-2. Design complete system architecture
-3. Validate design meets ALL requirements
-4. Get architecture approved
+Before writing ANY code, you MUST complete:
+1. Requirements Traceability Matrix - EVERY requirement mapped
+2. "What If" Analysis - ALL scenarios documented
+3. Architecture Decision Records - EVERY decision justified
+4. System Invariants - What must ALWAYS be true
+5. Integration Design - Start with HARDEST parts
+6. Failure Mode Analysis - EVERY component analyzed
 
 When adding ANY feature:
-1. STOP and review full system architecture
-2. Assess impact on entire system
-3. Update architecture if needed
-4. ONLY THEN implement
+1. STOP - Do not write code
+2. Review ENTIRE system architecture
+3. Update ALL architecture docs
+4. Complete impact analysis
+5. Get explicit approval
+6. ONLY THEN implement
+
+You are FORBIDDEN from:
+- Writing code without complete architecture
+- Making "quick fixes" without system analysis  
+- Adding features without traceability matrix
+- Ignoring "What If" scenarios
+- Skipping failure analysis
 
 ## MANDATORY: Quality Gates (NO EXCEPTIONS)
 
@@ -123,38 +134,84 @@ Change File → Run ALL Checks → Fix ALL Issues → Verify Clean → Next Chan
                      └──────────── If ANY issues found ←────────────┘
 ```
 
-#### 5. Architectural Thinking Enforcement
+#### 5. Comprehensive Architectural Thinking Enforcement
 
 **Mandatory Architecture-First Process:**
 
-1. **Before ANY implementation**:
-   - Document ALL requirements in one place
-   - Create system architecture diagram
-   - Identify ALL integration points
-   - Design data flow for ALL use cases
-   - Get explicit approval on architecture
-
-2. **When receiving new requirements**:
+1. **Requirements Traceability Matrix (MANDATORY)**:
+   Before ANY code, create a matrix showing:
+   - Every requirement mapped to architectural components
+   - Dependencies between requirements
+   - Integration points for each requirement
+   - Test strategy for each requirement
    ```
-   New Requirement → STOP → Review Full Architecture → Assess Impact
-                                     ↓
-                    Update Architecture if Needed → Update Design Docs
-                                     ↓
-                              ONLY THEN → Implement
+   | Requirement | Component | Dependencies | Integration | Tests |
+   |------------|-----------|--------------|-------------|-------|
+   | Auth       | AuthService| UserDB, JWT  | All APIs   | Unit+E2E |
    ```
 
-3. **Architecture Review Triggers**:
+2. **"What If" Analysis (MANDATORY)**:
+   Document answers to ALL of these:
+   - What if load increases 10x? 100x?
+   - What if we need multi-tenancy?
+   - What if we change databases?
+   - What if we need global deployment?
+   - What if the primary service fails?
+   - What if we need real-time updates?
+
+3. **Architecture Decision Records (ADRs)**:
+   For EVERY architectural choice:
+   - **Title**: What decision was made
+   - **Status**: Accepted/Superseded
+   - **Context**: Why this decision was needed
+   - **Decision**: What we chose
+   - **Alternatives**: What else was considered
+   - **Consequences**: Tradeoffs and impacts
+   - **Compliance**: How it meets ALL requirements
+
+4. **System Invariants Definition**:
+   Document what must ALWAYS be true:
+   - Data consistency guarantees
+   - Security boundaries that cannot be crossed
+   - Performance SLAs that must be met
+   - Scalability limits and how to handle them
+   - Availability requirements
+
+5. **Integration-First Design**:
+   Start with the HARDEST parts:
+   - External API contracts
+   - Cross-service communication protocols
+   - Data synchronization strategies
+   - Security token flow
+   - Error propagation paths
+
+6. **Failure Mode Analysis (REQUIRED)**:
+   For EVERY component document:
+   - All possible failure modes
+   - System behavior during each failure
+   - Recovery procedures
+   - Data integrity guarantees
+   - Cascading failure prevention
+
+7. **Architecture Review Triggers**:
+   Must STOP and review architecture for:
    - Any new API endpoint
    - Any new data store
-   - Any new external dependency
+   - Any external dependency
    - Any performance optimization
    - Any security implementation
+   - Any error handling change
 
-4. **Prevent Tactical Mistakes**:
-   - Block implementation without architecture docs
-   - Require impact analysis for all changes
-   - Force consideration of system-wide effects
-   - Mandate design review before coding
+8. **The Mandatory Flow**:
+   ```
+   Requirement → Full Context Analysis → Architecture Impact Assessment
+        ↓                                           ↓
+   Traceability Matrix ← What-If Analysis → System Design
+        ↓                                           ↓
+   ADR Documentation ← Invariants Check → Integration Design
+        ↓                                           ↓
+   Failure Analysis ← Review & Approve → ONLY THEN: Implement
+   ```
 
 #### 6. Professional Developer Constraints
 
@@ -175,55 +232,99 @@ tools/
 │   ├── validate-python.py        # New: Python-specific
 │   ├── validate-typescript.py    # New: TS-specific
 │   ├── validate-go.py           # New: Go-specific
-│   └── validate-debt.py          # New: Cross-language debt detector
+│   ├── validate-debt.py          # New: Cross-language debt detector
+│   └── validate-architecture.py  # New: Architecture completeness
 templates/
 ├── quality-gates.yaml            # New: Quality gate definitions
 ├── .pre-commit-config.yaml       # New: Pre-commit hooks
-└── CLAUDE.md                     # Updated with zero-debt section
+├── requirements-matrix.md        # New: Traceability template
+├── adr-template.md              # New: ADR template
+├── what-if-analysis.md          # New: What-if template
+├── system-invariants.md         # New: Invariants template
+├── failure-modes.md             # New: Failure analysis template
+└── CLAUDE.md                    # Updated with all mandates
 docs/
-└── ZERO-TECHNICAL-DEBT.md        # New: Policy documentation
+├── ZERO-TECHNICAL-DEBT.md       # New: Policy documentation
+├── architecture/
+│   ├── requirements-matrix.md   # Project requirements mapping
+│   ├── decisions/              # ADRs directory
+│   ├── what-if-analysis.md     # Scenario planning
+│   ├── system-invariants.md    # System guarantees
+│   └── failure-modes.md        # Failure analysis
+└── design/                      # System design docs
 ```
 
 ---
 
 ## Success Criteria
 
-1. **Zero Tolerance**: AI agents CANNOT proceed with any errors or warnings
-2. **Explicit Commands**: Every validation step is spelled out exactly
-3. **No Discretion**: All quality decisions are made by the framework
-4. **Professional Standards**: Every line of code meets senior engineer standards
-5. **Continuous Verification**: Validation happens automatically and continuously
+1. **Architecture-First**: NO code without complete architecture documentation
+2. **Zero Tolerance**: AI agents CANNOT proceed with any errors or warnings
+3. **Explicit Commands**: Every validation step is spelled out exactly
+4. **No Discretion**: All quality decisions are made by the framework
+5. **Professional Standards**: Every line of code meets senior engineer standards
+6. **Continuous Verification**: Validation happens automatically and continuously
+7. **Strategic Thinking**: All decisions consider full system context
 
 ### Non-Negotiable Metrics
+- Requirements without traceability: 0
+- Architectural decisions without ADRs: 0
+- Components without failure analysis: 0
+- "What if" scenarios unconsidered: 0
 - Type errors: 0 (not "minimal" - ZERO)
 - Security vulnerabilities: 0 (not "low" - ZERO)
 - Deprecation warnings: 0 (not "few" - ZERO)
 - Linting issues: 0 (not "acceptable" - ZERO)
 - Test failures: 0 (not "mostly passing" - ZERO)
+- Tactical hacks: 0 (not "temporary" - ZERO)
 
 ---
 
 ## Implementation Plan
 
-### Phase 1: Documentation & Policy (Day 1)
-1. Create ZERO-TECHNICAL-DEBT.md
-2. Update CLAUDE.md template
-3. Create quality-gates.yaml
+### Phase 1: Architecture-First Documentation (Day 1-2)
+1. Create comprehensive ZERO-TECHNICAL-DEBT.md policy
+2. Create all architectural templates:
+   - requirements-matrix.md template
+   - adr-template.md 
+   - what-if-analysis.md template
+   - system-invariants.md template
+   - failure-modes.md template
+3. Update CLAUDE.md with ALL mandatory sections
+4. Create validate-architecture.py tool
 
-### Phase 2: Validation Enhancement (Day 2)
-1. Enhance validate-pipeline.py
-2. Create language-specific validators
-3. Add technical debt detection
+### Phase 2: Quality Gates & Validation (Day 3-4)
+1. Create quality-gates.yaml with zero thresholds
+2. Enhance validate-pipeline.py with:
+   - Technical debt detection
+   - Architecture completeness checks
+   - Requirements traceability validation
+3. Create language-specific validators:
+   - validate-python.py
+   - validate-typescript.py
+   - validate-go.py
+   - validate-java.py
+   - validate-rust.py
 
-### Phase 3: Automation (Day 3)
-1. Create pre-commit hook templates
-2. Update setup-smart.py
-3. Add automated fixes where possible
+### Phase 3: Framework Integration (Day 5-6)
+1. Update setup-smart.py to:
+   - Create architecture directories
+   - Install architectural templates
+   - Configure strictest settings by default
+   - Set up pre-commit hooks automatically
+2. Create pre-commit hook configurations
+3. Integrate architecture validation into CI/CD
 
-### Phase 4: Testing & Rollout (Day 4)
-1. Test with sample projects
-2. Document migration path
-3. Create training materials
+### Phase 4: Enforcement & Education (Day 7)
+1. Create enforcement mechanisms that block:
+   - Code without architecture docs
+   - Implementation without traceability
+   - Changes without impact analysis
+2. Create examples showing:
+   - Good vs bad architectural thinking
+   - Complete architecture documentation
+   - Proper "What If" analysis
+3. Test with real projects
 
 ---
 
