@@ -29,13 +29,36 @@ before_script:
       cp -r /tmp/ai-sdlc/tools .
     fi
 
+# Architecture validation - MUST pass first (Zero Technical Debt)
+validate:architecture:
+  stage: validate
+  image: python:${PYTHON_VERSION}
+  script:
+    - echo "🏗️ Validating Architecture Documents..."
+    - python tools/validation/validate-architecture.py --strict
+  except:
+    - tags
+
+# Technical debt detection - Zero tolerance
+validate:technical-debt:
+  stage: validate
+  image: python:${PYTHON_VERSION}
+  script:
+    - echo "🔍 Checking for Technical Debt..."
+    - python tools/validation/check-technical-debt.py --threshold 0
+  artifacts:
+    when: always
+    paths:
+      - debt-report.*
+    expire_in: 1 week
+
 # Main validation job - runs on all branches
 validate:ai-sdlc:
   stage: validate
   image: python:${PYTHON_VERSION}
   script:
-    # Run the comprehensive validation pipeline
-    - python tools/validation/validate-pipeline.py --ci
+    # Run the comprehensive validation pipeline with new checks
+    - python tools/validation/validate-pipeline.py --ci --checks branch proposal architecture technical-debt type-safety
     # For merge requests, check feature proposal
     - |
       if [ -n "$CI_MERGE_REQUEST_ID" ]; then
@@ -82,6 +105,17 @@ validate:security:
     - python tools/validation/validate-pipeline.py --check security --ci
   only:
     - merge_requests
+
+# Type safety validation (Zero Technical Debt)
+validate:type-safety:
+  stage: validate
+  image: python:${PYTHON_VERSION}
+  script:
+    - echo "🔤 Checking type safety..."
+    - python tools/validation/validate-pipeline.py --check type-safety --ci
+  only:
+    - merge_requests
+    - branches
 
 # Optional: Progress tracking job (for long-running MRs)
 progress:report:

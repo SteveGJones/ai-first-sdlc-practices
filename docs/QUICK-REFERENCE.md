@@ -4,12 +4,13 @@
 
 - [AI-First SDLC - Quick Reference Card](#ai-first-sdlc---quick-reference-card)
   - [🚀 Essential Commands](#-essential-commands)
-    - [Starting Work](#starting-work)
+    - [Starting Work (Zero Technical Debt Workflow)](#starting-work-zero-technical-debt-workflow)
     - [During Development](#during-development)
     - [Ending Session](#ending-session)
   - [📋 Progress Tracking](#-progress-tracking)
   - [💾 Context Management](#-context-management)
   - [✅ Validation](#-validation)
+  - [🚫 Zero Technical Debt Commands](#-zero-technical-debt-commands)
   - [🛡️ Branch Protection](#-branch-protection)
   - [📝 Templates](#-templates)
     - [Feature Proposal](#feature-proposal)
@@ -44,11 +45,26 @@
 
 ## 🚀 Essential Commands
 
-### Starting Work
+### Starting Work (Zero Technical Debt Workflow)
 ```bash
-git checkout -b feature/name          # Create feature branch
-python tools/progress-tracker.py list # See pending tasks
-python tools/context-manager.py load  # Load previous session
+# 1. Create feature branch
+git checkout -b feature/name
+
+# 2. Create architecture documents FIRST (mandatory)
+# Create all 6 documents in templates/architecture/
+# - requirements-traceability-matrix.md
+# - what-if-analysis.md
+# - architecture-decision-record.md
+# - system-invariants.md
+# - integration-design.md
+# - failure-mode-analysis.md
+
+# 3. Validate architecture before coding
+python tools/validation/validate-architecture.py --strict
+
+# 4. Only then proceed with tasks
+python tools/automation/progress-tracker.py list
+python tools/automation/context-manager.py load
 ```
 
 ### During Development
@@ -115,13 +131,46 @@ context-manager.py list [--type handoff|work|snapshot]
 validate-pipeline.py
 
 # Specific checks
-validate-pipeline.py --checks branch proposal tests
+validate-pipeline.py --checks branch proposal tests architecture technical-debt type-safety
 
 # Export results
 validate-pipeline.py --export json|markdown --output file
 
 # CI mode
 validate-pipeline.py --ci
+
+# Architecture validation (Zero Technical Debt)
+validate-architecture.py --strict
+
+# Technical debt detection
+check-technical-debt.py --threshold 0
+check-technical-debt.py --format json --output debt-report.json
+
+# Check feature proposal
+check-feature-proposal.py --branch feature/branch-name
+```
+
+---
+
+## 🚫 Zero Technical Debt Commands
+
+```bash
+# Architecture validation (run BEFORE writing any code)
+python tools/validation/validate-architecture.py --strict
+
+# Technical debt detection (zero tolerance)
+python tools/validation/check-technical-debt.py --threshold 0
+
+# Type safety validation
+python tools/validation/validate-pipeline.py --checks type-safety
+
+# Full Zero Technical Debt validation
+python tools/validation/validate-pipeline.py --checks architecture technical-debt type-safety
+
+# Generate debt report
+python tools/validation/check-technical-debt.py \
+  --format json \
+  --output debt-report.json
 ```
 
 ---

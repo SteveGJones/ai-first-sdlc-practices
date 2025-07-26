@@ -1,0 +1,185 @@
+# AI-First SDLC Quality Gates Configuration
+# This file defines mandatory quality checks for zero technical debt
+
+version: 1.0
+enforce: strict  # No overrides allowed
+
+# Pre-task requirements
+pre_task:
+  environment:
+    - name: "Clean working directory"
+      check: "git status --porcelain"
+      expect: "empty"
+    - name: "No existing errors"
+      check: "npm run lint && npm run typecheck"
+      expect: "zero_exit_code"
+    - name: "Dependencies up to date"
+      check: "npm outdated"
+      expect: "empty_or_patches_only"
+
+# Language-specific quality gates
+quality_gates:
+  javascript:
+    lint:
+      command: "npm run lint"
+      max_warnings: 0
+      max_errors: 0
+      required: true
+    typecheck:
+      command: "npm run typecheck"
+      max_errors: 0
+      required: true
+    test:
+      command: "npm test"
+      min_coverage: 80
+      required: true
+    security:
+      command: "npm audit"
+      max_vulnerabilities: 0
+      required: true
+    outdated:
+      command: "npm outdated"
+      allow_patches: true
+      allow_minor: false
+      allow_major: false
+
+  python:
+    lint:
+      command: "flake8 ."
+      config_file: ".flake8"
+      max_warnings: 0
+      required: true
+    typecheck:
+      command: "mypy ."
+      config_file: "mypy.ini"
+      max_errors: 0
+      required: true
+    test:
+      command: "pytest"
+      min_coverage: 80
+      required: true
+    security:
+      command: "safety check"
+      max_vulnerabilities: 0
+      required: true
+    format:
+      command: "black . --check"
+      required: true
+
+  go:
+    format:
+      command: "go fmt ./..."
+      required: true
+    vet:
+      command: "go vet ./..."
+      max_errors: 0
+      required: true
+    test:
+      command: "go test ./... -cover"
+      min_coverage: 80
+      required: true
+    security:
+      command: "gosec ./..."
+      max_issues: 0
+      required: true
+    mod:
+      command: "go mod verify"
+      required: true
+
+  rust:
+    format:
+      command: "cargo fmt -- --check"
+      required: true
+    lint:
+      command: "cargo clippy -- -D warnings"
+      max_warnings: 0
+      required: true
+    test:
+      command: "cargo test"
+      required: true
+    security:
+      command: "cargo audit"
+      max_vulnerabilities: 0
+      required: true
+
+  java:
+    compile:
+      command: "mvn clean compile"
+      required: true
+    checkstyle:
+      command: "mvn checkstyle:check"
+      config_file: "checkstyle.xml"
+      max_violations: 0
+      required: true
+    test:
+      command: "mvn test"
+      min_coverage: 80
+      required: true
+    security:
+      command: "mvn dependency-check:check"
+      max_vulnerabilities: 0
+      required: true
+
+  ruby:
+    lint:
+      command: "rubocop"
+      config_file: ".rubocop.yml"
+      max_offenses: 0
+      required: true
+    test:
+      command: "rspec"
+      min_coverage: 80
+      required: true
+    security:
+      command: "bundle audit"
+      max_vulnerabilities: 0
+      required: true
+
+# Task completion requirements
+task_completion:
+  all_languages:
+    - "All quality gates must pass"
+    - "Zero warnings across all tools"
+    - "Documentation updated"
+    - "No TODO or FIXME comments"
+    - "No commented-out code"
+    - "No debug statements"
+
+# Commit requirements
+commit_requirements:
+  pre_commit:
+    - run_all_quality_gates: true
+    - check_commit_message: true
+    - verify_no_secrets: true
+  
+  commit_message:
+    format: "conventional"
+    types: ["feat", "fix", "docs", "refactor", "test", "chore"]
+    max_length: 72
+    require_issue_reference: false
+
+# CI/CD enforcement
+ci_cd:
+  on_pull_request:
+    - run_all_quality_gates: true
+    - block_if_any_fail: true
+    - no_admin_override: true
+  
+  on_merge:
+    - run_all_quality_gates: true
+    - deploy_only_if_pass: true
+    - rollback_on_failure: true
+
+# Monitoring and alerts
+monitoring:
+  track_metrics:
+    - debt_accumulation_rate
+    - clean_commit_percentage
+    - time_to_zero_errors
+    - fix_forward_time
+  
+  alert_on:
+    - quality_gate_failure
+    - debt_increase
+    - coverage_decrease
+    - performance_regression

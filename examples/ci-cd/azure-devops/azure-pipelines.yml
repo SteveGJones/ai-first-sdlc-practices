@@ -63,10 +63,25 @@ stages:
             displayName: 'Setup AI-First SDLC tools'
 
           - script: |
+              echo "🏗️ Validating Architecture Documents..."
+              python tools/validation/validate-architecture.py --strict
+            displayName: 'Validate Architecture'
+
+          - script: |
+              echo "🔍 Checking for Technical Debt..."
+              python tools/validation/check-technical-debt.py --threshold 0 \
+                --format json \
+                --output $(Build.ArtifactStagingDirectory)/debt-report.json
+              python tools/validation/check-technical-debt.py --threshold 0
+            displayName: 'Check Technical Debt'
+
+          - script: |
               python tools/validation/validate-pipeline.py --ci \
+                --checks branch proposal architecture technical-debt type-safety \
                 --format json \
                 > $(Build.ArtifactStagingDirectory)/validation-report.json
-              python tools/validation/validate-pipeline.py --ci
+              python tools/validation/validate-pipeline.py --ci \
+                --checks branch proposal architecture technical-debt type-safety
             displayName: 'Run validation pipeline'
 
           - script: |
@@ -83,8 +98,9 @@ stages:
             inputs:
               pathToPublish: |
                 $(Build.ArtifactStagingDirectory)/validation-report.json
-              artifactName: 'validation-report'
-            displayName: 'Publish validation report'
+                $(Build.ArtifactStagingDirectory)/debt-report.json
+              artifactName: 'validation-reports'
+            displayName: 'Publish validation reports'
             condition: always()
 
       - job: PreCommitChecks

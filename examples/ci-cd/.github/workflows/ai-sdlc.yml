@@ -25,11 +25,26 @@ jobs:
           pip install -r requirements.txt
           pip install pre-commit
 
+      - name: Validate Architecture Documents
+        run: |
+          echo "🏗️ Validating Architecture Documents..."
+          python tools/validation/validate-architecture.py --strict
+
+      - name: Check Technical Debt
+        run: |
+          echo "🔍 Checking for Technical Debt..."
+          python tools/validation/check-technical-debt.py --threshold 0
+
       - name: Run validation pipeline
-        run: python tools/validate-pipeline.py --ci
+        run: |
+          python tools/validation/validate-pipeline.py --ci \
+            --checks branch proposal architecture technical-debt type-safety
 
       - name: Check feature proposal
-        run: python tools/check-feature-proposal.py
+        if: github.event_name == 'pull_request'
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          python tools/validation/check-feature-proposal.py --branch "$BRANCH_NAME"
 
       - name: Run pre-commit hooks
         run: pre-commit run --all-files

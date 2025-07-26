@@ -379,9 +379,45 @@ When creating design documentation:
 
 **Remember**: Design docs describe WHAT and WHY, not HOW.
 
+## 🛑 MANDATORY: Zero Technical Debt Rules
+
+**YOU ARE FORBIDDEN FROM WRITING CODE WITHOUT ARCHITECTURE.**
+
+### Before ANY Code - Run This Command:
+```bash
+python tools/validation/validate-architecture.py --strict
+```
+If it fails, STOP. Do NOT proceed.
+
+### The ONLY Workflow Allowed:
+1. Create ALL 6 architecture documents
+2. Validate (MUST PASS)
+3. Create language-specific validator (see LANGUAGE-SPECIFIC-VALIDATORS.md)
+4. Write code
+5. After EVERY change: Run ALL validators
+6. If ANY check fails: FIX IMMEDIATELY
+
+### You Are FORBIDDEN From:
+- Writing `TODO`, `FIXME`, or `HACK` comments
+- Using `any` type
+- Commenting out code
+- Skipping error handling
+- Ignoring ANY warning
+- Proceeding with failed checks
+- Making "temporary" solutions
+
+### Commands After EVERY File Change:
+```bash
+# ALL must return 0
+python tools/validation/check-technical-debt.py --threshold 0
+python tools/validation/validate-pipeline.py --checks type-safety
+```
+
+**NO EXCEPTIONS. NO EXCUSES.**
+
 ## Workflow Standards
 
-### 1. Feature Development Process
+### 1. Feature Development Process (Zero Technical Debt)
 ```bash
 # 0. VERIFY current branch context
 git branch --show-current
@@ -394,18 +430,30 @@ docs/feature-proposals/XX-feature-name.md
 # 2. Create feature branch (ONLY if not already on one)
 git checkout -b feature/feature-name
 
-# 3. Implement changes
+# 3. ARCHITECTURE FIRST - Create all 6 documents BEFORE coding:
+#    - templates/architecture/requirements-traceability-matrix.md
+#    - templates/architecture/what-if-analysis.md
+#    - templates/architecture/architecture-decision-record.md
+#    - templates/architecture/system-invariants.md
+#    - templates/architecture/integration-design.md
+#    - templates/architecture/failure-mode-analysis.md
 
-# 4. UPDATE retrospective after major changes
+# 4. Validate architecture (MUST pass before coding)
+python tools/validation/validate-architecture.py --strict
+
+# 5. NOW implement changes (with Zero Technical Debt mindset)
+
+# 6. UPDATE retrospective after major changes
 # Don't wait until the end!
 
-# 5. Run validation
-python tools/validation/validate-pipeline.py --ci
+# 7. Run ALL validations
+python tools/validation/validate-pipeline.py --ci \
+  --checks branch proposal architecture technical-debt type-safety
 
-# 6. Final retrospective update
+# 8. Final retrospective update
 retrospectives/XX-feature-name.md
 
-# 7. Push and create PR
+# 9. Push and create PR
 git push -u origin feature/feature-name
 ```
 
@@ -419,6 +467,9 @@ When scripts mention `ai-first-kick-start`:
 All code changes must pass:
 - Branch compliance check
 - Feature proposal validation
+- Architecture documentation completeness
+- Zero technical debt check (no TODOs, no commented code, no `any` types)
+- Type safety validation
 - Security scanning
 - Code quality checks
 - Documentation validation

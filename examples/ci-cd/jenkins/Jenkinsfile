@@ -52,13 +52,39 @@ pipeline {
             }
         }
         
+        stage('Architecture Validation') {
+            steps {
+                echo '🏗️ Validating Architecture Documents...'
+                sh '''
+                    . venv/bin/activate
+                    python tools/validation/validate-architecture.py --strict
+                '''
+            }
+        }
+        
+        stage('Technical Debt Check') {
+            steps {
+                echo '🔍 Checking for Technical Debt...'
+                sh '''
+                    . venv/bin/activate
+                    python tools/validation/check-technical-debt.py --threshold 0 --format json --output debt-report.json
+                    python tools/validation/check-technical-debt.py --threshold 0
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'debt-report.*', allowEmptyArchive: true
+                }
+            }
+        }
+        
         stage('AI-SDLC Validation') {
             steps {
                 echo 'Running AI-First SDLC validation pipeline...'
                 sh '''
                     . venv/bin/activate
-                    python tools/validation/validate-pipeline.py --ci --format json > validation-report.json
-                    python tools/validation/validate-pipeline.py --ci
+                    python tools/validation/validate-pipeline.py --ci --checks branch proposal architecture technical-debt type-safety --format json > validation-report.json
+                    python tools/validation/validate-pipeline.py --ci --checks branch proposal architecture technical-debt type-safety
                 '''
             }
             post {
@@ -115,6 +141,16 @@ pipeline {
                         sh '''
                             . venv/bin/activate
                             python tools/validation/validate-pipeline.py --check tests --ci
+                        '''
+                    }
+                }
+                
+                stage('Type Safety') {
+                    steps {
+                        sh '''
+                            . venv/bin/activate
+                            echo "🔤 Checking type safety..."
+                            python tools/validation/validate-pipeline.py --check type-safety --ci
                         '''
                     }
                 }
