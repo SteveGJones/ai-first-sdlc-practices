@@ -5,7 +5,7 @@
 **Author**: AI Agent (with ai-solution-architect review)
 **Date**: 2025-07-26
 **Status**: Proposed
-**Target Branch**: `feature/instruction-compression`
+Target Branch: `feature/instruction-compression`
 
 ## Motivation
 
