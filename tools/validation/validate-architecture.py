@@ -55,7 +55,6 @@ class ArchitectureValidator:
             return False
         
         # Validate each required document
-        all_docs_exist = True
         for doc_name, validator in self.required_docs.items():
             doc_path = self.architecture_dir / doc_name
             print(f"\n📄 Checking {doc_name}...")
@@ -66,7 +65,6 @@ class ArchitectureValidator:
                     "Required document not found",
                     f"Copy template: cp templates/architecture/{doc_name} {doc_path}"
                 )
-                all_docs_exist = False
             else:
                 # Run specific validation for this document
                 validator(doc_path)
