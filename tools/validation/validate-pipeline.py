@@ -658,8 +658,8 @@ class ValidationPipeline:
                         r'// eslint-disable',
                     ]
                     
-                    for pattern in ignore_patterns:
-                        ignores = len(re.findall(pattern, content))
+                    for ignore_pattern in ignore_patterns:
+                        ignores = len(re.findall(ignore_pattern, content))
                         if ignores > 0:
                             debt_indicators.append(f"{file_path.name}: {ignores} error suppressions")
                             break
