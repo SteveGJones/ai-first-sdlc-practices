@@ -2,7 +2,6 @@
 """
 Migrates projects from legacy CLAUDE.md to hierarchical instruction system.
 """
-import os
 import sys
 import urllib.request
 from pathlib import Path
