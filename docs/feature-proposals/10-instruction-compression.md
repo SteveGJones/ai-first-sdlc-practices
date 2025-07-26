@@ -5,7 +5,11 @@
 **Author**: AI Agent (with ai-solution-architect review)
 **Date**: 2025-07-26
 **Status**: Proposed
-**Branch**: feature/instruction-compression
+**Target Branch**: `feature/instruction-compression`
+
+## Motivation
+
+The AI-First SDLC framework needs to optimize its instruction delivery to AI agents. With the current monolithic CLAUDE.md approach consuming nearly 900 lines of context window, we're limiting the effective working memory available for actual development tasks. This feature will dramatically improve AI agent performance by loading only relevant instructions.
 
 ## Problem Statement
 
