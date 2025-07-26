@@ -171,6 +171,28 @@ Details: Load CLAUDE-CONTEXT-architecture.md when needed
 3. **Rule priority system**: Rejected - too complex for reliable enforcement
 4. **External rule engine**: Rejected - adds dependency complexity
 
+## Deprecation Strategy
+
+Based on architectural review with ai-solution-architect:
+
+### Decision: Remove Legacy Support
+The framework will deprecate and remove CLAUDE.md entirely rather than maintain dual systems.
+
+### Rationale
+1. **Framework maturity**: At v1.6.0, too young to prioritize backward compatibility
+2. **Technical debt**: Maintaining two systems violates DRY and creates confusion
+3. **AI-first philosophy**: AI agents can adapt instantly to new instructions
+4. **Clear superiority**: Hierarchical system is 88% smaller with better organization
+
+### Timeline
+- **v1.7.0**: Add deprecation notices, migration tool, prefer hierarchical system
+- **v2.0.0**: Complete removal of CLAUDE.md support
+
+### Migration Support
+- Automated migration tool: `tools/migrate-to-hierarchical.py`
+- Clear deprecation notices in all touchpoints
+- Backup of existing CLAUDE.md during migration
+
 ## References
 
 - Current CLAUDE.md: 897 lines

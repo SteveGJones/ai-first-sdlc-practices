@@ -21,6 +21,8 @@
 1. **Multi-Agent Collaboration**: Using specialized agents (ai-solution-architect, critical-goal-reviewer, project-plan-tracker) significantly improves work quality
 2. **Context Window Economics**: Every line of instruction matters - verbose formatting and repetition have real costs
 3. **Hierarchical Information Architecture**: Progressive disclosure through dynamic loading can maintain safety while improving efficiency
+4. **Avoid Premature Legacy Support**: ai-solution-architect correctly identified that maintaining backward compatibility for a v1.6.0 framework creates unnecessary technical debt
+5. **AI-First Means Adaptability**: AI agents can instantly adapt to new instructions, so migration friction is minimal
 
 ## Implementation Progress
 
@@ -75,11 +77,16 @@ Successfully implemented hierarchical instruction system:
 - 6 context files created, all within size limits
 - 88.7% compression achieved (target was 70%)
 - All validation checks passing
-- Migration guide provided for existing projects
+- Migration guide and automation tool provided
+- Deprecation plan for CLAUDE.md (remove in v2.0.0)
 - Framework ready for PR submission
+
+### Key Architecture Decision
+After review with ai-solution-architect, decided to deprecate CLAUDE.md entirely rather than maintain dual systems. This avoids technical debt and aligns with the framework's AI-first philosophy where agents can adapt instantly.
 
 ## Notes
 
-- Maintaining backward compatibility is critical
+- Deprecation over legacy support - framework is too young for permanent backward compatibility
 - Zero Technical Debt rules must remain fully enforced
 - All existing validation pipelines must continue to pass
+- Migration tool helps users transition smoothly

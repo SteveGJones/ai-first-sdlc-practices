@@ -29,8 +29,8 @@ class SmartFrameworkSetup:
         "CLAUDE-CONTEXT-validation.md": "CLAUDE-CONTEXT-validation.md",
         "CLAUDE-CONTEXT-update.md": "CLAUDE-CONTEXT-update.md",
         "CLAUDE-CONTEXT-language-validators.md": "CLAUDE-CONTEXT-language-validators.md",
-        # Legacy CLAUDE.md for backward compatibility
-        "templates/CLAUDE.md": "templates/CLAUDE.md",
+        # Migration tool for existing projects
+        "tools/migrate-to-hierarchical.py": "tools/migrate-to-hierarchical.py",
         "templates/feature-proposal.md": "docs/feature-proposals/template-feature-proposal.md",
         "templates/implementation-plan.md": "plan/template-implementation-plan.md", 
         "templates/retrospective.md": "retrospectives/template-retrospective.md",
@@ -680,37 +680,41 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         language = self.detect_project_language()
         print(f"✅ Detected language: {language}")
         
-        # Check if new hierarchical system exists
+        # Always use hierarchical system for new installations
         if (self.project_dir / "CLAUDE-CORE.md").exists():
-            print("\n✅ Using new hierarchical instruction system (CLAUDE-CORE.md)")
-            # Create legacy CLAUDE.md pointing to new system
-            legacy_content = """# CLAUDE.md
+            print("\n✅ Using hierarchical instruction system (CLAUDE-CORE.md)")
+            # Create deprecation notice only
+            deprecation_content = """# CLAUDE.md
 
-This project uses the new hierarchical instruction system for better context management.
+⚠️ **DEPRECATED**: This file exists only for backward compatibility and will be removed in v2.0.0.
 
-## Primary Instructions
-Start with CLAUDE-CORE.md for essential rules and guidelines.
+Please use the new hierarchical instruction system:
+- Start with: CLAUDE-CORE.md
+- For setup: CLAUDE-SETUP.md
+- For other tasks: See context loading table in CLAUDE-CORE.md
 
-## Context-Specific Instructions
-Load additional context files as needed:
-- CLAUDE-SETUP.md - For framework setup
-- CLAUDE-CONTEXT-architecture.md - For architecture work
-- CLAUDE-CONTEXT-validation.md - For validation tasks
-- CLAUDE-CONTEXT-update.md - For framework updates
-- CLAUDE-CONTEXT-language-validators.md - For language-specific validation
-
-This approach reduces AI context window usage by 88% while maintaining all critical rules.
+To migrate existing customizations: python tools/migrate-to-hierarchical.py
 """
             with open(self.project_dir / "CLAUDE.md", 'w') as f:
-                f.write(legacy_content)
-            print("✅ Created CLAUDE.md (compatibility pointer)")
+                f.write(deprecation_content)
+            print("✅ Created CLAUDE.md (deprecation notice only)")
         else:
-            # Fallback to old system
-            print("\n📝 Generating project-specific CLAUDE.md...")
-            claude_content = self.generate_claude_md()
+            # Should not happen with new setup, but keep minimal fallback
+            print("\n⚠️  WARNING: Hierarchical system not found. Please update framework.")
+            fallback_content = """# CLAUDE.md
+
+ERROR: The hierarchical instruction system was not properly installed.
+
+Please re-run setup or manually download:
+- CLAUDE-CORE.md
+- CLAUDE-SETUP.md
+- CLAUDE-CONTEXT-*.md files
+
+From: https://github.com/SteveGJones/ai-first-sdlc-practices
+"""
             with open(self.project_dir / "CLAUDE.md", 'w') as f:
-                f.write(claude_content)
-            print("✅ Created CLAUDE.md")
+                f.write(fallback_content)
+            print("❌ ERROR: Created error notice in CLAUDE.md")
         
         # Create symlinks for other AI files
         for ai_file in ["GEMINI.md", "GPT.md"]:

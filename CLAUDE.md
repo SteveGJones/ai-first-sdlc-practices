@@ -1,9 +1,12 @@
 # CLAUDE.md
 
-> **📢 IMPORTANT**: This project now uses a hierarchical instruction system for better performance.
-> - **New users**: Start with CLAUDE-CORE.md (88% smaller, loads faster)
-> - **Setup tasks**: Read CLAUDE-SETUP.md after CLAUDE-CORE.md
-> - **This file**: Legacy full instructions (kept for backward compatibility)
+> **⚠️ DEPRECATION NOTICE**: This file will be removed in v2.0.0
+> - **Status**: DEPRECATED as of v1.7.0 
+> - **New system**: Use CLAUDE-CORE.md (88% smaller, loads faster)
+> - **Migration**: Run `python tools/migrate-to-hierarchical.py`
+> - **Removal date**: This file will be completely removed in v2.0.0
+>
+> The hierarchical instruction system is superior in every way. Please migrate now.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
