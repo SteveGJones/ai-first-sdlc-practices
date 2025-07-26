@@ -2,7 +2,6 @@
 """
 Validates instruction file sizes meet compression targets.
 """
-import os
 import sys
 from pathlib import Path
 
