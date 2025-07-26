@@ -4,7 +4,7 @@ Architecture Validation Tool for Zero Technical Debt Policy
 Ensures all architectural documents are complete before allowing implementation
 """
 
-import os
+
 import sys
 import json
 import re
