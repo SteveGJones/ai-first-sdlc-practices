@@ -8,7 +8,6 @@ import os
 import sys
 import re
 import json
-import subprocess
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional
 import argparse
