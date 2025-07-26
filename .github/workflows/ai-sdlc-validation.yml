@@ -20,7 +20,7 @@ jobs:
         python-version: '3.9'
     
     - name: Cache pip packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -87,7 +87,7 @@ jobs:
     # Only add PR comment step for pull request events
     - name: Comment PR with validation results
       if: github.event_name == 'pull_request'
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |

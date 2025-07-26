@@ -4,12 +4,12 @@ Architecture Validation Tool for Zero Technical Debt Policy
 Ensures all architectural documents are complete before allowing implementation
 """
 
-import os
+
 import sys
 import json
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional
 import argparse
 from datetime import datetime
 import subprocess
@@ -55,7 +55,6 @@ class ArchitectureValidator:
             return False
         
         # Validate each required document
-        all_docs_exist = True
         for doc_name, validator in self.required_docs.items():
             doc_path = self.architecture_dir / doc_name
             print(f"\n📄 Checking {doc_name}...")
@@ -66,7 +65,6 @@ class ArchitectureValidator:
                     "Required document not found",
                     f"Copy template: cp templates/architecture/{doc_name} {doc_path}"
                 )
-                all_docs_exist = False
             else:
                 # Run specific validation for this document
                 validator(doc_path)

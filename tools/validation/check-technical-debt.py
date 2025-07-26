@@ -8,9 +8,8 @@ import os
 import sys
 import re
 import json
-import subprocess
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List, Optional
 import argparse
 from datetime import datetime
 from collections import defaultdict
@@ -238,7 +237,7 @@ class TechnicalDebtDetector:
                     match = re.match(r'^\s*def\s+(\w+)', line)
                     current_func = match.group(1)
                     func_start = i
-                    indent_level = len(line) - len(line.lstrip())
+
     
     def _check_deep_nesting(self, file_path: Path, content: str) -> None:
         """Check for deeply nested code"""
