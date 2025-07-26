@@ -237,7 +237,7 @@ class TechnicalDebtDetector:
                     match = re.match(r'^\s*def\s+(\w+)', line)
                     current_func = match.group(1)
                     func_start = i
-                    indent_level = len(line) - len(line.lstrip())
+
     
     def _check_deep_nesting(self, file_path: Path, content: str) -> None:
         """Check for deeply nested code"""
