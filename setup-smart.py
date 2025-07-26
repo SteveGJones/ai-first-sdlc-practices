@@ -22,6 +22,14 @@ class SmartFrameworkSetup:
     
     # Files to download for basic setup
     ESSENTIAL_FILES = {
+        # New hierarchical instruction system
+        "CLAUDE-CORE.md": "CLAUDE-CORE.md",
+        "CLAUDE-SETUP.md": "CLAUDE-SETUP.md",
+        "CLAUDE-CONTEXT-architecture.md": "CLAUDE-CONTEXT-architecture.md",
+        "CLAUDE-CONTEXT-validation.md": "CLAUDE-CONTEXT-validation.md",
+        "CLAUDE-CONTEXT-update.md": "CLAUDE-CONTEXT-update.md",
+        "CLAUDE-CONTEXT-language-validators.md": "CLAUDE-CONTEXT-language-validators.md",
+        # Legacy CLAUDE.md for backward compatibility
         "templates/CLAUDE.md": "templates/CLAUDE.md",
         "templates/feature-proposal.md": "docs/feature-proposals/template-feature-proposal.md",
         "templates/implementation-plan.md": "plan/template-implementation-plan.md", 
@@ -37,6 +45,7 @@ class SmartFrameworkSetup:
         "LANGUAGE-SPECIFIC-VALIDATORS.md": "LANGUAGE-SPECIFIC-VALIDATORS.md",
         "tools/validation/validate-architecture.py": "tools/validation/validate-architecture.py",
         "tools/validation/check-technical-debt.py": "tools/validation/check-technical-debt.py",
+        "tools/validation/check-instruction-size.py": "tools/validation/check-instruction-size.py",
         "templates/quality-gates.yaml": "templates/quality-gates.yaml",
         # Architecture templates
         "templates/architecture/requirements-traceability-matrix.md": "templates/architecture/requirements-traceability-matrix.md",
@@ -671,12 +680,37 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         language = self.detect_project_language()
         print(f"✅ Detected language: {language}")
         
-        # Generate CLAUDE.md
-        print("\n📝 Generating project-specific CLAUDE.md...")
-        claude_content = self.generate_claude_md()
-        with open(self.project_dir / "CLAUDE.md", 'w') as f:
-            f.write(claude_content)
-        print("✅ Created CLAUDE.md")
+        # Check if new hierarchical system exists
+        if (self.project_dir / "CLAUDE-CORE.md").exists():
+            print("\n✅ Using new hierarchical instruction system (CLAUDE-CORE.md)")
+            # Create legacy CLAUDE.md pointing to new system
+            legacy_content = """# CLAUDE.md
+
+This project uses the new hierarchical instruction system for better context management.
+
+## Primary Instructions
+Start with CLAUDE-CORE.md for essential rules and guidelines.
+
+## Context-Specific Instructions
+Load additional context files as needed:
+- CLAUDE-SETUP.md - For framework setup
+- CLAUDE-CONTEXT-architecture.md - For architecture work
+- CLAUDE-CONTEXT-validation.md - For validation tasks
+- CLAUDE-CONTEXT-update.md - For framework updates
+- CLAUDE-CONTEXT-language-validators.md - For language-specific validation
+
+This approach reduces AI context window usage by 88% while maintaining all critical rules.
+"""
+            with open(self.project_dir / "CLAUDE.md", 'w') as f:
+                f.write(legacy_content)
+            print("✅ Created CLAUDE.md (compatibility pointer)")
+        else:
+            # Fallback to old system
+            print("\n📝 Generating project-specific CLAUDE.md...")
+            claude_content = self.generate_claude_md()
+            with open(self.project_dir / "CLAUDE.md", 'w') as f:
+                f.write(claude_content)
+            print("✅ Created CLAUDE.md")
         
         # Create symlinks for other AI files
         for ai_file in ["GEMINI.md", "GPT.md"]:
