@@ -33,8 +33,10 @@ curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/
 # Run with their project purpose
 python setup-smart.py "[their response]" --non-interactive --ci-platform github
 
-# Read the generated CLAUDE.md
-cat CLAUDE.md
+# Read the core instructions
+cat CLAUDE-CORE.md
+# For setup tasks, also read:
+cat CLAUDE-SETUP.md
 
 # Run repository health check
 git branch --show-current  # Should NOT be "main"
@@ -99,8 +101,12 @@ Before running setup, check:
 
 ```bash
 # 1. Check if already set up
-if [ -f "CLAUDE.md" ]; then
-    echo "Framework already set up. Reading existing CLAUDE.md..."
+if [ -f "CLAUDE-CORE.md" ]; then
+    echo "Framework already set up. Reading core instructions..."
+    cat CLAUDE-CORE.md
+    exit 0
+elif [ -f "CLAUDE.md" ]; then
+    echo "Legacy framework detected. Reading CLAUDE.md..."
     cat CLAUDE.md
     exit 0
 fi
@@ -158,7 +164,7 @@ Claude should always report the setup status:
 # After setup, report status
 echo "✅ Setup Status Report:"
 echo "- Current branch: $(git branch --show-current)"
-echo "- CLAUDE.md created: $([ -f CLAUDE.md ] && echo 'Yes' || echo 'No')"
+echo "- Instructions created: $([ -f CLAUDE-CORE.md ] && echo 'Yes (new system)' || ([ -f CLAUDE.md ] && echo 'Yes (legacy)' || echo 'No'))"
 echo "- Tools available: $([ -d tools ] && echo 'Yes' || echo 'No')"
 echo "- CI/CD configured: $([ -f .github/workflows/ai-sdlc.yml ] && echo 'GitHub Actions' || echo 'Check needed')"
 echo "- Branch protection: $(gh api repos/:owner/:repo/branches/main/protection &>/dev/null && echo 'Enabled' || echo 'Not enabled')"
@@ -200,7 +206,14 @@ def setup_ai_first_sdlc(project_purpose):
     run_command(f"python setup-smart.py '{project_purpose}' --non-interactive --ci-platform {ci_platform}")
     
     # 4. Verify setup
-    if file_exists("CLAUDE.md"):
+    if file_exists("CLAUDE-CORE.md"):
+        content = read_file("CLAUDE-CORE.md")
+        follow_instructions(content)
+        # Load context-specific instructions as needed
+        if task_type == "setup":
+            setup_content = read_file("CLAUDE-SETUP.md")
+            follow_instructions(setup_content)
+    elif file_exists("CLAUDE.md"):
         content = read_file("CLAUDE.md")
         follow_instructions(content)
     

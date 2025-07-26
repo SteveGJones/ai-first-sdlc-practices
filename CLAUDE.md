@@ -1,5 +1,10 @@
 # CLAUDE.md
 
+> **📢 IMPORTANT**: This project now uses a hierarchical instruction system for better performance.
+> - **New users**: Start with CLAUDE-CORE.md (88% smaller, loads faster)
+> - **Setup tasks**: Read CLAUDE-SETUP.md after CLAUDE-CORE.md
+> - **This file**: Legacy full instructions (kept for backward compatibility)
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## 🎯 Recommended User Prompt
@@ -7,9 +12,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 To have Claude set up this framework in your EXISTING project, use:
 ```
 I want to add AI-First SDLC practices to this project. Please:
-1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE.md (especially the "AI Agent Quick Start" section)
-2. Then download and run: curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
-3. Run: python setup-smart.py "[describe your project]" --non-interactive
+1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md
+2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md 
+3. Download and run: curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
+4. Run: python setup-smart.py "[describe your project]" --non-interactive
 Do NOT clone the repository - we're adding the framework to THIS project.
 ```
 
