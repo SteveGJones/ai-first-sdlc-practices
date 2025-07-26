@@ -510,6 +510,14 @@ When setting up a new repository or working with an unprotected main branch:
 
 ## Recent Framework Updates
 
+### Zero Technical Debt Policy (v1.6.0)
+- **MANDATORY**: Create ALL 6 architecture documents before coding
+- **FORBIDDEN**: TODOs, FIXMEs, `any` types, commented code
+- **REQUIRED**: Create language-specific validator for YOUR project
+- Technical debt detector with zero tolerance
+- Architecture validation that blocks code without docs
+- See ZERO-TECHNICAL-DEBT.md and LANGUAGE-SPECIFIC-VALIDATORS.md
+
 ### CONTRIBUTING.md Addition
 - Comprehensive contribution guidelines for humans and AI agents
 - Emphasizes retrospective-first workflow
