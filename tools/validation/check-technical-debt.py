@@ -9,7 +9,7 @@ import sys
 import re
 import json
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List, Optional
 import argparse
 from datetime import datetime
 from collections import defaultdict
