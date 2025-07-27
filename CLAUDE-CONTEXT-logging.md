@@ -2,7 +2,7 @@
 
 Load when implementing logging or debugging production issues.
 
-## Mandatory Logging Points
+## 10 Mandatory Logging Points
 
 ### 1. Function Entry/Exit
 ```python
@@ -86,18 +86,125 @@ logger.warning("Failed login", extra={
 logger.info("bad login")
 ```
 
-### 6. Business Milestones
+### 6. Business Milestones & Transactions
 ```python
 # GOOD - Business metrics
 logger.info("Order milestone", extra={
     "order_id": order.id,
-    "stage": "payment_complete",
+    "stage": "payment_complete", 
     "amount": order.total,
-    "items": len(order.items)
+    "items": len(order.items),
+    "customer_lifetime_value": customer.ltv
+})
+
+# GOOD - Revenue events
+logger.info("Revenue event", extra={
+    "event_type": "subscription_upgraded",
+    "customer_id": customer.id,
+    "mrr_delta": 50.00,
+    "new_mrr": 150.00
 })
 
 # BAD - No business value
 logger.debug("processed")
+```
+
+### 7. Performance Anomalies
+```python
+# GOOD - Performance degradation
+if response_time > EXPECTED_RESPONSE_TIME * 1.5:
+    logger.warning("Performance degradation", extra={
+        "operation": "user_search",
+        "expected_ms": EXPECTED_RESPONSE_TIME,
+        "actual_ms": response_time,
+        "degradation_factor": response_time / EXPECTED_RESPONSE_TIME,
+        "affected_users": result_count
+    })
+
+# GOOD - Slow query
+logger.warning("Slow database query", extra={
+    "query_type": "user_lookup",
+    "duration_ms": query_time,
+    "threshold_ms": 100,
+    "query_hash": hash(query_text)  # Don't log actual query
+})
+
+# BAD - No actionable data
+logger.warn("slow")
+```
+
+### 8. Configuration Changes
+```python
+# GOOD - Config update audit
+logger.info("Configuration updated", extra={
+    "config_key": "rate_limit",
+    "old_value": old_limit,
+    "new_value": new_limit,
+    "updated_by": admin.id,
+    "reason": update_reason,
+    "effective_at": effective_timestamp
+})
+
+# GOOD - Feature flag change
+logger.info("Feature flag toggled", extra={
+    "flag": "new_checkout_flow",
+    "enabled": True,
+    "percentage": 25,
+    "updated_by": admin.id
+})
+
+# BAD - No audit trail
+config["limit"] = 100
+```
+
+### 9. Data Validation Failures
+```python
+# GOOD - Validation failure details
+logger.warning("Data validation failed", extra={
+    "entity": "order",
+    "field": "total_amount",
+    "constraint": "range_check",
+    "expected": "0.01-10000.00",
+    "actual": order.total,
+    "action": "rejected",
+    "request_id": request.id
+})
+
+# GOOD - Input sanitization
+logger.info("Input sanitized", extra={
+    "field": "username",
+    "original_length": len(raw_input),
+    "sanitized_length": len(clean_input),
+    "removed_chars": ["<", ">", "script"]
+})
+
+# BAD - No context
+logger.error("validation failed")
+```
+
+### 10. Resource Utilization Events
+```python
+# GOOD - Rate limit approaching
+logger.warning("Approaching rate limit", extra={
+    "resource": "api_calls",
+    "current_usage": 950,
+    "limit": 1000,
+    "percentage_used": 95,
+    "reset_time": reset_timestamp,
+    "consumer": api_key_hash
+})
+
+# GOOD - Connection pool warning
+logger.warning("Connection pool pressure", extra={
+    "pool": "database_primary",
+    "active_connections": 45,
+    "max_connections": 50,
+    "wait_queue_size": 12,
+    "avg_wait_time_ms": 230
+})
+
+# BAD - Missing critical data
+logger.info("high usage")
 ```
 
 ## Log Levels
@@ -110,13 +217,20 @@ logger.debug("processed")
 ## Security Rules
 
 ### NEVER Log:
-- Passwords, API keys, tokens
-- Full credit card numbers
-- Social Security Numbers
-- Personal health information
-- Full email addresses in bulk
-- Session cookies
-- Private keys/certificates
+- Passwords, API keys, tokens (including JWT, OAuth, refresh tokens)
+- Full credit card numbers, bank accounts, routing numbers, IBAN
+- Social Security Numbers, driver's license, passport numbers
+- Personal health information, patient IDs, prescriptions
+- Full email addresses in bulk operations
+- Session cookies, authentication artifacts
+- Private keys, certificates, cryptographic material
+- Biometric data (fingerprints, facial data, voice prints)
+- IP addresses (can be PII under GDPR)
+- Device identifiers (MAC addresses, IMEI, device IDs)
+- Geolocation data (GPS coordinates, physical addresses)
+- Phone numbers (use area code only)
+- Date of birth (age range okay)
+- Government IDs, national identification numbers
 
 ### Safe Patterns:
 ```python
@@ -125,10 +239,21 @@ logger.info("User registered", extra={
     "username": username,
     "email_domain": email.split('@')[1],  # Not full email
     "card_last4": card_number[-4:],       # Not full card
+    "phone_area": phone[:3],              # Area code only
+    "age_range": "25-34",                 # Not exact DOB
+    "country": address.country,           # Not full address
+})
+
+# Hash for correlation without exposing data
+logger.info("User lookup", extra={
+    "user_hash": hashlib.sha256(user_id.encode()).hexdigest()[:8],
+    "ip_hash": hashlib.sha256(ip_address.encode()).hexdigest()[:8],
 })
 
 # NEVER do this
 logger.info(f"Login: {username}/{password}")  # SECURITY BREACH!
+logger.debug(f"Token: {jwt_token}")           # EXPOSES AUTH!
+logger.error(f"SSN validation failed: {ssn}") # PII LEAK!
 ```
 
 ## Structured Logging

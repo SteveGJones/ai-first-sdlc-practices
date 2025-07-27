@@ -25,6 +25,13 @@ class LoggingComplianceChecker:
             'missing_entry_logs': 0,
             'missing_error_logs': 0,
             'missing_external_logs': 0,
+            'missing_state_logs': 0,
+            'missing_security_logs': 0,
+            'missing_business_logs': 0,
+            'missing_performance_logs': 0,
+            'missing_config_logs': 0,
+            'missing_validation_logs': 0,
+            'missing_resource_logs': 0,
             'sensitive_data_logs': 0
         }
         
@@ -51,17 +58,71 @@ class LoggingComplianceChecker:
         
         # Sensitive data patterns that should NEVER be logged
         self.sensitive_patterns = [
-            r'password',
-            r'passwd',
-            r'token',
-            r'api_key',
-            r'apikey',
-            r'secret',
-            r'private_key',
-            r'ssn',
-            r'social_security',
-            r'credit_card',
-            r'card_number',
+            # Authentication & Secrets
+            r'\bpassword\b',
+            r'\bpasswd\b',
+            r'\btoken\b',
+            r'\bapi_key\b',
+            r'\bapikey\b',
+            r'\bsecret\b',
+            r'\bprivate_key\b',
+            r'\bjwt\b',
+            r'\boauth\b',
+            r'\brefresh_token\b',
+            r'\bsession_id\b',
+            r'\bcookie\b',
+            r'\bauth\b',
+            
+            # Financial Data
+            r'\bcredit_card\b',
+            r'\bcard_number\b',
+            r'\bbank_account\b',
+            r'\brouting_number\b',
+            r'\biban\b',
+            r'\bswift\b',
+            r'\bcvv\b',
+            
+            # Personal Identifiers
+            r'\bssn\b',
+            r'\bsocial_security\b',
+            r'\bdriver_license\b',
+            r'\bpassport\b',
+            r'\bnational_id\b',
+            r'\bgovernment_id\b',
+            r'\btax_id\b',
+            
+            # Health Information
+            r'\bpatient_id\b',
+            r'\bmedical_record\b',
+            r'\bhealth_insurance\b',
+            r'\bprescription\b',
+            r'\bdiagnosis\b',
+            
+            # Biometric & Device Data
+            r'\bfingerprint\b',
+            r'\bface_data\b',
+            r'\bvoice_print\b',
+            r'\bbiometric\b',
+            r'\bmac_address\b',
+            r'\bimei\b',
+            r'\bdevice_id\b',
+            r'\budid\b',
+            
+            # Location & Contact
+            r'\bgps_coord\b',
+            r'\blatitude\b',
+            r'\blongitude\b',
+            r'\bip_address\b',
+            r'\bphone_number\b',
+            r'\bemail_address\b',
+            r'\bdate_of_birth\b',
+            r'\bdob\b',
+            
+            # Cryptographic Material
+            r'\bprivate_key\b',
+            r'\bcertificate\b',
+            r'\bencryption_key\b',
+            r'\bcrypto_key\b',
         ]
         
         # Patterns indicating external calls
@@ -80,6 +141,39 @@ class LoggingComplianceChecker:
             r'\.save\(',
             r'\.create\(',
             r'\.update\(',
+        ]
+        
+        # Patterns for different logging categories
+        self.state_change_patterns = [
+            r'\.save\b', r'\.update\b', r'\.create\b', r'\.delete\b',
+            r'\.set\b', r'\.assign\b', r'\.modify\b', r'\.change\b',
+            r'setState', r'dispatch\(', r'commit\(',
+        ]
+        
+        self.security_patterns = [
+            r'login\b', r'logout\b', r'authenticate\b', r'authorize\b',
+            r'permission', r'access_denied', r'forbidden', r'unauthorized',
+            r'verify_token', r'check_permission', r'validate_user',
+        ]
+        
+        self.performance_patterns = [
+            r'duration', r'elapsed', r'response_time', r'latency',
+            r'slow', r'timeout', r'performance', r'threshold',
+        ]
+        
+        self.config_patterns = [
+            r'config\[', r'settings\[', r'environ\[', r'feature_flag',
+            r'toggle', r'enable', r'disable', r'update_config',
+        ]
+        
+        self.validation_patterns = [
+            r'validate', r'is_valid', r'check_', r'verify_',
+            r'sanitize', r'parse', r'clean', r'normalize',
+        ]
+        
+        self.resource_patterns = [
+            r'limit', r'quota', r'capacity', r'threshold',
+            r'pool', r'connection', r'rate_limit', r'throttle',
         ]
         
         # Functions to skip
@@ -139,7 +233,12 @@ class LoggingComplianceChecker:
             for sensitive in self.sensitive_patterns:
                 if re.search(sensitive, line, re.IGNORECASE):
                     # Skip if it's checking for sensitive data (not logging it)
-                    if 'sanitize' in line.lower() or 'mask' in line.lower():
+                    if any(safe_word in line.lower() for safe_word in 
+                           ['sanitize', 'mask', 'redact', 'hash', 'encrypt', 'remove']):
+                        continue
+                    
+                    # Skip if it's in a comment
+                    if line.strip().startswith('#') or line.strip().startswith('//'):
                         continue
                         
                     violations.append({
@@ -250,6 +349,91 @@ class LoggingComplianceChecker:
                     })
                     self.stats['missing_external_logs'] += 1
                     break
+        
+        # Check for state changes
+        for pattern in self.state_change_patterns:
+            if re.search(pattern, func_body):
+                if not has_logging:
+                    violations.append({
+                        'file': str(file_path),
+                        'line': func_node.lineno,
+                        'function': func_name,
+                        'violation': 'missing_state_log',
+                        'message': 'State change without logging'
+                    })
+                    self.stats['missing_state_logs'] += 1
+                    break
+        
+        # Check for security operations
+        for pattern in self.security_patterns:
+            if re.search(pattern, func_body, re.IGNORECASE):
+                if not has_logging:
+                    violations.append({
+                        'file': str(file_path),
+                        'line': func_node.lineno,
+                        'function': func_name,
+                        'violation': 'missing_security_log',
+                        'message': 'Security operation without logging'
+                    })
+                    self.stats['missing_security_logs'] += 1
+                    break
+        
+        # Check for performance checks
+        if any(re.search(p, func_body) for p in self.performance_patterns):
+            if '>=' in func_body or '<=' in func_body or 'threshold' in func_body.lower():
+                if not has_logging:
+                    violations.append({
+                        'file': str(file_path),
+                        'line': func_node.lineno,
+                        'function': func_name,
+                        'violation': 'missing_performance_log',
+                        'message': 'Performance check without logging'
+                    })
+                    self.stats['missing_performance_logs'] += 1
+        
+        # Check for config changes
+        for pattern in self.config_patterns:
+            if re.search(pattern, func_body):
+                if not has_logging:
+                    violations.append({
+                        'file': str(file_path),
+                        'line': func_node.lineno,
+                        'function': func_name,
+                        'violation': 'missing_config_log',
+                        'message': 'Configuration change without logging'
+                    })
+                    self.stats['missing_config_logs'] += 1
+                    break
+        
+        # Check for validation operations
+        for pattern in self.validation_patterns:
+            if re.search(pattern, func_body):
+                if 'raise' in func_body or 'throw' in func_body or 'reject' in func_body:
+                    if not has_logging:
+                        violations.append({
+                            'file': str(file_path),
+                            'line': func_node.lineno,
+                            'function': func_name,
+                            'violation': 'missing_validation_log',
+                            'message': 'Validation failure without logging'
+                        })
+                        self.stats['missing_validation_logs'] += 1
+                        break
+        
+        # Check for resource limits
+        for pattern in self.resource_patterns:
+            if re.search(pattern, func_body):
+                if any(op in func_body for op in ['>=', '>', '<', '<=', '==']):
+                    if not has_logging:
+                        violations.append({
+                            'file': str(file_path),
+                            'line': func_node.lineno,
+                            'function': func_name,
+                            'violation': 'missing_resource_log',
+                            'message': 'Resource check without logging'
+                        })
+                        self.stats['missing_resource_logs'] += 1
+                        break
         
         return violations
     
@@ -373,6 +557,13 @@ class LoggingComplianceChecker:
             'missing_entry_log': 'Missing Function Entry/Exit Logs',
             'missing_error_log': 'Missing Error Logs',
             'missing_external_log': 'Missing External Call Logs',
+            'missing_state_log': 'Missing State Change Logs',
+            'missing_security_log': 'Missing Security Event Logs',
+            'missing_business_log': 'Missing Business Milestone Logs',
+            'missing_performance_log': 'Missing Performance Anomaly Logs',
+            'missing_config_log': 'Missing Configuration Change Logs',
+            'missing_validation_log': 'Missing Validation Failure Logs',
+            'missing_resource_log': 'Missing Resource Limit Logs',
             'sensitive_data_log': 'Sensitive Data in Logs'
         }
         
@@ -390,12 +581,18 @@ class LoggingComplianceChecker:
         # Summary
         print(f"\n🚫 LOGGING COMPLIANCE FAILED")
         print("=" * 60)
-        print("ADD proper logging at ALL mandatory points:")
-        print("- Function entry/exit (with context)")
-        print("- Error handling (with stack traces)")
-        print("- External API/DB calls")
-        print("- State changes")
-        print("\nNEVER log sensitive data (passwords, tokens, SSNs)")
+        print("ADD proper logging at ALL 10 mandatory points:")
+        print("1. Function entry/exit (with context)")
+        print("2. Error handling (with stack traces)")
+        print("3. External API/DB calls")
+        print("4. State mutations")
+        print("5. Security events")
+        print("6. Business milestones")
+        print("7. Performance anomalies")
+        print("8. Configuration changes")
+        print("9. Validation failures")
+        print("10. Resource limits")
+        print("\nNEVER log sensitive data (passwords, tokens, PII, biometrics)")
         print("\nDetails: Load CLAUDE-CONTEXT-logging.md")
 
 

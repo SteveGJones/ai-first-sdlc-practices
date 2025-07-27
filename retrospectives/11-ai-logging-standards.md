@@ -20,25 +20,27 @@
 ## What Could Be Improved
 
 1. **Language Support**: Validator currently only supports Python/JS/TS, not Go/Java/Rust
-2. **Configuration Flexibility**: No .logging-config.yaml parser implemented yet
-3. **Integration Complexity**: Manual step needed to add logging check to validate-pipeline.py
-4. **Existing Code Impact**: Many projects will see high violation counts initially
+2. **Configuration Flexibility**: No .logging-config.yaml parser implemented yet (deferred to future)
+3. **Review Process**: Team review revealed significant gaps that required major rework
+4. **Scope Creep**: Expanded from 6 to 10 mandatory points based on architect feedback
 
 ## Lessons Learned
 
 1. **AI Behavior Patterns**: AI agents need explicit WHERE/WHAT/HOW guidance for logging
 2. **Quality Over Presence**: Just checking "log exists" leads to useless logs
-3. **Security First**: Must explicitly forbid logging sensitive data
+3. **Security First**: Initial sensitive data list was dangerously incomplete
+4. **Team Reviews Matter**: Multi-agent review caught critical security and completeness gaps
+5. **Production Focus**: Needed to expand beyond basic logging to production observability
 
 ## Implementation Progress
 
 ### Phase 1: Core Updates ✅
-- [x] Add compressed logging rules to CLAUDE-CORE.md (11 lines)
-- [x] Create CLAUDE-CONTEXT-logging.md for details (317 lines)
+- [x] Add compressed logging rules to CLAUDE-CORE.md (expanded to 10 points)
+- [x] Create CLAUDE-CONTEXT-logging.md for details (400+ lines with all examples)
 
 ### Phase 2: Validation Tools ✅
-- [x] Create check-logging-compliance.py (433 lines with AST parsing)
-- [ ] Integrate with validate-pipeline.py (manual step documented)
+- [x] Create check-logging-compliance.py (600+ lines with enhanced detection)
+- [x] Integrate with validate-pipeline.py (fully automated)
 
 ### Phase 3: Architecture Templates ✅
 - [x] Create observability-design.md template
@@ -59,8 +61,9 @@
 
 1. **AST Parsing Complexity**: JavaScript/TypeScript parsing required regex fallback
 2. **Function Boundary Detection**: Challenging to accurately detect function scope in JS
-3. **Sensitive Data Patterns**: Balancing comprehensive detection vs false positives
-4. **Performance Considerations**: Large codebases could slow down validation
+3. **Sensitive Data Patterns**: Expanded from 11 to 50+ patterns after security review
+4. **Performance Detection**: Needed heuristics to detect performance checks
+5. **Context Awareness**: Distinguishing actual sensitive data from safe mentions
 
 ## Impact on Framework
 
@@ -72,9 +75,10 @@
 
 1. **Validation Algorithm**: Uses Python AST for accurate parsing, regex for JS/TS
 2. **Skip Patterns**: Automatically skips getters, setters, magic methods
-3. **Security Detection**: 11 sensitive patterns checked in all log statements
-4. **Function Size Threshold**: Only checks functions >3 lines for entry/exit logs
-5. **External Call Detection**: 14 patterns for API/DB calls
+3. **Security Detection**: 50+ sensitive patterns with context awareness
+4. **Function Size Threshold**: Functions >5 lines for entry/exit logs
+5. **Comprehensive Detection**: Patterns for all 10 mandatory points
+6. **Enhanced Reporting**: Shows violations by category with actionable messages
 
 ## Migration Path
 
@@ -85,6 +89,7 @@
 
 ## Notes
 
-- Successfully kept startup experience lightweight (11 lines in core)
-- Focused on changing AI behavior through clear examples
-- User feedback incorporated throughout implementation
+- Successfully kept startup experience lightweight (17 lines in core)
+- Focused on production-grade observability, not just basic logging
+- Team review prevented shipping incomplete security coverage
+- Exemplar quality achieved through comprehensive enhancement

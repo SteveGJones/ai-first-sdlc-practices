@@ -24,7 +24,7 @@ Current issues with AI-generated code:
 
 ### 1. Mandatory Logging Points (The "WHERE")
 
-Define 6 specific locations where logging is REQUIRED:
+Define 10 specific locations where logging is REQUIRED:
 
 #### 1.1 Function/Method Boundaries
 ```python
@@ -102,6 +102,48 @@ logger.info("Order processing milestone", extra={
 logger.debug("step 3 done")
 ```
 
+#### 1.7 Performance Anomalies
+```python
+# GOOD - Performance degradation
+if response_time > THRESHOLD * 1.5:
+    logger.warning("Performance degradation", extra={
+        "operation": "search",
+        "expected_ms": THRESHOLD,
+        "actual_ms": response_time
+    })
+```
+
+#### 1.8 Configuration Changes
+```python
+# GOOD - Config audit trail
+logger.info("Configuration updated", extra={
+    "key": "rate_limit",
+    "old_value": 100,
+    "new_value": 200,
+    "updated_by": admin_id
+})
+```
+
+#### 1.9 Data Validation Failures
+```python
+# GOOD - Validation context
+logger.warning("Validation failed", extra={
+    "field": "email",
+    "reason": "invalid_format",
+    "value_length": len(email)
+})
+```
+
+#### 1.10 Resource Utilization
+```python
+# GOOD - Resource warnings
+logger.warning("Approaching rate limit", extra={
+    "current": 950,
+    "limit": 1000,
+    "reset_in": 300
+})
+```
+
 ### 2. Logging Quality Standards
 
 #### Log Level Requirements
@@ -138,11 +180,17 @@ logger.debug("step 3 done")
 ### 3. Security Requirements
 
 #### FORBIDDEN in Logs:
-- Passwords, tokens, API keys
-- Full credit card numbers (last 4 digits OK)
-- Social security numbers
-- Personal health information
+- Passwords, tokens, API keys (including JWT, OAuth, refresh tokens)
+- Full credit card numbers, bank accounts, routing numbers
+- Social security numbers, driver's licenses, passports
+- Personal health information, patient IDs
 - Full email addresses in bulk operations
+- Biometric data (fingerprints, facial data)
+- IP addresses (PII under GDPR)
+- Device identifiers (MAC, IMEI)
+- Geolocation data
+- Phone numbers (area code only)
+- Date of birth (age range okay)
 
 #### Required Sanitization:
 ```python
@@ -195,24 +243,31 @@ Provide examples and validators for:
 ### 6. Architecture Document Addition
 
 Add as 7th mandatory document: `observability-design.md`
-- Logging strategy
+- Logging strategy for all 10 mandatory points
 - Metrics collection
 - Distributed tracing
 - Alert thresholds
 - Retention policies
+- Compliance profiles (GDPR, HIPAA, PCI)
 
 ## Technical Specifications
 
 ### Validation Algorithm
 1. Parse source files into AST
 2. Identify functions/methods
-3. For each function, check:
-   - Has entry log? (quality check)
-   - Has exit log? (if >10 lines)
-   - Has error logs in catch blocks?
-   - Has logs near external calls?
-   - No sensitive patterns?
-4. Report violations with specific line numbers
+3. For each function, check all 10 mandatory points:
+   - Entry/exit logs (if >5 lines)
+   - Error handling logs in catch blocks
+   - External call logs
+   - State change logs
+   - Security event logs
+   - Business milestone logs
+   - Performance anomaly logs
+   - Configuration change logs
+   - Validation failure logs
+   - Resource limit logs
+4. Check for sensitive data patterns (50+ patterns)
+5. Report violations with specific line numbers
 
 ### Configuration
 ```yaml

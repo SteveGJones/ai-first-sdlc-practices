@@ -41,7 +41,8 @@ class ValidationPipeline:
             "design-docs": self.check_design_documentation,
             "technical-debt": self.check_technical_debt,
             "type-safety": self.check_type_safety,
-            "architecture": self.check_architecture_documentation
+            "architecture": self.check_architecture_documentation,
+            "logging": self.check_logging_compliance
         }
         
         # Default to all checks
@@ -811,6 +812,58 @@ class ValidationPipeline:
                 "Ensure validate-architecture.py exists"
             )
     
+    def check_logging_compliance(self):
+        """Check if code has proper logging at mandatory points"""
+        if self.is_empty_repo:
+            self.add_skip("Logging Compliance", "Empty repository - no code to check")
+            return
+        
+        # Check if logging validator exists
+        validator_path = self.project_root / "tools" / "validation" / "check-logging-compliance.py"
+        if not validator_path.exists():
+            self.add_warning(
+                "Logging Compliance",
+                "Logging validator not found",
+                "Download check-logging-compliance.py from framework"
+            )
+            return
+        
+        # Run logging compliance check
+        try:
+            result = subprocess.run(
+                ["python", str(validator_path), "--threshold", "0"],
+                capture_output=True,
+                text=True,
+                cwd=self.project_root
+            )
+            
+            if result.returncode != 0:
+                # Extract violation count from output
+                output_lines = result.stdout.strip().split('\n')
+                violation_line = next((line for line in output_lines if "Total Violations:" in line), None)
+                
+                if violation_line:
+                    self.add_error(
+                        "Logging Compliance",
+                        f"Missing mandatory logging - {violation_line}",
+                        "Add logging at all 10 mandatory points"
+                    )
+                else:
+                    self.add_error(
+                        "Logging Compliance",
+                        "Logging compliance check failed",
+                        "Run: python tools/validation/check-logging-compliance.py"
+                    )
+            else:
+                self.add_success("Logging Compliance", "All mandatory logging points covered")
+                
+        except Exception as e:
+            self.add_error(
+                "Logging Compliance",
+                f"Failed to run logging check: {e}",
+                "Ensure Python dependencies are installed"
+            )
+    
     def _get_current_branch(self) -> Optional[str]:
         """Get current git branch"""
         try:
@@ -942,7 +995,7 @@ def main():
         nargs="+",
         choices=["branch", "proposal", "plan", "ai-docs", "tests", 
                 "security", "code-quality", "dependencies", "commit-history", "retrospective", "design-docs",
-                "technical-debt", "type-safety", "architecture"],
+                "technical-debt", "type-safety", "architecture", "logging"],
         help="Specific checks to run (default: all)"
     )
     parser.add_argument(

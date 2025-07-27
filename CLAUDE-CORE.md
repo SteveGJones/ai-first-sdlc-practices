@@ -33,13 +33,19 @@ python tools/validation/validate-pipeline.py --checks type-safety
 
 ## Logging (MANDATORY)
 
-### Required Logging Points:
-1. Function entry/exit (with context)
-2. Errors (with stack trace)
-3. External calls (APIs/DB)
-4. State changes & security events
+### Required Logging Points (10):
+1. Function entry/exit
+2. Errors & exceptions  
+3. External calls
+4. State mutations
+5. Security events
+6. Business milestones
+7. Performance anomalies
+8. Config changes
+9. Validation failures
+10. Resource limits
 
-### FORBIDDEN: Passwords, tokens, SSNs, credit cards in logs
+### FORBIDDEN: Passwords, tokens, PII, biometrics, keys
 
 Details: Load CLAUDE-CONTEXT-logging.md
 
