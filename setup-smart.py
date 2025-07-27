@@ -29,6 +29,7 @@ class SmartFrameworkSetup:
         "CLAUDE-CONTEXT-validation.md": "CLAUDE-CONTEXT-validation.md",
         "CLAUDE-CONTEXT-update.md": "CLAUDE-CONTEXT-update.md",
         "CLAUDE-CONTEXT-language-validators.md": "CLAUDE-CONTEXT-language-validators.md",
+        "CLAUDE-CONTEXT-logging.md": "CLAUDE-CONTEXT-logging.md",
         # Migration tool for existing projects
         "tools/migrate-to-hierarchical.py": "tools/migrate-to-hierarchical.py",
         "templates/feature-proposal.md": "docs/feature-proposals/template-feature-proposal.md",
@@ -46,6 +47,7 @@ class SmartFrameworkSetup:
         "tools/validation/validate-architecture.py": "tools/validation/validate-architecture.py",
         "tools/validation/check-technical-debt.py": "tools/validation/check-technical-debt.py",
         "tools/validation/check-instruction-size.py": "tools/validation/check-instruction-size.py",
+        "tools/validation/check-logging-compliance.py": "tools/validation/check-logging-compliance.py",
         "templates/quality-gates.yaml": "templates/quality-gates.yaml",
         # Architecture templates
         "templates/architecture/requirements-traceability-matrix.md": "templates/architecture/requirements-traceability-matrix.md",
@@ -54,6 +56,7 @@ class SmartFrameworkSetup:
         "templates/architecture/system-invariants.md": "templates/architecture/system-invariants.md",
         "templates/architecture/integration-design.md": "templates/architecture/integration-design.md",
         "templates/architecture/failure-mode-analysis.md": "templates/architecture/failure-mode-analysis.md",
+        "templates/architecture/observability-design.md": "templates/architecture/observability-design.md",
         # Pre-commit configuration
         "templates/.pre-commit-config.yaml": ".pre-commit-config.yaml",
         "CONTRIBUTING.md": "CONTRIBUTING.md",

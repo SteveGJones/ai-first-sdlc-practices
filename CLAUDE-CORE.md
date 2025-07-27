@@ -31,6 +31,18 @@ python tools/validation/check-technical-debt.py --threshold 0
 python tools/validation/validate-pipeline.py --checks type-safety
 ```
 
+## Logging (MANDATORY)
+
+### Required Logging Points:
+1. Function entry/exit (with context)
+2. Errors (with stack trace)
+3. External calls (APIs/DB)
+4. State changes & security events
+
+### FORBIDDEN: Passwords, tokens, SSNs, credit cards in logs
+
+Details: Load CLAUDE-CONTEXT-logging.md
+
 ## Branch Protection & Workflow
 
 ### NEVER:
@@ -102,7 +114,8 @@ Load additional instructions based on task:
 | Create architecture | CLAUDE-CONTEXT-architecture.md |
 | Run validation | CLAUDE-CONTEXT-validation.md |
 | Update framework | CLAUDE-CONTEXT-update.md |
-| Language work | CLAUDE-CONTEXT-language-{lang}.md |
+| Language work | CLAUDE-CONTEXT-language-validators.md |
+| Logging standards | CLAUDE-CONTEXT-logging.md |
 
 ## Framework Updates
 
