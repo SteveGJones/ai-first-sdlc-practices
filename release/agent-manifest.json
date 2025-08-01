@@ -1,0 +1,300 @@
+{
+  "version": "1.0.0",
+  "build_date": "2025-08-01T15:16:11.061819",
+  "categories": {
+    "documentation": [
+      "technical-writer",
+      "documentation-architect"
+    ],
+    "core": [
+      "sdlc-coach",
+      "test-manager",
+      "solution-architect",
+      "security-architect"
+    ],
+    "project-management": [
+      "agile-coach",
+      "delivery-manager"
+    ],
+    "ai-development": [
+      "prompt-engineer",
+      "mcp-server-architect",
+      "agent-developer",
+      "langchain-architect",
+      "a2a-architect"
+    ],
+    "languages/python": [
+      "python-expert"
+    ],
+    "testing": [
+      "ai-test-engineer"
+    ],
+    "sdlc": [
+      "language-python-expert",
+      "framework-validator",
+      "kickstart-architect",
+      "project-bootstrapper",
+      "retrospective-miner"
+    ]
+  },
+  "agents": {
+    "technical-writer": {
+      "version": "1.0.0",
+      "category": "documentation/writing",
+      "description": "Expert technical writer specializing in creating clear, concise, and user-friendly documentation for complex technical products. Masters both conceptual explanation and practical instruction.",
+      "path": "documentation/technical-writer.md",
+      "priority": "high",
+      "dependencies": [
+        "documentation-architect",
+        "ux-researcher"
+      ]
+    },
+    "documentation-architect": {
+      "version": "1.0.0",
+      "category": "documentation/architecture",
+      "description": "Expert in designing and implementing comprehensive documentation systems, including developer docs, API references, user guides, and automated documentation generation.",
+      "path": "documentation/documentation-architect.md",
+      "priority": "high",
+      "dependencies": [
+        "technical-writer",
+        "api-designer",
+        "ux-researcher"
+      ]
+    },
+    "sdlc-coach": {
+      "version": "1.0.0",
+      "category": "core/governance",
+      "description": "Enforces AI-First SDLC practices, coaches developers on proper framework usage, identifies process violations, and conducts regular SDLC reviews to ensure continuous improvement.",
+      "path": "core/sdlc-coach.md",
+      "priority": "critical",
+      "dependencies": [
+        "quality-guardian",
+        "retrospective-orchestrator",
+        "process-auditor"
+      ]
+    },
+    "test-manager": {
+      "version": "1.0.0",
+      "category": "core/testing",
+      "description": "Oversees all testing activities across the project, manages test strategy, coordinates different testing types, ensures comprehensive coverage, and maintains quality metrics throughout the development lifecycle.",
+      "path": "core/test-manager.md",
+      "priority": "critical",
+      "dependencies": [
+        "test-strategist",
+        "quality-metrics-analyst",
+        "language-specific test engineers",
+        "ux-test-engineer",
+        "performance-tester",
+        "security-reviewer"
+      ]
+    },
+    "solution-architect": {
+      "version": "1.0.0",
+      "category": "core/architecture",
+      "description": "Designs end-to-end solutions considering all system aspects, ensures architectural coherence across components, identifies integration challenges, and makes strategic technology decisions that balance current needs with future scalability.",
+      "path": "core/solution-architect.md",
+      "priority": "critical",
+      "dependencies": [
+        "security-architect",
+        "integration-architect",
+        "database-architect",
+        "cloud-architect",
+        "api-designer"
+      ]
+    },
+    "security-architect": {
+      "version": "1.0.0",
+      "category": "architecture",
+      "description": "Expert in security architecture, threat modeling, and secure design patterns. Reviews systems for vulnerabilities and recommends security improvements.",
+      "path": "core/example-security-architect.md",
+      "priority": "medium",
+      "dependencies": [
+        "compliance/gdpr-advisor",
+        "compliance/pci-specialist",
+        "review/security-reviewer"
+      ]
+    },
+    "agile-coach": {
+      "version": "1.0.0",
+      "category": "project-management/methodology",
+      "description": "Expert Agile coach specializing in Scrum, Kanban, and scaled agile frameworks. Helps teams adopt agile practices, improve collaboration, and deliver value continuously.",
+      "path": "project-management/agile-coach.md",
+      "priority": "high",
+      "dependencies": [
+        "project-manager",
+        "team-coordinator"
+      ]
+    },
+    "delivery-manager": {
+      "version": "1.0.0",
+      "category": "project-management/delivery",
+      "description": "Expert in software delivery management, focusing on removing blockers, managing risks, coordinating releases, and ensuring smooth delivery of software projects from development to production.",
+      "path": "project-management/delivery-manager.md",
+      "priority": "high",
+      "dependencies": [
+        "project-manager",
+        "agile-coach",
+        "devops-engineer"
+      ]
+    },
+    "prompt-engineer": {
+      "version": "1.0.0",
+      "category": "ai-development/optimization",
+      "description": "Expert in prompt engineering, optimization, and evaluation. Specializes in crafting effective prompts, implementing prompt templates, managing prompt versions, and measuring prompt performance.",
+      "path": "ai-development/prompt-engineer.md",
+      "priority": "high",
+      "dependencies": [
+        "langchain-architect",
+        "ml-architect"
+      ]
+    },
+    "mcp-server-architect": {
+      "version": "1.0.0",
+      "category": "ai-development/mcp",
+      "description": "Expert in Model Context Protocol (MCP) server design and implementation, specializing in tool exposure, resource management, transport layers, and integration with AI systems.",
+      "path": "ai-development/mcp-server-architect.md",
+      "priority": "high",
+      "dependencies": [
+        "solution-architect",
+        "api-designer",
+        "security-architect"
+      ]
+    },
+    "agent-developer": {
+      "version": "1.0.0",
+      "category": "ai-development/meta",
+      "description": "Meta-agent specialized in designing and developing other AI agents. Expert in agent architectures, capability definition, personality crafting, and creating agent specifications for the AI-First SDLC framework.",
+      "path": "ai-development/agent-developer.md",
+      "priority": "high",
+      "dependencies": [
+        "prompt-engineer",
+        "langchain-architect",
+        "documentation-architect"
+      ]
+    },
+    "langchain-architect": {
+      "version": "1.0.0",
+      "category": "ai-development/frameworks",
+      "description": "Expert in LangChain and LangGraph architectures, specializing in chain design, memory systems, tool integration, and production deployment of LLM applications.",
+      "path": "ai-development/langchain-architect.md",
+      "priority": "critical",
+      "dependencies": [
+        "python-expert",
+        "solution-architect",
+        "prompt-engineer"
+      ]
+    },
+    "a2a-architect": {
+      "version": "1.0.0",
+      "category": "ai-development/communication",
+      "description": "Expert in Agent-to-Agent (A2A) communication protocols, multi-agent orchestration, inter-agent messaging, and building collaborative AI systems where multiple agents work together seamlessly.",
+      "path": "ai-development/a2a-architect.md",
+      "priority": "high",
+      "dependencies": [
+        "langchain-architect",
+        "mcp-server-architect",
+        "solution-architect"
+      ]
+    },
+    "python-expert": {
+      "version": "1.0.0",
+      "category": "languages/python",
+      "description": "Python language expert specializing in Pythonic patterns, performance optimization, and modern Python features. Ensures code follows PEP standards and community best practices.",
+      "path": "languages/python/example-python-expert.md",
+      "priority": "medium",
+      "dependencies": [
+        "testing/unit-test-designer",
+        "review/performance-reviewer"
+      ]
+    },
+    "ai-test-engineer": {
+      "version": "1.0.0",
+      "category": "testing/ai-systems",
+      "description": "Specialist in testing AI/LLM applications, including prompt testing, model evaluation, regression testing, hallucination detection, and production monitoring of AI systems.",
+      "path": "testing/ai-test-engineer.md",
+      "priority": "high",
+      "dependencies": [
+        "test-manager",
+        "prompt-engineer",
+        "ml-architect"
+      ]
+    },
+    "language-python-expert": {
+      "version": "1.0.0",
+      "category": "sdlc/languages",
+      "description": "Python-specific guidance for AI-First SDLC framework, provides Pythonic patterns, framework integration strategies, testing approaches, package structure recommendations, and Zero Technical Debt implementation for Python projects",
+      "path": "sdlc/language-python-expert.md",
+      "priority": "high",
+      "dependencies": [
+        "sdlc-coach",
+        "framework-validator",
+        "python-test-engineer"
+      ]
+    },
+    "framework-validator": {
+      "version": "1.0.0",
+      "category": "sdlc/validation",
+      "description": "Real-time framework compliance checking for AI-First SDLC, validates architecture documents, checks technical debt continuously, monitors Zero Technical Debt compliance, and provides immediate violation feedback",
+      "path": "sdlc/framework-validator.md",
+      "priority": "critical",
+      "dependencies": [
+        "sdlc-coach",
+        "quality-guardian"
+      ]
+    },
+    "kickstart-architect": {
+      "version": "1.0.0",
+      "category": "sdlc/architecture",
+      "description": "Generates optimal project kickstarters for AI-First SDLC framework projects, analyzes requirements to create tailored structures, pre-fills architecture documents, and configures language-specific setups",
+      "path": "sdlc/kickstart-architect.md",
+      "priority": "critical",
+      "dependencies": [
+        "framework-validator",
+        "language-specific experts",
+        "ci-cd-architect"
+      ]
+    },
+    "project-bootstrapper": {
+      "version": "1.0.0",
+      "category": "sdlc/initialization",
+      "description": "One-command project initialization for AI-First SDLC framework, creates complete project structure, detects languages and frameworks, sets up git hooks and branch protection, and installs appropriate agents",
+      "path": "sdlc/project-bootstrapper.md",
+      "priority": "high",
+      "dependencies": [
+        "kickstart-architect",
+        "framework-validator"
+      ]
+    },
+    "retrospective-miner": {
+      "version": "1.0.0",
+      "category": "sdlc/analytics",
+      "description": "Extracts insights from retrospectives across projects, identifies patterns and common challenges, suggests kickstarter improvements, builds organizational knowledge base, and tracks framework evolution",
+      "path": "sdlc/retrospective-miner.md",
+      "priority": "high",
+      "dependencies": [
+        "kickstart-architect",
+        "framework-validator"
+      ]
+    }
+  },
+  "core_agents": [
+    "sdlc-coach",
+    "test-manager",
+    "solution-architect",
+    "security-architect"
+  ],
+  "statistics": {
+    "total_agents": 20,
+    "core_agents": 4,
+    "optional_agents": 16,
+    "categories": {
+      "documentation": 2,
+      "core": 4,
+      "project-management": 2,
+      "ai-development": 5,
+      "languages": 1,
+      "testing": 1,
+      "sdlc": 5
+    }
+  }
+}

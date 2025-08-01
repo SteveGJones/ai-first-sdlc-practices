@@ -122,6 +122,7 @@ Load additional instructions based on task:
 | Update framework | CLAUDE-CONTEXT-update.md |
 | Language work | CLAUDE-CONTEXT-language-validators.md |
 | Logging standards | CLAUDE-CONTEXT-logging.md |
+| AI agents/help | CLAUDE-CONTEXT-agents.md |
 
 ## Framework Updates
 

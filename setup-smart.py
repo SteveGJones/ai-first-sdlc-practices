@@ -88,6 +88,16 @@ class SmartFrameworkSetup:
         "circleci": "examples/ci-cd/circleci/.circleci/config.yml"
     }
     
+    # Agent installation files
+    AGENT_FILES = {
+        "tools/automation/agent-installer.py": "tools/agent-installer.py",
+        "tools/automation/project-analyzer.py": "tools/project-analyzer.py",
+        "tools/automation/agent-recommender.py": "tools/agent-recommender.py",
+        "tools/automation/agent-help.py": "tools/agent-help.py",
+        "release/agent-manifest.json": None,  # Downloaded for metadata
+        "release/agents/README.md": None  # Downloaded for reference
+    }
+    
     def __init__(self, project_dir: Optional[Path] = None, project_purpose: str = None, 
                  non_interactive: bool = False, ci_platform: str = None, quickstart: bool = False):
         self.project_dir = project_dir or Path.cwd()
@@ -757,6 +767,10 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         version_file.write_text("1.6.0")
         print("✅ Created VERSION file (1.6.0)")
         
+        # Install AI agents
+        print("\n🤖 Installing AI agents...")
+        self.install_agents()
+        
         # Create initial context
         print("\n💾 Creating initial context...")
         self.create_initial_context()
@@ -1053,6 +1067,116 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
             self.errors.append(f"Could not set up branch protection: {e}")
             return False
     
+    def install_agents(self) -> bool:
+        """Install AI agents for the project with smart recommendations"""
+        try:
+            # Download agent tools
+            print("   📥 Downloading agent tools...")
+            agent_tools = [
+                "tools/automation/agent-installer.py",
+                "tools/automation/project-analyzer.py", 
+                "tools/automation/agent-recommender.py",
+                "tools/automation/agent-help.py"
+            ]
+            
+            for tool in agent_tools:
+                local_path = self.project_dir / "tools" / Path(tool).name
+                self.download_file(tool, local_path)
+            
+            # Create claude/agents directory
+            claude_agents_dir = self.project_dir / "claude" / "agents"
+            claude_agents_dir.mkdir(parents=True, exist_ok=True)
+            
+            # In non-interactive mode, do smart installation
+            if self.non_interactive:
+                print("   🔍 Analyzing project for smart agent recommendations...")
+                
+                # Build command for smart installation
+                cmd = [
+                    sys.executable, 
+                    str(self.project_dir / "tools" / "agent-installer.py"),
+                    "--project-root", str(self.project_dir)
+                ]
+                
+                # If we have project purpose, pass it as objectives
+                if self.project_purpose and self.project_purpose != "AI-assisted software development":
+                    # Create a temp file with analysis including objectives
+                    analysis_data = {
+                        'languages': {self.detected_language: {'files': 10, 'percentage': 100}} if self.detected_language else {},
+                        'primary_language': self.detected_language,
+                        'project_types': [],
+                        'frameworks': set(),
+                        'objectives': self.project_purpose
+                    }
+                    
+                    # Use the recommender directly
+                    print(f"   📋 Project purpose: {self.project_purpose}")
+                    
+                # Just install core + detected language for now
+                cmd.extend(["--core-only"])
+                if self.detected_language and self.detected_language != 'general':
+                    cmd.extend(["--languages", self.detected_language])
+                
+                print(f"   🚀 Installing essential agents...")
+                
+                # Try to run the installer
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                
+                if result.returncode != 0:
+                    # Fallback to downloading core agents directly
+                    return self._install_core_agents_fallback()
+                    
+                print("   ✅ Installed smart agent selection")
+                print("   💡 Run 'python tools/agent-installer.py' for more agents")
+                print("   💡 Use 'python tools/agent-help.py <challenge>' to find agents")
+            else:
+                # Interactive mode - just download core agents
+                return self._install_core_agents_fallback()
+                
+            return True
+            
+        except Exception as e:
+            print(f"   ⚠️  Could not install agents: {e}")
+            print("   💡 You can install agents manually later")
+            return False
+    
+    def _install_core_agents_fallback(self) -> bool:
+        """Fallback method to install core agents directly"""
+        # Download core agents directly
+        print("   📦 Installing core agents...")
+        
+        core_agents = [
+            ("agents/core/sdlc-coach.md", "claude/agents/core/sdlc-coach.md"),
+            ("agents/core/test-manager.md", "claude/agents/core/test-manager.md"),
+            ("agents/core/solution-architect.md", "claude/agents/core/solution-architect.md")
+        ]
+        
+        installed_count = 0
+        for remote, local in core_agents:
+            local_path = self.project_dir / local
+            local_path.parent.mkdir(parents=True, exist_ok=True)
+            if self.download_file(remote, local_path):
+                installed_count += 1
+        
+        if installed_count > 0:
+            print(f"   ✅ Installed {installed_count} core agents")
+            
+            # Create agent manifest
+            manifest = {
+                "sdlc-coach": "1.0.0",
+                "test-manager": "1.0.0",
+                "solution-architect": "1.0.0"
+            }
+            manifest_path = self.project_dir / ".agent-manifest.json"
+            with open(manifest_path, 'w') as f:
+                json.dump(manifest, f, indent=2)
+            print("   ✅ Created agent manifest")
+            return True
+        else:
+            print("   ℹ️  No agents downloaded (this is okay for initial setup)")
+            print("   💡 Full agent library will be available after framework update")
+            return False
+    
     def print_next_steps(self):
         """Print next steps for the user"""
         print("\n📋 Next Steps:")
@@ -1071,18 +1195,26 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         print("   - Read LANGUAGE-SPECIFIC-VALIDATORS.md")
         print("   - Create tools/validation/validate-[your-language].py")
         print("   - Configure for ZERO tolerance")
-        print("\n4. Customize CLAUDE.md with project-specific details:")
+        print("\n4. Explore AI agents (NEW!):")
+        print("   - View installed agents: ls claude/agents/")
+        print("   - Get smart recommendations: python tools/agent-installer.py --analyze")
+        print("   - Find agents for any challenge: python tools/agent-help.py <topic>")
+        print("   - Examples:")
+        print("     • python tools/agent-help.py testing")
+        print("     • python tools/agent-help.py performance")
+        print("     • python tools/agent-help.py \"optimize database queries\"")
+        print("\n5. Customize CLAUDE.md with project-specific details:")
         print("   edit CLAUDE.md")
-        print("\n5. Complete the setup tasks:")
+        print("\n6. Complete the setup tasks:")
         print("   python tools/progress-tracker.py list")
-        print("\n6. When ready, push the branch:")
+        print("\n7. When ready, push the branch:")
         print("   git add .")
         print("   git commit -m \"feat: implement AI-First SDLC framework with Zero Technical Debt\"")
         print("   git push -u origin ai-first-kick-start")
-        print("\n7. Create retrospective (REQUIRED before PR):")
+        print("\n8. Create retrospective (REQUIRED before PR):")
         print("   Create file: retrospectives/00-ai-first-setup.md")
         print("   Document what went well, what could improve, and lessons learned")
-        print("\n8. Create a pull request to merge into main")
+        print("\n9. Create a pull request to merge into main")
         print("   Note: PR will be rejected without retrospective AND architecture docs!")
         print("\n📚 Framework Documentation:")
         print("   https://github.com/SteveGJones/ai-first-sdlc-practices")
