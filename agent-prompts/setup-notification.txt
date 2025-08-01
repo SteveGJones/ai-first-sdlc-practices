@@ -1,0 +1,57 @@
+# AI Agent Configuration Instructions
+
+## Important: Manual Agent Setup Required
+
+The AI-First SDLC framework includes specialized AI agents that enhance your development workflow. However, these agents must be configured manually in your AI platform (Claude, GPT-4, etc.).
+
+## Next Steps:
+
+1. **Navigate to the agent-prompts directory:**
+   ```
+   cd agent-prompts/
+   ```
+
+2. **Review available agents:**
+   ```
+   cat README.md
+   ```
+
+3. **Configure essential agents** (recommended):
+   - sdlc-coach (in core/)
+   - solution-architect (in core/)
+   - test-manager (in core/)
+   - kickstart-architect (in sdlc/)
+
+4. **For each agent:**
+   - Open the .txt file
+   - Follow the configuration instructions
+   - Copy the prompt into your AI platform
+   - Set the specified trigger words
+
+## Quick Configuration Example:
+
+For Claude:
+1. Open Claude's agent configuration
+2. Click "Create New Agent"
+3. Name it according to the prompt file
+4. Paste the prompt content
+5. Set the trigger words
+6. Save and test
+
+## Why Manual Configuration?
+
+AI platforms don't currently support programmatic agent creation for security and control reasons. Manual configuration ensures:
+- You have full control over which agents are active
+- You can customize agents for your specific needs
+- You can verify agent behavior before activation
+
+## Get Started:
+
+Start with the core agents to experience the full power of AI-First SDLC:
+```
+cat agent-prompts/core/sdlc-coach.txt
+cat agent-prompts/core/solution-architect.txt
+cat agent-prompts/core/test-manager.txt
+```
+
+Happy coding with your new AI agent team!
