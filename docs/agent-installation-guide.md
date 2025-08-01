@@ -1,3 +1,34 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Agent Installation Guide](#agent-installation-guide)
+  - [Overview](#overview)
+  - [Important: Manual Installation Required](#important-manual-installation-required)
+  - [Installation Methods](#installation-methods)
+    - [Method 1: Using the Agent Installer (Recommended)](#method-1-using-the-agent-installer-recommended)
+    - [Method 2: Manual Agent Reference](#method-2-manual-agent-reference)
+      - [Option A: Copy Agent Content](#option-a-copy-agent-content)
+      - [Option B: Reference Agent Guidelines](#option-b-reference-agent-guidelines)
+  - [Agent Categories](#agent-categories)
+    - [Core Agents (Essential)](#core-agents-essential)
+    - [SDLC-Specific Agents](#sdlc-specific-agents)
+    - [Language-Specific Agents](#language-specific-agents)
+    - [Specialized Agents](#specialized-agents)
+    - [AI Development Agents](#ai-development-agents)
+  - [Working with Agents](#working-with-agents)
+    - [During Development](#during-development)
+    - [Agent Collaboration](#agent-collaboration)
+  - [Troubleshooting](#troubleshooting)
+    - [Agent Not Found](#agent-not-found)
+    - [Installation Issues](#installation-issues)
+    - [Using Agents Effectively](#using-agents-effectively)
+  - [Future Improvements](#future-improvements)
+  - [Example Workflow](#example-workflow)
+  - [Conclusion](#conclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Agent Installation Guide
 
 ## Overview
