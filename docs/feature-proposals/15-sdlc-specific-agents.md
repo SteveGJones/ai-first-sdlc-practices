@@ -5,7 +5,7 @@
 **Author**: AI Agent
 **Date**: 2025-08-01
 **Status**: Proposed
-**Target Branch**: `feature/sdlc-specific-agents`
+Target Branch: `feature/sdlc-specific-agents`
 
 ## Executive Summary
 
