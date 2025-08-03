@@ -1,0 +1,120 @@
+# Agent Composition Configuration
+# This file defines composite agents that combine capabilities of multiple base agents
+
+version: "1.0"
+
+compositions:
+  full-stack-developer:
+    name: "Full Stack Developer"
+    description: "Comprehensive development expertise across frontend, backend, and infrastructure"
+    base_agent: "solution-architect"
+    includes:
+      - "python-expert"
+      - "api-designer"
+      - "devops-specialist"
+      - "security-architect"
+    use_cases:
+      - "Building complete web applications"
+      - "End-to-end feature development"
+      - "Full stack architecture design"
+
+  compliance-specialist:
+    name: "Compliance Specialist"
+    description: "Comprehensive compliance and security expertise"
+    base_agent: "compliance-auditor"
+    includes:
+      - "security-architect"
+      - "sdlc-enforcer"
+      - "documentation-architect"
+    use_cases:
+      - "Regulatory compliance projects"
+      - "Security-critical applications"
+      - "Audit preparation"
+
+  ai-system-expert:
+    name: "AI System Expert"
+    description: "Complete AI/ML system development and deployment"
+    base_agent: "ai-solution-architect"
+    includes:
+      - "python-expert"
+      - "devops-specialist"
+      - "performance-engineer"
+      - "ai-test-engineer"
+    use_cases:
+      - "Building ML pipelines"
+      - "Deploying AI models"
+      - "AI system architecture"
+
+  enterprise-architect:
+    name: "Enterprise Architect"
+    description: "Large-scale system design and governance"
+    base_agent: "solution-architect"
+    includes:
+      - "compliance-auditor"
+      - "integration-orchestrator"
+      - "performance-engineer"
+      - "sre-specialist"
+    use_cases:
+      - "Enterprise system design"
+      - "Multi-system integration"
+      - "Large-scale deployments"
+
+  agile-delivery-lead:
+    name: "Agile Delivery Lead"
+    description: "Complete project delivery management"
+    base_agent: "delivery-manager"
+    includes:
+      - "agile-coach"
+      - "project-plan-tracker"
+      - "retrospective-miner"
+    use_cases:
+      - "Managing agile teams"
+      - "Sprint planning and execution"
+      - "Delivery optimization"
+
+  quality-assurance-lead:
+    name: "Quality Assurance Lead"
+    description: "Comprehensive testing and quality management"
+    base_agent: "test-manager"
+    includes:
+      - "ai-test-engineer"
+      - "integration-orchestrator"
+      - "performance-engineer"
+    use_cases:
+      - "Test strategy design"
+      - "Quality process implementation"
+      - "Test automation"
+
+# Composition Rules
+rules:
+  # Agents that should always be included when certain conditions are met
+  auto_include:
+    - when: "project_has_api"
+      include: ["api-designer", "integration-orchestrator"]
+    
+    - when: "project_is_production"
+      include: ["sre-specialist", "performance-engineer"]
+    
+    - when: "project_has_compliance_requirements"
+      include: ["compliance-auditor", "security-architect"]
+
+  # Conflicting agents that shouldn't be used together
+  exclusions:
+    - agents: ["junior-ai-solution-architect", "ai-solution-architect"]
+      reason: "Use one or the other based on complexity needs"
+
+# Usage Instructions
+usage:
+  activation: |
+    To use a composite agent, invoke it by its composition name:
+    Example: "I need help from the full-stack-developer agent"
+    
+  behavior: |
+    Composite agents combine the expertise of their included agents,
+    providing comprehensive guidance across multiple domains.
+    
+  selection: |
+    Choose composite agents when:
+    - The task spans multiple domains
+    - You need coordinated expertise
+    - Complex scenarios requiring diverse skills

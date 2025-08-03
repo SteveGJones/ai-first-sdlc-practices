@@ -21,9 +21,9 @@ console = Console()
 
 # Agent catalog with keywords and use cases
 AGENT_CATALOG = {
-    'sdlc-coach': {
-        'keywords': ['process', 'workflow', 'sdlc', 'framework', 'compliance', 'best practices'],
-        'helps_with': 'Framework compliance, process improvement, workflow optimization',
+    'sdlc-enforcer': {
+        'keywords': ['process', 'workflow', 'sdlc', 'framework', 'compliance', 'best practices', 'enforcement'],
+        'helps_with': 'Framework compliance, process improvement, workflow optimization, GitHub integration',
         'when_to_use': 'When unsure about AI-First SDLC practices or need process guidance'
     },
     'test-manager': {
@@ -41,10 +41,10 @@ AGENT_CATALOG = {
         'helps_with': 'Security design, threat modeling, compliance requirements, secure coding',
         'when_to_use': 'Implementing security features or addressing vulnerabilities'
     },
-    'python-expert': {
-        'keywords': ['python', 'pythonic', 'pep', 'django', 'flask', 'fastapi', 'pytest'],
-        'helps_with': 'Python best practices, code optimization, framework guidance',
-        'when_to_use': 'Writing Python code or solving Python-specific challenges'
+    'language-python-expert': {
+        'keywords': ['python', 'pythonic', 'pep', 'django', 'flask', 'fastapi', 'pytest', 'zero-debt'],
+        'helps_with': 'Python best practices, code optimization, framework guidance, AI-First SDLC integration',
+        'when_to_use': 'Writing Python code or solving Python-specific challenges with Zero Technical Debt'
     },
     'javascript-expert': {
         'keywords': ['javascript', 'js', 'typescript', 'node', 'npm', 'webpack', 'babel'],
@@ -95,6 +95,31 @@ AGENT_CATALOG = {
         'keywords': ['cicd', 'pipeline', 'automation', 'deployment', 'github actions', 'jenkins'],
         'helps_with': 'Pipeline design, deployment automation, CI/CD best practices',
         'when_to_use': 'Setting up or optimizing CI/CD pipelines'
+    },
+    'critical-goal-reviewer': {
+        'keywords': ['review', 'goals', 'requirements', 'validation', 'alignment', 'devil advocate'],
+        'helps_with': 'Goal alignment review, requirement validation, gap identification',
+        'when_to_use': 'After completing features to ensure alignment with original goals'
+    },
+    'ai-first-kick-starter': {
+        'keywords': ['setup', 'kickstart', 'framework', 'sdlc', 'initialization', 'bootstrap'],
+        'helps_with': 'AI-First SDLC framework setup, project initialization, directory structure',
+        'when_to_use': 'Setting up AI-First SDLC practices in a new or existing project'
+    },
+    'github-integration-specialist': {
+        'keywords': ['github', 'git', 'pr', 'branch', 'protection', 'repository', 'api'],
+        'helps_with': 'GitHub API operations, repository management, PR automation, branch protection',
+        'when_to_use': 'Automating GitHub workflows or repository management'
+    },
+    'ai-solution-architect': {
+        'keywords': ['ai', 'ml', 'machine learning', 'llm', 'architecture', 'mlops', 'models'],
+        'helps_with': 'AI/ML system design, architecture review, best practices validation',
+        'when_to_use': 'Designing or reviewing AI/ML systems and implementations'
+    },
+    'project-plan-tracker': {
+        'keywords': ['project', 'plan', 'tracking', 'progress', 'deliverables', 'timeline'],
+        'helps_with': 'Project progress monitoring, plan adherence, deliverable tracking',
+        'when_to_use': 'Monitoring project execution against established plans'
     }
 }
 

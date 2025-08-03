@@ -1,0 +1,324 @@
+name: AI-First SDLC Node.js Validation
+
+on:
+  push:
+    branches: [ main, develop, 'feature/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  # AI-First SDLC Framework Validation
+  ai-sdlc-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for proper validation
+    
+    - name: Set up Python for AI-First SDLC tools
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install AI-First SDLC framework tools
+      run: |
+        python -m pip install --upgrade pip
+        # Install framework tools (adjust path if tools are in your repo)
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pre-commit
+    
+    - name: Run AI-First SDLC pipeline validation
+      run: |
+        echo "🚀 Running AI-First SDLC validation pipeline..."
+        python tools/validation/validate-pipeline.py --ci --checks branch,proposal,architecture,technical-debt
+      continue-on-error: true
+    
+    - name: Check feature proposal (PRs only)
+      if: github.event_name == 'pull_request'
+      run: |
+        BRANCH_NAME="${{ github.head_ref }}"
+        echo "Checking feature proposal for branch: $BRANCH_NAME"
+        python tools/validation/check-feature-proposal.py --branch "$BRANCH_NAME"
+    
+    - name: Validate architecture documentation
+      run: |
+        echo "🏗️ Validating architecture documentation..."
+        python tools/validation/validate-architecture.py --strict
+    
+    - name: Check Zero Technical Debt compliance
+      run: |
+        echo "🚫 Checking Zero Technical Debt compliance..."
+        python tools/validation/check-technical-debt.py --threshold 0
+
+  # Node.js specific validation
+  nodejs-validation:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Set up Python for validation tools
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Cache node modules
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ matrix.node-version }}-
+          ${{ runner.os }}-node-
+    
+    - name: Install dependencies
+      run: |
+        npm ci
+        # Install additional tools if not in package.json
+        if ! npm list --depth=0 eslint &>/dev/null; then
+          npm install --save-dev eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
+        fi
+        if ! npm list --depth=0 prettier &>/dev/null; then
+          npm install --save-dev prettier
+        fi
+        if ! npm list --depth=0 typescript &>/dev/null && [ -f tsconfig.json ]; then
+          npm install --save-dev typescript
+        fi
+    
+    - name: Run Node.js AI-First SDLC validation
+      run: |
+        # Download and run the Node.js specific validator
+        curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/examples/ci-cd/nodejs/validate-nodejs.py > validate-nodejs.py
+        python validate-nodejs.py
+    
+    - name: Run tests with coverage
+      run: |
+        npm test -- --coverage --coverageReporters=lcov,text
+    
+    - name: Upload coverage to artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-${{ matrix.node-version }}
+        path: coverage/
+        retention-days: 7
+
+  # Security and dependency scanning
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run security audit
+      run: |
+        echo "🔒 Running security audit..."
+        npm audit --audit-level=moderate
+    
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=medium
+      continue-on-error: true
+    
+    - name: Run CodeQL analysis
+      uses: github/codeql-action/init@v3
+      with:
+        languages: javascript
+    
+    - name: Perform CodeQL analysis
+      uses: github/codeql-action/analyze@v3
+
+  # Build and deployment validation
+  build-validation:
+    runs-on: ubuntu-latest
+    needs: [ai-sdlc-validation, nodejs-validation]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: |
+        if npm run-script --list | grep -q "build"; then
+          echo "🏗️ Building application..."
+          npm run build
+        else
+          echo "ℹ️ No build script found, skipping build step"
+        fi
+    
+    - name: Run production build tests
+      run: |
+        if npm run-script --list | grep -q "test:build"; then
+          npm run test:build
+        else
+          echo "ℹ️ No build-specific tests found"
+        fi
+    
+    - name: Upload build artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          dist/
+          build/
+          out/
+        retention-days: 7
+
+  # AI-First SDLC compliance report
+  compliance-report:
+    runs-on: ubuntu-latest
+    needs: [ai-sdlc-validation, nodejs-validation, security-scan, build-validation]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install framework tools
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Generate comprehensive validation report
+      run: |
+        echo "📊 Generating AI-First SDLC compliance report..."
+        python tools/validation/validate-pipeline.py --ci --export json --output ai-sdlc-report.json
+        python tools/validation/validate-pipeline.py --ci --export markdown --output ai-sdlc-report.md
+      continue-on-error: true
+    
+    - name: Upload compliance reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: ai-sdlc-compliance-report
+        path: |
+          ai-sdlc-report.json
+          ai-sdlc-report.md
+        retention-days: 30
+    
+    - name: Comment PR with compliance results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          
+          let comment = '## 🤖 AI-First SDLC Compliance Report\n\n';
+          
+          // Add job status summary
+          const jobs = {
+            'AI-First SDLC Validation': '${{ needs.ai-sdlc-validation.result }}',
+            'Node.js Validation': '${{ needs.nodejs-validation.result }}', 
+            'Security Scan': '${{ needs.security-scan.result }}',
+            'Build Validation': '${{ needs.build-validation.result }}'
+          };
+          
+          comment += '### Pipeline Status\n\n';
+          for (const [job, status] of Object.entries(jobs)) {
+            const emoji = status === 'success' ? '✅' : status === 'failure' ? '❌' : '⚠️';
+            comment += `${emoji} **${job}**: ${status}\n`;
+          }
+          
+          comment += '\n### Compliance Checks\n\n';
+          
+          try {
+            const report = fs.readFileSync('ai-sdlc-report.md', 'utf8');
+            comment += report;
+          } catch (e) {
+            comment += '❌ Failed to generate detailed compliance report\n';
+          }
+          
+          comment += '\n### Zero Technical Debt Status\n\n';
+          comment += '- 🚫 No TODO/FIXME/HACK comments allowed\n';
+          comment += '- 🔒 No security vulnerabilities permitted\n';
+          comment += '- 📏 All code must pass linting with zero warnings\n';
+          comment += '- 🎯 100% type safety required (TypeScript projects)\n';
+          comment += '- ✅ All tests must pass\n';
+          
+          comment += `\n---\n_Generated at: ${new Date().toISOString()}_\n`;
+          comment += '_Powered by AI-First SDLC Framework_';
+          
+          const issue_number = context.payload.pull_request.number;
+          
+          try {
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('AI-First SDLC Compliance Report')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue_number,
+                body: comment
+              });
+            }
+          } catch (error) {
+            console.error('Failed to post comment:', error);
+          }

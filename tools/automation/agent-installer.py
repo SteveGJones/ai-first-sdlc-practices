@@ -34,8 +34,39 @@ except ImportError:
 
 console = Console()
 
+# Define agent tiers for deployment
+AGENT_TIERS = {
+    "universal": [
+        "sdlc-enforcer",
+        "solution-architect", 
+        "critical-goal-reviewer",
+        "framework-validator",
+        "github-integration-specialist"
+    ],
+    "language_specific": {
+        "python": ["language-python-expert", "ai-test-engineer"],
+        # Other language experts will be created as needed
+    },
+    "context_specific": {
+        "api": ["integration-orchestrator", "devops-specialist"],
+        "web": ["example-security-architect"],
+        "ml": ["ai-solution-architect", "ai-test-engineer"],
+        "microservices": ["integration-orchestrator", "devops-specialist"],
+        "production": ["sre-specialist", "performance-engineer"],
+        "compliance": ["compliance-auditor", "example-security-architect"]
+    },
+    "on_demand": [
+        "agile-coach",
+        "delivery-manager",
+        "documentation-architect",
+        "technical-writer",
+        "prompt-engineer",
+        "mcp-server-architect"
+    ]
+}
+
 class AgentInstaller:
-    """Manages installation of AI agents to user projects."""
+    """Manages installation of AI agents to user projects with tiered deployment."""
     
     def __init__(self, project_root: Path, agent_source: Path):
         self.project_root = project_root
@@ -181,6 +212,96 @@ class AgentInstaller:
                     console.print(f"[red]Failed to install {agent_file.name}: {e}[/red]")
         
         console.print(f"\n[green]Installed {installed_count} language-specific agents[/green]")
+    
+    def install_tiered_agents(self, project_context: Dict = None) -> Dict[str, List[str]]:
+        """Install agents based on tiered deployment strategy."""
+        installed = {
+            "universal": [],
+            "context_aware": [],
+            "on_demand": []
+        }
+        
+        # Tier 1: Always install universal agents
+        console.print("\n[bold]Installing Tier 1: Universal Core Agents[/bold]")
+        for agent_name in AGENT_TIERS["universal"]:
+            if self._install_by_name(agent_name):
+                installed["universal"].append(agent_name)
+                console.print(f"  ✓ {agent_name}")
+        
+        # Tier 2: Install context-aware agents based on project analysis
+        if project_context:
+            console.print("\n[bold]Installing Tier 2: Context-Aware Agents[/bold]")
+            
+            # Language-specific agents
+            detected_languages = project_context.get("languages", [])
+            for lang in detected_languages:
+                if lang.lower() in AGENT_TIERS["language_specific"]:
+                    for agent_name in AGENT_TIERS["language_specific"][lang.lower()]:
+                        if self._install_by_name(agent_name):
+                            installed["context_aware"].append(agent_name)
+                            console.print(f"  ✓ {agent_name} (for {lang})")
+            
+            # Context-specific agents
+            if project_context.get("has_api"):
+                for agent_name in AGENT_TIERS["context_specific"]["api"]:
+                    if self._install_by_name(agent_name):
+                        installed["context_aware"].append(agent_name)
+                        console.print(f"  ✓ {agent_name} (API support)")
+            
+            if project_context.get("is_web"):
+                for agent_name in AGENT_TIERS["context_specific"]["web"]:
+                    if self._install_by_name(agent_name):
+                        installed["context_aware"].append(agent_name)
+                        console.print(f"  ✓ {agent_name} (Web support)")
+            
+            if project_context.get("has_ml"):
+                for agent_name in AGENT_TIERS["context_specific"]["ml"]:
+                    if self._install_by_name(agent_name):
+                        installed["context_aware"].append(agent_name)
+                        console.print(f"  ✓ {agent_name} (ML support)")
+            
+            if project_context.get("is_production"):
+                for agent_name in AGENT_TIERS["context_specific"]["production"]:
+                    if self._install_by_name(agent_name):
+                        installed["context_aware"].append(agent_name)
+                        console.print(f"  ✓ {agent_name} (Production)")
+            
+            if project_context.get("requires_compliance"):
+                for agent_name in AGENT_TIERS["context_specific"]["compliance"]:
+                    if self._install_by_name(agent_name):
+                        installed["context_aware"].append(agent_name)
+                        console.print(f"  ✓ {agent_name} (Compliance)")
+        
+        # Tier 3: Show available on-demand agents
+        console.print("\n[bold]Tier 3: On-Demand Agents Available[/bold]")
+        console.print("These agents can be installed when needed:")
+        for agent_name in AGENT_TIERS["on_demand"]:
+            console.print(f"  • {agent_name}")
+        
+        return installed
+    
+    def smart_install(self) -> Dict[str, List[str]]:
+        """Smart installation with project analysis and tiered deployment."""
+        # Analyze project if available
+        project_context = {}
+        if ANALYSIS_AVAILABLE:
+            try:
+                analyzer = ProjectAnalyzer(self.project_root)
+                analysis = analyzer.analyze()
+                
+                project_context = {
+                    "languages": analysis.get("languages", []),
+                    "has_api": any(f in str(analysis) for f in ["api", "REST", "GraphQL"]),
+                    "is_web": any(f in str(analysis) for f in ["web", "frontend", "html"]),
+                    "has_ml": any(f in str(analysis) for f in ["ml", "ai", "model"]),
+                    "is_production": self.project_root.name not in ["test", "demo", "example"],
+                    "requires_compliance": any(f in str(analysis) for f in ["compliance", "audit", "security"])
+                }
+            except Exception as e:
+                console.print(f"[yellow]Could not analyze project: {e}[/yellow]")
+        
+        # Install based on tiers
+        return self.install_tiered_agents(project_context)
     
     def show_available_agents(self):
         """Display all available agents in a tree structure."""
@@ -371,8 +492,9 @@ class AgentInstaller:
 @click.option('--analyze', is_flag=True, help='Analyze project and show recommendations')
 @click.option('--objectives', help='Project objectives for recommendations')
 @click.option('--recommend-only', is_flag=True, help='Show recommendations without installing')
+@click.option('--tiered', is_flag=True, help='Use tiered deployment strategy')
 def main(project_root, agent_source, core_only, languages, list_agents, install, 
-        analyze, objectives, recommend_only):
+        analyze, objectives, recommend_only, tiered):
     """Install AI agents for the AI-First SDLC framework."""
     
     project_path = Path(project_root).resolve()
@@ -381,7 +503,7 @@ def main(project_root, agent_source, core_only, languages, list_agents, install,
     if agent_source is None:
         # Look for agents in the framework installation
         framework_root = Path(__file__).parent.parent.parent
-        agent_source = framework_root / "release" / "agents"
+        agent_source = framework_root / "agents"
         
         if not agent_source.exists():
             console.print("[red]Agent source directory not found![/red]")
@@ -414,6 +536,9 @@ def main(project_root, agent_source, core_only, languages, list_agents, install,
     
     if list_agents:
         installer.show_available_agents()
+    elif tiered:
+        # Use tiered deployment strategy
+        installer.smart_install()
     elif core_only:
         installer.install_core_agents()
     elif languages:

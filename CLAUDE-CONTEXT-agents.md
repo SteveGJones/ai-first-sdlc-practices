@@ -61,26 +61,40 @@ Agents are recommended based on:
 Once installed, agents provide specialized expertise:
 
 ```
-@sdlc-coach How do I ensure Zero Technical Debt compliance?
+@sdlc-enforcer How do I ensure Zero Technical Debt compliance?
+@critical-goal-reviewer Review our recent authentication implementation
+@ai-first-kick-starter Help me set up AI-First SDLC in my project
+@github-integration-specialist Set up branch protection for our repo
 @test-manager What's the right test strategy for microservices?
 @solution-architect Should we use event sourcing for this feature?
+@ai-solution-architect Review my LLM application architecture
+@project-plan-tracker Are we on track with our MVP deliverables?
 ```
 
 ## Agent Categories
 
 ### Core Agents (Always Installed)
-- `sdlc-coach`: Framework compliance and best practices
+- `sdlc-enforcer`: Primary guardian of AI-First SDLC compliance
+- `critical-goal-reviewer`: Reviews work against original goals
+- `github-integration-specialist`: GitHub automation and repository management
 - `test-manager`: Testing strategy and coordination
 - `solution-architect`: System design and technology decisions
 
 ### Language Experts
-- `python-expert`: Python patterns, PEP compliance
+- `language-python-expert`: Python patterns with AI-First SDLC integration
 - `javascript-expert`: JS/TS best practices
 - `go-expert`: Go idioms and concurrency
 - `java-architect`: Java patterns and Spring
 
 ### Specialized Domains
 - `security-architect`: Threat modeling, secure design
+- `compliance-auditor`: Comprehensive compliance auditing
+- `devops-specialist`: CI/CD and infrastructure automation
+- `sre-specialist`: Site reliability and production excellence
+- `performance-engineer`: Performance testing and optimization
+- `integration-orchestrator`: Complex integration testing
+- `ai-solution-architect`: AI/ML system design and reviews
+- `junior-ai-solution-architect`: Fresh perspectives on AI architectures
 - `api-designer`: RESTful and GraphQL API design
 - `database-architect`: Schema design, optimization
 - `kubernetes-architect`: K8s deployment patterns
