@@ -230,13 +230,11 @@ class AgentInstaller:
             console.print(f"[red]Missing dependencies for {agent_name}: {', '.join(missing_deps)}[/red]")
             return False
         
-        # Determine target directory based on category
-        category = metadata.get('category', 'uncategorized')
-        target_dir = self.claude_agents_dir / category.replace('/', os.sep)
-        target_dir.mkdir(parents=True, exist_ok=True)
+        # Install flat into .claude/agents without category folders
+        self.claude_agents_dir.mkdir(parents=True, exist_ok=True)
         
-        # Copy agent file
-        target_path = target_dir / agent_path.name
+        # Copy agent file directly to .claude/agents
+        target_path = self.claude_agents_dir / agent_path.name
         shutil.copy2(agent_path, target_path)
         
         # Record installation

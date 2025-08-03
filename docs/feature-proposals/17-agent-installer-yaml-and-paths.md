@@ -25,10 +25,11 @@ This proposal addresses critical bugs in the agent installer discovered during r
    - Error: "Warning: Skipping" messages for most agents
    - MCP agents and others failed to parse due to embedded newlines in descriptions
 
-3. **Wrong Installation Directory**
+3. **Wrong Installation Directory and Structure**
    - Agents installed to `claude/agents` instead of `.claude/agents`
-   - Claude doesn't recognize agents in the wrong directory
-   - Users had to manually move files
+   - Agents were installed in category subfolders (e.g., `.claude/agents/core/agent.md`)
+   - Claude expects flat structure with all agents directly in `.claude/agents`
+   - Users had to manually move and flatten files
 
 4. **Poor Error Handling**
    - YAML parsing errors crashed the installer
@@ -53,10 +54,11 @@ This proposal addresses critical bugs in the agent installer discovered during r
 - Parse basic metadata manually if YAML parsing fails
 - Return None for unparseable agents instead of crashing
 
-### 3. Correct Installation Directory
+### 3. Correct Installation Directory and Structure
 - Change from `claude/agents` to `.claude/agents`
+- Install agents flat without category subdirectories
+- All agents go directly into `.claude/agents/`
 - Update all references in code and messages
-- Ensure directory is created with proper structure
 
 ### 4. Improved Error Handling
 - Show warnings instead of errors for individual agent parsing
@@ -88,12 +90,18 @@ def _parse_agent_metadata(self, agent_path: Path) -> Dict:
         return None  # Return None instead of raising
 ```
 
-### Directory Path Fix
+### Directory Path and Structure Fix
 ```python
 # Change from:
 self.claude_agents_dir = project_root / "claude" / "agents"
 # To:
 self.claude_agents_dir = project_root / ".claude" / "agents"
+
+# And change installation from:
+target_dir = self.claude_agents_dir / category.replace('/', os.sep)
+target_path = target_dir / agent_path.name
+# To flat structure:
+target_path = self.claude_agents_dir / agent_path.name
 ```
 
 ### Description Display Fix
@@ -108,7 +116,7 @@ if isinstance(desc, str):
 
 1. **Correct Command Works**: Users can run `python tools/agent-installer.py`
 2. **All Agents Parse**: No YAML parsing errors for standard agents
-3. **Proper Directory**: Agents installed to `.claude/agents`
+3. **Proper Directory**: Agents installed flat to `.claude/agents` without subfolders
 4. **Graceful Failures**: Individual parsing errors don't stop installation
 5. **Clear Feedback**: Users understand what was installed and where
 
@@ -125,6 +133,7 @@ if isinstance(desc, str):
 
 3. **Test Installation Directory**:
    - Verify agents installed to `.claude/agents`
+   - Verify flat structure (no category subfolders)
    - Check Claude recognizes installed agents
 
 4. **Test Error Handling**:
