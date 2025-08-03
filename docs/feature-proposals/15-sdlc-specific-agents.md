@@ -11,7 +11,7 @@
 
 This proposal introduces SDLC-specific agents that enhance the AI-First SDLC framework's ability to generate better kickstarters and enforce framework practices. Additionally, it serves as an experimental test of dynamic agent deployment mechanisms to determine if agents can be made available to Claude without requiring a session restart.
 
-## Background & Motivation
+## Motivation
 
 ### Current Situation
 - We have a comprehensive agent library for general development
