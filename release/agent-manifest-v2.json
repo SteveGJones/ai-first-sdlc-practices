@@ -1,0 +1,170 @@
+{
+  "version": "2.0.0",
+  "build_date": "2025-08-02",
+  "categories": {
+    "core": [
+      "sdlc-enforcer",
+      "solution-architect",
+      "critical-goal-reviewer",
+      "github-integration-specialist",
+      "compliance-auditor",
+      "devops-specialist",
+      "sre-specialist",
+      "test-manager",
+      "example-security-architect"
+    ],
+    "ai-development": [
+      "ai-solution-architect",
+      "junior-ai-solution-architect",
+      "prompt-engineer",
+      "mcp-server-architect",
+      "agent-developer",
+      "langchain-architect",
+      "a2a-architect"
+    ],
+    "testing": [
+      "ai-test-engineer",
+      "performance-engineer",
+      "integration-orchestrator"
+    ],
+    "documentation": [
+      "technical-writer",
+      "documentation-architect"
+    ],
+    "project-management": [
+      "agile-coach",
+      "delivery-manager",
+      "project-plan-tracker"
+    ],
+    "sdlc": [
+      "ai-first-kick-starter",
+      "framework-validator",
+      "kickstart-architect",
+      "project-bootstrapper",
+      "retrospective-miner",
+      "language-python-expert"
+    ],
+    "languages/python": [
+      "example-python-expert"
+    ]
+  },
+  "agents": {
+    "sdlc-enforcer": {
+      "version": "1.0.0",
+      "category": "core/compliance",
+      "description": "Primary guardian of AI-First SDLC compliance. Combines sdlc-coach and framework-validator capabilities to provide comprehensive SDLC enforcement, GitHub integration, and automated compliance monitoring.",
+      "path": "core/sdlc-enforcer.md",
+      "priority": "critical",
+      "dependencies": []
+    },
+    "critical-goal-reviewer": {
+      "version": "1.0.0",
+      "category": "core/quality",
+      "description": "Acts as a constructive challenger and devil's advocate. Reviews completed work against original project goals, requirements, and design specifications, identifying gaps and deviations.",
+      "path": "core/critical-goal-reviewer.md",
+      "priority": "critical",
+      "dependencies": []
+    },
+    "github-integration-specialist": {
+      "version": "1.0.0",
+      "category": "core/github",
+      "description": "Expert in GitHub API operations, repository management, and workflow automation within the AI-First SDLC framework. Handles branch protection, PR automation, and repository health analysis.",
+      "path": "core/github-integration-specialist.md",
+      "priority": "critical",
+      "dependencies": []
+    },
+    "compliance-auditor": {
+      "version": "1.0.0",
+      "category": "core/compliance",
+      "description": "Comprehensive compliance auditing across projects. Identifies compliance gaps, tracks remediation, generates audit reports, and ensures adherence to AI-First SDLC standards and regulations.",
+      "path": "core/compliance-auditor.md",
+      "priority": "high",
+      "dependencies": ["sdlc-enforcer"]
+    },
+    "devops-specialist": {
+      "version": "1.0.0",
+      "category": "core/operations",
+      "description": "Expert in CI/CD pipeline design, deployment automation, infrastructure as code, containerization, and DevOps best practices within the AI-First SDLC framework.",
+      "path": "core/devops-specialist.md",
+      "priority": "high",
+      "dependencies": []
+    },
+    "sre-specialist": {
+      "version": "1.0.0",
+      "category": "core/reliability",
+      "description": "Site reliability engineering expert focusing on production monitoring, incident response, and operational excellence. Ensures systems remain reliable and performant in production.",
+      "path": "core/sre-specialist.md",
+      "priority": "high",
+      "dependencies": []
+    },
+    "performance-engineer": {
+      "version": "1.0.0",
+      "category": "testing/performance",
+      "description": "Specialist in performance testing, optimization, capacity planning, and scalability analysis. Identifies bottlenecks and ensures applications meet performance SLAs.",
+      "path": "testing/performance-engineer.md",
+      "priority": "high",
+      "dependencies": []
+    },
+    "integration-orchestrator": {
+      "version": "1.0.0",
+      "category": "testing/integration",
+      "description": "Designs and manages complex integration testing strategies, API contract testing, cross-service validation, and end-to-end testing orchestration.",
+      "path": "testing/integration-orchestrator.md",
+      "priority": "high",
+      "dependencies": []
+    },
+    "ai-solution-architect": {
+      "version": "1.0.0",
+      "category": "ai-development/architecture",
+      "description": "Expert in designing and reviewing AI/ML systems with deep knowledge of industry best practices, emerging patterns, and production-grade implementations.",
+      "path": "ai-development/ai-solution-architect.md",
+      "priority": "high",
+      "dependencies": []
+    },
+    "junior-ai-solution-architect": {
+      "version": "1.0.0",
+      "category": "ai-development/architecture",
+      "description": "Emerging expert in AI/ML systems providing rapid, practical reviews of AI architectures with fresh perspectives and current tool knowledge.",
+      "path": "ai-development/junior-ai-solution-architect.md",
+      "priority": "medium",
+      "dependencies": []
+    },
+    "project-plan-tracker": {
+      "version": "1.0.0",
+      "category": "project-management/tracking",
+      "description": "Monitors project execution against established plans, ensures deliverables are completed on schedule, and maintains visibility into project health.",
+      "path": "project-management/project-plan-tracker.md",
+      "priority": "high",
+      "dependencies": []
+    },
+    "ai-first-kick-starter": {
+      "version": "1.0.0",
+      "category": "sdlc/setup",
+      "description": "Specializes in properly integrating the AI-First SDLC framework into projects, ensuring correct directory structure, creating essential files, and establishing workflow automation.",
+      "path": "sdlc/ai-first-kick-starter.md",
+      "priority": "critical",
+      "dependencies": ["framework-validator"]
+    }
+  },
+  "core_agents": [
+    "sdlc-enforcer",
+    "solution-architect",
+    "critical-goal-reviewer",
+    "framework-validator",
+    "github-integration-specialist"
+  ],
+  "statistics": {
+    "total_agents": 32,
+    "core_agents": 5,
+    "new_agents": 12,
+    "categories": {
+      "core": 9,
+      "ai-development": 7,
+      "testing": 3,
+      "documentation": 2,
+      "project-management": 3,
+      "sdlc": 6,
+      "languages": 1
+    }
+  }
+}

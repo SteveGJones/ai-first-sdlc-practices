@@ -88,6 +88,16 @@ class SmartFrameworkSetup:
         "circleci": "examples/ci-cd/circleci/.circleci/config.yml"
     }
     
+    # Agent installation files
+    AGENT_FILES = {
+        "tools/automation/agent-installer.py": "tools/agent-installer.py",
+        "tools/automation/project-analyzer.py": "tools/project-analyzer.py",
+        "tools/automation/agent-recommender.py": "tools/agent-recommender.py",
+        "tools/automation/agent-help.py": "tools/agent-help.py",
+        "release/agent-manifest.json": None,  # Downloaded for metadata
+        "release/agents/README.md": None  # Downloaded for reference
+    }
+    
     def __init__(self, project_dir: Optional[Path] = None, project_purpose: str = None, 
                  non_interactive: bool = False, ci_platform: str = None, quickstart: bool = False):
         self.project_dir = project_dir or Path.cwd()
@@ -185,38 +195,49 @@ class SmartFrameworkSetup:
                     self.detected_language = lang
                     return lang
         
-        # If no language detected and not in quickstart/non-interactive mode, ask user
-        if not language_detected and not self.quickstart and not self.non_interactive:
-            print("\n🤔 No programming language detected in the project.")
-            print("What type of project is this?")
-            print("1. Python")
-            print("2. Node.js/JavaScript/TypeScript") 
-            print("3. Go")
-            print("4. Rust")
-            print("5. Java")
-            print("6. Ruby")
-            print("7. General/Other")
-            
-            while True:
-                try:
-                    choice = input("\nSelect language (1-7) [7]: ").strip() or "7"
-                    choice_map = {
-                        "1": "python",
-                        "2": "node",
-                        "3": "go",
-                        "4": "rust",
-                        "5": "java",
-                        "6": "ruby",
-                        "7": "general"
-                    }
-                    if choice in choice_map:
-                        self.detected_language = choice_map[choice]
-                        return self.detected_language
-                    else:
-                        print("Please enter a number between 1 and 7")
-                except KeyboardInterrupt:
-                    print("\nUsing general language settings")
-                    break
+        # If no language detected, handle based on mode
+        if not language_detected:
+            # In non-interactive mode, provide helpful message
+            if self.non_interactive:
+                print("\n⚠️  No programming language detected in the project.")
+                print("   You can specify the language by creating one of these files:")
+                print("   - Python: requirements.txt, setup.py, or *.py files")
+                print("   - Node.js: package.json or *.js files")
+                print("   - Go: go.mod or *.go files")
+                print("   - Rust: Cargo.toml or *.rs files")
+                print("   - Java: pom.xml, build.gradle, or *.java files")
+                print("   Using general language settings for now.")
+            elif not self.quickstart:  # Interactive mode
+                print("\n🤔 No programming language detected in the project.")
+                print("What type of project is this?")
+                print("1. Python")
+                print("2. Node.js/JavaScript/TypeScript") 
+                print("3. Go")
+                print("4. Rust")
+                print("5. Java")
+                print("6. Ruby")
+                print("7. General/Other")
+                
+                while True:
+                    try:
+                        choice = input("\nSelect language (1-7) [7]: ").strip() or "7"
+                        choice_map = {
+                            "1": "python",
+                            "2": "node",
+                            "3": "go",
+                            "4": "rust",
+                            "5": "java",
+                            "6": "ruby",
+                            "7": "general"
+                        }
+                        if choice in choice_map:
+                            self.detected_language = choice_map[choice]
+                            return self.detected_language
+                        else:
+                            print("Please enter a number between 1 and 7")
+                    except KeyboardInterrupt:
+                        print("\nUsing general language settings")
+                        break
         
         # Default to general
         self.detected_language = 'general'
@@ -757,6 +778,14 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         version_file.write_text("1.6.0")
         print("✅ Created VERSION file (1.6.0)")
         
+        # Install AI agents
+        print("\n🤖 Installing AI agents...")
+        self.install_agents()
+        
+        # Create Claude project configuration
+        print("\n🔧 Creating Claude project configuration...")
+        self.create_claude_config()
+        
         # Create initial context
         print("\n💾 Creating initial context...")
         self.create_initial_context()
@@ -1053,6 +1082,181 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
             self.errors.append(f"Could not set up branch protection: {e}")
             return False
     
+    def install_agents(self) -> bool:
+        """Install AI agents for the project with smart recommendations"""
+        try:
+            # Download agent tools
+            print("   📥 Downloading agent tools...")
+            agent_tools = [
+                "tools/automation/agent-installer.py",
+                "tools/automation/project-analyzer.py", 
+                "tools/automation/agent-recommender.py",
+                "tools/automation/agent-help.py"
+            ]
+            
+            for tool in agent_tools:
+                local_path = self.project_dir / "tools" / Path(tool).name
+                self.download_file(tool, local_path)
+            
+            # Create claude/agents directory
+            claude_agents_dir = self.project_dir / "claude" / "agents"
+            claude_agents_dir.mkdir(parents=True, exist_ok=True)
+            
+            # In non-interactive mode, do smart installation
+            if self.non_interactive:
+                print("   🔍 Analyzing project for smart agent recommendations...")
+                
+                # Build command for smart installation
+                cmd = [
+                    sys.executable, 
+                    str(self.project_dir / "tools" / "agent-installer.py"),
+                    "--project-root", str(self.project_dir)
+                ]
+                
+                # If we have project purpose, pass it as objectives
+                if self.project_purpose and self.project_purpose != "AI-assisted software development":
+                    # Create a temp file with analysis including objectives
+                    analysis_data = {
+                        'languages': {self.detected_language: {'files': 10, 'percentage': 100}} if self.detected_language else {},
+                        'primary_language': self.detected_language,
+                        'project_types': [],
+                        'frameworks': set(),
+                        'objectives': self.project_purpose
+                    }
+                    
+                    # Use the recommender directly
+                    print(f"   📋 Project purpose: {self.project_purpose}")
+                    
+                # Just install core + detected language for now
+                cmd.extend(["--core-only"])
+                if self.detected_language and self.detected_language != 'general':
+                    cmd.extend(["--languages", self.detected_language])
+                
+                print(f"   🚀 Installing essential agents...")
+                
+                # Try to run the installer
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                
+                if result.returncode != 0:
+                    # Fallback to downloading core agents directly
+                    return self._install_core_agents_fallback()
+                    
+                print("   ✅ Installed smart agent selection")
+                print("   💡 Run 'python tools/agent-installer.py' for more agents")
+                print("   💡 Use 'python tools/agent-help.py <challenge>' to find agents")
+            else:
+                # Interactive mode - just download core agents
+                return self._install_core_agents_fallback()
+                
+            return True
+            
+        except Exception as e:
+            print(f"   ⚠️  Could not install agents: {e}")
+            print("   💡 You can install agents manually later")
+            return False
+    
+    def _install_core_agents_fallback(self) -> bool:
+        """Fallback method to install core agents directly"""
+        # Download core agents directly
+        print("   📦 Installing core agents...")
+        
+        # Updated core agents list with new universal agents
+        core_agents = [
+            ("agents/core/sdlc-enforcer.md", "claude/agents/core/sdlc-enforcer.md"),
+            ("agents/core/solution-architect.md", "claude/agents/core/solution-architect.md"),
+            ("agents/core/critical-goal-reviewer.md", "claude/agents/core/critical-goal-reviewer.md"),
+            ("agents/sdlc/framework-validator.md", "claude/agents/sdlc/framework-validator.md"),
+            ("agents/core/github-integration-specialist.md", "claude/agents/core/github-integration-specialist.md")
+        ]
+        
+        installed_count = 0
+        for remote, local in core_agents:
+            local_path = self.project_dir / local
+            local_path.parent.mkdir(parents=True, exist_ok=True)
+            if self.download_file(remote, local_path):
+                installed_count += 1
+        
+        if installed_count > 0:
+            print(f"   ✅ Installed {installed_count} core agents")
+            
+            # Create agent manifest with updated agents
+            manifest = {
+                "sdlc-enforcer": "1.0.0",
+                "solution-architect": "1.0.0",
+                "critical-goal-reviewer": "1.0.0",
+                "framework-validator": "1.0.0",
+                "github-integration-specialist": "1.0.0"
+            }
+            manifest_path = self.project_dir / ".agent-manifest.json"
+            with open(manifest_path, 'w') as f:
+                json.dump(manifest, f, indent=2)
+            print("   ✅ Created agent manifest")
+            return True
+        else:
+            print("   ℹ️  No agents downloaded (this is okay for initial setup)")
+            print("   💡 Full agent library will be available after framework update")
+            return False
+    
+    def create_claude_config(self) -> bool:
+        """Create Claude project configuration with GitHub repo and agent settings"""
+        try:
+            claude_dir = self.project_dir / ".claude"
+            claude_dir.mkdir(exist_ok=True)
+            
+            # Try to get GitHub repo URL
+            github_url = None
+            try:
+                result = subprocess.run(
+                    ["git", "remote", "get-url", "origin"],
+                    cwd=self.project_dir,
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    github_url = result.stdout.strip()
+            except:
+                pass
+            
+            # Create project configuration
+            config = {
+                "project_name": self.project_name,
+                "project_purpose": self.purpose,
+                "github_repository": github_url,
+                "agent_preferences": {
+                    "required_agents": [
+                        "sdlc-enforcer",
+                        "solution-architect",
+                        "critical-goal-reviewer"
+                    ],
+                    "auto_suggest": True,
+                    "context_aware_selection": True
+                },
+                "sdlc_settings": {
+                    "enforce_feature_proposals": True,
+                    "require_architecture_docs": True,
+                    "zero_technical_debt": True,
+                    "require_retrospectives": True
+                },
+                "detected_stack": {
+                    "languages": [self.detected_language] if self.detected_language else [],
+                    "frameworks": [],
+                    "project_type": self.project_type
+                }
+            }
+            
+            config_path = claude_dir / "project-config.json"
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+            
+            print("   ✅ Created Claude project configuration")
+            if github_url:
+                print(f"   📍 GitHub repository linked: {github_url}")
+            return True
+            
+        except Exception as e:
+            print(f"   ⚠️  Could not create Claude config: {e}")
+            return False
+    
     def print_next_steps(self):
         """Print next steps for the user"""
         print("\n📋 Next Steps:")
@@ -1071,18 +1275,41 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         print("   - Read LANGUAGE-SPECIFIC-VALIDATORS.md")
         print("   - Create tools/validation/validate-[your-language].py")
         print("   - Configure for ZERO tolerance")
-        print("\n4. Customize CLAUDE.md with project-specific details:")
+        print("\n4. Install recommended AI agents:")
+        print("   🤖 Core Agents (CRITICAL - Install These First):")
+        print("     • sdlc-enforcer - Primary compliance guardian")
+        print("     • critical-goal-reviewer - Quality assurance")
+        print("     • solution-architect - System design expert")
+        print("   ")
+        print("   📚 Based on your project type, also consider:")
+        if "python" in self.purpose.lower() or "api" in self.purpose.lower():
+            print("     • python-expert - Python best practices")
+            print("     • ai-test-engineer - AI system testing")
+        if "langchain" in self.purpose.lower() or "llm" in self.purpose.lower():
+            print("     • langchain-architect - LangChain expertise")
+            print("     • prompt-engineer - Prompt optimization")
+        if "mcp" in self.purpose.lower():
+            print("     • mcp-server-architect - MCP design")
+            print("     • mcp-test-agent - MCP testing")
+            print("     • mcp-quality-assurance - MCP quality")
+        print("   ")
+        print("   ⚠️  IMPORTANT: Installing agents requires a reboot of your AI assistant!")
+        print("   ")
+        print("   To discover more agents for your needs:")
+        print("   - Ask: 'What agents should I install for [your specific need]?'")
+        print("   - The ai-first-kick-starter agent can recommend agents anytime")
+        print("\n5. Customize CLAUDE.md with project-specific details:")
         print("   edit CLAUDE.md")
-        print("\n5. Complete the setup tasks:")
+        print("\n6. Complete the setup tasks:")
         print("   python tools/progress-tracker.py list")
-        print("\n6. When ready, push the branch:")
+        print("\n7. When ready, push the branch:")
         print("   git add .")
         print("   git commit -m \"feat: implement AI-First SDLC framework with Zero Technical Debt\"")
         print("   git push -u origin ai-first-kick-start")
-        print("\n7. Create retrospective (REQUIRED before PR):")
+        print("\n8. Create retrospective (REQUIRED before PR):")
         print("   Create file: retrospectives/00-ai-first-setup.md")
         print("   Document what went well, what could improve, and lessons learned")
-        print("\n8. Create a pull request to merge into main")
+        print("\n9. Create a pull request to merge into main")
         print("   Note: PR will be rejected without retrospective AND architecture docs!")
         print("\n📚 Framework Documentation:")
         print("   https://github.com/SteveGJones/ai-first-sdlc-practices")

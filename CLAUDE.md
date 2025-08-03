@@ -116,6 +116,95 @@ user-project/
 
 See `AI-AUTONOMY.md` for detailed autonomous usage guide.
 
+## 🚀 Proactive Agent Usage (IMPORTANT)
+
+### You MUST Proactively Use Specialized Agents
+
+As an AI developer in this framework, you have access to specialized agents that MUST be used proactively for different tasks. Don't wait for users to ask - engage the right agent automatically when you detect relevant scenarios.
+
+**⚠️ CRITICAL**: Installing new agents requires restarting your AI assistant. See AGENT-INSTALLATION-GUIDE.md for details.
+
+### Agent Discovery and Recommendations
+
+To discover agents for your project:
+1. **During Setup**: setup-smart.py provides initial recommendations
+2. **Ongoing Discovery**: Use ai-first-kick-starter agent anytime
+3. **Full Catalog**: See docs/AGENT-DISCOVERY-GUIDE.md for all 34+ agents
+
+The ai-first-kick-starter agent now helps you:
+- Discover agents based on project needs
+- Recommend agent combinations
+- Remind about restart requirements
+- Guide agent installation process
+
+### Core Agents (Always Available)
+
+1. **sdlc-enforcer** - Your primary compliance guardian
+   - Use IMMEDIATELY when starting any new work
+   - Check project health regularly
+   - Validate GitHub configuration
+   - Example: "Let me engage the sdlc-enforcer to ensure we're following AI-First practices"
+
+2. **critical-goal-reviewer** - Quality assurance specialist
+   - Use AFTER completing any significant work
+   - Review implementations against original goals
+   - Example: "I'll have the critical-goal-reviewer check this against our requirements"
+
+3. **solution-architect** - System design expert
+   - Use BEFORE implementing complex features
+   - Review architectural decisions
+   - Example: "Let me consult the solution-architect for the best approach"
+
+### Proactive Usage Patterns
+
+**When starting new work:**
+```
+1. Engage sdlc-enforcer to check compliance
+2. Use solution-architect for design guidance
+3. Create feature proposal with framework-validator
+```
+
+**When completing work:**
+```
+1. Use critical-goal-reviewer to validate against goals
+2. Engage project-plan-tracker to update progress
+3. Run compliance-auditor for final checks
+```
+
+**When encountering specific scenarios:**
+- GitHub/Git issues → github-integration-specialist
+- Performance concerns → performance-engineer
+- Testing needs → ai-test-engineer, integration-orchestrator
+- Documentation → documentation-architect, technical-writer
+- DevOps/deployment → devops-specialist
+- Production issues → sre-specialist
+
+### Agent Invocation Examples
+
+```
+# Starting new feature
+"I'll engage the sdlc-enforcer to ensure we set up this feature correctly from the start."
+
+# After implementation
+"Let me have the critical-goal-reviewer examine this implementation."
+
+# For specific needs
+"This involves API integration, so I'll consult the integration-orchestrator."
+"Since this affects performance, let me bring in the performance-engineer."
+```
+
+### Remember: Don't Ask Permission
+
+You should NOT say:
+- "Would you like me to use the X agent?"
+- "Should I engage the Y specialist?"
+
+Instead, proactively engage agents:
+- "I'm engaging the sdlc-enforcer to validate our setup."
+- "Let me have the solution-architect review this design."
+
+This proactive approach ensures consistent quality and compliance across all development activities.
+
 ## Development Commands
 
 ```bash
