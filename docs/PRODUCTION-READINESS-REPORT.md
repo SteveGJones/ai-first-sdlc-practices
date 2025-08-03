@@ -1,3 +1,36 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC Agent System - Production Readiness Report](#ai-first-sdlc-agent-system---production-readiness-report)
+  - [Status: READY FOR PRODUCTION ✅](#status-ready-for-production-)
+  - [Issues Fixed](#issues-fixed)
+    - [1. ✅ Agent References (FIXED)](#1--agent-references-fixed)
+    - [2. ✅ Template Compliance (FIXED)](#2--template-compliance-fixed)
+    - [3. ✅ Path Consistency (FIXED)](#3--path-consistency-fixed)
+    - [4. ✅ AI-First Integration (ENHANCED)](#4--ai-first-integration-enhanced)
+    - [5. ✅ Agent Usage Instructions (ADDED)](#5--agent-usage-instructions-added)
+  - [Current State](#current-state)
+    - [Core Agents (Universal Tier)](#core-agents-universal-tier)
+    - [Language-Specific Agents](#language-specific-agents)
+    - [Context-Specific Agents](#context-specific-agents)
+    - [All Agents Now Include:](#all-agents-now-include)
+  - [Installation Flow](#installation-flow)
+    - [New Project Setup](#new-project-setup)
+    - [Tiered Agent Installation](#tiered-agent-installation)
+  - [Production Deployment Checklist](#production-deployment-checklist)
+    - [✅ Code Quality](#-code-quality)
+    - [✅ Documentation](#-documentation)
+    - [✅ Testing](#-testing)
+    - [✅ Agent Coverage](#-agent-coverage)
+  - [Remaining Minor Tasks](#remaining-minor-tasks)
+    - [Low Priority Enhancements](#low-priority-enhancements)
+  - [Deployment Instructions](#deployment-instructions)
+  - [Key Achievements](#key-achievements)
+  - [Conclusion](#conclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC Agent System - Production Readiness Report
 
 ## Status: READY FOR PRODUCTION ✅

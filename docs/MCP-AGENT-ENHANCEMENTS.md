@@ -1,3 +1,31 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [MCP Agent Enhancements Summary](#mcp-agent-enhancements-summary)
+  - [Overview](#overview)
+  - [Agent Updates](#agent-updates)
+    - [1. mcp-test-agent Enhancements](#1-mcp-test-agent-enhancements)
+      - [Statistical Validation Framework (NEW)](#statistical-validation-framework-new)
+      - [AI Personality Variations (NEW)](#ai-personality-variations-new)
+      - [Enhanced Edge Cases (NEW)](#enhanced-edge-cases-new)
+      - [Real-World Usage Patterns (NEW)](#real-world-usage-patterns-new)
+    - [2. mcp-quality-assurance Enhancements](#2-mcp-quality-assurance-enhancements)
+      - [MCP Version Compliance Matrix (NEW)](#mcp-version-compliance-matrix-new)
+      - [Transport Layer Specialization (NEW)](#transport-layer-specialization-new)
+      - [Cross-Agent Collaboration (NEW)](#cross-agent-collaboration-new)
+    - [3. mcp-server-architect Enhancements](#3-mcp-server-architect-enhancements)
+      - [Cross-Agent Collaboration Workflow (NEW)](#cross-agent-collaboration-workflow-new)
+  - [Key Improvements](#key-improvements)
+    - [1. Statistical Rigor](#1-statistical-rigor)
+    - [2. AI-Specific Testing](#2-ai-specific-testing)
+    - [3. Production Readiness](#3-production-readiness)
+    - [4. Collaboration Framework](#4-collaboration-framework)
+  - [Impact](#impact)
+  - [Next Steps](#next-steps)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # MCP Agent Enhancements Summary
 
 ## Overview

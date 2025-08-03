@@ -1,3 +1,31 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Agent System Updates Summary](#agent-system-updates-summary)
+  - [1. New Agents Created](#1-new-agents-created)
+    - [High Priority Agents](#high-priority-agents)
+    - [Medium Priority Agents](#medium-priority-agents)
+  - [2. Framework Updates](#2-framework-updates)
+    - [Updated setup-smart.py](#updated-setup-smartpy)
+    - [Agent Composition System](#agent-composition-system)
+    - [Tiered Agent Deployment](#tiered-agent-deployment)
+  - [3. Agent Template Compliance](#3-agent-template-compliance)
+  - [4. Key Benefits](#4-key-benefits)
+    - [Improved Coverage](#improved-coverage)
+    - [Better Organization](#better-organization)
+    - [Enhanced Automation](#enhanced-automation)
+  - [5. Usage Examples](#5-usage-examples)
+    - [For New Projects](#for-new-projects)
+    - [For Agent Installation](#for-agent-installation)
+    - [For Compliance Checking](#for-compliance-checking)
+  - [6. Next Steps](#6-next-steps)
+    - [Short Term](#short-term)
+    - [Long Term](#long-term)
+  - [7. Migration Guide](#7-migration-guide)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Agent System Updates Summary
 
 This document summarizes the comprehensive updates made to the AI-First SDLC agent system.

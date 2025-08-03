@@ -1,3 +1,34 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Agent System Improvements Summary](#agent-system-improvements-summary)
+  - [Overview](#overview)
+  - [Key Improvements](#key-improvements)
+    - [1. Enhanced Agent Discovery and Recommendations](#1-enhanced-agent-discovery-and-recommendations)
+      - [ai-first-kick-starter Agent Updates](#ai-first-kick-starter-agent-updates)
+      - [setup-smart.py Enhancements](#setup-smartpy-enhancements)
+    - [2. New MCP Development Agents](#2-new-mcp-development-agents)
+      - [mcp-test-agent (NEW)](#mcp-test-agent-new)
+      - [mcp-quality-assurance (NEW)](#mcp-quality-assurance-new)
+      - [mcp-server-architect (ENHANCED)](#mcp-server-architect-enhanced)
+    - [3. Documentation Improvements](#3-documentation-improvements)
+      - [New Documents Created](#new-documents-created)
+    - [4. Agent Manifest Updates](#4-agent-manifest-updates)
+      - [agent-manifest.json Enhancements](#agent-manifestjson-enhancements)
+    - [5. User Experience Improvements](#5-user-experience-improvements)
+      - [Clear Restart Requirements](#clear-restart-requirements)
+      - [Progressive Discovery](#progressive-discovery)
+      - [Project-Type Intelligence](#project-type-intelligence)
+  - [Impact Summary](#impact-summary)
+    - [For New Users](#for-new-users)
+    - [For Existing Users](#for-existing-users)
+    - [For MCP Developers](#for-mcp-developers)
+  - [Statistics](#statistics)
+  - [Next Steps](#next-steps)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Agent System Improvements Summary
 
 ## Overview

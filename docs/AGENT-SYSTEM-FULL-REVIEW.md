@@ -1,3 +1,38 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC Agent System - Full Team Review](#ai-first-sdlc-agent-system---full-team-review)
+  - [Executive Summary](#executive-summary)
+  - [Critical Issues Found](#critical-issues-found)
+    - [1. Template Compliance Issues ❌](#1-template-compliance-issues-)
+    - [2. Broken Agent Installation Flow ❌](#2-broken-agent-installation-flow-)
+    - [3. AI-First SDLC Integration Gaps ⚠️](#3-ai-first-sdlc-integration-gaps-)
+  - [What Works Well ✅](#what-works-well-)
+    - [1. Newly Created Agents](#1-newly-created-agents)
+    - [2. Agent Composition System](#2-agent-composition-system)
+    - [3. Core Concepts](#3-core-concepts)
+  - [Immediate Actions Required](#immediate-actions-required)
+    - [1. Fix Agent References (BLOCKING)](#1-fix-agent-references-blocking)
+    - [2. Add Missing Template Sections (CRITICAL)](#2-add-missing-template-sections-critical)
+    - [3. Fix Installation Paths (CRITICAL)](#3-fix-installation-paths-critical)
+  - [Recommendations for Production Readiness](#recommendations-for-production-readiness)
+    - [Phase 1: Critical Fixes (Before Any Release)](#phase-1-critical-fixes-before-any-release)
+    - [Phase 2: Quality Improvements (Next Sprint)](#phase-2-quality-improvements-next-sprint)
+    - [Phase 3: Long-term Enhancements](#phase-3-long-term-enhancements)
+  - [Test Cases for Validation](#test-cases-for-validation)
+    - [Test 1: New Python API Project](#test-1-new-python-api-project)
+    - [Test 2: Tiered Installation](#test-2-tiered-installation)
+    - [Test 3: Agent Functionality](#test-3-agent-functionality)
+  - [Risk Assessment](#risk-assessment)
+    - [High Risk 🔴](#high-risk-)
+    - [Medium Risk 🟡](#medium-risk-)
+    - [Low Risk 🟢](#low-risk-)
+  - [Conclusion](#conclusion)
+    - [Success Criteria](#success-criteria)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC Agent System - Full Team Review
 
 ## Executive Summary

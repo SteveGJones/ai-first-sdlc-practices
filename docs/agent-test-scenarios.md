@@ -1,3 +1,55 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Agent Test Scenarios](#agent-test-scenarios)
+  - [Overview](#overview)
+  - [Universal Test Prompts](#universal-test-prompts)
+    - [Basic Load Test (All Agents)](#basic-load-test-all-agents)
+    - [Framework Integration Test (All Agents)](#framework-integration-test-all-agents)
+    - [Value Proposition Test (All Agents)](#value-proposition-test-all-agents)
+  - [Category-Specific Test Scenarios](#category-specific-test-scenarios)
+    - [Core Agents](#core-agents)
+      - [SDLC-Enforcer](#sdlc-enforcer)
+      - [Critical-Goal-Reviewer](#critical-goal-reviewer)
+      - [GitHub-Integration-Specialist](#github-integration-specialist)
+      - [Solution-Architect](#solution-architect)
+      - [Framework-Validator](#framework-validator)
+    - [AI Development Agents](#ai-development-agents)
+      - [AI-Solution-Architect](#ai-solution-architect)
+      - [Junior-AI-Solution-Architect](#junior-ai-solution-architect)
+      - [Prompt-Engineer](#prompt-engineer)
+      - [Agent-Developer](#agent-developer)
+    - [Testing Agents](#testing-agents)
+      - [Performance-Engineer](#performance-engineer)
+      - [Integration-Orchestrator](#integration-orchestrator)
+      - [AI-Test-Engineer](#ai-test-engineer)
+    - [Project Management Agents](#project-management-agents)
+      - [Project-Plan-Tracker](#project-plan-tracker)
+      - [Agile-Coach](#agile-coach)
+      - [Delivery-Manager](#delivery-manager)
+    - [Documentation Agents](#documentation-agents)
+      - [Technical-Writer](#technical-writer)
+      - [Documentation-Architect](#documentation-architect)
+    - [DevOps & Operations Agents](#devops--operations-agents)
+      - [DevOps-Specialist](#devops-specialist)
+      - [SRE-Specialist](#sre-specialist)
+      - [Compliance-Auditor](#compliance-auditor)
+  - [Advanced Integration Scenarios](#advanced-integration-scenarios)
+    - [Multi-Agent Collaboration Test](#multi-agent-collaboration-test)
+    - [Framework Knowledge Test](#framework-knowledge-test)
+    - [Practical Troubleshooting Test](#practical-troubleshooting-test)
+  - [Quality Assessment Criteria](#quality-assessment-criteria)
+    - [Excellent Response (Keep Agent)](#excellent-response-keep-agent)
+    - [Good Response (Conditional Keep)](#good-response-conditional-keep)
+    - [Poor Response (Remove Agent)](#poor-response-remove-agent)
+  - [Test Execution Guidelines](#test-execution-guidelines)
+    - [For Each Agent Test](#for-each-agent-test)
+    - [Time Management](#time-management)
+    - [Documentation Standards](#documentation-standards)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Agent Test Scenarios
 
 ## Overview

@@ -1,3 +1,30 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC Agent System v2.0 Release Notes](#ai-first-sdlc-agent-system-v20-release-notes)
+  - [Overview](#overview)
+  - [Major Features](#major-features)
+    - [1. Complete Agent Ecosystem (34 Agents)](#1-complete-agent-ecosystem-34-agents)
+    - [2. Enhanced Agent Discovery](#2-enhanced-agent-discovery)
+    - [3. New MCP Development Suite](#3-new-mcp-development-suite)
+      - [mcp-test-agent](#mcp-test-agent)
+      - [mcp-quality-assurance](#mcp-quality-assurance)
+    - [4. Agent System Improvements](#4-agent-system-improvements)
+  - [Key Enhancements](#key-enhancements)
+    - [For New Users](#for-new-users)
+    - [For Existing Users](#for-existing-users)
+    - [For MCP Developers](#for-mcp-developers)
+  - [Breaking Changes](#breaking-changes)
+  - [Migration Guide](#migration-guide)
+  - [Documentation Updates](#documentation-updates)
+  - [Statistics](#statistics)
+  - [Contributors](#contributors)
+  - [Next Steps](#next-steps)
+  - [Feedback](#feedback)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC Agent System v2.0 Release Notes
 
 ## Overview

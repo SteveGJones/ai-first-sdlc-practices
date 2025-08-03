@@ -1,3 +1,34 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Agent Template Format Guide](#agent-template-format-guide)
+  - [Overview](#overview)
+  - [Template Structure](#template-structure)
+    - [1. YAML Front Matter (Required)](#1-yaml-front-matter-required)
+      - [Key Components:](#key-components)
+    - [2. Agent Description Section](#2-agent-description-section)
+    - [3. Task Instructions](#3-task-instructions)
+    - [4. Response Format Instructions](#4-response-format-instructions)
+    - [5. Agent Personality and Approach](#5-agent-personality-and-approach)
+    - [6. Uncertainty Handling](#6-uncertainty-handling)
+  - [Complete Template Example](#complete-template-example)
+  - [Best Practices](#best-practices)
+    - [1. Description Section](#1-description-section)
+    - [2. Core Competencies](#2-core-competencies)
+    - [3. Task Instructions](#3-task-instructions-1)
+    - [4. Response Format](#4-response-format)
+    - [5. Personality Definition](#5-personality-definition)
+  - [Common Patterns](#common-patterns)
+    - [1. Review/Validation Agents](#1-reviewvalidation-agents)
+    - [2. Creation/Generation Agents](#2-creationgeneration-agents)
+    - [3. Analysis/Advisory Agents](#3-analysisadvisory-agents)
+    - [4. Setup/Configuration Agents](#4-setupconfiguration-agents)
+  - [Validation Checklist](#validation-checklist)
+  - [Integration with Claude Code](#integration-with-claude-code)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Agent Template Format Guide
 
 This document provides comprehensive guidance on creating agents using the AI-First SDLC agent template format.
