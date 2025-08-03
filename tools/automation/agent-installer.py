@@ -14,6 +14,10 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
+import urllib.request
+import zipfile
+import time
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 import click
@@ -33,6 +37,11 @@ except ImportError:
     ANALYSIS_AVAILABLE = False
 
 console = Console()
+
+# GitHub repository details
+GITHUB_REPO = "SteveGJones/ai-first-sdlc-practices"
+GITHUB_BRANCH = "main"
+AGENTS_URL = f"https://github.com/{GITHUB_REPO}/archive/refs/heads/{GITHUB_BRANCH}.zip"
 
 # Define agent tiers for deployment
 AGENT_TIERS = {
@@ -68,13 +77,51 @@ AGENT_TIERS = {
 class AgentInstaller:
     """Manages installation of AI agents to user projects with tiered deployment."""
     
-    def __init__(self, project_root: Path, agent_source: Path):
+    def __init__(self, project_root: Path, agent_source: Optional[Path] = None):
         self.project_root = project_root
         self.agent_source = agent_source
         self.claude_agents_dir = project_root / "claude" / "agents"
         self.installed_agents_file = project_root / ".agent-manifest.json"
         self.installed_agents = self._load_installed_agents()
+        self._temp_dir = None
         
+    def _download_agents(self) -> Path:
+        """Download agents from GitHub repository."""
+        console.print("[yellow]Downloading agents from GitHub...[/yellow]")
+        
+        # Create temporary directory
+        self._temp_dir = tempfile.mkdtemp(prefix="ai-first-agents-")
+        zip_path = Path(self._temp_dir) / "agents.zip"
+        
+        try:
+            # Download the repository
+            urllib.request.urlretrieve(AGENTS_URL, zip_path)
+            
+            # Extract the zip file
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(self._temp_dir)
+            
+            # Find the agents directory
+            extracted_dir = Path(self._temp_dir) / f"ai-first-sdlc-practices-{GITHUB_BRANCH}"
+            agents_dir = extracted_dir / "agents"
+            
+            if not agents_dir.exists():
+                raise FileNotFoundError("Agents directory not found in downloaded repository")
+            
+            console.print("[green]✓ Agents downloaded successfully[/green]")
+            return agents_dir
+            
+        except Exception as e:
+            console.print(f"[red]Error downloading agents: {e}[/red]")
+            if self._temp_dir and Path(self._temp_dir).exists():
+                shutil.rmtree(self._temp_dir)
+            raise
+    
+    def _cleanup_temp(self):
+        """Clean up temporary directory."""
+        if self._temp_dir and Path(self._temp_dir).exists():
+            shutil.rmtree(self._temp_dir)
+    
     def _load_installed_agents(self) -> Dict[str, str]:
         """Load record of installed agents."""
         if self.installed_agents_file.exists():
@@ -106,6 +153,10 @@ class AgentInstaller:
     
     def discover_agents(self) -> Dict[str, List[Path]]:
         """Discover all available agents organized by category."""
+        # Download agents if no local source provided
+        if self.agent_source is None:
+            self.agent_source = self._download_agents()
+        
         agents = {}
         
         for category_dir in self.agent_source.iterdir():
@@ -499,18 +550,14 @@ def main(project_root, agent_source, core_only, languages, list_agents, install,
     
     project_path = Path(project_root).resolve()
     
-    # Default agent source to release directory
-    if agent_source is None:
-        # Look for agents in the framework installation
-        framework_root = Path(__file__).parent.parent.parent
-        agent_source = framework_root / "agents"
-        
-        if not agent_source.exists():
-            console.print("[red]Agent source directory not found![/red]")
-            console.print(f"Expected at: {agent_source}")
-            sys.exit(1)
-    
-    agent_source_path = Path(agent_source).resolve()
+    # Handle agent source
+    agent_source_path = None
+    if agent_source:
+        agent_source_path = Path(agent_source).resolve()
+        if not agent_source_path.exists():
+            console.print(f"[red]Agent source directory not found at: {agent_source_path}[/red]")
+            console.print("[yellow]Will download agents from GitHub instead...[/yellow]")
+            agent_source_path = None
     
     installer = AgentInstaller(project_path, agent_source_path)
     
@@ -575,4 +622,14 @@ def main(project_root, agent_source, core_only, languages, list_agents, install,
     console.print("\nNote: Project-specific agents in .claude/agents are not automatically available")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        # Clean up any temporary directories
+        import atexit
+        for path in Path(tempfile.gettempdir()).glob("ai-first-agents-*"):
+            if path.is_dir() and path.stat().st_mtime < time.time() - 3600:  # Older than 1 hour
+                try:
+                    shutil.rmtree(path)
+                except:
+                    pass
