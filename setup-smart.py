@@ -1282,13 +1282,13 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         print("     • solution-architect - System design expert")
         print("   ")
         print("   📚 Based on your project type, also consider:")
-        if "python" in self.purpose.lower() or "api" in self.purpose.lower():
+        if "python" in self.project_purpose.lower() or "api" in self.project_purpose.lower():
             print("     • python-expert - Python best practices")
             print("     • ai-test-engineer - AI system testing")
-        if "langchain" in self.purpose.lower() or "llm" in self.purpose.lower():
+        if "langchain" in self.project_purpose.lower() or "llm" in self.project_purpose.lower():
             print("     • langchain-architect - LangChain expertise")
             print("     • prompt-engineer - Prompt optimization")
-        if "mcp" in self.purpose.lower():
+        if "mcp" in self.project_purpose.lower():
             print("     • mcp-server-architect - MCP design")
             print("     • mcp-test-agent - MCP testing")
             print("     • mcp-quality-assurance - MCP quality")
