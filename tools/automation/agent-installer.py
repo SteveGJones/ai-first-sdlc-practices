@@ -80,7 +80,7 @@ class AgentInstaller:
     def __init__(self, project_root: Path, agent_source: Optional[Path] = None):
         self.project_root = project_root
         self.agent_source = agent_source
-        self.claude_agents_dir = project_root / "claude" / "agents"
+        self.claude_agents_dir = project_root / ".claude" / "agents"
         self.installed_agents_file = project_root / ".agent-manifest.json"
         self.installed_agents = self._load_installed_agents()
         self._temp_dir = None
@@ -136,20 +136,47 @@ class AgentInstaller:
     
     def _parse_agent_metadata(self, agent_path: Path) -> Dict:
         """Parse agent YAML frontmatter."""
-        with open(agent_path) as f:
-            content = f.read()
-            
-        if not content.startswith('---'):
-            raise ValueError(f"Agent {agent_path} missing YAML frontmatter")
-            
-        # Extract YAML frontmatter
-        parts = content.split('---', 2)
-        if len(parts) < 3:
-            raise ValueError(f"Invalid agent format in {agent_path}")
-            
-        metadata = yaml.safe_load(parts[1])
-        metadata['content'] = parts[2].strip()
-        return metadata
+        try:
+            with open(agent_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+            if not content.startswith('---'):
+                console.print(f"[yellow]Warning: {agent_path.name} missing YAML frontmatter[/yellow]")
+                return None
+                
+            # Extract YAML frontmatter
+            parts = content.split('---', 2)
+            if len(parts) < 3:
+                console.print(f"[yellow]Warning: Invalid agent format in {agent_path.name}[/yellow]")
+                return None
+                
+            # Parse YAML with proper handling
+            try:
+                metadata = yaml.safe_load(parts[1])
+                if metadata is None:
+                    metadata = {}
+            except yaml.YAMLError as e:
+                console.print(f"[yellow]Warning: YAML parsing error in {agent_path.name}[/yellow]")
+                # Try to extract basic info manually
+                metadata = {}
+                lines = parts[1].strip().split('\n')
+                for line in lines:
+                    if ':' in line and not line.strip().startswith('-'):
+                        key, value = line.split(':', 1)
+                        key = key.strip()
+                        value = value.strip()
+                        if key == 'name':
+                            metadata['name'] = value
+                        elif key == 'category':
+                            metadata['category'] = value
+                        elif key == 'color':
+                            metadata['color'] = value
+                            
+            metadata['content'] = parts[2].strip()
+            return metadata
+        except Exception as e:
+            console.print(f"[red]Error parsing {agent_path.name}: {e}[/red]")
+            return None
     
     def discover_agents(self) -> Dict[str, List[Path]]:
         """Discover all available agents organized by category."""
@@ -165,14 +192,12 @@ class AgentInstaller:
                 
             category_agents = []
             for agent_file in category_dir.rglob("*.md"):
-                try:
-                    metadata = self._parse_agent_metadata(agent_file)
+                metadata = self._parse_agent_metadata(agent_file)
+                if metadata:
                     category_agents.append({
                         'path': agent_file,
                         'metadata': metadata
                     })
-                except Exception as e:
-                    console.print(f"[yellow]Warning: Skipping {agent_file}: {e}[/yellow]")
                     
             if category_agents:
                 agents[category_dir.name] = category_agents
@@ -232,12 +257,9 @@ class AgentInstaller:
         
         installed_count = 0
         for agent_file in core_dir.rglob("*.md"):
-            try:
-                metadata = self._parse_agent_metadata(agent_file)
-                if self.install_agent(agent_file, metadata):
-                    installed_count += 1
-            except Exception as e:
-                console.print(f"[red]Failed to install {agent_file.name}: {e}[/red]")
+            metadata = self._parse_agent_metadata(agent_file)
+            if metadata and self.install_agent(agent_file, metadata):
+                installed_count += 1
         
         console.print(f"\n[green]Installed {installed_count} core agents[/green]")
     
@@ -372,7 +394,14 @@ class AgentInstaller:
                 agent_branch = category_branch.add(f"{name} v{version}{installed}")
                 
                 if 'description' in metadata:
-                    agent_branch.add(f"[dim]{metadata['description']}[/dim]")
+                    desc = metadata['description']
+                    # Handle multiline descriptions - take first line only
+                    if isinstance(desc, str):
+                        desc = desc.split('\\n')[0].strip()
+                        # Limit length for display
+                        if len(desc) > 80:
+                            desc = desc[:77] + "..."
+                    agent_branch.add(f"[dim]{desc}[/dim]")
         
         console.print(tree)
     
@@ -612,13 +641,12 @@ def main(project_root, agent_source, core_only, languages, list_agents, install,
     console.print("\n[bold green]Agent installation complete![/bold green]")
     console.print(f"Agents installed to: {installer.claude_agents_dir}")
     
-    # Manual installation instructions
-    console.print("\n[bold yellow]⚠️  Manual Installation Required[/bold yellow]")
-    console.print("\nDynamic agent deployment is not supported. To use these agents:")
-    console.print("\n1. Agents have been copied to your project's claude/agents directory")
-    console.print("2. You must manually copy them to your Claude agents directory:")
-    console.print("   [cyan]cp -r claude/agents/* ~/.claude/agents/[/cyan]")
-    console.print("\n3. Or reference them in your Claude conversations when needed")
+    # Important notes
+    console.print("\n[bold yellow]⚠️  Important Notes[/bold yellow]")
+    console.print("\n1. Agents have been installed to your project's .claude/agents directory")
+    console.print("2. [bold red]RESTART YOUR AI ASSISTANT[/bold red] to activate the agents!")
+    console.print("\nFor system-wide availability, you can also copy to:")
+    console.print("   [cyan]cp -r .claude/agents/* ~/.claude/agents/[/cyan]")
     console.print("\nNote: Project-specific agents in .claude/agents are not automatically available")
 
 if __name__ == "__main__":
