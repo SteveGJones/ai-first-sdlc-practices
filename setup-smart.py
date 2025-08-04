@@ -948,18 +948,24 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         print("\n✅ Organized setup completed successfully!")
         print("\n📚 Next steps:")
         print("  1. Review the clean project structure")
-        print("  2. Run tools with: ./validate (or python .sdlc/tools/validation/validate-pipeline.py)")
-        print("  3. Install additional agents: ./install-agents")
-        print("  4. Create your first feature: ./new-feature <feature-name>")
+        print("  2. Run tools from: cd sdlc-tools")
+        print("     - ./validate - Run validation checks")
+        print("     - ./install-agents - Install AI agents")
+        print("     - ./new-feature <name> - Create feature proposal")
+        print("  3. Or add to PATH: export PATH=\"$PATH:$(pwd)/sdlc-tools\"")
         
         return True
     
     def create_convenience_scripts(self):
-        """Create convenience wrapper scripts at project root"""
+        """Create convenience wrapper scripts in sdlc-tools directory"""
+        # Create sdlc-tools directory
+        tools_dir = self.project_dir / "sdlc-tools"
+        tools_dir.mkdir(exist_ok=True)
+        
         scripts = {
             "validate": """#!/bin/bash
 # Convenience wrapper for validation
-python .sdlc/tools/validation/validate-pipeline.py "$@"
+python ../.sdlc/tools/validation/validate-pipeline.py "$@"
 """,
             "new-feature": """#!/bin/bash
 # Create a new feature proposal
@@ -967,21 +973,63 @@ if [ -z "$1" ]; then
     echo "Usage: ./new-feature <feature-name>"
     exit 1
 fi
-cp .sdlc/templates/proposals/feature-proposal.md "docs/feature-proposals/$(date +%y)-$1.md"
+cp ../.sdlc/templates/proposals/feature-proposal.md "../docs/feature-proposals/$(date +%y)-$1.md"
 echo "Created: docs/feature-proposals/$(date +%y)-$1.md"
 """,
             "install-agents": """#!/bin/bash
 # Install AI agents
-python .sdlc/tools/automation/agent-installer.py "$@"
+python ../.sdlc/tools/automation/agent-installer.py "$@"
+""",
+            "check-debt": """#!/bin/bash
+# Check for technical debt
+python ../.sdlc/tools/validation/check-technical-debt.py "$@"
+""",
+            "track-progress": """#!/bin/bash
+# Track development progress
+python ../.sdlc/tools/automation/progress-tracker.py "$@"
 """
         }
         
         for name, content in scripts.items():
-            script_path = self.project_dir / name
+            script_path = tools_dir / name
             with open(script_path, 'w') as f:
                 f.write(content)
             os.chmod(script_path, 0o755)
-            print(f"✅ Created {name} wrapper script")
+            print(f"✅ Created sdlc-tools/{name}")
+        
+        # Create README for sdlc-tools
+        readme_content = """# SDLC Tools
+
+These are convenience wrappers for common AI-First SDLC framework commands.
+
+## Available Commands
+
+- `./validate` - Run framework validation checks
+- `./new-feature <name>` - Create a new feature proposal
+- `./install-agents` - Install or manage AI agents
+- `./check-debt` - Check for technical debt
+- `./track-progress` - Track development tasks
+
+## Usage
+
+All commands can be run from this directory:
+
+```bash
+cd sdlc-tools
+./validate --checks all
+./new-feature user-authentication
+./install-agents list
+```
+
+Or add this directory to your PATH for system-wide access:
+
+```bash
+export PATH="$PATH:$(pwd)"
+```
+"""
+        with open(tools_dir / "README.md", 'w') as f:
+            f.write(readme_content)
+        print("✅ Created sdlc-tools/README.md")
     
     def create_minimal_claude_md(self):
         """Create minimal CLAUDE.md for organized structure"""
@@ -999,18 +1047,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 This project uses the organized AI-First SDLC structure:
 - Framework tools are in `.sdlc/`
+- User tools are in `sdlc-tools/`
 - User work is in the standard directories
-- Run validation: `./validate` or `python .sdlc/tools/validation/validate-pipeline.py`
+- Run validation: `cd sdlc-tools && ./validate`
 
 ## Directory Structure
 
 ```
 {self.project_name}/
-├── .sdlc/                    # Framework tools and configuration
+├── .sdlc/                    # Framework internals (hidden)
 │   ├── tools/               # Validation and automation scripts
 │   ├── templates/           # Templates for proposals and architecture
 │   ├── agents/              # Installed AI agents
 │   └── VERSION              # Framework version
+├── sdlc-tools/              # User-facing command tools
+│   ├── validate             # Run validation checks
+│   ├── new-feature          # Create feature proposals
+│   ├── install-agents       # Manage AI agents
+│   ├── check-debt           # Check technical debt
+│   └── track-progress       # Track tasks
 ├── docs/                    # Documentation and proposals
 │   ├── feature-proposals/   # Feature proposals
 │   └── architecture/        # Architecture documents and ADRs
@@ -1021,16 +1076,16 @@ This project uses the organized AI-First SDLC structure:
 
 ## Development Workflow
 
-1. **Create feature proposal**: `./new-feature <name>` or manually in `docs/feature-proposals/`
+1. **Create feature proposal**: `cd sdlc-tools && ./new-feature <name>`
 2. **Create feature branch**: `git checkout -b feature/<name>`
 3. **Implement changes**
 4. **Update retrospective** in `retrospectives/`
-5. **Run validation**: `./validate`
+5. **Run validation**: `cd sdlc-tools && ./validate`
 6. **Create Pull Request**
 
 ## Available Agents
 
-Run `./install-agents list` to see available AI agents.
+Run `cd sdlc-tools && ./install-agents list` to see available AI agents.
 Agents are installed to `.sdlc/agents/` for clean organization.
 
 ## Framework Documentation
@@ -1058,6 +1113,9 @@ This project uses the AI-First SDLC framework with organized structure for clean
 ## Quick Start
 
 ```bash
+# Go to tools directory
+cd sdlc-tools
+
 # Validate project compliance
 ./validate
 
@@ -1071,7 +1129,8 @@ This project uses the AI-First SDLC framework with organized structure for clean
 ## Project Structure
 
 ```
-├── .sdlc/              # Framework tools (hidden)
+├── .sdlc/              # Framework internals (hidden)
+├── sdlc-tools/         # User command tools
 ├── docs/               # Documentation
 ├── plan/               # Implementation plans
 ├── retrospectives/     # Feature retrospectives

@@ -38,7 +38,7 @@ Recent agent installation issues highlighted this problem when the full team rev
 
 ```
 user-project/
-├── .sdlc/                    # Framework tools and internals
+├── .sdlc/                    # Framework internals (hidden)
 │   ├── tools/               # Validation and automation scripts
 │   │   ├── validation/      
 │   │   └── automation/      
@@ -49,6 +49,13 @@ user-project/
 │   ├── config/              # Framework configuration
 │   │   └── settings.json    
 │   └── VERSION              # Framework version
+├── sdlc-tools/              # User-facing command tools
+│   ├── validate             # Run validation checks
+│   ├── new-feature          # Create feature proposals
+│   ├── install-agents       # Manage AI agents  
+│   ├── check-debt           # Check technical debt
+│   ├── track-progress       # Track development tasks
+│   └── README.md           # Tool documentation
 ├── docs/                    # User-facing (REQUIRED at root)
 │   ├── feature-proposals/   
 │   └── architecture/        
@@ -97,13 +104,13 @@ user-project/
 ## Benefits
 
 1. **Improved User Experience**
-   - Clean project root
-   - Clear file organization
+   - Clean project root (only 6-7 visible directories)
+   - Clear separation: `.sdlc/` for internals, `sdlc-tools/` for user commands
    - Easy to see actual project files
 
 2. **Better Framework Integration**
-   - Framework files clearly separated
-   - Easier to update framework
+   - Framework internals hidden in `.sdlc/`
+   - User tools organized in `sdlc-tools/`
    - Simpler gitignore rules
 
 3. **Maintains Compliance**
@@ -139,7 +146,9 @@ user-project/
 
 ## Success Metrics
 
-- User project roots have <10 framework files (vs 50+)
+- User project roots have only 6-7 visible directories (vs 50+ files)
+- Framework internals hidden in `.sdlc/`
+- User commands organized in `sdlc-tools/`
 - Setup time reduced by 50%
 - User satisfaction improved
 - No increase in validation failures

@@ -118,10 +118,14 @@ class FrameworkMigrator:
         else:
             print(f"✅ Migration complete! Moved {len(self.moved_files)} items")
             print("\n📁 New structure:")
-            print("   .sdlc/          # Framework tools and configs")
+            print("   .sdlc/          # Framework internals (hidden)")
+            print("   sdlc-tools/     # User command tools") 
             print("   docs/           # Your documentation (unchanged)")
             print("   retrospectives/ # Your retrospectives (unchanged)")
             print("   plan/           # Your plans (unchanged)")
+            print("\n📚 Next steps:")
+            print("   cd sdlc-tools   # Access all framework commands")
+            print("   ./validate      # Run validation")
             
             if self.errors:
                 print(f"\n⚠️  {len(self.errors)} errors occurred:")
@@ -168,27 +172,40 @@ class FrameworkMigrator:
             print(f"❌ {error_msg}")
     
     def _create_convenience_scripts(self):
-        """Create wrapper scripts"""
+        """Create wrapper scripts in sdlc-tools directory"""
+        # Create sdlc-tools directory
+        tools_dir = self.project_root / "sdlc-tools"
+        tools_dir.mkdir(exist_ok=True)
+        
         scripts = {
-            'validate': '#!/bin/bash\npython .sdlc/tools/validation/validate-pipeline.py "$@"\n',
+            'validate': '#!/bin/bash\npython ../.sdlc/tools/validation/validate-pipeline.py "$@"\n',
             'new-feature': '''#!/bin/bash
 if [ -z "$1" ]; then
     echo "Usage: ./new-feature <feature-name>"
     exit 1
 fi
-cp .sdlc/templates/proposals/feature-proposal.md "docs/feature-proposals/$(date +%y)-$1.md"
+cp ../.sdlc/templates/proposals/feature-proposal.md "../docs/feature-proposals/$(date +%y)-$1.md"
 echo "Created: docs/feature-proposals/$(date +%y)-$1.md"
 ''',
-            'install-agents': '#!/bin/bash\npython .sdlc/tools/automation/agent-installer.py "$@"\n'
+            'install-agents': '#!/bin/bash\npython ../.sdlc/tools/automation/agent-installer.py "$@"\n',
+            'check-debt': '#!/bin/bash\npython ../.sdlc/tools/validation/check-technical-debt.py "$@"\n',
+            'track-progress': '#!/bin/bash\npython ../.sdlc/tools/automation/progress-tracker.py "$@"\n'
         }
         
         for name, content in scripts.items():
-            script_path = self.project_root / name
+            script_path = tools_dir / name
             if not script_path.exists():
                 with open(script_path, 'w') as f:
                     f.write(content)
                 os.chmod(script_path, 0o755)
-                print(f"✅ Created convenience script: {name}")
+                print(f"✅ Created sdlc-tools/{name}")
+        
+        # Remove old scripts from root if they exist
+        for name in scripts.keys():
+            old_path = self.project_root / name
+            if old_path.exists():
+                old_path.unlink()
+                print(f"✅ Removed old script from root: {name}")
     
     def _update_claude_md(self):
         """Update CLAUDE.md to reflect new structure"""
@@ -198,8 +215,11 @@ echo "Created: docs/feature-proposals/$(date +%y)-$1.md"
             
             # Update tool paths
             replacements = [
-                ('python tools/validate-pipeline.py', './validate'),
-                ('python tools/validation/validate-pipeline.py', './validate'),
+                ('python tools/validate-pipeline.py', 'cd sdlc-tools && ./validate'),
+                ('python tools/validation/validate-pipeline.py', 'cd sdlc-tools && ./validate'),
+                ('./validate', 'cd sdlc-tools && ./validate'),
+                ('./new-feature', 'cd sdlc-tools && ./new-feature'),
+                ('./install-agents', 'cd sdlc-tools && ./install-agents'),
                 ('tools/', '.sdlc/tools/'),
                 ('templates/', '.sdlc/templates/')
             ]

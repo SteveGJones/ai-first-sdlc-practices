@@ -98,11 +98,20 @@
    - User-facing directories (docs/, retrospectives/) stay visible
    - Hybrid approach balances all needs
 
+4. **Why sdlc-tools Directory**
+   - Cleaner than individual scripts at root
+   - Clear purpose: "these are your SDLC tools"
+   - Can be added to PATH for convenience
+   - Separates "hidden" .sdlc from user tools
+
 ## Metrics
 
 - Files in root (before): 50+
-- Files in root (after): <10
-- User-visible framework files: 5 (CLAUDE.md, README.md, 3 wrapper scripts)
+- Visible directories in root (after): 6-7
+- Framework structure:
+  - `.sdlc/` - Hidden internals
+  - `sdlc-tools/` - User commands (5 tools)
+  - User dirs: docs/, plan/, retrospectives/
 - Setup time reduction: ~50% with quickstart mode
 
 ## Final Thoughts
