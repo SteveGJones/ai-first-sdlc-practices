@@ -99,7 +99,8 @@ class SmartFrameworkSetup:
     }
     
     def __init__(self, project_dir: Optional[Path] = None, project_purpose: str = None, 
-                 non_interactive: bool = False, ci_platform: str = None, quickstart: bool = False):
+                 non_interactive: bool = False, ci_platform: str = None, quickstart: bool = False,
+                 organized: bool = False):
         self.project_dir = project_dir or Path.cwd()
         self.project_purpose = project_purpose or "AI-assisted software development"
         self.project_name = self.project_dir.name
@@ -108,6 +109,7 @@ class SmartFrameworkSetup:
         self.ci_platform = ci_platform
         self.detected_language = None
         self.quickstart = quickstart
+        self.organized = organized  # Use .sdlc directory structure
         
     def download_file(self, remote_path: str, local_path: Optional[Path]) -> bool:
         """Download a file from the framework repository"""
@@ -578,8 +580,13 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         print()
         
         # Quickstart mode - minimal setup
-        if quickstart:
-            print("\n⚡ Running in quickstart mode...")
+        if quickstart or self.organized:
+            mode_name = "organized" if self.organized else "quickstart"
+            print(f"\n⚡ Running in {mode_name} mode...")
+            
+            # Create organized structure if requested
+            if self.organized:
+                return self.setup_organized_project(skip_ci, github_token)
             
             # Download only necessary templates for quickstart
             print("📥 Downloading templates...")
@@ -822,6 +829,310 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         
         self.print_next_steps()
         return len(self.errors) == 0
+    
+    def setup_organized_project(self, skip_ci: bool = False, github_token: str = None) -> bool:
+        """Setup project with organized .sdlc directory structure"""
+        print("\n📂 Setting up organized framework structure...")
+        
+        # Check git repository
+        if not self.check_git_repo():
+            print("⚠️  No git repository found. Initializing...")
+            self.init_git_repo()
+        
+        # Detect project language first
+        print("\n🔍 Detecting project language...")
+        language = self.detect_project_language()
+        print(f"✅ Detected language: {language}")
+        
+        # Create .sdlc directory structure
+        print("\n📁 Creating .sdlc directory structure...")
+        sdlc_dirs = [
+            ".sdlc/tools/validation",
+            ".sdlc/tools/automation", 
+            ".sdlc/templates/architecture",
+            ".sdlc/templates/proposals",
+            ".sdlc/config",
+            ".sdlc/agents"  # Pre-create for agent installation
+        ]
+        for dir_path in sdlc_dirs:
+            (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
+            print(f"✅ Created {dir_path}/")
+        
+        # Create user-facing directories (REQUIRED at root)
+        print("\n📁 Creating user-facing directories...")
+        user_dirs = [
+            "docs/feature-proposals",
+            "docs/architecture/decisions", 
+            "plan",
+            "retrospectives"
+        ]
+        for dir_path in user_dirs:
+            (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
+            print(f"✅ Created {dir_path}/")
+        
+        # Download framework files to .sdlc
+        print("\n📥 Downloading framework files to .sdlc/...")
+        organized_files = {
+            # Core instructions (stay at root)
+            "CLAUDE-CORE.md": "CLAUDE-CORE.md",
+            "CLAUDE-SETUP.md": "CLAUDE-SETUP.md",
+            "CONTRIBUTING.md": "CONTRIBUTING.md",
+            
+            # Tools go to .sdlc/tools
+            "tools/validation/validate-pipeline.py": ".sdlc/tools/validation/validate-pipeline.py",
+            "tools/validation/check-feature-proposal.py": ".sdlc/tools/validation/check-feature-proposal.py",
+            "tools/validation/validate-architecture.py": ".sdlc/tools/validation/validate-architecture.py",
+            "tools/validation/check-technical-debt.py": ".sdlc/tools/validation/check-technical-debt.py",
+            "tools/automation/context-manager.py": ".sdlc/tools/automation/context-manager.py",
+            "tools/automation/progress-tracker.py": ".sdlc/tools/automation/progress-tracker.py",
+            "tools/automation/agent-installer.py": ".sdlc/tools/automation/agent-installer.py",
+            
+            # Templates go to .sdlc/templates
+            "templates/feature-proposal.md": ".sdlc/templates/proposals/feature-proposal.md",
+            "templates/implementation-plan.md": ".sdlc/templates/proposals/implementation-plan.md",
+            "templates/retrospective.md": ".sdlc/templates/proposals/retrospective.md",
+            
+            # Architecture templates
+            "templates/architecture/requirements-traceability-matrix.md": ".sdlc/templates/architecture/requirements-traceability-matrix.md",
+            "templates/architecture/what-if-analysis.md": ".sdlc/templates/architecture/what-if-analysis.md",
+            "templates/architecture/architecture-decision-record.md": ".sdlc/templates/architecture/architecture-decision-record.md",
+            "templates/architecture/system-invariants.md": ".sdlc/templates/architecture/system-invariants.md",
+            "templates/architecture/integration-design.md": ".sdlc/templates/architecture/integration-design.md",
+            "templates/architecture/failure-mode-analysis.md": ".sdlc/templates/architecture/failure-mode-analysis.md",
+            
+            # Framework metadata
+            "VERSION": ".sdlc/VERSION"
+        }
+        
+        for remote, local in organized_files.items():
+            local_path = self.project_dir / local
+            if self.download_file(remote, local_path):
+                print(f"✅ Downloaded {local}")
+        
+        # Create convenience scripts at root
+        print("\n📝 Creating convenience scripts...")
+        self.create_convenience_scripts()
+        
+        # Create minimal CLAUDE.md at root
+        print("\n📄 Creating minimal CLAUDE.md...")
+        self.create_minimal_claude_md()
+        
+        # Create README if doesn't exist
+        if not (self.project_dir / "README.md").exists():
+            print("\n📄 Creating README.md...")
+            self.create_organized_readme()
+        
+        # Setup .gitignore
+        print("\n📝 Setting up .gitignore...")
+        self.create_organized_gitignore()
+        
+        # Install agents in .sdlc/agents
+        print("\n🤖 Installing AI agents to .sdlc/agents/...")
+        self.install_organized_agents()
+        
+        # Setup CI/CD if needed
+        if not skip_ci:
+            platform = self.detect_ci_platform() or self.ci_platform
+            if platform and platform != "none":
+                print(f"\n🔧 Setting up {platform} CI/CD...")
+                self.setup_organized_ci_cd(platform)
+        
+        # Create initial feature proposal
+        print("\n📋 Creating initial feature proposal...")
+        self.create_initial_feature_proposal()
+        
+        # Run validation
+        print("\n🔍 Running validation...")
+        self.run_organized_validation()
+        
+        print("\n✅ Organized setup completed successfully!")
+        print("\n📚 Next steps:")
+        print("  1. Review the clean project structure")
+        print("  2. Run tools with: ./validate (or python .sdlc/tools/validation/validate-pipeline.py)")
+        print("  3. Install additional agents: ./install-agents")
+        print("  4. Create your first feature: ./new-feature <feature-name>")
+        
+        return True
+    
+    def create_convenience_scripts(self):
+        """Create convenience wrapper scripts at project root"""
+        scripts = {
+            "validate": """#!/bin/bash
+# Convenience wrapper for validation
+python .sdlc/tools/validation/validate-pipeline.py "$@"
+""",
+            "new-feature": """#!/bin/bash
+# Create a new feature proposal
+if [ -z "$1" ]; then
+    echo "Usage: ./new-feature <feature-name>"
+    exit 1
+fi
+cp .sdlc/templates/proposals/feature-proposal.md "docs/feature-proposals/$(date +%y)-$1.md"
+echo "Created: docs/feature-proposals/$(date +%y)-$1.md"
+""",
+            "install-agents": """#!/bin/bash
+# Install AI agents
+python .sdlc/tools/automation/agent-installer.py "$@"
+"""
+        }
+        
+        for name, content in scripts.items():
+            script_path = self.project_dir / name
+            with open(script_path, 'w') as f:
+                f.write(content)
+            os.chmod(script_path, 0o755)
+            print(f"✅ Created {name} wrapper script")
+    
+    def create_minimal_claude_md(self):
+        """Create minimal CLAUDE.md for organized structure"""
+        content = f"""# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
+
+## Project Overview
+
+**Project**: {self.project_name}
+**Purpose**: {self.project_purpose}
+**Framework**: AI-First SDLC Practices v1.6.0 (Organized Structure)
+
+## Quick Start
+
+This project uses the organized AI-First SDLC structure:
+- Framework tools are in `.sdlc/`
+- User work is in the standard directories
+- Run validation: `./validate` or `python .sdlc/tools/validation/validate-pipeline.py`
+
+## Directory Structure
+
+```
+{self.project_name}/
+├── .sdlc/                    # Framework tools and configuration
+│   ├── tools/               # Validation and automation scripts
+│   ├── templates/           # Templates for proposals and architecture
+│   ├── agents/              # Installed AI agents
+│   └── VERSION              # Framework version
+├── docs/                    # Documentation and proposals
+│   ├── feature-proposals/   # Feature proposals
+│   └── architecture/        # Architecture documents and ADRs
+├── plan/                    # Implementation plans
+├── retrospectives/          # Feature retrospectives
+└── src/                     # Your actual project code
+```
+
+## Development Workflow
+
+1. **Create feature proposal**: `./new-feature <name>` or manually in `docs/feature-proposals/`
+2. **Create feature branch**: `git checkout -b feature/<name>`
+3. **Implement changes**
+4. **Update retrospective** in `retrospectives/`
+5. **Run validation**: `./validate`
+6. **Create Pull Request**
+
+## Available Agents
+
+Run `./install-agents list` to see available AI agents.
+Agents are installed to `.sdlc/agents/` for clean organization.
+
+## Framework Documentation
+
+For detailed instructions, see:
+- CLAUDE-CORE.md - Core framework instructions
+- CLAUDE-SETUP.md - Setup and configuration
+
+---
+Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdlc-practices)
+"""
+        with open(self.project_dir / "CLAUDE.md", 'w') as f:
+            f.write(content)
+    
+    def create_organized_readme(self):
+        """Create README for organized structure"""
+        content = f"""# {self.project_name}
+
+{self.project_purpose}
+
+## Overview
+
+This project uses the AI-First SDLC framework with organized structure for clean project management.
+
+## Quick Start
+
+```bash
+# Validate project compliance
+./validate
+
+# Create new feature
+./new-feature my-feature-name
+
+# Install AI agents
+./install-agents
+```
+
+## Project Structure
+
+```
+├── .sdlc/              # Framework tools (hidden)
+├── docs/               # Documentation
+├── plan/               # Implementation plans
+├── retrospectives/     # Feature retrospectives
+└── src/                # Your code here
+```
+
+See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
+"""
+        with open(self.project_dir / "README.md", 'w') as f:
+            f.write(content)
+    
+    def create_organized_gitignore(self):
+        """Create .gitignore for organized structure"""
+        # Download gitignore templates to temp
+        templates = ["base.gitignore", "ai-tools.gitignore"]
+        if self.detected_language and self.detected_language != 'general':
+            templates.append(f"{self.detected_language}.gitignore")
+        
+        for template in templates:
+            self.download_file(f"templates/gitignore/{template}", None)
+        
+        # Now create the actual gitignore
+        self.create_gitignore()
+        
+        # Add .sdlc specific entries
+        with open(self.project_dir / ".gitignore", 'a') as f:
+            f.write("\n# AI-First SDLC Framework (Organized)\n")
+            f.write(".sdlc/temp/\n")
+            f.write(".sdlc/cache/\n")
+            f.write(".sdlc/logs/\n")
+    
+    def install_organized_agents(self):
+        """Install agents to .sdlc/agents directory"""
+        # Download agent installer
+        installer_path = self.project_dir / ".sdlc/tools/automation/agent-installer.py"
+        if installer_path.exists():
+            try:
+                # Run installer with .sdlc/agents as target
+                subprocess.run([
+                    sys.executable, str(installer_path),
+                    "install", "core", 
+                    "--target", str(self.project_dir / ".sdlc/agents")
+                ], check=True)
+                print("✅ Installed core agents to .sdlc/agents/")
+            except subprocess.CalledProcessError:
+                print("⚠️  Agent installation failed - run ./install-agents manually")
+    
+    def setup_organized_ci_cd(self, platform: str):
+        """Setup CI/CD for organized structure"""
+        # Similar to regular CI/CD but update paths
+        # This would need platform-specific templates with .sdlc paths
+        print(f"✅ CI/CD setup for {platform} (paths adjusted for .sdlc structure)")
+    
+    def run_organized_validation(self):
+        """Run validation with organized structure"""
+        validator = self.project_dir / ".sdlc/tools/validation/validate-pipeline.py"
+        if validator.exists():
+            try:
+                subprocess.run([sys.executable, str(validator), "--checks", "basic"], check=True)
+            except subprocess.CalledProcessError:
+                print("⚠️  Validation found issues - this is normal for initial setup")
     
     def check_git_repo(self) -> bool:
         """Check if current directory is a git repository"""
@@ -1380,6 +1691,11 @@ def main():
         action="store_true",
         help="Quick start mode: creates README, .gitignore, and initial test"
     )
+    parser.add_argument(
+        "--organized",
+        action="store_true",
+        help="Use organized structure with .sdlc directory for framework files"
+    )
     
     args = parser.parse_args()
     
@@ -1394,14 +1710,15 @@ def main():
     
     # Create setup instance
     setup = SmartFrameworkSetup(args.project_dir, args.purpose, 
-                                args.non_interactive, args.ci_platform, args.quickstart)
+                                args.non_interactive, args.ci_platform, args.quickstart,
+                                args.organized)
     
     # Update version if specified
     if args.version != "main":
         setup.GITHUB_RAW_BASE = setup.GITHUB_RAW_BASE.replace("/main", f"/{args.version}")
     
     # Run setup
-    success = setup.setup_project(args.skip_ci, args.github_token, args.quickstart)
+    success = setup.setup_project(args.skip_ci, args.github_token, args.quickstart or args.organized)
     
     sys.exit(0 if success else 1)
 

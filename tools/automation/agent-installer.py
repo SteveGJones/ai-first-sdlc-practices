@@ -77,11 +77,21 @@ AGENT_TIERS = {
 class AgentInstaller:
     """Manages installation of AI agents to user projects with tiered deployment."""
     
-    def __init__(self, project_root: Path, agent_source: Optional[Path] = None):
+    def __init__(self, project_root: Path, agent_source: Optional[Path] = None, target_dir: Optional[Path] = None):
         self.project_root = project_root
         self.agent_source = agent_source
-        self.claude_agents_dir = project_root / ".claude" / "agents"
-        self.installed_agents_file = project_root / ".agent-manifest.json"
+        
+        # Support both old and new locations
+        if target_dir:
+            self.claude_agents_dir = target_dir
+        elif (project_root / ".sdlc").exists():
+            # Organized structure
+            self.claude_agents_dir = project_root / ".sdlc" / "agents"
+        else:
+            # Legacy structure
+            self.claude_agents_dir = project_root / ".claude" / "agents"
+            
+        self.installed_agents_file = self.claude_agents_dir.parent / "agent-manifest.json"
         self.installed_agents = self._load_installed_agents()
         self._temp_dir = None
         
@@ -587,6 +597,8 @@ class AgentInstaller:
               help='Project root directory')
 @click.option('--agent-source', type=click.Path(exists=True),
               default=None, help='Agent source directory')
+@click.option('--target', type=click.Path(), default=None,
+              help='Target directory for agents (default: auto-detect .sdlc/agents or .claude/agents)')
 @click.option('--core-only', is_flag=True, help='Install only core agents')
 @click.option('--languages', '-l', multiple=True, help='Languages to install agents for')
 @click.option('--list', 'list_agents', is_flag=True, help='List available agents')
@@ -595,7 +607,7 @@ class AgentInstaller:
 @click.option('--objectives', help='Project objectives for recommendations')
 @click.option('--recommend-only', is_flag=True, help='Show recommendations without installing')
 @click.option('--tiered', is_flag=True, help='Use tiered deployment strategy')
-def main(project_root, agent_source, core_only, languages, list_agents, install, 
+def main(project_root, agent_source, target, core_only, languages, list_agents, install, 
         analyze, objectives, recommend_only, tiered):
     """Install AI agents for the AI-First SDLC framework."""
     
@@ -610,7 +622,10 @@ def main(project_root, agent_source, core_only, languages, list_agents, install,
             console.print("[yellow]Will download agents from GitHub instead...[/yellow]")
             agent_source_path = None
     
-    installer = AgentInstaller(project_path, agent_source_path)
+    # Handle target directory
+    target_path = Path(target) if target else None
+    
+    installer = AgentInstaller(project_path, agent_source_path, target_path)
     
     # Handle analysis and recommendations
     if analyze or recommend_only:
@@ -679,11 +694,18 @@ def main(project_root, agent_source, core_only, languages, list_agents, install,
     
     # Important notes
     console.print("\n[bold yellow]⚠️  Important Notes[/bold yellow]")
-    console.print("\n1. Agents have been installed to your project's .claude/agents directory")
+    
+    # Determine which directory structure we're using
+    if ".sdlc" in str(installer.claude_agents_dir):
+        console.print(f"\n1. Agents have been installed to: {installer.claude_agents_dir}")
+        console.print("   (Using organized .sdlc structure)")
+    else:
+        console.print(f"\n1. Agents have been installed to: {installer.claude_agents_dir}")
+        
     console.print("2. [bold red]RESTART YOUR AI ASSISTANT[/bold red] to activate the agents!")
     console.print("\nFor system-wide availability, you can also copy to:")
-    console.print("   [cyan]cp -r .claude/agents/* ~/.claude/agents/[/cyan]")
-    console.print("\nNote: Project-specific agents in .claude/agents are not automatically available")
+    console.print(f"   [cyan]cp -r {installer.claude_agents_dir}/* ~/.claude/agents/[/cyan]")
+    console.print("\nNote: Project-specific agents are not automatically available")
     
     # Clean up temporary directory after all operations are complete
     installer._cleanup_temp()
