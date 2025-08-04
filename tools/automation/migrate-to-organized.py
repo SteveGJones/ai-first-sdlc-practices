@@ -206,6 +206,9 @@ echo "Created: docs/feature-proposals/$(date +%y)-$1.md"
             if old_path.exists():
                 old_path.unlink()
                 print(f"✅ Removed old script from root: {name}")
+        
+        # Create comprehensive README
+        self._create_tools_readme(tools_dir)
     
     def _update_claude_md(self):
         """Update CLAUDE.md to reflect new structure"""
@@ -255,6 +258,120 @@ Framework tools are now in `.sdlc/` for a cleaner project root.
                     f.write('.sdlc/cache/\n') 
                     f.write('.sdlc/logs/\n')
                 print("✅ Updated .gitignore")
+    
+    def _create_tools_readme(self, tools_dir: Path):
+        """Create comprehensive README for sdlc-tools directory"""
+        readme_content = """# SDLC Tools
+
+User-friendly command-line tools for the AI-First SDLC Framework.
+
+## Overview
+
+This directory contains convenience wrappers for common framework commands. These tools help you follow AI-First SDLC practices without remembering complex paths or commands.
+
+## Available Commands
+
+### 📋 `validate` - Run Framework Validation
+Checks your project for AI-First SDLC compliance.
+
+```bash
+./validate                    # Run basic checks
+./validate --checks all       # Run all validation checks
+./validate --checks branch    # Check branch compliance only
+./validate --export report.md # Export results to file
+```
+
+### 🚀 `new-feature` - Create Feature Proposal
+Creates a new feature proposal from the template.
+
+```bash
+./new-feature user-auth              # Creates: docs/feature-proposals/24-user-auth.md
+./new-feature "payment integration"  # Handles spaces in names
+```
+
+### 🤖 `install-agents` - Manage AI Agents
+Install and manage specialized AI agents for your project.
+
+```bash
+./install-agents list         # List available agents
+./install-agents --core-only  # Install essential agents
+./install-agents -i langchain-architect  # Install specific agent
+./install-agents --analyze    # Get recommendations based on your project
+```
+
+### 🔍 `check-debt` - Technical Debt Scanner
+Scans for technical debt indicators (TODOs, commented code, etc).
+
+```bash
+./check-debt                  # Scan current directory
+./check-debt --threshold 0    # Fail if ANY debt found (Zero Technical Debt)
+./check-debt --format json    # Output as JSON
+```
+
+### 📊 `track-progress` - Task Management
+Track development tasks and progress.
+
+```bash
+./track-progress add "Implement user authentication"
+./track-progress list         # Show all tasks
+./track-progress complete 1   # Mark task #1 as complete
+./track-progress export       # Export task list
+```
+
+## Quick Start
+
+1. **From this directory:**
+   ```bash
+   cd sdlc-tools
+   ./validate
+   ```
+
+2. **Add to PATH (recommended):**
+   ```bash
+   # Add to your .bashrc or .zshrc
+   export PATH="$PATH:/path/to/your/project/sdlc-tools"
+   
+   # Then use from anywhere in your project
+   validate
+   new-feature my-feature
+   ```
+
+3. **Create aliases:**
+   ```bash
+   # Add to your shell config
+   alias sdlc-validate="cd $PROJECT_ROOT/sdlc-tools && ./validate"
+   alias sdlc-feature="cd $PROJECT_ROOT/sdlc-tools && ./new-feature"
+   ```
+
+## Tool Details
+
+All tools are shell wrappers around Python scripts in `.sdlc/tools/`. This design:
+- Keeps commands simple and memorable
+- Hides implementation details
+- Allows easy updates without changing commands
+- Supports both local and PATH usage
+
+## Getting Help
+
+- Run any command without arguments for usage help
+- Check `.sdlc/tools/` for the underlying Python scripts
+- See the [AI-First SDLC documentation](https://github.com/SteveGJones/ai-first-sdlc-practices)
+
+## Tips
+
+- **AI Agents**: Always restart your AI assistant after installing new agents
+- **Validation**: Run `./validate` before creating pull requests
+- **Features**: Create a feature proposal before starting any new work
+- **Technical Debt**: Aim for zero output from `./check-debt`
+
+---
+
+Part of the [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdlc-practices)
+"""
+        readme_path = tools_dir / "README.md"
+        with open(readme_path, 'w') as f:
+            f.write(readme_content)
+        print("✅ Created sdlc-tools/README.md")
 
 
 def main():
