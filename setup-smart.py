@@ -1591,8 +1591,8 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 local_path = self.project_dir / "tools" / Path(tool).name
                 self.download_file(tool, local_path)
             
-            # Create claude/agents directory
-            claude_agents_dir = self.project_dir / "claude" / "agents"
+            # Create .claude/agents directory
+            claude_agents_dir = self.project_dir / ".claude" / "agents"
             claude_agents_dir.mkdir(parents=True, exist_ok=True)
             
             # In non-interactive mode, do smart installation
@@ -1655,11 +1655,11 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         
         # Updated core agents list with new universal agents
         core_agents = [
-            ("agents/core/sdlc-enforcer.md", "claude/agents/core/sdlc-enforcer.md"),
-            ("agents/core/solution-architect.md", "claude/agents/core/solution-architect.md"),
-            ("agents/core/critical-goal-reviewer.md", "claude/agents/core/critical-goal-reviewer.md"),
-            ("agents/sdlc/framework-validator.md", "claude/agents/sdlc/framework-validator.md"),
-            ("agents/core/github-integration-specialist.md", "claude/agents/core/github-integration-specialist.md")
+            ("agents/core/sdlc-enforcer.md", ".claude/agents/core/sdlc-enforcer.md"),
+            ("agents/core/solution-architect.md", ".claude/agents/core/solution-architect.md"),
+            ("agents/core/critical-goal-reviewer.md", ".claude/agents/core/critical-goal-reviewer.md"),
+            ("agents/sdlc/framework-validator.md", ".claude/agents/sdlc/framework-validator.md"),
+            ("agents/core/github-integration-specialist.md", ".claude/agents/core/github-integration-specialist.md")
         ]
         
         installed_count = 0
