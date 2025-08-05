@@ -27,11 +27,11 @@ class ArchitectureValidator:
         
         # Required documents with their validation rules
         self.required_docs = {
-            "requirements-matrix.md": self._validate_requirements_matrix,
+            "requirements-traceability-matrix.md": self._validate_requirements_matrix,
             "what-if-analysis.md": self._validate_what_if_analysis,
             "system-invariants.md": self._validate_system_invariants,
             "integration-design.md": self._validate_integration_design,
-            "failure-analysis.md": self._validate_failure_analysis
+            "failure-mode-analysis.md": self._validate_failure_analysis
         }
         
         # ADRs are in a subdirectory

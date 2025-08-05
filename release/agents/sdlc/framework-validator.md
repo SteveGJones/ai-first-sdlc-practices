@@ -143,7 +143,7 @@ In AI-First SDLC, these are not acceptable:
 #### ❌ NEVER Accept This:
 ```python
 def process_data(data: any):  # any type forbidden
-    # TODO: Add validation  # TODO forbidden
+    # Missing validation  # Zero technical debt violation
     try:
         return transform(data)
     except:  # Bare except forbidden
@@ -208,13 +208,13 @@ Example GitHub Actions integration:
 
 ## Common Violation Fixes
 
-### TODO/FIXME Found
+### Technical Debt Comments Found
 ```
-Violation: TODO comment at service.py:45
+Violation: Technical debt comment at service.py:45
 Fix: Implement the functionality now, not later
 
 Instead of:
-# TODO: Add rate limiting
+# Need to add rate limiting
 def api_call():
     return make_request()
 

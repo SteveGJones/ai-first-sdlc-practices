@@ -2,8 +2,17 @@
 
 AI-First SDLC framework core instructions. Load context modules as needed.
 
+## 🚨 CRITICAL WARNING: ZERO TOLERANCE ENFORCEMENT 🚨
+
+This framework enforces AI-First SDLC practices with ABSOLUTE ZERO TOLERANCE. ANY violation will result in:
+- IMMEDIATE WORK STOPPAGE
+- PROJECT TERMINATION
+- COMPLETE DEVELOPMENT HALT
+
+**SEE `SDLC-RULES-SUMMARY.md` FOR COMPLETE ENFORCEMENT RULES**
+
 ## Framework Overview
-Comprehensive methodology for AI agents as primary developers with quality enforcement.
+Uncompromising methodology for AI agents as mandatory developers with ruthless quality enforcement.
 
 ## Zero Technical Debt (MANDATORY)
 
@@ -49,33 +58,43 @@ python tools/validation/validate-pipeline.py --checks type-safety
 
 Details: Load CLAUDE-CONTEXT-logging.md
 
-## Branch Protection & Workflow
+## 🛑 MANDATORY WORKFLOW (VIOLATION = IMMEDIATE TERMINATION)
 
-### NEVER:
-- Commit directly to main
-- Work without feature branch
-- Create PR without retrospective
+### ABSOLUTELY FORBIDDEN (INSTANT PROJECT DEATH):
+- ANY commit directly to main branch
+- ANY work without proper feature branch
+- ANY PR creation without complete retrospective
+- ANY code without ALL 6 architecture documents
+- ANY technical debt (TODOs, FIXMEs, any types)
 
-### ALWAYS:
-1. Create feature branch: `git checkout -b feature/name`
-2. Create proposal: `docs/feature-proposals/XX-name.md`
-3. Create retrospective: `retrospectives/XX-name.md` (update incrementally)
-4. Push to remote: `git push -u origin feature/name`
-5. Create PR with complete retrospective
+### MANDATORY SEQUENCE (NO DEVIATIONS ALLOWED):
+1. **HALT**: Stop ALL work if not on feature branch
+2. **CREATE**: Feature branch: `git checkout -b feature/name` 
+3. **DOCUMENT**: Proposal: `docs/feature-proposals/XX-name.md`
+4. **ARCHITECTURE**: ALL 6 documents BEFORE any code
+5. **VALIDATE**: `python tools/validation/validate-architecture.py --strict` MUST PASS
+6. **RETROSPECTIVE**: Create `retrospectives/XX-name.md` IMMEDIATELY
+7. **DEVELOP**: Update retrospective after EVERY change
+8. **PUSH**: `git push -u origin feature/name`
+9. **PR**: Only with COMPLETE retrospective or REJECTION
 
-## Retrospectives (MANDATORY)
+## 📋 RETROSPECTIVES (MANDATORY OR PROJECT TERMINATION)
 
-### Create immediately when starting work
-### Update throughout implementation:
-- After discovering issues
-- When making major changes
-- Upon finding bugs
-- When completing todos
+### ⚠️ CREATE IMMEDIATELY OR WORK STOPS
+### ⚠️ UPDATE AFTER EVERY SINGLE CHANGE OR FACE PUNISHMENT:
+- After discovering ANY issues (NO EXCEPTIONS)
+- When making ANY changes (major or minor)
+- Upon finding ANY bugs (immediate update required)
+- When completing ANY todos (document immediately)
+- After EVERY validation run
+- Before EVERY commit
 
-### PR REJECTED without retrospective containing:
-- What went well
-- What could improve
-- Lessons learned
+### 🚫 PR AUTO-REJECTED WITHOUT RETROSPECTIVE CONTAINING:
+- What went well (MANDATORY SECTION)
+- What could improve (MANDATORY SECTION) 
+- Lessons learned (MANDATORY SECTION)
+- Complete change log (MANDATORY SECTION)
+- Validation results (MANDATORY SECTION)
 
 ## Essential Commands
 
@@ -138,12 +157,18 @@ If update available: Load CLAUDE-CONTEXT-update.md
 4. **Review**: Update retrospective
 5. **Submit**: PR with complete retrospective
 
-## Critical Rules Summary
+## 🚨 DEATH PENALTY VIOLATIONS 🚨
 
-- **Architecture before code** (NO EXCEPTIONS)
-- **Zero technical debt** (NO TODOS)
-- **Branch protection** (NO direct commits)
-- **Retrospectives required** (NO PR without)
-- **Continuous validation** (EVERY change)
+**THESE VIOLATIONS RESULT IN IMMEDIATE PROJECT TERMINATION:**
+
+- **NO Architecture before code** → INSTANT DEATH PENALTY
+- **ANY technical debt found** → INSTANT DEATH PENALTY  
+- **ANY direct commit to main** → INSTANT DEATH PENALTY
+- **PR without retrospective** → INSTANT DEATH PENALTY
+- **Skipping validation** → INSTANT DEATH PENALTY
+- **Working without feature branch** → INSTANT DEATH PENALTY
+- **Missing ANY of 6 architecture docs** → INSTANT DEATH PENALTY
+
+**THERE ARE NO WARNINGS. THERE ARE NO SECOND CHANCES. VIOLATION = TERMINATION.**
 
 Total lines: 120

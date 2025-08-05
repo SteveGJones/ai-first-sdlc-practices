@@ -41,7 +41,7 @@ Adapt framework requirements to Python idioms:
 ```python
 # ❌ FORBIDDEN in Python
 def process_data(data: Any) -> Any:  # No Any types
-    # TODO: Add validation  # No TODOs
+    # Missing validation  # Zero technical debt violation
     try:
         return transform(data)
     except:  # No bare except

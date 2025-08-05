@@ -1,12 +1,24 @@
 # CLAUDE.md
 
-> **⚠️ DEPRECATION NOTICE**: This file will be removed in v2.0.0
-> - **Status**: DEPRECATED as of v1.7.0 
-> - **New system**: Use CLAUDE-CORE.md (88% smaller, loads faster)
-> - **Migration**: Run `python tools/migrate-to-hierarchical.py`
-> - **Removal date**: This file will be completely removed in v2.0.0
+> # 🚨 CRITICAL: DO NOT USE THIS FILE 🚨
+> 
+> ## THIS FILE IS DEPRECATED AND WILL CAUSE RULE VIOLATIONS
+> 
+> **MANDATORY**: Use these files instead:
+> 1. **CLAUDE-CORE.md** - Compact core instructions (88% smaller)
+> 2. **SDLC-RULES-SUMMARY.md** - Critical enforcement rules
+> 3. **sdlc-enforcer agent** - Harsh compliance enforcement
 >
-> The hierarchical instruction system is superior in every way. Please migrate now.
+> **WARNING**: The sdlc-enforcer agent will BLOCK work if you use this deprecated file.
+>
+> **IMMEDIATE ACTION REQUIRED**:
+> ```bash
+> # Switch to the compact system NOW
+> cat CLAUDE-CORE.md  # Use this instead
+> cat SDLC-RULES-SUMMARY.md  # Know the rules
+> ```
+>
+> This 646-line file violates our compact documentation principles and will be DELETED.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 

@@ -36,6 +36,11 @@ This proposal addresses critical bugs in the agent installer discovered during r
    - No graceful fallback for malformed metadata
    - Users couldn't install any agents when parsing failed
 
+5. **Agents Not Actually Installing**
+   - Temporary directory cleaned up before files were copied
+   - No verification that files were actually copied
+   - Silent failures with "success" messages
+
 ### Impact
 - Users unable to run agent installer with correct command
 - Most agents failed to install due to YAML errors
@@ -65,6 +70,13 @@ This proposal addresses critical bugs in the agent installer discovered during r
 - Continue processing other agents if one fails
 - Provide clear feedback about what succeeded/failed
 - Handle multiline descriptions in display
+
+### 5. Fix Actual Installation
+- Ensure temporary directory persists until copying complete
+- Add explicit cleanup after all operations finish
+- Verify files actually exist after copying
+- Show list of successfully installed files
+- Add debug logging to track installation process
 
 ## Implementation Details
 
@@ -119,6 +131,7 @@ if isinstance(desc, str):
 3. **Proper Directory**: Agents installed flat to `.claude/agents` without subfolders
 4. **Graceful Failures**: Individual parsing errors don't stop installation
 5. **Clear Feedback**: Users understand what was installed and where
+6. **Files Actually Install**: Agent files exist in `.claude/agents` after installation
 
 ## Testing Plan
 

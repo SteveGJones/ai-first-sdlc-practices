@@ -77,11 +77,21 @@ AGENT_TIERS = {
 class AgentInstaller:
     """Manages installation of AI agents to user projects with tiered deployment."""
     
-    def __init__(self, project_root: Path, agent_source: Optional[Path] = None):
+    def __init__(self, project_root: Path, agent_source: Optional[Path] = None, target_dir: Optional[Path] = None):
         self.project_root = project_root
         self.agent_source = agent_source
-        self.claude_agents_dir = project_root / ".claude" / "agents"
-        self.installed_agents_file = project_root / ".agent-manifest.json"
+        
+        # Support both old and new locations
+        if target_dir:
+            self.claude_agents_dir = target_dir
+        elif (project_root / ".sdlc").exists():
+            # Organized structure
+            self.claude_agents_dir = project_root / ".sdlc" / "agents"
+        else:
+            # Legacy structure
+            self.claude_agents_dir = project_root / ".claude" / "agents"
+            
+        self.installed_agents_file = self.claude_agents_dir.parent / "agent-manifest.json"
         self.installed_agents = self._load_installed_agents()
         self._temp_dir = None
         
@@ -217,7 +227,7 @@ class AgentInstaller:
     
     def install_agent(self, agent_path: Path, metadata: Dict, force: bool = False) -> bool:
         """Install a single agent."""
-        agent_name = metadata['name']
+        agent_name = metadata.get('name', agent_path.stem)
         
         # Check if already installed
         if agent_name in self.installed_agents and not force:
@@ -235,7 +245,22 @@ class AgentInstaller:
         
         # Copy agent file directly to .claude/agents
         target_path = self.claude_agents_dir / agent_path.name
-        shutil.copy2(agent_path, target_path)
+        
+        # Debug: Check source file exists
+        if not agent_path.exists():
+            console.print(f"[red]Error: Source file does not exist: {agent_path}[/red]")
+            return False
+            
+        # Actually copy the file
+        try:
+            shutil.copy2(agent_path, target_path)
+            # Verify the copy succeeded
+            if not target_path.exists():
+                console.print(f"[red]Error: Failed to copy {agent_path.name} to {target_path}[/red]")
+                return False
+        except Exception as e:
+            console.print(f"[red]Error copying {agent_path.name}: {e}[/red]")
+            return False
         
         # Record installation
         self.installed_agents[agent_name] = metadata.get('version', '1.0.0')
@@ -248,18 +273,27 @@ class AgentInstaller:
         """Install all core agents required for every project."""
         console.print("\n[bold]Installing Core Agents[/bold]")
         
+        # Ensure we have agents downloaded
+        if self.agent_source is None:
+            self.agent_source = self._download_agents()
+        
         core_dir = self.agent_source / "core"
         if not core_dir.exists():
-            console.print("[red]Core agents directory not found![/red]")
+            console.print(f"[red]Core agents directory not found at: {core_dir}[/red]")
             return
         
+        console.print(f"[dim]Looking for agents in: {core_dir}[/dim]")
+        
         installed_count = 0
+        found_count = 0
         for agent_file in core_dir.rglob("*.md"):
+            found_count += 1
+            console.print(f"[dim]Processing: {agent_file.name}[/dim]")
             metadata = self._parse_agent_metadata(agent_file)
             if metadata and self.install_agent(agent_file, metadata):
                 installed_count += 1
         
-        console.print(f"\n[green]Installed {installed_count} core agents[/green]")
+        console.print(f"\n[green]Found {found_count} agents, installed {installed_count} core agents[/green]")
     
     def install_language_agents(self, languages: List[str]):
         """Install language-specific agents."""
@@ -385,7 +419,7 @@ class AgentInstaller:
             
             for agent_info in category_agents:
                 metadata = agent_info['metadata']
-                name = metadata['name']
+                name = metadata.get('name', 'Unknown')
                 version = metadata.get('version', '1.0.0')
                 installed = " [green]✓[/green]" if name in self.installed_agents else ""
                 
@@ -563,6 +597,8 @@ class AgentInstaller:
               help='Project root directory')
 @click.option('--agent-source', type=click.Path(exists=True),
               default=None, help='Agent source directory')
+@click.option('--target', type=click.Path(), default=None,
+              help='Target directory for agents (default: auto-detect .sdlc/agents or .claude/agents)')
 @click.option('--core-only', is_flag=True, help='Install only core agents')
 @click.option('--languages', '-l', multiple=True, help='Languages to install agents for')
 @click.option('--list', 'list_agents', is_flag=True, help='List available agents')
@@ -571,7 +607,7 @@ class AgentInstaller:
 @click.option('--objectives', help='Project objectives for recommendations')
 @click.option('--recommend-only', is_flag=True, help='Show recommendations without installing')
 @click.option('--tiered', is_flag=True, help='Use tiered deployment strategy')
-def main(project_root, agent_source, core_only, languages, list_agents, install, 
+def main(project_root, agent_source, target, core_only, languages, list_agents, install, 
         analyze, objectives, recommend_only, tiered):
     """Install AI agents for the AI-First SDLC framework."""
     
@@ -586,7 +622,10 @@ def main(project_root, agent_source, core_only, languages, list_agents, install,
             console.print("[yellow]Will download agents from GitHub instead...[/yellow]")
             agent_source_path = None
     
-    installer = AgentInstaller(project_path, agent_source_path)
+    # Handle target directory
+    target_path = Path(target) if target else None
+    
+    installer = AgentInstaller(project_path, agent_source_path, target_path)
     
     # Handle analysis and recommendations
     if analyze or recommend_only:
@@ -639,13 +678,37 @@ def main(project_root, agent_source, core_only, languages, list_agents, install,
     console.print("\n[bold green]Agent installation complete![/bold green]")
     console.print(f"Agents installed to: {installer.claude_agents_dir}")
     
+    # List what was actually installed
+    if installer.claude_agents_dir.exists():
+        installed_files = list(installer.claude_agents_dir.glob("*.md"))
+        if installed_files:
+            console.print(f"\n[green]Successfully installed {len(installed_files)} agent(s):[/green]")
+            for f in installed_files[:5]:  # Show first 5
+                console.print(f"  - {f.name}")
+            if len(installed_files) > 5:
+                console.print(f"  ... and {len(installed_files) - 5} more")
+        else:
+            console.print("\n[red]WARNING: No agent files found in installation directory![/red]")
+    else:
+        console.print("\n[red]WARNING: Installation directory does not exist![/red]")
+    
     # Important notes
     console.print("\n[bold yellow]⚠️  Important Notes[/bold yellow]")
-    console.print("\n1. Agents have been installed to your project's .claude/agents directory")
+    
+    # Determine which directory structure we're using
+    if ".sdlc" in str(installer.claude_agents_dir):
+        console.print(f"\n1. Agents have been installed to: {installer.claude_agents_dir}")
+        console.print("   (Using organized .sdlc structure)")
+    else:
+        console.print(f"\n1. Agents have been installed to: {installer.claude_agents_dir}")
+        
     console.print("2. [bold red]RESTART YOUR AI ASSISTANT[/bold red] to activate the agents!")
     console.print("\nFor system-wide availability, you can also copy to:")
-    console.print("   [cyan]cp -r .claude/agents/* ~/.claude/agents/[/cyan]")
-    console.print("\nNote: Project-specific agents in .claude/agents are not automatically available")
+    console.print(f"   [cyan]cp -r {installer.claude_agents_dir}/* ~/.claude/agents/[/cyan]")
+    console.print("\nNote: Project-specific agents are not automatically available")
+    
+    # Clean up temporary directory after all operations are complete
+    installer._cleanup_temp()
 
 if __name__ == "__main__":
     try:

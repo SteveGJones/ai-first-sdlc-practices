@@ -1,0 +1,204 @@
+# SDLC Gates Configuration
+# Mandatory checkpoints and agent validations for each SDLC phase
+
+gates:
+  requirements:
+    description: "Requirements gathering and analysis phase"
+    mandatory: true
+    required_agents:
+      - solution-architect
+      - critical-goal-reviewer
+    consensus_type: "all"  # all agents must approve
+    documents_required:
+      - "docs/feature-proposals/XX-feature.md"
+    validation_checks:
+      - feature-proposal-exists
+      - requirements-clarity
+      - scope-defined
+    cannot_proceed_without:
+      - agent_sign_off
+      - approved_feature_proposal
+    level_overrides:
+      prototype:
+        required_agents:
+          - solution-architect  # Only one agent for prototypes
+        documents_required:
+          - "docs/feature-intent.md"  # Simplified doc
+      
+  design:
+    description: "Architecture and design phase"
+    mandatory: true
+    required_agents:
+      - solution-architect
+      - security-architect
+      - performance-engineer
+    consensus_type: "majority"  # 2 out of 3 must approve
+    documents_required:
+      - "docs/architecture/requirements-traceability-matrix.md"
+      - "docs/architecture/what-if-analysis.md"
+      - "docs/architecture/architecture-decision-record.md"
+      - "docs/architecture/system-invariants.md"
+      - "docs/architecture/integration-design.md"
+      - "docs/architecture/failure-mode-analysis.md"
+    validation_checks:
+      - architecture-complete
+      - security-review
+      - performance-baseline
+    cannot_proceed_without:
+      - multi_agent_approval
+      - all_architecture_documents
+    level_overrides:
+      prototype:
+        required_agents:
+          - solution-architect
+        documents_required:
+          - "docs/basic-design.md"
+        consensus_type: "single"
+      enterprise:
+        required_agents:
+          - solution-architect
+          - security-architect
+          - performance-engineer
+          - compliance-auditor
+        consensus_type: "all"
+        
+  implementation:
+    description: "Development and testing phase"
+    mandatory: true
+    required_agents:
+      - sdlc-enforcer
+      - test-manager
+    continuous_validation: true
+    validation_interval: "on_commit"
+    validation_checks:
+      - technical-debt
+      - test-coverage
+      - code-quality
+      - security-scan
+    cannot_proceed_without:
+      - passing_validation
+      - test_coverage_threshold
+    level_overrides:
+      prototype:
+        validation_checks:
+          - basic-security
+          - basic-tests
+        test_coverage_threshold: 0  # No minimum for prototypes
+      production:
+        test_coverage_threshold: 80
+      enterprise:
+        test_coverage_threshold: 90
+        required_agents:
+          - sdlc-enforcer
+          - test-manager
+          - ai-test-engineer
+          
+  review:
+    description: "Code review and quality assurance"
+    mandatory: true
+    required_agents:
+      - critical-goal-reviewer
+      - test-manager
+    validation_checks:
+      - goal-alignment
+      - test-results
+      - documentation-complete
+    cannot_proceed_without:
+      - pr_approval
+      - all_checks_passing
+    level_overrides:
+      prototype:
+        required_agents:
+          - critical-goal-reviewer
+        allow_self_merge: true  # Solo developers
+      enterprise:
+        minimum_reviewers: 2
+        required_agents:
+          - critical-goal-reviewer
+          - test-manager
+          - security-architect
+          
+  deployment:
+    description: "Production deployment phase"
+    mandatory: true
+    required_agents:
+      - sre-specialist
+      - compliance-auditor
+    validation_checks:
+      - production-readiness
+      - security-clearance
+      - performance-validation
+      - rollback-plan
+    deployment_strategies:
+      prototype: "direct"
+      production: "blue-green"
+      enterprise: "canary"
+    cannot_proceed_without:
+      - deployment_approval
+      - health_checks_passing
+    level_overrides:
+      prototype:
+        required_agents:
+          - sre-specialist
+        validation_checks:
+          - basic-health-check
+      enterprise:
+        required_agents:
+          - sre-specialist
+          - compliance-auditor
+          - security-architect
+        approval_gates:
+          - security-team
+          - platform-team
+          - change-advisory-board
+
+# Agent conflict resolution rules
+conflict_resolution:
+  escalation_path:
+    - framework-validator  # First escalation
+    - critical-goal-reviewer  # Second escalation
+    - human-decision  # Final escalation
+  
+  resolution_strategies:
+    unanimous_required:  # All agents must agree
+      gates: ["requirements", "deployment"]
+      levels: ["enterprise"]
+    
+    majority_vote:  # Simple majority wins
+      gates: ["design", "review"]
+      levels: ["production"]
+      
+    single_veto:  # Any agent can block
+      agents: ["security-architect", "compliance-auditor"]
+      gates: ["deployment"]
+      
+# Mandatory agent sequences for common scenarios
+agent_sequences:
+  new_feature:
+    sequence:
+      - solution-architect
+      - security-architect
+      - performance-engineer
+      - test-manager
+    parallel_allowed: false
+    
+  bug_fix:
+    sequence:
+      - critical-goal-reviewer
+      - test-manager
+    parallel_allowed: true
+    
+  deployment:
+    sequence:
+      - sre-specialist
+      - compliance-auditor
+      - security-architect
+    parallel_allowed: false
+    
+  architecture_change:
+    sequence:
+      - solution-architect
+      - security-architect
+      - performance-engineer
+      - critical-goal-reviewer
+    parallel_allowed: false
