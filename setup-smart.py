@@ -1039,7 +1039,7 @@ python ../.sdlc/tools/automation/progress-tracker.py "$@"
             script_path = tools_dir / name
             with open(script_path, 'w') as f:
                 f.write(content)
-            os.chmod(script_path, 0o750)  # rwxr-x--- (owner: rwx, group: r-x, others: no access)
+            os.chmod(script_path, 0o700)  # rwx------ (owner only: read, write, execute)
             print(f"✅ Created sdlc-tools/{name}")
         
         # Create README for sdlc-tools

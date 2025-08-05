@@ -102,12 +102,20 @@ class CollaborationDetector:
                 text=True,
                 check=True
             )
-            # Properly parse URL to check hostname
             url = result.stdout.strip()
-            # Check for common GitHub URL patterns
-            return (url.startswith('https://github.com/') or 
-                    url.startswith('git@github.com:') or
-                    url.startswith('git://github.com/'))
+            
+            # Parse URL properly to extract hostname
+            if url.startswith('git@'):
+                # SSH format: git@github.com:user/repo.git
+                if url.startswith('git@github.com:'):
+                    return True
+            elif url.startswith(('https://', 'http://', 'git://')):
+                # HTTP(S) format: https://github.com/user/repo.git
+                from urllib.parse import urlparse
+                parsed = urlparse(url)
+                return parsed.hostname == 'github.com'
+            
+            return False
         except subprocess.CalledProcessError:
             return False
     

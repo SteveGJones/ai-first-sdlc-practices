@@ -197,7 +197,7 @@ echo "Created: docs/feature-proposals/$(date +%y)-$1.md"
             if not script_path.exists():
                 with open(script_path, 'w') as f:
                     f.write(content)
-                os.chmod(script_path, 0o750)  # rwxr-x--- (owner: rwx, group: r-x, others: no access)
+                os.chmod(script_path, 0o700)  # rwx------ (owner only: read, write, execute)
                 print(f"✅ Created sdlc-tools/{name}")
         
         # Remove old scripts from root if they exist
