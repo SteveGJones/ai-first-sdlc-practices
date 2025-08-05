@@ -322,7 +322,7 @@ class ProjectAnalyzer:
         
         try:
             # Check if it's a git repo
-            result = subprocess.run(
+            subprocess.run(
                 ["git", "rev-parse", "--git-dir"],
                 cwd=self.project_path,
                 capture_output=True,
