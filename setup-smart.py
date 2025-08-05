@@ -314,6 +314,239 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
 - Feature proposals and retrospectives are required
 """
     
+    def setup_python_project(self) -> bool:
+        """Create essential Python project files"""
+        print("\n🐍 Setting up Python project essentials...")
+        
+        # Create requirements.txt with common dependencies
+        requirements_content = """# Core dependencies
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+pre-commit>=3.0.0
+
+# Add your project dependencies below:
+"""
+        requirements_path = self.project_dir / "requirements.txt"
+        if not requirements_path.exists():
+            requirements_path.write_text(requirements_content)
+            print("✅ Created requirements.txt")
+        
+        # Create pyproject.toml
+        pyproject_content = f"""[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --cov=src --cov-report=html"
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{self.project_name}"
+version = "0.1.0"
+description = "{self.project_purpose}"
+"""
+        pyproject_path = self.project_dir / "pyproject.toml"
+        if not pyproject_path.exists():
+            pyproject_path.write_text(pyproject_content)
+            print("✅ Created pyproject.toml")
+        
+        # Create setup.py
+        setup_content = f"""#!/usr/bin/env python3
+\"\"\"
+{self.project_name}
+{self.project_purpose}
+\"\"\"
+
+from setuptools import setup, find_packages
+
+setup(
+    name="{self.project_name}",
+    version="0.1.0",
+    description="{self.project_purpose}",
+    packages=find_packages(where="src"),
+    package_dir={{"": "src"}},
+    python_requires=">=3.8",
+    install_requires=[
+        # Add runtime dependencies here
+    ],
+    extras_require={{
+        "dev": [
+            "pytest>=7.0.0",
+            "pytest-cov>=4.0.0",
+            "black>=23.0.0",
+            "flake8>=6.0.0",
+            "mypy>=1.0.0",
+            "pre-commit>=3.0.0",
+        ],
+    }},
+)
+"""
+        setup_path = self.project_dir / "setup.py"
+        if not setup_path.exists():
+            setup_path.write_text(setup_content)
+            os.chmod(setup_path, 0o755)
+            print("✅ Created setup.py")
+        
+        # Create __init__.py files
+        package_name = self.project_name.replace('-', '_')
+        init_files = [
+            self.project_dir / "src" / package_name / "__init__.py",
+            self.project_dir / "tests" / "__init__.py"
+        ]
+        
+        for init_file in init_files:
+            if not init_file.exists():
+                init_file.parent.mkdir(parents=True, exist_ok=True)
+                init_file.write_text('"""Package initialization."""\n')
+        
+        print("✅ Created package structure")
+        
+        # Create basic test file
+        test_content = f"""\"\"\"
+Basic tests for {self.project_name}
+\"\"\"
+
+import pytest
+
+
+def test_framework_setup():
+    \"\"\"Test that the AI-First SDLC framework is properly set up.\"\"\"
+    from pathlib import Path
+    
+    # Check essential directories exist
+    project_root = Path(__file__).parent.parent
+    assert (project_root / "docs" / "architecture").exists()
+    assert (project_root / "docs" / "feature-proposals").exists()
+    assert (project_root / "retrospectives").exists()
+    
+
+def test_import():
+    \"\"\"Test that the package can be imported.\"\"\"
+    import {package_name}
+    assert {package_name}.__name__ == "{package_name}"
+"""
+        test_path = self.project_dir / "tests" / f"test_{package_name}.py"
+        if not test_path.exists():
+            test_path.write_text(test_content)
+            print("✅ Created basic test file")
+        
+        return True
+    
+    def update_readme_for_python(self):
+        """Update README.md with Python-specific content"""
+        readme_path = self.project_dir / "README.md"
+        
+        if not readme_path.exists():
+            # Create new README if it doesn't exist
+            self.create_readme()
+            
+        # Read existing content
+        content = readme_path.read_text()
+        
+        # Check if Python section already exists
+        if "## Installation" in content and "pip install" in content:
+            print("ℹ️  README.md already has Python content, skipping update")
+            return
+        
+        # Find where to insert Python content (after Overview or at end)
+        python_section = f"""
+## Installation
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd {self.project_name}
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\\Scripts\\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install in development mode
+pip install -e .
+```
+
+## Development
+
+```bash
+# Run tests
+pytest
+
+# Run tests with coverage
+pytest --cov
+
+# Format code
+black .
+
+# Lint
+flake8
+
+# Type check
+mypy .
+```
+
+## Project Structure
+
+```
+{self.project_name}/
+├── src/
+│   └── {self.project_name.replace('-', '_')}/
+│       └── __init__.py
+├── tests/
+│   └── test_{self.project_name.replace('-', '_')}.py
+├── docs/
+│   ├── architecture/
+│   └── feature-proposals/
+├── requirements.txt
+├── setup.py
+├── pyproject.toml
+└── README.md
+```
+"""
+        
+        # Insert after Overview section or before Testing section
+        if "## Overview" in content:
+            parts = content.split("## Getting Started")
+            if len(parts) == 2:
+                content = parts[0] + python_section + "\n## Getting Started" + parts[1]
+            else:
+                # Insert after Overview
+                parts = content.split("## Overview")
+                if len(parts) == 2:
+                    # Find the end of Overview section
+                    lines = parts[1].split('\n')
+                    insert_idx = 0
+                    for i, line in enumerate(lines):
+                        if line.startswith('##'):
+                            insert_idx = i
+                            break
+                    if insert_idx > 0:
+                        lines.insert(insert_idx, python_section)
+                        parts[1] = '\n'.join(lines)
+                        content = "## Overview".join(parts)
+        else:
+            # Just append at the end
+            content = content.rstrip() + "\n" + python_section
+        
+        # Write updated content
+        readme_path.write_text(content)
+        print("✅ Updated README.md with Python-specific content")
+    
     def configure_sdlc_level(self):
         """Configure the SDLC level for the project"""
         print(f"\n🎯 Configuring SDLC Level: {self.sdlc_level}")
@@ -738,12 +971,29 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         print("\n📁 Creating directory structure...")
         dirs = [
             "docs/feature-proposals", 
-            "docs/architecture/decisions",  # New for Zero Technical Debt
+            "docs/architecture",            # MANDATORY for validation
+            "docs/architecture/decisions",  # For ADRs
             "plan", 
             "retrospectives", 
             ".claude",
-            "templates/architecture"  # New for architecture templates
+            ".claude/agents",              # For agent installation
+            "templates/architecture"        # For architecture templates
         ]
+        
+        # Add language-specific directories
+        if language == 'python':
+            dirs.extend(["src", "tests", "src/" + self.project_name.replace('-', '_')])
+        elif language == 'node':
+            dirs.extend(["src", "test"])
+        elif language == 'go':
+            dirs.extend(["cmd", "pkg", "internal"])
+        elif language == 'java':
+            dirs.extend(["src/main/java", "src/test/java"])
+        elif language == 'rust':
+            dirs.extend(["src", "tests"])
+        elif language == 'ruby':
+            dirs.extend(["lib", "spec", "test"])
+            
         for dir_path in dirs:
             (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
             print(f"✅ Created {dir_path}/")
@@ -804,6 +1054,11 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         print("\n🧪 Creating initial test...")
         self.create_initial_test()
         
+        # Setup Python project if detected
+        if language == 'python':
+            self.setup_python_project()
+            self.update_readme_for_python()
+        
         # Setup CI/CD if not skipped
         if not skip_ci:
             platform = self.detect_ci_platform()
@@ -857,6 +1112,11 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
                 self.setup_branch_protection(github_token)
             else:
                 print("\n💡 Tip: Install 'gh' CLI or provide GITHUB_TOKEN for automatic branch protection")
+        
+        # Create comprehensive first commit if in non-interactive mode
+        if self.non_interactive:
+            print("\n📦 Creating comprehensive first commit...")
+            self.create_first_commit()
         
         # Clean up temp directory
         temp_dir = self.project_dir / '.ai-sdlc-temp'
@@ -1713,7 +1973,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
             # Create project configuration
             config = {
                 "project_name": self.project_name,
-                "project_purpose": self.purpose,
+                "project_purpose": self.project_purpose,
                 "github_repository": github_url,
                 "agent_preferences": {
                     "required_agents": [
@@ -1750,6 +2010,100 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
             print(f"   ⚠️  Could not create Claude config: {e}")
             return False
     
+    def create_first_commit(self) -> bool:
+        """Create a comprehensive first commit with all essentials"""
+        try:
+            print("\n📝 Preparing comprehensive first commit...")
+            
+            # Essential files that should be in the commit
+            essential_files = [
+                "README.md",
+                "CLAUDE.md", 
+                "CLAUDE-CORE.md",
+                "CLAUDE-CORE-PROGRESSIVE.md",
+                ".gitignore",
+                "VERSION",
+                "CONTRIBUTING.md",
+                ".pre-commit-config.yaml",
+                "docs/feature-proposals/00-ai-first-setup.md"
+            ]
+            
+            # Add language-specific files
+            if self.detected_language == 'python':
+                essential_files.extend([
+                    "requirements.txt",
+                    "setup.py", 
+                    "pyproject.toml",
+                    "src/__init__.py",
+                    "tests/__init__.py"
+                ])
+            
+            # Stage all essential files
+            for file in essential_files:
+                file_path = self.project_dir / file
+                if file_path.exists() or any((self.project_dir / p).exists() for p in Path(file).parents):
+                    try:
+                        subprocess.run(["git", "add", file], cwd=self.project_dir, check=True)
+                    except:
+                        pass
+            
+            # Stage directories
+            essential_dirs = ["docs", "tools", "retrospectives", "plan", ".claude", ".sdlc"]
+            for dir_name in essential_dirs:
+                dir_path = self.project_dir / dir_name
+                if dir_path.exists():
+                    try:
+                        subprocess.run(["git", "add", f"{dir_name}/"], cwd=self.project_dir, check=True)
+                    except:
+                        pass
+            
+            # Create comprehensive commit message
+            commit_message = f"""feat: implement AI-First SDLC framework with proactive agent usage
+
+- Complete project structure with mandatory directories
+- AI-First SDLC framework v1.6.0 integrated
+- Progressive SDLC level: {self.sdlc_level}
+- Proactive agent collaboration enforced
+- Zero Technical Debt policy active
+"""
+            
+            if self.detected_language == 'python':
+                commit_message += """- Python project essentials created
+- Testing and linting configured
+- Package structure established
+"""
+            
+            commit_message += f"""
+Project: {self.project_name}
+Purpose: {self.project_purpose}
+
+This project uses AI agents as primary developers with mandatory
+consultation before any coding decisions. 
+
+Run 'python tools/agent-installer.py' to install specialist agents.
+
+🤖 Generated with AI-First SDLC Framework
+"""
+            
+            # Check if there are changes to commit
+            result = subprocess.run(["git", "status", "--porcelain"], 
+                                  cwd=self.project_dir, capture_output=True, text=True)
+            
+            if result.stdout.strip():
+                print("   📦 Creating comprehensive first commit...")
+                # Create the commit
+                subprocess.run(["git", "commit", "-m", commit_message], 
+                             cwd=self.project_dir, check=True)
+                print("   ✅ Created comprehensive first commit")
+                return True
+            else:
+                print("   ℹ️  No changes to commit")
+                return False
+                
+        except Exception as e:
+            print(f"   ⚠️  Could not create first commit: {e}")
+            return False
+    
     def print_next_steps(self):
         """Print next steps for the user"""
         print("\n📋 Next Steps:")
@@ -1782,6 +2136,15 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
             print("     • mcp-test-agent - MCP testing from AI perspective ⭐")
             print("     • mcp-quality-assurance - MCP quality & security ⭐")
             print("   ")
+        elif self.detected_language == 'python':
+            print("   🐍 Python Project Detected! Essential Agents:")
+            print("     • sdlc-enforcer - Primary compliance guardian")
+            print("     • critical-goal-reviewer - Quality assurance")
+            print("     • solution-architect - System design expert")
+            print("     • language-python-expert - Python best practices ⭐")
+            print("     • ai-test-engineer - AI testing specialist ⭐")
+            print("     • test-manager - Testing strategy")
+            print("   ")
             print("   📚 Additional recommended agents:")
         else:
             print("   🤖 Core Agents (CRITICAL - Install These First):")
@@ -1808,6 +2171,18 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         print("   - Ask: 'What agents should I install for [your specific need]?'")
         print("   - The ai-first-kick-starter agent can recommend agents anytime")
         print("   - List all available agents: python tools/agent-installer.py --list")
+        print("\n🚨 CRITICAL: AI AGENTS MUST BE USED PROACTIVELY!")
+        print("   The framework REQUIRES agents to be consulted BEFORE any coding:")
+        print("   - NEVER write code without agent consultation")
+        print("   - ALWAYS engage agents at the START of tasks")
+        print("   - Agents are MANDATORY, not optional helpers")
+        print("   ")
+        print("   Example: User says 'add login' → You IMMEDIATELY invoke:")
+        print("   1. sdlc-enforcer (check compliance)")
+        print("   2. solution-architect (design approach)")
+        print("   3. security-architect (auth patterns)")
+        print("   4. test-manager (test strategy)")
+        
         print("\n5. Customize CLAUDE.md with project-specific details:")
         print("   edit CLAUDE.md")
         print("\n6. Complete the setup tasks:")
