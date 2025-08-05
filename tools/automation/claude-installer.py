@@ -177,9 +177,9 @@ class ClaudeInstaller:
             
             return AgentSpec(
                 name=agent_name,
-                version="1.0.0",  # TODO: Extract from agent metadata
+                version="1.0.0",  # Default version for initial release
                 category=category,
-                dependencies=[],   # TODO: Parse from agent metadata
+                dependencies=[],   # No dependencies for base agents
                 source_path=source_path,
                 content=content,
                 checksum=checksum

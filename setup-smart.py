@@ -24,12 +24,15 @@ class SmartFrameworkSetup:
     ESSENTIAL_FILES = {
         # New hierarchical instruction system
         "CLAUDE-CORE.md": "CLAUDE-CORE.md",
+        "CLAUDE-CORE-PROGRESSIVE.md": "CLAUDE-CORE-PROGRESSIVE.md",
         "CLAUDE-SETUP.md": "CLAUDE-SETUP.md",
         "CLAUDE-CONTEXT-architecture.md": "CLAUDE-CONTEXT-architecture.md",
         "CLAUDE-CONTEXT-validation.md": "CLAUDE-CONTEXT-validation.md",
         "CLAUDE-CONTEXT-update.md": "CLAUDE-CONTEXT-update.md",
         "CLAUDE-CONTEXT-language-validators.md": "CLAUDE-CONTEXT-language-validators.md",
         "CLAUDE-CONTEXT-logging.md": "CLAUDE-CONTEXT-logging.md",
+        "CLAUDE-CONTEXT-levels.md": "CLAUDE-CONTEXT-levels.md",
+        "CLAUDE-CONTEXT-agents.md": "CLAUDE-CONTEXT-agents.md",
         # Migration tool for existing projects
         "tools/migrate-to-hierarchical.py": "tools/migrate-to-hierarchical.py",
         "templates/feature-proposal.md": "docs/feature-proposals/template-feature-proposal.md",
@@ -41,6 +44,8 @@ class SmartFrameworkSetup:
         "tools/automation/setup-branch-protection-gh.py": "tools/setup-branch-protection-gh.py",
         "tools/validation/check-feature-proposal.py": "tools/check-feature-proposal.py",
         "tools/validation/validate-pipeline.py": "tools/validate-pipeline.py",
+        "tools/validation/validate-pipeline-progressive.py": "tools/validate-pipeline-progressive.py",
+        "tools/automation/sdlc-level.py": "tools/sdlc-level.py",
         # Zero Technical Debt additions
         "ZERO-TECHNICAL-DEBT.md": "ZERO-TECHNICAL-DEBT.md",
         "LANGUAGE-SPECIFIC-VALIDATORS.md": "LANGUAGE-SPECIFIC-VALIDATORS.md",
@@ -100,7 +105,7 @@ class SmartFrameworkSetup:
     
     def __init__(self, project_dir: Optional[Path] = None, project_purpose: str = None, 
                  non_interactive: bool = False, ci_platform: str = None, quickstart: bool = False,
-                 organized: bool = False):
+                 organized: bool = False, sdlc_level: str = "production"):
         self.project_dir = project_dir or Path.cwd()
         self.project_purpose = project_purpose or "AI-assisted software development"
         self.project_name = self.project_dir.name
@@ -109,7 +114,8 @@ class SmartFrameworkSetup:
         self.ci_platform = ci_platform
         self.detected_language = None
         self.quickstart = quickstart
-        self.organized = organized  # Use .sdlc directory structure
+        self.organized = organized
+        self.sdlc_level = sdlc_level  # Use .sdlc directory structure
         
     def download_file(self, remote_path: str, local_path: Optional[Path]) -> bool:
         """Download a file from the framework repository"""
@@ -307,6 +313,42 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
 - Main branch protection should be enabled
 - Feature proposals and retrospectives are required
 """
+    
+    def configure_sdlc_level(self):
+        """Configure the SDLC level for the project"""
+        print(f"\n🎯 Configuring SDLC Level: {self.sdlc_level}")
+        
+        # Create .sdlc directory if needed
+        sdlc_dir = self.project_dir / ".sdlc"
+        sdlc_dir.mkdir(exist_ok=True)
+        
+        # Create level configuration
+        level_config = {
+            "level": self.sdlc_level,
+            "set_date": subprocess.run(['date', '+%Y-%m-%dT%H:%M:%S'], 
+                                     capture_output=True, text=True).stdout.strip(),
+            "framework_version": "1.6.0"
+        }
+        
+        level_file = sdlc_dir / "level.json"
+        with open(level_file, 'w') as f:
+            json.dump(level_config, f, indent=2)
+        
+        print(f"✅ Set SDLC level to: {self.sdlc_level}")
+        
+        # Print level-specific guidance
+        if self.sdlc_level == "prototype":
+            print("   📝 Prototype level: Quick starts with basic requirements")
+            print("   ✅ TODOs are allowed during prototyping")
+            print("   📋 Required: feature intent, basic design, retrospective")
+        elif self.sdlc_level == "production":
+            print("   🏭 Production level: Full architecture and zero technical debt")
+            print("   📋 Required: All 6 architecture documents")
+            print("   🚫 No TODOs, FIXMEs, or technical debt allowed")
+        else:  # enterprise
+            print("   🏢 Enterprise level: Maximum rigor with compliance")
+            print("   📋 Required: All production requirements plus compliance docs")
+            print("   👥 Team coordination and audit trails mandatory")
     
     def create_initial_feature_proposal(self) -> bool:
         """Create the initial setup feature proposal"""
@@ -784,6 +826,9 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         version_file = self.project_dir / "VERSION"
         version_file.write_text("1.6.0")
         print("✅ Created VERSION file (1.6.0)")
+        
+        # Configure SDLC level
+        self.configure_sdlc_level()
         
         # Install AI agents
         print("\n🤖 Installing AI agents...")
@@ -1833,6 +1878,12 @@ def main():
         action="store_true",
         help="Use organized structure with .sdlc directory for framework files"
     )
+    parser.add_argument(
+        "--level",
+        choices=["prototype", "production", "enterprise"],
+        default="production",
+        help="SDLC enforcement level (default: production)"
+    )
     
     args = parser.parse_args()
     
@@ -1848,7 +1899,7 @@ def main():
     # Create setup instance
     setup = SmartFrameworkSetup(args.project_dir, args.purpose, 
                                 args.non_interactive, args.ci_platform, args.quickstart,
-                                args.organized)
+                                args.organized, args.level)
     
     # Update version if specified
     if args.version != "main":
