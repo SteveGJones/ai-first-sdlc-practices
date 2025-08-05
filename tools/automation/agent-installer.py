@@ -81,15 +81,12 @@ class AgentInstaller:
         self.project_root = project_root
         self.agent_source = agent_source
         
-        # Support both old and new locations
+        # Always use claude/agents as the standard location (without dot)
         if target_dir:
             self.claude_agents_dir = target_dir
-        elif (project_root / ".sdlc").exists():
-            # Organized structure
-            self.claude_agents_dir = project_root / ".sdlc" / "agents"
         else:
-            # Legacy structure
-            self.claude_agents_dir = project_root / ".claude" / "agents"
+            # Standard location for Claude agents
+            self.claude_agents_dir = project_root / "claude" / "agents"
             
         self.installed_agents_file = self.claude_agents_dir.parent / "agent-manifest.json"
         self.installed_agents = self._load_installed_agents()
@@ -598,7 +595,7 @@ class AgentInstaller:
 @click.option('--agent-source', type=click.Path(exists=True),
               default=None, help='Agent source directory')
 @click.option('--target', type=click.Path(), default=None,
-              help='Target directory for agents (default: auto-detect .sdlc/agents or .claude/agents)')
+              help='Target directory for agents (default: claude/agents)')
 @click.option('--core-only', is_flag=True, help='Install only core agents')
 @click.option('--languages', '-l', multiple=True, help='Languages to install agents for')
 @click.option('--list', 'list_agents', is_flag=True, help='List available agents')
