@@ -102,7 +102,12 @@ class CollaborationDetector:
                 text=True,
                 check=True
             )
-            return 'github.com' in result.stdout
+            # Properly parse URL to check hostname
+            url = result.stdout.strip()
+            # Check for common GitHub URL patterns
+            return (url.startswith('https://github.com/') or 
+                    url.startswith('git@github.com:') or
+                    url.startswith('git://github.com/'))
         except subprocess.CalledProcessError:
             return False
     
