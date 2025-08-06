@@ -520,9 +520,10 @@ class TechnicalDebtDetector:
                     line.startswith("#")
                     or line.startswith("//")
                     or "(r'" in line
-                    or '"' in line
-                    and "pattern" in line.lower()
+                    or '(r"' in line
+                    or ("pattern" in line.lower() and '"' in line)
                     or "security_patterns" in line
+                    or "= [" in line  # Skip list/tuple definitions
                 ):
                     continue
 
