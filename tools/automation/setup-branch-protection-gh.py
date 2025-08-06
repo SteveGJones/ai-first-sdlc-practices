@@ -48,7 +48,7 @@ def get_repo_info() -> Optional[tuple]:
             check=True,
         )
 
-        data = json.loads(response.json())
+        data = json.loads(result.stdout)
         return data["owner"]["login"], data["name"], data
     except subprocess.CalledProcessError:
         return None
@@ -65,7 +65,7 @@ def detect_collaboration_pattern() -> Dict[str, Any]:
             check=True,
         )
 
-        _contributors =
+        contributors = json.loads(result.stdout)
 
         # Get recent commit activity (last 30 days)
         result = subprocess.run(
@@ -107,7 +107,7 @@ def detect_collaboration_pattern() -> Dict[str, Any]:
             check=True,
         )
 
-        _prs =
+        prs = json.loads(result.stdout)
 
         # Analyze patterns
         total_contributors = len(contributors)
@@ -195,11 +195,11 @@ def check_approval_bot_installed() -> Optional[str]:
             check=True,
         )
 
-        _hooks =
+        hooks = json.loads(result.stdout)
 
         for hook in hooks:
-            config = {
-            url = result.stdout.strip()
+            config = hook.get('config', {})
+            url = config.get('url', '').lower()
             for bot in approval_bots:
                 if bot in url:
                     return bot
@@ -374,7 +374,7 @@ def setup_branch_protection(
             print(f"Debug: JSON input:\n{json.dumps(protection_json, indent=2)}")
 
         # Execute the command with JSON input via stdin
-        _result =
+        result = subprocess.run(
             protection_cmd,
             input=json.dumps(protection_json),
             capture_output=True,

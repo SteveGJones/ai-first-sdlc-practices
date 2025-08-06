@@ -217,6 +217,36 @@ Instead, proactively engage agents:
 
 This proactive approach ensures consistent quality and compliance across all development activities.
 
+## 🛡️ Local Validation for AI Agents (CRITICAL)
+
+As an AI agent, you MUST run local validation to prevent the push-fail-fix cycle:
+
+### After Writing Code
+```bash
+# ALWAYS run syntax check after code changes
+python tools/validation/local-validation.py --syntax
+```
+
+### Before Committing
+```bash
+# Run quick validation to catch common issues
+python tools/validation/local-validation.py --quick
+```
+
+### Before Creating PR
+```bash
+# Run full validation to mirror CI/CD
+python tools/validation/local-validation.py --pre-push
+```
+
+### Why This Matters
+- **Prevents syntax errors** from reaching the repository
+- **Avoids CI/CD failures** that waste time and resources
+- **Maintains professional standards** expected from AI developers
+- **Reduces user frustration** from repeated fix commits
+
+**Remember**: Finding errors locally in 5 seconds is better than finding them in CI/CD after 5 minutes.
+
 ## Development Commands
 
 ```bash
@@ -225,6 +255,21 @@ pip install -e .
 
 # Install dependencies
 pip install -r requirements.txt
+
+# CRITICAL: Local validation to prevent push-fail-fix cycles
+# Run BEFORE committing or pushing to avoid CI/CD failures
+
+# Quick syntax validation (5 seconds) - run after writing code
+python tools/validation/local-validation.py --syntax
+
+# Fast validation (30 seconds) - run before committing
+python tools/validation/local-validation.py --quick
+
+# Full validation (2-5 minutes) - run before pushing
+python tools/validation/local-validation.py --pre-push
+
+# Install Git hooks for automatic validation
+python tools/automation/install-git-hooks.py
 
 # Run validation pipeline on a project
 python tools/validation/validate-pipeline.py
@@ -556,10 +601,17 @@ python tools/validation/validate-architecture.py --strict
 
 # 5. NOW implement changes (with Zero Technical Debt mindset)
 
+# 5a. CRITICAL: Run local validation after EVERY code change
+python tools/validation/local-validation.py --syntax  # After writing code
+python tools/validation/local-validation.py --quick   # Before committing
+
 # 6. UPDATE retrospective after major changes
 # Don't wait until the end!
 
 # 7. Run ALL validations
+# First run locally to catch issues:
+python tools/validation/local-validation.py --pre-push
+# Then run full pipeline:
 python tools/validation/validate-pipeline.py --ci \
   --checks branch proposal architecture technical-debt type-safety
 

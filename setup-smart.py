@@ -2439,20 +2439,27 @@ Run 'python tools/agent-installer.py' to install specialist agents.
         print("   3. security-architect (auth patterns)")
         print("   4. test-manager (test strategy)")
 
-        print("\n5. Customize CLAUDE.md with project-specific details:")
+        print("\n5. Install Git hooks for local validation (HIGHLY RECOMMENDED):")
+        print("   🛡️  Prevent syntax errors and validation failures before push!")
+        print("   python tools/automation/install-git-hooks.py")
+        print("   ")
+        print("   This installs pre-commit and pre-push validation to catch issues locally.")
+        print("   See docs/LOCAL-VALIDATION-WORKFLOW.md for details.")
+        
+        print("\n6. Customize CLAUDE.md with project-specific details:")
         print("   edit CLAUDE.md")
-        print("\n6. Complete the setup tasks:")
+        print("\n7. Complete the setup tasks:")
         print("   python tools/progress-tracker.py list")
-        print("\n7. When ready, push the branch:")
+        print("\n8. When ready, push the branch:")
         print("   git add .")
         print(
             '   git commit -m "feat: implement AI-First SDLC framework with Zero Technical Debt"'
         )
         print("   git push -u origin ai-first-kick-start")
-        print("\n8. Create retrospective (REQUIRED before PR):")
+        print("\n9. Create retrospective (REQUIRED before PR):")
         print("   Create file: retrospectives/00-ai-first-setup.md")
         print("   Document what went well, what could improve, and lessons learned")
-        print("\n9. Create a pull request to merge into main")
+        print("\n10. Create a pull request to merge into main")
         print(
             "   Note: PR will be rejected without retrospective AND architecture docs!"
         )
