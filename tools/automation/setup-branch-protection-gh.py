@@ -18,7 +18,7 @@ import subprocess
 import sys
 import argparse
 import json
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List, Optional
 
 # Version for compatibility tracking
 TOOL_VERSION = "2.0.0"
@@ -28,10 +28,10 @@ def check_gh_installed() -> bool:
     """Check if gh CLI is installed and authenticated"""
     try:
         # Check if gh is installed
-        result = subprocess.run(["gh", "--version"], capture_output=True, check=True)
+        subprocess.run(["gh", "--version"], capture_output=True, check=True)
 
         # Check if authenticated
-        result = subprocess.run(
+        subprocess.run(
             ["gh", "auth", "status"], capture_output=True, check=True
         )
 
@@ -225,7 +225,9 @@ on:
 jobs:
   auto-approve:
     runs-on: ubuntu-latest
-    if: github.actor == github.repository_owner || contains(github.event.pull_request.title, '[AI-FIRST]')
+    if: >
+      github.actor == github.repository_owner ||
+      contains(github.event.pull_request.title, '[AI-FIRST]')
 
     steps:
     - name: Check if all status checks passed
@@ -249,11 +251,24 @@ jobs:
 
           // Check if all required status checks are successful
           const requiredChecks = ['validate', 'test-framework-tools (3.8)', 'code-quality'];
+          
+          // Get status checks for the commit
+          const { data: statusChecks } = await github.rest.repos.getCombinedStatusForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: pr.head.sha
+          });
+          
           let allPassed = true;
-
+          
+          // Check each required status check
           for (const check of requiredChecks) {
-            const status = commit.commit.verification?.verified || false;
-            if (!status) {
+            const statusCheck = statusChecks.statuses.find(status => 
+              status.context === check || status.context.includes(check)
+            );
+            
+            if (!statusCheck || statusCheck.state !== 'success') {
+              console.log(`Required check '${check}' not passed: ${statusCheck?.state || 'not found'}`);
               allPassed = false;
               break;
             }
@@ -311,24 +326,34 @@ def setup_branch_protection(
     try:
         # Build the protection rules based on collaboration pattern
         if solo_mode:
-            # Solo developer mode: rely on status checks, minimal review requirements
+            # Solo developer mode: rely on status checks, minimal
+            # review requirements
             protection_json = {
-                "required_status_checks": {"strict": True, "contexts": required_checks},
-                "enforce_admins": False,  # Allow admin bypass for solo developers
+                "required_status_checks": {
+                    "strict": True,
+                    "contexts": required_checks
+                },
+                "enforce_admins": False,  # Allow admin bypass for solo (SECURITY: acceptable for single-developer repos)
                 "required_pull_request_reviews": {
-                    "required_approving_review_count": 0 if enable_auto_approval else 1,
+                    "required_approving_review_count": (
+                        0 if enable_auto_approval else 1
+                    ),
                     "dismiss_stale_reviews": True,
                     "require_code_owner_reviews": False,
                 },
                 "restrictions": None,
                 "allow_force_pushes": False,
                 "allow_deletions": False,
-                "required_conversation_resolution": False,  # More flexible for solo
+                # More flexible for solo
+                "required_conversation_resolution": False,
             }
         else:
             # Team mode: stricter review requirements
             protection_json = {
-                "required_status_checks": {"strict": True, "contexts": required_checks},
+                "required_status_checks": {
+                    "strict": True,
+                    "contexts": required_checks
+                },
                 "enforce_admins": True,
                 "required_pull_request_reviews": {
                     "required_approving_review_count": 1,
@@ -387,7 +412,7 @@ def setup_branch_protection(
             print("   - Stale reviews dismissed on new commits")
             return True
         else:
-            print(f"❌ Failed to enable branch protection")
+            print("❌ Failed to enable branch protection")
             if "Not Found" in result.stderr:
                 print("   Branch might not exist yet. Push the branch first.")
             elif "401" in result.stderr or "403" in result.stderr:
