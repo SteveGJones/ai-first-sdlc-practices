@@ -703,25 +703,25 @@ class ArchitectureValidator:
         print("\n" + "-" * 60)
 
         # Summary statistics
-        _total_checks =
-        _errors =
-        _warnings =
-        success = self.setup(components, force)
+        total_checks = len(self.validation_results)
+        errors = sum(1 for r in self.validation_results if r['status'] == 'error')
+        warnings = sum(1 for r in self.validation_results if r['status'] == 'warning')
+        success = errors == 0
         print(f"Total Checks: {total_checks}")
-        print(f"✅ Passed: {success}")
+        print(f"✅ Passed: {total_checks - errors - warnings}")
         print(f"⚠️  Warnings: {warnings}")
         print(f"❌ Errors: {errors}")
 
     def export_report(self, format: str = "json") -> str:
         """Export validation report"""
         if format == "json":
-            data = json.loads(response.json())
+            data = {
                 "timestamp": datetime.now().isoformat(),
                 "architecture_complete": not self.has_errors,
                 "has_warnings": self.has_warnings,
                 "results": [
                     {
-                        "status": icon.strip(),
+                        "status": result["status"],
                         "component": component,
                         "message": message,
                         "fix": fix,
