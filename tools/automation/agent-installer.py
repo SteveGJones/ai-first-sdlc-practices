@@ -10,23 +10,20 @@ This tool installs specialized agents into user projects, managing:
 """
 
 import json
-import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import urllib.request
 import zipfile
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 import click
 import yaml
 from rich.console import Console
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.tree import Tree
-from rich.panel import Panel
 
 # Import project analyzer and recommender
 try:
@@ -42,7 +39,9 @@ console = Console()
 # GitHub repository details
 GITHUB_REPO = "SteveGJones/ai-first-sdlc-practices"
 GITHUB_BRANCH = "main"
-AGENTS_URL = f"https://github.com/{GITHUB_REPO}/archive/refs/heads/{GITHUB_BRANCH}.zip"
+AGENTS_URL = (
+    f"https://github.com/{GITHUB_REPO}/archive/refs/heads/" f"{GITHUB_BRANCH}.zip"
+)
 
 # Define agent tiers for deployment
 AGENT_TIERS = {
@@ -77,7 +76,8 @@ AGENT_TIERS = {
 
 
 class AgentInstaller:
-    """Manages installation of AI agents to user projects with tiered deployment."""
+    """Manages installation of AI agents to user projects with tiered
+    deployment."""
 
     def __init__(
         self,
@@ -162,7 +162,10 @@ class AgentInstaller:
 
             if not content.startswith("---"):
                 console.print(
-                    f"[yellow]Warning: {agent_path.name} missing YAML frontmatter[/yellow]"
+                    (
+                        f"[yellow]Warning: {agent_path.name} missing "
+                        f"YAML frontmatter[/yellow]"
+                    )
                 )
                 return None
 
@@ -170,39 +173,67 @@ class AgentInstaller:
             parts = content.split("---", 2)
             if len(parts) < 3:
                 console.print(
-                    f"[yellow]Warning: Invalid agent format in {agent_path.name}[/yellow]"
+                    (
+                        f"[yellow]Warning: Invalid agent format in "
+                        f"{agent_path.name}[/yellow]"
+                    )
                 )
                 return None
 
-            # Parse YAML with proper handling
+            # Parse YAML with robust error handling
             try:
                 metadata = yaml.safe_load(parts[1])
-                if metadata is None:
-                    metadata = yaml.safe_load(parts[1])
-            except yaml.YAMLError as e:
-                console.print(
-                    f"[yellow]Warning: YAML parsing error in {agent_path.name}[/yellow]"
-                )
-                # Try to extract basic info manually
-                metadata = yaml.safe_load(parts[1])
-                lines = parts[1].strip().split("\n")
-                for line in lines:
-                    if ":" in line and not line.strip().startswith("-"):
-                        key, value = line.split(":", 1)
-                        key = key.strip()
-                        value = value.strip()
-                        if key == "name":
-                            metadata["name"] = value
-                        elif key == "category":
-                            metadata["category"] = value
-                        elif key == "color":
-                            metadata["color"] = value
+            except yaml.YAMLError:
+                # Use the same robust fallback as discover_agents
+                metadata = self._parse_basic_metadata(parts[1])
 
-            metadata["content"] = parts[2].strip()
-            return metadata
+            if metadata:
+                metadata["content"] = parts[2].strip()
+                return metadata
+            else:
+                return None
         except Exception as e:
             console.print(f"[red]Error parsing {agent_path.name}: {e}[/red]")
             return None
+
+    def _parse_basic_metadata(self, yaml_content: str) -> Dict:
+        """Fallback parser for basic agent metadata when YAML parsing fails."""
+        metadata = {}
+
+        # Split into lines and parse basic fields
+        lines = yaml_content.strip().split("\n")
+
+        for line in lines:
+            # Skip empty lines and comments
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+
+            # Parse key: value pairs (only first colon)
+            if ":" in line:
+                key, value = line.split(":", 1)
+                key = key.strip()
+                value = value.strip()
+
+                # Only extract essential fields
+                if key == "name":
+                    metadata["name"] = value
+                elif key == "description":
+                    # Take only the first sentence for descriptions
+                    metadata["description"] = value.split(".")[0] + "." if value else ""
+                elif key == "version":
+                    metadata["version"] = value
+                elif key == "category":
+                    metadata["category"] = value
+                elif key == "priority":
+                    metadata["priority"] = value
+
+        # Ensure we have at least a name
+        if "name" not in metadata and lines:
+            # Use filename as fallback name
+            metadata["name"] = "unknown-agent"
+
+        return metadata if metadata else None
 
     def discover_agents(self) -> Dict[str, List[Path]]:
         """Discover all available agents organized by category."""
@@ -224,10 +255,15 @@ class AgentInstaller:
                     if not content.startswith("---"):
                         continue
 
-                    # Extract YAML frontmatter
+                    # Extract YAML frontmatter with robust error handling
                     parts = content.split("---", 2)
                     if len(parts) >= 3:
-                        metadata = yaml.safe_load(parts[1])
+                        try:
+                            metadata = yaml.safe_load(parts[1])
+                        except yaml.YAMLError:
+                            # Fallback: parse basic fields manually
+                            metadata = self._parse_basic_metadata(parts[1])
+
                         if metadata:
                             category_agents.append(
                                 {"path": agent_file, "metadata": metadata}
@@ -237,7 +273,6 @@ class AgentInstaller:
 
             if category_agents:
                 agents[category_dir.name] = category_agents
-
         return agents
 
     def check_dependencies(self, agent_metadata: Dict) -> List[str]:
@@ -260,15 +295,21 @@ class AgentInstaller:
         # Check if already installed
         if agent_name in self.installed_agents and not force:
             console.print(
-                f"[yellow]Agent '{agent_name}' already installed (v{self.installed_agents[agent_name]})[/yellow]"
+                (
+                    f"[yellow]Agent '{agent_name}' already installed "
+                    f"(v{self.installed_agents[agent_name]})[/yellow]"
+                )
             )
             return False
 
         # Check dependencies
-        missing_deps = self._check_dependencies(metadata.get("dependencies", []))
+        missing_deps = self.check_dependencies(metadata)
         if missing_deps:
             console.print(
-                f"[red]Missing dependencies for {agent_name}: {', '.join(missing_deps)}[/red]"
+                (
+                    f"[red]Missing dependencies for {agent_name}: "
+                    f"{', '.join(missing_deps)}[/red]"
+                )
             )
             return False
 
@@ -289,7 +330,10 @@ class AgentInstaller:
             # Verify the copy succeeded
             if not target_path.exists():
                 console.print(
-                    f"[red]Error: Failed to copy {agent_path.name} to {target_path}[/red]"
+                    (
+                        f"[red]Error: Failed to copy {agent_path.name} "
+                        f"to {target_path}[/red]"
+                    )
                 )
                 return False
         except Exception as e:
@@ -301,7 +345,10 @@ class AgentInstaller:
         self._save_installed_agents()
 
         console.print(
-            f"[green]✓ Installed {agent_name} v{metadata.get('version', '1.0.0')}[/green]"
+            (
+                f"[green]✓ Installed {agent_name} "
+                f"v{metadata.get('version', '1.0.0')}[/green]"
+            )
         )
         return True
 
@@ -330,7 +377,10 @@ class AgentInstaller:
                 installed_count += 1
 
         console.print(
-            f"\n[green]Found {found_count} agents, installed {installed_count} core agents[/green]"
+            (
+                f"\n[green]Found {found_count} agents, installed "
+                f"{installed_count} core agents[/green]"
+            )
         )
 
     def install_language_agents(self, languages: List[str]):
@@ -357,7 +407,10 @@ class AgentInstaller:
                     )
 
         console.print(
-            f"\n[green]Installed {installed_count} language-specific agents[/green]"
+            (
+                f"\n[green]Installed {installed_count} "
+                f"language-specific agents[/green]"
+            )
         )
 
     def install_tiered_agents(
@@ -545,7 +598,8 @@ class AgentInstaller:
 
             for agent in recommendations["recommended"]:
                 if Confirm.ask(
-                    f"Install {agent['name']}? ({agent['reason']})", default=False
+                    f"Install {agent['name']}? ({agent['reason']})",
+                    default=False,
                 ):
                     self._install_by_name(agent["name"])
 
@@ -572,7 +626,10 @@ class AgentInstaller:
             # Show recommendations and install
             console.print("\n[bold]Agent Recommendations[/bold]")
             console.print(
-                "Based on your project analysis, here are the recommended agents:\n"
+                (
+                    "Based on your project analysis, here are the "
+                    "recommended agents:\n"
+                )
             )
 
             self.install_recommended_agents(recommendation_data["recommendations"])
@@ -684,7 +741,9 @@ class AgentInstaller:
 )
 @click.option("--objectives", help="Project objectives for recommendations")
 @click.option(
-    "--recommend-only", is_flag=True, help="Show recommendations without installing"
+    "--recommend-only",
+    is_flag=True,
+    help="Show recommendations without installing",
 )
 @click.option("--tiered", is_flag=True, help="Use tiered deployment strategy")
 def main(
@@ -710,7 +769,10 @@ def main(
         agent_source_path = Path(agent_source).resolve()
         if not agent_source_path.exists():
             console.print(
-                f"[red]Agent source directory not found at: {agent_source_path}[/red]"
+                (
+                    f"[red]Agent source directory not found at: "
+                    f"{agent_source_path}[/red]"
+                )
             )
             console.print(
                 "[yellow]Will download agents from GitHub instead...[/yellow]"
@@ -726,7 +788,7 @@ def main(
     if analyze or recommend_only:
         if not ANALYSIS_AVAILABLE:
             console.print(
-                "[red]Project analysis not available. Missing dependencies.[/red]"
+                ("[red]Project analysis not available. " "Missing dependencies.[/red]")
             )
             sys.exit(1)
 
@@ -736,7 +798,8 @@ def main(
             from agent_recommender import display_recommendations
 
             display_recommendations(
-                recommendation_data["recommendations"], recommendation_data["analysis"]
+                recommendation_data["recommendations"],
+                recommendation_data["analysis"],
             )
 
             if not recommend_only:
@@ -750,6 +813,7 @@ def main(
 
     if list_agents:
         installer.show_available_agents()
+        return
     elif tiered:
         # Use tiered deployment strategy
         installer.smart_install()
@@ -786,7 +850,10 @@ def main(
         installed_files = list(installer.claude_agents_dir.glob("*.md"))
         if installed_files:
             console.print(
-                f"\n[green]Successfully installed {len(installed_files)} agent(s):[/green]"
+                (
+                    f"\n[green]Successfully installed "
+                    f"{len(installed_files)} agent(s):[/green]"
+                )
             )
             for f in installed_files[:5]:  # Show first 5
                 console.print(f"  - {f.name}")
@@ -794,7 +861,10 @@ def main(
                 console.print(f"  ... and {len(installed_files) - 5} more")
         else:
             console.print(
-                "\n[red]WARNING: No agent files found in installation directory![/red]"
+                (
+                    "\n[red]WARNING: No agent files found in "
+                    "installation directory![/red]"
+                )
             )
     else:
         console.print("\n[red]WARNING: Installation directory does not exist![/red]")
@@ -805,20 +875,20 @@ def main(
     # Determine which directory structure we're using
     if ".sdlc" in str(installer.claude_agents_dir):
         console.print(
-            f"\n1. Agents have been installed to: {installer.claude_agents_dir}"
+            (f"\n1. Agents have been installed to: " f"{installer.claude_agents_dir}")
         )
         console.print("   (Using organized .sdlc structure)")
     else:
         console.print(
-            f"\n1. Agents have been installed to: {installer.claude_agents_dir}"
+            (f"\n1. Agents have been installed to: " f"{installer.claude_agents_dir}")
         )
 
     console.print(
-        "2. [bold red]RESTART YOUR AI ASSISTANT[/bold red] to activate the agents!"
+        ("2. [bold red]RESTART YOUR AI ASSISTANT[/bold red] " "to activate the agents!")
     )
     console.print("\nFor system-wide availability, you can also copy to:")
     console.print(
-        f"   [cyan]cp -r {installer.claude_agents_dir}/* ~/.claude/agents/[/cyan]"
+        (f"   [cyan]cp -r {installer.claude_agents_dir}/* " f"~/.claude/agents/[/cyan]")
     )
     console.print("\nNote: Project-specific agents are not automatically available")
 
@@ -831,8 +901,6 @@ if __name__ == "__main__":
         main()
     finally:
         # Clean up any temporary directories
-        import atexit
-
         for path in Path(tempfile.gettempdir()).glob("ai-first-agents-*"):
             if (
                 path.is_dir() and path.stat().st_mtime < time.time() - 3600

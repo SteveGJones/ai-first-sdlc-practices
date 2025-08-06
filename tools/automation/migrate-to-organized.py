@@ -58,20 +58,6 @@ class FrameworkMigrator:
             ".ai-sdlc-temp": None,  # Delete temp directory
         }
 
-        # Files that should stay at root
-        keep_at_root = [
-            "CLAUDE.md",
-            "CLAUDE-CORE.md",
-            "CLAUDE-SETUP.md",
-            "CLAUDE-CONTEXT-*.md",
-            "README.md",
-            "CONTRIBUTING.md",
-            ".gitignore",
-            "docs",  # User-facing docs stay
-            "plan",
-            "retrospectives",
-        ]
-
         if dry_run:
             print("\n🔍 DRY RUN - No files will be moved")
             print("=" * 50)
@@ -271,7 +257,8 @@ User-friendly command-line tools for the AI-First SDLC Framework.
 
 ## Overview
 
-This directory contains convenience wrappers for common framework commands. These tools help you follow AI-First SDLC practices without remembering complex paths or commands.
+This directory contains convenience wrappers for common framework commands.
+These tools help you follow AI-First SDLC practices without remembering complex paths or commands.
 
 ## Available Commands
 
@@ -404,8 +391,8 @@ def main():
         print("  --execute   Perform the migration")
         return
 
-    FrameworkMigrator(args.project_root)
-    success = self.setup(components, force)
+    migrator = FrameworkMigrator(args.project_root)
+    success = migrator.migrate()
     sys.exit(0 if success else 1)
 
 

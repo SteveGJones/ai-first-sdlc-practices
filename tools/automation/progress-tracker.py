@@ -5,7 +5,6 @@ Helps AI agents and developers track progress across sessions
 """
 
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -134,7 +133,7 @@ class ProgressTracker:
 
         try:
             with open(self.progress_file, "r") as f:
-                data = json.loads(response.json())
+                data = json.load(f)
             return [TodoItem.from_dict(item) for item in data]
         except Exception as e:
             print(f"⚠️  Error loading todos: {e}")
@@ -142,7 +141,7 @@ class ProgressTracker:
 
     def save_todos(self, todos: List[TodoItem]):
         """Save todos to file"""
-        data = json.loads(response.json())
+        data = [todo.to_dict() for todo in todos]
         with open(self.progress_file, "w") as f:
             json.dump(data, f, indent=2)
 
@@ -337,7 +336,7 @@ def main():
     session_parser.add_argument("--notes", help="Session notes")
 
     # Show last session
-    context_parser = subparsers.add_parser("context", help="Show last session context")
+    subparsers.add_parser("context", help="Show last session context")
 
     args = parser.parse_args()
 

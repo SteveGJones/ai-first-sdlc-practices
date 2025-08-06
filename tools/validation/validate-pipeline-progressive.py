@@ -4,7 +4,6 @@ Progressive Validation Pipeline for AI-First SDLC
 Supports level-based validation for prototype, production, and enterprise projects
 """
 
-import subprocess
 import sys
 import json
 import os
@@ -201,35 +200,6 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
                 "message": "Technical debt tracking (TODOs allowed in prototype)",
                 "details": "TODO comments are allowed during prototyping",
             }
-
-            # Still check and report, but don't fail
-            try:
-                cmd = [
-                    "grep",
-                    "-r",
-                    "-n",
-                    "-E",
-                    "TODO|FIXME|HACK",
-                    "--include=*.py",
-                    "--include=*.js",
-                    "--include=*.ts",
-                    ".",
-                ]
-                output = subprocess.run(
-                    cmd, cwd=self.project_root, capture_output=True, text=True
-                )
-
-                if output.returncode == 0:
-                    todo_count = len(output.stdout.strip().split("\n"))
-                    result[
-                        "details"
-                    ] = f"Found {todo_count} TODO/FIXME markers (allowed in prototype)"
-                    result["status"] = "info"
-
-            except Exception:
-                pass
-
-            return result
         else:
             # For production/enterprise, use strict checking
             return super().check_technical_debt()
@@ -324,7 +294,7 @@ def main() -> None:
     )
 
     # Run validation
-    success = self.setup(components, force)
+    success = pipeline.run_validation()
     # Export if requested
     if args.export:
         output = (

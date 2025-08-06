@@ -5,7 +5,6 @@ Preserves and manages context across AI agent sessions
 """
 
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -409,9 +408,9 @@ def main():
     cm = ContextManager()
 
     if args.command == "save":
-        data = json.loads(response.json())
+        data = {}
         if args.data:
-            data = json.loads(response.json())
+            data = json.loads(args.data)
         elif args.file:
             with open(args.file, "r") as f:
                 data = json.load(f)

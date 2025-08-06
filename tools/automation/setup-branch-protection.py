@@ -10,9 +10,8 @@ import os
 import sys
 import argparse
 import subprocess
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 import requests
-from pathlib import Path
 
 
 class BranchProtectionConfigurator:

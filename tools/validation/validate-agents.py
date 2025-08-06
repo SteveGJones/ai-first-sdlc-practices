@@ -9,10 +9,9 @@ Validates agent files for:
 - Content quality checks
 """
 
-import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 import click
 import yaml
 from rich.console import Console

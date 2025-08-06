@@ -5,10 +5,9 @@ This module implements agent composition, allowing multiple agents to be
 combined into composite agents with enhanced capabilities.
 """
 
-import json
 import yaml
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 import click
 from rich.console import Console
 from rich.table import Table
@@ -92,13 +91,21 @@ class AgentCompositionManager:
 
         examples_text = "\n".join(examples) if examples else ""
 
-        content = """---
+        description_text = (
+            f"{composition.get('description', '')}\\n\\n"
+            f"This is a composite agent that combines the expertise of: {', '.join(includes)}."
+            f"\\n\\nExamples:\\n{examples_text}"
+        )
+
+        content = f"""---
 name: {name}
-description: {composition.get('description', '')}\\n\\nThis is a composite agent that combines the expertise of: {', '.join(includes)}.\\n\\nExamples:\\n{examples_text}
+description: {description_text}
 color: purple
 ---
 
-You are the {composition.get('name', name)}, a composite agent that combines the expertise and capabilities of multiple specialized agents. Your mission is to provide comprehensive, coordinated guidance by leveraging the combined knowledge of your constituent agents.
+You are the {composition.get('name', name)}, a composite agent that combines the expertise
+and capabilities of multiple specialized agents.
+Your mission is to provide comprehensive, coordinated guidance by leveraging the combined knowledge of your constituent agents.
 
 Your combined expertise includes:
 """
@@ -139,7 +146,8 @@ Your response format should include:
 - **Cross-Domain Considerations**: How different areas interact
 - **Risk Mitigation**: Comprehensive risk assessment
 
-You maintain the best qualities of all included agents while providing a unified voice. You never provide conflicting advice but rather synthesize the best approach from all perspectives.
+You maintain the best qualities of all included agents while providing a unified voice.
+You never provide conflicting advice but rather synthesize the best approach from all perspectives.
 
 This composite agent includes expertise from:
 - Base: {base_agent or 'None'}

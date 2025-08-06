@@ -8,9 +8,8 @@ Replaces ad-hoc "proactive" usage with deterministic agent sequences.
 
 import click
 import json
-import yaml
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 from enum import Enum
 
 

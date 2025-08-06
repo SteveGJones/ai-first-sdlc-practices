@@ -9,13 +9,11 @@ This script prepares agents for distribution by:
 """
 
 import json
-import os
 import shutil
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
 import click
 import yaml
 from rich.console import Console
@@ -327,7 +325,7 @@ def main(source: str, release: str, clean: bool) -> None:
         console.print("[yellow]Cleaning entire release directory...[/yellow]")
         shutil.rmtree(release_dir)
 
-    success = self.setup(components, force)
+    success = builder.build()
     sys.exit(0 if success else 1)
 
 

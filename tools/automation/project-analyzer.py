@@ -179,7 +179,7 @@ class ProjectAnalyzer:
         """Parse Node.js package.json."""
         try:
             with open(self.project_root / "package.json") as f:
-                data = json.loads(response.json())
+                data = json.load(f)
             deps = set()
             if "dependencies" in data:
                 deps.update(data["dependencies"].keys())

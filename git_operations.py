@@ -9,6 +9,9 @@ import os
 # sys import removed - not used
 from typing import Tuple
 
+# Version number for current branch and files
+VERSION_NUMBER = "07"
+
 
 def run_git_command(cmd: str, cwd: str) -> Tuple[str, str, int]:
     """Run a git command and return output"""
@@ -44,9 +47,9 @@ def main() -> None:
         "docs/releases/v1.3.0-to-v1.4.0.md",
         "docs/releases/v1.4.0-to-v1.5.0.md",
         "templates/migration-guide.md",
-        "retrospectives/07-version-management-updates.md",
-        "docs/feature-proposals/07-version-management-updates.md",
-        "plan/07-version-management-plan.md",
+        f"retrospectives/{VERSION_NUMBER}-version-management-updates.md",
+        f"docs/feature-proposals/{VERSION_NUMBER}-version-management-updates.md",
+        f"plan/{VERSION_NUMBER}-version-management-plan.md",
         "setup-smart.py",
         "CLAUDE.md",
         "README.md",

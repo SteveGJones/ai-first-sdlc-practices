@@ -9,10 +9,9 @@ based on project type, technology stack, and development patterns.
 
 import json
 import os
-import re
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, Set
 import click
 from datetime import datetime
 
@@ -262,7 +261,7 @@ class ProjectAnalyzer:
         """Parse package.json for dependencies."""
         try:
             with open(file_path) as f:
-                data = json.loads(response.json())
+                data = json.loads(f.read())
             # Check for frameworks
             all_deps = {}
             all_deps.update(data.get("dependencies", {}))
@@ -285,7 +284,7 @@ class ProjectAnalyzer:
             # Add all libraries
             deps["libraries"].extend(all_deps.keys())
 
-        except (json.JSONDecodeError, FileNotFoundError, KeyError) as e:
+        except (json.JSONDecodeError, FileNotFoundError, KeyError):
             # Silently ignore parsing errors for package.json - not all projects have valid format
             pass
 
@@ -316,7 +315,7 @@ class ProjectAnalyzer:
                     if fw in pkg:
                         deps["frameworks"].append(fw)
 
-        except (FileNotFoundError, IOError) as e:
+        except (FileNotFoundError, IOError):
             # Silently ignore file read errors for requirements.txt
             pass
 

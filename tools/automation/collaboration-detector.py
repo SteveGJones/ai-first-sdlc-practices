@@ -8,7 +8,7 @@ import subprocess
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple
 import click
 
 

@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from datetime import datetime
 import subprocess
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 
 class SDLCLevelManager:
@@ -420,7 +420,6 @@ def graduation():
         return
 
     next_level = level_order[current_index + 1]
-    next_config = manager.LEVELS[next_level]
 
     click.echo(f"🎓 Graduation Readiness: {current_level} → {next_level}")
     click.echo()

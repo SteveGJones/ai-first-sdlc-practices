@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 AI-First SDLC Smart Setup Tool
-Downloads and configures AI-First SDLC framework without cloning the entire repository
+Downloads and configures AI-First SDLC framework without cloning the
+entire repository
 """
 
 import os
@@ -31,7 +32,9 @@ class SmartFrameworkSetup:
         "CLAUDE-CONTEXT-architecture.md": "CLAUDE-CONTEXT-architecture.md",
         "CLAUDE-CONTEXT-validation.md": "CLAUDE-CONTEXT-validation.md",
         "CLAUDE-CONTEXT-update.md": "CLAUDE-CONTEXT-update.md",
-        "CLAUDE-CONTEXT-language-validators.md": "CLAUDE-CONTEXT-language-validators.md",
+        "CLAUDE-CONTEXT-language-validators.md": (
+            "CLAUDE-CONTEXT-language-validators.md"
+        ),
         "CLAUDE-CONTEXT-logging.md": "CLAUDE-CONTEXT-logging.md",
         "CLAUDE-CONTEXT-levels.md": "CLAUDE-CONTEXT-levels.md",
         "CLAUDE-CONTEXT-agents.md": "CLAUDE-CONTEXT-agents.md",
@@ -196,7 +199,13 @@ class SmartFrameworkSetup:
         indicators = [
             (
                 "python",
-                ["*.py", "requirements.txt", "setup.py", "pyproject.toml", "Pipfile"],
+                [
+                    "*.py",
+                    "requirements.txt",
+                    "setup.py",
+                    "pyproject.toml",
+                    "Pipfile",
+                ],
             ),
             (
                 "node",
@@ -212,7 +221,10 @@ class SmartFrameworkSetup:
             ),
             ("go", ["*.go", "go.mod", "go.sum"]),
             ("rust", ["*.rs", "Cargo.toml", "Cargo.lock"]),
-            ("java", ["*.java", "pom.xml", "build.gradle", "build.gradle.kts"]),
+            (
+                "java",
+                ["*.java", "pom.xml", "build.gradle", "build.gradle.kts"],
+            ),
             ("ruby", ["*.rb", "Gemfile", "Gemfile.lock", "Rakefile"]),
             ("csharp", ["*.cs", "*.csproj", "*.sln"]),
             ("php", ["*.php", "composer.json", "composer.lock"]),
@@ -635,7 +647,8 @@ mypy .
 
 ## Executive Summary
 
-Initial setup of AI-First SDLC practices for {self.project_name}. This establishes the framework, tools, and workflows needed for AI-assisted development.
+Initial setup of AI-First SDLC practices for {self.project_name}.
+This establishes the framework, tools, and workflows needed for AI-assisted development.
 
 ---
 
@@ -770,16 +783,25 @@ Implement AI-First SDLC framework with:
     def _customize_requirements_matrix(self, content: str) -> str:
         """Add project-specific requirements to the matrix"""
         # Replace the template requirements with project-specific ones
-        project_reqs = """| {self.project_name.upper()}-FR-001 | MUST | Core {self.project_name} functionality | Main Service | src/main.py | tests/test_main.py | ❌ |
-| {self.project_name.upper()}-FR-002 | MUST | User interface for {self.project_purpose} | UI Component | src/ui/ | tests/test_ui.py | ❌ |
-| {self.project_name.upper()}-NFR-001 | MUST | System performance requirements | All Components | - | tests/performance/ | ❌ |
-| {self.project_name.upper()}-NFR-002 | MUST | Security and authentication | Auth Service | src/auth/ | tests/test_auth.py | ❌ |"""
+        project_reqs = (
+            f"| {self.project_name.upper()}-FR-001 | MUST | Core {self.project_name} "
+            f"functionality | Main Service | src/main.py | tests/test_main.py | ❌ |\n"
+            f"| {self.project_name.upper()}-FR-002 | MUST | User interface for "
+            f"{self.project_purpose} | UI Component | src/ui/ | tests/test_ui.py | ❌ |\n"
+            f"| {self.project_name.upper()}-NFR-001 | MUST | System performance "
+            f"requirements | All Components | - | tests/performance/ | ❌ |\n"
+            f"| {self.project_name.upper()}-NFR-002 | MUST | Security and authentication "
+            f"| Auth Service | src/auth/ | tests/test_auth.py | ❌ |"
+        )
 
         # Replace the template rows
-        content = content.replace(
-            "| FR-001 | MUST | [Feature] | [Service] | [path/file.ext] | [test/file.ext] | ❌ |\n| FR-002 | MUST | | | | | ❌ |\n| NFR-001 | MUST | [Performance/Security] | | | | ❌ |\n| NFR-002 | MUST | | | | | ❌ |",
-            project_reqs,
+        template_rows = (
+            "| FR-001 | MUST | [Feature] | [Service] | [path/file.ext] | [test/file.ext] | ❌ |\n"
+            "| FR-002 | MUST | | | | | ❌ |\n"
+            "| NFR-001 | MUST | [Performance/Security] | | | | ❌ |\n"
+            "| NFR-002 | MUST | | | | | ❌ |"
         )
+        content = content.replace(template_rows, project_reqs)
 
         return content
 
@@ -914,7 +936,10 @@ Implement AI-First SDLC framework with:
             "python": ("test_framework_setup.py", "test_framework_setup.py"),
             "node": ("framework.test.js", "test/framework.test.js"),
             "go": ("test-framework.sh", "test-framework.sh"),
-            "java": ("FrameworkTest.java", "src/test/java/FrameworkTest.java"),
+            "java": (
+                "FrameworkTest.java",
+                "src/test/java/FrameworkTest.java",
+            ),
             "ruby": ("framework_test.rb", "test/framework_test.rb"),
             "rust": ("framework_test.rs", "tests/framework_test.rs"),
             "general": ("test-framework.sh", "test-framework.sh"),
@@ -954,13 +979,14 @@ Implement AI-First SDLC framework with:
             print("ℹ️  README.md already exists, skipping...")
             return True
 
-        content = """# {self.project_name}
+        content = f"""# {self.project_name}
 
 {self.project_purpose}
 
 ## Overview
 
-This project uses the AI-First SDLC framework for development. AI agents and developers should refer to [CLAUDE.md](CLAUDE.md) for development guidelines.
+This project uses the AI-First SDLC framework for development.
+AI agents and developers should refer to [CLAUDE.md](CLAUDE.md) for development guidelines.
 
 ## Getting Started
 
@@ -1011,7 +1037,10 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         return True
 
     def setup_project(
-        self, skip_ci: bool = False, github_token: str = None, quickstart: bool = False
+        self,
+        skip_ci: bool = False,
+        github_token: str = None,
+        quickstart: bool = False,
     ) -> bool:
         """Run the complete setup process"""
         print("🚀 AI-First SDLC Smart Setup")
@@ -1375,13 +1404,21 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
             "tools/automation/progress-tracker.py": ".sdlc/tools/automation/progress-tracker.py",
             "tools/automation/agent-installer.py": ".sdlc/tools/automation/agent-installer.py",
             # Templates go to .sdlc/templates
-            "templates/feature-proposal.md": ".sdlc/templates/proposals/feature-proposal.md",
-            "templates/implementation-plan.md": ".sdlc/templates/proposals/implementation-plan.md",
+            "templates/feature-proposal.md": (
+                ".sdlc/templates/proposals/feature-proposal.md"
+            ),
+            "templates/implementation-plan.md": (
+                ".sdlc/templates/proposals/implementation-plan.md"
+            ),
             "templates/retrospective.md": ".sdlc/templates/proposals/retrospective.md",
             # Architecture templates
-            "templates/architecture/requirements-traceability-matrix.md": ".sdlc/templates/architecture/requirements-traceability-matrix.md",
+            "templates/architecture/requirements-traceability-matrix.md": (
+                ".sdlc/templates/architecture/requirements-traceability-matrix.md"
+            ),
             "templates/architecture/what-if-analysis.md": ".sdlc/templates/architecture/what-if-analysis.md",
-            "templates/architecture/architecture-decision-record.md": ".sdlc/templates/architecture/architecture-decision-record.md",
+            "templates/architecture/architecture-decision-record.md": (
+                ".sdlc/templates/architecture/architecture-decision-record.md"
+            ),
             "templates/architecture/system-invariants.md": ".sdlc/templates/architecture/system-invariants.md",
             "templates/architecture/integration-design.md": ".sdlc/templates/architecture/integration-design.md",
             "templates/architecture/failure-mode-analysis.md": ".sdlc/templates/architecture/failure-mode-analysis.md",
@@ -1492,7 +1529,8 @@ User-friendly command-line tools for the AI-First SDLC Framework.
 
 ## Overview
 
-This directory contains convenience wrappers for common framework commands. These tools help you follow AI-First SDLC practices without remembering complex paths or commands.
+This directory contains convenience wrappers for common framework commands.
+These tools help you follow AI-First SDLC practices without remembering complex paths or commands.
 
 ## Available Commands
 
@@ -1762,7 +1800,8 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         if validator.exists():
             try:
                 subprocess.run(
-                    [sys.executable, str(validator), "--checks", "basic"], check=True
+                    [sys.executable, str(validator), "--checks", "basic"],
+                    check=True,
                 )
             except subprocess.CalledProcessError:
                 print("⚠️  Validation found issues - this is normal for initial setup")
@@ -1939,7 +1978,8 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 )
 
                 if self.download_file(
-                    "tools/automation/setup-branch-protection-gh.py", gh_script_path
+                    "tools/automation/setup-branch-protection-gh.py",
+                    gh_script_path,
                 ):
                     result = subprocess.run(
                         ["python", str(gh_script_path), "--branch", "main"],
@@ -2114,7 +2154,10 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
 
         # Updated core agents list with new universal agents
         core_agents = [
-            ("agents/core/sdlc-enforcer.md", ".claude/agents/core/sdlc-enforcer.md"),
+            (
+                "agents/core/sdlc-enforcer.md",
+                ".claude/agents/core/sdlc-enforcer.md",
+            ),
             (
                 "agents/core/solution-architect.md",
                 ".claude/agents/core/solution-architect.md",
@@ -2261,7 +2304,9 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 ):
                     try:
                         subprocess.run(
-                            ["git", "add", file], cwd=self.project_dir, check=True
+                            ["git", "add", file],
+                            cwd=self.project_dir,
+                            check=True,
                         )
                     except Exception:
                         pass

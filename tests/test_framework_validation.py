@@ -8,6 +8,7 @@ import os
 import sys
 from pathlib import Path
 import pytest
+import importlib.util
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -19,7 +20,6 @@ validate_pipeline_path = os.path.join(
     "validation",
     "validate-pipeline.py",
 )
-import importlib.util
 
 spec = importlib.util.spec_from_file_location(
     "validate_pipeline", validate_pipeline_path
@@ -67,7 +67,6 @@ class TestFrameworkValidation:
 
     def test_ci_environment_detection(self):
         """Test CI environment detection"""
-        pipeline = ValidationPipeline(Path.cwd())
         # In local environment, this should be False
         # In CI, it would be True
         is_ci = os.environ.get("CI") == "true"

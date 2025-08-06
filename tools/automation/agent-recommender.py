@@ -10,7 +10,7 @@ Recommends appropriate AI agents based on:
 
 import json
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List
 import click
 from rich.console import Console
 from rich.table import Table

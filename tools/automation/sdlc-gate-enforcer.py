@@ -12,8 +12,7 @@ import json
 import subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
-import sys
+from typing import Dict, List, Tuple
 
 
 class SDLCGateEnforcer:

@@ -154,7 +154,11 @@ class ValidationPipeline:
             return
 
         # Look for proposal
-        proposal_dirs = ["docs/feature-proposals", "feature-proposals", "proposals"]
+        proposal_dirs = [
+            "docs/feature-proposals",
+            "feature-proposals",
+            "proposals",
+        ]
         found = False
 
         for dir_path in proposal_dirs:
@@ -188,7 +192,11 @@ class ValidationPipeline:
 
         if branch and branch not in ["main", "master"]:
             # Look for current feature proposal
-            proposal_dirs = ["docs/feature-proposals", "feature-proposals", "proposals"]
+            proposal_dirs = [
+                "docs/feature-proposals",
+                "feature-proposals",
+                "proposals",
+            ]
             for dir_path in proposal_dirs:
                 path = self.project_root / dir_path
                 if path.exists():
@@ -230,7 +238,8 @@ class ValidationPipeline:
                 )
             else:
                 self.add_skip(
-                    "Implementation Plan", "No plans required (simple feature)"
+                    "Implementation Plan",
+                    "No plans required (simple feature)",
                 )
             return
 
@@ -293,7 +302,8 @@ class ValidationPipeline:
                         )
                         if result.returncode == 0:
                             self.add_success(
-                                "Test Coverage", "Framework verification test passing"
+                                "Test Coverage",
+                                "Framework verification test passing",
                             )
                         else:
                             self.add_warning(
@@ -361,7 +371,9 @@ class ValidationPipeline:
                         )
                     else:
                         self.add_error(
-                            "Test Coverage", "Tests failing", "Fix failing tests"
+                            "Test Coverage",
+                            "Tests failing",
+                            "Fix failing tests",
                         )
                 return
 
@@ -373,7 +385,9 @@ class ValidationPipeline:
                 continue
 
         self.add_warning(
-            "Test Coverage", "No test runner found", "Set up testing framework"
+            "Test Coverage",
+            "No test runner found",
+            "Set up testing framework",
         )
 
     def check_security_scan(self) -> None:
@@ -498,7 +512,10 @@ class ValidationPipeline:
             if (self.project_root / dep_file).exists() and check_cmd:
                 try:
                     result = subprocess.run(
-                        check_cmd.split(), capture_output=True, text=True, timeout=30
+                        check_cmd.split(),
+                        capture_output=True,
+                        text=True,
+                        timeout=30,
                     )
 
                     if result.returncode == 0:
@@ -605,7 +622,8 @@ class ValidationPipeline:
                                         )
                                     else:
                                         self.add_success(
-                                            "Retrospective", f"Found in {file}"
+                                            "Retrospective",
+                                            f"Found in {file}",
                                         )
                                 except Exception:
                                     self.add_success(
@@ -732,7 +750,9 @@ class ValidationPipeline:
 
             except Exception as e:
                 self.add_warning(
-                    "Design Documentation", f"Could not analyze {file_path}", str(e)
+                    "Design Documentation",
+                    f"Could not analyze {file_path}",
+                    str(e),
                 )
 
     def check_technical_debt(self) -> None:
@@ -895,7 +915,8 @@ class ValidationPipeline:
                     print(f"   ... and {len(debt_indicators) - 5} more")
         elif files_checked > 0:
             self.add_success(
-                "Technical Debt", f"No debt indicators in {files_checked} files"
+                "Technical Debt",
+                f"No debt indicators in {files_checked} files",
             )
         else:
             self.add_skip("Technical Debt", "No code files to check")
@@ -1098,7 +1119,8 @@ class ValidationPipeline:
                 )
             else:
                 self.add_success(
-                    "Architecture Documentation", "All architecture documents complete"
+                    "Architecture Documentation",
+                    "All architecture documents complete",
                 )
 
         except FileNotFoundError:
@@ -1147,7 +1169,8 @@ class ValidationPipeline:
                 # Extract violation count from output
                 output_lines = result.stdout.splitlines()
                 violation_line = next(
-                    (line for line in output_lines if "Total Violations:" in line), None
+                    (line for line in output_lines if "Total Violations:" in line),
+                    None,
                 )
 
                 if violation_line:
@@ -1164,7 +1187,8 @@ class ValidationPipeline:
                     )
             else:
                 self.add_success(
-                    "Logging Compliance", "All mandatory logging points covered"
+                    "Logging Compliance",
+                    "All mandatory logging points covered",
                 )
 
         except Exception as e:
@@ -1359,11 +1383,15 @@ def main() -> None:
         help="Specific checks to run (default: all)",
     )
     parser.add_argument(
-        "--export", choices=["json", "markdown"], help="Export results to format"
+        "--export",
+        choices=["json", "markdown"],
+        help="Export results to format",
     )
     parser.add_argument("--output", help="Output file for export (default: stdout)")
     parser.add_argument(
-        "--ci", action="store_true", help="CI mode - exit with error code on failures"
+        "--ci",
+        action="store_true",
+        help="CI mode - exit with error code on failures",
     )
 
     args = parser.parse_args()

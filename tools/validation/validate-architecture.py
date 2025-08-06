@@ -9,10 +9,9 @@ import sys
 import json
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 import argparse
 from datetime import datetime
-import subprocess
 
 
 class ArchitectureValidator:
@@ -68,7 +67,8 @@ class ArchitectureValidator:
                 self.add_warning(
                     "Architecture Directory",
                     "docs/architecture/ directory not found - will be created",
-                    "IMMEDIATE ACTION: mkdir -p docs/architecture/decisions && cp templates/architecture/*.md docs/architecture/",
+                    "IMMEDIATE ACTION: mkdir -p docs/architecture/decisions && "
+                    "cp templates/architecture/*.md docs/architecture/",
                 )
             else:
                 self.add_error(
@@ -306,9 +306,15 @@ class ArchitectureValidator:
     def _get_template_customization_guidance(self, doc_name: str) -> str:
         """Get specific customization guidance for each template"""
         guidance_map = {
-            "requirements-traceability-matrix.md": "Replace [Feature Name] with actual feature, add real REQ-IDs, map to components",
-            "what-if-analysis.md": "Add 5+ scenarios: load spikes, failures, scaling needs. Replace [scenarios] with real risks",
-            "system-invariants.md": "Define 10+ invariants: data rules, security bounds, performance limits. Replace generic examples",
+            "requirements-traceability-matrix.md": (
+                "Replace [Feature Name] with actual feature, add real REQ-IDs, map to components"
+            ),
+            "what-if-analysis.md": (
+                "Add 5+ scenarios: load spikes, failures, scaling needs. Replace [scenarios] with real risks"
+            ),
+            "system-invariants.md": (
+                "Define 10+ invariants: data rules, security bounds, performance limits. Replace generic examples"
+            ),
             "integration-design.md": (
                 "Document ALL external APIs, auth flows, data sync. "
                 "Replace [Service] with actual integrations"
@@ -706,7 +712,6 @@ class ArchitectureValidator:
         total_checks = len(self.results)
         errors = sum(1 for r in self.results if r[0] == "❌")
         warnings = sum(1 for r in self.results if r[0] == "⚠️ ")
-        success = errors == 0
         print(f"Total Checks: {total_checks}")
         print(f"✅ Passed: {total_checks - errors - warnings}")
         print(f"⚠️  Warnings: {warnings}")
@@ -721,7 +726,11 @@ class ArchitectureValidator:
                 "has_warnings": self.has_warnings,
                 "results": [
                     {
-                        "status": result["status"],
+                        "status": "pass"
+                        if icon == "✅"
+                        else "warn"
+                        if "⚠️" in icon
+                        else "fail",
                         "component": component,
                         "message": message,
                         "fix": fix,

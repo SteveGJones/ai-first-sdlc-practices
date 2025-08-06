@@ -7,7 +7,6 @@ Single unified installer for AI agents and framework components
 import argparse
 import base64
 import json
-import shutil
 import sys
 import time
 from pathlib import Path

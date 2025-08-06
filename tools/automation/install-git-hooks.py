@@ -14,9 +14,10 @@ import stat
 from pathlib import Path
 import shutil
 
+
 def create_pre_push_hook() -> str:
     """Create pre-push hook content"""
-    return '''#!/bin/bash
+    return """#!/bin/bash
 #
 # Pre-push hook for AI-First SDLC
 # Prevents pushing broken code to remote repository
@@ -47,17 +48,18 @@ if [ $validation_result -ne 0 ]; then
 fi
 
 echo "✅ Pre-push validation passed! Pushing to remote..."
-'''
+"""
+
 
 def create_commit_msg_hook() -> str:
     """Create commit-msg hook for enforcing commit standards"""
-    return '''#!/bin/bash
+    return """#!/bin/bash
 #
 # Commit message hook for AI-First SDLC
 # Enforces commit message standards
 #
 
-commit_regex='^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: .{1,50}'
+commit_regex='^(feat|fix|docs|style|refactor|test|chore)(\\(.+\\))?: .{1,50}'
 
 error_msg="❌ Invalid commit message format!
 
@@ -65,7 +67,7 @@ Expected format: type(scope): description
 
 Types:
   feat:     New feature
-  fix:      Bug fix  
+  fix:      Bug fix
   docs:     Documentation changes
   style:    Code style changes (formatting, etc.)
   refactor: Code refactoring
@@ -74,7 +76,7 @@ Types:
 
 Examples:
   feat: add user authentication system
-  fix: resolve syntax error in migration script  
+  fix: resolve syntax error in migration script
   docs: update API documentation
   fix(validation): prevent false positive TODO detection
 
@@ -85,11 +87,12 @@ if ! grep -qE "$commit_regex" "$1"; then
     echo "$error_msg" >&2
     exit 1
 fi
-'''
+"""
+
 
 def create_pre_commit_hook() -> str:
     """Create pre-commit hook for immediate syntax validation"""
-    return '''#!/bin/bash
+    return """#!/bin/bash
 #
 # Pre-commit hook for AI-First SDLC
 # Fast syntax validation before commit
@@ -114,53 +117,55 @@ if [ $syntax_result -ne 0 ]; then
 fi
 
 echo "✅ Syntax validation passed!"
-'''
+"""
+
 
 def install_hooks():
     """Install Git hooks"""
-    
+
     # Find git directory
     git_dir = Path(".git")
     if not git_dir.exists():
         print("❌ Not in a Git repository!")
         return False
-    
+
     hooks_dir = git_dir / "hooks"
     hooks_dir.mkdir(exist_ok=True)
-    
+
     hooks_to_install = [
         ("pre-push", create_pre_push_hook()),
-        ("commit-msg", create_commit_msg_hook()), 
+        ("commit-msg", create_commit_msg_hook()),
         ("pre-commit", create_pre_commit_hook()),
     ]
-    
+
     print("🪝 Installing Git hooks for AI-First SDLC...")
-    
+
     installed_hooks = []
     for hook_name, hook_content in hooks_to_install:
         hook_path = hooks_dir / hook_name
-        
+
         # Backup existing hook
         if hook_path.exists():
             backup_path = hooks_dir / f"{hook_name}.backup"
             shutil.copy2(hook_path, backup_path)
             print(f"💾 Backed up existing {hook_name} hook to {backup_path}")
-        
+
         # Write new hook
-        with open(hook_path, 'w') as f:
+        with open(hook_path, "w") as f:
             f.write(hook_content)
-        
+
         # Make executable
         hook_path.chmod(hook_path.stat().st_mode | stat.S_IEXEC)
-        
+
         print(f"✅ Installed {hook_name} hook")
         installed_hooks.append(hook_name)
-    
+
     print(f"\\n🎉 Successfully installed {len(installed_hooks)} Git hooks:")
     for hook in installed_hooks:
         print(f"   • {hook}")
-    
-    print(f"""
+
+    print(
+        """
 🛡️ Protection Active:
    • pre-commit: Fast syntax validation
    • commit-msg: Commit message standards
@@ -175,9 +180,11 @@ def install_hooks():
 ⚠️ To bypass hooks (NOT RECOMMENDED):
    git commit --no-verify
    git push --no-verify
-""")
-    
+"""
+    )
+
     return True
+
 
 def main():
     """Main function"""
@@ -185,18 +192,19 @@ def main():
         # Change to repository root
         repo_root = Path(__file__).parent.parent.parent
         os.chdir(repo_root)
-        
+
         success = install_hooks()
-        
+
         if success:
             print("\\n🚀 Git hooks installed successfully!")
             print("   Run 'git commit' or 'git push' to test the hooks.")
         else:
             print("\\n❌ Failed to install Git hooks.")
-            
+
     except Exception as e:
         print(f"❌ Error installing Git hooks: {str(e)}")
         return False
+
 
 if __name__ == "__main__":
     main()
