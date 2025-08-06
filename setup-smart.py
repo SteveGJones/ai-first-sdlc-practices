@@ -2090,7 +2090,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 if self.detected_language and self.detected_language != "general":
                     cmd.extend(["--languages", self.detected_language])
 
-                print(f"   🚀 Installing essential agents...")
+                print("   🚀 Installing essential agents...")
 
                 # Try to run the installer
                 result = subprocess.run(cmd, capture_output=True, text=True)
@@ -2186,7 +2186,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 )
                 if result.returncode == 0 and result.stdout.strip():
                     github_url = result.stdout.strip()
-            except:
+            except Exception:
                 pass
 
             # Create project configuration
@@ -2271,7 +2271,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                         subprocess.run(
                             ["git", "add", file], cwd=self.project_dir, check=True
                         )
-                    except:
+                    except Exception:
                         pass
 
             # Stage directories
@@ -2292,7 +2292,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                             cwd=self.project_dir,
                             check=True,
                         )
-                    except:
+                    except Exception:
                         pass
 
             # Create comprehensive commit message

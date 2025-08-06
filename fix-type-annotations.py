@@ -6,7 +6,7 @@ This is a temporary utility to achieve Zero Technical Debt compliance.
 
 import re
 from pathlib import Path
-from typing import List, Tuple
+# Type hints are built into Python 3.9+, no need for typing imports
 
 
 def add_common_type_annotations(file_path: Path) -> bool:
