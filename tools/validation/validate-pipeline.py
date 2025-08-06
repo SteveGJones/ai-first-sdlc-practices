@@ -497,7 +497,7 @@ class ValidationPipeline:
         for dep_file, check_cmd in dep_files_with_checks:
             if (self.project_root / dep_file).exists() and check_cmd:
                 try:
-                    _result =
+                    result = subprocess.run(
                         check_cmd.split(), capture_output=True, text=True, timeout=30
                     )
 
@@ -531,7 +531,7 @@ class ValidationPipeline:
                 check=True,
             )
 
-            _commits =
+            commits = result.stdout.strip().split("\n")
             non_compliant = []
 
             # Simple conventional commit check
@@ -910,11 +910,11 @@ class ValidationPipeline:
         type_issues = []
 
         # Check TypeScript configuration
-        _ts_issues =
+        ts_issues = self._check_typescript_config()
         type_issues.extend(ts_issues)
 
         # Check Python configuration
-        _py_issues =
+        py_issues = self._check_python_type_config()
         type_issues.extend(py_issues)
 
         # Check Python code annotations
@@ -926,15 +926,15 @@ class ValidationPipeline:
     def _check_typescript_config(self) -> List[str]:
         """Check TypeScript configuration for type safety"""
         issues: List[str] = []
-        _ts_config =
+        ts_config = self.project_root / "tsconfig.json"
 
         if not ts_config.exists():
             return issues
 
         try:
-            _config_content =
-            _config_json =
-            _compiler_options =
+            config_content = ts_config.read_text()
+            config_json = json.loads(config_content)
+            compiler_options = config_json.get("compilerOptions", {})
 
             # Check strict mode
             if not compiler_options.get("strict", False):
@@ -963,7 +963,7 @@ class ValidationPipeline:
     def _check_python_type_config(self) -> List[str]:
         """Check Python mypy configuration"""
         issues: List[str] = []
-        _config_files =
+        config_files = [
             self.project_root / "mypy.ini",
             self.project_root / "setup.cfg",
             self.project_root / "pyproject.toml",
@@ -972,25 +972,25 @@ class ValidationPipeline:
         if not any(f.exists() for f in config_files):
             return issues
 
-        _mypy_config_found =
+        mypy_config_found = False
 
         # Check mypy.ini
         if config_files[0].exists():
-            content = base64.b64decode(data["content"]).decode("utf-8")
+            content = config_files[0].read_text()
             # For framework repos, check that main [mypy] section has strict=True
             # Allow relaxed rules in specific sections
             if self.is_framework_repo:
                 # Parse INI to check main section
-                config = {
+                config = configparser.ConfigParser()
                 try:
                     config.read_string(content)
 
                     # Check main mypy section
                     if "mypy" in config:
-                        _mypy_section =
+                        mypy_section = config["mypy"]
                         # Check for strict=True
                         if mypy_section.get("strict", "").lower() == "true":
-                            _mypy_config_found =
+                            mypy_config_found = True
                         # Or check individual strict settings in main section
                         elif (
                             mypy_section.get("disallow_untyped_defs", "").lower()
@@ -998,7 +998,7 @@ class ValidationPipeline:
                             or mypy_section.get("check_untyped_defs", "").lower()
                             == "true"
                         ):
-                            _mypy_config_found =
+                            mypy_config_found = True
                         else:
                             issues.append(
                                 "mypy main section not configured for strict type checking "
@@ -1009,7 +1009,7 @@ class ValidationPipeline:
                 except configparser.Error:
                     # Fall back to simple check if parsing fails
                     if "strict = True" in content or "strict=True" in content:
-                        _mypy_config_found =
+                        mypy_config_found = True
                     else:
                         issues.append("mypy configuration cannot be parsed")
             else:
@@ -1017,11 +1017,11 @@ class ValidationPipeline:
                 if "disallow_untyped_defs" not in content or "False" in content:
                     issues.append("mypy not configured for strict type checking")
                 else:
-                    _mypy_config_found =
+                    mypy_config_found = True
 
         # Check setup.cfg
         if not mypy_config_found and config_files[1].exists():
-            content = base64.b64decode(data["content"]).decode("utf-8")
+            content = config_files[1].read_text()
             if "[mypy]" not in content:
                 issues.append("mypy configuration missing")
 
@@ -1146,7 +1146,7 @@ class ValidationPipeline:
 
             if result.returncode != 0:
                 # Extract violation count from output
-                _output_lines =
+                output_lines = result.stdout.splitlines()
                 violation_line = next(
                     (line for line in output_lines if "Total Violations:" in line), None
                 )
@@ -1295,18 +1295,18 @@ class ValidationPipeline:
     def export_results(self, format: str = "json") -> str:
         """Export results in specified format"""
         if format == "json":
-            data = json.loads(response.json())
+            data = {
                 "timestamp": datetime.now().isoformat(),
                 "has_errors": self.has_errors,
                 "has_warnings": self.has_warnings,
                 "results": [
                     {
-                        "status": icon.strip(),
-                        "check": check,
-                        "message": message,
-                        "fix": fix,
+                        "status": result["icon"].strip(),
+                        "check": result["check"],
+                        "message": result["message"],
+                        "fix": result["fix"],
                     }
-                    for icon, check, message, fix in self.results
+                    for result in self.results
                 ],
             }
             return json.dumps(data, indent=2)
@@ -1316,10 +1316,10 @@ class ValidationPipeline:
             md += f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
 
             md += "## Results\n\n"
-            for icon, check, message, fix in self.results:
-                md += f"- {icon} **{check}**: {message}\n"
-                if fix:
-                    md += f"  - Fix: {fix}\n"
+            for result in self.results:
+                md += f"- {result['icon']} **{result['check']}**: {result['message']}\n"
+                if result['fix']:
+                    md += f"  - Fix: {result['fix']}\n"
 
             md += "\n## Summary\n"
             if self.has_errors:
@@ -1371,10 +1371,10 @@ def main() -> None:
 
     # Run validation
     pipeline = ValidationPipeline()
-    success = self.setup(components, force)
+    success = pipeline.run_validation(args.checks)
     # Export if requested
     if args.export:
-        _output =
+        output = pipeline.export_results(args.export)
 
         if args.output:
             with open(args.output, "w") as f:
