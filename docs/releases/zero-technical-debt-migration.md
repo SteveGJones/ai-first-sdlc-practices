@@ -1,7 +1,7 @@
 # Migration Guide: Zero Technical Debt Policy
 
-**Version:** 1.5.0  
-**Release Date:** 2024-07-25  
+**Version:** 1.5.0
+**Release Date:** 2024-07-25
 **Impact:** BREAKING CHANGES - Requires architectural documentation before coding
 
 ---
@@ -20,10 +20,10 @@ This release introduces **mandatory Architecture-First Development**. AI agents 
    ```bash
    # Backup current CLAUDE.md
    cp CLAUDE.md CLAUDE.md.backup
-   
+
    # Download the new mandatory section
    curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/CLAUDE.md | grep -A 200 "MANDATORY: Architecture-First Development" > architecture-section.md
-   
+
    # Manually add the new section to your CLAUDE.md after the Zero Technical Debt Policy section
    ```
 
@@ -31,7 +31,7 @@ This release introduces **mandatory Architecture-First Development**. AI agents 
    ```bash
    # Create required directories
    mkdir -p docs/architecture/decisions
-   
+
    # Download all architecture templates
    curl -LO https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/architecture/requirements-traceability-matrix.md
    curl -LO https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/architecture/what-if-analysis.md
@@ -39,7 +39,7 @@ This release introduces **mandatory Architecture-First Development**. AI agents 
    curl -LO https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/architecture/system-invariants.md
    curl -LO https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/architecture/integration-design.md
    curl -LO https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/architecture/failure-mode-analysis.md
-   
+
    # Move templates to correct location
    mv *.md templates/architecture/
    ```
@@ -50,12 +50,12 @@ This release introduces **mandatory Architecture-First Development**. AI agents 
    curl -LO https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/tools/validation/validate-architecture.py
    chmod +x validate-architecture.py
    mv validate-architecture.py tools/validation/
-   
+
    # Technical debt detector
    curl -LO https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/tools/validation/check-technical-debt.py
    chmod +x check-technical-debt.py
    mv check-technical-debt.py tools/validation/
-   
+
    # Updated validation pipeline
    curl -LO https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/tools/validation/validate-pipeline.py
    chmod +x validate-pipeline.py
@@ -63,44 +63,44 @@ This release introduces **mandatory Architecture-First Development**. AI agents 
    ```
 
 4. **Update Your Workflow**
-   
+
    **OLD WORKFLOW:**
    ```
    Feature Proposal → Implementation → Retrospective → PR
    ```
-   
+
    **NEW WORKFLOW (MANDATORY):**
    ```
    Feature Proposal → Architecture Docs (ALL 6) → Implementation → Retrospective → PR
    ```
 
 5. **For Work in Progress**
-   
+
    If you have features currently being implemented:
-   
+
    a. **STOP all coding immediately**
-   
+
    b. **Create architecture documents for current feature**:
    ```bash
    # Copy templates to docs/architecture/
    cp templates/architecture/*.md docs/architecture/
-   
+
    # Fill out EVERY document completely
    # This is NOT optional
    ```
-   
+
    c. **Validate architecture**:
    ```bash
    python tools/validation/validate-architecture.py
    # MUST pass before continuing
    ```
-   
+
    d. **Only then resume coding**
 
 6. **Update CI/CD Pipeline**
-   
+
    Add architecture validation to your CI/CD:
-   
+
    ```yaml
    # GitHub Actions example
    - name: Validate Architecture
@@ -121,7 +121,7 @@ This release introduces **mandatory Architecture-First Development**. AI agents 
 
 1. **Six Architecture Documents** (BEFORE ANY CODE):
    - Requirements Traceability Matrix
-   - What-If Analysis  
+   - What-If Analysis
    - Architecture Decision Records
    - System Invariants
    - Integration Design
@@ -213,7 +213,7 @@ git add -A
 git commit -m "feat: migrate to Zero Technical Debt policy v1.5.0
 
 - Added mandatory architecture-first development
-- Created all 6 architecture document templates  
+- Created all 6 architecture document templates
 - Updated validation pipeline with new checks
 - Ready for zero technical debt compliance"
 ```
@@ -222,19 +222,19 @@ git commit -m "feat: migrate to Zero Technical Debt policy v1.5.0
 
 ## ❓ FAQ
 
-**Q: What if I'm in the middle of coding a feature?**  
+**Q: What if I'm in the middle of coding a feature?**
 A: Stop immediately, create all 6 architecture documents, validate them, then resume.
 
-**Q: Can I skip some architecture documents for simple features?**  
+**Q: Can I skip some architecture documents for simple features?**
 A: NO. All 6 are mandatory. This is zero-tolerance.
 
-**Q: What if the architecture changes during implementation?**  
+**Q: What if the architecture changes during implementation?**
 A: Update the architecture documents FIRST, then update the code.
 
-**Q: How detailed must the architecture documents be?**  
+**Q: How detailed must the architecture documents be?**
 A: Complete enough that someone could implement the feature without asking questions.
 
-**Q: Can I use placeholders or templates?**  
+**Q: Can I use placeholders or templates?**
 A: NO. The validator checks for actual content, not templates.
 
 ---

@@ -181,7 +181,7 @@ Force the correct mode:
 # Force solo mode
 python tools/automation/setup-branch-protection-gh.py --solo
 
-# Force team mode  
+# Force team mode
 python tools/automation/setup-branch-protection-gh.py --team
 ```
 

@@ -54,7 +54,7 @@ No VERSION file? (pre-1.3.0):
 # v1.2.0 feature check
 grep -q "Self-Review Process" CLAUDE.md && echo "At least v1.2.0"
 
-# v1.1.0 feature check  
+# v1.1.0 feature check
 ls examples/ci-cd/ 2>/dev/null && echo "At least v1.1.0"
 
 # If neither, assume v1.0.0

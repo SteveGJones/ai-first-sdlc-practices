@@ -109,11 +109,11 @@ class PasswordValidator:
         """Validate password meets security requirements."""
         if len(password) < 12:
             return False
-        
+
         has_upper = any(c.isupper() for c in password)
         has_lower = any(c.islower() for c in password)
         has_digit = any(c.isdigit() for c in password)
-        
+
         return has_upper and has_lower and has_digit
 ```
 
@@ -142,36 +142,36 @@ import re
 class PasswordValidator:
     MIN_LENGTH = 12
     MAX_LENGTH = 128
-    
+
     def __init__(self, common_passwords_file: str = None):
         self.common_passwords = set()
         if common_passwords_file:
             self._load_common_passwords(common_passwords_file)
-    
+
     def validate_password(self, password: str, password_history: List[str] = None) -> Tuple[bool, str]:
         """
         Validate password meets security requirements.
-        
+
         Args:
             password: The password to validate
             password_history: List of previous password hashes
-            
+
         Returns:
             Tuple of (is_valid, error_message)
         """
         if not password:
             return False, "Password cannot be empty"
-        
+
         if not isinstance(password, str):
             return False, "Password must be a string"
-        
+
         # Length checks
         if len(password) < self.MIN_LENGTH:
             return False, f"Password must be at least {self.MIN_LENGTH} characters"
-        
+
         if len(password) > self.MAX_LENGTH:
             return False, f"Password cannot exceed {self.MAX_LENGTH} characters"
-        
+
         # Character requirements
         checks = [
             (r'[A-Z]', "Password must contain uppercase letter"),
@@ -179,25 +179,25 @@ class PasswordValidator:
             (r'[0-9]', "Password must contain digit"),
             (r'[!@#$%^&*(),.?":{}|<>]', "Password must contain special character")
         ]
-        
+
         for pattern, error_msg in checks:
             if not re.search(pattern, password):
                 return False, error_msg
-        
+
         # Common password check
         if password.lower() in self.common_passwords:
             return False, "Password is too common"
-        
+
         # Sequential character check
         if self._has_sequential_chars(password):
             return False, "Password contains sequential characters"
-        
+
         # Password history check
         if password_history and password in password_history:
             return False, "Password was recently used"
-        
+
         return True, "Password is valid"
-    
+
     def _has_sequential_chars(self, password: str, max_sequential: int = 3) -> bool:
         """Check for sequential characters like 'abc' or '123'."""
         for i in range(len(password) - max_sequential + 1):
@@ -205,7 +205,7 @@ class PasswordValidator:
             if all(ord(substr[j]) == ord(substr[j-1]) + 1 for j in range(1, len(substr))):
                 return True
         return False
-    
+
     def _load_common_passwords(self, filename: str) -> None:
         """Load common passwords from file."""
         try:
@@ -234,7 +234,7 @@ class NotificationService:
     def send_email(self, user_id, subject, body):
         user = db.get_user(user_id)
         email_client.send(user.email, subject, body)
-    
+
     def send_sms(self, user_id, message):
         user = db.get_user(user_id)
         sms_client.send(user.phone, message)
@@ -299,7 +299,7 @@ graph TB
     Router --> SMS[SMS Service]
     Router --> Push[Push Service]
     Router --> InApp[In-App Service]
-    
+
     Router --> Prefs[(User Preferences)]
     Router --> Templates[(Templates)]
     Router --> Analytics[(Analytics)]

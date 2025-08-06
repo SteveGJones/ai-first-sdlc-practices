@@ -37,17 +37,17 @@ This document summarizes the comprehensive updates made to the AI-First SDLC age
   - Combines sdlc-coach and framework-validator capabilities
   - Primary compliance guardian for every project
   - Includes GitHub integration capabilities
-  
+
 - **github-integration-specialist** (`/agents/core/github-integration-specialist.md`)
   - GitHub API operations and repository management
   - Branch protection configuration
   - Automated PR creation and management
-  
+
 - **compliance-auditor** (`/agents/core/compliance-auditor.md`)
   - Cross-repository compliance scanning
   - Security and regulatory compliance validation
   - Audit report generation
-  
+
 - **devops-specialist** (`/agents/core/devops-specialist.md`)
   - CI/CD pipeline design and optimization
   - Infrastructure as Code
@@ -58,12 +58,12 @@ This document summarizes the comprehensive updates made to the AI-First SDLC age
   - Performance testing and optimization
   - Capacity planning and scaling
   - Load testing strategies
-  
+
 - **integration-orchestrator** (`/agents/testing/integration-orchestrator.md`)
   - Cross-service integration testing
   - API contract testing
   - End-to-end test orchestration
-  
+
 - **sre-specialist** (`/agents/core/sre-specialist.md`)
   - Site reliability engineering
   - Production monitoring and incident response

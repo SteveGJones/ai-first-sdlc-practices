@@ -67,13 +67,13 @@ Setup Levels:
     - 1 simple workflow doc
     - Optional validation
     - No branch protection by default
-    
+
   Growing Team:
     - Add 2-3 specialized agents
     - Add lightweight docs
     - Enable validation warnings
     - Optional branch protection
-    
+
   Enterprise:
     - Full agent catalog
     - Complete documentation

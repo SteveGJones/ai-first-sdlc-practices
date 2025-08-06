@@ -73,7 +73,7 @@ DELETE /api/todos/{id}  # Delete todo
 class TodoService:
     def __init__(self, db: Session):
         self.db = db
-    
+
     def create_todo(self, todo_data: TodoCreate) -> Todo:
         # Implementation
 ```

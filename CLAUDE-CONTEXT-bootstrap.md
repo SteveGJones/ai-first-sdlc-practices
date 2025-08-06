@@ -30,7 +30,7 @@ Your PRIMARY GOALS during bootstrap:
 ```bash
 # Check if this is truly a bootstrap situation
 ls docs/feature-proposals/     # Should be empty
-ls retrospectives/            # Should be empty  
+ls retrospectives/            # Should be empty
 ls plan/                      # Should be empty
 cat templates/architecture/*  # Should contain [placeholders]
 ```
@@ -107,7 +107,7 @@ Create `docs/architecture/system-invariants.md`:
 - **INV-002**: User passwords must be hashed using bcrypt with salt rounds >= 12
 - **INV-003**: User accounts cannot be deleted if they have active orders
 
-### Product Data Consistency  
+### Product Data Consistency
 - **INV-004**: Product prices must be positive decimal values with 2 decimal places
 - **INV-005**: Product inventory counts must be non-negative integers
 - **INV-006**: Product categories must exist in the categories table before assignment
@@ -186,7 +186,7 @@ Use PostgreSQL as primary database with Redis for caching.
 
 ## ADR-002: API Authentication
 
-**Status**: Accepted  
+**Status**: Accepted
 **Date**: 2024-08-06
 **Deciders**: Security Architect, Technical Lead
 
@@ -279,7 +279,7 @@ sequenceDiagram
     participant API
     participant Stripe
     participant Webhook
-    
+
     Client->>API: Create Payment Intent
     API->>Stripe: POST /payment_intents
     Stripe-->>API: Payment Intent + Client Secret
@@ -335,7 +335,7 @@ graph TB
 graph TB
     Client --> Gateway[API Gateway]
     Gateway --> Auth[Auth Service]
-    Gateway --> Products[Product Service]  
+    Gateway --> Products[Product Service]
     Gateway --> Orders[Order Service]
     Gateway --> Payments[Payment Service]
 ```
@@ -562,19 +562,19 @@ graph TB
         US_DB[(PostgreSQL)]
         US_Cache[Redis]
     end
-    
+
     subgraph "EU West"
         EU_API[API Gateway]
         EU_DB[(PostgreSQL)]
         EU_Cache[Redis]
     end
-    
+
     subgraph "APAC"
         APAC_API[API Gateway]
         APAC_DB[(PostgreSQL)]
         APAC_Cache[Redis]
     end
-    
+
     Global_LB[Global Load Balancer] --> US_API
     Global_LB --> EU_API
     Global_LB --> APAC_API
@@ -648,10 +648,10 @@ graph LR
     B --> D[Product Catalog]
     B --> E[Order Processing]
     B --> F[User Management]
-    
+
     A --> A1[Individual Cart]
     A --> A2[Credit Card Payment]
-    
+
     C --> C1[Bulk Ordering]
     C --> C2[Invoice Payment]
     C --> C3[Approval Workflows]
@@ -679,7 +679,7 @@ graph TB
     A[Our Python API] --> C[API Gateway]
     B[Acquired Ruby API] --> C
     C --> D[Unified Customer Experience]
-    
+
     E[Our PostgreSQL] --> F[Data Sync Service]
     G[Their MySQL] --> F
     F --> H[Customer Data Warehouse]
@@ -712,10 +712,10 @@ graph TB
     B --> D[Cache Invalidation]
     B --> E[Analytics Pipeline]
     B --> F[Backup Systems]
-    
+
     C --> G[Deletion Confirmation]
     D --> G
-    E --> G  
+    E --> G
     F --> G
     G --> H[User Notification]
 ```
@@ -807,7 +807,7 @@ Create `plan/01-project-bootstrap-plan.md`:
 
 ## Phase 1: Architecture Documentation (Completed)
 - [x] Requirements Traceability Matrix
-- [x] System Invariants 
+- [x] System Invariants
 - [x] Architecture Decision Records
 - [x] Integration Design
 - [x] Failure Mode Analysis
@@ -897,7 +897,7 @@ You have successfully completed bootstrap when:
 **BAD**: Leaving `[Your Project Name]` or `[Description]` in files
 **GOOD**: Replace ALL placeholders with actual project information
 
-### ❌ Generic or Vague Requirements  
+### ❌ Generic or Vague Requirements
 **BAD**: "System must be performant" or "Users need authentication"
 **GOOD**: "API response time < 200ms for read operations" or "JWT token authentication with 24-hour expiration"
 

@@ -7,14 +7,14 @@ class FrameworkTest < Minitest::Test
     # This test always passes to indicate framework is installed
     assert true, "AI-First SDLC Framework is set up"
   end
-  
+
   def test_project_structure
     # Verify essential directories exist
     assert File.directory?('docs'), "docs directory should exist"
     assert File.directory?('retrospectives'), "retrospectives directory should exist"
     assert File.exist?('CLAUDE.md'), "CLAUDE.md should exist"
   end
-  
+
   def test_version_file
     # Check VERSION file exists
     assert File.exist?('VERSION'), "VERSION file should exist"

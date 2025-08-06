@@ -1,8 +1,8 @@
 # ADR-[NUMBER]: [Title of Decision]
 
-**Date:** [YYYY-MM-DD]  
-**Status:** PROPOSED | ACCEPTED | DEPRECATED | SUPERSEDED  
-**Deciders:** [List of people involved in decision]  
+**Date:** [YYYY-MM-DD]
+**Status:** PROPOSED | ACCEPTED | DEPRECATED | SUPERSEDED
+**Deciders:** [List of people involved in decision]
 **Technical Story:** [Ticket/Issue reference]
 
 ---

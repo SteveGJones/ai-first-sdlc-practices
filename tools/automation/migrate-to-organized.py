@@ -335,7 +335,7 @@ Track development tasks and progress.
    ```bash
    # Add to your .bashrc or .zshrc
    export PATH="$PATH:/path/to/your/project/sdlc-tools"
-   
+
    # Then use from anywhere in your project
    validate
    new-feature my-feature

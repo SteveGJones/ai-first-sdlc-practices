@@ -1,8 +1,8 @@
 # Feature Proposal: Version Documentation Enhancement
 
-**Date:** 2025-07-20  
-**Author:** Claude (AI Agent)  
-**Target Branch:** `feature/version-docs-enhancement`  
+**Date:** 2025-07-20
+**Author:** Claude (AI Agent)
+**Target Branch:** `feature/version-docs-enhancement`
 **Related Issues:** Post-implementation review of PR #20
 
 ---
@@ -139,7 +139,7 @@ None - requirements are clear from review feedback.
 # Check for v1.2.0 features
 grep -q "Self-Review Process" CLAUDE.md && echo "At least v1.2.0"
 
-# Check for v1.1.0 features  
+# Check for v1.1.0 features
 ls examples/ci-cd/ 2>/dev/null && echo "At least v1.1.0"
 ```
 

@@ -129,7 +129,7 @@ full-stack-expert:
   includes: [python-expert, api-designer, security-patterns]
 
 compliance-specialist:
-  base: compliance-auditor  
+  base: compliance-auditor
   includes: [security-architect, legal-advisor]
 ```
 

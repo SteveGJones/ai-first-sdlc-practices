@@ -118,7 +118,7 @@ The Zero Technical Debt policy remains intact for applications - where it matter
 ```python
 FRAMEWORK_THRESHOLDS = {
     'Security Issues': 0,      # Zero tolerance
-    'TODOs and FIXMEs': 0,     # Zero tolerance  
+    'TODOs and FIXMEs': 0,     # Zero tolerance
     'Type Issues': 150,        # Pragmatic
     'Error Suppressions': 20,  # Pragmatic
     'Code Smells': 2000,       # Very pragmatic

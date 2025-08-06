@@ -51,13 +51,13 @@ To have Claude set up the AI-First SDLC framework in your EXISTING project, use 
 ```
 I want to add AI-First SDLC practices to this project. Please:
 1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md
-2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md 
+2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md
 3. Download and run: curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
 4. Run: python setup-smart.py "[describe your project]" --non-interactive
 Do NOT clone the repository - we're adding the framework to THIS project.
 ```
 
-**⚠️ CRITICAL**: 
+**⚠️ CRITICAL**:
 - Claude MUST read the instructions FIRST before running anything
 - Claude MUST use the official setup-smart.py script from the MAIN branch
 - Claude MUST NOT create custom directory structures like `.claud/` or `.claude/`
@@ -102,7 +102,7 @@ Both methods will:
 
 ### What This Does
 1. **Downloads hierarchical instruction system** (CLAUDE-CORE.md for 88% less context usage)
-2. **Creates `ai-first-kick-start` branch** automatically 
+2. **Creates `ai-first-kick-start` branch** automatically
 3. **Generates compatibility CLAUDE.md** pointing to new modular system
 4. **Sets up branch protection** using secure gh CLI (prompts for auth if needed)
 5. **Creates initial feature proposal** to kickstart the workflow

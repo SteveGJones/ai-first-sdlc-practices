@@ -46,7 +46,7 @@ python tools/validation/validate-pipeline.py --checks type-safety
 
 ### Required Logging Points (10):
 1. Function entry/exit
-2. Errors & exceptions  
+2. Errors & exceptions
 3. External calls
 4. State mutations
 5. Security events
@@ -71,7 +71,7 @@ Details: Load CLAUDE-CONTEXT-logging.md
 
 ### MANDATORY SEQUENCE (NO DEVIATIONS ALLOWED):
 1. **HALT**: Stop ALL work if not on feature branch
-2. **CREATE**: Feature branch: `git checkout -b feature/name` 
+2. **CREATE**: Feature branch: `git checkout -b feature/name`
 3. **DOCUMENT**: Proposal: `docs/feature-proposals/XX-name.md`
 4. **ARCHITECTURE**: ALL 6 documents BEFORE any code
 5. **VALIDATE**: `python tools/validation/validate-architecture.py --strict` MUST PASS
@@ -93,7 +93,7 @@ Details: Load CLAUDE-CONTEXT-logging.md
 
 ### 🚫 PR AUTO-REJECTED WITHOUT RETROSPECTIVE CONTAINING:
 - What went well (MANDATORY SECTION)
-- What could improve (MANDATORY SECTION) 
+- What could improve (MANDATORY SECTION)
 - Lessons learned (MANDATORY SECTION)
 - Complete change log (MANDATORY SECTION)
 - Validation results (MANDATORY SECTION)
@@ -164,7 +164,7 @@ If update available: Load CLAUDE-CONTEXT-update.md
 **THESE VIOLATIONS RESULT IN IMMEDIATE PROJECT TERMINATION:**
 
 - **NO Architecture before code** → INSTANT DEATH PENALTY
-- **ANY technical debt found** → INSTANT DEATH PENALTY  
+- **ANY technical debt found** → INSTANT DEATH PENALTY
 - **ANY direct commit to main** → INSTANT DEATH PENALTY
 - **PR without retrospective** → INSTANT DEATH PENALTY
 - **Skipping validation** → INSTANT DEATH PENALTY

@@ -123,7 +123,7 @@ def _is_bootstrap_mode(self) -> bool:
 ### Progressive Validation
 ```python
 # Bootstrap: Warnings only, guidance focused
-# Intermediate: Light validation, completion required  
+# Intermediate: Light validation, completion required
 # Strict: Full Zero Technical Debt enforcement
 ```
 

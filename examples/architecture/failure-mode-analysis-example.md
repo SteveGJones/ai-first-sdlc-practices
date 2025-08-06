@@ -1,8 +1,8 @@
 # Failure Mode and Effects Analysis (FMEA) - E-Commerce Checkout System
 
-**Project:** FastCart Checkout System  
-**Version:** 1.0  
-**Last Updated:** 2024-07-25  
+**Project:** FastCart Checkout System
+**Version:** 1.0
+**Last Updated:** 2024-07-25
 **Risk Assessment Team:** Architecture, Security, Operations
 
 ## Overview
@@ -178,13 +178,13 @@ class FailureDetector {
       await this.switchToBackupPaymentProvider();
       await this.alertOncall('Payment failures above 5%');
     }
-    
+
     // Inventory discrepancy
     if (inventoryMismatchCount > 10) {
       await this.pauseCheckout();
       await this.triggerInventoryReconciliation();
     }
-    
+
     // Performance degradation
     if (p95ResponseTime > 2000) {
       await this.enableCacheBoost();

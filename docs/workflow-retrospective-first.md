@@ -67,7 +67,7 @@ echo "# Retrospective: New Feature
 ## What Went Well
 - [To be updated as you work]
 
-## What Could Be Improved  
+## What Could Be Improved
 - [To be updated as you work]
 
 ## Lessons Learned
@@ -125,7 +125,7 @@ git commit -m "docs: update retrospective with algorithm insights"
 ## Benefits of This Approach
 
 1. **Real-time Learning**: Insights are captured when fresh, not reconstructed later
-2. **Better PRs**: Reviewers see the journey, not just the destination  
+2. **Better PRs**: Reviewers see the journey, not just the destination
 3. **Team Knowledge**: Lessons learned are shared before merge, not after
 4. **Process Compliance**: Automated validation ensures no shortcuts
 5. **Historical Record**: Future developers understand the "why" behind decisions

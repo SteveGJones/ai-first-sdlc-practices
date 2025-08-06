@@ -1,10 +1,10 @@
 # Feature Proposal: Add Priority to Todo Items
 
-**Proposal Number:** 01  
-**Status:** Approved  
-**Author:** Claude AI  
-**Created:** 2025-01-12  
-**Target Branch:** `feature/todo-priority`  
+**Proposal Number:** 01
+**Status:** Approved
+**Author:** Claude AI
+**Created:** 2025-01-12
+**Target Branch:** `feature/todo-priority`
 **Implementation Type:** Code
 
 ---
@@ -60,7 +60,7 @@ Add an optional priority field to the Todo model with three levels (low, medium,
 - [ ] Create database migration
 - [ ] Update Pydantic schemas
 
-#### Phase 2: API Updates  
+#### Phase 2: API Updates
 - [ ] Update POST/PUT endpoints
 - [ ] Add query parameters to GET
 - [ ] Implement filtering/sorting

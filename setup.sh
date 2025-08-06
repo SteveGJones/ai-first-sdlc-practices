@@ -113,7 +113,7 @@ if [ ! -t 0 ]; then
     # No TTY attached (running via pipe)
     echo "📋 Running in non-interactive mode"
     INTERACTIVE_ARGS="--non-interactive"
-    
+
     # Try to detect CI platform from current directory
     if [ -d ".github/workflows" ]; then
         INTERACTIVE_ARGS="${INTERACTIVE_ARGS} --ci-platform github"

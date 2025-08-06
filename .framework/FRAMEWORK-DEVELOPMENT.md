@@ -35,7 +35,7 @@ When contributing to the framework:
    - Use feature branches
    - Create retrospectives
 
-2. **Test Changes**: 
+2. **Test Changes**:
    - Run `python tools/validation/validate-pipeline.py --ci`
    - Test setup.py on a clean directory
    - Verify CI/CD examples still validate

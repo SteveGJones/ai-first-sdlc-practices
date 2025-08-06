@@ -228,7 +228,7 @@ jobs:
   auto-approve:
     runs-on: ubuntu-latest
     if: github.actor == github.repository_owner || contains(github.event.pull_request.title, '[AI-FIRST]')
-    
+
     steps:
     - name: Check if all status checks passed
       id: status-check
@@ -241,18 +241,18 @@ jobs:
             repo: context.repo.repo,
             pull_number: context.issue.number
           });
-          
+
           // Get the latest commit
           const { data: commit } = await github.rest.repos.getCommit({
             owner: context.repo.owner,
             repo: context.repo.repo,
             ref: pr.head.sha
           });
-          
+
           // Check if all required status checks are successful
           const requiredChecks = ['validate', 'test-framework-tools (3.8)', 'code-quality'];
           let allPassed = true;
-          
+
           for (const check of requiredChecks) {
             const status = commit.commit.verification?.verified || false;
             if (!status) {
@@ -260,9 +260,9 @@ jobs:
               break;
             }
           }
-          
+
           return allPassed;
-    
+
     - name: Auto-approve PR
       if: steps.status-check.outputs.result == 'true'
       uses: actions/github-script@v7
@@ -414,13 +414,13 @@ def main():
 Examples:
   # Auto-detect collaboration pattern
   python setup-branch-protection-gh.py
-  
+
   # Force solo developer mode
   python setup-branch-protection-gh.py --solo --auto-approval
-  
+
   # Force team mode with custom checks
   python setup-branch-protection-gh.py --team --checks validate security-scan
-  
+
   # Dry run to see what would be configured
   python setup-branch-protection-gh.py --dry-run
 """,

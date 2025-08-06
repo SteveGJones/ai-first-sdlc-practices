@@ -29,13 +29,13 @@
     "@typescript-eslint/no-unsafe-call": "error",
     "@typescript-eslint/no-unsafe-member-access": "error",
     "@typescript-eslint/no-unsafe-return": "error",
-    
+
     // Forbidden patterns
     "no-console": "error",
     "no-debugger": "error",
     "no-alert": "error",
     "no-todo-comments": "error",
-    
+
     // Code quality
     "@typescript-eslint/explicit-function-return-type": "error",
     "@typescript-eslint/explicit-module-boundary-types": "error",
@@ -43,12 +43,12 @@
     "@typescript-eslint/prefer-nullish-coalescing": "error",
     "@typescript-eslint/prefer-optional-chain": "error",
     "@typescript-eslint/strict-boolean-expressions": "error",
-    
+
     // Security
     "security/detect-object-injection": "error",
     "security/detect-non-literal-require": "error",
     "security/detect-possible-timing-attacks": "error",
-    
+
     // Complexity limits
     "complexity": ["error", 10],
     "max-depth": ["error", 4],

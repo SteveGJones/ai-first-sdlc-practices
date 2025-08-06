@@ -1,8 +1,8 @@
 # Design Documentation: Real-Time Data Processing Pipeline
 
-**Date:** 2025-07-17  
-**Author:** AI-First SDLC Team  
-**Status:** In Review  
+**Date:** 2025-07-17
+**Author:** AI-First SDLC Team
+**Status:** In Review
 **Version:** 1.0
 
 ---
@@ -99,48 +99,48 @@ graph LR
         API[API Events]
         IOT[IoT Devices]
     end
-    
+
     subgraph "Ingestion Layer"
         LB[Load Balancer]
         Collector[Event Collector]
         Buffer[Message Buffer]
     end
-    
+
     subgraph "Processing Layer"
         Validator[Schema Validator]
         Enricher[Data Enricher]
         Transform[Transformer]
         Aggregator[Aggregator]
     end
-    
+
     subgraph "Storage Layer"
         HotStore[(Hot Storage)]
         ColdStore[(Cold Storage)]
         Cache[(Cache Layer)]
     end
-    
+
     subgraph "Delivery Layer"
         Analytics[Analytics API]
         Alerts[Alert Engine]
         Export[Data Export]
     end
-    
+
     Web --> LB
     Mobile --> LB
     API --> LB
     IOT --> LB
-    
+
     LB --> Collector
     Collector --> Buffer
     Buffer --> Validator
     Validator --> Enricher
     Enricher --> Transform
     Transform --> Aggregator
-    
+
     Aggregator --> HotStore
     Aggregator --> Cache
     HotStore --> ColdStore
-    
+
     HotStore --> Analytics
     Cache --> Analytics
     Aggregator --> Alerts
@@ -177,18 +177,18 @@ sequenceDiagram
     participant Processor
     participant Storage
     participant Consumer
-    
+
     Source->>Collector: Send event batch
     Collector->>Collector: Basic validation
     Collector->>Buffer: Queue events
     Collector-->>Source: Acknowledge
-    
+
     Buffer->>Processor: Pull events
     Processor->>Processor: Validate schema
     Processor->>Processor: Enrich data
     Processor->>Processor: Transform
     Processor->>Storage: Write processed
-    
+
     Storage->>Consumer: Query data
     Consumer-->>Consumer: Display/Alert
 ```

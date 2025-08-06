@@ -50,7 +50,7 @@ The framework currently doesn't proactively create essential files (requirements
 # In setup-smart.py - MUST create these directories
 def create_mandatory_structure(self):
     """Create ALL mandatory directories to prevent validation failures"""
-    
+
     mandatory_dirs = [
         "docs/architecture",          # REQUIRED for validation
         "docs/architecture/decisions", # For ADRs
@@ -60,11 +60,11 @@ def create_mandatory_structure(self):
         "tests",                      # For Python projects
         "src",                        # For Python projects
     ]
-    
+
     for dir_path in mandatory_dirs:
         (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
         print(f"✅ Created {dir_path}/")
-    
+
     # Create placeholder architecture docs for each level
     if self.sdlc_level == 'prototype':
         # Create minimal docs
@@ -91,7 +91,7 @@ def create_mandatory_structure(self):
 # In setup-smart.py
 def setup_python_project(self):
     """Create essential Python project files"""
-    
+
     # Create requirements.txt with common dependencies
     requirements = """# Core dependencies
 pytest>=7.0.0
@@ -103,7 +103,7 @@ pre-commit>=3.0.0
 
 # Add your project dependencies below:
 """
-    
+
     # Create pyproject.toml
     pyproject = f"""[tool.black]
 line-length = 88
@@ -123,7 +123,7 @@ addopts = "-v --cov=src --cov-report=html"
 requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 """
-    
+
     # Update README with Python-specific sections
     readme_update = f"""
 ## Installation
@@ -238,7 +238,7 @@ PYTHON_PROJECT_AGENTS = {
 ```python
 def create_first_commit(self):
     """Create a proper first commit with all essentials"""
-    
+
     # Stage all essential files
     files_to_commit = [
         'README.md',
@@ -251,7 +251,7 @@ def create_first_commit(self):
         'CLAUDE.md',
         '.pre-commit-config.yaml'
     ]
-    
+
     # Create comprehensive first commit
     commit_message = f"""Initial commit: {self.project_name} with AI-First SDLC
 

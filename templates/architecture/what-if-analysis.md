@@ -6,7 +6,7 @@
 
 ### Load & Scale
 - **What if load increases 100x?**
-  - Current capacity: 
+  - Current capacity:
   - Breaking point:
   - Mitigation:
 

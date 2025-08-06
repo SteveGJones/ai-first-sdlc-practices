@@ -116,7 +116,7 @@ We'll use Apache Kafka for message streaming with Spark for processing:
 from pyspark.sql import SparkSession
 from kafka import KafkaConsumer
 
-consumer = KafkaConsumer('events', 
+consumer = KafkaConsumer('events',
                         bootstrap_servers=['localhost:9092'],
                         value_deserializer=lambda m: json.loads(m.decode('utf-8')))
 
@@ -151,7 +151,7 @@ graph LR
     C --> D[Processing Engine]
     D --> E[Analytics Store]
     D --> F[Action Triggers]
-    
+
     E --> G[Dashboards]
     F --> H[Notifications]
     F --> I[Automated Workflows]

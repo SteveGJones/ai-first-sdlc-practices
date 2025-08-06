@@ -1,8 +1,8 @@
 # ADR-001: Framework Compliance Policy
 
-**Date:** 2025-08-06  
-**Status:** ACCEPTED  
-**Deciders:** AI Solution Architects, Framework Contributors  
+**Date:** 2025-08-06
+**Status:** ACCEPTED
+**Deciders:** AI Solution Architects, Framework Contributors
 **Technical Story:** Zero Technical Debt and AI-First Development Enforcement
 
 ---
@@ -56,7 +56,7 @@ The framework must enforce these practices proactively rather than reactively to
 - ❌ Framework value proposition diminished
 - ❌ No guarantee of AI-First practices adherence
 
-**Estimated Effort:** Small  
+**Estimated Effort:** Small
 **Risk Level:** High
 
 ### Option 2: Strict Enforcement with No Exceptions
@@ -72,7 +72,7 @@ The framework must enforce these practices proactively rather than reactively to
 - ❌ Could reduce framework adoption due to perceived inflexibility
 - ❌ Emergency situations may require policy violations
 
-**Estimated Effort:** Medium  
+**Estimated Effort:** Medium
 **Risk Level:** Medium
 
 ### Option 3: Tiered Compliance with Justified Overrides
@@ -90,7 +90,7 @@ The framework must enforce these practices proactively rather than reactively to
 - ❌ Potential for policy erosion through overuse of overrides
 - ❌ Requires ongoing governance to prevent abuse
 
-**Estimated Effort:** Large  
+**Estimated Effort:** Large
 **Risk Level:** Low
 
 ---
@@ -156,7 +156,7 @@ graph TB
     G --> H[Track for Review]
     H --> C
     E --> B
-    
+
     I[Governance Process] --> J[Review Override Patterns]
     J --> K[Update Policies if Needed]
     H --> I
@@ -250,13 +250,13 @@ class ComplianceChecker:
         violations = scan_for_debt(file_path)
         if not violations:
             return True
-            
+
         if allow_override:
             justification = input("Justify technical debt override: ")
             if justification:
                 log_override("technical_debt", file_path, justification)
                 return True
-                
+
         raise ComplianceViolation(f"Technical debt found in {file_path}: {violations}")
 ```
 

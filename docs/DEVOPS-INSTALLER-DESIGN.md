@@ -6,12 +6,12 @@
 ```python
 class ClaudeInstaller:
     """DevOps-grade installer with progressive enhancement."""
-    
+
     def __init__(self, installation_mode: str):
         self.mode = installation_mode  # agents-only, with-framework, full-setup
         self.target_dir = Path(".claude")
         self.github_api = GitHubAPI("SteveGJones/ai-first-sdlc-practices")
-    
+
     def install(self):
         if self.mode == "agents-only":
             return self.install_agents_only()
@@ -47,13 +47,13 @@ class ClaudeInstaller:
 ```python
 class GitHubAPI:
     """Efficient file downloading using GitHub API."""
-    
+
     def download_file(self, path: str) -> bytes:
         """Download single file via API - no zip extraction."""
         url = f"https://api.github.com/repos/{self.repo}/contents/{path}"
         response = requests.get(url, headers=self.headers)
         return base64.b64decode(response.json()['content'])
-    
+
     def download_directory(self, path: str) -> Dict[str, bytes]:
         """Download directory contents efficiently."""
         # Parallel downloads with proper rate limiting
@@ -64,7 +64,7 @@ class GitHubAPI:
 ```python
 class AtomicInstaller:
     """Ensures clean installation or complete rollback."""
-    
+
     def install_with_rollback(self, files: Dict[str, bytes]):
         staging_dir = self.target_dir.with_suffix('.staging')
         try:
@@ -73,18 +73,18 @@ class AtomicInstaller:
                 staging_path = staging_dir / path
                 staging_path.parent.mkdir(parents=True, exist_ok=True)
                 staging_path.write_bytes(content)
-            
+
             # Atomic move to final location
             if self.target_dir.exists():
                 backup_dir = self.target_dir.with_suffix('.backup')
                 shutil.move(self.target_dir, backup_dir)
-            
+
             shutil.move(staging_dir, self.target_dir)
-            
+
             # Clean up backup on success
             if backup_dir.exists():
                 shutil.rmtree(backup_dir)
-                
+
         except Exception as e:
             # Rollback on any error
             if staging_dir.exists():
@@ -98,21 +98,21 @@ class AtomicInstaller:
 ```python
 class DependencyResolver:
     """Smart dependency resolution for agents."""
-    
+
     def resolve_agents(self, requested: List[str]) -> List[AgentSpec]:
         """Resolve agent dependencies and conflicts."""
         resolved = []
         for agent_name in requested:
             agent_spec = self.load_agent_spec(agent_name)
-            
+
             # Check dependencies
             for dep in agent_spec.dependencies:
                 if dep not in [a.name for a in resolved]:
                     dep_spec = self.load_agent_spec(dep)
                     resolved.append(dep_spec)
-            
+
             resolved.append(agent_spec)
-        
+
         return self.deduplicate_and_order(resolved)
 ```
 
@@ -123,19 +123,19 @@ installation:
   mode: "agents-only"  # agents-only, with-framework, full-setup
   version: "1.6.0"
   installed_date: "2025-08-03T17:30:00Z"
-  
+
 agents:
   installed:
     - name: "sdlc-enforcer"
       version: "1.0.0"
       source: "core/sdlc-enforcer.md"
       checksum: "sha256:abc123..."
-  
+
   available_updates:
     - name: "sdlc-enforcer"
       current: "1.0.0"
       latest: "1.1.0"
-      
+
 framework:
   components:
     validation_tools: true

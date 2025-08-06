@@ -10,7 +10,7 @@
 - Improves quality by catching gaps early
 - Completely internal - users only see polished results
 
-**📐 Design Documentation Standards** 
+**📐 Design Documentation Standards**
 - Clear separation between design (WHAT/WHY) and implementation (HOW)
 - New design documentation template
 - Validation warns when design docs contain >20% code

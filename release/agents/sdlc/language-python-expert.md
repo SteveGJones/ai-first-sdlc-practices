@@ -65,19 +65,19 @@ class ProcessedData:
 
 def process_data(data: T) -> ProcessedData:
     """Process data with full validation.
-    
+
     Args:
         data: Input data implementing DataProtocol
-        
+
     Returns:
         ProcessedData with result and metadata
-        
+
     Raises:
         ValidationError: If data validation fails
         ProcessingError: If transformation fails
     """
     data.validate()
-    
+
     try:
         result = transform(data)
         return ProcessedData(
@@ -132,7 +132,7 @@ from pathlib import Path
 def check_type_safety():
     """Run mypy with strict settings."""
     result = subprocess.run([
-        'mypy', 
+        'mypy',
         '--strict',
         '--warn-return-any',
         '--warn-unused-configs',
@@ -141,7 +141,7 @@ def check_type_safety():
         '--no-implicit-optional',
         'src/'
     ], capture_output=True, text=True)
-    
+
     if result.returncode != 0:
         print("❌ Type safety check failed:")
         print(result.stdout)
@@ -151,7 +151,7 @@ def check_type_safety():
 def check_no_todos():
     """Ensure no TODOs in Python files."""
     todo_patterns = ['TODO', 'FIXME', 'HACK', 'XXX', 'REFACTOR']
-    
+
     for pattern in todo_patterns:
         result = subprocess.run(
             ['grep', '-r', pattern, 'src/', '--include=*.py'],
@@ -170,7 +170,7 @@ def check_test_coverage():
         '--cov-fail-under=80',
         '--cov-report=term-missing'
     ], capture_output=True)
-    
+
     return result.returncode == 0
 
 if __name__ == '__main__':
@@ -179,7 +179,7 @@ if __name__ == '__main__':
         ('No TODOs', check_no_todos),
         ('Test Coverage', check_test_coverage),
     ]
-    
+
     all_passed = True
     for name, check in checks:
         if check():
@@ -187,7 +187,7 @@ if __name__ == '__main__':
         else:
             print(f"❌ {name}: FAIL")
             all_passed = False
-    
+
     sys.exit(0 if all_passed else 1)
 ```
 
@@ -207,13 +207,13 @@ class PaymentRequest(BaseModel):
     amount: Decimal
     currency: str
     customer_id: UUID
-    
+
     @validator('amount')
     def amount_positive(cls, v: Decimal) -> Decimal:
         if v <= 0:
             raise ValueError('Amount must be positive')
         return v
-    
+
     @validator('currency')
     def currency_valid(cls, v: str) -> str:
         if v not in SUPPORTED_CURRENCIES:
@@ -253,7 +253,7 @@ import uuid
 
 class PaymentManager(models.Manager):
     """Manager with business logic."""
-    
+
     @transaction.atomic
     def create_payment(
         self,
@@ -265,10 +265,10 @@ class PaymentManager(models.Manager):
         # Validate business rules
         if not customer.is_active:
             raise ValidationError("Customer is not active")
-        
+
         if amount > customer.credit_limit:
             raise ValidationError("Amount exceeds credit limit")
-        
+
         # Create with audit trail
         payment = self.create(
             id=uuid.uuid4(),
@@ -277,30 +277,30 @@ class PaymentManager(models.Manager):
             customer=customer,
             status=PaymentStatus.PENDING
         )
-        
+
         # Trigger events
         payment_created.send(sender=self.__class__, payment=payment)
-        
+
         return payment
 
 class Payment(models.Model):
     """Payment model with strict validation."""
-    
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES)
     customer = models.ForeignKey('Customer', on_delete=models.PROTECT)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     objects = PaymentManager()
-    
+
     class Meta:
         indexes = [
             models.Index(fields=['customer', '-created_at']),
             models.Index(fields=['status', 'created_at']),
         ]
-    
+
     def clean(self) -> None:
         """Model-level validation."""
         if self.amount <= 0:
@@ -318,18 +318,18 @@ from freezegun import freeze_time
 
 class TestPaymentService:
     """Comprehensive payment service tests."""
-    
+
     @pytest.fixture
     def service(self) -> PaymentService:
         """Provide configured service."""
         return PaymentService(settings=test_settings())
-    
+
     @pytest.fixture
     def mock_gateway(self) -> Mock:
         """Mock payment gateway."""
         with patch('services.payment.PaymentGateway') as mock:
             yield mock
-    
+
     @pytest.mark.parametrize("amount,currency,expected", [
         (Decimal("100.00"), "USD", True),
         (Decimal("0.01"), "EUR", True),
@@ -345,12 +345,12 @@ class TestPaymentService:
     ) -> None:
         """Test valid payment scenarios."""
         mock_gateway.charge.return_value = {"status": "success"}
-        
+
         result = service.process_payment(amount, currency)
-        
+
         assert result.success == expected
         mock_gateway.charge.assert_called_once()
-    
+
     @pytest.mark.parametrize("amount,currency,error", [
         (Decimal("-1.00"), "USD", ValueError),
         (Decimal("0.00"), "USD", ValueError),
@@ -366,7 +366,7 @@ class TestPaymentService:
         """Test invalid payment scenarios."""
         with pytest.raises(error):
             service.process_payment(amount, currency)
-    
+
     @freeze_time("2024-01-15 10:00:00")
     def test_payment_audit_trail(
         self,
@@ -375,7 +375,7 @@ class TestPaymentService:
     ) -> None:
         """Test audit trail creation."""
         result = service.process_payment(Decimal("100.00"), "USD")
-        
+
         assert result.timestamp == datetime(2024, 1, 15, 10, 0, 0)
         assert result.audit_id is not None
 ```

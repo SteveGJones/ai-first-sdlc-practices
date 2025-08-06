@@ -1,6 +1,6 @@
 # Migration Guide: Hierarchical Instruction System
 
-**Version**: 1.7.0  
+**Version**: 1.7.0
 **Feature**: Instruction Compression and Context Optimization
 
 ## Overview

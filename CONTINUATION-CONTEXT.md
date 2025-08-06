@@ -9,7 +9,7 @@
 ### Completed Work
 1. ✅ Created 5 SDLC-specific agents:
    - kickstart-architect
-   - framework-validator 
+   - framework-validator
    - project-bootstrapper
    - retrospective-miner
    - language-python-expert
@@ -34,9 +34,9 @@
    ```
    @reboot-test-agent hello
    ```
-   
+
    Expected if works: "Reboot deployment successful! I was deployed at 2025-08-01T15:30:00..."
-   
+
 2. **Update Documentation Based on Results**:
    - If works: Update guide to say "requires restart"
    - If fails: Confirm "manual reference only"

@@ -1,8 +1,8 @@
 # What-If Analysis - E-Commerce Checkout System
 
-**Project:** FastCart Checkout System  
-**Version:** 1.0  
-**Last Updated:** 2024-07-25  
+**Project:** FastCart Checkout System
+**Version:** 1.0
+**Last Updated:** 2024-07-25
 **Prepared By:** Architecture Team
 
 ## Overview
@@ -22,7 +22,7 @@ Failure at any step prevents revenue generation.
 - **Probability:** Low (0.01% based on Stripe SLA)
 - **Impact:** Critical - No orders can be processed
 - **Detection:** Health check endpoint, payment timeouts
-- **Handling Strategy:** 
+- **Handling Strategy:**
   - Implement PayPal as backup payment processor
   - Queue orders for delayed processing
   - Show clear messaging to customers
@@ -30,7 +30,7 @@ Failure at any step prevents revenue generation.
 - **Testing:** Monthly failover drill
 
 #### What if a payment is charged but our system crashes before recording the order?
-- **Probability:** Very Low 
+- **Probability:** Very Low
 - **Impact:** Critical - Customer charged without order
 - **Detection:** Webhook reconciliation, payment/order mismatch alerts
 - **Handling Strategy:**
@@ -104,7 +104,7 @@ Failure at any step prevents revenue generation.
 ### Integration Scenarios
 
 #### What if shipping API doesn't respond?
-- **Probability:** Medium 
+- **Probability:** Medium
 - **Impact:** Medium - Can't calculate shipping
 - **Detection:** API timeout monitoring
 - **Handling Strategy:**

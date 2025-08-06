@@ -21,7 +21,7 @@ import sys
 def main():
     """Run ALL quality checks for [LANGUAGE]"""
     errors = 0
-    
+
     # Add YOUR language's tools here
     checks = [
         # Examples - replace with YOUR tools:
@@ -29,11 +29,11 @@ def main():
         # ("Lint", ["flake8", ".", "--max-line-length=120"]),
         # ("Format", ["black", ".", "--check"]),
     ]
-    
+
     for name, cmd in checks:
         print(f"\n🔍 Running {name}...")
         result = subprocess.run(cmd, capture_output=True)
-        
+
         if result.returncode != 0:
             print(f"❌ {name} FAILED")
             print(result.stdout.decode())
@@ -41,12 +41,12 @@ def main():
             errors += 1
         else:
             print(f"✅ {name} passed")
-    
+
     if errors > 0:
         print(f"\n🚫 VALIDATION FAILED: {errors} checks failed")
         print("YOU ARE FORBIDDEN FROM PROCEEDING")
         sys.exit(1)
-    
+
     print("\n✅ All checks passed - Zero issues")
     sys.exit(0)
 

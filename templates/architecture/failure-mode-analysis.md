@@ -1,8 +1,8 @@
 # Failure Mode and Effects Analysis (FMEA)
 
-**Project/Feature:** [Feature Name]  
-**Date:** [YYYY-MM-DD]  
-**Version:** 1.0  
+**Project/Feature:** [Feature Name]
+**Date:** [YYYY-MM-DD]
+**Version:** 1.0
 **Analysis Team:** [Names/Roles]
 
 ---
@@ -233,11 +233,11 @@ patterns:
   - name: "Cascading timeout"
     condition: "response_time > 5s AND error_rate > 10%"
     action: "Enable circuit breaker"
-    
+
   - name: "Database overload"
     condition: "db_connections > 90% AND query_time > 1s"
     action: "Redirect to read replica"
-    
+
   - name: "Memory leak suspected"
     condition: "memory_usage increasing 5% per hour"
     action: "Schedule restart, investigate"

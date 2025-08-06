@@ -124,13 +124,13 @@ repos:
         entry: python tools/validation/check-feature-proposal.py
         language: system
         files: 'docs/feature-proposals/.*\.md$'
-        
+
       - id: check-retrospective
         name: Check for Retrospective
         entry: |
-          bash -c 'branch=$(git symbolic-ref --short HEAD); 
-          if [[ "$branch" != "main" ]] && ! ls retrospectives/*${branch#*/}* 2>/dev/null; then 
-            echo "Warning: No retrospective found for branch $branch"; 
+          bash -c 'branch=$(git symbolic-ref --short HEAD);
+          if [[ "$branch" != "main" ]] && ! ls retrospectives/*${branch#*/}* 2>/dev/null; then
+            echo "Warning: No retrospective found for branch $branch";
           fi'
         language: system
         pass_filenames: false

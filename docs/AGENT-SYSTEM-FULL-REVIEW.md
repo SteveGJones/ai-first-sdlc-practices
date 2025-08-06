@@ -152,7 +152,7 @@ For these agents, add "When uncertain" sections:
 ### Test 1: New Python API Project
 ```bash
 python setup-smart.py "Building a Python REST API"
-# Should install: sdlc-enforcer, solution-architect, critical-goal-reviewer, 
+# Should install: sdlc-enforcer, solution-architect, critical-goal-reviewer,
 #                framework-validator, github-integration-specialist, language-python-expert
 ```
 

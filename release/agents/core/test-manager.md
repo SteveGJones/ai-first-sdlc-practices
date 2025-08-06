@@ -172,7 +172,7 @@ Manage testing across different specialists:
 
 ### Team Structure
 - **Core QA**: 4 engineers
-- **Automation**: 2 engineers  
+- **Automation**: 2 engineers
 - **Performance**: 1 specialist
 - **Security**: 1 specialist (part-time)
 - **Accessibility**: External consultant
@@ -254,8 +254,8 @@ Continuously improve testing efficiency:
 
 ### When to Automate
 ```
-if (test.frequency > 5/month && 
-    test.stability > 90% && 
+if (test.frequency > 5/month &&
+    test.stability > 90% &&
     test.roi > 3) {
     automate();
 }

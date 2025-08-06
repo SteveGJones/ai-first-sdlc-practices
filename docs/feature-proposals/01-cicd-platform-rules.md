@@ -1,10 +1,10 @@
 # Feature Proposal: CI/CD Platform Rules Implementation
 
-**Proposal Number:** 01  
-**Status:** Draft  
-**Author:** Claude (AI Assistant)  
-**Created:** 2025-07-12  
-**Target Branch:** `feature/cicd-platform-rules`  
+**Proposal Number:** 01
+**Status:** Draft
+**Author:** Claude (AI Assistant)
+**Created:** 2025-07-12
+**Target Branch:** `feature/cicd-platform-rules`
 **Implementation Type:** Infrastructure
 
 ---

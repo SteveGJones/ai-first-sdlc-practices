@@ -1,7 +1,7 @@
 # Zero Technical Debt Policy
 
-**Status:** MANDATORY - NO EXCEPTIONS  
-**For:** AI Agents ONLY (humans lack your advantages)  
+**Status:** MANDATORY - NO EXCEPTIONS
+**For:** AI Agents ONLY (humans lack your advantages)
 **Scope:** APPLICATION CODE (see Framework Compliance Policy for infrastructure)
 
 ---
@@ -120,7 +120,7 @@ See LANGUAGE-SPECIFIC-VALIDATORS.md for implementation.
 ## 📋 Framework vs Application Standards
 
 - **Application Code:** This Zero Technical Debt Policy applies (ZERO exceptions)
-- **Framework Code:** See `docs/FRAMEWORK-COMPLIANCE-POLICY.md` for differentiated standards  
+- **Framework Code:** See `docs/FRAMEWORK-COMPLIANCE-POLICY.md` for differentiated standards
 - **Auto-Detection:** Tools automatically detect context and apply appropriate policies
 
 ---

@@ -1,8 +1,8 @@
 # Integration Design Document
 
-**Project/Feature:** [Feature Name]  
-**Date:** [YYYY-MM-DD]  
-**Version:** 1.0  
+**Project/Feature:** [Feature Name]
+**Date:** [YYYY-MM-DD]
+**Version:** 1.0
 **Architect:** [Name/Role]
 
 ---
@@ -16,8 +16,8 @@ This document defines ALL integration points for the system, starting with the H
 ## 🌐 External Service Integrations
 
 ### Payment Gateway Integration
-**Service:** [Stripe/PayPal/etc]  
-**Criticality:** HIGH  
+**Service:** [Stripe/PayPal/etc]
+**Criticality:** HIGH
 **Complexity:** HIGH
 
 #### API Specifications
@@ -50,7 +50,7 @@ sequenceDiagram
     participant Queue
     participant PaymentService
     participant Stripe
-    
+
     UI->>API: Submit payment
     API->>Queue: Enqueue payment job
     Queue->>PaymentService: Process payment
@@ -69,8 +69,8 @@ sequenceDiagram
 ---
 
 ### Email Service Integration
-**Service:** [SendGrid/AWS SES/etc]  
-**Criticality:** MEDIUM  
+**Service:** [SendGrid/AWS SES/etc]
+**Criticality:** MEDIUM
 **Complexity:** MEDIUM
 
 #### API Specifications
@@ -94,7 +94,7 @@ interface EmailFailureStrategy {
     onRateLimit: () => queueWithDelay(60_000);
     onTimeout: () => retryWithBackoff(attempts: 3);
     onNetworkError: () => fallbackProvider();
-    
+
     // Permanent failures (don't retry)
     onInvalidEmail: () => logAndSkip();
     onBlockedDomain: () => notifyAdmin();
@@ -105,8 +105,8 @@ interface EmailFailureStrategy {
 ---
 
 ### Authentication Provider Integration
-**Service:** [Auth0/Okta/etc]  
-**Criticality:** CRITICAL  
+**Service:** [Auth0/Okta/etc]
+**Criticality:** CRITICAL
 **Complexity:** HIGH
 
 #### Integration Points
@@ -143,7 +143,7 @@ routing_rules:
     circuit_breaker:
       threshold: 50%
       timeout: 30s
-      
+
   - path: /api/orders/*
     service: order-service
     timeout: 10s
@@ -160,7 +160,7 @@ graph LR
     B --> C[Inventory Service]
     B --> D[Notification Service]
     B --> E[Analytics Service]
-    
+
     C -->|InventoryReserved| B
     D -->|NotificationSent| B
 ```
@@ -177,7 +177,7 @@ graph LR
 | Analytics | ClickHouse | Min: 2, Max: 10 | 30s | 1x |
 
 ### Cache Layer Integration
-**Technology:** Redis Cluster  
+**Technology:** Redis Cluster
 **Architecture:** Master-Slave with Sentinel
 
 ```typescript
@@ -200,7 +200,7 @@ interface CacheStrategy {
 ## 🔄 Message Queue Integration
 
 ### Queue Configuration
-**Technology:** RabbitMQ / Kafka  
+**Technology:** RabbitMQ / Kafka
 **Deployment:** Clustered with 3 nodes
 
 #### Queue Definitions
@@ -251,11 +251,11 @@ secrets:
   database:
     path: /prod/database/credentials
     rotation: 90d
-    
+
   api_keys:
     path: /prod/external/api-keys
     rotation: 180d
-    
+
   certificates:
     path: /prod/tls/certs
     rotation: 365d
@@ -273,11 +273,11 @@ metrics:
   - name: integration_latency_ms
     type: histogram
     labels: [service, endpoint, status]
-    
+
   - name: integration_errors_total
     type: counter
     labels: [service, error_type]
-    
+
   - name: circuit_breaker_state
     type: gauge
     labels: [service, state]
@@ -320,7 +320,7 @@ services:
     dns: user-service.prod.svc.cluster.local
     consul: prod/services/user
     health_check: /health
-    
+
   order-service:
     dns: order-service.prod.svc.cluster.local
     consul: prod/services/order
@@ -365,12 +365,12 @@ health_checks:
     - url: https://api.payment.com/health
       interval: 30s
       timeout: 5s
-      
+
   internal_services:
     - service: user-service
       endpoint: /health
       interval: 10s
-      
+
   message_queues:
     - queue: payment.process
       check: queue_depth < 1000

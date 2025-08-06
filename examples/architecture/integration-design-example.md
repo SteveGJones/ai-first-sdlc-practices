@@ -1,8 +1,8 @@
 # Integration Design - E-Commerce Checkout System
 
-**Project:** FastCart Checkout System  
-**Version:** 1.0  
-**Last Updated:** 2024-07-25  
+**Project:** FastCart Checkout System
+**Version:** 1.0
+**Last Updated:** 2024-07-25
 **Author:** Integration Architecture Team
 
 ## Overview
@@ -87,7 +87,7 @@ interface StripeWebhook {
 async function createPaymentWithRetry(amount: number, orderId: string) {
   const idempotencyKey = `order-${orderId}-${Date.now()}`;
   const maxRetries = 3;
-  
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const payment = await stripe.paymentIntents.create({
@@ -115,15 +115,15 @@ class WebhookProcessor {
     if (!this.verifySignature(event)) {
       throw new Error('Invalid webhook signature');
     }
-    
+
     // Idempotent processing
     const processed = await db.webhookEvents.findOne({ id: event.id });
     if (processed) return; // Already processed
-    
+
     await db.transaction(async (trx) => {
       // Record webhook
       await trx.webhookEvents.insert({ id: event.id, processed_at: new Date() });
-      
+
       // Process based on type
       switch (event.type) {
         case 'payment_intent.succeeded':
@@ -143,16 +143,16 @@ class WebhookProcessor {
 async function processRefund(paymentIntentId: string, amount?: number) {
   // Get original payment
   const payment = await stripe.paymentIntents.retrieve(paymentIntentId);
-  
+
   // Validate refund amount
   const refundAmount = amount || payment.amount;
   const previousRefunds = await stripe.refunds.list({ payment_intent: paymentIntentId });
   const totalRefunded = previousRefunds.data.reduce((sum, r) => sum + r.amount, 0);
-  
+
   if (totalRefunded + refundAmount > payment.amount) {
     throw new Error('Refund amount exceeds original payment');
   }
-  
+
   // Process refund with idempotency
   const refund = await stripe.refunds.create({
     payment_intent: paymentIntentId,
@@ -162,7 +162,7 @@ async function processRefund(paymentIntentId: string, amount?: number) {
   }, {
     idempotency_key: `refund-${paymentIntentId}-${refundAmount}-${Date.now()}`
   });
-  
+
   return refund;
 }
 ```
@@ -233,31 +233,31 @@ class CheckoutOrchestrator {
   async processCheckout(order: Order) {
     let reservationId: string | null = null;
     let paymentIntentId: string | null = null;
-    
+
     try {
       // Step 1: Reserve inventory
       const reservation = await this.inventoryService.reserve(order.items);
       reservationId = reservation.reservation_id;
-      
+
       // Step 2: Calculate shipping and tax
       const shipping = await this.shippingService.calculate(order);
       const tax = await this.taxService.calculate(order);
-      
+
       // Step 3: Create payment
       const payment = await this.paymentService.createIntent(
         order.total + shipping + tax
       );
       paymentIntentId = payment.id;
-      
+
       // Step 4: Confirm payment (frontend handles 3DS)
       await this.waitForPaymentConfirmation(paymentIntentId);
-      
+
       // Step 5: Confirm inventory
       await this.inventoryService.confirmReservation(reservationId);
-      
+
       // Step 6: Create order record
       await this.orderService.create(order, paymentIntentId);
-      
+
     } catch (error) {
       // Rollback in reverse order
       if (paymentIntentId) {
@@ -287,14 +287,14 @@ Rate Limits: 10,000 requests/day
 class TaxCalculator {
   private cache = new Redis();
   private readonly CACHE_TTL = 86400; // 24 hours
-  
+
   async calculateTax(order: Order): Promise<TaxCalculation> {
     const cacheKey = this.generateCacheKey(order);
-    
+
     // Try cache first
     const cached = await this.cache.get(cacheKey);
     if (cached) return JSON.parse(cached);
-    
+
     // Call API with circuit breaker
     const tax = await this.circuitBreaker.execute(async () => {
       return this.taxjarClient.calculateTax({
@@ -305,13 +305,13 @@ class TaxCalculator {
         shipping: order.shipping_cost
       });
     });
-    
+
     // Cache result
     await this.cache.setex(cacheKey, this.CACHE_TTL, JSON.stringify(tax));
-    
+
     return tax;
   }
-  
+
   private generateCacheKey(order: Order): string {
     // Cache by zip, state, and amount (rounded to dollar)
     return `tax:${order.shipping_address.state}:${order.shipping_address.zip}:${Math.floor(order.subtotal)}`;
@@ -329,32 +329,32 @@ class ShippingService {
     new UPSProvider(),
     new USPSProvider()
   ];
-  
+
   async getRates(shipment: Shipment): Promise<ShippingRate[]> {
     // Parallel requests with timeout
-    const promises = this.providers.map(provider => 
+    const promises = this.providers.map(provider =>
       this.getRateWithTimeout(provider, shipment)
     );
-    
+
     const results = await Promise.allSettled(promises);
-    
+
     // Filter successful responses
     const rates = results
       .filter(r => r.status === 'fulfilled')
       .map(r => (r as PromiseFulfilledResult<ShippingRate[]>).value)
       .flat()
       .sort((a, b) => a.cost - b.cost);
-    
+
     if (rates.length === 0) {
       // Fallback to flat rate
       return this.getFlatRateOptions(shipment);
     }
-    
+
     return rates;
   }
-  
+
   private async getRateWithTimeout(
-    provider: ShippingProvider, 
+    provider: ShippingProvider,
     shipment: Shipment
   ): Promise<ShippingRate[]> {
     return Promise.race([
@@ -371,7 +371,7 @@ class ShippingService {
 ```typescript
 class EmailService {
   private queue = new Bull('email-queue');
-  
+
   async sendOrderConfirmation(order: Order) {
     // Queue for reliability
     await this.queue.add('order-confirmation', {
@@ -388,11 +388,11 @@ class EmailService {
       removeOnFail: false
     });
   }
-  
+
   // Worker process
   async processEmailJob(job: Job) {
     const { to, order_id, template_id } = job.data;
-    
+
     try {
       await this.sendgrid.send({
         to,
@@ -424,9 +424,9 @@ describe('Stripe Integration Contract', () => {
     const mock = nock('https://api.stripe.com')
       .post('/v1/payment_intents')
       .reply(200, mockPaymentIntentResponse);
-    
+
     const result = await paymentService.createPayment(100);
-    
+
     expect(result.id).toBeDefined();
     expect(mock.isDone()).toBe(true);
   });

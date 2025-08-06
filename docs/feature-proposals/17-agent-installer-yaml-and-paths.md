@@ -88,14 +88,14 @@ def _parse_agent_metadata(self, agent_path: Path) -> Dict:
         # Read file with UTF-8 encoding
         with open(agent_path, 'r', encoding='utf-8') as f:
             content = f.read()
-        
+
         # Extract YAML with error handling
         try:
             metadata = yaml.safe_load(parts[1])
         except yaml.YAMLError:
             # Fallback to manual parsing for basic fields
             metadata = self._parse_basic_metadata(parts[1])
-            
+
         return metadata
     except Exception as e:
         console.print(f"[yellow]Warning: Could not parse {agent_path.name}[/yellow]")

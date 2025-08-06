@@ -1,8 +1,8 @@
 # Retrospective: Automated PR Creation
 
-**Feature**: Automated PR Creation  
+**Feature**: Automated PR Creation
 **Branch**: `feature/automated-pr-creation` (planned)
-**Date**: 2025-07-13  
+**Date**: 2025-07-13
 **Author**: Claude (AI Assistant)
 
 ---
@@ -68,11 +68,11 @@ def create_pr():
     check_gh_auth()
     check_retrospective_exists()
     check_validation_passes()
-    
+
     # 2. Generate PR content
     title = extract_title_from_proposal()
     body = generate_pr_body()
-    
+
     # 3. Create PR
     result = gh_pr_create(title, body, labels=["ai-generated"])
     return result.url

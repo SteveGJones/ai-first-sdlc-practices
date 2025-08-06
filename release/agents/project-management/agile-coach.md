@@ -99,11 +99,11 @@ Run effective agile ceremonies:
 ```python
 class SprintFacilitation:
     """Templates and techniques for agile ceremonies"""
-    
+
     @staticmethod
     def sprint_planning():
         """Effective sprint planning session"""
-        
+
         return """
 ## Sprint Planning Facilitation Guide
 
@@ -162,7 +162,7 @@ Selected stories → Concrete tasks
     @staticmethod
     def effective_retrospectives():
         """Retrospective formats and techniques"""
-        
+
         return """
 ## Retrospective Toolkit
 
@@ -178,15 +178,15 @@ Selected stories → Concrete tasks
    - Start: What should we start doing?
    - Stop: What should we stop doing?
    - Continue: What's working well?
-   
+
 3. **Generate Insights** (20 min)
    - Group similar items
    - Discuss root causes
-   
+
 4. **Decide Actions** (15 min)
    - Vote on top issues
    - Create SMART action items
-   
+
 5. **Close** (5 min)
    - Appreciation round
 
@@ -218,45 +218,45 @@ Track meaningful metrics:
 ```python
 class AgileMetrics:
     """Comprehensive agile metrics system"""
-    
+
     def __init__(self, team_name: str):
         self.team = team_name
         self.metrics_store = MetricsStore()
-        
+
     def calculate_team_metrics(self, sprint_data: Dict) -> Dict:
         """Calculate key agile metrics"""
-        
+
         metrics = {
             # Velocity Metrics
             "velocity": self.calculate_velocity(sprint_data),
             "velocity_trend": self.calculate_velocity_trend(),
             "capacity_utilization": self.calculate_capacity_utilization(sprint_data),
-            
+
             # Predictability Metrics
             "commitment_accuracy": self.calculate_commitment_accuracy(sprint_data),
             "scope_change": self.calculate_scope_change(sprint_data),
-            
+
             # Flow Metrics
             "cycle_time": self.calculate_cycle_time(sprint_data),
             "lead_time": self.calculate_lead_time(sprint_data),
             "throughput": self.calculate_throughput(sprint_data),
-            
+
             # Quality Metrics
             "defect_rate": self.calculate_defect_rate(sprint_data),
             "escaped_defects": self.calculate_escaped_defects(sprint_data),
-            
+
             # Team Health
             "happiness_index": self.get_happiness_index(),
             "retrospective_actions_completed": self.get_retro_completion_rate()
         }
-        
+
         return self.generate_insights(metrics)
-    
+
     def generate_insights(self, metrics: Dict) -> Dict:
         """Generate actionable insights from metrics"""
-        
+
         insights = []
-        
+
         # Velocity Analysis
         if metrics["velocity_trend"] < -10:
             insights.append({
@@ -264,7 +264,7 @@ class AgileMetrics:
                 "message": "Velocity declining - investigate blockers",
                 "action": "Schedule focused retrospective on impediments"
             })
-            
+
         # Commitment Accuracy
         if metrics["commitment_accuracy"] < 80:
             insights.append({
@@ -272,7 +272,7 @@ class AgileMetrics:
                 "message": "Team over-committing in sprint planning",
                 "action": "Review estimation practices, consider capacity buffer"
             })
-            
+
         return {
             "metrics": metrics,
             "insights": insights,
@@ -339,11 +339,11 @@ Align stakeholders with agile delivery:
 ```python
 class StakeholderEngagement:
     """Strategies for stakeholder management in agile"""
-    
+
     @staticmethod
     def communication_plan():
         """Structured stakeholder communication"""
-        
+
         return """
 ## Stakeholder Communication Matrix
 

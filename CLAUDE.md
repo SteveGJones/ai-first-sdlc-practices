@@ -1,9 +1,9 @@
 # CLAUDE.md
 
 > # 🚨 CRITICAL: DO NOT USE THIS FILE 🚨
-> 
+>
 > ## THIS FILE IS DEPRECATED AND WILL CAUSE RULE VIOLATIONS
-> 
+>
 > **MANDATORY**: Use these files instead:
 > 1. **CLAUDE-CORE.md** - Compact core instructions (88% smaller)
 > 2. **SDLC-RULES-SUMMARY.md** - Critical enforcement rules
@@ -28,7 +28,7 @@ To have Claude set up this framework in your EXISTING project, use:
 ```
 I want to add AI-First SDLC practices to this project. Please:
 1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md
-2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md 
+2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md
 3. Download and run: curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
 4. Run: python setup-smart.py "[describe your project]" --non-interactive
 Do NOT clone the repository - we're adding the framework to THIS project.
@@ -93,7 +93,7 @@ The setup script will create these directories AT THE PROJECT ROOT:
 user-project/
 ├── docs/
 │   └── feature-proposals/     # Feature proposals go here
-├── plan/                      # Implementation plans go here  
+├── plan/                      # Implementation plans go here
 ├── retrospectives/            # Retrospectives go here
 ├── tools/                     # Framework tools
 │   ├── automation/
@@ -366,10 +366,10 @@ If the project has no VERSION file (pre-1.3.0 installation):
    ```bash
    # Check for v1.2.0 features (self-review)
    grep -q "Self-Review Process" CLAUDE.md && echo "At least v1.2.0"
-   
+
    # Check for v1.1.0 features (CI/CD examples)
    ls examples/ci-cd/ 2>/dev/null && echo "At least v1.1.0"
-   
+
    # If neither exists, assume v1.0.0
    ```
 2. Start updates from the determined version
@@ -477,7 +477,7 @@ When creating design documentation:
 
 ### ✅ DO Include:
 - Functional specifications and user stories
-- Business rules and constraints  
+- Business rules and constraints
 - Architecture diagrams (Mermaid, PlantUML, ASCII)
 - Data flow and state diagrams
 - Integration points and APIs

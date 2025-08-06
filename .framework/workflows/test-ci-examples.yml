@@ -12,25 +12,25 @@ on:
 jobs:
   validate-yaml-syntax:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-    
+
     - name: Install YAML validator
       run: |
         python -m pip install --upgrade pip
         pip install pyyaml yamllint
-    
+
     - name: Validate GitHub Actions workflow
       run: |
         echo "=== Validating GitHub Actions workflow ==="
         yamllint examples/ci-cd/.github/workflows/ai-sdlc.yml
-    
+
     - name: Validate GitLab CI configuration
       run: |
         echo "=== Validating GitLab CI configuration ==="
@@ -44,7 +44,7 @@ with open('examples/ci-cd/gitlab/.gitlab-ci.yml', 'r') as f:
     assert 'validate:ai-sdlc' in config, 'Missing main validation job'
     print('✅ GitLab CI configuration is valid')
         "
-    
+
     - name: Validate Azure Pipelines configuration
       run: |
         echo "=== Validating Azure Pipelines configuration ==="
@@ -57,7 +57,7 @@ with open('examples/ci-cd/azure-devops/azure-pipelines.yml', 'r') as f:
     assert 'stages' in config, 'Missing stages in Azure Pipelines'
     print('✅ Azure Pipelines configuration is valid')
         "
-    
+
     - name: Validate CircleCI configuration
       run: |
         echo "=== Validating CircleCI configuration ==="
@@ -71,7 +71,7 @@ with open('examples/ci-cd/circleci/.circleci/config.yml', 'r') as f:
     assert 'jobs' in config, 'Missing jobs in CircleCI'
     print('✅ CircleCI configuration is valid')
         "
-    
+
     - name: Validate Jenkins Pipeline
       run: |
         echo "=== Checking Jenkins Pipeline syntax ==="
@@ -80,20 +80,20 @@ with open('examples/ci-cd/circleci/.circleci/config.yml', 'r') as f:
         grep -q "stages {" examples/ci-cd/jenkins/Jenkinsfile
         grep -q "steps {" examples/ci-cd/jenkins/Jenkinsfile
         echo "✅ Jenkins Pipeline has basic required structure"
-    
+
     - name: Check for common issues
       run: |
         echo "=== Checking for common CI/CD configuration issues ==="
-        
+
         # Check for hardcoded secrets
         if grep -r "password\|secret\|key\|token" examples/ci-cd/ | grep -v "GITHUB_TOKEN\|GITLAB_TOKEN\|API_KEY"; then
           echo "⚠️  Warning: Possible hardcoded secrets found"
         fi
-        
+
         # Check for consistent Python versions
         PYTHON_VERSIONS=$(grep -r "python.*3\." examples/ci-cd/ | grep -oE "3\.[0-9]+" | sort -u)
         echo "Python versions used: $PYTHON_VERSIONS"
-        
+
         # Check that all configs reference the validation tools
         for file in examples/ci-cd/**/*.yml examples/ci-cd/**/*.yaml examples/ci-cd/**/Jenkinsfile; do
           if [[ -f "$file" ]]; then
@@ -105,16 +105,16 @@ with open('examples/ci-cd/circleci/.circleci/config.yml', 'r') as f:
 
   test-ci-tool-detection:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Test CI platform detection
       run: |
         # Create a simple test to verify CI detection would work
         cat > test_ci_detection.py << 'EOF'
         import os
-        
+
         # Test environment variables that would be set in each CI
         ci_environments = {
             'GitHub Actions': {'GITHUB_ACTIONS': 'true', 'GITHUB_WORKFLOW': 'test'},
@@ -123,14 +123,14 @@ with open('examples/ci-cd/circleci/.circleci/config.yml', 'r') as f:
             'Azure DevOps': {'TF_BUILD': 'True', 'SYSTEM_TEAMFOUNDATIONCOLLECTIONURI': 'https://dev.azure.com/org'},
             'CircleCI': {'CIRCLECI': 'true', 'CIRCLE_BUILD_NUM': '1'}
         }
-        
+
         for ci_name, env_vars in ci_environments.items():
             # Temporarily set environment variables
             original_env = {}
             for key, value in env_vars.items():
                 original_env[key] = os.environ.get(key)
                 os.environ[key] = value
-            
+
             # Test detection logic
             detected = False
             if ci_name == 'GitHub Actions' and os.getenv('GITHUB_ACTIONS') == 'true':
@@ -143,9 +143,9 @@ with open('examples/ci-cd/circleci/.circleci/config.yml', 'r') as f:
                 detected = True
             elif ci_name == 'CircleCI' and os.getenv('CIRCLECI') == 'true':
                 detected = True
-            
+
             print(f"{'✅' if detected else '❌'} {ci_name} detection: {'PASS' if detected else 'FAIL'}")
-            
+
             # Restore original environment
             for key in env_vars:
                 if original_env[key] is None:
@@ -153,5 +153,5 @@ with open('examples/ci-cd/circleci/.circleci/config.yml', 'r') as f:
                 else:
                     os.environ[key] = original_env[key]
         EOF
-        
+
         python test_ci_detection.py

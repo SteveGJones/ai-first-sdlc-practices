@@ -177,11 +177,11 @@ logging:
   level: INFO
   format: json
   output: stdout
-  
+
 metrics:
   endpoint: http://metrics-collector:8080
   interval: 10s
-  
+
 tracing:
   endpoint: http://jaeger:14268
   sampling_rate: 0.01

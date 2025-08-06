@@ -59,19 +59,19 @@ graph TB
         Secondary[Supporting Skills]
         Tools[Tool Usage]
     end
-    
+
     subgraph "Knowledge Domains"
         Technical[Technical Knowledge]
         Contextual[Context Awareness]
         Procedural[Process Knowledge]
     end
-    
+
     subgraph "Interaction Model"
         Input[Input Processing]
         Reasoning[Reasoning Engine]
         Output[Output Generation]
     end
-    
+
     Primary --> Reasoning
     Secondary --> Reasoning
     Tools --> Reasoning
@@ -89,7 +89,7 @@ category: domain/specialty
 description: |
   Concise description of agent's purpose and expertise.
   What makes this agent unique and valuable.
-  
+
 color: blue  # Visual identifier
 priority: high  # critical/high/medium/low
 
@@ -99,7 +99,7 @@ expertise:
   - Specific methodologies
   - Tool proficiencies
   - Industry knowledge
-  
+
 capabilities:
   analyze:
     - Complex system analysis
@@ -113,21 +113,21 @@ capabilities:
     - Code quality assessment
     - Security evaluation
     - Performance analysis
-    
+
 limitations:
   - Cannot execute code directly
   - Requires human validation for critical decisions
   - Limited to advisory role
-  
+
 triggers:  # Keywords that activate this agent
   - primary keyword
   - alternate keyword
   - domain term
-  
+
 dependencies:  # Other agents this agent may invoke
   - supporting-agent-1
   - supporting-agent-2
-  
+
 output_format: structured_response
 ---
 
@@ -160,11 +160,11 @@ Define precise agent capabilities:
 ```python
 class CapabilityModeling:
     """Framework for modeling agent capabilities"""
-    
+
     @staticmethod
     def define_capabilities():
         """Structure for defining what an agent can do"""
-        
+
         return {
             "capability_taxonomy": """
 ## Capability Taxonomy
@@ -194,7 +194,7 @@ class CapabilityModeling:
 - **Persuasion**: Build compelling arguments
 - **Summarization**: Distill key information
 """,
-            
+
             "capability_definition": """
 ## Defining Specific Capabilities
 
@@ -203,42 +203,42 @@ class CapabilityModeling:
 capability:
   name: "System Architecture Design"
   type: "creative"
-  
+
   description: |
     Design scalable, maintainable system architectures
     considering technical and business constraints
-    
+
   inputs:
     - requirements: "Functional and non-functional requirements"
     - constraints: "Technical, time, budget constraints"
     - context: "Existing systems, team skills"
-    
+
   process:
     - analyze_requirements
     - identify_patterns
     - generate_options
     - evaluate_trade_offs
     - synthesize_solution
-    
+
   outputs:
     - architecture_diagram
     - component_specifications
     - integration_patterns
     - deployment_strategy
-    
+
   quality_criteria:
     - scalability
     - maintainability
     - performance
     - cost_effectiveness
-    
+
   examples:
     - microservices_architecture
     - event_driven_design
     - serverless_patterns
 ```
 """,
-            
+
             "capability_boundaries": """
 ## Setting Clear Boundaries
 
@@ -272,7 +272,7 @@ Craft engaging agent personalities:
 ```python
 class PersonalityEngineering:
     """Create consistent, engaging agent personalities"""
-    
+
     @staticmethod
     def personality_framework():
         return """
@@ -286,10 +286,10 @@ Create believable expertise:
 - Learning journey and evolution
 
 Example:
-"You are a Site Reliability Engineer with 12+ years experience 
-managing systems at scale. You've handled incidents affecting 
-millions of users, pioneered chaos engineering practices at 
-tech giants, and authored the book 'SRE at Scale'. You learned 
+"You are a Site Reliability Engineer with 12+ years experience
+managing systems at scale. You've handled incidents affecting
+millions of users, pioneered chaos engineering practices at
+tech giants, and authored the book 'SRE at Scale'. You learned
 early that prevention beats reaction."
 
 ### 2. Communication Style
@@ -342,24 +342,24 @@ How the agent engages:
     def personality_examples():
         return {
             "encouraging_teacher": """
-You approach every question with enthusiasm and patience. You 
-remember being confused once too, so you explain things clearly 
-without condescension. You celebrate small wins and help users 
-build confidence. Your catchphrase: "Every expert was once a 
+You approach every question with enthusiasm and patience. You
+remember being confused once too, so you explain things clearly
+without condescension. You celebrate small wins and help users
+build confidence. Your catchphrase: "Every expert was once a
 beginner."
 """,
-            
+
             "pragmatic_architect": """
-You've seen enough over-engineered systems to know that simple 
-often wins. You balance theoretical best practices with real-world 
-constraints. You ask about actual requirements before suggesting 
+You've seen enough over-engineered systems to know that simple
+often wins. You balance theoretical best practices with real-world
+constraints. You ask about actual requirements before suggesting
 solutions. Your motto: "Make it work, make it right, make it fast."
 """,
-            
+
             "detail_oriented_reviewer": """
-You have an eye for what others miss. You systematically examine 
-every aspect, but you prioritize issues by impact. You explain 
-why something matters, not just that it's wrong. Your approach: 
+You have an eye for what others miss. You systematically examine
+every aspect, but you prioritize issues by impact. You explain
+why something matters, not just that it's wrong. Your approach:
 "Trust, but verify everything."
 """
         }
@@ -372,39 +372,39 @@ Ensure agents perform correctly:
 ```python
 class AgentTesting:
     """Comprehensive agent testing framework"""
-    
+
     def create_test_suite(self, agent_spec: Dict) -> TestSuite:
         """Create test suite for new agent"""
-        
+
         return TestSuite(
             metadata_tests=[
                 self.test_required_fields(agent_spec),
                 self.test_category_validity(agent_spec),
                 self.test_trigger_uniqueness(agent_spec)
             ],
-            
+
             capability_tests=[
                 self.test_expertise_coverage(agent_spec),
                 self.test_output_format(agent_spec),
                 self.test_dependency_availability(agent_spec)
             ],
-            
+
             behavior_tests=[
                 self.test_personality_consistency(agent_spec),
                 self.test_response_quality(agent_spec),
                 self.test_edge_case_handling(agent_spec)
             ],
-            
+
             integration_tests=[
                 self.test_agent_discovery(agent_spec),
                 self.test_agent_invocation(agent_spec),
                 self.test_agent_collaboration(agent_spec)
             ]
         )
-    
+
     def test_response_quality(self, agent_spec: Dict):
         """Test agent response quality"""
-        
+
         test_cases = [
             {
                 "input": "Simple question in domain",
@@ -438,7 +438,7 @@ class AgentTesting:
                 ]
             }
         ]
-        
+
         return test_cases
 ```
 

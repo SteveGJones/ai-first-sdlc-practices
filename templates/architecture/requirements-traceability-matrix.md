@@ -1,8 +1,8 @@
 # Requirements Traceability Matrix
 
-**Project:** AI-First SDLC Practices Framework  
-**Date:** 2025-08-06  
-**Version:** 1.6.0+  
+**Project:** AI-First SDLC Practices Framework
+**Date:** 2025-08-06
+**Version:** 1.6.0+
 
 **STOP**: Complete EVERY row before writing ANY code.
 

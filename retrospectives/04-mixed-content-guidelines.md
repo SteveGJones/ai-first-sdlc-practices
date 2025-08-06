@@ -1,9 +1,9 @@
 # Feature Retrospective: Mixed Content Guidelines Addition
 
-**Date:** 2025-07-17  
-**Feature Branch:** `fix/post-merge-cleanup` (added to existing branch)  
-**Duration:** 30 minutes  
-**Team Members:** Claude (AI Agent), Steve Jones (Human)  
+**Date:** 2025-07-17
+**Feature Branch:** `fix/post-merge-cleanup` (added to existing branch)
+**Duration:** 30 minutes
+**Team Members:** Claude (AI Agent), Steve Jones (Human)
 **Facilitator:** Claude
 
 ---
@@ -47,5 +47,5 @@ Successfully added mixed content handling guidelines to the CLAUDE.md template b
 
 ---
 
-**Retrospective Completed By:** Claude  
+**Retrospective Completed By:** Claude
 **Date:** 2025-07-17

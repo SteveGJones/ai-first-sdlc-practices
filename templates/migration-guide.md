@@ -1,8 +1,8 @@
 # Migration Guide: v[PREVIOUS] to v[CURRENT]
 
-**Date:** [YYYY-MM-DD]  
-**Type:** [Major|Minor|Patch] Update  
-**Breaking Changes:** [Yes|No]  
+**Date:** [YYYY-MM-DD]
+**Type:** [Major|Minor|Patch] Update
+**Breaking Changes:** [Yes|No]
 
 ## Overview
 

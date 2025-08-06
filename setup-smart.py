@@ -330,7 +330,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Verify you're not on main branch
 git branch --show-current
 
-# Check if main branch protection exists  
+# Check if main branch protection exists
 gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts' 2>/dev/null
 ```
 
@@ -453,13 +453,13 @@ import pytest
 def test_framework_setup():
     \"\"\"Test that the AI-First SDLC framework is properly set up.\"\"\"
     from pathlib import Path
-    
+
     # Check essential directories exist
     project_root = Path(__file__).parent.parent
     assert (project_root / "docs" / "architecture").exists()
     assert (project_root / "docs" / "feature-proposals").exists()
     assert (project_root / "retrospectives").exists()
-    
+
 
 def test_import():
     \"\"\"Test that the package can be imported.\"\"\"
@@ -621,11 +621,11 @@ mypy .
 
         content = f"""# Feature Proposal: AI-First SDLC Setup
 
-**Proposal Number:** 00  
-**Status:** In Progress  
-**Author:** AI Setup Assistant  
-**Created:** {subprocess.run(['date', '+%Y-%m-%d'], capture_output=True, text=True).stdout.strip()}  
-**Target Branch:** `ai-first-kick-start`  
+**Proposal Number:** 00
+**Status:** In Progress
+**Author:** AI Setup Assistant
+**Created:** {subprocess.run(['date', '+%Y-%m-%d'], capture_output=True, text=True).stdout.strip()}
+**Target Branch:** `ai-first-kick-start`
 **Implementation Type:** Infrastructure
 
 ---
@@ -1552,7 +1552,7 @@ Track development tasks and progress.
    ```bash
    # Add to your .bashrc or .zshrc
    export PATH="$PATH:/path/to/your/project/sdlc-tools"
-   
+
    # Then use from anywhere in your project
    validate
    new-feature my-feature
@@ -2316,7 +2316,7 @@ Project: {self.project_name}
 Purpose: {self.project_purpose}
 
 This project uses AI agents as primary developers with mandatory
-consultation before any coding decisions. 
+consultation before any coding decisions.
 
 Run 'python tools/agent-installer.py' to install specialist agents.
 

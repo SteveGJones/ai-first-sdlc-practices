@@ -61,23 +61,23 @@ graph TB
         UI[React SPA]
         Mobile[Mobile Apps]
     end
-    
+
     subgraph "API Gateway"
         GW[Kong/AWS API GW]
     end
-    
+
     subgraph "Services"
         Auth[Auth Service]
         Core[Core Business]
         Analytics[Analytics]
     end
-    
+
     subgraph "Data"
         PG[(PostgreSQL)]
         Redis[(Redis)]
         S3[S3 Storage]
     end
-    
+
     UI --> GW
     Mobile --> GW
     GW --> Auth
@@ -251,20 +251,20 @@ graph LR
         Auth[Auth Service]
         Notify[Notification Service]
     end
-    
+
     subgraph "External Systems"
         Payment[Payment Gateway]
         Ship[Shipping Partners]
         CRM[Salesforce]
         Analytics[Google Analytics]
     end
-    
+
     subgraph "Integration Layer"
         ESB[Event Bus]
         API[API Gateway]
         ETL[ETL Pipeline]
     end
-    
+
     App --> ESB
     ESB --> Notify
     App --> API

@@ -294,7 +294,7 @@ git log --oneline -20
 ## 📊 Status Icons
 
 - ✅ Completed
-- 🚧 In Progress  
+- 🚧 In Progress
 - ⏸️ Pending
 - 🚫 Blocked
 - ⚠️ Warning
@@ -335,7 +335,7 @@ export BITBUCKET_TOKEN=xxx # For Bitbucket
 
 ### GitLab CI
 ```bash
-# Add to: .gitlab-ci.yml  
+# Add to: .gitlab-ci.yml
 # Stages: validate, quality
 # See: examples/ci-cd/gitlab/
 ```

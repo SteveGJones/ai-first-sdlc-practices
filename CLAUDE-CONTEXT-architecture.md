@@ -188,7 +188,7 @@ Therefore: ZERO excuse for technical debt.
 
 ## The Enforcement Loop
 ```
-Change File → Run ALL Validations → Any Failures? 
+Change File → Run ALL Validations → Any Failures?
     ↓ NO                              ↓ YES
 Continue                         FIX IMMEDIATELY
 ```

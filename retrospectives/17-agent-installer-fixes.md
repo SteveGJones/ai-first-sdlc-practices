@@ -1,7 +1,7 @@
 # Retrospective: Agent Installer Fixes and Progressive SDLC Implementation
 
 **Feature**: Multiple fixes for agent installation and progressive SDLC
-**Branch**: `fix/agent-installer-yaml-and-paths`  
+**Branch**: `fix/agent-installer-yaml-and-paths`
 **Date**: 2025-08-05
 
 ## What Went Well

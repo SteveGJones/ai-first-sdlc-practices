@@ -1,8 +1,8 @@
 # System Invariants
 
-**Project/Feature:** AI-First SDLC Practices Framework  
-**Date:** 2025-08-06  
-**Version:** 1.6.0+  
+**Project/Feature:** AI-First SDLC Practices Framework
+**Date:** 2025-08-06
+**Version:** 1.6.0+
 **Maintainers:** AI Solution Architects, Framework Contributors
 
 ---
@@ -175,14 +175,14 @@ class FrameworkInvariantChecker:
         for template in glob.glob('templates/**/*.md', recursive=True):
             content = Path(template).read_text()
             assert '[' in content or '{' in content, f"No placeholders in {template}"
-    
+
     def verify_agent_definitions(self):
         """INV-AGT001: Agents specify roles and capabilities"""
         for agent in glob.glob('agents/**/*.md', recursive=True):
             content = Path(agent).read_text()
             assert 'Role:' in content or 'role' in content.lower(), f"No role in {agent}"
             assert 'Capabilities' in content or 'capabilities' in content.lower(), f"No capabilities in {agent}"
-    
+
     def verify_zero_technical_debt(self):
         """INV-WRK004: Zero technical debt policy enforcement"""
         for py_file in glob.glob('**/*.py', recursive=True):
@@ -190,7 +190,7 @@ class FrameworkInvariantChecker:
             assert 'TODO' not in content, f"TODO found in {py_file}"
             assert 'FIXME' not in content, f"FIXME found in {py_file}"
             assert 'HACK' not in content, f"HACK found in {py_file}"
-    
+
     def verify_setup_idempotency(self):
         """INV-SET001: Setup processes are idempotent"""
         # Run setup twice and verify identical outcomes
@@ -200,7 +200,7 @@ class FrameworkInvariantChecker:
         run_setup()  # Second run should be identical
         second_result = capture_project_state()
         assert first_result == second_result, "Setup not idempotent"
-    
+
     def verify_performance_limits(self):
         """INV-PER001: Framework setup completes within 60 seconds"""
         start_time = time.time()
@@ -255,17 +255,17 @@ def setup_framework(project_path: str, project_description: str):
     # Check invariants FIRST
     if not os.path.exists(project_path):
         raise InvariantViolation("INV-SET003: Target project path must exist")
-    
+
     if os.path.exists(os.path.join(project_path, 'CLAUDE.md')):
         # Framework already installed - ensure idempotency
         verify_existing_installation(project_path)
-    
+
     # Proceed with setup
     try:
         create_directory_structure(project_path)
         install_templates(project_path, project_description)
         setup_git_hooks(project_path)
-        
+
         # Verify invariants still hold
         verify_framework_integrity(project_path)
     except Exception as e:

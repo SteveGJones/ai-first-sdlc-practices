@@ -154,11 +154,11 @@ jobs:
   auto-approve:
     runs-on: ubuntu-latest
     if: github.actor == github.repository_owner || contains(github.event.pull_request.title, '[AI-FIRST]')
-    
+
     steps:
     - name: Check if all status checks passed
       # Validates required status checks
-    
+
     - name: Auto-approve PR
       if: steps.status-check.outputs.result == 'true'
       # Approves PR when all checks pass

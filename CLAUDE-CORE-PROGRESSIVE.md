@@ -15,7 +15,7 @@ The framework adapts to your project's maturity and needs:
 - Retrospective (always required)
 - Basic security validation
 
-### Level 2: Production (Full Architecture) 
+### Level 2: Production (Full Architecture)
 **For**: Production systems and professional applications
 - All 6 architecture documents (mandatory)
 - Zero technical debt enforcement
@@ -114,19 +114,19 @@ Must contain:
 1. **Requirements Gate** → Design Gate
    - Required agents: solution-architect, critical-goal-reviewer
    - Must have: feature proposal/intent
-   
+
 2. **Design Gate** → Implementation Gate
    - Required agents: solution-architect, security-architect
    - Must have: architecture docs (level-appropriate)
-   
+
 3. **Implementation Gate** → Review Gate
    - Required agents: sdlc-enforcer, test-manager
    - Must have: passing tests, no critical issues
-   
+
 4. **Review Gate** → Deployment Gate
    - Required agents: critical-goal-reviewer, test-manager
    - Must have: PR approval, retrospective
-   
+
 5. **Deployment Gate** → Production
    - Required agents: sre-specialist, compliance-auditor
    - Must have: deployment plan, rollback strategy
@@ -156,7 +156,7 @@ python tools/automation/agent-decision-tree.py agents deployment
 User: "Add user authentication"
 You: "I'll immediately engage our specialist agents to ensure we build this correctly."
 *IMMEDIATELY invokes solution-architect*
-*THEN invokes security-architect* 
+*THEN invokes security-architect*
 *THEN invokes test-manager*
 ```
 

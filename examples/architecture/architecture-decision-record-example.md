@@ -1,9 +1,9 @@
 # Architecture Decision Record: Checkout Service Architecture
 
-**ADR-ID:** ADR-2024-001  
-**Date:** 2024-07-25  
-**Status:** Accepted  
-**Deciders:** Architecture Team, Engineering Lead, CTO  
+**ADR-ID:** ADR-2024-001
+**Date:** 2024-07-25
+**Status:** Accepted
+**Deciders:** Architecture Team, Engineering Lead, CTO
 **Technical Story:** Design scalable checkout service for FastCart
 
 ## Context and Problem Statement

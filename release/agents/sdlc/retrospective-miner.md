@@ -173,12 +173,12 @@ anti_patterns:
     frequency: "25% of failed projects"
     impact: "Major refactoring required"
     prevention: "Enforce validation before code"
-    
+
   - name: "Generic Architecture Docs"
     frequency: "40% of projects"
     impact: "Useless documentation"
     prevention: "Require specific examples"
-    
+
   - name: "TODO Accumulation"
     frequency: "30% of projects after 3 months"
     impact: "Technical debt spiral"
@@ -192,7 +192,7 @@ success_stories:
     key_success: "Complete architecture first"
     result: "Zero production issues in 6 months"
     lesson: "Architecture investment pays off"
-    
+
   - project: "Data Pipeline"
     key_success: "Failure mode analysis"
     result: "Graceful handling of all failures"

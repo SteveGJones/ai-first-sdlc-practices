@@ -1,10 +1,10 @@
 # Feature Proposal: [Feature Name]
 
-**Proposal Number:** [XX]  
-**Status:** Draft  
-**Author:** [Your Name/AI Agent Name]  
-**Created:** [YYYY-MM-DD]  
-**Target Branch:** `feature/[branch-name]`  
+**Proposal Number:** [XX]
+**Status:** Draft
+**Author:** [Your Name/AI Agent Name]
+**Created:** [YYYY-MM-DD]
+**Target Branch:** `feature/[branch-name]`
 **Implementation Type:** [Code|Documentation|Process|Infrastructure]
 
 ---
