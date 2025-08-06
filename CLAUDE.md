@@ -245,6 +245,9 @@ python tools/automation/setup-branch-protection-gh.py
 
 # Alternative (if gh not available)
 python tools/automation/setup-branch-protection.py
+
+# Check SDLC level (NOT 'show' - that command doesn't exist)
+python tools/automation/sdlc-level.py check
 ```
 
 ## Architecture
