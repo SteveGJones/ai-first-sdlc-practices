@@ -11,7 +11,7 @@ import os
 import re
 import configparser
 from pathlib import Path
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Tuple, Optional, Dict, Any, Union
 import argparse
 from datetime import datetime
 
@@ -469,7 +469,7 @@ class ValidationPipeline:
         # Skip or adjust for empty repos
         if self.is_empty_repo:
             # Just check if dependency file exists and is valid
-            dep_files = [
+            dep_files: List[Tuple[str, Optional[str]]] = [
                 ("requirements.txt", None),
                 ("package.json", None),
                 ("go.mod", None),
@@ -487,7 +487,7 @@ class ValidationPipeline:
             self.add_skip("Dependencies", "Empty repository - no dependencies")
             return
 
-        dep_files = [
+        dep_files: List[Tuple[str, Optional[str]]] = [
             ("requirements.txt", "pip check"),
             ("package.json", "npm audit"),
             ("go.mod", "go mod verify"),
@@ -495,7 +495,7 @@ class ValidationPipeline:
         ]
 
         for dep_file, check_cmd in dep_files:
-            if (self.project_root / dep_file).exists():
+            if (self.project_root / dep_file).exists() and check_cmd:
                 try:
                     result = subprocess.run(
                         check_cmd.split(), capture_output=True, text=True, timeout=30
@@ -638,7 +638,7 @@ class ValidationPipeline:
                     "Remember to create a retrospective before PR",
                 )
 
-    def check_design_documentation(self):
+    def check_design_documentation(self) -> None:
         """Check design documents for excessive implementation details"""
         if self.is_empty_repo:
             return
@@ -925,7 +925,7 @@ class ValidationPipeline:
 
     def _check_typescript_config(self) -> List[str]:
         """Check TypeScript configuration for type safety"""
-        issues = []
+        issues: List[str] = []
         ts_config = self.project_root / "tsconfig.json"
 
         if not ts_config.exists():
@@ -962,7 +962,7 @@ class ValidationPipeline:
 
     def _check_python_type_config(self) -> List[str]:
         """Check Python mypy configuration"""
-        issues = []
+        issues: List[str] = []
         config_files = [
             self.project_root / "mypy.ini",
             self.project_root / "setup.cfg",
@@ -1026,7 +1026,7 @@ class ValidationPipeline:
 
     def _check_python_annotations(self) -> List[str]:
         """Check Python code for type annotations"""
-        issues = []
+        issues: List[str] = []
         py_files = list(Path(self.project_root).glob("**/*.py"))
         py_files = [
             f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)
@@ -1106,7 +1106,7 @@ class ValidationPipeline:
                 "Ensure validate-architecture.py exists",
             )
 
-    def check_logging_compliance(self):
+    def check_logging_compliance(self) -> None:
         """Check if code has proper logging at mandatory points"""
         if self.is_empty_repo:
             self.add_skip("Logging Compliance", "Empty repository - no code to check")
@@ -1199,7 +1199,7 @@ class ValidationPipeline:
             except subprocess.CalledProcessError:
                 return None
 
-    def _detect_empty_repository(self):
+    def _detect_empty_repository(self) -> None:
         """Detect if this is an empty repository with only framework files"""
         import glob
 
@@ -1240,34 +1240,34 @@ class ValidationPipeline:
 
         self.is_empty_repo = code_file_count == 0 and has_framework
 
-    def add_success(self, check: str, message: str):
+    def add_success(self, check: str, message: str) -> None:
         """Add success result"""
-        self.results.append(("✅", check, message, None))
+        self.results.append({"icon": "✅", "check": check, "message": message, "fix": None})
 
-    def add_error(self, check: str, message: str, fix: str):
+    def add_error(self, check: str, message: str, fix: str) -> None:
         """Add error result"""
         self.has_errors = True
-        self.results.append(("❌", check, message, fix))
+        self.results.append({"icon": "❌", "check": check, "message": message, "fix": fix})
 
-    def add_warning(self, check: str, message: str, fix: str):
+    def add_warning(self, check: str, message: str, fix: str) -> None:
         """Add warning result"""
         self.has_warnings = True
-        self.results.append(("⚠️ ", check, message, fix))
+        self.results.append({"icon": "⚠️ ", "check": check, "message": message, "fix": fix})
 
-    def add_skip(self, check: str, reason: str):
+    def add_skip(self, check: str, reason: str) -> None:
         """Add skipped check"""
-        self.results.append(("⏭️ ", check, reason, None))
+        self.results.append({"icon": "⏭️ ", "check": check, "message": reason, "fix": None})
 
-    def print_summary(self):
+    def print_summary(self) -> None:
         """Print validation summary"""
         print("\n" + "=" * 50)
         print("📊 Validation Summary")
         print("=" * 50)
 
-        for icon, check, message, fix in self.results:
-            print(f"{icon} {check}: {message}")
-            if fix:
-                print(f"   └─ Fix: {fix}")
+        for result in self.results:
+            print(f"{result['icon']} {result['check']}: {result['message']}")
+            if result.get('fix'):
+                print(f"   └─ Fix: {result['fix']}")
 
         print("\n" + "-" * 50)
 
@@ -1324,7 +1324,7 @@ class ValidationPipeline:
             raise ValueError(f"Unsupported format: {format}")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="AI-First SDLC Validation Pipeline")
     parser.add_argument(
         "--checks",

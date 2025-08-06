@@ -56,7 +56,7 @@ def check_file_sizes() -> Tuple[List[str], int]:
     return violations, total_lines
 
 
-def check_compression_ratio(new_total: int) -> None:
+def check_compression_ratio(new_total: int) -> bool:
     """Check if compression target is met."""
     # Original default load (full CLAUDE.md)
     original_default = 897

@@ -94,7 +94,7 @@ def find_feature_proposal(feature_name: str) -> Optional[Path]:
     return None
 
 
-def check_proposal_content(proposal_file: Path, branch_name: str) -> Tuple[bool, List[str]]:
+def check_proposal_content(proposal_file: Path, branch_name: str) -> bool:
     """Verify proposal has required fields"""
     required_fields = [
         "Target Branch:",
@@ -186,9 +186,9 @@ def main() -> None:
     if not check_proposal_content(proposal_file, branch):
         print(f"\n❌ Feature proposal needs updates")
         sys.exit(1)
-
-    print(f"✅ Feature proposal is properly formatted")
-    sys.exit(0)
+    else:
+        print(f"✅ Feature proposal is properly formatted")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
