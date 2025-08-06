@@ -538,7 +538,7 @@ class ProjectAnalyzer:
                                 content = f.read()
                                 if "argparse" in content or "click" in content:
                                     return "cli-tool"
-                        except:
+                        except Exception:
                             pass
 
         # Check for library

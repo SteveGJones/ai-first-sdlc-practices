@@ -33,10 +33,11 @@ deployment:
       - performance_baseline_met
       
     staging_validation:
-      - smoke_tests
-      - integration_tests
-      - performance_tests
-      - security_tests
+      tests:
+        - smoke_tests
+        - integration_tests
+        - performance_tests
+        - security_tests
       duration: "30 minutes"
       
     post_deployment:

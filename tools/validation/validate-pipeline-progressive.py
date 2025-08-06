@@ -89,7 +89,7 @@ class ProgressiveValidationPipeline(ValidationPipeline):
                 with open(level_file) as f:
                     config = json.load(f)
                     return config.get("level", "production")
-            except:
+            except Exception:
                 pass
 
         # Otherwise default to production
@@ -224,7 +224,7 @@ class ProgressiveValidationPipeline(ValidationPipeline):
                     )
                     result["status"] = "info"
 
-            except:
+            except Exception:
                 pass
 
             return result

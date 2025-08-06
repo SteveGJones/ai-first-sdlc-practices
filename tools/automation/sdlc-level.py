@@ -145,7 +145,7 @@ class SDLCLevelManager:
                 capture_output=True,
             )
             return result.returncode == 0  # Found TODOs
-        except:
+        except Exception:
             return False
 
     def _estimate_team_size(self) -> int:
@@ -159,7 +159,7 @@ class SDLCLevelManager:
             )
             unique_emails = set(result.stdout.strip().split("\n"))
             return len(unique_emails)
-        except:
+        except Exception:
             return 1
 
     def _check_ci_cd(self) -> bool:
@@ -190,7 +190,7 @@ class SDLCLevelManager:
                 first_commit = int(result.stdout.strip())
                 age_seconds = datetime.now().timestamp() - first_commit
                 return int(age_seconds / 86400)  # Convert to days
-        except:
+        except Exception:
             pass
         return 0
 
@@ -230,7 +230,7 @@ class SDLCLevelManager:
             )
             if result.returncode == 0:
                 return "enabled"
-        except:
+        except Exception:
             pass
         return "unknown"
 

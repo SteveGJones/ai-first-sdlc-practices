@@ -164,7 +164,7 @@ class SDLCGateEnforcer:
         try:
             result = subprocess.run(cmd.split(), capture_output=True)
             return result.returncode == 0
-        except:
+        except Exception:
             return False
 
     def _get_agent_approvals(self, gate_name: str) -> List[str]:

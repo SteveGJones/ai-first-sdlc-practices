@@ -8,7 +8,6 @@ Enforces AI-First SDLC standards
 import subprocess
 import sys
 import json
-import os
 from pathlib import Path
 
 
@@ -157,7 +156,7 @@ def main():
         with open("package.json", "r") as f:
             pkg = json.load(f)
             scripts = pkg.get("scripts", {})
-    except:
+    except Exception:
         scripts = {}
 
     for name, cmd in checks:
