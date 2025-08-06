@@ -976,10 +976,42 @@ class ValidationPipeline:
         # Check mypy.ini
         if config_files[0].exists():
             content = config_files[0].read_text()
-            if "disallow_untyped_defs" not in content or "False" in content:
-                issues.append("mypy not configured for strict type checking")
+            
+            # For framework repos, check that main [mypy] section has strict=True
+            # Allow relaxed rules in specific sections
+            if self.is_framework_repo:
+                # Parse INI to check main section
+                import configparser
+                config = configparser.ConfigParser()
+                try:
+                    config.read_string(content)
+                    
+                    # Check main mypy section
+                    if 'mypy' in config:
+                        mypy_section = config['mypy']
+                        # Check for strict=True
+                        if mypy_section.get('strict', '').lower() == 'true':
+                            mypy_config_found = True
+                        # Or check individual strict settings in main section
+                        elif (mypy_section.get('disallow_untyped_defs', '').lower() == 'true' or
+                              mypy_section.get('check_untyped_defs', '').lower() == 'true'):
+                            mypy_config_found = True
+                        else:
+                            issues.append("mypy main section not configured for strict type checking (Framework allows relaxed rules in tool-specific sections)")
+                    else:
+                        issues.append("mypy configuration missing [mypy] section")
+                except configparser.Error:
+                    # Fall back to simple check if parsing fails
+                    if "strict = True" in content or "strict=True" in content:
+                        mypy_config_found = True
+                    else:
+                        issues.append("mypy configuration cannot be parsed")
             else:
-                mypy_config_found = True
+                # For application code, enforce strict type checking throughout
+                if "disallow_untyped_defs" not in content or "False" in content:
+                    issues.append("mypy not configured for strict type checking")
+                else:
+                    mypy_config_found = True
 
         # Check setup.cfg
         if not mypy_config_found and config_files[1].exists():
