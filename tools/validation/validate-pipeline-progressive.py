@@ -103,12 +103,12 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
 
         # If no explicit checks, use level defaults
         if not checks:
-            checks = self.level_config["required"]
+            checks = self.level_config["required"]  # type: ignore[assignment]
             if not strict:
-                checks.extend(self.level_config["optional"])
+                checks.extend(self.level_config["optional"])  # type: ignore[union-attr]
 
         # Filter out checks that should be skipped at this level
-        checks = [c for c in checks if c not in self.level_config["skip"]]
+        checks = [c for c in checks if c not in self.level_config["skip"]]  # type: ignore[union-attr]
 
         # Add level context to results
         self.results.append(
@@ -124,7 +124,7 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
         validation_passed = super().run_validation(checks)
 
         # Both gate and validation must pass
-        return gate_passed and validation_passed
+        return gate_passed and validation_passed  # type: ignore[no-any-return]
 
     def _check_sdlc_gates(self) -> bool:
         """Check SDLC gate requirements."""
@@ -281,7 +281,7 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
             print("   • Maximum validation rigor applied")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Progressive AI-First SDLC Validation Pipeline"
     )
