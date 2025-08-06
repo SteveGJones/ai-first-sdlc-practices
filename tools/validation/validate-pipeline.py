@@ -294,7 +294,10 @@ class ValidationPipeline:
 
         # Regular test checking for non-empty repos
         test_commands = [
-            (["pytest", "--version"], ["pytest", "--cov", "--cov-report=term-missing"]),
+            (
+                ["python", "-m", "pytest", "--version"],
+                ["python", "-m", "pytest", "tests/"],
+            ),
             (["go", "version"], ["go", "test", "-cover", "./..."]),
             (["npm", "--version"], ["npm", "test"]),
             (["make", "--version"], ["make", "test"]),
@@ -305,6 +308,18 @@ class ValidationPipeline:
                 # Check if tool exists
                 subprocess.run(check_cmd, capture_output=True, check=True)
 
+                # For framework repository, check if tests directory exists
+                if (
+                    test_cmd[0] == "pytest"
+                    and not (self.project_root / "tests").exists()
+                ):
+                    self.add_warning(
+                        "Test Coverage",
+                        "No tests directory found",
+                        "Create tests directory with test files",
+                    )
+                    return
+
                 # Run tests
                 result = subprocess.run(
                     test_cmd, capture_output=True, text=True, timeout=60
@@ -313,9 +328,20 @@ class ValidationPipeline:
                 if result.returncode == 0:
                     self.add_success("Test Coverage", "Tests passing")
                 else:
-                    self.add_error(
-                        "Test Coverage", "Tests failing", "Fix failing tests"
-                    )
+                    # In CI environment, provide more context about failure
+                    if os.environ.get("CI") == "true":
+                        stderr_msg = (
+                            result.stderr[:200] if result.stderr else "No error output"
+                        )
+                        self.add_error(
+                            "Test Coverage",
+                            f"Tests failing: {stderr_msg}",
+                            "Fix failing tests",
+                        )
+                    else:
+                        self.add_error(
+                            "Test Coverage", "Tests failing", "Fix failing tests"
+                        )
                 return
 
             except (
