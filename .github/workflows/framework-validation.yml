@@ -64,7 +64,7 @@ jobs:
       run: |
         BRANCH_NAME="${{ github.head_ref }}"
         echo "📖 Checking retrospective for branch: $BRANCH_NAME"
-        python tools/validation/validate-pipeline.py --checks retrospective --branch "$BRANCH_NAME"
+        python tools/validation/validate-pipeline.py --checks retrospective
     
     - name: Run Pre-commit Hooks
       run: |
