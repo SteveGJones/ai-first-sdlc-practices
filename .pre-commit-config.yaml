@@ -30,5 +30,5 @@ repos:
     rev: v1.8.0
     hooks:
       - id: mypy
-        args: ['--ignore-missing-imports']
+        args: ['--ignore-missing-imports', '--exclude', 'tools/setup.py']
         additional_dependencies: ['types-requests', 'types-PyYAML']
