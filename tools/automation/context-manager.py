@@ -414,8 +414,8 @@ def main():
             data = json.loads(response.json())
         elif args.file:
             with open(args.file, "r") as f:
-                data = json.loads(response.json())
-        _session_id =
+                data = json.load(f)
+        session_id = cm.save_context(data)
         print(f"Session ID: {session_id}")
 
     elif args.command == "load":
