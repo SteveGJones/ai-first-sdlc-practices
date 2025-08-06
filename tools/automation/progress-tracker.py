@@ -93,8 +93,12 @@ class TodoItem:
             status=TodoStatus[data["status"]],
             priority=TodoPriority[data["priority"]],
             id=data.get("id"),
-            created_at=datetime.fromisoformat(data["created_at"]) if data.get("created_at") else None,
-            updated_at=datetime.fromisoformat(data["updated_at"]) if data.get("updated_at") else None,
+            created_at=datetime.fromisoformat(data["created_at"])
+            if data.get("created_at")
+            else None,
+            updated_at=datetime.fromisoformat(data["updated_at"])
+            if data.get("updated_at")
+            else None,
             blocked_by=data.get("blocked_by"),
             branch=data.get("branch"),
         )
@@ -268,7 +272,9 @@ class ProgressTracker:
                         else (
                             "🚫"
                             if status == "blocked"
-                            else "⏸️" if status == "pending" else "✅"
+                            else "⏸️"
+                            if status == "pending"
+                            else "✅"
                         )
                     )
                     report += f"- {marker} {todo.content}"
@@ -378,7 +384,9 @@ def main():
                     else (
                         "🚧"
                         if todo.status == TodoStatus.IN_PROGRESS
-                        else "🚫" if todo.status == TodoStatus.BLOCKED else "⏸️"
+                        else "🚫"
+                        if todo.status == TodoStatus.BLOCKED
+                        else "⏸️"
                     )
                 )
 
@@ -388,7 +396,9 @@ def main():
                     else (
                         "🟡"
                         if todo.priority == TodoPriority.HIGH
-                        else "🟢" if todo.priority == TodoPriority.MEDIUM else "⚪"
+                        else "🟢"
+                        if todo.priority == TodoPriority.MEDIUM
+                        else "⚪"
                     )
                 )
 

@@ -549,7 +549,7 @@ class ProjectAnalyzer:
             return "library"
 
         # Check for data pipeline
-        _data_libs =
+        data_libs = ["pandas", "numpy", "sklearn", "tensorflow", "pytorch", "airflow"]
         for lib in deps.get("libraries", []):
             if any(data_lib in lib for data_lib in data_libs):
                 return "data-pipeline"

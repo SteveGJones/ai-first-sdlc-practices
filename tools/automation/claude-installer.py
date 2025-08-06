@@ -256,7 +256,7 @@ class ClaudeInstaller:
             "agents_count": installed_count,
         }
 
-        _config_file =
+        config_file = self.target_dir / "config.json"
         with open(config_file, "w") as f:
             json.dump(config, f, indent=2)
 
@@ -432,7 +432,7 @@ def main():
         installer.list_installed_agents()
         return
 
-    success = self.setup(components, force)
+    success = installer.install()
     sys.exit(0 if success else 1)
 
 

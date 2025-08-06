@@ -218,9 +218,22 @@ class AgentInstaller:
 
             category_agents = []
             for agent_file in category_dir.rglob("*.md"):
-                metadata = yaml.safe_load(parts[1])
-                if metadata:
-                    category_agents.append({"path": agent_file, "metadata": metadata})
+                # Read and parse the agent file
+                try:
+                    content = agent_file.read_text(encoding="utf-8")
+                    if not content.startswith("---"):
+                        continue
+
+                    # Extract YAML frontmatter
+                    parts = content.split("---", 2)
+                    if len(parts) >= 3:
+                        metadata = yaml.safe_load(parts[1])
+                        if metadata:
+                            category_agents.append(
+                                {"path": agent_file, "metadata": metadata}
+                            )
+                except Exception:
+                    continue
 
             if category_agents:
                 agents[category_dir.name] = category_agents
@@ -242,7 +255,7 @@ class AgentInstaller:
         self, agent_path: Path, metadata: Dict, force: bool = False
     ) -> bool:
         """Install a single agent."""
-        _agent_name =
+        agent_name = metadata.get("name", agent_path.stem)
 
         # Check if already installed
         if agent_name in self.installed_agents and not force:
@@ -252,7 +265,7 @@ class AgentInstaller:
             return False
 
         # Check dependencies
-        _missing_deps =
+        missing_deps = self._check_dependencies(metadata.get("dependencies", []))
         if missing_deps:
             console.print(
                 f"[red]Missing dependencies for {agent_name}: {', '.join(missing_deps)}[/red]"
@@ -312,7 +325,7 @@ class AgentInstaller:
         for agent_file in core_dir.rglob("*.md"):
             found_count += 1
             console.print(f"[dim]Processing: {agent_file.name}[/dim]")
-            metadata = yaml.safe_load(parts[1])
+            metadata = self._parse_agent_metadata(agent_file)
             if metadata and self.install_agent(agent_file, metadata):
                 installed_count += 1
 
@@ -335,8 +348,8 @@ class AgentInstaller:
 
             for agent_file in lang_dir.glob("*.md"):
                 try:
-                    metadata = yaml.safe_load(parts[1])
-                    if self.install_agent(agent_file, metadata):
+                    metadata = self._parse_agent_metadata(agent_file)
+                    if metadata and self.install_agent(agent_file, metadata):
                         installed_count += 1
                 except Exception as e:
                     console.print(
@@ -452,15 +465,15 @@ class AgentInstaller:
             category_branch = tree.add(f"[blue]{category}[/blue]")
 
             for agent_info in category_agents:
-                metadata = yaml.safe_load(parts[1])
-                _name =
-                _version =
+                metadata = agent_info.get("metadata", {})
+                name = metadata.get("name", agent_info["path"].stem)
+                version = metadata.get("version", "1.0.0")
                 installed = " [green]✓[/green]" if name in self.installed_agents else ""
 
                 agent_branch = category_branch.add(f"{name} v{version}{installed}")
 
                 if "description" in metadata:
-                    _desc =
+                    desc = metadata["description"]
                     # Handle multiline descriptions - take first line only
                     if isinstance(desc, str):
                         desc = desc.split("\\n")[0].strip()
@@ -553,7 +566,7 @@ class AgentInstaller:
     def interactive_install(self):
         """Interactive agent installation wizard with smart recommendations."""
         # Try to analyze and recommend first
-        _recommendation_data =
+        recommendation_data = None  # This would be set by analysis function
 
         if recommendation_data:
             # Show recommendations and install
@@ -614,7 +627,7 @@ class AgentInstaller:
             table.add_column("Status", style="green")
 
             for agent_info in agents[category]:
-                metadata = yaml.safe_load(parts[1])
+                metadata = agent_info.get("metadata", {})
                 status = (
                     "Installed"
                     if metadata["name"] in self.installed_agents
@@ -717,7 +730,7 @@ def main(
             )
             sys.exit(1)
 
-        _recommendation_data =
+        recommendation_data = None  # This would be set by analysis function
         if recommendation_data:
             # Display recommendations
             from agent_recommender import display_recommendations

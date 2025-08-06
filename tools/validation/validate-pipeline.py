@@ -591,7 +591,6 @@ class ValidationPipeline:
                                 found = True
                                 # Check retrospective freshness
                                 try:
-
                                     file_mtime = datetime.fromtimestamp(
                                         file.stat().st_mtime
                                     )
@@ -1318,7 +1317,7 @@ class ValidationPipeline:
             md += "## Results\n\n"
             for result in self.results:
                 md += f"- {result['icon']} **{result['check']}**: {result['message']}\n"
-                if result['fix']:
+                if result["fix"]:
                     md += f"  - Fix: {result['fix']}\n"
 
             md += "\n## Summary\n"

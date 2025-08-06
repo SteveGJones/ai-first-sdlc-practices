@@ -94,7 +94,7 @@ class CollaborationDetector:
                 check=True,
             )
             # Simple heuristic: count merge commits that mention "pull request" or "PR"
-            _merge_messages =
+            merge_messages = result.stdout.lower()
             pr_count = merge_messages.count("pull request") + merge_messages.count("#")
             return pr_count
         except subprocess.CalledProcessError:

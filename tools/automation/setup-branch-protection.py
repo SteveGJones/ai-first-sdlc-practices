@@ -186,7 +186,7 @@ def detect_git_platform() -> Optional[str]:
             text=True,
             check=True,
         )
-        _remote_url =
+        remote_url = result.stdout.strip()
 
         # Use proper URL parsing to avoid security issues
         if remote_url.startswith("git@github.com:") or remote_url.startswith(
@@ -229,7 +229,7 @@ def extract_repo_from_url(url: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        _description =
+        description="Setup branch protection rules for git repository"
     )
     parser.add_argument(
         "--platform",
@@ -249,9 +249,7 @@ def main():
         help="API token for authentication (or set GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_TOKEN)",
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Export format for validation report"
+        "--dry-run", action="store_true", help="Export format for validation report"
     )
 
     args = parser.parse_args()
@@ -276,7 +274,7 @@ def main():
                 text=True,
                 check=True,
             )
-            _repo =
+            repo = extract_repo_from_url(result.stdout.strip())
             print(f"🔍 Detected repository: {repo}")
         except Exception as e:
             print(f"❌ Could not auto-detect repository: {e}")
@@ -307,8 +305,8 @@ def main():
             sys.exit(1)
 
     # Configure branch protection
-    _configurator =
-    success = self.setup(components, force)
+    configurator = BranchProtectionConfigurator(platform, repo, token, args.branch)
+    success = configurator.setup(args.force)
     if success:
         print("\n✅ Branch protection successfully configured!")
         print("\n📋 AI-First SDLC Compliance Checklist:")

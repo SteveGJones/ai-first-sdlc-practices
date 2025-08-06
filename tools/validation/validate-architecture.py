@@ -703,9 +703,9 @@ class ArchitectureValidator:
         print("\n" + "-" * 60)
 
         # Summary statistics
-        total_checks = len(self.validation_results)
-        errors = sum(1 for r in self.validation_results if r['status'] == 'error')
-        warnings = sum(1 for r in self.validation_results if r['status'] == 'warning')
+        total_checks = len(self.results)
+        errors = sum(1 for r in self.results if r[0] == "❌")
+        warnings = sum(1 for r in self.results if r[0] == "⚠️ ")
         success = errors == 0
         print(f"Total Checks: {total_checks}")
         print(f"✅ Passed: {total_checks - errors - warnings}")
@@ -743,7 +743,9 @@ class ArchitectureValidator:
 
             md += "\n## Summary\n"
             if self.has_errors:
-                md += "❌ **FAILED** - Complete all architecture documents before coding\n"
+                md += (
+                    "❌ **FAILED** - Complete all architecture documents before coding\n"
+                )
             elif self.has_warnings:
                 md += "⚠️  **PASSED** with warnings - Consider addressing issues\n"
             else:
@@ -773,7 +775,7 @@ def main():
     parser.add_argument(
         "--export",
         choices=["json", "markdown"],
-        help="Export format for validation report"
+        help="Export format for validation report",
     )
     parser.add_argument("--output", help="Output file for export (default: stdout)")
     parser.add_argument(
@@ -789,10 +791,10 @@ def main():
 
     # Run validation
     validator = ArchitectureValidator(args.project_root, mode)
-    success = self.setup(components, force)
+    success = validator.validate()
     # Handle strict mode
     if args.strict and validator.has_warnings:
-        success = self.setup(components, force)
+        success = False
     # Export if requested
     if args.export:
         report = validator.export_report(args.export)

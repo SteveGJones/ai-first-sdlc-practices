@@ -13,6 +13,14 @@ repos:
         args: ['--autofix', '--no-sort-keys']
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
+      # CRITICAL: Add Python syntax validation
+      - id: check-ast
+        name: Check Python AST (Syntax)
+        description: 'Check whether Python files parse as valid python'
+      - id: check-builtin-literals
+        name: Check builtin type constructor use (Python)
+      - id: debug-statements
+        name: Debug statement (Python)
 
   - repo: https://github.com/psf/black
     rev: 23.12.1

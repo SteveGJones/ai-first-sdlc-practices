@@ -198,8 +198,8 @@ def check_approval_bot_installed() -> Optional[str]:
         hooks = json.loads(result.stdout)
 
         for hook in hooks:
-            config = hook.get('config', {})
-            url = config.get('url', '').lower()
+            config = hook.get("config", {})
+            url = config.get("url", "").lower()
             for bot in approval_bots:
                 if bot in url:
                     return bot
@@ -537,7 +537,9 @@ Examples:
             mode_str = "Solo Developer" if solo_mode else "Team Collaboration"
             print(f"🎯 Detected mode: {mode_str}")
         else:
-            print("⚠️  Could not analyze collaboration pattern, defaulting to team mode")
+            print(
+                "⚠️  Could not analyze collaboration pattern, defaulting to team mode"
+            )
             solo_mode = False
 
     # Check for existing approval bots

@@ -116,7 +116,7 @@ class AgentReleaseBuilder:
             if content.startswith("---"):
                 parts = content.split("---", 2)
                 metadata = yaml.safe_load(parts[1])
-                _agent_name =
+                agent_name = metadata.get("name", agent_file.stem)
 
                 # Add to manifest
                 manifest["agents"][agent_name] = {

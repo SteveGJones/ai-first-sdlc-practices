@@ -92,7 +92,7 @@ class SDLCLevelManager:
         # Check if level is explicitly set
         if self.config_file.exists():
             with open(self.config_file) as f:
-                config = {
+                config = json.load(f)
                 # Use the configured level but return the analysis
                 return config["level"], analysis
 
@@ -157,7 +157,7 @@ class SDLCLevelManager:
                 capture_output=True,
                 text=True,
             )
-            _unique_emails =
+            unique_emails = set(result.stdout.strip().split("\n"))
             return len(unique_emails)
         except Exception:
             return 1
@@ -187,7 +187,7 @@ class SDLCLevelManager:
                 text=True,
             )
             if result.returncode == 0:
-                _first_commit =
+                first_commit = float(result.stdout.strip())
                 age_seconds = datetime.now().timestamp() - first_commit
                 return int(age_seconds / 86400)  # Convert to days
         except Exception:
@@ -283,7 +283,7 @@ class SDLCLevelManager:
         if target_level not in self.LEVELS:
             return {}
 
-        _level_config =
+        level_config = self.LEVELS[target_level]
         readiness = {}
 
         # Check required documents
@@ -324,7 +324,7 @@ def check(output_json):
         }
         click.echo(json.dumps(output, indent=2))
     else:
-        _level_config =
+        level_config = manager.LEVELS[current_level]
         click.echo(f"🎯 Current SDLC Level: {level_config['name']}")
         click.echo(f"   {level_config['description']}")
         click.echo()
@@ -358,7 +358,7 @@ def set(level, force):
             return
 
     if manager.set_level(level):
-        _level_config =
+        level_config = manager.LEVELS[level]
         click.echo(f"✅ SDLC level set to: {level_config['name']}")
         click.echo(f"   {level_config['description']}")
     else:
@@ -420,7 +420,7 @@ def graduation():
         return
 
     next_level = level_order[current_index + 1]
-    _next_config =
+    next_config = manager.LEVELS[next_level]
 
     click.echo(f"🎓 Graduation Readiness: {current_level} → {next_level}")
     click.echo()

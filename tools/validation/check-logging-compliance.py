@@ -234,7 +234,7 @@ class LoggingComplianceChecker:
             content = file_path.read_text(encoding="utf-8")
 
             # Check for sensitive data in logs
-            _sensitive_violations =
+            sensitive_violations = self._check_sensitive_data(content, file_path)
             violations.extend(sensitive_violations)
 
             # Language-specific checks
@@ -702,10 +702,10 @@ def main() -> None:
     args = parser.parse_args()
 
     checker = LoggingComplianceChecker(Path(args.path))
-    _results =
+    results = checker.scan_project()
     checker.generate_report()
 
-    _total_violations =
+    total_violations = len(results.get("violations", []))
     if total_violations > args.threshold:
         sys.exit(1)
     else:

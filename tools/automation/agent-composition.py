@@ -228,9 +228,9 @@ def list():
     table.add_column("Includes", style="green")
 
     for comp_name in compositions:
-        _comp_data =
+        comp_data = manager.compositions.get("compositions", {}).get(comp_name, {})
         if comp_data:
-            _includes =
+            includes = ", ".join(comp_data.get("includes", []))
             table.add_row(
                 comp_name,
                 comp_data.get("description", "")[:50] + "...",

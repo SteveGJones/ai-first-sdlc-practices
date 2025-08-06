@@ -86,10 +86,10 @@ class SDLCGateEnforcer:
 
     def _get_gate_config(self, gate_name: str) -> Dict:
         """Get configuration for a specific gate, including level overrides."""
-        _gate_config =
+        gate_config = self.gates_config.get("gates", {}).get(gate_name, {}).copy()
 
         # Apply level-specific overrides
-        _level_overrides =
+        level_overrides = self.gates_config.get("level_overrides", {}).get(
             self.current_level, {}
         )
         for key, value in level_overrides.items():
@@ -112,14 +112,14 @@ class SDLCGateEnforcer:
 
     def check_gate(self, gate_name: str) -> Tuple[bool, List[str]]:
         """Check if a gate's requirements are met."""
-        _gate_config =
+        gate_config = self._get_gate_config(gate_name)
         if not gate_config:
             return False, [f"Unknown gate: {gate_name}"]
 
         issues = []
 
         # Check required documents
-        _docs_required =
+        docs_required = gate_config.get("required_docs", [])
         for doc_pattern in docs_required:
             if "XX" in doc_pattern:
                 # Pattern-based check
@@ -132,13 +132,13 @@ class SDLCGateEnforcer:
                     issues.append(f"Missing required document: {doc_pattern}")
 
         # Check validation status
-        _validation_checks =
+        validation_checks = gate_config.get("validation_checks", [])
         for check in validation_checks:
             if not self._is_validation_passing(check):
                 issues.append(f"Validation failing: {check}")
 
         # Check agent approvals
-        _required_agents =
+        required_agents = gate_config.get("required_agents", [])
         if required_agents:
             approvals = self._get_agent_approvals(gate_name)
             for agent in required_agents:
@@ -162,7 +162,9 @@ class SDLCGateEnforcer:
             return True  # Unknown checks pass by default
 
         try:
-            _result =
+            result = subprocess.run(
+                cmd.split(), capture_output=True, cwd=self.project_path
+            )
             return result.returncode == 0
         except Exception:
             return False
@@ -188,9 +190,9 @@ class SDLCGateEnforcer:
             status[gate_name]["approvals"].append(agent_name)
 
         # Check if gate is now complete
-        _gate_config =
-        _required_agents =
-        _consensus_type =
+        gate_config = self._get_gate_config(gate_name)
+        required_agents = gate_config.get("required_agents", [])
+        consensus_type = gate_config.get("consensus_type", "all")
 
         if consensus_type == "all":
             if all(
@@ -239,13 +241,13 @@ class SDLCGateEnforcer:
 
     def get_agent_sequence(self, scenario: str) -> List[str]:
         """Get mandatory agent sequence for a scenario."""
-        _sequences =
-        _scenario_config =
+        sequences = self.gates_config.get("sequences", {})
+        scenario_config = sequences.get(scenario, {})
         return scenario_config.get("sequence", [])
 
     def resolve_conflict(self, gate_name: str, conflicting_agents: List[str]) -> str:
         """Resolve conflicts between agent decisions."""
-        _conflict_rules =
+        conflict_rules = self.gates_config.get("conflict_resolution", {})
 
         # Check for single veto power
         veto_agents = (

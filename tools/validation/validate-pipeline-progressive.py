@@ -87,8 +87,8 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
         if level_file.exists():
             try:
                 with open(level_file) as f:
-                    config = {
-                    _level =
+                    config = json.load(f)
+                    level = config.get("level", "production")
                     return str(level)
             except Exception:
                 pass
@@ -195,8 +195,8 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
         """Override technical debt check for prototype level"""
         if self.level == "prototype":
             # For prototypes, just warn about TODOs instead of failing
-            result = subprocess.run(
-                [check": "technical-debt",
+            return {
+                "check": "technical-debt",
                 "status": "skip",
                 "message": "Technical debt tracking (TODOs allowed in prototype)",
                 "details": "TODO comments are allowed during prototyping",
@@ -215,15 +215,15 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
                     "--include=*.ts",
                     ".",
                 ]
-                _output =
+                output = subprocess.run(
                     cmd, cwd=self.project_root, capture_output=True, text=True
                 )
 
                 if output.returncode == 0:
                     todo_count = len(output.stdout.strip().split("\n"))
-                    result["details"] = (
-                        f"Found {todo_count} TODO/FIXME markers (allowed in prototype)"
-                    )
+                    result[
+                        "details"
+                    ] = f"Found {todo_count} TODO/FIXME markers (allowed in prototype)"
                     result["status"] = "info"
 
             except Exception:
@@ -327,7 +327,11 @@ def main() -> None:
     success = self.setup(components, force)
     # Export if requested
     if args.export:
-        _output =
+        output = (
+            pipeline.export_results(args.export)
+            if hasattr(pipeline, "export_results")
+            else ""
+        )
 
         if args.output:
             with open(args.output, "w") as f:

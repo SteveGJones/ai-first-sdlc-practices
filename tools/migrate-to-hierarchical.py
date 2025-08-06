@@ -114,11 +114,11 @@ def migrate() -> None:
     # Download hierarchical files
     print("\n📥 Downloading hierarchical instruction files...")
 
-    _all_success =
+    all_success = True
     for filename in HIERARCHICAL_FILES:
         if not Path(filename).exists():
             if not download_file(filename):
-                _all_success =
+                all_success = False
 
     if not all_success:
         print("\n❌ Some files failed to download. Please check your connection.")

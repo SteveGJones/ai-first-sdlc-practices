@@ -15,10 +15,15 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import the validation pipeline module directly
 validate_pipeline_path = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    'tools', 'validation', 'validate-pipeline.py'
+    "tools",
+    "validation",
+    "validate-pipeline.py",
 )
 import importlib.util
-spec = importlib.util.spec_from_file_location("validate_pipeline", validate_pipeline_path)
+
+spec = importlib.util.spec_from_file_location(
+    "validate_pipeline", validate_pipeline_path
+)
 validate_pipeline = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(validate_pipeline)
 ValidationPipeline = validate_pipeline.ValidationPipeline
@@ -54,7 +59,7 @@ class TestFrameworkValidation:
         json_output = pipeline.export_results("json")
         assert json_output is not None
         assert isinstance(json_output, str)
-        
+
         # Test Markdown export
         md_output = pipeline.export_results("markdown")
         assert md_output is not None

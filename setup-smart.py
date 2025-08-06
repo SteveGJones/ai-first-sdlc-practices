@@ -426,7 +426,9 @@ setup(
         setup_path = self.project_dir / "setup.py"
         if not setup_path.exists():
             setup_path.write_text(setup_content)
-            os.chmod(setup_path, 0o600)  # Owner read/write only - prevents information disclosure
+            os.chmod(
+                setup_path, 0o600
+            )  # Owner read/write only - prevents information disclosure
             print("✅ Created setup.py")
 
         # Create __init__.py files
@@ -2069,17 +2071,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                     and self.project_purpose != "AI-assisted software development"
                 ):
                     # Create a temp file with analysis including objectives
-                    analysis_data = {
-                        "languages": (
-                            {self.detected_language: {"files": 10, "percentage": 100}}
-                            if self.detected_language
-                            else {}
-                        ),
-                        "primary_language": self.detected_language,
-                        "project_types": [],
-                        "frameworks": set(),
-                        "objectives": self.project_purpose,
-                    }
+                    # Note: analysis_data was unused - removed to fix F841
 
                     # Use the recommender directly
                     print(f"   📋 Project purpose: {self.project_purpose}")
@@ -2092,7 +2084,9 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("   🚀 Installing essential agents...")
 
                 # Try to run the installer
-                result = subprocess.run(cmd, cwd=self.project_dir, capture_output=True, text=True)
+                result = subprocess.run(
+                    cmd, cwd=self.project_dir, capture_output=True, text=True
+                )
                 if result.returncode != 0:
                     # Fallback to downloading core agents directly
                     return self._install_core_agents_fallback()
@@ -2443,9 +2437,11 @@ Run 'python tools/agent-installer.py' to install specialist agents.
         print("   🛡️  Prevent syntax errors and validation failures before push!")
         print("   python tools/automation/install-git-hooks.py")
         print("   ")
-        print("   This installs pre-commit and pre-push validation to catch issues locally.")
+        print(
+            "   This installs pre-commit and pre-push validation to catch issues locally."
+        )
         print("   See docs/LOCAL-VALIDATION-WORKFLOW.md for details.")
-        
+
         print("\n6. Customize CLAUDE.md with project-specific details:")
         print("   edit CLAUDE.md")
         print("\n7. Complete the setup tasks:")
@@ -2502,7 +2498,7 @@ def main():
     parser.add_argument(
         "--ci-platform",
         choices=["github", "gitlab", "jenkins", "azure", "circleci", "none"],
-        help="CI/CD platform to configure (default: auto-detect)"
+        help="CI/CD platform to configure (default: auto-detect)",
     )
     parser.add_argument(
         "--quickstart",

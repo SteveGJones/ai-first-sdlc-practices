@@ -597,7 +597,7 @@ def main(analysis_file, project_dir, objectives, phase, output):
 
     # Save if requested
     if output:
-        _output_data =
+        output_data = {
             "analysis_summary": {
                 "primary_language": analysis.get("primary_language"),
                 "project_types": list(analysis.get("project_types", [])),
