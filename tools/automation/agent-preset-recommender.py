@@ -286,7 +286,8 @@ class ProjectAnalyzer:
             # Add all libraries
             deps["libraries"].extend(all_deps.keys())
 
-        except Exception:
+        except (json.JSONDecodeError, FileNotFoundError, KeyError) as e:
+            # Silently ignore parsing errors for package.json - not all projects have valid format
             pass
 
     def _parse_requirements_txt(self, file_path: Path, deps: Dict):
@@ -316,7 +317,8 @@ class ProjectAnalyzer:
                     if fw in pkg:
                         deps["frameworks"].append(fw)
 
-        except Exception:
+        except (FileNotFoundError, IOError) as e:
+            # Silently ignore file read errors for requirements.txt
             pass
 
     def _parse_pipfile(self, file_path: Path, deps: Dict):

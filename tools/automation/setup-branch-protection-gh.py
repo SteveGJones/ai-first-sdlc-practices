@@ -18,9 +18,7 @@ import subprocess
 import sys
 import argparse
 import json
-import re
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, List
 
 # Version for compatibility tracking
 TOOL_VERSION = "2.0.0"
@@ -321,7 +319,6 @@ def setup_branch_protection(
                     "required_approving_review_count": 0 if enable_auto_approval else 1,
                     "dismiss_stale_reviews": True,
                     "require_code_owner_reviews": False,
-                    "require_review_from_code_owners": False,
                 },
                 "restrictions": None,
                 "allow_force_pushes": False,

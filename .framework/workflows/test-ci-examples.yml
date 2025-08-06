@@ -42,14 +42,7 @@ jobs:
       run: |
         echo "=== Validating Azure Pipelines configuration ==="
         yamllint examples/ci-cd/azure-devops/azure-pipelines.yml
-        python -c "
-import yaml
-with open('examples/ci-cd/azure-devops/azure-pipelines.yml', 'r') as f:
-    config = yaml.safe_load(f)
-    assert 'trigger' in config, 'Missing trigger in Azure Pipelines'
-    assert 'stages' in config, 'Missing stages in Azure Pipelines'
-    print('✅ Azure Pipelines configuration is valid')
-        "
+        python3 -c "import yaml; f = open('examples/ci-cd/azure-devops/azure-pipelines.yml', 'r'); config = yaml.safe_load(f); f.close(); assert 'trigger' in config, 'Missing trigger in Azure Pipelines'; assert 'stages' in config, 'Missing stages in Azure Pipelines'; print('✅ Azure Pipelines configuration is valid')"
 
     - name: Validate CircleCI configuration
       run: |

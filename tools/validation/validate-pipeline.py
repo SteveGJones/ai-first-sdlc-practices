@@ -166,7 +166,7 @@ class ValidationPipeline:
                                 found = True
                                 self.add_success("Feature Proposal", f"Found in {file}")
                                 break
-                    except:
+                    except Exception:
                         continue
                 if found:
                     break
@@ -212,7 +212,7 @@ class ValidationPipeline:
                                 requires_plan = True
                                 proposal_content = file.name
                                 break
-                        except:
+                        except Exception:
                             continue
                 if requires_plan:
                     break
@@ -301,7 +301,7 @@ class ValidationPipeline:
                                 f"Fix {test_file}",
                             )
                         return
-                    except:
+                    except Exception:
                         continue
 
             # No framework test found
@@ -412,7 +412,7 @@ class ValidationPipeline:
                                     "Review file for hardcoded secrets",
                                 )
                                 return
-                except:
+                except Exception:
                     continue
 
             self.add_success("Security Scan", "No obvious secrets detected")
@@ -608,12 +608,12 @@ class ValidationPipeline:
                                         self.add_success(
                                             "Retrospective", f"Found in {file}"
                                         )
-                                except:
+                                except Exception:
                                     self.add_success(
                                         "Retrospective", f"Found in {file}"
                                     )
                                 break
-                    except:
+                    except Exception:
                         continue
                 if found:
                     break
@@ -1162,7 +1162,7 @@ class ValidationPipeline:
                     check=True,
                 )
                 return result.stdout.strip()
-            except:
+            except subprocess.CalledProcessError:
                 return None
 
     def _detect_empty_repository(self):
@@ -1267,7 +1267,7 @@ class ValidationPipeline:
             return json.dumps(data, indent=2)
 
         elif format == "markdown":
-            md = f"# Validation Report\n\n"
+            md = "# Validation Report\n\n"
             md += f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
 
             md += "## Results\n\n"
@@ -1276,7 +1276,7 @@ class ValidationPipeline:
                 if fix:
                     md += f"  - Fix: {fix}\n"
 
-            md += f"\n## Summary\n"
+            md += "\n## Summary\n"
             if self.has_errors:
                 md += "❌ **FAILED** - Errors must be fixed\n"
             elif self.has_warnings:
