@@ -659,6 +659,112 @@ Implement AI-First SDLC framework with:
             
         return True
     
+    def customize_architecture_templates(self) -> bool:
+        """Customize architecture templates with project-specific content"""
+        print("\n🏗️  Customizing architecture templates with project info...")
+        
+        # Try both organized and regular directory structures
+        architecture_dirs = [
+            self.project_dir / "docs" / "architecture",  # Regular setup
+            self.project_dir / ".sdlc" / "templates" / "architecture"  # Organized setup
+        ]
+        
+        architecture_dir = None
+        for dir_path in architecture_dirs:
+            if dir_path.exists():
+                architecture_dir = dir_path
+                break
+        
+        if not architecture_dir:
+            print("⚠️  Architecture directory not found, skipping customization")
+            return True
+            
+        from datetime import datetime
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        
+        # Template customization mappings
+        customizations = {
+            "[Feature Name]": self.project_name,
+            "[YYYY-MM-DD]": current_date,
+            "[Team/Roles responsible]": "Development Team",
+            "[Project Description]": self.project_purpose,
+            "[Component Name]": self.project_name,
+            "FR-001": f"{self.project_name.upper()}-FR-001",
+            "NFR-001": f"{self.project_name.upper()}-NFR-001",
+            "[Service]": f"{self.project_name} Service",
+            "[System Name]": self.project_name,
+        }
+        
+        # Architecture templates to customize
+        templates_to_customize = [
+            "requirements-traceability-matrix.md",
+            "what-if-analysis.md", 
+            "system-invariants.md",
+            "integration-design.md",
+            "failure-mode-analysis.md"
+        ]
+        
+        for template_file in templates_to_customize:
+            template_path = architecture_dir / template_file
+            if template_path.exists():
+                try:
+                    content = template_path.read_text()
+                    
+                    # Apply customizations
+                    for placeholder, replacement in customizations.items():
+                        content = content.replace(placeholder, replacement)
+                    
+                    # Add project-specific examples for requirements matrix
+                    if template_file == "requirements-traceability-matrix.md":
+                        content = self._customize_requirements_matrix(content)
+                    
+                    # Add project-specific invariants for system invariants
+                    elif template_file == "system-invariants.md":
+                        content = self._customize_system_invariants(content)
+                    
+                    # Write back customized content
+                    template_path.write_text(content)
+                    print(f"✅ Customized {template_file}")
+                    
+                except Exception as e:
+                    print(f"⚠️  Could not customize {template_file}: {e}")
+        
+        return True
+    
+    def _customize_requirements_matrix(self, content: str) -> str:
+        """Add project-specific requirements to the matrix"""
+        # Replace the template requirements with project-specific ones
+        project_reqs = f"""| {self.project_name.upper()}-FR-001 | MUST | Core {self.project_name} functionality | Main Service | src/main.py | tests/test_main.py | ❌ |
+| {self.project_name.upper()}-FR-002 | MUST | User interface for {self.project_purpose} | UI Component | src/ui/ | tests/test_ui.py | ❌ |
+| {self.project_name.upper()}-NFR-001 | MUST | System performance requirements | All Components | - | tests/performance/ | ❌ |
+| {self.project_name.upper()}-NFR-002 | MUST | Security and authentication | Auth Service | src/auth/ | tests/test_auth.py | ❌ |"""
+        
+        # Replace the template rows
+        content = content.replace(
+            "| FR-001 | MUST | [Feature] | [Service] | [path/file.ext] | [test/file.ext] | ❌ |\n| FR-002 | MUST | | | | | ❌ |\n| NFR-001 | MUST | [Performance/Security] | | | | ❌ |\n| NFR-002 | MUST | | | | | ❌ |",
+            project_reqs
+        )
+        
+        return content
+    
+    def _customize_system_invariants(self, content: str) -> str:
+        """Add project-specific invariants"""
+        # Add project-specific invariants to existing examples
+        project_invariants = f"""
+### {self.project_name} Specific
+- [ ] **INV-{self.project_name.upper()[:3]}001**: {self.project_purpose} data is always validated
+- [ ] **INV-{self.project_name.upper()[:3]}002**: System state remains consistent during operations
+- [ ] **INV-{self.project_name.upper()[:3]}003**: User inputs are properly sanitized
+- [ ] **INV-{self.project_name.upper()[:3]}004**: Error conditions are handled gracefully
+- [ ] **INV-{self.project_name.upper()[:3]}005**: System resources are properly managed"""
+        
+        # Insert after the existing User Data section
+        insert_point = "- [ ] **INV-U005**: [Add your invariant]"
+        if insert_point in content:
+            content = content.replace(insert_point, f"- [ ] **INV-U005**: User data integrity maintained{project_invariants}")
+        
+        return content
+    
     def create_gitignore(self) -> bool:
         """Create comprehensive .gitignore file"""
         gitignore_path = self.project_dir / ".gitignore"
@@ -967,6 +1073,11 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
             else:
                 print(f"❌ Failed to download {remote}")
         
+        # Detect project language first
+        print("\n🔍 Detecting project language...")
+        language = self.detect_project_language()
+        print(f"✅ Detected language: {language}")
+        
         # Create directory structure
         print("\n📁 Creating directory structure...")
         dirs = [
@@ -997,11 +1108,6 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         for dir_path in dirs:
             (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
             print(f"✅ Created {dir_path}/")
-        
-        # Detect project language
-        print("\n🔍 Detecting project language...")
-        language = self.detect_project_language()
-        print(f"✅ Detected language: {language}")
         
         # Always use hierarchical system for new installations
         if (self.project_dir / "CLAUDE-CORE.md").exists():
@@ -1049,6 +1155,9 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         # Create comprehensive .gitignore
         print("\n📝 Setting up .gitignore...")
         self.create_gitignore()
+        
+        # Customize architecture templates with project-specific content
+        self.customize_architecture_templates()
         
         # Create initial test
         print("\n🧪 Creating initial test...")
@@ -1230,6 +1339,9 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         # Setup .gitignore
         print("\n📝 Setting up .gitignore...")
         self.create_organized_gitignore()
+        
+        # Customize architecture templates with project-specific content
+        self.customize_architecture_templates()
         
         # Install agents in .sdlc/agents
         print("\n🤖 Installing AI agents to .sdlc/agents/...")

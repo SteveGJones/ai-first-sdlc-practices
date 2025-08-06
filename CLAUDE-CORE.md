@@ -18,6 +18,8 @@ Uncompromising methodology for AI agents as mandatory developers with ruthless q
 
 Before ANY code: `python tools/validation/validate-architecture.py --strict` (MUST PASS)
 
+**🚧 If you see "BOOTSTRAP MODE" - this is NORMAL for fresh installs. Load CLAUDE-CONTEXT-architecture.md for complete guidance.**
+
 ### Required Architecture Documents (ALL 6):
 1. requirements-traceability-matrix.md
 2. what-if-analysis.md

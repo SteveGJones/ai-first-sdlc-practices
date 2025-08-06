@@ -2,6 +2,54 @@
 
 Load when creating architecture documents or implementing Zero Technical Debt policy.
 
+## 🚧 BOOTSTRAP MODE - AI Setup Required
+
+When you first run architecture validation on a fresh framework installation, you'll see:
+
+```
+🚀 BOOTSTRAP MODE - Architecture Template Setup
+✨ Fresh installation detected - AI should complete templates
+📝 Templates will be validated for basic structure only
+🎯 Goal: Create project-specific architecture documents
+```
+
+**This is NORMAL and EXPECTED for fresh installs.**
+
+### What Bootstrap Mode Means
+- Framework was just installed via setup-smart.py
+- Architecture templates exist but are unmodified
+- System is ready for you to customize templates for this specific project
+- You can proceed with template customization
+
+### Bootstrap Mode Progression
+1. **Bootstrap**: 70%+ templates unmodified → AI completes templates
+2. **Intermediate**: Some templates done → AI finishes remaining
+3. **Strict**: All templates customized → Full validation enforced
+
+### Your Next Steps in Bootstrap Mode
+1. **DO NOT PANIC** - this is the expected starting state
+2. Run validation to see which templates need customization:
+   ```bash
+   python tools/validation/validate-architecture.py --strict
+   ```
+3. The system will show you exactly what to do:
+   ```
+   ✅ WHAT TO DO:
+   1. Copy architecture templates to docs/architecture/
+   2. Replace ALL placeholders with project-specific content:
+      - [Feature Name] → Actual feature name
+      - [Your specific details] → Real project details
+   ```
+4. Templates are in `templates/architecture/` - copy and modify for your project needs
+5. Replace ALL template placeholders like `[Feature Name]`, `[Database Type]`, etc.
+6. Focus on creating meaningful, project-specific content (not generic text)
+7. Re-run validation to progress from bootstrap → intermediate → strict
+
+### Bootstrap Mode Benefits
+- **You can write code AFTER completing templates**
+- **Bootstrap mode allows warnings but not errors**
+- **System guides you through each step**
+
 ## Architecture-First Workflow
 
 ```bash
@@ -10,6 +58,36 @@ python tools/validation/validate-architecture.py --strict
 ```
 
 If validation fails, STOP. Create missing documents first.
+
+### Fresh Installation Bootstrap Process
+
+For new framework installations, the validation runs in **Bootstrap Mode** automatically:
+
+1. **Bootstrap Mode Detection**: Validates templates exist and have basic structure
+2. **AI Action Required**: Copy templates from `templates/architecture/` to `docs/architecture/`
+3. **Template Customization**: Replace ALL placeholders with project-specific content:
+   - `[Feature Name]` → Actual feature being built
+   - `[YYYY-MM-DD]` → Current date
+   - `[Team/Roles responsible]` → Your project context
+   - `FR-001, NFR-001` → Real requirements with meaningful IDs
+4. **Progress to Intermediate Mode**: Once templates are customized, validation becomes stricter
+5. **Final Strict Mode**: When all documents are complete, normal zero-debt validation applies
+
+**Bootstrap Workflow for AI Agents**:
+```bash
+# 1. Check current state
+python tools/validation/validate-architecture.py
+
+# 2. If bootstrap mode detected, copy and customize ALL templates:
+cp templates/architecture/*.md docs/architecture/
+
+# 3. Edit each file to replace placeholders with real content
+
+# 4. Validate again - should progress to next mode
+python tools/validation/validate-architecture.py
+
+# 5. Only when strict mode passes can you write code
+```
 
 ## Required Documents (ALL 6)
 

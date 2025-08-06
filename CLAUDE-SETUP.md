@@ -139,4 +139,25 @@ pip install click pyyaml
 - Check repository settings
 
 ## Next Steps
-After setup, return to CLAUDE-CORE.md for development workflow.
+
+After setup, when you begin development work:
+
+### 1. Architecture Validation (EXPECTED BEHAVIOR)
+```bash
+python tools/validation/validate-architecture.py --strict
+```
+
+**🚧 You will see "BOOTSTRAP MODE" - this is NORMAL and EXPECTED for fresh installs.**
+
+Bootstrap mode means:
+- Templates were installed but not yet customized for your project
+- System is waiting for you to complete architecture documents
+- This is the correct starting state, not an error
+
+### 2. Complete Architecture Setup
+- Load CLAUDE-CONTEXT-architecture.md for detailed bootstrap guidance
+- Customize the 6 required architecture templates for your specific project
+- System will progress from bootstrap → intermediate → strict validation
+
+### 3. Resume Development
+After architecture documents are complete, return to CLAUDE-CORE.md for normal development workflow.

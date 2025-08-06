@@ -18,12 +18,13 @@ import subprocess
 class ArchitectureValidator:
     """Validates that all architectural requirements are met before coding"""
     
-    def __init__(self, project_root: Optional[Path] = None):
+    def __init__(self, project_root: Optional[Path] = None, mode: str = "strict"):
         self.project_root = project_root or Path.cwd()
         self.results = []
         self.has_errors = False
         self.has_warnings = False
         self.architecture_dir = self.project_root / "docs" / "architecture"
+        self.mode = mode  # bootstrap, intermediate, strict
         
         # Required documents with their validation rules
         self.required_docs = {
@@ -36,24 +37,190 @@ class ArchitectureValidator:
         
         # ADRs are in a subdirectory
         self.adr_dir = self.architecture_dir / "decisions"
+        
+        # Template markers that indicate unmodified templates
+        self.template_markers = [
+            "[Feature Name]", "[YYYY-MM-DD]", "[Team/Roles responsible]",
+            "[Add your invariant]", "[Service]", "[path/file.ext]", 
+            "[test/file.ext]", "FR-001", "NFR-001"
+        ]
     
     def validate(self) -> bool:
         """Run all architecture validations"""
-        print("🛑 STOP - Architecture Validation REQUIRED")
-        print("=" * 60)
-        print("\n⚠️  YOU ARE FORBIDDEN FROM WRITING CODE UNTIL THIS PASSES")
-        print("⚠️  NO EXCEPTIONS. NO EXCUSES. NO WORKAROUNDS.\n")
+        # Auto-detect mode if not specified
+        if self.mode == "strict":
+            detected_mode = self._detect_validation_mode()
+            if detected_mode != "strict":
+                self.mode = detected_mode
+                print(f"🤖 Auto-detected validation mode: {self.mode}")
+        
+        self._print_validation_header()
         
         # Check architecture directory exists
         if not self.architecture_dir.exists():
-            self.add_error(
-                "Architecture Directory",
-                "docs/architecture/ directory not found",
-                "Create directory: mkdir -p docs/architecture/decisions"
-            )
-            self._print_results()
-            return False
+            if self.mode == "bootstrap":
+                self.add_warning(
+                    "Architecture Directory",
+                    "docs/architecture/ directory not found - will be created",
+                    "AI should create: mkdir -p docs/architecture/decisions"
+                )
+            else:
+                self.add_error(
+                    "Architecture Directory",
+                    "docs/architecture/ directory not found",
+                    "Create directory: mkdir -p docs/architecture/decisions"
+                )
+                self._print_results()
+                return False
         
+        return self._run_mode_specific_validation()
+    
+    def _detect_validation_mode(self) -> str:
+        """Auto-detect appropriate validation mode based on project state"""
+        if not self.architecture_dir.exists():
+            return "bootstrap"
+        
+        # Check if templates exist and are unmodified
+        unmodified_templates = 0
+        total_templates = 0
+        
+        for doc_name in self.required_docs.keys():
+            doc_path = self.architecture_dir / doc_name
+            if doc_path.exists():
+                total_templates += 1
+                content = doc_path.read_text()
+                
+                # Count template markers
+                marker_count = sum(1 for marker in self.template_markers if marker in content)
+                if marker_count >= 3:  # Still has significant template content
+                    unmodified_templates += 1
+        
+        if total_templates == 0:
+            return "bootstrap"
+        elif unmodified_templates >= total_templates * 0.7:  # 70% still templates
+            return "bootstrap"
+        elif unmodified_templates > 0:
+            return "intermediate"
+        else:
+            return "strict"
+    
+    def _print_validation_header(self):
+        """Print mode-appropriate validation header"""
+        if self.mode == "bootstrap":
+            print("🚀 BOOTSTRAP MODE - Architecture Template Setup")
+            print("=" * 60)
+            print("\n✨ Fresh installation detected - AI should complete templates")
+            print("📝 Templates will be validated for basic structure only")
+            print("🎯 Goal: Create project-specific architecture documents\n")
+        elif self.mode == "intermediate":
+            print("🔄 INTERMEDIATE MODE - Architecture In Progress")
+            print("=" * 60)
+            print("\n📝 Some templates completed, others still need work")
+            print("🎯 Goal: Complete ALL architecture documents")
+            print("⚠️  Code forbidden until all documents are complete\n")
+        else:
+            print("🛑 STRICT MODE - Architecture Validation REQUIRED")
+            print("=" * 60)
+            print("\n⚠️  YOU ARE FORBIDDEN FROM WRITING CODE UNTIL THIS PASSES")
+            print("⚠️  NO EXCEPTIONS. NO EXCUSES. NO WORKAROUNDS.\n")
+    
+    def _run_mode_specific_validation(self) -> bool:
+        """Run validation appropriate for current mode"""
+        if self.mode == "bootstrap":
+            return self._validate_bootstrap_mode()
+        elif self.mode == "intermediate":
+            return self._validate_intermediate_mode()
+        else:
+            return self._validate_strict_mode()
+    
+    def _validate_bootstrap_mode(self) -> bool:
+        """Bootstrap validation - guide AI to complete templates"""
+        print("🔍 Checking template presence and basic structure...")
+        
+        # Check each required document
+        for doc_name, validator in self.required_docs.items():
+            doc_path = self.architecture_dir / doc_name
+            print(f"\n📄 Checking {doc_name}...")
+            
+            if not doc_path.exists():
+                self.add_warning(
+                    doc_name,
+                    "Template not found - needs to be created",
+                    f"AI should copy and customize: templates/architecture/{doc_name}"
+                )
+            else:
+                content = doc_path.read_text()
+                marker_count = sum(1 for marker in self.template_markers if marker in content)
+                
+                if marker_count >= 3:
+                    self.add_warning(
+                        doc_name,
+                        "Still contains template placeholders - needs customization",
+                        "AI should replace placeholders with project-specific content"
+                    )
+                else:
+                    self.add_success(doc_name, "Has been customized with project content")
+        
+        # Check for ADRs directory
+        if not self.adr_dir.exists():
+            self.add_warning(
+                "ADR Directory",
+                "decisions/ directory missing",
+                "AI should create: mkdir -p docs/architecture/decisions"
+            )
+        
+        self._print_results()
+        self._print_bootstrap_guidance()
+        
+        return not self.has_errors  # Warnings are OK in bootstrap mode
+    
+    def _validate_intermediate_mode(self) -> bool:
+        """Intermediate validation - some docs done, others need work"""
+        print("🔍 Checking completion status of architecture documents...")
+        
+        completed_docs = 0
+        
+        for doc_name, validator in self.required_docs.items():
+            doc_path = self.architecture_dir / doc_name
+            print(f"\n📄 Checking {doc_name}...")
+            
+            if not doc_path.exists():
+                self.add_error(
+                    doc_name,
+                    "Required document missing",
+                    f"AI must create from template: templates/architecture/{doc_name}"
+                )
+            else:
+                content = doc_path.read_text()
+                marker_count = sum(1 for marker in self.template_markers if marker in content)
+                
+                if marker_count >= 3:
+                    self.add_error(
+                        doc_name,
+                        "Still contains template placeholders",
+                        "AI must complete with project-specific content"
+                    )
+                else:
+                    # Light validation - check basic structure
+                    validator(doc_path)
+                    completed_docs += 1
+        
+        # Check ADRs
+        print("\n📄 Checking Architecture Decision Records...")
+        self._validate_adrs()
+        
+        self._print_results()
+        
+        if self.has_errors:
+            print("\n⚠️  ARCHITECTURE INCOMPLETE - Continue completing documents")
+            return False
+        else:
+            print("\n✅ ARCHITECTURE COMPLETE - Switching to strict validation")
+            print("🔄 Run again to verify strict compliance")
+            return True
+    
+    def _validate_strict_mode(self) -> bool:
+        """Full strict validation - all documents must be complete"""
         # Validate each required document
         for doc_name, validator in self.required_docs.items():
             doc_path = self.architecture_dir / doc_name
@@ -80,8 +247,8 @@ class ArchitectureValidator:
             print("\n🚫 ARCHITECTURE VALIDATION FAILED - CODE FORBIDDEN")
             print("=" * 60)
             print("\n⛔ YOU MUST:")
-            print("1. cp templates/architecture/*.md docs/architecture/")
-            print("2. Complete EVERY document FULLY")
+            print("1. Complete ALL architecture documents FULLY")
+            print("2. Remove ALL template placeholders")
             print("3. Run this validation again")
             print("\n⛔ YOU MAY NOT:")
             print("- Write ANY code")
@@ -93,6 +260,26 @@ class ArchitectureValidator:
         
         print("\n✅ ARCHITECTURE COMPLETE - You may now write code")
         return True
+    
+    def _print_bootstrap_guidance(self):
+        """Print guidance for AI in bootstrap mode"""
+        print("\n" + "=" * 60)
+        print("🤖 GUIDANCE FOR AI COMPLETION")
+        print("=" * 60)
+        print("\n✅ WHAT TO DO:")
+        print("1. Copy architecture templates to docs/architecture/")
+        print("2. Replace ALL placeholders with project-specific content:")
+        print("   - [Feature Name] → Actual feature name")
+        print("   - [YYYY-MM-DD] → Current date")
+        print("   - [Team/Roles responsible] → Your project context")
+        print("   - FR-001, NFR-001 → Real requirements")
+        print("3. Create at least one ADR in docs/architecture/decisions/")
+        print("4. Run validation again to progress to next mode")
+        print("\n⚠️  IMPORTANT:")
+        print("- You can write code AFTER completing templates")
+        print("- Bootstrap mode allows warnings but not errors")
+        print("- Focus on creating meaningful, project-specific content")
+        print("\n🎯 Goal: Transform generic templates into project documentation")
     
     def _validate_requirements_matrix(self, doc_path: Path) -> None:
         """Validate Requirements Traceability Matrix"""
@@ -444,6 +631,12 @@ def main():
         help="Project root directory (default: current directory)"
     )
     parser.add_argument(
+        "--mode",
+        choices=["bootstrap", "intermediate", "strict"],
+        default="strict",
+        help="Validation mode (default: auto-detect)"
+    )
+    parser.add_argument(
         "--export",
         choices=["json", "markdown"],
         help="Export results in specified format"
@@ -455,13 +648,16 @@ def main():
     parser.add_argument(
         "--strict",
         action="store_true",
-        help="Treat warnings as errors"
+        help="Force strict mode (treat warnings as errors)"
     )
     
     args = parser.parse_args()
     
+    # Force strict mode if requested
+    mode = "strict" if args.strict else args.mode
+    
     # Run validation
-    validator = ArchitectureValidator(args.project_root)
+    validator = ArchitectureValidator(args.project_root, mode)
     success = validator.validate()
     
     # Handle strict mode
