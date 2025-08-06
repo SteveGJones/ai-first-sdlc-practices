@@ -441,7 +441,7 @@ class ValidationPipeline:
                 subprocess.run(check_cmd, capture_output=True, check=True)
 
                 # Run linter
-                _result =
+                result = subprocess.run(
                     lint_cmd, capture_output=True, text=True, timeout=30
                 )
 

@@ -333,7 +333,7 @@ class ContextManager:
 
         for cmd, name in linters:
             try:
-                _result =
+                result = subprocess.run(cmd, capture_output=True, timeout=30)
                 if result.returncode == 0:
                     return f"✅ {name}: No issues"
                 else:
