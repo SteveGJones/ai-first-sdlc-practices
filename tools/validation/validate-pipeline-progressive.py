@@ -219,9 +219,9 @@ class ProgressiveValidationPipeline(ValidationPipeline):
 
                 if output.returncode == 0:
                     todo_count = len(output.stdout.strip().split("\n"))
-                    result["details"] = (
-                        f"Found {todo_count} TODO/FIXME markers (allowed in prototype)"
-                    )
+                    result[
+                        "details"
+                    ] = f"Found {todo_count} TODO/FIXME markers (allowed in prototype)"
                     result["status"] = "info"
 
             except Exception:

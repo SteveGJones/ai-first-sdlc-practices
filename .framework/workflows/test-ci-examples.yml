@@ -36,14 +36,7 @@ jobs:
         echo "=== Validating GitLab CI configuration ==="
         yamllint examples/ci-cd/gitlab/.gitlab-ci.yml
         # Also validate with Python to check structure
-        python -c "
-import yaml
-with open('examples/ci-cd/gitlab/.gitlab-ci.yml', 'r') as f:
-    config = yaml.safe_load(f)
-    assert 'stages' in config, 'Missing stages in GitLab CI'
-    assert 'validate:ai-sdlc' in config, 'Missing main validation job'
-    print('✅ GitLab CI configuration is valid')
-        "
+        python3 -c "import yaml; f = open('examples/ci-cd/gitlab/.gitlab-ci.yml', 'r'); config = yaml.safe_load(f); f.close(); assert 'stages' in config, 'Missing stages in GitLab CI'; assert 'validate:ai-sdlc' in config, 'Missing main validation job'; print('✅ GitLab CI configuration is valid')"
 
     - name: Validate Azure Pipelines configuration
       run: |

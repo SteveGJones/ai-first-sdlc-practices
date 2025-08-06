@@ -242,29 +242,29 @@ deployment:
 
   checklist:
     one_week_before:
-      - [ ] CAB approval obtained
-      - [ ] All compliance docs updated
-      - [ ] Disaster recovery tested
-      - [ ] Runbooks updated
-      - [ ] Team training completed
+      - "[ ] CAB approval obtained"
+      - "[ ] All compliance docs updated"
+      - "[ ] Disaster recovery tested"
+      - "[ ] Runbooks updated"
+      - "[ ] Team training completed"
 
     one_day_before:
-      - [ ] Final security scan
-      - [ ] Performance benchmarks verified
-      - [ ] Rollback plan tested
-      - [ ] Communication sent
-      - [ ] On-call schedule confirmed
+      - "[ ] Final security scan"
+      - "[ ] Performance benchmarks verified"
+      - "[ ] Rollback plan tested"
+      - "[ ] Communication sent"
+      - "[ ] On-call schedule confirmed"
 
     deployment_day:
-      - [ ] Pre-deployment validation passed
-      - [ ] Monitoring dashboards ready
-      - [ ] Incident response team standby
-      - [ ] Stakeholders notified
-      - [ ] War room established
+      - "[ ] Pre-deployment validation passed"
+      - "[ ] Monitoring dashboards ready"
+      - "[ ] Incident response team standby"
+      - "[ ] Stakeholders notified"
+      - "[ ] War room established"
 
     post_deployment:
-      - [ ] All stages successfully completed
-      - [ ] Metrics within tolerance
-      - [ ] No customer escalations
-      - [ ] Audit trail complete
-      - [ ] Post-mortem scheduled
+      - "[ ] All stages successfully completed"
+      - "[ ] Metrics within tolerance"
+      - "[ ] No customer escalations"
+      - "[ ] Audit trail complete"
+      - "[ ] Post-mortem scheduled"

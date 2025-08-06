@@ -58,7 +58,13 @@
       "path": "core/sdlc-enforcer.md",
       "priority": "critical",
       "dependencies": [],
-      "keywords": ["compliance", "enforcement", "critical", "zero technical debt", "validation"]
+      "keywords": [
+        "compliance",
+        "enforcement",
+        "critical",
+        "zero technical debt",
+        "validation"
+      ]
     },
     "critical-goal-reviewer": {
       "version": "1.0.0",
@@ -82,7 +88,9 @@
       "description": "Comprehensive compliance auditing across projects. Identifies compliance gaps, tracks remediation, generates audit reports, and ensures adherence to AI-First SDLC standards and regulations.",
       "path": "core/compliance-auditor.md",
       "priority": "high",
-      "dependencies": ["sdlc-enforcer"]
+      "dependencies": [
+        "sdlc-enforcer"
+      ]
     },
     "devops-specialist": {
       "version": "1.0.0",
@@ -146,8 +154,15 @@
       "description": "Post-installation advisor for AI-First SDLC practices, checking for updates, reviewing compliance, providing troubleshooting guidance, and helping discover the right AI agents for project needs.",
       "path": "sdlc/ai-first-kick-starter.md",
       "priority": "medium",
-      "dependencies": ["framework-validator"],
-      "keywords": ["maintenance", "updates", "agent discovery", "recommendations"]
+      "dependencies": [
+        "framework-validator"
+      ],
+      "keywords": [
+        "maintenance",
+        "updates",
+        "agent discovery",
+        "recommendations"
+      ]
     },
     "mcp-test-agent": {
       "version": "1.0.0",
@@ -155,8 +170,16 @@
       "description": "Automated testing specialist for MCP servers, acting as a naive AI client to validate functionality, reliability, and usability with statistical validation and personality variations.",
       "path": "ai-development/mcp-test-agent.md",
       "priority": "high",
-      "dependencies": ["mcp-server-architect"],
-      "keywords": ["mcp", "testing", "ai client", "validation", "statistical"]
+      "dependencies": [
+        "mcp-server-architect"
+      ],
+      "keywords": [
+        "mcp",
+        "testing",
+        "ai client",
+        "validation",
+        "statistical"
+      ]
     },
     "mcp-quality-assurance": {
       "version": "1.0.0",
@@ -164,8 +187,16 @@
       "description": "Quality assurance specialist for MCP server development, ensuring specification compliance, security best practices, and production readiness with version awareness.",
       "path": "ai-development/mcp-quality-assurance.md",
       "priority": "high",
-      "dependencies": ["mcp-server-architect"],
-      "keywords": ["mcp", "quality", "security", "compliance", "production"]
+      "dependencies": [
+        "mcp-server-architect"
+      ],
+      "keywords": [
+        "mcp",
+        "quality",
+        "security",
+        "compliance",
+        "production"
+      ]
     }
   },
   "core_agents": [

@@ -8,7 +8,11 @@ repos:
     hooks:
       - id: no-commit-to-main
         name: Block commits to main branch
-        entry: bash -c 'if [[ $(git symbolic-ref HEAD) == "refs/heads/main" ]]; then echo "❌ Direct commits to main branch are forbidden!"; echo "📝 Create a feature branch: git checkout -b feature/your-feature"; exit 1; fi'
+        entry: >
+          bash -c 'if [[ $(git symbolic-ref HEAD) == "refs/heads/main" ]]; then
+          echo "❌ Direct commits to main branch are forbidden!";
+          echo "📝 Create a feature branch: git checkout -b feature/your-feature";
+          exit 1; fi'
         language: system
         pass_filenames: false
         always_run: true

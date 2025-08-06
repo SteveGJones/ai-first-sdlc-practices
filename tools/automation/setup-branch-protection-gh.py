@@ -524,7 +524,9 @@ Examples:
             mode_str = "Solo Developer" if solo_mode else "Team Collaboration"
             print(f"🎯 Detected mode: {mode_str}")
         else:
-            print("⚠️  Could not analyze collaboration pattern, defaulting to team mode")
+            print(
+                "⚠️  Could not analyze collaboration pattern, defaulting to team mode"
+            )
             solo_mode = False
 
     # Check for existing approval bots

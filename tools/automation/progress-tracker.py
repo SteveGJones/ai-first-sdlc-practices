@@ -268,7 +268,9 @@ class ProgressTracker:
                         else (
                             "🚫"
                             if status == "blocked"
-                            else "⏸️" if status == "pending" else "✅"
+                            else "⏸️"
+                            if status == "pending"
+                            else "✅"
                         )
                     )
                     report += f"- {marker} {todo.content}"
@@ -378,7 +380,9 @@ def main():
                     else (
                         "🚧"
                         if todo.status == TodoStatus.IN_PROGRESS
-                        else "🚫" if todo.status == TodoStatus.BLOCKED else "⏸️"
+                        else "🚫"
+                        if todo.status == TodoStatus.BLOCKED
+                        else "⏸️"
                     )
                 )
 
@@ -388,7 +392,9 @@ def main():
                     else (
                         "🟡"
                         if todo.priority == TodoPriority.HIGH
-                        else "🟢" if todo.priority == TodoPriority.MEDIUM else "⚪"
+                        else "🟢"
+                        if todo.priority == TodoPriority.MEDIUM
+                        else "⚪"
                     )
                 )
 

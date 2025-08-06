@@ -51,7 +51,7 @@ deployment:
     validation_duration: "< 2 minutes"
 
   checklist:
-    - [ ] Feature intent documented
-    - [ ] Basic tests passing (if any)
-    - [ ] Development environment accessible
-    - [ ] Team notified (if applicable)
+    - "[ ] Feature intent documented"
+    - "[ ] Basic tests passing (if any)"
+    - "[ ] Development environment accessible"
+    - "[ ] Team notified (if applicable)"

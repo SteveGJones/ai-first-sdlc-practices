@@ -115,18 +115,18 @@ deployment:
 
   checklist:
     pre_deployment:
-      - [ ] All 6 architecture documents complete
-      - [ ] Zero technical debt validation passed
-      - [ ] Test coverage > 80%
-      - [ ] Security scan clean
-      - [ ] Performance benchmarks met
-      - [ ] Retrospective updated
-      - [ ] Agent approvals obtained
-      - [ ] Rollback plan tested
+      - "[ ] All 6 architecture documents complete"
+      - "[ ] Zero technical debt validation passed"
+      - "[ ] Test coverage > 80%"
+      - "[ ] Security scan clean"
+      - "[ ] Performance benchmarks met"
+      - "[ ] Retrospective updated"
+      - "[ ] Agent approvals obtained"
+      - "[ ] Rollback plan tested"
 
     post_deployment:
-      - [ ] Health checks green
-      - [ ] Metrics within tolerance
-      - [ ] No customer complaints
-      - [ ] Team debriefed
-      - [ ] Documentation updated
+      - "[ ] Health checks green"
+      - "[ ] Metrics within tolerance"
+      - "[ ] No customer complaints"
+      - "[ ] Team debriefed"
+      - "[ ] Documentation updated"
