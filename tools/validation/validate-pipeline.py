@@ -342,7 +342,7 @@ class ValidationPipeline:
                     return
 
                 # Run tests
-                _result =
+                result = subprocess.run(
                     test_cmd, capture_output=True, text=True, timeout=60
                 )
 

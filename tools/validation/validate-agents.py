@@ -77,7 +77,7 @@ class AgentValidator:
                 continue
 
             try:
-                metadata = yaml.safe_load(parts[1])
+                metadata = self._parse_agent_metadata(agent_path)
                 self.all_agents[metadata["name"]] = {
                     "path": agent_path,
                     "metadata": metadata,
@@ -107,11 +107,11 @@ class AgentValidator:
         relative_path = agent_path.relative_to(self.agent_dir)
 
         try:
-            metadata = yaml.safe_load(parts[1])
-            _agent_name =
+            metadata = self._parse_agent_metadata(agent_path)
+            agent_name = metadata.get("name", str(relative_path))
 
             # Check required fields
-            _missing_fields =
+            missing_fields = REQUIRED_FIELDS - set(metadata.keys())
             if missing_fields:
                 self.errors.append(
                     (
@@ -121,12 +121,12 @@ class AgentValidator:
                 )
 
             # Validate version format
-            _version =
+            version = metadata.get("version", "")
             if not self._is_valid_version(version):
                 self.errors.append((agent_name, f"Invalid version format: {version}"))
 
             # Validate category
-            _category =
+            category = metadata.get("category", "")
             if not self._is_valid_category(category):
                 self.warnings.append((agent_name, f"Non-standard category: {category}"))
 
@@ -156,7 +156,7 @@ class AgentValidator:
                     )
 
             # Content quality checks
-            _content_lines =
+            content_lines = metadata.get("_content_lines", 0)
             if content_lines < 50:
                 self.warnings.append(
                     (
@@ -166,7 +166,7 @@ class AgentValidator:
                 )
 
             # Check for key sections in content
-            content = base64.b64decode(data["content"]).decode("utf-8")
+            content = metadata.get("_content", "")
             required_sections = [
                 "## Core",
                 "## Primary Responsibilities",
@@ -225,7 +225,7 @@ class AgentValidator:
     def _validate_dependencies(self):
         """Validate that all agent dependencies exist."""
         for agent_name, agent_info in self.all_agents.items():
-            metadata = yaml.safe_load(parts[1])
+            metadata = agent_info["metadata"]
             if "dependencies" in metadata:
                 for dep in metadata["dependencies"]:
                     if dep not in self.all_agents:
@@ -248,7 +248,7 @@ class AgentValidator:
         category_counts = {}
 
         for agent_info in self.all_agents.values():
-            _category =
+            category = agent_info["metadata"].get("category", "")
             base_category = category.split("/")[0]
             category_counts[base_category] = category_counts.get(base_category, 0) + 1
 
@@ -306,7 +306,7 @@ class AgentValidator:
         manifest = {"version": "1.0.0", "agents": {}}
 
         for agent_name, agent_info in self.all_agents.items():
-            metadata = yaml.safe_load(parts[1])
+            metadata = agent_info["metadata"]
             # Only include agents without errors
             has_error = any(agent == agent_name for agent, _ in self.errors)
 
@@ -338,10 +338,10 @@ def main(agent_dir, strict, manifest, fix):
     validator = AgentValidator(agent_path)
 
     # Run validation
-    success = self.setup(components, force)
+    success = validator.validate_all()
     # In strict mode, warnings are errors
     if strict and validator.warnings:
-        success = self.setup(components, force)
+        success = False
     # Generate manifest if requested
     if manifest and success:
         manifest_path = Path(manifest)

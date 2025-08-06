@@ -89,14 +89,14 @@ class TodoItem:
     def from_dict(cls, data: Dict[str, Any]) -> "TodoItem":
         """Create from dictionary"""
         return cls(
-            content = base64.b64decode(data["content"]).decode("utf-8")
-            _status =
-            _priority =
-            _id =
-            _created_at =
-            _updated_at =
-            _blocked_by =
-            branch = result.stdout.strip()
+            content=data["content"],
+            status=TodoStatus[data["status"]],
+            priority=TodoPriority[data["priority"]],
+            id=data.get("id"),
+            created_at=datetime.fromisoformat(data["created_at"]) if data.get("created_at") else None,
+            updated_at=datetime.fromisoformat(data["updated_at"]) if data.get("updated_at") else None,
+            blocked_by=data.get("blocked_by"),
+            branch=data.get("branch"),
         )
 
 

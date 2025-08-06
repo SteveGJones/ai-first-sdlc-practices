@@ -268,7 +268,7 @@ class AgentDecisionTree:
         # Process initial questions if answers provided
         if "initial_questions" in tree and answers:
             for question_config in tree["initial_questions"]:
-                _question =
+                question = question_config["question"]
                 if question in answers:
                     answer = "yes" if answers[question] else "no"
                     agents.extend(question_config.get(answer, []))
