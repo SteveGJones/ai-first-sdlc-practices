@@ -372,7 +372,7 @@ target-version = ['py39']
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
-warn_unused_configs = None  # TODO: Fix this assignment
+warn_unused_configs = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
@@ -585,7 +585,7 @@ mypy .
         sdlc_dir.mkdir(exist_ok=True)
 
         # Create level configuration
-        level_config = None  # TODO: Fix this assignment
+        level_config = {
             "level": self.sdlc_level,
             "set_date": subprocess.run(
                 ["date", "+%Y-%m-%dT%H:%M:%S"], capture_output=True, text=True
@@ -1821,7 +1821,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         if platform not in self.CI_CONFIGS:
             return False
 
-        remote_path = None  # TODO: Fix this assignment
+        remote_path = self.CI_CONFIGS[platform]
         # Determine local path based on platform
         if platform == "github":
             local_path = self.project_dir / ".github" / "workflows" / "ai-sdlc.yml"
@@ -1832,7 +1832,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         elif platform == "azure":
             local_path = self.project_dir / "azure-pipelines.yml"
         elif platform == "circleci":
-            local_path = None  # TODO: Fix this assignment
+            local_path = self.project_dir / ".circleci" / "config.yml"
         else:
             # This should never happen due to the check above, but be safe
             return False
@@ -1871,7 +1871,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
     def run_validation(self) -> bool:
         """Run initial validation"""
         try:
-            result = None  # TODO: Fix this assignment
+            result = subprocess.run(
                 ["python", "tools/validate-pipeline.py", "--ci"],
                 cwd=self.project_dir,
                 capture_output=True,
@@ -1939,7 +1939,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 if self.download_file(
                     "tools/automation/setup-branch-protection-gh.py", gh_script_path
                 ):
-                    result = None  # TODO: Fix this assignment
+                    result = subprocess.run(
                         ["python", str(gh_script_path), "--branch", "main"],
                         cwd=self.project_dir,
                         capture_output=True,
@@ -1960,7 +1960,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("   ℹ️  No GitHub token provided and gh CLI not available")
                 return False
             # Get repository info from git remote
-            result = None  # TODO: Fix this assignment
+            result = subprocess.run(
                 ["git", "remote", "get-url", "origin"],
                 cwd=self.project_dir,
                 capture_output=True,
@@ -1971,7 +1971,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("❌ Could not determine repository URL")
                 return False
 
-            remote_url = None  # TODO: Fix this assignment
+            remote_url = result.stdout.strip()
             # Extract owner/repo from URL
             # Handle both HTTPS and SSH URLs
             import re
@@ -1995,7 +1995,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                     self.project_dir / "tools" / "setup-branch-protection.py"
                 )
                 if protection_script.exists():
-                    result = None  # TODO: Fix this assignment
+                    result = subprocess.run(
                         [
                             "python",
                             str(protection_script),
@@ -2069,7 +2069,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                     and self.project_purpose != "AI-assisted software development"
                 ):
                     # Create a temp file with analysis including objectives
-                    analysis_data = None  # TODO: Fix this assignment
+                    analysis_data = {
                         "languages": (
                             {self.detected_language: {"files": 10, "percentage": 100}}
                             if self.detected_language
@@ -2092,7 +2092,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("   🚀 Installing essential agents...")
 
                 # Try to run the installer
-                result = None  # TODO: Fix this assignment
+                result = subprocess.run(cmd, cwd=self.project_dir, capture_output=True, text=True)
                 if result.returncode != 0:
                     # Fallback to downloading core agents directly
                     return self._install_core_agents_fallback()
@@ -2176,19 +2176,19 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
             # Try to get GitHub repo URL
             github_url = None
             try:
-                result = None  # TODO: Fix this assignment
+                result = subprocess.run(
                     ["git", "remote", "get-url", "origin"],
                     cwd=self.project_dir,
                     capture_output=True,
                     text=True,
                 )
                 if result.returncode == 0 and result.stdout.strip():
-                    github_url = None  # TODO: Fix this assignment
+                    github_url = result.stdout.strip()
             except Exception:
                 pass
 
             # Create project configuration
-            config = None  # TODO: Fix this assignment
+            config = {
                 "project_name": self.project_name,
                 "project_purpose": self.project_purpose,
                 "github_repository": github_url,
@@ -2216,7 +2216,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 },
             }
 
-            config_path = None  # TODO: Fix this assignment
+            config_path = self.project_dir / ".claude-project.json"
             with open(config_path, "w") as f:
                 json.dump(config, f, indent=2)
 
@@ -2322,7 +2322,7 @@ Run 'python tools/agent-installer.py' to install specialist agents.
 """
 
             # Check if there are changes to commit
-            result = None  # TODO: Fix this assignment
+            result = subprocess.run(
                 ["git", "status", "--porcelain"],
                 cwd=self.project_dir,
                 capture_output=True,
@@ -2495,7 +2495,7 @@ def main():
     parser.add_argument(
         "--ci-platform",
         choices=["github", "gitlab", "jenkins", "azure", "circleci", "none"],
-        help = None  # TODO: Fix this assignment
+        help="CI/CD platform to configure (default: auto-detect)"
     )
     parser.add_argument(
         "--quickstart",
@@ -2546,7 +2546,7 @@ def main():
         )
 
     # Run setup
-    success = None  # TODO: Fix this assignment
+    success = setup.run_setup(
         args.skip_ci, args.github_token, args.quickstart or args.organized
     )
 
