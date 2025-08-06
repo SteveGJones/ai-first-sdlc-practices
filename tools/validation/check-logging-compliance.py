@@ -9,16 +9,16 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Any, Union
 import argparse
 
 
 class LoggingComplianceChecker:
     """Validates that code includes mandatory logging"""
 
-    def __init__(self, project_root: Path = None):
+    def __init__(self, project_root: Optional[Path] = None):
         self.project_root = project_root or Path.cwd()
-        self.violations = []
+        self.violations: List[Dict[str, Any]] = []
         self.stats = {
             "files_checked": 0,
             "functions_checked": 0,
@@ -225,9 +225,9 @@ class LoggingComplianceChecker:
                 return True
         return False
 
-    def check_file(self, file_path: Path) -> List[Dict]:
+    def check_file(self, file_path: Path) -> List[Dict[str, Any]]:
         """Check a single file for logging compliance"""
-        violations = []
+        violations: List[Dict[str, Any]] = []
         self.stats["files_checked"] += 1
 
         try:
@@ -248,9 +248,9 @@ class LoggingComplianceChecker:
 
         return violations
 
-    def _check_sensitive_data(self, file_path: Path, content: str) -> List[Dict]:
+    def _check_sensitive_data(self, file_path: Path, content: str) -> List[Dict[str, Any]]:
         """Check for sensitive data being logged"""
-        violations = []
+        violations: List[Dict[str, Any]] = []
         lines = content.split("\n")
 
         log_patterns = self.log_patterns.get(file_path.suffix, [])
@@ -297,9 +297,9 @@ class LoggingComplianceChecker:
 
         return violations
 
-    def _check_python_file(self, file_path: Path, content: str) -> List[Dict]:
+    def _check_python_file(self, file_path: Path, content: str) -> List[Dict[str, Any]]:
         """Check Python file for logging compliance"""
-        violations = []
+        violations: List[Dict[str, Any]] = []
 
         try:
             tree = ast.parse(content)
@@ -322,10 +322,10 @@ class LoggingComplianceChecker:
         return violations
 
     def _check_python_function(
-        self, func_node: ast.FunctionDef, content: str, file_path: Path
-    ) -> List[Dict]:
+        self, func_node: Union[ast.FunctionDef, ast.AsyncFunctionDef], content: str, file_path: Path
+    ) -> List[Dict[str, Any]]:
         """Check if Python function has required logging"""
-        violations = []
+        violations: List[Dict[str, Any]] = []
         func_name = func_node.name
 
         # Get function lines
@@ -507,9 +507,9 @@ class LoggingComplianceChecker:
 
         return violations
 
-    def _check_javascript_file(self, file_path: Path, content: str) -> List[Dict]:
+    def _check_javascript_file(self, file_path: Path, content: str) -> List[Dict[str, Any]]:
         """Check JavaScript/TypeScript file for logging compliance"""
-        violations = []
+        violations: List[Dict[str, Any]] = []
 
         # Simple regex-based checking for JS/TS
         func_pattern = r"(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?(?:function|\())"
@@ -567,7 +567,7 @@ class LoggingComplianceChecker:
         patterns = self.log_patterns.get(file_ext, [])
         return any(re.search(pattern, code) for pattern in patterns)
 
-    def scan_project(self) -> Dict:
+    def scan_project(self) -> Dict[str, Any]:
         """Scan entire project for logging compliance"""
         print("🔍 Scanning for Logging Compliance...")
         print("=" * 60)
@@ -622,7 +622,7 @@ class LoggingComplianceChecker:
             return
 
         # Group violations by type
-        by_type = {}
+        by_type: Dict[str, List[Any]] = {}
         for v in self.violations:
             vtype = v["violation"]
             if vtype not in by_type:
@@ -675,7 +675,7 @@ class LoggingComplianceChecker:
         print("\nDetails: Load CLAUDE-CONTEXT-logging.md")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Check logging compliance for Zero Technical Debt"
     )

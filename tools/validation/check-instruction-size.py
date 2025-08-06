@@ -4,6 +4,7 @@ Validates instruction file sizes meet compression targets.
 """
 import sys
 from pathlib import Path
+from typing import List, Tuple
 
 # Size limits (in lines)
 LIMITS = {
@@ -19,7 +20,7 @@ LIMITS = {
 TARGET_COMPRESSION = 0.70  # 70% reduction
 
 
-def count_lines(filepath):
+def count_lines(filepath: Path) -> int:
     """Count non-empty lines in a file."""
     try:
         with open(filepath, "r") as f:
@@ -28,7 +29,7 @@ def count_lines(filepath):
         return 0
 
 
-def check_file_sizes():
+def check_file_sizes() -> Tuple[List[str], int]:
     """Check all instruction files against size limits."""
     violations = []
     total_lines = 0
@@ -55,7 +56,7 @@ def check_file_sizes():
     return violations, total_lines
 
 
-def check_compression_ratio(new_total):
+def check_compression_ratio(new_total: int) -> None:
     """Check if compression target is met."""
     # Original default load (full CLAUDE.md)
     original_default = 897
@@ -87,7 +88,7 @@ def check_compression_ratio(new_total):
     return default_compression >= TARGET_COMPRESSION
 
 
-def main():
+def main() -> int:
     """Main validation function."""
     print("AI-First SDLC Instruction Compression Validator")
     print("=" * 50)

@@ -10,9 +10,10 @@ import sys
 from pathlib import Path
 import re
 import argparse
+from typing import Optional, List, Tuple
 
 
-def get_current_branch():
+def get_current_branch() -> Optional[str]:
     """Get the current git branch name"""
     try:
         # Try to get symbolic ref (normal case)
@@ -54,7 +55,7 @@ def get_current_branch():
         return None
 
 
-def extract_feature_name(branch_name):
+def extract_feature_name(branch_name: str) -> Optional[str]:
     """Extract feature name from branch name"""
     # Pattern: feature/feature-name or fix/bug-name
     match = re.match(r"^(feature|fix|enhancement)/(.+)$", branch_name)
@@ -63,7 +64,7 @@ def extract_feature_name(branch_name):
     return None
 
 
-def find_feature_proposal(feature_name):
+def find_feature_proposal(feature_name: str) -> Optional[Path]:
     """Look for feature proposal file"""
     proposal_dirs = [
         "docs/feature-proposals",
@@ -93,7 +94,7 @@ def find_feature_proposal(feature_name):
     return None
 
 
-def check_proposal_content(proposal_file, branch_name):
+def check_proposal_content(proposal_file: Path, branch_name: str) -> Tuple[bool, List[str]]:
     """Verify proposal has required fields"""
     required_fields = [
         "Target Branch:",
@@ -130,7 +131,7 @@ def check_proposal_content(proposal_file, branch_name):
         return False
 
 
-def main():
+def main() -> None:
     """Main validation logic"""
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Check for feature proposal")
