@@ -824,10 +824,15 @@ def main():
     total_issues = sum(len(items) for items in debt_items.values())
     policy_violations = detector._check_policy_compliance()
 
-    # Use legacy threshold for backward compatibility, but policy takes precedence
-    threshold_exceeded = total_issues > args.threshold
+    # For framework code, only policy violations matter, not total count
+    if detector.context == "framework":
+        should_fail = policy_violations > 0
+    else:
+        # For application code, use legacy threshold or policy violations
+        threshold_exceeded = total_issues > args.threshold
+        should_fail = policy_violations > 0 or threshold_exceeded
 
-    if policy_violations > 0 or threshold_exceeded:
+    if should_fail:
         print(f"\n🚫 POLICY VIOLATION DETECTED")
         print("=" * 60)
 
