@@ -18,17 +18,17 @@ def test_framework_structure():
         "README.md",
         "CLAUDE.md",
     ]
-    
+
     required_dirs = [
         "docs/feature-proposals",
         "retrospectives",
     ]
-    
+
     # Check required files
     for file_path in required_files:
         if not os.path.exists(file_path):
             raise AssertionError(f"Required file missing: {file_path}")
-    
+
     # Check required directories
     for dir_path in required_dirs:
         if not os.path.isdir(dir_path):
@@ -39,10 +39,10 @@ def test_claude_md_content():
     """Verify CLAUDE.md has basic required content."""
     if not os.path.exists("CLAUDE.md"):
         raise AssertionError("CLAUDE.md not found")
-    
+
     with open("CLAUDE.md", "r", encoding="utf-8") as f:
         content = f.read().lower()
-    
+
     # Check for key framework indicators
     required_patterns = [
         "claude.md",
@@ -50,7 +50,7 @@ def test_claude_md_content():
         "git workflow",
         "never push directly to main",
     ]
-    
+
     for pattern in required_patterns:
         if pattern not in content:
             raise AssertionError(f"CLAUDE.md missing required pattern: {pattern}")
@@ -61,14 +61,14 @@ def test_gitignore_exists():
     if not os.path.exists(".gitignore"):
         print("Warning: .gitignore not found (run setup-smart.py to create)")
         return
-    
+
     with open(".gitignore", "r", encoding="utf-8") as f:
         content = f.read().lower()
-    
+
     # Check for some AI tool patterns (optional check)
     ai_patterns = [".claude", ".cursor", ".aider"]
     found_patterns = sum(1 for pattern in ai_patterns if pattern in content)
-    
+
     if found_patterns == 0:
         print("Info: Consider adding AI tool patterns to .gitignore")
 
@@ -78,7 +78,7 @@ def test_python_environment():
     # Check Python version
     if sys.version_info < (3, 8):
         raise AssertionError(f"Python 3.8+ required, found {sys.version}")
-    
+
     # Check if we can import basic modules
     try:
         import json
@@ -103,12 +103,12 @@ def main():
         test_python_environment,
         test_git_repository,
     ]
-    
+
     print("🔍 Running AI-First SDLC framework verification...")
-    
+
     passed = 0
     failed = 0
-    
+
     for test in tests:
         try:
             test()
@@ -120,9 +120,9 @@ def main():
         except Exception as e:
             print(f"⚠️  {test.__name__}: Unexpected error: {e}")
             failed += 1
-    
+
     print(f"\n📊 Results: {passed} passed, {failed} failed")
-    
+
     if failed == 0:
         print("🎉 Framework verification complete! Ready for development.")
         return 0
