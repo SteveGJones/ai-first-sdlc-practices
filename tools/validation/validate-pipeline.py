@@ -610,7 +610,7 @@ class ValidationPipeline:
         debt_indicators, files_checked = self._scan_for_debt_indicators()
         self._report_debt_results(debt_indicators, files_checked)
     
-    def _scan_for_debt_indicators(self) -> tuple[list[str], int]:
+    def _scan_for_debt_indicators(self) -> Tuple[List[str], int]:
         """Scan all code files for technical debt indicators"""
         debt_indicators = []
         files_checked = 0
@@ -634,7 +634,7 @@ class ValidationPipeline:
         skip_patterns = ['node_modules', '.git', '__pycache__', 'venv']
         return any(skip in str(file_path) for skip in skip_patterns)
     
-    def _check_file_for_debt(self, file_path: Path) -> list[str]:
+    def _check_file_for_debt(self, file_path: Path) -> List[str]:
         """Check a single file for technical debt indicators"""
         indicators = []
         
@@ -695,7 +695,7 @@ class ValidationPipeline:
                 return suppressions
         return 0
     
-    def _report_debt_results(self, debt_indicators: list[str], files_checked: int) -> None:
+    def _report_debt_results(self, debt_indicators: List[str], files_checked: int) -> None:
         """Report technical debt scan results"""
         if debt_indicators:
             self.add_error(
@@ -735,7 +735,7 @@ class ValidationPipeline:
         
         self._report_type_safety_results(type_issues)
     
-    def _check_typescript_config(self) -> list[str]:
+    def _check_typescript_config(self) -> List[str]:
         """Check TypeScript configuration for type safety"""
         issues = []
         ts_config = self.project_root / "tsconfig.json"
@@ -772,7 +772,7 @@ class ValidationPipeline:
         
         return issues
     
-    def _check_python_type_config(self) -> list[str]:
+    def _check_python_type_config(self) -> List[str]:
         """Check Python mypy configuration"""
         issues = []
         config_files = [
@@ -802,7 +802,7 @@ class ValidationPipeline:
         
         return issues
     
-    def _check_python_annotations(self) -> list[str]:
+    def _check_python_annotations(self) -> List[str]:
         """Check Python code for type annotations"""
         issues = []
         py_files = list(Path(self.project_root).glob("**/*.py"))
@@ -828,7 +828,7 @@ class ValidationPipeline:
         
         return issues
     
-    def _report_type_safety_results(self, type_issues: list[str]) -> None:
+    def _report_type_safety_results(self, type_issues: List[str]) -> None:
         """Report type safety check results"""
         if type_issues:
             self.add_error(

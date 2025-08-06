@@ -1,0 +1,115 @@
+{
+  "timestamp": "2025-08-06T12:32:05.009890",
+  "has_errors": true,
+  "has_warnings": true,
+  "results": [
+    {
+      "status": "\u2705",
+      "check": "Branch Compliance",
+      "message": "Valid branch: fix/agent-installer-yaml-and-paths",
+      "fix": null
+    },
+    {
+      "status": "\u2705",
+      "check": "Feature Proposal",
+      "message": "Found in docs/feature-proposals/17-agent-installer-yaml-and-paths.md",
+      "fix": null
+    },
+    {
+      "status": "\u2705",
+      "check": "Implementation Plan",
+      "message": "Found 6 plan(s)",
+      "fix": null
+    },
+    {
+      "status": "\u2705",
+      "check": "AI Documentation",
+      "message": "Found: CLAUDE.md",
+      "fix": null
+    },
+    {
+      "status": "\u274c",
+      "check": "Test Coverage",
+      "message": "Tests failing",
+      "fix": "Fix failing tests"
+    },
+    {
+      "status": "\u2705",
+      "check": "Security Scan",
+      "message": "No obvious secrets detected",
+      "fix": null
+    },
+    {
+      "status": "\u26a0\ufe0f",
+      "check": "Code Quality",
+      "message": "flake8 found issues",
+      "fix": "Fix linting issues"
+    },
+    {
+      "status": "\u26a0\ufe0f",
+      "check": "Dependencies",
+      "message": "Issues found in requirements.txt",
+      "fix": "Run: pip check"
+    },
+    {
+      "status": "\u2705",
+      "check": "Commit Compliance",
+      "message": "All commits follow conventions",
+      "fix": null
+    },
+    {
+      "status": "\u2705",
+      "check": "Retrospective",
+      "message": "Found in retrospectives/19-architecture-validation-bootstrap.md",
+      "fix": null
+    },
+    {
+      "status": "\u26a0\ufe0f",
+      "check": "Design Documentation",
+      "message": "docs/guides/design-vs-implementation.md contains 32% code content",
+      "fix": "Consider moving implementation details to technical docs or code comments"
+    },
+    {
+      "status": "\u26a0\ufe0f",
+      "check": "Design Documentation",
+      "message": "docs/guides/design-vs-implementation.md contains class definitions",
+      "fix": "Design docs should focus on WHAT and WHY, not HOW"
+    },
+    {
+      "status": "\u26a0\ufe0f",
+      "check": "Design Documentation",
+      "message": "docs/architecture/integration-design.md contains 31% code content",
+      "fix": "Consider moving implementation details to technical docs or code comments"
+    },
+    {
+      "status": "\u26a0\ufe0f",
+      "check": "Design Documentation",
+      "message": "docs/architecture/integration-design.md contains class definitions",
+      "fix": "Design docs should focus on WHAT and WHY, not HOW"
+    },
+    {
+      "status": "\u274c",
+      "check": "Technical Debt",
+      "message": "Found 2 debt indicators",
+      "fix": "Remove all TODOs, commented code, and type suppressions"
+    },
+    {
+      "status": "\u2705",
+      "check": "Type Safety",
+      "message": "Strong typing enforced",
+      "fix": null
+    },
+    {
+      "status": "\u274c",
+      "check": "Architecture Documentation",
+      "message": "Architecture validation failed",
+      "fix": "Complete all architecture documents before coding"
+    },
+    {
+      "status": "\u274c",
+      "check": "Logging Compliance",
+      "message": "Missing mandatory logging - Total Violations: 403",
+      "fix": "Add logging at all 10 mandatory points"
+    }
+  ]
+}

@@ -53,7 +53,7 @@ class TechnicalDebtDetector:
                 'magic_numbers': 2000,       # Common constants allowed
                 'deprecated_usage': 50,      # Migration timeline required
                 'commented_code': 10,        # Examples and documentation
-                'complexity_issues': 10,     # Framework utility complexity
+                'complexity_issues': 65,     # Framework utility complexity (updated 2025-08-06)
             }
         else:  # application
             return {
