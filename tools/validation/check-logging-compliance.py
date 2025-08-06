@@ -248,7 +248,9 @@ class LoggingComplianceChecker:
 
         return violations
 
-    def _check_sensitive_data(self, file_path: Path, content: str) -> List[Dict[str, Any]]:
+    def _check_sensitive_data(
+        self, file_path: Path, content: str
+    ) -> List[Dict[str, Any]]:
         """Check for sensitive data being logged"""
         violations: List[Dict[str, Any]] = []
         lines = content.split("\n")
@@ -322,7 +324,10 @@ class LoggingComplianceChecker:
         return violations
 
     def _check_python_function(
-        self, func_node: Union[ast.FunctionDef, ast.AsyncFunctionDef], content: str, file_path: Path
+        self,
+        func_node: Union[ast.FunctionDef, ast.AsyncFunctionDef],
+        content: str,
+        file_path: Path,
     ) -> List[Dict[str, Any]]:
         """Check if Python function has required logging"""
         violations: List[Dict[str, Any]] = []
@@ -507,7 +512,9 @@ class LoggingComplianceChecker:
 
         return violations
 
-    def _check_javascript_file(self, file_path: Path, content: str) -> List[Dict[str, Any]]:
+    def _check_javascript_file(
+        self, file_path: Path, content: str
+    ) -> List[Dict[str, Any]]:
         """Check JavaScript/TypeScript file for logging compliance"""
         violations: List[Dict[str, Any]] = []
 

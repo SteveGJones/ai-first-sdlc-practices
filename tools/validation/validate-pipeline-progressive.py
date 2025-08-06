@@ -96,7 +96,9 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
         # Otherwise default to production
         return "production"
 
-    def run_validation(self, checks: Optional[List[str]] = None, strict: bool = False) -> bool:
+    def run_validation(
+        self, checks: Optional[List[str]] = None, strict: bool = False
+    ) -> bool:
         """Run level-appropriate validation checks"""
         # Check SDLC gate requirements first
         gate_passed = self._check_sdlc_gates()

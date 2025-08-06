@@ -92,7 +92,10 @@ repos:
     hooks:
       - id: documentation-updated
         name: Check if documentation needs updating
-        entry: bash -c 'if git diff --cached --name-only | grep -E "\.(py|js|go|java)$" > /dev/null; then echo "📝 Reminder: Update documentation if needed (README.md, API docs, etc.)"; fi'
+        entry: >-
+          bash -c "if git diff --cached --name-only | grep -E '\\.(py|js|go|java)$' > /dev/null;
+          then echo '📝 Reminder - Update documentation if needed (README.md, API docs, etc.)';
+          fi"
         language: system
         pass_filenames: false
         always_run: true
@@ -102,7 +105,7 @@ repos:
     hooks:
       - id: test-reminder
         name: Remind to run tests
-        entry: bash -c 'echo "🧪 Reminder: Have you run the tests? (make test or pytest)"'
+        entry: bash -c "echo '🧪 Reminder - Have you run the tests? (make test or pytest)'"
         language: system
         pass_filenames: false
         always_run: true

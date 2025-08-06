@@ -31,9 +31,7 @@ def check_gh_installed() -> bool:
         subprocess.run(["gh", "--version"], capture_output=True, check=True)
 
         # Check if authenticated
-        subprocess.run(
-            ["gh", "auth", "status"], capture_output=True, check=True
-        )
+        subprocess.run(["gh", "auth", "status"], capture_output=True, check=True)
 
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -329,10 +327,7 @@ def setup_branch_protection(
             # Solo developer mode: rely on status checks, minimal
             # review requirements
             protection_json = {
-                "required_status_checks": {
-                    "strict": True,
-                    "contexts": required_checks
-                },
+                "required_status_checks": {"strict": True, "contexts": required_checks},
                 "enforce_admins": False,  # Allow admin bypass for solo (SECURITY: acceptable for single-developer repos)
                 "required_pull_request_reviews": {
                     "required_approving_review_count": (
@@ -350,10 +345,7 @@ def setup_branch_protection(
         else:
             # Team mode: stricter review requirements
             protection_json = {
-                "required_status_checks": {
-                    "strict": True,
-                    "contexts": required_checks
-                },
+                "required_status_checks": {"strict": True, "contexts": required_checks},
                 "enforce_admins": True,
                 "required_pull_request_reviews": {
                     "required_approving_review_count": 1,

@@ -260,7 +260,7 @@ def create(name: str, output: Optional[Path]):
         output = Path(f"composite-{name}.md")
 
     if manager.create_composite_agent(name, output):
-        console.print(f"\n[green]Composite agent created successfully![/green]")
+        console.print("\n[green]Composite agent created successfully![/green]")
         console.print(f"You can now use this agent by referencing: [cyan]{name}[/cyan]")
 
 

@@ -987,14 +987,18 @@ class ValidationPipeline:
                     config.read_string(content)
 
                     # Check main mypy section
-                    if 'mypy' in config:
-                        mypy_section = config['mypy']
+                    if "mypy" in config:
+                        mypy_section = config["mypy"]
                         # Check for strict=True
-                        if mypy_section.get('strict', '').lower() == 'true':
+                        if mypy_section.get("strict", "").lower() == "true":
                             mypy_config_found = True
                         # Or check individual strict settings in main section
-                        elif (mypy_section.get('disallow_untyped_defs', '').lower() == 'true' or
-                              mypy_section.get('check_untyped_defs', '').lower() == 'true'):
+                        elif (
+                            mypy_section.get("disallow_untyped_defs", "").lower()
+                            == "true"
+                            or mypy_section.get("check_untyped_defs", "").lower()
+                            == "true"
+                        ):
                             mypy_config_found = True
                         else:
                             issues.append(
@@ -1242,21 +1246,29 @@ class ValidationPipeline:
 
     def add_success(self, check: str, message: str) -> None:
         """Add success result"""
-        self.results.append({"icon": "✅", "check": check, "message": message, "fix": None})
+        self.results.append(
+            {"icon": "✅", "check": check, "message": message, "fix": None}
+        )
 
     def add_error(self, check: str, message: str, fix: str) -> None:
         """Add error result"""
         self.has_errors = True
-        self.results.append({"icon": "❌", "check": check, "message": message, "fix": fix})
+        self.results.append(
+            {"icon": "❌", "check": check, "message": message, "fix": fix}
+        )
 
     def add_warning(self, check: str, message: str, fix: str) -> None:
         """Add warning result"""
         self.has_warnings = True
-        self.results.append({"icon": "⚠️ ", "check": check, "message": message, "fix": fix})
+        self.results.append(
+            {"icon": "⚠️ ", "check": check, "message": message, "fix": fix}
+        )
 
     def add_skip(self, check: str, reason: str) -> None:
         """Add skipped check"""
-        self.results.append({"icon": "⏭️ ", "check": check, "message": reason, "fix": None})
+        self.results.append(
+            {"icon": "⏭️ ", "check": check, "message": reason, "fix": None}
+        )
 
     def print_summary(self) -> None:
         """Print validation summary"""
@@ -1266,7 +1278,7 @@ class ValidationPipeline:
 
         for result in self.results:
             print(f"{result['icon']} {result['check']}: {result['message']}")
-            if result.get('fix'):
+            if result.get("fix"):
                 print(f"   └─ Fix: {result['fix']}")
 
         print("\n" + "-" * 50)

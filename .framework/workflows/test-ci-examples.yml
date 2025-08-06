@@ -49,13 +49,13 @@ jobs:
         echo "=== Validating CircleCI configuration ==="
         yamllint examples/ci-cd/circleci/.circleci/config.yml
         python -c "
-import yaml
-with open('examples/ci-cd/circleci/.circleci/config.yml', 'r') as f:
-    config = yaml.safe_load(f)
-    assert config.get('version') == 2.1, 'CircleCI config should use version 2.1'
-    assert 'workflows' in config, 'Missing workflows in CircleCI'
-    assert 'jobs' in config, 'Missing jobs in CircleCI'
-    print('✅ CircleCI configuration is valid')
+          import yaml;
+          with open('examples/ci-cd/circleci/.circleci/config.yml', 'r') as f:
+              config = yaml.safe_load(f);
+              assert config.get('version') == 2.1, 'CircleCI config should use version 2.1';
+              assert 'workflows' in config, 'Missing workflows in CircleCI';
+              assert 'jobs' in config, 'Missing jobs in CircleCI';
+              print('✅ CircleCI configuration is valid');
         "
 
     - name: Validate Jenkins Pipeline

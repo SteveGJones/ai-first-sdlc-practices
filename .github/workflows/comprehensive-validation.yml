@@ -251,6 +251,9 @@ jobs:
     needs: [sdlc-validation, code-quality, documentation, dependencies, performance]
     if: always()
     name: Validation Summary
+    permissions:
+      pull-requests: write
+      issues: write
 
     steps:
     - uses: actions/checkout@v4
