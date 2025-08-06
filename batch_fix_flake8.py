@@ -29,14 +29,14 @@ def fix_unused_imports():
         "--recursive",
         ".",
     ]
-    result = None  # TODO: Fix this assignment
+    result = run_command(cmd)
     if result:
         print("✓ Fixed unused imports")
     else:
         # Try pip install autoflake if not available
         print("Installing autoflake...")
         run_command(["pip", "install", "autoflake"])
-        result = None  # TODO: Fix this assignment
+        result = run_command(cmd)
         if result:
             print("✓ Fixed unused imports after installing autoflake")
 
@@ -142,13 +142,13 @@ def fix_bare_except():
 def run_black():
     """Run black formatter"""
     print("Running black formatter...")
-    result = None  # TODO: Fix this assignment
+    result = run_command(["python", "-m", "black", "."])
     if result:
         print("✓ Applied black formatting")
     else:
         print("Installing black...")
         run_command(["pip", "install", "black"])
-        result = None  # TODO: Fix this assignment
+        result = run_command(["python", "-m", "black", "."])
         if result:
             print("✓ Applied black formatting after installing black")
 
@@ -159,7 +159,7 @@ def fix_import_order():
 
     # This is more complex and typically requires manual intervention
     # We'll identify files with E402 and report them
-    result = None  # TODO: Fix this assignment
+    result = run_command(["python", "-m", "flake8", "--select=E402", "."])
     if result and result.stdout:
         print("Files with import order issues (manual fix required):")
         print(result.stdout)
@@ -183,7 +183,7 @@ def main():
 
     # Step 4: Check results
     print("\nRunning final flake8 check...")
-    result = None  # TODO: Fix this assignment
+    result = run_command(["python", "-m", "flake8", "."])
     if result and not result.stdout:
         print("✓ All flake8 issues fixed!")
     else:
