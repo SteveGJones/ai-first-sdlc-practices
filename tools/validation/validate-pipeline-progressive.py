@@ -103,7 +103,7 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
 
         # If no explicit checks, use level defaults
         if not checks:
-            checks = self.level_config["required"]  # type: ignore[assignment]
+            checks = self.level_config["required"]  # type: ignore[assignment,index]
             if not strict:
                 checks.extend(self.level_config["optional"])  # type: ignore[union-attr]
 

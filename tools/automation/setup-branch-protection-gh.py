@@ -251,22 +251,22 @@ jobs:
 
           // Check if all required status checks are successful
           const requiredChecks = ['validate', 'test-framework-tools (3.8)', 'code-quality'];
-          
+
           // Get status checks for the commit
           const { data: statusChecks } = await github.rest.repos.getCombinedStatusForRef({
             owner: context.repo.owner,
             repo: context.repo.repo,
             ref: pr.head.sha
           });
-          
+
           let allPassed = true;
-          
+
           // Check each required status check
           for (const check of requiredChecks) {
-            const statusCheck = statusChecks.statuses.find(status => 
+            const statusCheck = statusChecks.statuses.find(status =>
               status.context === check || status.context.includes(check)
             );
-            
+
             if (!statusCheck || statusCheck.state !== 'success') {
               console.log(`Required check '${check}' not passed: ${statusCheck?.state || 'not found'}`);
               allPassed = false;

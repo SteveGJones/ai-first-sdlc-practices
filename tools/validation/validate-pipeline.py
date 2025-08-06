@@ -977,7 +977,7 @@ class ValidationPipeline:
         # Check mypy.ini
         if config_files[0].exists():
             content = config_files[0].read_text()
-            
+
             # For framework repos, check that main [mypy] section has strict=True
             # Allow relaxed rules in specific sections
             if self.is_framework_repo:
@@ -985,7 +985,7 @@ class ValidationPipeline:
                 config = configparser.ConfigParser()
                 try:
                     config.read_string(content)
-                    
+
                     # Check main mypy section
                     if 'mypy' in config:
                         mypy_section = config['mypy']

@@ -34,8 +34,8 @@ repos:
       - id: claude-md-exists
         name: Verify CLAUDE.md exists
         entry: >
-          bash -c 'if [[ ! -f "CLAUDE.md" && ! -f "GEMINI.md" && ! -f "GPT.md" ]]; then 
-          echo "⚠️  Warning: No AI instruction file found (CLAUDE.md, GEMINI.md, or GPT.md)"; 
+          bash -c 'if [[ ! -f "CLAUDE.md" && ! -f "GEMINI.md" && ! -f "GPT.md" ]]; then
+          echo "⚠️  Warning: No AI instruction file found (CLAUDE.md, GEMINI.md, or GPT.md)";
           echo "📝 Create one from templates/CLAUDE.md"; fi'
         language: system
         pass_filenames: false
