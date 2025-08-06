@@ -355,7 +355,8 @@ class ArchitectureValidator:
             print("\n✅ FINAL STEPS:")
             print("   1. Complete any remaining templates shown above")
             print(
-                "   2. Create first ADR: cp templates/architecture/ADR-template.md "\n                "docs/architecture/decisions/ADR-001-initial-architecture.md"
+                "   2. Create first ADR: cp templates/architecture/ADR-template.md "
+                "docs/architecture/decisions/ADR-001-initial-architecture.md"
             )
             print("   3. Customize ADR with first architectural decision")
         else:
