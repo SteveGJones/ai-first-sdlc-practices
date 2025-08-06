@@ -69,14 +69,17 @@ class SDLCLevelManager:
         
     def detect_current_level(self) -> Tuple[str, Dict]:
         """Detect the current SDLC level based on project state."""
-        # First check if level is explicitly set
+        # Always analyze the project to get current metrics
+        analysis = self._analyze_project()
+        
+        # Check if level is explicitly set
         if self.config_file.exists():
             with open(self.config_file) as f:
                 config = json.load(f)
-                return config['level'], config
+                # Use the configured level but return the analysis
+                return config['level'], analysis
                 
-        # Otherwise, analyze project to determine level
-        analysis = self._analyze_project()
+        # Otherwise, suggest level based on analysis
         suggested_level = self._suggest_level(analysis)
         
         return suggested_level, analysis
