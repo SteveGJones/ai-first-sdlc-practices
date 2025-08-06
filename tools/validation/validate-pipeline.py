@@ -70,36 +70,60 @@ class ValidationPipeline:
 
     def check_branch_compliance(self) -> None:
         """Check if on a feature branch"""
-        try:
-            result = subprocess.run(
-                ["git", "symbolic-ref", "--short", "HEAD"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            branch = result.stdout.strip()
+        # Check if we're in GitHub Actions CI environment
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            # In GitHub Actions, get branch from environment variables
+            if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+                # For PRs, use the head ref
+                branch = os.environ.get("GITHUB_HEAD_REF", "")
+            else:
+                # For pushes, extract from GITHUB_REF
+                ref = os.environ.get("GITHUB_REF", "")
+                if ref.startswith("refs/heads/"):
+                    branch = ref.replace("refs/heads/", "")
+                else:
+                    branch = ""
 
-            if branch in ["main", "master"]:
-                self.add_error(
-                    "Branch Compliance",
-                    f"Working directly on '{branch}' branch",
-                    "Create a feature branch: git checkout -b feature/your-feature",
-                )
-            elif not branch.startswith(("feature/", "fix/", "enhancement/")):
+            if not branch:
                 self.add_warning(
                     "Branch Compliance",
-                    f"Non-standard branch name: '{branch}'",
-                    "Consider using feature/, fix/, or enhancement/ prefix",
+                    "Unable to detect branch in CI environment",
+                    "Check GITHUB_REF environment variable",
                 )
-            else:
-                self.add_success("Branch Compliance", f"Valid branch: {branch}")
+                return
+        else:
+            # Local environment - use git command
+            try:
+                result = subprocess.run(
+                    ["git", "symbolic-ref", "--short", "HEAD"],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                branch = result.stdout.strip()
+            except subprocess.CalledProcessError:
+                self.add_error(
+                    "Branch Compliance",
+                    "Not in a git repository",
+                    "Initialize git: git init",
+                )
+                return
 
-        except subprocess.CalledProcessError:
+        # Validate branch name
+        if branch in ["main", "master"]:
             self.add_error(
                 "Branch Compliance",
-                "Not in a git repository",
-                "Initialize git: git init",
+                f"Working directly on '{branch}' branch",
+                "Create a feature branch: git checkout -b feature/your-feature",
             )
+        elif not branch.startswith(("feature/", "fix/", "enhancement/")):
+            self.add_warning(
+                "Branch Compliance",
+                f"Non-standard branch name: '{branch}'",
+                "Consider using feature/, fix/, or enhancement/ prefix",
+            )
+        else:
+            self.add_success("Branch Compliance", f"Valid branch: {branch}")
 
     def check_feature_proposal(self) -> None:
         """Check for feature proposal"""
@@ -1031,16 +1055,30 @@ class ValidationPipeline:
 
     def _get_current_branch(self) -> Optional[str]:
         """Get current git branch"""
-        try:
-            result = subprocess.run(
-                ["git", "symbolic-ref", "--short", "HEAD"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            return result.stdout.strip()
-        except:
+        # Check if we're in GitHub Actions CI environment
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            # In GitHub Actions, get branch from environment variables
+            if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+                # For PRs, use the head ref
+                return os.environ.get("GITHUB_HEAD_REF", "")
+            else:
+                # For pushes, extract from GITHUB_REF
+                ref = os.environ.get("GITHUB_REF", "")
+                if ref.startswith("refs/heads/"):
+                    return ref.replace("refs/heads/", "")
             return None
+        else:
+            # Local environment - use git command
+            try:
+                result = subprocess.run(
+                    ["git", "symbolic-ref", "--short", "HEAD"],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                return result.stdout.strip()
+            except:
+                return None
 
     def _detect_empty_repository(self):
         """Detect if this is an empty repository with only framework files"""
