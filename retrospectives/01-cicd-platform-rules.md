@@ -200,7 +200,7 @@ This removes the need for multiple human prompts and ensures consistent applicat
 
 1. **Overly Permissive File Permissions (2 instances - HIGH)**:
    - `setup-smart.py:72`: Changed from `0o755` to `0o700` (owner-only access)
-   - `tools/setup.py:214`: Changed from `0o755` to `0o700` (owner-only access)
+   - `tools/framework-setup.py:214`: Changed from `0o755` to `0o700` (owner-only access)
    - **Impact**: Prevented world-readable executable scripts that could expose sensitive logic
 
 2. **Incomplete URL Substring Sanitization (4 instances - HIGH)**:

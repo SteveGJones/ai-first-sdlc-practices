@@ -5,6 +5,7 @@ Git operations for version management feature
 
 import subprocess
 import os
+
 # sys import removed - not used
 from typing import Tuple
 

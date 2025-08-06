@@ -722,7 +722,7 @@ class ArchitectureValidator:
             return json.dumps(data, indent=2)
 
         elif format == "markdown":
-            md = f"# Architecture Validation Report\n\n"
+            md = "# Architecture Validation Report\n\n"
             md += f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
 
             md += "## Results\n\n"
@@ -731,11 +731,9 @@ class ArchitectureValidator:
                 if fix:
                     md += f"  - Fix: {fix}\n"
 
-            md += f"\n## Summary\n"
+            md += "\n## Summary\n"
             if self.has_errors:
-                md += (
-                    "❌ **FAILED** - Complete all architecture documents before coding\n"
-                )
+                md += "❌ **FAILED** - Complete all architecture documents before coding\n"
             elif self.has_warnings:
                 md += "⚠️  **PASSED** with warnings - Consider addressing issues\n"
             else:

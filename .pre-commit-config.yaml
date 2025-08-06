@@ -31,4 +31,5 @@ repos:
     hooks:
       - id: mypy
         args: ['--config-file=mypy.ini']
+        exclude: ^tools/framework-setup\.py$
         additional_dependencies: ['types-requests', 'types-PyYAML']

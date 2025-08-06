@@ -10,7 +10,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import List, Tuple, Optional
 import argparse
 from datetime import datetime
 
@@ -590,7 +590,6 @@ class ValidationPipeline:
                                 found = True
                                 # Check retrospective freshness
                                 try:
-                                    from datetime import datetime, timedelta
 
                                     file_mtime = datetime.fromtimestamp(
                                         file.stat().st_mtime

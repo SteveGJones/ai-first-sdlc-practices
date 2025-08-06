@@ -18,9 +18,6 @@ import importlib.util
 script_dir = Path(__file__).parent
 sys.path.insert(0, str(script_dir))
 
-# Import with proper module name (without .py extension)
-import importlib.util
-
 spec = importlib.util.spec_from_file_location(
     "validate_pipeline", script_dir / "validate-pipeline.py"
 )
@@ -219,9 +216,9 @@ class ProgressiveValidationPipeline(ValidationPipeline):
 
                 if output.returncode == 0:
                     todo_count = len(output.stdout.strip().split("\n"))
-                    result[
-                        "details"
-                    ] = f"Found {todo_count} TODO/FIXME markers (allowed in prototype)"
+                    result["details"] = (
+                        f"Found {todo_count} TODO/FIXME markers (allowed in prototype)"
+                    )
                     result["status"] = "info"
 
             except Exception:
