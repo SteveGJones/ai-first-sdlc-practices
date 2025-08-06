@@ -397,7 +397,7 @@ setup(
         setup_path = self.project_dir / "setup.py"
         if not setup_path.exists():
             setup_path.write_text(setup_content)
-            os.chmod(setup_path, 0o755)
+            os.chmod(setup_path, 0o644)
             print("✅ Created setup.py")
         
         # Create __init__.py files

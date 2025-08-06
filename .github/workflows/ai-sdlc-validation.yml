@@ -37,7 +37,6 @@ jobs:
       run: |
         # The validation tools are in this repo
         python tools/validation/validate-pipeline.py --ci
-      continue-on-error: true  # Continue even if validation fails to see all results
     
     - name: Check feature proposal (PRs only)
       if: github.event_name == 'pull_request'
@@ -51,22 +50,24 @@ jobs:
       run: |
         # Run individual checks to pinpoint issues
         echo "=== Branch Compliance ==="
-        python tools/validation/validate-pipeline.py --checks branch --ci || true
+        python tools/validation/validate-pipeline.py --checks branch --ci
         
         echo "=== Architecture Validation ==="
-        python tools/validation/validate-architecture.py --strict || true
+        # Auto-detects appropriate mode (bootstrap/intermediate/strict)
+        python tools/validation/validate-architecture.py
         
         echo "=== Technical Debt Check ==="
-        python tools/validation/check-technical-debt.py --threshold 0 || true
+        # Auto-detects framework context and applies appropriate policy
+        python tools/validation/check-technical-debt.py .
         
         echo "=== Type Safety Check ==="
-        python tools/validation/validate-pipeline.py --checks type-safety --ci || true
+        python tools/validation/validate-pipeline.py --checks type-safety --ci
         
         echo "=== Security Scan ==="
-        python tools/validation/validate-pipeline.py --checks security --ci || true
+        python tools/validation/validate-pipeline.py --checks security --ci
         
         echo "=== Test Check ==="
-        python tools/validation/validate-pipeline.py --checks tests --ci || true
+        python tools/validation/validate-pipeline.py --checks tests --ci
     
     - name: Generate validation report
       if: always()

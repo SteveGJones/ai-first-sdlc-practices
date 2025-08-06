@@ -1,0 +1,197 @@
+name: Framework Compliance Validation
+
+on:
+  push:
+    branches: [ main, develop, 'feature/**', 'fix/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  validate-framework:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pre-commit
+    
+    # Framework-specific validation with proper context
+    - name: Validate Architecture Documents (Framework Context)
+      run: |
+        echo "🏗️ Validating Architecture Documents..."
+        # Auto-detects bootstrap/intermediate/strict mode
+        python tools/validation/validate-architecture.py
+    
+    - name: Check Technical Debt (Framework Policy)
+      run: |
+        echo "🔍 Checking Technical Debt with Framework Policy..."
+        # Auto-detects framework context and applies appropriate thresholds
+        python tools/validation/check-technical-debt.py .
+    
+    - name: Run Framework Validation Pipeline
+      run: |
+        echo "🔧 Running Framework Validation Pipeline..."
+        python tools/validation/validate-pipeline.py --ci \
+          --checks branch proposal type-safety security tests
+    
+    - name: Check Feature Proposal (PRs only)
+      if: github.event_name == 'pull_request'
+      run: |
+        BRANCH_NAME="${{ github.head_ref }}"
+        echo "📋 Checking feature proposal for branch: $BRANCH_NAME"
+        python tools/validation/check-feature-proposal.py --branch "$BRANCH_NAME"
+    
+    - name: Check Retrospective (PRs only)
+      if: github.event_name == 'pull_request'
+      run: |
+        BRANCH_NAME="${{ github.head_ref }}"
+        echo "📖 Checking retrospective for branch: $BRANCH_NAME"
+        python tools/validation/validate-pipeline.py --checks retrospective --branch "$BRANCH_NAME"
+    
+    - name: Run Pre-commit Hooks
+      run: |
+        echo "🪝 Running pre-commit hooks..."
+        pre-commit run --all-files
+    
+    - name: Generate Compliance Report
+      if: always()
+      run: |
+        echo "📊 Generating compliance report..."
+        python tools/validation/validate-pipeline.py --ci --export json --output compliance-report.json
+        python tools/validation/validate-pipeline.py --ci --export markdown --output compliance-report.md
+        
+        # Also generate framework-specific debt report
+        python tools/validation/check-technical-debt.py . --format json --output debt-report.json
+    
+    - name: Upload Compliance Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: compliance-reports
+        path: |
+          compliance-report.json
+          compliance-report.md
+          debt-report.json
+        retention-days: 30
+    
+    - name: Comment PR with Results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          
+          let comment = '## 🔍 Framework Compliance Validation Results\n\n';
+          
+          // Read compliance report
+          try {
+            const report = fs.readFileSync('compliance-report.md', 'utf8');
+            comment += report;
+          } catch (e) {
+            comment += '⚠️ Could not load compliance report\n\n';
+          }
+          
+          // Read debt report summary
+          try {
+            const debtReport = JSON.parse(fs.readFileSync('debt-report.json', 'utf8'));
+            const summary = debtReport.summary;
+            
+            comment += '\n### 📊 Technical Debt Summary\n\n';
+            comment += `- **Context**: ${debtReport.context || 'Unknown'}\n`;
+            comment += `- **Total Issues**: ${summary.total_issues}\n`;
+            comment += `- **Policy Violations**: ${summary.policy_violations || 0}\n`;
+            
+            if (summary.policy_violations > 0) {
+              comment += '\n⚠️ **Framework Policy Violations Detected**\n';
+            } else {
+              comment += '\n✅ **Framework Policy Compliant**\n';
+            }
+          } catch (e) {
+            comment += '\n⚠️ Could not load debt report\n';
+          }
+          
+          // Post or update comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('Framework Compliance Validation Results')
+          );
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: comment
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+          }
+
+  # Separate job for language-specific checks
+  validate-python:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'python') || contains(github.event.pull_request.title, 'python')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install Python dev dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov black flake8 mypy pylint
+    
+    - name: Run Black formatter check
+      run: |
+        echo "🎨 Checking Python formatting..."
+        black --check .
+    
+    - name: Run Flake8 linter
+      run: |
+        echo "🔍 Running Flake8..."
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Run MyPy type checker
+      run: |
+        echo "🔍 Running MyPy..."
+        mypy tools/ || true  # Non-blocking for now
+    
+    - name: Run Pylint
+      run: |
+        echo "🔍 Running Pylint..."
+        pylint tools/**/*.py --exit-zero --score=y

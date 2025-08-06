@@ -62,7 +62,7 @@ class ArchitectureValidator:
                 self.add_warning(
                     "Architecture Directory",
                     "docs/architecture/ directory not found - will be created",
-                    "AI should create: mkdir -p docs/architecture/decisions"
+                    "IMMEDIATE ACTION: mkdir -p docs/architecture/decisions && cp templates/architecture/*.md docs/architecture/"
                 )
             else:
                 self.add_error(
@@ -111,18 +111,22 @@ class ArchitectureValidator:
             print("=" * 60)
             print("\n✨ Fresh installation detected - AI should complete templates")
             print("📝 Templates will be validated for basic structure only")
-            print("🎯 Goal: Create project-specific architecture documents\n")
+            print("🎯 Goal: Create project-specific architecture documents")
+            print("📚 Full guidance: Load CLAUDE-CONTEXT-architecture.md for complete instructions")
+            print("🚀 Quick start: mkdir -p docs/architecture/decisions && cp templates/architecture/*.md docs/architecture/\n")
         elif self.mode == "intermediate":
             print("🔄 INTERMEDIATE MODE - Architecture In Progress")
             print("=" * 60)
             print("\n📝 Some templates completed, others still need work")
             print("🎯 Goal: Complete ALL architecture documents")
-            print("⚠️  Code forbidden until all documents are complete\n")
+            print("⚠️  Code forbidden until all documents are complete")
+            print("🚀 Quick fix: Replace remaining [placeholders] with project content\n")
         else:
             print("🛑 STRICT MODE - Architecture Validation REQUIRED")
             print("=" * 60)
             print("\n⚠️  YOU ARE FORBIDDEN FROM WRITING CODE UNTIL THIS PASSES")
-            print("⚠️  NO EXCEPTIONS. NO EXCUSES. NO WORKAROUNDS.\n")
+            print("⚠️  NO EXCEPTIONS. NO EXCUSES. NO WORKAROUNDS.")
+            print("🔄 If new to framework: Run without --strict to enable bootstrap mode\n")
     
     def _run_mode_specific_validation(self) -> bool:
         """Run validation appropriate for current mode"""
@@ -137,16 +141,19 @@ class ArchitectureValidator:
         """Bootstrap validation - guide AI to complete templates"""
         print("🔍 Checking template presence and basic structure...")
         
+        total_docs = len(self.required_docs) + 1  # +1 for ADR
+        completed_docs = 0
+        
         # Check each required document
         for doc_name, validator in self.required_docs.items():
             doc_path = self.architecture_dir / doc_name
-            print(f"\n📄 Checking {doc_name}...")
+            print(f"\n📄 Checking {doc_name} ({completed_docs + 1}/{total_docs})...")
             
             if not doc_path.exists():
                 self.add_warning(
                     doc_name,
                     "Template not found - needs to be created",
-                    f"AI should copy and customize: templates/architecture/{doc_name}"
+                    self._get_template_creation_command(doc_name)
                 )
             else:
                 content = doc_path.read_text()
@@ -156,21 +163,28 @@ class ArchitectureValidator:
                     self.add_warning(
                         doc_name,
                         "Still contains template placeholders - needs customization",
-                        "AI should replace placeholders with project-specific content"
+                        self._get_template_customization_guidance(doc_name)
                     )
                 else:
                     self.add_success(doc_name, "Has been customized with project content")
+                    completed_docs += 1
         
         # Check for ADRs directory
         if not self.adr_dir.exists():
             self.add_warning(
                 "ADR Directory",
                 "decisions/ directory missing",
-                "AI should create: mkdir -p docs/architecture/decisions"
+                "Create directory: mkdir -p docs/architecture/decisions"
             )
+        else:
+            adr_files = list(self.adr_dir.glob("ADR-*.md"))
+            if len(adr_files) > 0:
+                completed_docs += 1
+        
+        progress_percentage = int((completed_docs / total_docs) * 100)
         
         self._print_results()
-        self._print_bootstrap_guidance()
+        self._print_enhanced_bootstrap_guidance(progress_percentage, completed_docs, total_docs)
         
         return not self.has_errors  # Warnings are OK in bootstrap mode
     
@@ -188,7 +202,7 @@ class ArchitectureValidator:
                 self.add_error(
                     doc_name,
                     "Required document missing",
-                    f"AI must create from template: templates/architecture/{doc_name}"
+                    f"COPY TEMPLATE: cp templates/architecture/{doc_name} docs/architecture/{doc_name} && customize"
                 )
             else:
                 content = doc_path.read_text()
@@ -198,7 +212,7 @@ class ArchitectureValidator:
                     self.add_error(
                         doc_name,
                         "Still contains template placeholders",
-                        "AI must complete with project-specific content"
+                        f"CUSTOMIZE NOW: {self._get_template_customization_guidance(doc_name)}"
                     )
                 else:
                     # Light validation - check basic structure
@@ -230,7 +244,7 @@ class ArchitectureValidator:
                 self.add_error(
                     doc_name,
                     "Required document not found",
-                    f"Copy template: cp templates/architecture/{doc_name} {doc_path}"
+                    f"IMMEDIATE: cp templates/architecture/{doc_name} {doc_path} && replace ALL [placeholders]"
                 )
             else:
                 # Run specific validation for this document
@@ -261,25 +275,70 @@ class ArchitectureValidator:
         print("\n✅ ARCHITECTURE COMPLETE - You may now write code")
         return True
     
-    def _print_bootstrap_guidance(self):
-        """Print guidance for AI in bootstrap mode"""
+    def _get_template_creation_command(self, doc_name: str) -> str:
+        """Get specific command to create missing template"""
+        return f"Copy template: cp templates/architecture/{doc_name} docs/architecture/{doc_name} && customize placeholders"
+    
+    def _get_template_customization_guidance(self, doc_name: str) -> str:
+        """Get specific customization guidance for each template"""
+        guidance_map = {
+            "requirements-traceability-matrix.md": "Replace [Feature Name] with actual feature, add real REQ-IDs, map to components",
+            "what-if-analysis.md": "Add 5+ scenarios: load spikes, failures, scaling needs. Replace [scenarios] with real risks",
+            "system-invariants.md": "Define 10+ invariants: data rules, security bounds, performance limits. Replace generic examples",
+            "integration-design.md": "Document ALL external APIs, auth flows, data sync. Replace [Service] with actual integrations",
+            "failure-mode-analysis.md": "Analyze failure modes for each component, calculate RPN scores, add recovery procedures"
+        }
+        return guidance_map.get(doc_name, "Replace ALL template placeholders with project-specific content")
+    
+    def _print_enhanced_bootstrap_guidance(self, progress_percentage: int, completed_docs: int, total_docs: int):
+        """Print enhanced guidance for AI in bootstrap mode"""
         print("\n" + "=" * 60)
-        print("🤖 GUIDANCE FOR AI COMPLETION")
+        print("🚀 AI BOOTSTRAP GUIDANCE - NEXT ACTIONS")
         print("=" * 60)
-        print("\n✅ WHAT TO DO:")
-        print("1. Copy architecture templates to docs/architecture/")
-        print("2. Replace ALL placeholders with project-specific content:")
-        print("   - [Feature Name] → Actual feature name")
-        print("   - [YYYY-MM-DD] → Current date")
-        print("   - [Team/Roles responsible] → Your project context")
-        print("   - FR-001, NFR-001 → Real requirements")
-        print("3. Create at least one ADR in docs/architecture/decisions/")
-        print("4. Run validation again to progress to next mode")
-        print("\n⚠️  IMPORTANT:")
-        print("- You can write code AFTER completing templates")
-        print("- Bootstrap mode allows warnings but not errors")
-        print("- Focus on creating meaningful, project-specific content")
-        print("\n🎯 Goal: Transform generic templates into project documentation")
+        print(f"\n📊 PROGRESS: {progress_percentage}% complete ({completed_docs}/{total_docs} docs)")
+        
+        if progress_percentage == 0:
+            print("\n🎯 IMMEDIATE PRIORITY: Create architecture directory and copy templates")
+            print("\n✅ RUN THESE COMMANDS NOW:")
+            print("   mkdir -p docs/architecture/decisions")
+            print("   cp templates/architecture/*.md docs/architecture/")
+            print("   python tools/validation/validate-architecture.py  # Check progress")
+        elif progress_percentage < 50:
+            print("\n🎯 CURRENT FOCUS: Complete template customization")
+            print("\n✅ FOR EACH INCOMPLETE TEMPLATE:")
+            print("   1. Open the file in docs/architecture/")
+            print("   2. Find ALL placeholders like [Feature Name], [YYYY-MM-DD]")
+            print("   3. Replace with project-specific content")
+            print("   4. Save and run validation again")
+        elif progress_percentage < 100:
+            print("\n🎯 ALMOST DONE: Finish remaining templates")
+            print("\n✅ FINAL STEPS:")
+            print("   1. Complete any remaining templates shown above")
+            print("   2. Create first ADR: cp templates/architecture/ADR-template.md docs/architecture/decisions/ADR-001-initial-architecture.md")
+            print("   3. Customize ADR with first architectural decision")
+        else:
+            print("\n🎯 READY FOR NEXT PHASE: All templates completed!")
+            print("\n✅ NEXT STEPS:")
+            print("   1. Run: python tools/validation/validate-architecture.py --strict")
+            print("   2. Should progress to intermediate or strict mode")
+            print("   3. Begin implementation when validation passes")
+        
+        print("\n📚 DETAILED GUIDANCE:")
+        print("   • Read: CLAUDE-CONTEXT-architecture.md for complete instructions")
+        print("   • Templates: Available in templates/architecture/ directory")
+        print("   • Examples: See existing templates for structure reference")
+        
+        print("\n⚠️  BOOTSTRAP MODE RULES:")
+        print("   • Warnings are OK - focus on meaningful content, not perfection")
+        print("   • Replace ALL [placeholders] with real project information")
+        print("   • Create project-specific requirements, not generic examples")
+        print("   • You can write code AFTER completing all templates")
+        
+        print("\n🔄 VALIDATION COMMANDS:")
+        print("   python tools/validation/validate-architecture.py          # Check current progress")
+        print("   python tools/validation/validate-architecture.py --strict  # Force strict mode check")
+        
+        print("\n🎯 SUCCESS CRITERIA: All templates customized + 1 ADR created = Ready for development")
     
     def _validate_requirements_matrix(self, doc_path: Path) -> None:
         """Validate Requirements Traceability Matrix"""
@@ -309,7 +368,7 @@ class ArchitectureValidator:
             self.add_error(
                 "Requirements Matrix",
                 "Too few requirements documented",
-                "Document ALL requirements with unique IDs"
+                "ADD REQUIREMENTS: Create REQ-001, REQ-002, REQ-003... for each feature. Example: 'REQ-001 | User Authentication | High | Login/logout functionality'"
             )
         
         # Check for traceability
@@ -348,7 +407,7 @@ class ArchitectureValidator:
             self.add_error(
                 "What-If Analysis",
                 f"Only {len(scenarios)} scenarios documented (minimum 5)",
-                "Add more edge cases and failure scenarios"
+                "ADD SCENARIOS: Create '#### What if load increases 100x?' '#### What if database fails?' '#### What if API rate limits hit?' etc."
             )
         
         # Check each scenario has required fields
@@ -391,7 +450,7 @@ class ArchitectureValidator:
             self.add_error(
                 "System Invariants",
                 f"Only {len(invariants)} invariants defined (minimum 10)",
-                "Define more system constraints"
+                "CREATE INVARIANTS: Add INV-SEC001 (auth required), INV-DAT001 (data integrity), INV-PER001 (response <2s), etc."
             )
         
         # Check categories
@@ -472,7 +531,7 @@ class ArchitectureValidator:
             self.add_error(
                 "Failure Analysis",
                 f"Only {len(rpn_scores)} failure modes analyzed",
-                "Analyze at least 5 failure modes with RPN scores"
+                "ANALYZE FAILURES: Document database failure (RPN: 8x7x3=168), network timeout (RPN: 6x5x4=120), etc. with detection and recovery"
             )
         
         # Check for high-risk items

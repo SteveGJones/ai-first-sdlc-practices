@@ -1,0 +1,314 @@
+name: Comprehensive AI-First SDLC Validation
+
+on:
+  push:
+    branches: [ main, develop, 'feature/**', 'fix/**', 'docs/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run daily at 2 AM UTC to catch drift
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      strict_mode:
+        description: 'Force strict validation mode'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  # Job 1: Core SDLC Validation
+  sdlc-validation:
+    runs-on: ubuntu-latest
+    name: SDLC Compliance Check
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for branch validation
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    # All the checks we enforce on other projects
+    - name: 🌿 Branch Compliance Check
+      run: |
+        echo "Checking branch naming and protection..."
+        python tools/validation/validate-pipeline.py --checks branch --ci
+    
+    - name: 📋 Feature Proposal Check
+      if: github.event_name == 'pull_request'
+      run: |
+        BRANCH_NAME="${{ github.head_ref }}"
+        echo "Checking feature proposal for branch: $BRANCH_NAME"
+        python tools/validation/check-feature-proposal.py --branch "$BRANCH_NAME"
+    
+    - name: 🏗️ Architecture Validation
+      run: |
+        echo "Validating architecture documents..."
+        if [ "${{ inputs.strict_mode }}" == "true" ]; then
+          python tools/validation/validate-architecture.py --mode strict
+        else
+          python tools/validation/validate-architecture.py  # Auto-detect mode
+        fi
+    
+    - name: 🔍 Technical Debt Check
+      run: |
+        echo "Checking technical debt..."
+        python tools/validation/check-technical-debt.py .
+    
+    - name: 📖 Retrospective Check
+      if: github.event_name == 'pull_request'
+      run: |
+        BRANCH_NAME="${{ github.head_ref }}"
+        echo "Checking retrospective for branch: $BRANCH_NAME"
+        python tools/validation/validate-pipeline.py --checks retrospective --branch "$BRANCH_NAME"
+    
+    - name: 🔒 Security Scan
+      run: |
+        echo "Running security checks..."
+        python tools/validation/validate-pipeline.py --checks security --ci
+    
+    - name: 🧪 Test Existence Check
+      run: |
+        echo "Checking test coverage..."
+        python tools/validation/validate-pipeline.py --checks tests --ci
+    
+    - name: 📏 Type Safety Check
+      run: |
+        echo "Checking type annotations..."
+        python tools/validation/validate-pipeline.py --checks type-safety --ci
+    
+    - name: 📊 Generate Compliance Report
+      if: always()
+      run: |
+        python tools/validation/validate-pipeline.py --ci --export json --output sdlc-compliance.json
+        python tools/validation/validate-pipeline.py --ci --export markdown --output sdlc-compliance.md
+
+  # Job 2: Code Quality Checks
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality Analysis
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install quality tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8 mypy pylint bandit safety pre-commit
+    
+    - name: 🎨 Black Formatting Check
+      run: |
+        echo "Checking Python formatting..."
+        black --check . || echo "::warning::Code formatting issues found. Run 'black .' to fix."
+    
+    - name: 🔍 Flake8 Linting
+      run: |
+        echo "Running Flake8..."
+        flake8 . --count --exit-zero --max-complexity=15 --max-line-length=127 --statistics
+    
+    - name: 🔍 MyPy Type Checking
+      run: |
+        echo "Running MyPy..."
+        mypy tools/ --ignore-missing-imports || echo "::warning::Type checking issues found"
+    
+    - name: 🔍 Pylint Analysis
+      run: |
+        echo "Running Pylint..."
+        find . -name "*.py" -not -path "./test-*" | xargs pylint --exit-zero --score=y
+    
+    - name: 🔒 Bandit Security Scan
+      run: |
+        echo "Running Bandit security scan..."
+        bandit -r tools/ -f json -o bandit-report.json || true
+        if [ -f bandit-report.json ]; then
+          python -c "import json; data=json.load(open('bandit-report.json')); print(f'Security issues found: {len(data[\"results\"])}')"
+        fi
+    
+    - name: 🔒 Safety Dependency Check
+      run: |
+        echo "Checking for known vulnerabilities..."
+        safety check --json || echo "::warning::Dependency vulnerabilities found"
+    
+    - name: 🪝 Pre-commit Hooks
+      run: |
+        echo "Running pre-commit hooks..."
+        pre-commit run --all-files || echo "::warning::Pre-commit checks failed"
+
+  # Job 3: Documentation Validation
+  documentation:
+    runs-on: ubuntu-latest
+    name: Documentation Check
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install markdown-link-check markdownlint-cli || true
+    
+    - name: 📚 Check Documentation Links
+      run: |
+        echo "Checking documentation links..."
+        find . -name "*.md" -not -path "./test-*" | xargs -I {} markdown-link-check {} || echo "::warning::Broken links found"
+    
+    - name: 📝 Validate Markdown
+      run: |
+        echo "Validating markdown files..."
+        markdownlint '**/*.md' --ignore 'test-*/**' || echo "::warning::Markdown style issues found"
+    
+    - name: 📏 Check Documentation Completeness
+      run: |
+        echo "Checking required documentation..."
+        for doc in README.md CONTRIBUTING.md CLAUDE.md; do
+          if [ ! -f "$doc" ]; then
+            echo "::error::Missing required documentation: $doc"
+            exit 1
+          fi
+        done
+
+  # Job 4: Dependency and License Checks
+  dependencies:
+    runs-on: ubuntu-latest
+    name: Dependency Analysis
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: 📦 Check Dependencies
+      run: |
+        echo "Analyzing dependencies..."
+        pip install pipdeptree
+        pipdeptree --warn silence
+    
+    - name: 📜 License Check
+      run: |
+        echo "Checking licenses..."
+        pip install pip-licenses
+        pip-licenses --summary --output-file=licenses.txt
+        echo "License summary saved to licenses.txt"
+
+  # Job 5: Performance and Complexity Analysis
+  performance:
+    runs-on: ubuntu-latest
+    name: Performance Analysis
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install analysis tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install radon xenon
+    
+    - name: 📊 Cyclomatic Complexity
+      run: |
+        echo "Analyzing code complexity..."
+        radon cc tools/ -a -nc
+    
+    - name: 📊 Maintainability Index
+      run: |
+        echo "Calculating maintainability index..."
+        radon mi tools/ -s
+    
+    - name: 📊 Code Complexity Threshold
+      run: |
+        echo "Checking complexity thresholds..."
+        xenon --max-absolute B --max-modules C --max-average A tools/ || echo "::warning::High complexity detected"
+
+  # Final job: Summary and PR Comment
+  summary:
+    runs-on: ubuntu-latest
+    needs: [sdlc-validation, code-quality, documentation, dependencies, performance]
+    if: always()
+    name: Validation Summary
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: 📊 Create Summary Report
+      run: |
+        echo "## 🔍 Comprehensive Validation Summary" > summary.md
+        echo "" >> summary.md
+        echo "### Job Results" >> summary.md
+        echo "- SDLC Validation: ${{ needs.sdlc-validation.result }} ${{ needs.sdlc-validation.result == 'success' && '✅' || '❌' }}" >> summary.md
+        echo "- Code Quality: ${{ needs.code-quality.result }} ${{ needs.code-quality.result == 'success' && '✅' || '⚠️' }}" >> summary.md
+        echo "- Documentation: ${{ needs.documentation.result }} ${{ needs.documentation.result == 'success' && '✅' || '⚠️' }}" >> summary.md
+        echo "- Dependencies: ${{ needs.dependencies.result }} ${{ needs.dependencies.result == 'success' && '✅' || '⚠️' }}" >> summary.md
+        echo "- Performance: ${{ needs.performance.result }} ${{ needs.performance.result == 'success' && '✅' || '⚠️' }}" >> summary.md
+        
+        # Set overall status
+        if [[ "${{ needs.sdlc-validation.result }}" == "failure" ]]; then
+          echo "" >> summary.md
+          echo "### ❌ Validation Failed" >> summary.md
+          echo "The SDLC validation checks have failed. Please review the logs above." >> summary.md
+          exit 1
+        else
+          echo "" >> summary.md
+          echo "### ✅ All Required Checks Passed" >> summary.md
+        fi
+    
+    - name: Comment PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('summary.md', 'utf8');
+          
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('Comprehensive Validation Summary')
+          );
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: summary
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: summary
+            });
+          }
