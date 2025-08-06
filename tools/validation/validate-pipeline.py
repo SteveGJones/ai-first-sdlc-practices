@@ -9,8 +9,9 @@ import sys
 import json
 import os
 import re
+import configparser
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict, Any
 import argparse
 from datetime import datetime
 
@@ -20,7 +21,7 @@ class ValidationPipeline:
 
     def __init__(self, project_root: Optional[Path] = None):
         self.project_root = project_root or Path.cwd()
-        self.results = []
+        self.results: List[Dict[str, Any]] = []
         self.has_errors = False
         self.has_warnings = False
         self.is_empty_repo = False
@@ -45,7 +46,7 @@ class ValidationPipeline:
         # If we have most framework markers, this is the framework repo
         return marker_count >= 3
 
-    def run_validation(self, checks: List[str] = None) -> bool:
+    def run_validation(self, checks: Optional[List[str]] = None) -> bool:
         """Run validation checks"""
         available_checks = {
             "branch": self.check_branch_compliance,
@@ -981,7 +982,6 @@ class ValidationPipeline:
             # Allow relaxed rules in specific sections
             if self.is_framework_repo:
                 # Parse INI to check main section
-                import configparser
                 config = configparser.ConfigParser()
                 try:
                     config.read_string(content)
@@ -997,7 +997,10 @@ class ValidationPipeline:
                               mypy_section.get('check_untyped_defs', '').lower() == 'true'):
                             mypy_config_found = True
                         else:
-                            issues.append("mypy main section not configured for strict type checking (Framework allows relaxed rules in tool-specific sections)")
+                            issues.append(
+                                "mypy main section not configured for strict type checking "
+                                "(Framework allows relaxed rules in tool-specific sections)"
+                            )
                     else:
                         issues.append("mypy configuration missing [mypy] section")
                 except configparser.Error:

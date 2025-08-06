@@ -412,7 +412,8 @@ class ArchitectureValidator:
             self.add_error(
                 "Requirements Matrix",
                 "Too few requirements documented",
-                "ADD REQUIREMENTS: Create REQ-001, REQ-002, REQ-003... for each feature. Example: 'REQ-001 | User Authentication | High | Login/logout functionality'",
+                "ADD REQUIREMENTS: Create REQ-001, REQ-002, REQ-003... for each feature. "
+                "Example: 'REQ-001 | User Authentication | High | Login/logout functionality'",
             )
 
         # Check for traceability
@@ -453,7 +454,8 @@ class ArchitectureValidator:
             self.add_error(
                 "What-If Analysis",
                 f"Only {len(scenarios)} scenarios documented (minimum 5)",
-                "ADD SCENARIOS: Create '#### What if load increases 100x?' '#### What if database fails?' '#### What if API rate limits hit?' etc.",
+                "ADD SCENARIOS: Create '#### What if load increases 100x?' "
+                "'#### What if database fails?' '#### What if API rate limits hit?' etc.",
             )
 
         # Check each scenario has required fields
@@ -504,7 +506,8 @@ class ArchitectureValidator:
             self.add_error(
                 "System Invariants",
                 f"Only {len(invariants)} invariants defined (minimum 10)",
-                "CREATE INVARIANTS: Add INV-SEC001 (auth required), INV-DAT001 (data integrity), INV-PER001 (response <2s), etc.",
+                "CREATE INVARIANTS: Add INV-SEC001 (auth required), "
+                "INV-DAT001 (data integrity), INV-PER001 (response <2s), etc.",
             )
 
         # Check categories
@@ -593,7 +596,8 @@ class ArchitectureValidator:
             self.add_error(
                 "Failure Analysis",
                 f"Only {len(rpn_scores)} failure modes analyzed",
-                "ANALYZE FAILURES: Document database failure (RPN: 8x7x3=168), network timeout (RPN: 6x5x4=120), etc. with detection and recovery",
+                "ANALYZE FAILURES: Document database failure (RPN: 8x7x3=168), "
+                "network timeout (RPN: 6x5x4=120), etc. with detection and recovery",
             )
 
         # Check for high-risk items
