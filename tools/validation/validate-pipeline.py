@@ -68,7 +68,7 @@ class ValidationPipeline:
         
         return not self.has_errors
     
-    def check_branch_compliance(self):
+    def check_branch_compliance(self) -> None:
         """Check if on a feature branch"""
         try:
             result = subprocess.run(
@@ -97,7 +97,7 @@ class ValidationPipeline:
         except subprocess.CalledProcessError:
             self.add_error("Branch Compliance", "Not in a git repository", "Initialize git: git init")
     
-    def check_feature_proposal(self):
+    def check_feature_proposal(self) -> None:
         """Check for feature proposal"""
         branch = self._get_current_branch()
         if not branch or branch in ["main", "master"]:
@@ -130,7 +130,7 @@ class ValidationPipeline:
                 "Create a proposal in docs/feature-proposals/"
             )
     
-    def check_implementation_plan(self):
+    def check_implementation_plan(self) -> None:
         """Check for implementation plan"""
         # First check if we have a complex feature proposal
         branch = self._get_current_branch()
@@ -187,7 +187,7 @@ class ValidationPipeline:
         else:
             self.add_skip("Implementation Plan", "No plans required (simple feature)")
     
-    def check_ai_documentation(self):
+    def check_ai_documentation(self) -> None:
         """Check for AI instruction files"""
         ai_files = ["CLAUDE.md", "GEMINI.md", "GPT.md"]
         found_files = []
@@ -205,7 +205,7 @@ class ValidationPipeline:
                 "Create CLAUDE.md, GEMINI.md, or GPT.md from templates"
             )
     
-    def check_test_coverage(self):
+    def check_test_coverage(self) -> None:
         """Check test coverage"""
         # Check for framework verification test in empty repos
         if self.is_empty_repo:
@@ -278,7 +278,7 @@ class ValidationPipeline:
         
         self.add_warning("Test Coverage", "No test runner found", "Set up testing framework")
     
-    def check_security_scan(self):
+    def check_security_scan(self) -> None:
         """Run security scans"""
         # Check for secrets
         try:
@@ -318,7 +318,7 @@ class ValidationPipeline:
         except subprocess.CalledProcessError:
             self.add_skip("Security Scan", "No staged files to scan")
     
-    def check_code_quality(self):
+    def check_code_quality(self) -> None:
         """Check code quality with linters"""
         # Skip linting in empty repos
         if self.is_empty_repo:
@@ -356,7 +356,7 @@ class ValidationPipeline:
         
         self.add_skip("Code Quality", "No linters configured")
     
-    def check_dependencies(self):
+    def check_dependencies(self) -> None:
         """Check for dependency issues"""
         # Skip or adjust for empty repos
         if self.is_empty_repo:
@@ -408,7 +408,7 @@ class ValidationPipeline:
         
         self.add_skip("Dependencies", "No dependency files found")
     
-    def check_commit_compliance(self):
+    def check_commit_compliance(self) -> None:
         """Check commit message compliance"""
         try:
             # Get last 5 commits
@@ -444,7 +444,7 @@ class ValidationPipeline:
         except subprocess.CalledProcessError:
             self.add_skip("Commit Compliance", "No commit history")
     
-    def check_retrospective(self):
+    def check_retrospective(self) -> None:
         """Check for retrospective document"""
         branch = self._get_current_branch()
         if not branch or branch in ["main", "master"]:
@@ -601,73 +601,102 @@ class ValidationPipeline:
                     str(e)
                 )
     
-    def check_technical_debt(self):
+    def check_technical_debt(self) -> None:
         """Check for technical debt indicators"""
         if self.is_empty_repo:
             self.add_skip("Technical Debt", "Empty repository - no code to check")
             return
         
+        debt_indicators, files_checked = self._scan_for_debt_indicators()
+        self._report_debt_results(debt_indicators, files_checked)
+    
+    def _scan_for_debt_indicators(self) -> tuple[list[str], int]:
+        """Scan all code files for technical debt indicators"""
         debt_indicators = []
         files_checked = 0
         
-        # Check all code files
         code_patterns = ['**/*.py', '**/*.js', '**/*.ts', '**/*.jsx', '**/*.tsx',
                         '**/*.go', '**/*.rs', '**/*.java', '**/*.rb', '**/*.cpp']
         
         for pattern in code_patterns:
             for file_path in Path(self.project_root).glob(pattern):
-                # Skip framework tools and node_modules
-                if any(skip in str(file_path) for skip in ['node_modules', '.git', '__pycache__', 'venv']):
+                if self._should_skip_file(file_path):
                     continue
                 
                 files_checked += 1
-                try:
-                    content = file_path.read_text(encoding='utf-8')
-                    
-                    # Check for TODO/FIXME comments
-                    todos = len(re.findall(r'(TODO|FIXME|HACK|XXX|BUG):', content, re.IGNORECASE))
-                    if todos > 0:
-                        debt_indicators.append(f"{file_path.name}: {todos} TODO/FIXME comments")
-                    
-                    # Check for commented-out code (simple heuristic)
-                    comment_patterns = {
-                        '.py': r'^\s*#\s*(import|def|class|if|for|while|return)',
-                        '.js': r'^\s*//\s*(import|function|class|if|for|while|return)',
-                        '.ts': r'^\s*//\s*(import|function|class|if|for|while|return)',
-                        '.go': r'^\s*//\s*(import|func|type|if|for|return)',
-                    }
-                    
-                    suffix = file_path.suffix
-                    if suffix in comment_patterns:
-                        commented_code = len(re.findall(comment_patterns[suffix], content, re.MULTILINE))
-                        if commented_code > 0:
-                            debt_indicators.append(f"{file_path.name}: {commented_code} lines of commented code")
-                    
-                    # Check for any types (TypeScript)
-                    if suffix in ['.ts', '.tsx']:
-                        any_types = len(re.findall(r':\s*any\b', content))
-                        if any_types > 0:
-                            debt_indicators.append(f"{file_path.name}: {any_types} 'any' types")
-                    
-                    # Check for ignored errors
-                    ignore_patterns = [
-                        r'@ts-ignore',
-                        r'@ts-nocheck',
-                        r'# type: ignore',
-                        r'# noqa',
-                        r'# pylint: disable',
-                        r'// eslint-disable',
-                    ]
-                    
-                    for ignore_pattern in ignore_patterns:
-                        ignores = len(re.findall(ignore_pattern, content))
-                        if ignores > 0:
-                            debt_indicators.append(f"{file_path.name}: {ignores} error suppressions")
-                            break
-                
-                except Exception:
-                    continue
+                indicators = self._check_file_for_debt(file_path)
+                debt_indicators.extend(indicators)
         
+        return debt_indicators, files_checked
+    
+    def _should_skip_file(self, file_path: Path) -> bool:
+        """Check if file should be skipped during debt analysis"""
+        skip_patterns = ['node_modules', '.git', '__pycache__', 'venv']
+        return any(skip in str(file_path) for skip in skip_patterns)
+    
+    def _check_file_for_debt(self, file_path: Path) -> list[str]:
+        """Check a single file for technical debt indicators"""
+        indicators = []
+        
+        try:
+            content = file_path.read_text(encoding='utf-8')
+            
+            # Check for TODO/FIXME comments (excluding strings and regular words)
+            # Only match when preceded by comment markers and not in strings
+            todo_pattern = r'(?:#|//|/\*)\s*(TODO|FIXME|HACK|XXX|BUG):'
+            todos = len(re.findall(todo_pattern, content, re.IGNORECASE))
+            if todos > 0:
+                indicators.append(f"{file_path.name}: {todos} TODO/FIXME comments")
+            
+            # Check for commented-out code
+            commented_lines = self._count_commented_code(content, file_path.suffix)
+            if commented_lines > 0:
+                indicators.append(f"{file_path.name}: {commented_lines} lines of commented code")
+            
+            # Check for any types (TypeScript)
+            if file_path.suffix in ['.ts', '.tsx']:
+                any_types = len(re.findall(r':\s*any\b', content))
+                if any_types > 0:
+                    indicators.append(f"{file_path.name}: {any_types} 'any' types")
+            
+            # Check for error suppressions
+            suppressions = self._count_error_suppressions(content)
+            if suppressions > 0:
+                indicators.append(f"{file_path.name}: {suppressions} error suppressions")
+        
+        except Exception:
+            pass  # Skip files we can't read
+        
+        return indicators
+    
+    def _count_commented_code(self, content: str, suffix: str) -> int:
+        """Count lines of commented-out code"""
+        comment_patterns = {
+            '.py': r'^\s*#\s*(import|def|class|if|for|while|return)',
+            '.js': r'^\s*//\s*(import|function|class|if|for|while|return)',
+            '.ts': r'^\s*//\s*(import|function|class|if|for|while|return)',
+            '.go': r'^\s*//\s*(import|func|type|if|for|return)',
+        }
+        
+        if suffix in comment_patterns:
+            return len(re.findall(comment_patterns[suffix], content, re.MULTILINE))
+        return 0
+    
+    def _count_error_suppressions(self, content: str) -> int:
+        """Count error suppression patterns"""
+        ignore_patterns = [
+            r'@ts-ignore', r'@ts-nocheck', r'# type: ignore',
+            r'# noqa', r'# pylint: disable', r'// eslint-disable'
+        ]
+        
+        for pattern in ignore_patterns:
+            suppressions = len(re.findall(pattern, content))
+            if suppressions > 0:
+                return suppressions
+        return 0
+    
+    def _report_debt_results(self, debt_indicators: list[str], files_checked: int) -> None:
+        """Report technical debt scan results"""
         if debt_indicators:
             self.add_error(
                 "Technical Debt",
@@ -684,7 +713,7 @@ class ValidationPipeline:
         else:
             self.add_skip("Technical Debt", "No code files to check")
     
-    def check_type_safety(self):
+    def check_type_safety(self) -> None:
         """Check for type safety issues"""
         if self.is_empty_repo:
             self.add_skip("Type Safety", "Empty repository - no code to check")
@@ -692,78 +721,115 @@ class ValidationPipeline:
         
         type_issues = []
         
-        # TypeScript/JavaScript projects
+        # Check TypeScript configuration
+        ts_issues = self._check_typescript_config()
+        type_issues.extend(ts_issues)
+        
+        # Check Python configuration
+        py_issues = self._check_python_type_config()
+        type_issues.extend(py_issues)
+        
+        # Check Python code annotations
+        annotation_issues = self._check_python_annotations()
+        type_issues.extend(annotation_issues)
+        
+        self._report_type_safety_results(type_issues)
+    
+    def _check_typescript_config(self) -> list[str]:
+        """Check TypeScript configuration for type safety"""
+        issues = []
         ts_config = self.project_root / "tsconfig.json"
-        if ts_config.exists():
-            try:
-                config_content = ts_config.read_text()
-                config_json = json.loads(config_content)
-                
-                # Check strict mode
-                compiler_options = config_json.get('compilerOptions', {})
-                if not compiler_options.get('strict', False):
-                    type_issues.append("TypeScript strict mode is disabled")
-                
-                # Check for weak type settings
-                weak_settings = {
-                    'noImplicitAny': False,
-                    'strictNullChecks': False,
-                    'strictFunctionTypes': False,
-                    'strictBindCallApply': False,
-                    'strictPropertyInitialization': False,
-                    'noImplicitThis': False,
-                    'alwaysStrict': False
-                }
-                
-                for setting, expected in weak_settings.items():
-                    if compiler_options.get(setting, True) == expected:
-                        type_issues.append(f"TypeScript {setting} is not enabled")
-                
-            except Exception:
-                type_issues.append("Could not parse tsconfig.json")
         
-        # Python projects
-        mypy_ini = self.project_root / "mypy.ini"
-        setup_cfg = self.project_root / "setup.cfg"
-        pyproject_toml = self.project_root / "pyproject.toml"
+        if not ts_config.exists():
+            return issues
         
-        if any(f.exists() for f in [mypy_ini, setup_cfg, pyproject_toml]):
-            # Check if mypy is configured strictly
-            mypy_config_found = False
+        try:
+            config_content = ts_config.read_text()
+            config_json = json.loads(config_content)
+            compiler_options = config_json.get('compilerOptions', {})
             
-            if mypy_ini.exists():
-                content = mypy_ini.read_text()
-                if "disallow_untyped_defs" not in content or "False" in content:
-                    type_issues.append("mypy not configured for strict type checking")
-                else:
-                    mypy_config_found = True
+            # Check strict mode
+            if not compiler_options.get('strict', False):
+                issues.append("TypeScript strict mode is disabled")
             
-            if not mypy_config_found and setup_cfg.exists():
-                content = setup_cfg.read_text()
-                if "[mypy]" not in content:
-                    type_issues.append("mypy configuration missing")
+            # Check for weak type settings
+            weak_settings = {
+                'noImplicitAny': False,
+                'strictNullChecks': False,
+                'strictFunctionTypes': False,
+                'strictBindCallApply': False,
+                'strictPropertyInitialization': False,
+                'noImplicitThis': False,
+                'alwaysStrict': False
+            }
+            
+            for setting, expected in weak_settings.items():
+                if compiler_options.get(setting, True) == expected:
+                    issues.append(f"TypeScript {setting} is not enabled")
         
-        # Check actual code for type annotations (Python)
+        except Exception:
+            issues.append("Could not parse tsconfig.json")
+        
+        return issues
+    
+    def _check_python_type_config(self) -> list[str]:
+        """Check Python mypy configuration"""
+        issues = []
+        config_files = [
+            self.project_root / "mypy.ini",
+            self.project_root / "setup.cfg",
+            self.project_root / "pyproject.toml"
+        ]
+        
+        if not any(f.exists() for f in config_files):
+            return issues
+        
+        mypy_config_found = False
+        
+        # Check mypy.ini
+        if config_files[0].exists():
+            content = config_files[0].read_text()
+            if "disallow_untyped_defs" not in content or "False" in content:
+                issues.append("mypy not configured for strict type checking")
+            else:
+                mypy_config_found = True
+        
+        # Check setup.cfg
+        if not mypy_config_found and config_files[1].exists():
+            content = config_files[1].read_text()
+            if "[mypy]" not in content:
+                issues.append("mypy configuration missing")
+        
+        return issues
+    
+    def _check_python_annotations(self) -> list[str]:
+        """Check Python code for type annotations"""
+        issues = []
         py_files = list(Path(self.project_root).glob("**/*.py"))
         py_files = [f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)]
         
-        if py_files:
-            missing_annotations = 0
-            for py_file in py_files[:10]:  # Sample first 10 files
-                try:
-                    content = py_file.read_text()
-                    # Simple heuristic: functions without type hints
-                    functions = re.findall(r'def\s+\w+\s*\([^)]*\)\s*:', content)
-                    typed_functions = re.findall(r'def\s+\w+\s*\([^)]*\)\s*->\s*\w+\s*:', content)
-                    
-                    if functions and len(typed_functions) < len(functions) * 0.8:
-                        missing_annotations += 1
-                except Exception:
-                    continue
-            
-            if missing_annotations > len(py_files) * 0.2:
-                type_issues.append(f"{missing_annotations} Python files lack type annotations")
+        if not py_files:
+            return issues
         
+        missing_annotations = 0
+        for py_file in py_files[:10]:  # Sample first 10 files
+            try:
+                content = py_file.read_text()
+                functions = re.findall(r'def\s+\w+\s*\([^)]*\)\s*:', content)
+                typed_functions = re.findall(r'def\s+\w+\s*\([^)]*\)\s*->\s*\w+\s*:', content)
+                
+                if functions and len(typed_functions) < len(functions) * 0.8:
+                    missing_annotations += 1
+            except Exception:
+                continue
+        
+        if missing_annotations > len(py_files) * 0.2:
+            issues.append(f"{missing_annotations} Python files lack type annotations")
+        
+        return issues
+    
+    def _report_type_safety_results(self, type_issues: list[str]) -> None:
+        """Report type safety check results"""
         if type_issues:
             self.add_error(
                 "Type Safety",
@@ -775,7 +841,7 @@ class ValidationPipeline:
         else:
             self.add_success("Type Safety", "Strong typing enforced")
     
-    def check_architecture_documentation(self):
+    def check_architecture_documentation(self) -> None:
         """Check if architecture documents exist and are complete"""
         arch_dir = self.project_root / "docs" / "architecture"
         

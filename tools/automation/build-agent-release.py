@@ -31,7 +31,7 @@ class AgentReleaseBuilder:
         self.release_agents_dir = release_dir / "agents"
         self.build_timestamp = datetime.now().isoformat()
         
-    def clean_release_dir(self):
+    def clean_release_dir(self) -> None:
         """Clean the release directory."""
         if self.release_agents_dir.exists():
             console.print(f"[yellow]Cleaning existing release directory...[/yellow]")
@@ -59,7 +59,7 @@ class AgentReleaseBuilder:
         console.print("[green]✓ All agents validated successfully[/green]")
         return True
     
-    def copy_agents(self):
+    def copy_agents(self) -> bool:
         """Copy validated agents to release directory."""
         console.print("\n[bold]Copying agents to release directory...[/bold]")
         
@@ -81,7 +81,7 @@ class AgentReleaseBuilder:
         
         console.print(f"[green]✓ Copied {copied_count} agents[/green]")
     
-    def generate_release_manifest(self):
+    def generate_release_manifest(self) -> bool:
         """Generate comprehensive release manifest."""
         console.print("\n[bold]Generating release manifest...[/bold]")
         
@@ -157,7 +157,7 @@ class AgentReleaseBuilder:
         console.print(f"  Optional agents: {manifest['statistics']['optional_agents']}")
         console.print(f"  Categories: {len(manifest['categories'])}")
     
-    def create_agent_index(self):
+    def create_agent_index(self) -> bool:
         """Create an index file for easy agent discovery."""
         console.print("\n[bold]Creating agent index...[/bold]")
         
@@ -235,7 +235,7 @@ python tools/validation/validate-agents.py agents/
         
         console.print("[green]✓ Created agent index[/green]")
     
-    def create_version_file(self):
+    def create_version_file(self) -> None:
         """Create version tracking file."""
         version_info = {
             'agent_library_version': '1.0.0',
@@ -290,7 +290,7 @@ python tools/validation/validate-agents.py agents/
 @click.option('--release', '-r', type=click.Path(),
               default='release', help='Release output directory')
 @click.option('--clean', is_flag=True, help='Clean release directory first')
-def main(source, release, clean):
+def main(source: str, release: str, clean: bool) -> None:
     """Build agent release package for distribution."""
     
     source_dir = Path(source).resolve()

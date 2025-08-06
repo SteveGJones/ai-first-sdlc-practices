@@ -6,8 +6,9 @@ Git operations for version management feature
 import subprocess
 import os
 import sys
+from typing import Tuple
 
-def run_git_command(cmd, cwd):
+def run_git_command(cmd: str, cwd: str) -> Tuple[str, str, int]:
     """Run a git command and return output"""
     try:
         result = subprocess.run(
@@ -21,7 +22,7 @@ def run_git_command(cmd, cwd):
     except Exception as e:
         return "", str(e), 1
 
-def main():
+def main() -> None:
     # Change to project directory
     project_dir = "/Users/stevejones/Documents/Development/ai-first-sdlc-practices"
     os.chdir(project_dir)

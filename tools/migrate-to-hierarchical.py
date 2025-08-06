@@ -7,6 +7,7 @@ import urllib.request
 from pathlib import Path
 import shutil
 from datetime import datetime
+from typing import Tuple, List
 
 GITHUB_RAW_BASE = "https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main"
 
@@ -19,7 +20,7 @@ HIERARCHICAL_FILES = [
     "CLAUDE-CONTEXT-language-validators.md"
 ]
 
-def download_file(filename):
+def download_file(filename: str) -> bool:
     """Download a file from the framework repository."""
     url = f"{GITHUB_RAW_BASE}/{filename}"
     try:
@@ -34,7 +35,7 @@ def download_file(filename):
         print(f"  ❌ Failed to download {filename}: {e}")
         return False
 
-def check_for_customizations():
+def check_for_customizations() -> Tuple[bool, List[str]]:
     """Check if CLAUDE.md has been customized."""
     if not Path("CLAUDE.md").exists():
         return False, []
@@ -64,7 +65,7 @@ def check_for_customizations():
     
     return len(customizations) > 0, customizations
 
-def migrate():
+def migrate() -> None:
     """Main migration function."""
     print("🔄 AI-First SDLC: Migrating to Hierarchical Instruction System")
     print("=" * 60)

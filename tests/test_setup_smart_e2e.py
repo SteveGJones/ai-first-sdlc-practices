@@ -210,10 +210,11 @@ class TestSetupSmartE2E(unittest.TestCase):
         # Run quickstart setup
         success = setup.setup_project(skip_ci=True, quickstart=True)
         
-        # Verify all components created
+        # Verify minimal components created in quickstart mode
         self.assertTrue((Path(self.test_dir) / 'README.md').exists())
         self.assertTrue((Path(self.test_dir) / '.gitignore').exists())
-        self.assertTrue((Path(self.test_dir) / 'CLAUDE.md').exists())
+        # Quickstart mode is minimal - it doesn't include CLAUDE.md
+        self.assertFalse((Path(self.test_dir) / 'CLAUDE.md').exists())
         self.assertFalse((Path(self.test_dir) / '.ai-sdlc-temp').exists())  # Should be cleaned up
     
     def test_ai_friendly_gitignore_patterns(self):
