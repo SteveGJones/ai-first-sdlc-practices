@@ -9,7 +9,7 @@ import sys
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import argparse
 from datetime import datetime
 import importlib.util
@@ -21,12 +21,15 @@ sys.path.insert(0, str(script_dir))
 spec = importlib.util.spec_from_file_location(
     "validate_pipeline", script_dir / "validate-pipeline.py"
 )
-validate_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(validate_module)
-ValidationPipeline = validate_module.ValidationPipeline
+if spec and spec.loader:
+    validate_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(validate_module)
+    ValidationPipeline = validate_module.ValidationPipeline
+else:
+    raise ImportError("Could not load validate-pipeline.py")
 
 
-class ProgressiveValidationPipeline(ValidationPipeline):
+class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,valid-type]
     """Level-aware validation pipeline"""
 
     # Define checks for each level
@@ -85,14 +88,15 @@ class ProgressiveValidationPipeline(ValidationPipeline):
             try:
                 with open(level_file) as f:
                     config = json.load(f)
-                    return config.get("level", "production")
+                    level = config.get("level", "production")
+                    return str(level)
             except Exception:
                 pass
 
         # Otherwise default to production
         return "production"
 
-    def run_validation(self, checks: List[str] = None, strict: bool = False) -> bool:
+    def run_validation(self, checks: Optional[List[str]] = None, strict: bool = False) -> bool:
         """Run level-appropriate validation checks"""
         # Check SDLC gate requirements first
         gate_passed = self._check_sdlc_gates()
