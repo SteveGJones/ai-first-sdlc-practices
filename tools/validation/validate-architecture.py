@@ -309,8 +309,14 @@ class ArchitectureValidator:
             "requirements-traceability-matrix.md": "Replace [Feature Name] with actual feature, add real REQ-IDs, map to components",
             "what-if-analysis.md": "Add 5+ scenarios: load spikes, failures, scaling needs. Replace [scenarios] with real risks",
             "system-invariants.md": "Define 10+ invariants: data rules, security bounds, performance limits. Replace generic examples",
-            "integration-design.md": "Document ALL external APIs, auth flows, data sync. Replace [Service] with actual integrations",
-            "failure-mode-analysis.md": "Analyze failure modes for each component, calculate RPN scores, add recovery procedures",
+            "integration-design.md": (
+                "Document ALL external APIs, auth flows, data sync. "
+                "Replace [Service] with actual integrations"
+            ),
+            "failure-mode-analysis.md": (
+                "Analyze failure modes for each component, calculate RPN scores, "
+                "add recovery procedures"
+            ),
         }
         return guidance_map.get(
             doc_name, "Replace ALL template placeholders with project-specific content"
@@ -349,7 +355,7 @@ class ArchitectureValidator:
             print("\n✅ FINAL STEPS:")
             print("   1. Complete any remaining templates shown above")
             print(
-                "   2. Create first ADR: cp templates/architecture/ADR-template.md docs/architecture/decisions/ADR-001-initial-architecture.md"
+                "   2. Create first ADR: cp templates/architecture/ADR-template.md "\n                "docs/architecture/decisions/ADR-001-initial-architecture.md"
             )
             print("   3. Customize ADR with first architectural decision")
         else:

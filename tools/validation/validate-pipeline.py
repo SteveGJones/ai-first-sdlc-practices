@@ -11,7 +11,7 @@ import os
 import re
 import configparser
 from pathlib import Path
-from typing import List, Tuple, Optional, Dict, Any, Union
+from typing import List, Tuple, Optional, Dict, Any
 import argparse
 from datetime import datetime
 
@@ -487,14 +487,14 @@ class ValidationPipeline:
             self.add_skip("Dependencies", "Empty repository - no dependencies")
             return
 
-        dep_files: List[Tuple[str, Optional[str]]] = [
+        dep_files_with_checks: List[Tuple[str, Optional[str]]] = [
             ("requirements.txt", "pip check"),
             ("package.json", "npm audit"),
             ("go.mod", "go mod verify"),
             ("Gemfile", "bundle check"),
         ]
 
-        for dep_file, check_cmd in dep_files:
+        for dep_file, check_cmd in dep_files_with_checks:
             if (self.project_root / dep_file).exists() and check_cmd:
                 try:
                     result = subprocess.run(

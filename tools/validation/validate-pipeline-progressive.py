@@ -9,7 +9,7 @@ import sys
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 import argparse
 from datetime import datetime
 import importlib.util
