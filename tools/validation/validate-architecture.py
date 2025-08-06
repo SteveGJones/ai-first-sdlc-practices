@@ -733,9 +733,7 @@ class ArchitectureValidator:
 
             md += f"\n## Summary\n"
             if self.has_errors:
-                md += (
-                    "❌ **FAILED** - Complete all architecture documents before coding\n"
-                )
+                md += "❌ **FAILED** - Complete all architecture documents before coding\n"
             elif self.has_warnings:
                 md += "⚠️  **PASSED** with warnings - Consider addressing issues\n"
             else:

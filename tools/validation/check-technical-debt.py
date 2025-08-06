@@ -203,9 +203,11 @@ class TechnicalDebtDetector:
                         "line": line_no,
                         "type": match.group(1).upper(),
                         "message": match.group(2).strip(),
-                        "severity": "high"
-                        if match.group(1).upper() in ["BUG", "FIXME"]
-                        else "medium",
+                        "severity": (
+                            "high"
+                            if match.group(1).upper() in ["BUG", "FIXME"]
+                            else "medium"
+                        ),
                     }
                 )
 

@@ -833,9 +833,11 @@ Implement AI-First SDLC framework with:
         templates_to_combine = [
             "base.gitignore",
             "ai-tools.gitignore",
-            f"{self.detected_language}.gitignore"
-            if self.detected_language != "general"
-            else "general.gitignore",
+            (
+                f"{self.detected_language}.gitignore"
+                if self.detected_language != "general"
+                else "general.gitignore"
+            ),
         ]
 
         combined_content = []
@@ -2069,11 +2071,11 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 ):
                     # Create a temp file with analysis including objectives
                     analysis_data = {
-                        "languages": {
-                            self.detected_language: {"files": 10, "percentage": 100}
-                        }
-                        if self.detected_language
-                        else {},
+                        "languages": (
+                            {self.detected_language: {"files": 10, "percentage": 100}}
+                            if self.detected_language
+                            else {}
+                        ),
                         "primary_language": self.detected_language,
                         "project_types": [],
                         "frameworks": set(),
@@ -2208,9 +2210,9 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                     "require_retrospectives": True,
                 },
                 "detected_stack": {
-                    "languages": [self.detected_language]
-                    if self.detected_language
-                    else [],
+                    "languages": (
+                        [self.detected_language] if self.detected_language else []
+                    ),
                     "frameworks": [],
                     "project_type": self.project_type,
                 },

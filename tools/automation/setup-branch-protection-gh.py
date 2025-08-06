@@ -152,11 +152,9 @@ def detect_collaboration_pattern() -> Dict[str, Any]:
             "total_prs": total_prs,
             "external_reviews": external_reviews,
             "self_merges": self_merges,
-            "confidence": "high"
-            if total_prs > 5
-            else "medium"
-            if total_prs > 0
-            else "low",
+            "confidence": (
+                "high" if total_prs > 5 else "medium" if total_prs > 0 else "low"
+            ),
         }
 
     except (subprocess.CalledProcessError, json.JSONDecodeError, KeyError) as e:
@@ -528,9 +526,7 @@ Examples:
             mode_str = "Solo Developer" if solo_mode else "Team Collaboration"
             print(f"🎯 Detected mode: {mode_str}")
         else:
-            print(
-                "⚠️  Could not analyze collaboration pattern, defaulting to team mode"
-            )
+            print("⚠️  Could not analyze collaboration pattern, defaulting to team mode")
             solo_mode = False
 
     # Check for existing approval bots
