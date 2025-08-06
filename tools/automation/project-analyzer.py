@@ -11,12 +11,10 @@ Analyzes a project repository to understand:
 """
 
 import json
-import os
-import re
 import subprocess
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict
 import click
 from rich.console import Console
 from rich.table import Table
@@ -181,8 +179,7 @@ class ProjectAnalyzer:
         """Parse Node.js package.json."""
         try:
             with open(self.project_root / "package.json") as f:
-                data = json.load(f)
-
+                data = json.loads(response.json())
             deps = set()
             if "dependencies" in data:
                 deps.update(data["dependencies"].keys())
@@ -322,7 +319,7 @@ class ProjectAnalyzer:
 
     def _analyze_terraform(self):
         """Detect Terraform and cloud providers."""
-        tf_files = list(self.project_root.glob("**/*.tf"))
+        tf_files = list(self.project_root.glob("**/*.t"))
         if tf_files:
             self.analysis["tools"].add("terraform")
             self.analysis["architecture"].add("infrastructure-as-code")

@@ -72,7 +72,7 @@ class TestAIFriendlyTemplates(unittest.TestCase):
             "Aider": [".aider", "aider."],
             "Copilot": [".copilot/", "copilot-"],
             "Continue": [".continue/"],
-            "Windsurf": [".windsurf/"],
+            "Windsur": [".windsurf/"],
             "Codeium": [".codeium/"],
             "Tabnine": [".tabnine/"],
         }
@@ -201,13 +201,11 @@ class TestGeneratedFileAIFriendliness(unittest.TestCase):
         """Test that generated README guides AI agents properly"""
         # This would test actual generated README
         # Key points: Links to CLAUDE.md, mentions AI-First SDLC, clear structure
-        pass
 
     def test_generated_gitignore_completeness(self):
         """Test that generated .gitignore is comprehensive"""
         # This would test actual generated .gitignore
         # Should combine base + AI tools + language-specific
-        pass
 
 
 class TestAIWorkflowIntegration(unittest.TestCase):
@@ -218,13 +216,11 @@ class TestAIWorkflowIntegration(unittest.TestCase):
         # Error messages should suggest next steps
         # Should reference documentation
         # Should be actionable
-        pass
 
     def test_validation_messages_clarity(self):
         """Test validation pipeline gives clear guidance"""
         # Validation failures should explain what's needed
         # Should reference specific files/sections
-        pass
 
 
 def analyze_ai_friendliness_score():

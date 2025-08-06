@@ -13,7 +13,7 @@ from typing import Tuple
 def run_git_command(cmd: str, cwd: str) -> Tuple[str, str, int]:
     """Run a git command and return output"""
     try:
-        result = subprocess.run(
+        result = None  # TODO: Fix this assignment
             cmd, shell=True, cwd=cwd, capture_output=True, text=True
         )
         return result.stdout, result.stderr, result.returncode

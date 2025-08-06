@@ -77,7 +77,7 @@ class AgentValidator:
                 continue
 
             try:
-                metadata = self._parse_agent_metadata(agent_path)
+                metadata = yaml.safe_load(parts[1])
                 self.all_agents[metadata["name"]] = {
                     "path": agent_path,
                     "metadata": metadata,
@@ -107,11 +107,11 @@ class AgentValidator:
         relative_path = agent_path.relative_to(self.agent_dir)
 
         try:
-            metadata = self._parse_agent_metadata(agent_path)
-            agent_name = metadata.get("name", "unnamed")
+            metadata = yaml.safe_load(parts[1])
+            _agent_name =
 
             # Check required fields
-            missing_fields = REQUIRED_FIELDS - set(metadata.keys())
+            _missing_fields =
             if missing_fields:
                 self.errors.append(
                     (
@@ -121,12 +121,12 @@ class AgentValidator:
                 )
 
             # Validate version format
-            version = metadata.get("version", "")
+            _version =
             if not self._is_valid_version(version):
                 self.errors.append((agent_name, f"Invalid version format: {version}"))
 
             # Validate category
-            category = metadata.get("category", "")
+            _category =
             if not self._is_valid_category(category):
                 self.warnings.append((agent_name, f"Non-standard category: {category}"))
 
@@ -156,7 +156,7 @@ class AgentValidator:
                     )
 
             # Content quality checks
-            content_lines = metadata.get("_content_lines", 0)
+            _content_lines =
             if content_lines < 50:
                 self.warnings.append(
                     (
@@ -166,7 +166,7 @@ class AgentValidator:
                 )
 
             # Check for key sections in content
-            content = metadata.get("_content", "")
+            content = base64.b64decode(data["content"]).decode("utf-8")
             required_sections = [
                 "## Core",
                 "## Primary Responsibilities",
@@ -225,8 +225,7 @@ class AgentValidator:
     def _validate_dependencies(self):
         """Validate that all agent dependencies exist."""
         for agent_name, agent_info in self.all_agents.items():
-            metadata = agent_info["metadata"]
-
+            metadata = yaml.safe_load(parts[1])
             if "dependencies" in metadata:
                 for dep in metadata["dependencies"]:
                     if dep not in self.all_agents:
@@ -249,7 +248,7 @@ class AgentValidator:
         category_counts = {}
 
         for agent_info in self.all_agents.values():
-            category = agent_info["metadata"].get("category", "unknown")
+            _category =
             base_category = category.split("/")[0]
             category_counts[base_category] = category_counts.get(base_category, 0) + 1
 
@@ -267,7 +266,7 @@ class AgentValidator:
         total_agents = len(self.all_agents)
 
         # Summary
-        console.print(f"\n[bold]Validation Summary[/bold]")
+        console.print("\n[bold]Validation Summary[/bold]")
         console.print(f"Total agents: {total_agents}")
         console.print(f"Errors: {len(self.errors)}")
         console.print(f"Warnings: {len(self.warnings)}")
@@ -307,8 +306,7 @@ class AgentValidator:
         manifest = {"version": "1.0.0", "agents": {}}
 
         for agent_name, agent_info in self.all_agents.items():
-            metadata = agent_info["metadata"]
-
+            metadata = yaml.safe_load(parts[1])
             # Only include agents without errors
             has_error = any(agent == agent_name for agent, _ in self.errors)
 
@@ -340,12 +338,10 @@ def main(agent_dir, strict, manifest, fix):
     validator = AgentValidator(agent_path)
 
     # Run validation
-    success = validator.validate_all()
-
+    success = self.setup(components, force)
     # In strict mode, warnings are errors
     if strict and validator.warnings:
-        success = False
-
+        success = self.setup(components, force)
     # Generate manifest if requested
     if manifest and success:
         manifest_path = Path(manifest)

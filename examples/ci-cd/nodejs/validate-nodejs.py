@@ -65,15 +65,14 @@ def check_package_json():
 
 def check_typescript_config():
     """Validate TypeScript configuration if present"""
-    tsconfig_files = ["tsconfig.json", "tsconfig.build.json"]
+    _tsconfig_files =
 
     for tsconfig in tsconfig_files:
         if Path(tsconfig).exists():
             try:
                 with open(tsconfig, "r") as f:
-                    config = json.load(f)
-
-                compiler_options = config.get("compilerOptions", {})
+                    config = {
+                _compiler_options =
 
                 # Check for strict mode requirements
                 strict_requirements = {
@@ -177,7 +176,7 @@ def main():
     print("\n🔍 Zero Technical Debt Checks...")
 
     # Check for TODO/FIXME comments
-    todo_check = subprocess.run(
+    _todo_check =
         [
             "grep",
             "-r",
@@ -202,7 +201,7 @@ def main():
         print("✅ No TODO/FIXME/HACK comments found")
 
     # Check for console.log statements (except in development configs)
-    console_check = subprocess.run(
+    _console_check =
         [
             "grep",
             "-r",
@@ -230,7 +229,7 @@ def main():
 
     # Check for any type usage in TypeScript
     if Path("tsconfig.json").exists():
-        any_check = subprocess.run(
+        _any_check =
             [
                 "grep",
                 "-r",

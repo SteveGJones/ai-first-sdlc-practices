@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 import re
 import argparse
-from typing import Optional, List, Tuple
+from typing import Optional
 
 
 def get_current_branch() -> Optional[str]:
@@ -88,7 +88,7 @@ def find_feature_proposal(feature_name: str) -> Optional[Path]:
                     content = f.read()
                     if f"feature/{feature_name}" in content or feature_name in content:
                         return file
-            except:
+            except Exception:
                 continue
 
     return None
@@ -120,7 +120,7 @@ def check_proposal_content(proposal_file: Path, branch_name: str) -> bool:
             )
 
         if missing_fields:
-            print(f"⚠️  Proposal is missing required sections:")
+            print("⚠️  Proposal is missing required sections:")
             for field in missing_fields:
                 print(f"   - {field}")
             return False
@@ -170,24 +170,24 @@ def main() -> None:
 
     if not proposal_file:
         print(f"❌ No feature proposal found for branch: {branch}")
-        print(f"\n📝 Please create a feature proposal:")
-        print(f"   1. Copy templates/feature-proposal.md to docs/feature-proposals/")
+        print("\n📝 Please create a feature proposal:")
+        print("   1. Copy templates/feature-proposal.md to docs/feature-proposals/")
         print(f"   2. Name it descriptively (e.g., 01-{feature_name}.md)")
-        print(f"   3. Fill out all required sections")
+        print("   3. Fill out all required sections")
         print(f"   4. Set 'Target Branch: `{branch}`'")
-        print(f"\n❓ Why is this required?")
-        print(f"   Feature proposals ensure clear planning and prevent wasted effort.")
-        print(f"   They are mandatory in the AI-First SDLC framework.")
+        print("\n❓ Why is this required?")
+        print("   Feature proposals ensure clear planning and prevent wasted effort.")
+        print("   They are mandatory in the AI-First SDLC framework.")
         sys.exit(1)
 
     print(f"✅ Found feature proposal: {proposal_file}")
 
     # Verify proposal content
     if not check_proposal_content(proposal_file, branch):
-        print(f"\n❌ Feature proposal needs updates")
+        print("\n❌ Feature proposal needs updates")
         sys.exit(1)
     else:
-        print(f"✅ Feature proposal is properly formatted")
+        print("✅ Feature proposal is properly formatted")
         sys.exit(0)
 
 

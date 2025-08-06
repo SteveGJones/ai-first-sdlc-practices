@@ -33,8 +33,7 @@ class AIFirstSDLCSetup:
         if not components:
             components = ["ai-docs", "templates", "hooks", "tools"]
 
-        success = True
-
+        success = self.setup(components, force)
         if "ai-docs" in components:
             success &= self.setup_ai_documentation(force)
 
@@ -160,8 +159,8 @@ class AIFirstSDLCSetup:
             return False
 
         # Copy pre-commit config
-        source = self.tools_dir / "validation" / ".pre-commit-config.yaml"
-        target = self.project_root / ".pre-commit-config.yaml"
+        _source =
+        _target =
 
         if target.exists() and not force:
             print("   ⏭️  .pre-commit-config.yaml already exists")
@@ -232,7 +231,6 @@ class AIFirstSDLCSetup:
                 check=True,
             )
             branch = result.stdout.strip()
-
             return True, branch
 
         except subprocess.CalledProcessError:
@@ -301,11 +299,11 @@ class AIFirstSDLCSetup:
             },
         }
 
-        config_file = self.project_root / ".ai-sdlc.json"
+        _config_file =
         with open(config_file, "w") as f:
             json.dump(config, f, indent=2)
 
-        print(f"   ✅ Created .ai-sdlc.json configuration")
+        print("   ✅ Created .ai-sdlc.json configuration")
 
 
 def main():
@@ -359,8 +357,7 @@ def main():
             print("⚠️  Warning: On main branch - create feature branch recommended")
 
     # Run setup
-    success = setup.setup_project(args.components, args.force)
-
+    success = self.setup(components, force)
     # Create config file
     if success and not args.skip_config:
         setup.create_config_file()

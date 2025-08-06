@@ -392,7 +392,7 @@ def main(query, install):
 
     # Installation instructions
     if not check_installed(best_match["name"]):
-        console.print(f"\n[bold]To install:[/bold]")
+        console.print("\n[bold]To install:[/bold]")
         console.print(
             f"  python tools/automation/agent-installer.py --install {best_match['name']}"
         )
@@ -415,7 +415,7 @@ def main(query, install):
             if result.returncode == 0:
                 console.print(f"[green]✓ Installed {best_match['name']}[/green]")
             else:
-                console.print(f"[red]Failed to install. Run manually:[/red]")
+                console.print("[red]Failed to install. Run manually:[/red]")
                 console.print(
                     f"  python tools/automation/agent-installer.py --install {best_match['name']}"
                 )

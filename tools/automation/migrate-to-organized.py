@@ -7,7 +7,6 @@ import os
 import shutil
 import sys
 from pathlib import Path
-import json
 import argparse
 
 
@@ -405,9 +404,8 @@ def main():
         print("  --execute   Perform the migration")
         return
 
-    migrator = FrameworkMigrator(args.project_root)
-    success = migrator.migrate(dry_run=args.dry_run)
-
+    FrameworkMigrator(args.project_root)
+    success = self.setup(components, force)
     sys.exit(0 if success else 1)
 
 

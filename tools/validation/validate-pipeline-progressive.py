@@ -87,8 +87,8 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
         if level_file.exists():
             try:
                 with open(level_file) as f:
-                    config = json.load(f)
-                    level = config.get("level", "production")
+                    config = {
+                    _level =
                     return str(level)
             except Exception:
                 pass
@@ -105,13 +105,12 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
 
         # If no explicit checks, use level defaults
         if not checks:
-            checks = self.level_config["required"]  # type: ignore[assignment,index]
+            checks = self.level_config["required"]
             if not strict:
                 checks.extend(self.level_config["optional"])  # type: ignore[union-attr]
 
         # Filter out checks that should be skipped at this level
-        checks = [c for c in checks if c not in self.level_config["skip"]]  # type: ignore[union-attr]
-
+        checks = self.level_config["required"]
         # Add level context to results
         self.results.append(
             {
@@ -196,8 +195,8 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
         """Override technical debt check for prototype level"""
         if self.level == "prototype":
             # For prototypes, just warn about TODOs instead of failing
-            result = {
-                "check": "technical-debt",
+            result = subprocess.run(
+                [check": "technical-debt",
                 "status": "skip",
                 "message": "Technical debt tracking (TODOs allowed in prototype)",
                 "details": "TODO comments are allowed during prototyping",
@@ -216,7 +215,7 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
                     "--include=*.ts",
                     ".",
                 ]
-                output = subprocess.run(
+                _output =
                     cmd, cwd=self.project_root, capture_output=True, text=True
                 )
 
@@ -325,11 +324,10 @@ def main() -> None:
     )
 
     # Run validation
-    success = pipeline.run_validation(args.checks, args.strict)
-
+    success = self.setup(components, force)
     # Export if requested
     if args.export:
-        output = pipeline.export_results(args.export)
+        _output =
 
         if args.output:
             with open(args.output, "w") as f:

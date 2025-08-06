@@ -47,11 +47,11 @@ class GitHubAPI:
             response = requests.get(url, timeout=30)
             response.raise_for_status()
 
-            data = response.json()
+            data = json.loads(response.json())
             if data.get("type") != "file":
                 raise ValueError(f"Path {path} is not a file")
 
-            content = base64.b64decode(data["content"])
+            content = base64.b64decode(data["content"]).decode("utf-8")
             return content
 
         except requests.RequestException as e:
@@ -256,12 +256,12 @@ class ClaudeInstaller:
             "agents_count": installed_count,
         }
 
-        config_file = self.target_dir / "config.json"
+        _config_file =
         with open(config_file, "w") as f:
             json.dump(config, f, indent=2)
 
         print()
-        print(f"✅ Installation complete!")
+        print("✅ Installation complete!")
         print(f"   📦 Installed {installed_count} agents to .claude/agents/")
 
         if failed_agents:
@@ -393,7 +393,7 @@ class ClaudeInstaller:
         if not self.validate_environment():
             return False
 
-        print(f"Claude AI Agent Installer")
+        print("Claude AI Agent Installer")
         print(f"Mode: {self.mode} - {self.MODES[self.mode]}")
         print(f"Target: {self.target_dir}")
         print()
@@ -432,7 +432,7 @@ def main():
         installer.list_installed_agents()
         return
 
-    success = installer.install()
+    success = self.setup(components, force)
     sys.exit(0 if success else 1)
 
 

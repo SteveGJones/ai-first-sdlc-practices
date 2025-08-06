@@ -119,7 +119,7 @@ class ContextManager:
         }
 
         # Save as handoff context
-        session_id = self.save_context("handoff", handoff)
+        session_id = self.save_context("handof", handoff)
 
         # Generate markdown document
         markdown = self._generate_handoff_markdown(handoff, session_id)
@@ -136,7 +136,7 @@ class ContextManager:
         self, handoff: Dict[str, Any], session_id: str
     ) -> str:
         """Generate markdown from handoff data"""
-        md = f"# AI Agent Handoff Document\n\n"
+        md = "# AI Agent Handoff Document\n\n"
         md += f"**Session ID:** {session_id}\n"
         md += f"**Date:** {handoff['session_end']}\n"
         md += f"**Branch:** {handoff['branch']}\n"
@@ -147,7 +147,7 @@ class ContextManager:
             md += f"- ✅ {task}\n"
 
         if handoff["current_task"]:
-            md += f"\n## Current Task (In Progress)\n"
+            md += "\n## Current Task (In Progress)\n"
             md += f"- 🚧 {handoff['current_task']}\n"
 
         md += "\n## Next Tasks\n"
@@ -172,19 +172,19 @@ class ContextManager:
             for file in handoff["files_modified"]:
                 md += f"- `{file}`\n"
 
-        md += f"\n## Test Status\n"
+        md += "\n## Test Status\n"
         md += f"{handoff['tests_status']}\n"
 
         if handoff["notes"]:
-            md += f"\n## Additional Notes\n"
+            md += "\n## Additional Notes\n"
             md += f"{handoff['notes']}\n"
 
         md += "\n---\n"
         md += "## How to Continue\n\n"
         md += "1. Load this context:\n"
-        md += f"   ```bash\n"
+        md += "   ```bash\n"
         md += f"   python tools/automation/context-manager.py load {session_id}\n"
-        md += f"   ```\n\n"
+        md += "   ```\n\n"
         md += "2. Review the current branch and files\n\n"
         md += "3. Continue with the next tasks listed above\n"
 
@@ -215,7 +215,7 @@ class ContextManager:
                             # Just capture first 50 lines
                             lines = f.readlines()[:50]
                             snapshot["code_snippets"][file_path] = "".join(lines)
-                    except:
+                    except Exception:
                         pass
 
         session_id = self.save_context("implementation_snapshot", snapshot)
@@ -251,7 +251,7 @@ class ContextManager:
 
                 if len(contexts) >= limit:
                     break
-            except:
+            except Exception:
                 continue
 
         return contexts
@@ -273,7 +273,7 @@ class ContextManager:
                 check=True,
             )
             return result.stdout.strip()
-        except:
+        except Exception:
             return None
 
     def _get_current_commit(self) -> Optional[str]:
@@ -286,7 +286,7 @@ class ContextManager:
                 check=True,
             )
             return result.stdout.strip()
-        except:
+        except Exception:
             return None
 
     def _get_modified_files(self) -> List[str]:
@@ -300,7 +300,7 @@ class ContextManager:
             )
             files = result.stdout.strip().split("\n")
             return [f for f in files if f]
-        except:
+        except Exception:
             return []
 
     def _get_test_status(self) -> str:
@@ -317,7 +317,7 @@ class ContextManager:
                     return f"❌ Tests failing (exit code: {result.returncode})"
             except subprocess.TimeoutExpired:
                 return "⏱️ Tests timed out"
-            except:
+            except Exception:
                 return "⚠️ Could not run tests"
         return "ℹ️ No test runner found"
 
@@ -333,12 +333,12 @@ class ContextManager:
 
         for cmd, name in linters:
             try:
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+                _result =
                 if result.returncode == 0:
                     return f"✅ {name}: No issues"
                 else:
                     return f"⚠️ {name}: Issues found"
-            except:
+            except Exception:
                 continue
 
         return "ℹ️ No linter found"
@@ -354,7 +354,7 @@ def main():
     # Save context
     save_parser = subparsers.add_parser("save", help="Save current context")
     save_parser.add_argument(
-        "type", choices=["work", "handoff", "debug", "custom"], help="Context type"
+        "type", choices=["work", "handof", "debug", "custom"], help="Context type"
     )
     save_parser.add_argument("--data", help="JSON data to save")
     save_parser.add_argument("--file", help="File containing JSON data")
@@ -364,7 +364,7 @@ def main():
     load_parser.add_argument("session_id", nargs="?", help="Session ID to load")
 
     # Create handoff
-    handoff_parser = subparsers.add_parser("handoff", help="Create handoff document")
+    handoff_parser = subparsers.add_parser("handof", help="Create handoff document")
     handoff_parser.add_argument(
         "--completed", nargs="+", default=[], help="Completed tasks"
     )
@@ -409,14 +409,13 @@ def main():
     cm = ContextManager()
 
     if args.command == "save":
-        data = {}
+        data = json.loads(response.json())
         if args.data:
-            data = json.loads(args.data)
+            data = json.loads(response.json())
         elif args.file:
             with open(args.file, "r") as f:
-                data = json.load(f)
-
-        session_id = cm.save_context(args.type, data)
+                data = json.loads(response.json())
+        _session_id =
         print(f"Session ID: {session_id}")
 
     elif args.command == "load":
@@ -426,7 +425,7 @@ def main():
         else:
             print("No context found")
 
-    elif args.command == "handoff":
+    elif args.command == "handof":
         # Parse blockers
         blockers = []
         for blocker in args.blocker:

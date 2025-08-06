@@ -57,7 +57,9 @@ class SmartFrameworkSetup:
         "tools/validation/check-logging-compliance.py": "tools/validation/check-logging-compliance.py",
         "templates/quality-gates.yaml": "templates/quality-gates.yaml",
         # Architecture templates
-        "templates/architecture/requirements-traceability-matrix.md": "templates/architecture/requirements-traceability-matrix.md",
+        "templates/architecture/requirements-traceability-matrix.md": (
+            "templates/architecture/requirements-traceability-matrix.md"
+        ),
         "templates/architecture/what-if-analysis.md": "templates/architecture/what-if-analysis.md",
         "templates/architecture/architecture-decision-record.md": "templates/architecture/architecture-decision-record.md",
         "templates/architecture/system-invariants.md": "templates/architecture/system-invariants.md",
@@ -304,7 +306,7 @@ class SmartFrameworkSetup:
         except Exception as e:
             print(f"⚠️  Could not download template, using fallback: {e}")
             # Fallback to simplified version if template download fails
-            return f"""# CLAUDE.md
+            return """# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -363,15 +365,14 @@ pre-commit>=3.0.0
             print("✅ Created requirements.txt")
 
         # Create pyproject.toml
-        pyproject_content = f"""[tool.black]
+        pyproject_content = """[tool.black]
 line-length = 88
 target-version = ['py39']
 
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
-warn_unused_configs = true
-
+warn_unused_configs = None  # TODO: Fix this assignment
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
@@ -392,7 +393,7 @@ description = "{self.project_purpose}"
             print("✅ Created pyproject.toml")
 
         # Create setup.py
-        setup_content = f"""#!/usr/bin/env python3
+        setup_content = """#!/usr/bin/env python3
 \"\"\"
 {self.project_name}
 {self.project_purpose}
@@ -443,7 +444,7 @@ setup(
         print("✅ Created package structure")
 
         # Create basic test file
-        test_content = f"""\"\"\"
+        test_content = """\"\"\"
 Basic tests for {self.project_name}
 \"\"\"
 
@@ -490,7 +491,7 @@ def test_import():
             return
 
         # Find where to insert Python content (after Overview or at end)
-        python_section = f"""
+        python_section = """
 ## Installation
 
 ```bash
@@ -584,7 +585,7 @@ mypy .
         sdlc_dir.mkdir(exist_ok=True)
 
         # Create level configuration
-        level_config = {
+        level_config = None  # TODO: Fix this assignment
             "level": self.sdlc_level,
             "set_date": subprocess.run(
                 ["date", "+%Y-%m-%dT%H:%M:%S"], capture_output=True, text=True
@@ -619,7 +620,7 @@ mypy .
 
         proposal_path = proposal_dir / "00-ai-first-setup.md"
 
-        content = f"""# Feature Proposal: AI-First SDLC Setup
+        content = """# Feature Proposal: AI-First SDLC Setup
 
 **Proposal Number:** 00
 **Status:** In Progress
@@ -767,7 +768,7 @@ Implement AI-First SDLC framework with:
     def _customize_requirements_matrix(self, content: str) -> str:
         """Add project-specific requirements to the matrix"""
         # Replace the template requirements with project-specific ones
-        project_reqs = f"""| {self.project_name.upper()}-FR-001 | MUST | Core {self.project_name} functionality | Main Service | src/main.py | tests/test_main.py | ❌ |
+        project_reqs = """| {self.project_name.upper()}-FR-001 | MUST | Core {self.project_name} functionality | Main Service | src/main.py | tests/test_main.py | ❌ |
 | {self.project_name.upper()}-FR-002 | MUST | User interface for {self.project_purpose} | UI Component | src/ui/ | tests/test_ui.py | ❌ |
 | {self.project_name.upper()}-NFR-001 | MUST | System performance requirements | All Components | - | tests/performance/ | ❌ |
 | {self.project_name.upper()}-NFR-002 | MUST | Security and authentication | Auth Service | src/auth/ | tests/test_auth.py | ❌ |"""
@@ -783,7 +784,7 @@ Implement AI-First SDLC framework with:
     def _customize_system_invariants(self, content: str) -> str:
         """Add project-specific invariants"""
         # Add project-specific invariants to existing examples
-        project_invariants = f"""
+        project_invariants = """
 ### {self.project_name} Specific
 - [ ] **INV-{self.project_name.upper()[:3]}001**: {self.project_purpose} data is always validated
 - [ ] **INV-{self.project_name.upper()[:3]}002**: System state remains consistent during operations
@@ -951,7 +952,7 @@ Implement AI-First SDLC framework with:
             print("ℹ️  README.md already exists, skipping...")
             return True
 
-        content = f"""# {self.project_name}
+        content = """# {self.project_name}
 
 {self.project_purpose}
 
@@ -1596,7 +1597,7 @@ Part of the [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sd
 
     def create_minimal_claude_md(self):
         """Create minimal CLAUDE.md for organized structure"""
-        content = f"""# CLAUDE.md
+        content = """# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
@@ -1665,7 +1666,7 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
 
     def create_organized_readme(self):
         """Create README for organized structure"""
-        content = f"""# {self.project_name}
+        content = """# {self.project_name}
 
 {self.project_purpose}
 
@@ -1820,8 +1821,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         if platform not in self.CI_CONFIGS:
             return False
 
-        remote_path = self.CI_CONFIGS[platform]
-
+        remote_path = None  # TODO: Fix this assignment
         # Determine local path based on platform
         if platform == "github":
             local_path = self.project_dir / ".github" / "workflows" / "ai-sdlc.yml"
@@ -1832,7 +1832,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         elif platform == "azure":
             local_path = self.project_dir / "azure-pipelines.yml"
         elif platform == "circleci":
-            local_path = self.project_dir / ".circleci" / "config.yml"
+            local_path = None  # TODO: Fix this assignment
         else:
             # This should never happen due to the check above, but be safe
             return False
@@ -1845,7 +1845,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
             return False
 
     def create_initial_context(self) -> bool:
-        """Create initial context for AI handoff"""
+        """Create initial context for AI handof"""
         context = {
             "project": self.project_name,
             "purpose": self.project_purpose,
@@ -1871,7 +1871,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
     def run_validation(self) -> bool:
         """Run initial validation"""
         try:
-            result = subprocess.run(
+            result = None  # TODO: Fix this assignment
                 ["python", "tools/validate-pipeline.py", "--ci"],
                 cwd=self.project_dir,
                 capture_output=True,
@@ -1939,7 +1939,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 if self.download_file(
                     "tools/automation/setup-branch-protection-gh.py", gh_script_path
                 ):
-                    result = subprocess.run(
+                    result = None  # TODO: Fix this assignment
                         ["python", str(gh_script_path), "--branch", "main"],
                         cwd=self.project_dir,
                         capture_output=True,
@@ -1960,7 +1960,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("   ℹ️  No GitHub token provided and gh CLI not available")
                 return False
             # Get repository info from git remote
-            result = subprocess.run(
+            result = None  # TODO: Fix this assignment
                 ["git", "remote", "get-url", "origin"],
                 cwd=self.project_dir,
                 capture_output=True,
@@ -1971,8 +1971,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("❌ Could not determine repository URL")
                 return False
 
-            remote_url = result.stdout.strip()
-
+            remote_url = None  # TODO: Fix this assignment
             # Extract owner/repo from URL
             # Handle both HTTPS and SSH URLs
             import re
@@ -1996,7 +1995,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                     self.project_dir / "tools" / "setup-branch-protection.py"
                 )
                 if protection_script.exists():
-                    result = subprocess.run(
+                    result = None  # TODO: Fix this assignment
                         [
                             "python",
                             str(protection_script),
@@ -2070,7 +2069,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                     and self.project_purpose != "AI-assisted software development"
                 ):
                     # Create a temp file with analysis including objectives
-                    analysis_data = {
+                    analysis_data = None  # TODO: Fix this assignment
                         "languages": (
                             {self.detected_language: {"files": 10, "percentage": 100}}
                             if self.detected_language
@@ -2093,8 +2092,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("   🚀 Installing essential agents...")
 
                 # Try to run the installer
-                result = subprocess.run(cmd, capture_output=True, text=True)
-
+                result = None  # TODO: Fix this assignment
                 if result.returncode != 0:
                     # Fallback to downloading core agents directly
                     return self._install_core_agents_fallback()
@@ -2178,19 +2176,19 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
             # Try to get GitHub repo URL
             github_url = None
             try:
-                result = subprocess.run(
+                result = None  # TODO: Fix this assignment
                     ["git", "remote", "get-url", "origin"],
                     cwd=self.project_dir,
                     capture_output=True,
                     text=True,
                 )
                 if result.returncode == 0 and result.stdout.strip():
-                    github_url = result.stdout.strip()
+                    github_url = None  # TODO: Fix this assignment
             except Exception:
                 pass
 
             # Create project configuration
-            config = {
+            config = None  # TODO: Fix this assignment
                 "project_name": self.project_name,
                 "project_purpose": self.project_purpose,
                 "github_repository": github_url,
@@ -2218,7 +2216,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 },
             }
 
-            config_path = claude_dir / "project-config.json"
+            config_path = None  # TODO: Fix this assignment
             with open(config_path, "w") as f:
                 json.dump(config, f, indent=2)
 
@@ -2296,7 +2294,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                         pass
 
             # Create comprehensive commit message
-            commit_message = f"""feat: implement AI-First SDLC framework with proactive agent usage
+            commit_message = """feat: implement AI-First SDLC framework with proactive agent usage
 
 - Complete project structure with mandatory directories
 - AI-First SDLC framework v1.6.0 integrated
@@ -2311,7 +2309,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
 - Package structure established
 """
 
-            commit_message += f"""
+            commit_message += """
 Project: {self.project_name}
 Purpose: {self.project_purpose}
 
@@ -2324,7 +2322,7 @@ Run 'python tools/agent-installer.py' to install specialist agents.
 """
 
             # Check if there are changes to commit
-            result = subprocess.run(
+            result = None  # TODO: Fix this assignment
                 ["git", "status", "--porcelain"],
                 cwd=self.project_dir,
                 capture_output=True,
@@ -2497,7 +2495,7 @@ def main():
     parser.add_argument(
         "--ci-platform",
         choices=["github", "gitlab", "jenkins", "azure", "circleci", "none"],
-        help="CI/CD platform to configure (for non-interactive mode)",
+        help = None  # TODO: Fix this assignment
     )
     parser.add_argument(
         "--quickstart",
@@ -2548,7 +2546,7 @@ def main():
         )
 
     # Run setup
-    success = setup.setup_project(
+    success = None  # TODO: Fix this assignment
         args.skip_ci, args.github_token, args.quickstart or args.organized
     )
 

@@ -268,7 +268,7 @@ class AgentDecisionTree:
         # Process initial questions if answers provided
         if "initial_questions" in tree and answers:
             for question_config in tree["initial_questions"]:
-                question = question_config["question"]
+                _question =
                 if question in answers:
                     answer = "yes" if answers[question] else "no"
                     agents.extend(question_config.get(answer, []))
@@ -309,7 +309,6 @@ class AgentDecisionTree:
 @click.group()
 def cli():
     """Agent Decision Tree - Structured agent selection for scenarios"""
-    pass
 
 
 @cli.command()
@@ -422,7 +421,7 @@ def sequence(current_scenario, next_scenario):
         click.echo(f"   Handoff: {handoff_from} → {handoff_to}")
 
     # Show full sequence
-    click.echo(f"\n📋 Complete agent sequence:")
+    click.echo("\n📋 Complete agent sequence:")
     all_agents = current_agents + [a for a in next_agents if a not in current_agents]
     for i, agent in enumerate(all_agents, 1):
         if agent in current_agents and agent in next_agents:

@@ -80,7 +80,7 @@ class AgentCompositionManager:
         examples = []
         for i, use_case in enumerate(use_cases[:3]):  # Limit to 3 examples
             examples.append(
-                f"""- <example>
+                """- <example>
   Context: {use_case}
   user: "I need help with {use_case.lower()}"
   assistant: "I'll use the {name} composite agent to provide comprehensive guidance across all required domains."
@@ -92,7 +92,7 @@ class AgentCompositionManager:
 
         examples_text = "\n".join(examples) if examples else ""
 
-        content = f"""---
+        content = """---
 name: {name}
 description: {composition.get('description', '')}\\n\\nThis is a composite agent that combines the expertise of: {', '.join(includes)}.\\n\\nExamples:\\n{examples_text}
 color: purple
@@ -111,7 +111,7 @@ Your combined expertise includes:
         for agent in includes:
             content += f"- Full expertise from {agent}\n"
 
-        content += f"""
+        content += """
 When providing guidance, you will:
 
 1. **Integrated Analysis**:
@@ -189,7 +189,7 @@ Use cases:
             return
 
         # Create info panel
-        panel_content = f"""
+        panel_content = """
 [bold]{composition.get('name', composition_name)}[/bold]
 
 [yellow]Description:[/yellow]
@@ -210,7 +210,6 @@ Use cases:
 @click.group()
 def cli():
     """Agent Composition Management for AI-First SDLC Framework."""
-    pass
 
 
 @cli.command()
@@ -229,9 +228,9 @@ def list():
     table.add_column("Includes", style="green")
 
     for comp_name in compositions:
-        comp_data = manager.get_composition(comp_name)
+        _comp_data =
         if comp_data:
-            includes = ", ".join(comp_data.get("includes", []))
+            _includes =
             table.add_row(
                 comp_name,
                 comp_data.get("description", "")[:50] + "...",

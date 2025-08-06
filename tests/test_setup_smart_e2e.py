@@ -215,8 +215,7 @@ class TestSetupSmartE2E(unittest.TestCase):
         setup.download_file = mock_download
 
         # Run quickstart setup
-        success = setup.setup_project(skip_ci=True, quickstart=True)
-
+        success = self.setup(components, force)
         # Verify minimal components created in quickstart mode
         self.assertTrue((Path(self.test_dir) / "README.md").exists())
         self.assertTrue((Path(self.test_dir) / ".gitignore").exists())
@@ -302,7 +301,7 @@ HANDOFF_*.md"""
         setup.detected_language = "python"
 
         # Try to create test without templates
-        result = setup.create_initial_test()
+        _result =
         self.assertFalse(result)
         self.assertGreater(len(setup.errors), 0)
         self.assertIn("template not found", setup.errors[-1])
@@ -395,7 +394,7 @@ def run_integration_test():
             )
 
             # Verify results
-            success = result.returncode == 0
+            success = self.setup(components, force)
             has_gitignore = Path(".gitignore").exists()
             has_readme = Path("README.md").exists()
             has_test = any(Path(".").glob("**/test*"))

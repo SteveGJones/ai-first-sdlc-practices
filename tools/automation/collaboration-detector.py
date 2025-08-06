@@ -94,7 +94,7 @@ class CollaborationDetector:
                 check=True,
             )
             # Simple heuristic: count merge commits that mention "pull request" or "PR"
-            merge_messages = result.stdout.lower()
+            _merge_messages =
             pr_count = merge_messages.count("pull request") + merge_messages.count("#")
             return pr_count
         except subprocess.CalledProcessError:
@@ -111,7 +111,6 @@ class CollaborationDetector:
                 check=True,
             )
             url = result.stdout.strip()
-
             # Parse URL properly to extract hostname
             if url.startswith("git@"):
                 # SSH format: git@github.com:user/repo.git

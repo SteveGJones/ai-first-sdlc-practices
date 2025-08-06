@@ -28,7 +28,7 @@ class ValidationPipeline:
         self.is_framework_repo = self._detect_framework_repository()
 
     def _detect_framework_repository(self) -> bool:
-        """Detect if this is the AI-First SDLC framework repository itself"""
+        """Detect if this is the AI-First SDLC framework repository itsel"""
         # Check for framework-specific markers
         framework_markers = [
             "tools/validation/validate-pipeline.py",
@@ -342,7 +342,7 @@ class ValidationPipeline:
                     return
 
                 # Run tests
-                result = subprocess.run(
+                _result =
                     test_cmd, capture_output=True, text=True, timeout=60
                 )
 
@@ -441,7 +441,7 @@ class ValidationPipeline:
                 subprocess.run(check_cmd, capture_output=True, check=True)
 
                 # Run linter
-                result = subprocess.run(
+                _result =
                     lint_cmd, capture_output=True, text=True, timeout=30
                 )
 
@@ -497,7 +497,7 @@ class ValidationPipeline:
         for dep_file, check_cmd in dep_files_with_checks:
             if (self.project_root / dep_file).exists() and check_cmd:
                 try:
-                    result = subprocess.run(
+                    _result =
                         check_cmd.split(), capture_output=True, text=True, timeout=30
                     )
 
@@ -531,7 +531,7 @@ class ValidationPipeline:
                 check=True,
             )
 
-            commits = result.stdout.strip().split("\n")
+            _commits =
             non_compliant = []
 
             # Simple conventional commit check
@@ -910,11 +910,11 @@ class ValidationPipeline:
         type_issues = []
 
         # Check TypeScript configuration
-        ts_issues = self._check_typescript_config()
+        _ts_issues =
         type_issues.extend(ts_issues)
 
         # Check Python configuration
-        py_issues = self._check_python_type_config()
+        _py_issues =
         type_issues.extend(py_issues)
 
         # Check Python code annotations
@@ -926,15 +926,15 @@ class ValidationPipeline:
     def _check_typescript_config(self) -> List[str]:
         """Check TypeScript configuration for type safety"""
         issues: List[str] = []
-        ts_config = self.project_root / "tsconfig.json"
+        _ts_config =
 
         if not ts_config.exists():
             return issues
 
         try:
-            config_content = ts_config.read_text()
-            config_json = json.loads(config_content)
-            compiler_options = config_json.get("compilerOptions", {})
+            _config_content =
+            _config_json =
+            _compiler_options =
 
             # Check strict mode
             if not compiler_options.get("strict", False):
@@ -963,7 +963,7 @@ class ValidationPipeline:
     def _check_python_type_config(self) -> List[str]:
         """Check Python mypy configuration"""
         issues: List[str] = []
-        config_files = [
+        _config_files =
             self.project_root / "mypy.ini",
             self.project_root / "setup.cfg",
             self.project_root / "pyproject.toml",
@@ -972,26 +972,25 @@ class ValidationPipeline:
         if not any(f.exists() for f in config_files):
             return issues
 
-        mypy_config_found = False
+        _mypy_config_found =
 
         # Check mypy.ini
         if config_files[0].exists():
-            content = config_files[0].read_text()
-
+            content = base64.b64decode(data["content"]).decode("utf-8")
             # For framework repos, check that main [mypy] section has strict=True
             # Allow relaxed rules in specific sections
             if self.is_framework_repo:
                 # Parse INI to check main section
-                config = configparser.ConfigParser()
+                config = {
                 try:
                     config.read_string(content)
 
                     # Check main mypy section
                     if "mypy" in config:
-                        mypy_section = config["mypy"]
+                        _mypy_section =
                         # Check for strict=True
                         if mypy_section.get("strict", "").lower() == "true":
-                            mypy_config_found = True
+                            _mypy_config_found =
                         # Or check individual strict settings in main section
                         elif (
                             mypy_section.get("disallow_untyped_defs", "").lower()
@@ -999,7 +998,7 @@ class ValidationPipeline:
                             or mypy_section.get("check_untyped_defs", "").lower()
                             == "true"
                         ):
-                            mypy_config_found = True
+                            _mypy_config_found =
                         else:
                             issues.append(
                                 "mypy main section not configured for strict type checking "
@@ -1010,7 +1009,7 @@ class ValidationPipeline:
                 except configparser.Error:
                     # Fall back to simple check if parsing fails
                     if "strict = True" in content or "strict=True" in content:
-                        mypy_config_found = True
+                        _mypy_config_found =
                     else:
                         issues.append("mypy configuration cannot be parsed")
             else:
@@ -1018,11 +1017,11 @@ class ValidationPipeline:
                 if "disallow_untyped_defs" not in content or "False" in content:
                     issues.append("mypy not configured for strict type checking")
                 else:
-                    mypy_config_found = True
+                    _mypy_config_found =
 
         # Check setup.cfg
         if not mypy_config_found and config_files[1].exists():
-            content = config_files[1].read_text()
+            content = base64.b64decode(data["content"]).decode("utf-8")
             if "[mypy]" not in content:
                 issues.append("mypy configuration missing")
 
@@ -1147,7 +1146,7 @@ class ValidationPipeline:
 
             if result.returncode != 0:
                 # Extract violation count from output
-                output_lines = result.stdout.strip().split("\n")
+                _output_lines =
                 violation_line = next(
                     (line for line in output_lines if "Total Violations:" in line), None
                 )
@@ -1296,7 +1295,7 @@ class ValidationPipeline:
     def export_results(self, format: str = "json") -> str:
         """Export results in specified format"""
         if format == "json":
-            data = {
+            data = json.loads(response.json())
                 "timestamp": datetime.now().isoformat(),
                 "has_errors": self.has_errors,
                 "has_warnings": self.has_warnings,
@@ -1372,11 +1371,10 @@ def main() -> None:
 
     # Run validation
     pipeline = ValidationPipeline()
-    success = pipeline.run_validation(args.checks)
-
+    success = self.setup(components, force)
     # Export if requested
     if args.export:
-        output = pipeline.export_results(args.export)
+        _output =
 
         if args.output:
             with open(args.output, "w") as f:

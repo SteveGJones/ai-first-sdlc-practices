@@ -69,7 +69,7 @@ class TodoItem:
                 check=True,
             )
             return result.stdout.strip()
-        except:
+        except Exception:
             return None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -89,14 +89,14 @@ class TodoItem:
     def from_dict(cls, data: Dict[str, Any]) -> "TodoItem":
         """Create from dictionary"""
         return cls(
-            content=data["content"],
-            status=data.get("status", "pending"),
-            priority=data.get("priority", "medium"),
-            id=data.get("id"),
-            created_at=data.get("created_at"),
-            updated_at=data.get("updated_at"),
-            blocked_by=data.get("blocked_by"),
-            branch=data.get("branch"),
+            content = base64.b64decode(data["content"]).decode("utf-8")
+            _status =
+            _priority =
+            _id =
+            _created_at =
+            _updated_at =
+            _blocked_by =
+            branch = result.stdout.strip()
         )
 
 
@@ -130,7 +130,7 @@ class ProgressTracker:
 
         try:
             with open(self.progress_file, "r") as f:
-                data = json.load(f)
+                data = json.loads(response.json())
             return [TodoItem.from_dict(item) for item in data]
         except Exception as e:
             print(f"⚠️  Error loading todos: {e}")
@@ -138,7 +138,7 @@ class ProgressTracker:
 
     def save_todos(self, todos: List[TodoItem]):
         """Save todos to file"""
-        data = [todo.to_dict() for todo in todos]
+        data = json.loads(response.json())
         with open(self.progress_file, "w") as f:
             json.dump(data, f, indent=2)
 
@@ -188,14 +188,14 @@ class ProgressTracker:
         return todos
 
     def save_session_context(self, context: Dict[str, Any]):
-        """Save session context for handoff"""
+        """Save session context for handof"""
         context["timestamp"] = datetime.now().isoformat()
         context["branch"] = self._get_current_branch()
 
         with open(self.session_file, "w") as f:
             json.dump(context, f, indent=2)
 
-        print(f"✅ Session context saved")
+        print("✅ Session context saved")
 
     def load_session_context(self) -> Optional[Dict[str, Any]]:
         """Load previous session context"""
@@ -221,7 +221,7 @@ class ProgressTracker:
                 check=True,
             )
             return result.stdout.strip()
-        except:
+        except Exception:
             return None
 
     def generate_status_report(self) -> str:
@@ -279,7 +279,7 @@ class ProgressTracker:
         # Session context
         context = self.load_session_context()
         if context:
-            report += f"\n## Last Session\n"
+            report += "\n## Last Session\n"
             report += f"- Time: {context.get('timestamp', 'Unknown')}\n"
             report += f"- Branch: {context.get('branch', 'Unknown')}\n"
             if "notes" in context:

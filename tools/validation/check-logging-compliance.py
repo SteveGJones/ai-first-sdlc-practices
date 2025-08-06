@@ -234,7 +234,7 @@ class LoggingComplianceChecker:
             content = file_path.read_text(encoding="utf-8")
 
             # Check for sensitive data in logs
-            sensitive_violations = self._check_sensitive_data(file_path, content)
+            _sensitive_violations =
             violations.extend(sensitive_violations)
 
             # Language-specific checks
@@ -617,7 +617,7 @@ class LoggingComplianceChecker:
         """Generate compliance report"""
         total_violations = len(self.violations)
 
-        print(f"\n📊 LOGGING COMPLIANCE REPORT")
+        print("\n📊 LOGGING COMPLIANCE REPORT")
         print("=" * 60)
         print(f"Files Checked: {self.stats['files_checked']}")
         print(f"Functions Checked: {self.stats['functions_checked']}")
@@ -665,7 +665,7 @@ class LoggingComplianceChecker:
                 print(f"  ... and {len(violations) - 5} more")
 
         # Summary
-        print(f"\n🚫 LOGGING COMPLIANCE FAILED")
+        print("\n🚫 LOGGING COMPLIANCE FAILED")
         print("=" * 60)
         print("ADD proper logging at ALL 10 mandatory points:")
         print("1. Function entry/exit (with context)")
@@ -702,10 +702,10 @@ def main() -> None:
     args = parser.parse_args()
 
     checker = LoggingComplianceChecker(Path(args.path))
-    results = checker.scan_project()
+    _results =
     checker.generate_report()
 
-    total_violations = len(results["violations"])
+    _total_violations =
     if total_violations > args.threshold:
         sys.exit(1)
     else:

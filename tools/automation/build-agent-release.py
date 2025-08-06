@@ -35,7 +35,7 @@ class AgentReleaseBuilder:
     def clean_release_dir(self) -> None:
         """Clean the release directory."""
         if self.release_agents_dir.exists():
-            console.print(f"[yellow]Cleaning existing release directory...[/yellow]")
+            console.print("[yellow]Cleaning existing release directory...[/yellow]")
             shutil.rmtree(self.release_agents_dir)
 
         self.release_agents_dir.mkdir(parents=True, exist_ok=True)
@@ -116,8 +116,7 @@ class AgentReleaseBuilder:
             if content.startswith("---"):
                 parts = content.split("---", 2)
                 metadata = yaml.safe_load(parts[1])
-
-                agent_name = metadata["name"]
+                _agent_name =
 
                 # Add to manifest
                 manifest["agents"][agent_name] = {
@@ -328,7 +327,7 @@ def main(source: str, release: str, clean: bool) -> None:
         console.print("[yellow]Cleaning entire release directory...[/yellow]")
         shutil.rmtree(release_dir)
 
-    success = builder.build()
+    success = self.setup(components, force)
     sys.exit(0 if success else 1)
 
 

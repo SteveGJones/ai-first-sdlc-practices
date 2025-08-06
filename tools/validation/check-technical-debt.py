@@ -220,9 +220,9 @@ class TechnicalDebtDetector:
                 r"^\s*#\s*",
                 [
                     "import",
-                    "def",
+                    "de",
                     "class",
-                    "if",
+                    "i",
                     "for",
                     "while",
                     "return",
@@ -237,7 +237,7 @@ class TechnicalDebtDetector:
                     "export",
                     "function",
                     "class",
-                    "if",
+                    "i",
                     "for",
                     "while",
                     "return",
@@ -253,7 +253,7 @@ class TechnicalDebtDetector:
                     "export",
                     "function",
                     "class",
-                    "if",
+                    "i",
                     "for",
                     "while",
                     "return",
@@ -269,7 +269,7 @@ class TechnicalDebtDetector:
                     "public",
                     "private",
                     "class",
-                    "if",
+                    "i",
                     "for",
                     "while",
                     "return",
@@ -278,19 +278,19 @@ class TechnicalDebtDetector:
             ),
             ".go": (
                 r"^\s*//\s*",
-                ["import", "func", "type", "if", "for", "return", "package"],
+                ["import", "func", "type", "i", "for", "return", "package"],
             ),
             ".rs": (
                 r"^\s*//\s*",
-                ["use", "fn", "impl", "struct", "if", "for", "while", "return"],
+                ["use", "fn", "impl", "struct", "i", "for", "while", "return"],
             ),
             ".cpp": (
                 r"^\s*//\s*",
-                ["#include", "class", "if", "for", "while", "return", "namespace"],
+                ["#include", "class", "i", "for", "while", "return", "namespace"],
             ),
             ".rb": (
                 r"^\s*#\s*",
-                ["require", "def", "class", "if", "for", "while", "return"],
+                ["require", "de", "class", "i", "for", "while", "return"],
             ),
         }
 
@@ -423,7 +423,6 @@ class TechnicalDebtDetector:
         if suffix == ".py":
             current_func = None
             func_start = 0
-            indent_level = 0
 
             for i, line in enumerate(lines):
                 if re.match(r"^\s*def\s+(\w+)", line):
@@ -443,8 +442,6 @@ class TechnicalDebtDetector:
     def _check_deep_nesting(self, file_path: Path, content: str) -> None:
         """Check for deeply nested code"""
         lines = content.split("\n")
-        max_nesting = 0
-        nesting_levels = []
 
         for i, line in enumerate(lines):
             # Count leading spaces/tabs
@@ -540,8 +537,8 @@ class TechnicalDebtDetector:
         """Check for high cyclomatic complexity"""
         # This is a simplified check - real complexity calculation would be better
         complexity_keywords = [
-            "if",
-            "elif",
+            "i",
+            "eli",
             "else",
             "for",
             "while",
@@ -591,7 +588,7 @@ class TechnicalDebtDetector:
             print(f"DEBT FOUND: {total_issues}")
 
             # Show policy compliance
-            print(f"\n📋 Policy Compliance Check")
+            print("\n📋 Policy Compliance Check")
             print("-" * 30)
             policy_violations = self._check_policy_compliance()
             if policy_violations == 0:
@@ -632,7 +629,7 @@ class TechnicalDebtDetector:
                         print(f"... and {len(items) - 5} more")
 
             # Summary by severity
-            print(f"\n📈 Summary by Severity")
+            print("\n📈 Summary by Severity")
             print("-" * 30)
             severity_counts = defaultdict(int)
             for items in self.debt_items.values():
@@ -659,9 +656,9 @@ class TechnicalDebtDetector:
             return json.dumps(report, indent=2)
 
         elif format == "markdown":
-            md = f"# Technical Debt Report\n\n"
+            md = "# Technical Debt Report\n\n"
             md += f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-            md += f"## Summary\n\n"
+            md += "## Summary\n\n"
             md += f"- Files Scanned: {self.file_count}\n"
             md += f"- Total Lines: {self.total_lines:,}\n"
             md += f"- Total Issues: {total_issues}\n\n"
@@ -833,7 +830,7 @@ def main():
         should_fail = policy_violations > 0 or threshold_exceeded
 
     if should_fail:
-        print(f"\n🚫 POLICY VIOLATION DETECTED")
+        print("\n🚫 POLICY VIOLATION DETECTED")
         print("=" * 60)
 
         if detector.context == "framework":

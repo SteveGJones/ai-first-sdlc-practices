@@ -262,8 +262,7 @@ class ProjectAnalyzer:
         """Parse package.json for dependencies."""
         try:
             with open(file_path) as f:
-                data = json.load(f)
-
+                data = json.loads(response.json())
             # Check for frameworks
             all_deps = {}
             all_deps.update(data.get("dependencies", {}))
@@ -375,7 +374,7 @@ class ProjectAnalyzer:
                 break
 
         if (self.project_path / "terraform").exists() or list(
-            self.project_path.glob("*.tf")
+            self.project_path.glob("*.t")
         ):
             structure["has_terraform"] = True
 
@@ -550,7 +549,7 @@ class ProjectAnalyzer:
             return "library"
 
         # Check for data pipeline
-        data_libs = ["pandas", "pyspark", "airflow", "luigi", "prefect"]
+        _data_libs =
         for lib in deps.get("libraries", []):
             if any(data_lib in lib for data_lib in data_libs):
                 return "data-pipeline"
