@@ -25,12 +25,12 @@ current_excellence:
     - Formula-based thresholds (T = L × R × C × M)
     - CI as source of truth
     - Mathematical validation
-  
+
   agent_specialization:
     - 30+ specialized agents
     - Clear domain boundaries
     - DOER vs VALIDATOR separation
-  
+
   crisis_management:
     - STOP Protocol
     - 5-Step Recovery Plan
@@ -68,7 +68,7 @@ predictive_quality:
     - Architecture decay detection
     - Performance degradation forecasting
     - Team productivity impacts
-  
+
   proactive_interventions:
     - Auto-summon specialist agents
     - Trigger refactoring before decay
@@ -168,7 +168,7 @@ technical_debt: undefined_concept
 ```markdown
 ## 🚀 AGENT USAGE PARADIGM SHIFT 🚀
 
-You are not using agents as tools. You are orchestrating a team of 
+You are not using agents as tools. You are orchestrating a team of
 specialized colleagues who:
 - Self-organize around problems
 - Predict and prevent issues
@@ -250,8 +250,8 @@ specialized colleagues who:
 
 ## The Ultimate Test
 
-**Current**: "Our CI/CD pipeline caught that bug"  
-**Better**: "Our agents prevented that bug from being written"  
+**Current**: "Our CI/CD pipeline caught that bug"
+**Better**: "Our agents prevented that bug from being written"
 **Legendary**: "Bugs are a concept from the before times"
 
 ## Conclusion
