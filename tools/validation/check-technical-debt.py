@@ -404,6 +404,28 @@ class TechnicalDebtDetector:
             if number in [60, 72, 79, 120, 127, 128, 256, 512, 1024, 2048, 4096]:
                 continue
 
+            # Skip common HTTP status codes and well-known numbers
+            if number in [
+                200,
+                201,
+                204,
+                301,
+                302,
+                304,
+                400,
+                401,
+                403,
+                404,
+                500,
+                502,
+                503,
+            ]:
+                continue
+
+            # Skip common timeouts and limits
+            if number in [15, 30, 45, 90, 180, 300, 600, 900, 1800, 3600]:
+                continue
+
             line_no = content[: match.start()].count("\n") + 1
             self.debt_items["code_smells"].append(
                 {
