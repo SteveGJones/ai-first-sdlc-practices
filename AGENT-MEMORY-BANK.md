@@ -27,7 +27,7 @@ from .context_manager import ContextManager
 **Prevention Command**:
 ```bash
 # Before committing, verify all method calls match definitions
-grep -r "def " . | grep -E "(handof|handoff)" 
+grep -r "def " . | grep -E "(handof|handoff)"
 ```
 
 ### 2. Local Validation Lying About Compliance
@@ -54,7 +54,7 @@ find . -name "*.py" -exec grep -l "TODO\|FIXME\|HACK" {} \;
 ### 3. Magic Number Patching Attempts
 **What Happened**: Tried to "fix" 2052 violations by:
 - Adding magic exclusion numbers
-- Patching specific violation counts  
+- Patching specific violation counts
 - Hardcoding thresholds instead of understanding root cause
 
 **Wrong Approach**:
@@ -89,10 +89,10 @@ threshold = calculate_threshold(project_metrics)
 def calculate_technical_debt_threshold(project_metrics):
     """Calculate threshold using mathematical formula, not magic numbers"""
     lines_of_code = project_metrics.get('lines', 1000)
-    risk_factor = project_metrics.get('risk', 0.1)  
+    risk_factor = project_metrics.get('risk', 0.1)
     complexity = project_metrics.get('complexity', 1.5)
     maintenance = project_metrics.get('maintenance', 2.0)
-    
+
     # T = L × R × C × M formula
     threshold = int(lines_of_code * risk_factor * complexity * maintenance)
     return max(threshold, 10)  # Minimum threshold
@@ -107,7 +107,7 @@ def calculate_technical_debt_threshold(project_metrics):
 def compare_environments():
     print("=== Local Environment ===")
     run_local_checks()
-    print("=== Expected CI Behavior ===") 
+    print("=== Expected CI Behavior ===")
     simulate_ci_environment()
     print("=== Differences Found ===")
     highlight_differences()
@@ -118,7 +118,7 @@ def compare_environments():
 ### 3. Team Collaboration on Root Cause Analysis
 **What Worked**: Multiple agents contributing different perspectives:
 - Agent 1: Identified the typo
-- Agent 2: Diagnosed environment differences  
+- Agent 2: Diagnosed environment differences
 - Agent 3: Proposed mathematical solution
 - Agent 4: Validated final approach
 
@@ -172,7 +172,7 @@ if violations > threshold:
 
 **Formula Templates**:
 - **Linear**: `T = base + (lines * factor)`
-- **Logarithmic**: `T = base * log(lines + 1)`  
+- **Logarithmic**: `T = base * log(lines + 1)`
 - **Multi-factor**: `T = L × R × C × M`
 
 ### Card 3: "CodeQL Argument Errors"
@@ -188,7 +188,7 @@ if violations > threshold:
 # Find method definitions
 grep -r "def method_name" .
 
-# Find method calls  
+# Find method calls
 grep -r "method_name(" .
 
 # Check import usage
@@ -225,7 +225,7 @@ echo "Solution: [approach]" >> team-context.md
 ### MATH (For Threshold Calculation)
 - **M**easure actual project metrics
 - **A**nalyze patterns and trends
-- **T**ransform into mathematical formula  
+- **T**ransform into mathematical formula
 - **H**old accountable with evidence
 
 ### CI-FIRST (When Local Passes But CI Fails)
@@ -257,7 +257,7 @@ pip list | grep -E "(flake8|black|mypy|pylint)"
 ```bash
 # Count violations by type
 grep -r "TODO" --include="*.py" . | wc -l
-grep -r "FIXME" --include="*.py" . | wc -l  
+grep -r "FIXME" --include="*.py" . | wc -l
 grep -r "HACK" --include="*.py" . | wc -l
 grep -r "XXX" --include="*.py" . | wc -l
 
@@ -282,7 +282,7 @@ def calculate_technical_debt_threshold(project_size="medium"):
     """Calculate realistic threshold based on project characteristics"""
     base_thresholds = {
         "small": 50,    # < 1000 lines
-        "medium": 150,  # 1000-10000 lines  
+        "medium": 150,  # 1000-10000 lines
         "large": 300,   # 10000+ lines
         "enterprise": 500  # Complex enterprise projects
     }
@@ -294,21 +294,21 @@ def calculate_technical_debt_threshold(project_size="medium"):
 def diagnose_ci_local_difference():
     """Compare local environment to CI expectations"""
     import subprocess
-    
+
     print("=== Local Environment ===")
     print(f"Python: {subprocess.check_output(['python', '--version']).decode().strip()}")
     print(f"Working dir: {os.getcwd()}")
-    
+
     print("\n=== File Analysis ===")
     py_files = list(Path('.').rglob('*.py'))
     print(f"Total Python files: {len(py_files)}")
-    
+
     todo_files = []
     for f in py_files:
         if 'TODO' in f.read_text():
             todo_files.append(f)
     print(f"Files with TODO: {len(todo_files)}")
-    
+
     return {
         'total_files': len(py_files),
         'todo_files': len(todo_files),

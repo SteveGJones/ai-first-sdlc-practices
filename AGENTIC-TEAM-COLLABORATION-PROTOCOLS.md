@@ -1,8 +1,8 @@
 # Agentic Team Collaboration Protocols
 
-> **Version**: 1.0.0  
-> **Status**: Active  
-> **Last Updated**: 2025-08-07  
+> **Version**: 1.0.0
+> **Status**: Active
+> **Last Updated**: 2025-08-07
 > **Context**: Derived from PR #29 recovery experience
 
 ## Overview
@@ -17,7 +17,7 @@ This document defines collaboration protocols for AI agent teams working on comp
 
 **Immediate Actions**:
 1. **HALT all progress** - Do not proceed with implementation
-2. **ISOLATE the environment** - Fresh clone, clean state verification  
+2. **ISOLATE the environment** - Fresh clone, clean state verification
 3. **DOCUMENT the discrepancy** - Exact commands, outputs, timestamps
 4. **ESCALATE to diagnostic mode** - Switch from "fix" to "understand" mindset
 
@@ -368,10 +368,10 @@ All updates require:
 
 ## Quick Reference Card
 
-**Crisis Response**: STOP → ISOLATE → DOCUMENT → ESCALATE  
-**Confidence Reset**: ADMIT → RETURN → QUESTION → SEEK  
-**Patch Failure**: 2 attempts → Team diagnostic → Systematic solution  
-**Handoff**: VERIFY → CONFIRM → VALIDATE → ACKNOWLEDGE  
-**Quality Gate**: Evidence required → Block until met → Escalate systematically  
+**Crisis Response**: STOP → ISOLATE → DOCUMENT → ESCALATE
+**Confidence Reset**: ADMIT → RETURN → QUESTION → SEEK
+**Patch Failure**: 2 attempts → Team diagnostic → Systematic solution
+**Handoff**: VERIFY → CONFIRM → VALIDATE → ACKNOWLEDGE
+**Quality Gate**: Evidence required → Block until met → Escalate systematically
 
 **Remember**: Better to be slow and right than fast and wrong. The framework supports systematic problem-solving over quick fixes.

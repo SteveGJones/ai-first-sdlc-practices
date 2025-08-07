@@ -11,7 +11,7 @@
 Every team member (human or AI) must internalize:
 
 - **"My local success means nothing if CI fails"** - Local validation is guidance, not gospel
-- **"I verify, therefore I am reliable"** - Trust but verify, especially your own work  
+- **"I verify, therefore I am reliable"** - Trust but verify, especially your own work
 - **"Quality is my signature"** - Every commit represents your professional standards
 - **"I own the entire pipeline"** - From local development to production deployment
 
@@ -42,7 +42,7 @@ Before any PR creation:
 ```bash
 # The Trinity of Truth - ALL must pass:
 1. Local validation passes
-2. Push to branch and verify CI passes  
+2. Push to branch and verify CI passes
 3. Only then create PR
 
 # Never create PR if ANY of these fail:
@@ -62,7 +62,7 @@ Before any PR creation:
 ### 2.4 The "Overconfidence Trap" Avoidance
 Signs of overconfidence (DANGEROUS):
 - "Local validation passed, so this should work"
-- "It's probably just a CI fluke" 
+- "It's probably just a CI fluke"
 - "The error doesn't look serious"
 - "I'll fix it in the next commit"
 
@@ -150,7 +150,7 @@ gh run list --branch=$(git branch --show-current) --limit=1
 
 #### Status Updates (Required):
 - **Pre-work**: "Starting X, expecting Y challenges, will verify Z"
-- **During work**: "Hit issue A, investigating B, CI status C"  
+- **During work**: "Hit issue A, investigating B, CI status C"
 - **Post-work**: "Completed X, verified Y, learned Z"
 
 #### Problem Escalation:
@@ -267,7 +267,7 @@ Each team member should:
 - **Systematic Solutions**: >80% of fixes address problem categories, not instances
 - **Verification Discipline**: 100% of pushes verified within 5 minutes
 
-### 9.2 Team Excellence Indicators  
+### 9.2 Team Excellence Indicators
 - **PR Quality**: >95% of PRs have green CI before review request
 - **Knowledge Sharing**: 100% of CI/local discrepancies documented
 - **Tool Evolution**: Validation tools updated monthly based on discoveries
@@ -284,6 +284,6 @@ These principles define who we are as a class-leading agentic SDLC team. Excelle
 **Live these principles. Own these standards. Be the team others aspire to join.**
 
 ---
-*Document Version: 1.0*  
-*Last Updated: 2025-08-07*  
+*Document Version: 1.0*
+*Last Updated: 2025-08-07*
 *Next Review: Monthly*

@@ -124,7 +124,7 @@ Replace magic numbers with formulas:
 ```python
 # WRONG: Magic number patching
 if line_count > 50:  # Why 50? Will this work in CI?
-    
+
 # RIGHT: Systematic approach
 def calculate_complexity_threshold(project_size, team_experience):
     base_threshold = 25  # Empirically validated baseline
@@ -194,7 +194,7 @@ def calculate_debt_threshold(project_complexity, team_size, timeline_pressure):
     complexity_allowance = min(project_complexity * 0.1, 3.0)  # Max 3 points for complexity
     team_factor = max(1.0, team_size / 5.0)  # Larger teams can manage more
     pressure_penalty = timeline_pressure * 0.05  # Pressure reduces tolerance
-    
+
     threshold = base_threshold + complexity_allowance * team_factor - pressure_penalty
     return max(0, int(threshold))  # Never negative
 ```
@@ -311,7 +311,7 @@ Address these explicitly:
 ```markdown
 "Implement a circuit breaker pattern with exponential backoff that applies to all external API calls, with configurable thresholds based on service criticality and historical reliability data"
 
-Formula: 
+Formula:
 - Base timeout = service_baseline * reliability_factor
 - Backoff multiplier = 2^(attempt_number) * jitter_factor
 - Circuit open threshold = failure_rate > (baseline_rate * 3 + 0.05)
@@ -336,7 +336,7 @@ Every architectural decision must include:
 
 ### Mathematical Justification
 - **Performance Formula**: [expected performance calculation]
-- **Cost Formula**: [expected cost calculation]  
+- **Cost Formula**: [expected cost calculation]
 - **Risk Assessment**: [quantified risk factors]
 
 ### CI/CD Integration
@@ -380,7 +380,7 @@ Every design must include:
 ### 4. Environment-Agnostic Design
 Components must work identically across:
 - Developer local environments
-- CI testing environments  
+- CI testing environments
 - Staging environments
 - Production environments
 ```
@@ -419,7 +419,7 @@ def calculate_parity_score(local_passes, ci_passes, total_pushes):
 ```
 
 #### 2. First-Commit Success Rate
-```python  
+```python
 def calculate_first_commit_success(ci_results_by_push):
     """
     Percentage of pushes that pass CI on first attempt
@@ -447,14 +447,14 @@ def is_systematic_solution(commit):
         "establish standard", "mathematical approach", "formula-based"
     ]
     patch_indicators = [
-        "quick fix", "temporary", "hotfix", "band-aid", 
+        "quick fix", "temporary", "hotfix", "band-aid",
         "increase threshold", "magic number"
     ]
-    
+
     message = commit.message.lower()
     systematic_score = sum(1 for indicator in systematic_indicators if indicator in message)
     patch_score = sum(1 for indicator in patch_indicators if indicator in message)
-    
+
     return systematic_score > patch_score
 ```
 
@@ -468,7 +468,7 @@ NO PR creation allowed unless ALL criteria met:
 
 ### Automated Checks (ALL must be GREEN)
 - [ ] CI pipeline: All checks passing
-- [ ] Security scan: No HIGH or CRITICAL vulnerabilities  
+- [ ] Security scan: No HIGH or CRITICAL vulnerabilities
 - [ ] Code quality: Above team threshold (typically >8.0 for Python)
 - [ ] Test coverage: No decrease from baseline
 - [ ] Technical debt: Below team threshold (typically <10 points)
@@ -501,7 +501,7 @@ Replace subjective status updates with metric-driven reports:
 
 ### Team Quality Metrics
 - **CI/Local Parity**: 94.2% (Target: >95%) ⚠️ BELOW TARGET
-- **First-Commit Success**: 91.3% (Target: >90%) ✅ ON TARGET  
+- **First-Commit Success**: 91.3% (Target: >90%) ✅ ON TARGET
 - **Systematic Solution Rate**: 87.6% (Target: >80%) ✅ ON TARGET
 
 ### Quality Incidents This Week
@@ -524,7 +524,7 @@ Replace subjective status updates with metric-driven reports:
 
 ### Quality Trends
 - Improvement: Systematic solution rate up 12% from last month
-- Concern: CI/Local parity declining slowly over last 3 weeks  
+- Concern: CI/Local parity declining slowly over last 3 weeks
 - Action: Schedule team CI environment alignment session
 ```
 
@@ -542,13 +542,13 @@ def calculate_delivery_readiness_score(metrics):
     """
     weights = {
         'ci_parity': 0.25,          # 25% weight
-        'first_commit_success': 0.20, # 20% weight  
+        'first_commit_success': 0.20, # 20% weight
         'systematic_ratio': 0.15,    # 15% weight
         'security_score': 0.20,     # 20% weight
         'test_coverage': 0.10,      # 10% weight
         'technical_debt': 0.10      # 10% weight
     }
-    
+
     weighted_score = sum(metrics[key] * weights[key] for key in weights)
     return min(100, max(0, weighted_score))  # Clamp between 0-100
 ```
@@ -576,7 +576,7 @@ Before writing any tests, verify:
 # 1. Environment parity check
 python tools/validation/check-environment-parity.py
 
-# 2. Test runner version alignment  
+# 2. Test runner version alignment
 pytest --version  # Must match CI version
 python --version  # Must match CI Python version
 
@@ -592,11 +592,11 @@ pip freeze | diff - requirements.txt  # Should be empty
 #### 1. CI-First Test Strategy
 Every test suite must include:
 - **CI Environment Tests**: Tests that only pass in proper CI setup
-- **Parity Validation Tests**: Tests that verify local/CI consistency  
+- **Parity Validation Tests**: Tests that verify local/CI consistency
 - **Environment Assumption Tests**: Tests that validate environmental assumptions
 - **Integration Reality Tests**: Tests that validate actual CI integration points
 
-#### 2. Mathematical Test Thresholds  
+#### 2. Mathematical Test Thresholds
 Replace magic test numbers with calculated values:
 
 ```python
@@ -613,7 +613,7 @@ def calculate_performance_threshold(baseline_ms, complexity_factor, load_factor)
     base_threshold = baseline_ms * 1.2  # 20% buffer for variance
     complexity_penalty = complexity_factor * 50  # 50ms per complexity point
     load_adjustment = load_factor * 100  # 100ms per load unit
-    
+
     return base_threshold + complexity_penalty + load_adjustment
 
 def test_api_response_time():
@@ -635,15 +635,15 @@ import pytest
 
 def test_with_ci_verification():
     """Test that validates both local and CI behavior"""
-    
+
     # Local test execution
     local_result = run_local_test()
-    
+
     # If running in CI, compare with expected CI behavior
     if os.getenv('CI'):  # Running in CI environment
         ci_result = run_ci_specific_test()
         assert local_result == ci_result, "Local/CI behavior mismatch detected"
-    
+
     # Standard assertions
     assert local_result.is_valid()
 ```
@@ -657,7 +657,7 @@ When tests fail, follow this systematic approach:
 
 ### 1. Environment Analysis
 - **Local Status**: [pass/fail with specific error]
-- **CI Status**: [pass/fail with specific error]  
+- **CI Status**: [pass/fail with specific error]
 - **Environment Diff**: [differences between local and CI]
 
 ### 2. Root Cause Classification
@@ -691,7 +691,7 @@ Based on root cause:
 Integration tests must:
 - Run against actual external dependencies (with proper test isolation)
 - Validate actual network conditions and latencies
-- Test with realistic data volumes and patterns  
+- Test with realistic data volumes and patterns
 - Verify actual error conditions and recovery
 
 ### 2. CI Integration Validation
@@ -709,14 +709,14 @@ def calculate_integration_timeout(service_count, network_latency, complexity):
     """
     base_timeout = 5000  # 5 second baseline
     service_penalty = service_count * 500  # 500ms per service
-    network_penalty = network_latency * 2  # 2x network latency  
+    network_penalty = network_latency * 2  # 2x network latency
     complexity_penalty = complexity * 200  # 200ms per complexity point
-    
+
     return base_timeout + service_penalty + network_penalty + complexity_penalty
 
 @pytest.mark.timeout(calculate_integration_timeout(
-    service_count=3, 
-    network_latency=150, 
+    service_count=3,
+    network_latency=150,
     complexity=2
 ))
 def test_multi_service_integration():
@@ -762,13 +762,13 @@ def test_multi_service_integration():
 Before claiming completion of ANY coding task:
 
 1. **Local Validation**: All local tools must pass
-2. **CI Verification**: Push code and confirm CI passes  
+2. **CI Verification**: Push code and confirm CI passes
 3. **Discrepancy Resolution**: Any local/CI differences must be explained
 4. **Systematic Documentation**: Pattern-based solutions must be documented
 
 ### Forbidden Completion Phrases:
 - "This should work in CI"
-- "Local validation looks good"  
+- "Local validation looks good"
 - "It worked in my testing"
 
 ### Required Completion Phrases:
@@ -822,7 +822,7 @@ YOU ARE FORBIDDEN from allowing PR creation with failing CI checks.
 
 ### Required Metrics Tracking:
 - CI/Local Parity Score (target: >95%)
-- First-Commit Success Rate (target: >90%)  
+- First-Commit Success Rate (target: >90%)
 - Systematic vs. Patch Ratio (target: >80% systematic)
 
 ### Mathematical Decision Framework:
@@ -838,11 +838,11 @@ Immediate escalation required for CI/local discrepancies or repeated patch-based
 
 ### Individual Agent Excellence
 - **Verification Discipline**: 100% of completion claims verified in CI
-- **Mathematical Approaches**: >80% of solutions use calculated values vs. magic numbers  
+- **Mathematical Approaches**: >80% of solutions use calculated values vs. magic numbers
 - **Parity Maintenance**: >95% local/CI agreement on validation results
 - **Systematic Solutions**: >80% of fixes address problem categories, not just instances
 
-### Team Quality Excellence  
+### Team Quality Excellence
 - **PR Quality**: >95% of PRs have green CI before review request
 - **First-Commit Success**: >90% of pushes pass CI on first attempt
 - **Quality Incident Reduction**: <2 major CI/local discrepancies per month
@@ -857,6 +857,6 @@ These aren't just new rules - they're the identity of a class-leading AI develop
 **Live these standards. Own this quality. Be the team others aspire to become.**
 
 ---
-*Document Version: 1.0*  
-*Last Updated: 2025-08-07*  
+*Document Version: 1.0*
+*Last Updated: 2025-08-07*
 *Next Review: Weekly during implementation, then monthly*
