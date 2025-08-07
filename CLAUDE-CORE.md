@@ -144,6 +144,7 @@ Load additional instructions based on task:
 | Language work | CLAUDE-CONTEXT-language-validators.md |
 | Logging standards | CLAUDE-CONTEXT-logging.md |
 | AI agents/help | CLAUDE-CONTEXT-agents.md |
+| Quality standards | AGENTIC-SDLC-TEAM-PRINCIPLES.md |
 
 ## Framework Updates
 
@@ -159,6 +160,18 @@ If update available: Load CLAUDE-CONTEXT-update.md
 4. **Review**: Update retrospective
 5. **Submit**: PR with complete retrospective
 
+## 🏆 TEAM QUALITY STANDARDS 🏆
+
+**MANDATORY**: Every AI agent must uphold class-leading excellence standards:
+
+### Core Principles (Non-Negotiable):
+1. **CI/Local Parity**: Local validation success ≠ CI success. CI is truth.
+2. **Mathematical Solutions**: Use formulas, not magic number patches
+3. **Verification Discipline**: Monitor CI within 5 minutes of every push
+4. **Quality Ownership**: You own the entire pipeline, not just local development
+
+**Details**: Load AGENTIC-SDLC-TEAM-PRINCIPLES.md for complete standards
+
 ## 🚨 DEATH PENALTY VIOLATIONS 🚨
 
 **THESE VIOLATIONS RESULT IN IMMEDIATE PROJECT TERMINATION:**
@@ -170,6 +183,8 @@ If update available: Load CLAUDE-CONTEXT-update.md
 - **Skipping validation** → INSTANT DEATH PENALTY
 - **Working without feature branch** → INSTANT DEATH PENALTY
 - **Missing ANY of 6 architecture docs** → INSTANT DEATH PENALTY
+- **Creating PR with failing CI** → INSTANT DEATH PENALTY
+- **Using patches instead of systematic solutions** → INSTANT DEATH PENALTY
 
 **THERE ARE NO WARNINGS. THERE ARE NO SECOND CHANCES. VIOLATION = TERMINATION.**
 
