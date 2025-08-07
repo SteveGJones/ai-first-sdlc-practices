@@ -32,19 +32,19 @@ ValidationPipeline = validate_pipeline.ValidationPipeline
 class TestFrameworkValidation:
     """Basic validation tests for the framework"""
 
-    def test_validation_pipeline_creation(self):
+    def test_validation_pipeline_creation(self) -> None:
         """Test that validation pipeline can be created"""
         pipeline = ValidationPipeline(Path.cwd())
         assert pipeline is not None
         assert pipeline.project_root == Path.cwd()
 
-    def test_framework_detection(self):
+    def test_framework_detection(self) -> None:
         """Test that framework repository is properly detected"""
         pipeline = ValidationPipeline(Path.cwd())
         # This should be True when running in the framework repo
         assert pipeline.is_framework_repo is True
 
-    def test_validation_has_checks(self):
+    def test_validation_has_checks(self) -> None:
         """Test that validation pipeline has required check methods"""
         pipeline = ValidationPipeline(Path.cwd())
         assert hasattr(pipeline, "check_branch_compliance")
@@ -52,7 +52,7 @@ class TestFrameworkValidation:
         assert hasattr(pipeline, "check_test_coverage")
         assert hasattr(pipeline, "check_security_scan")
 
-    def test_export_formats(self):
+    def test_export_formats(self) -> None:
         """Test that export formats are supported"""
         pipeline = ValidationPipeline(Path.cwd())
         # Test JSON export
@@ -65,7 +65,7 @@ class TestFrameworkValidation:
         assert md_output is not None
         assert isinstance(md_output, str)
 
-    def test_ci_environment_detection(self):
+    def test_ci_environment_detection(self) -> None:
         """Test CI environment detection"""
         # In local environment, this should be False
         # In CI, it would be True

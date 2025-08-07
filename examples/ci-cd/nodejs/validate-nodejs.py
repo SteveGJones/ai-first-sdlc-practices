@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 
-def run_command(name, cmd, working_dir=None):
+def run_command(name: str, cmd: list, working_dir: str = None) -> bool:
     """Run a command and return success status"""
     print(f"\n🔍 Running {name}...")
     try:
@@ -34,7 +34,7 @@ def run_command(name, cmd, working_dir=None):
         return False
 
 
-def check_package_json():
+def check_package_json() -> bool:
     """Validate package.json exists and has required scripts"""
     if not Path("package.json").exists():
         print("❌ package.json not found")
@@ -63,7 +63,7 @@ def check_package_json():
         return False
 
 
-def check_typescript_config():
+def check_typescript_config() -> bool:
     """Validate TypeScript configuration if present"""
     tsconfig_files = ["tsconfig.json", "tsconfig.app.json", "tsconfig.lib.json"]
 
@@ -104,7 +104,7 @@ def check_typescript_config():
     return True
 
 
-def main():
+def main() -> None:
     """Run ALL quality checks for Node.js/TypeScript"""
     print("🚀 Starting Node.js AI-First SDLC Validation")
     print("=" * 50)

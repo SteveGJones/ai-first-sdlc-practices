@@ -69,7 +69,7 @@ class AgentValidator:
 
         return len(self.errors) == 0
 
-    def _load_all_agents(self):
+    def _load_all_agents(self) -> None:
         """Load metadata for all agents."""
         for agent_path in self.agent_dir.rglob("*.md"):
             if agent_path.name.startswith("."):
@@ -101,7 +101,7 @@ class AgentValidator:
         metadata["_content_lines"] = len(parts[2].strip().split("\n"))
         return metadata
 
-    def _validate_agent(self, agent_path: Path):
+    def _validate_agent(self, agent_path: Path) -> None:
         """Validate a single agent file."""
         relative_path = agent_path.relative_to(self.agent_dir)
 
@@ -221,7 +221,7 @@ class AgentValidator:
 
         return any(category.startswith(pattern) for pattern in valid_patterns)
 
-    def _validate_dependencies(self):
+    def _validate_dependencies(self) -> None:
         """Validate that all agent dependencies exist."""
         for agent_name, agent_info in self.all_agents.items():
             metadata = agent_info["metadata"]
@@ -242,7 +242,7 @@ class AgentValidator:
                                 (agent_name, f"Unknown dependency: {dep}")
                             )
 
-    def _validate_categories(self):
+    def _validate_categories(self) -> None:
         """Ensure proper category distribution."""
         category_counts = {}
 
@@ -260,7 +260,7 @@ class AgentValidator:
                 )
             )
 
-    def _report_results(self):
+    def _report_results(self) -> None:
         """Display validation results."""
         total_agents = len(self.all_agents)
 
@@ -300,7 +300,7 @@ class AgentValidator:
         else:
             console.print("\n[bold red]✗ Validation failed![/bold red]")
 
-    def generate_manifest(self, output_path: Path):
+    def generate_manifest(self, output_path: Path) -> None:
         """Generate a manifest of all valid agents."""
         manifest = {"version": "1.0.0", "agents": {}}
 
@@ -330,7 +330,7 @@ class AgentValidator:
 @click.option("--strict", is_flag=True, help="Treat warnings as errors")
 @click.option("--manifest", type=click.Path(), help="Generate agent manifest file")
 @click.option("--fix", is_flag=True, help="Attempt to fix common issues")
-def main(agent_dir, strict, manifest, fix):
+def main(agent_dir: str, strict: bool, manifest: str, fix: bool) -> None:
     """Validate AI agent files for the AI-First SDLC framework."""
 
     agent_path = Path(agent_dir).resolve()

@@ -379,7 +379,7 @@ pre-commit>=3.0.0
         # Standard configuration values
         BLACK_LINE_LENGTH = 88
         SETUPTOOLS_MIN_VERSION = 45
-        
+
         # Create pyproject.toml
         pyproject_content = f"""[tool.black]
 line-length = {BLACK_LINE_LENGTH}
@@ -2040,35 +2040,35 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 protection_script = (
                     self.project_dir / "tools" / "setup-branch-protection.py"
                 )
-                if protection_script.exists():
-                    result = subprocess.run(
-                        [
-                            "python",
-                            str(protection_script),
-                            "--platform",
-                            "github",
-                            "--repo",
-                            repo_path,
-                            "--token",
-                            github_token,
-                        ],
-                        cwd=self.project_dir,
-                        capture_output=True,
-                        text=True,
-                    )
-
-                    if result.returncode == 0:
-                        print("✅ Branch protection enabled for main branch")
-                        print("   - Require pull request reviews")
-                        print("   - Require status checks to pass")
-                        print("   - No direct pushes allowed")
-                        return True
-                    else:
-                        print(f"❌ Failed to set up branch protection: {result.stderr}")
-                        return False
-                else:
+                if not protection_script.exists():
                     print("⚠️  Branch protection tool not found")
                     return False
+
+                result = subprocess.run(
+                    [
+                        "python",
+                        str(protection_script),
+                        "--platform",
+                        "github",
+                        "--repo",
+                        repo_path,
+                        "--token",
+                        github_token,
+                    ],
+                    cwd=self.project_dir,
+                    capture_output=True,
+                    text=True,
+                )
+
+                if result.returncode != 0:
+                    print(f"❌ Failed to set up branch protection: {result.stderr}")
+                    return False
+
+                print("✅ Branch protection enabled for main branch")
+                print("   - Require pull request reviews")  
+                print("   - Require status checks to pass")
+                print("   - No direct pushes allowed")
+                return True
             else:
                 print("❌ Could not parse repository information")
                 return False

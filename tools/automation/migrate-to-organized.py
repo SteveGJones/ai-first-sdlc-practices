@@ -115,7 +115,7 @@ class FrameworkMigrator:
 
         return len(self.errors) == 0
 
-    def _create_sdlc_structure(self):
+    def _create_sdlc_structure(self) -> None:
         """Create the .sdlc directory structure"""
         dirs = [
             ".sdlc/tools/validation",
@@ -129,7 +129,7 @@ class FrameworkMigrator:
         for dir_path in dirs:
             (self.project_root / dir_path).mkdir(parents=True, exist_ok=True)
 
-    def _move_path(self, src: Path, dst: Path):
+    def _move_path(self, src: Path, dst: Path) -> None:
         """Move a file or directory"""
         try:
             # Create parent directory
@@ -156,7 +156,7 @@ class FrameworkMigrator:
             self.errors.append(error_msg)
             print(f"❌ {error_msg}")
 
-    def _create_convenience_scripts(self):
+    def _create_convenience_scripts(self) -> None:
         """Create wrapper scripts in sdlc-tools directory"""
         # Create sdlc-tools directory
         tools_dir = self.project_root / "sdlc-tools"
@@ -197,7 +197,7 @@ echo "Created: docs/feature-proposals/$(date +%y)-$1.md"
         # Create comprehensive README
         self._create_tools_readme(tools_dir)
 
-    def _update_claude_md(self):
+    def _update_claude_md(self) -> None:
         """Update CLAUDE.md to reflect new structure"""
         claude_path = self.project_root / "CLAUDE.md"
         if claude_path.exists():
@@ -235,7 +235,7 @@ Framework tools are now in `.sdlc/` for a cleaner project root.
             claude_path.write_text(content)
             print("✅ Updated CLAUDE.md for new structure")
 
-    def _update_gitignore(self):
+    def _update_gitignore(self) -> None:
         """Add .sdlc entries to gitignore"""
         gitignore_path = self.project_root / ".gitignore"
         if gitignore_path.exists():
@@ -249,7 +249,7 @@ Framework tools are now in `.sdlc/` for a cleaner project root.
                     f.write(".sdlc/logs/\n")
                 print("✅ Updated .gitignore")
 
-    def _create_tools_readme(self, tools_dir: Path):
+    def _create_tools_readme(self, tools_dir: Path) -> None:
         """Create comprehensive README for sdlc-tools directory"""
         readme_content = """# SDLC Tools
 
@@ -365,7 +365,7 @@ Part of the [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sd
         print("✅ Created sdlc-tools/README.md")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Migrate existing AI-First SDLC installation to organized structure"
     )

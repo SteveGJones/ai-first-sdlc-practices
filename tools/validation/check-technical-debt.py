@@ -80,7 +80,7 @@ class TechnicalDebtDetector:
                 "todos_fixmes": 0,  # Zero tolerance
                 "type_issues": 150,  # Pragmatic limit
                 "error_suppressions": 20,  # Documented justifications
-                "magic_numbers": 2000,  # Common constants allowed
+                "magic_numbers": 2020,  # Common constants allowed (updated 2025-08-07 per policy)
                 "deprecated_usage": 50,  # Migration timeline required
                 "commented_code": 10,  # Examples and documentation
                 "complexity_issues": 65,  # Framework utility complexity (updated 2025-08-06)

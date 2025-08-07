@@ -12,7 +12,7 @@ import os
 import sys
 
 
-def test_framework_structure():
+def test_framework_structure() -> None:
     """Verify basic AI-First SDLC framework structure exists."""
     required_files = [
         "README.md",
@@ -35,7 +35,7 @@ def test_framework_structure():
             raise AssertionError(f"Required directory missing: {dir_path}")
 
 
-def test_claude_md_content():
+def test_claude_md_content() -> None:
     """Verify CLAUDE.md has basic required content."""
     if not os.path.exists("CLAUDE.md"):
         raise AssertionError("CLAUDE.md not found")
@@ -56,7 +56,7 @@ def test_claude_md_content():
             raise AssertionError(f"CLAUDE.md missing required pattern: {pattern}")
 
 
-def test_gitignore_exists():
+def test_gitignore_exists() -> None:
     """Verify .gitignore file exists and has AI tool patterns."""
     if not os.path.exists(".gitignore"):
         print("Warning: .gitignore not found (run setup-smart.py to create)")
@@ -73,7 +73,7 @@ def test_gitignore_exists():
         print("Info: Consider adding AI tool patterns to .gitignore")
 
 
-def test_python_environment():
+def test_python_environment() -> None:
     """Verify Python environment is suitable for development."""
     # Check Python version
     if sys.version_info < (3, 8):
@@ -86,7 +86,7 @@ def test_python_environment():
         raise AssertionError(f"Required Python module not available: {e}")
 
 
-def test_git_repository():
+def test_git_repository() -> None:
     """Verify this is a git repository."""
     if not os.path.isdir(".git"):
         raise AssertionError("Not a git repository (run 'git init')")

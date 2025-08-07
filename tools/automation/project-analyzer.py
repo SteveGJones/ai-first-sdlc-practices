@@ -64,7 +64,7 @@ class ProjectAnalyzer:
 
         return self.analysis
 
-    def _analyze_languages(self):
+    def _analyze_languages(self) -> None:
         """Detect programming languages used."""
         language_extensions = {
             ".py": "python",
@@ -110,7 +110,7 @@ class ProjectAnalyzer:
             primary = file_counts.most_common(1)[0][0]
             self.analysis["primary_language"] = primary
 
-    def _analyze_package_files(self):
+    def _analyze_package_files(self) -> None:
         """Analyze package manager files for dependencies."""
         # Python
         if (self.project_root / "requirements.txt").exists():
@@ -145,7 +145,7 @@ class ProjectAnalyzer:
         if (self.project_root / "Cargo.toml").exists():
             self._parse_cargo_toml()
 
-    def _parse_requirements_txt(self):
+    def _parse_requirements_txt(self) -> None:
         """Parse Python requirements."""
         try:
             with open(self.project_root / "requirements.txt") as f:
@@ -175,7 +175,7 @@ class ProjectAnalyzer:
         except Exception:
             pass
 
-    def _parse_package_json(self):
+    def _parse_package_json(self) -> None:
         """Parse Node.js package.json."""
         try:
             with open(self.project_root / "package.json") as f:
@@ -219,7 +219,7 @@ class ProjectAnalyzer:
         except Exception:
             pass
 
-    def _parse_go_mod(self):
+    def _parse_go_mod(self) -> None:
         """Parse Go modules."""
         try:
             with open(self.project_root / "go.mod") as f:
@@ -241,7 +241,7 @@ class ProjectAnalyzer:
         except Exception:
             pass
 
-    def _analyze_directory_structure(self):
+    def _analyze_directory_structure(self) -> None:
         """Analyze project structure for patterns."""
         dirs = set()
         for path in self.project_root.rglob("*"):
@@ -272,7 +272,7 @@ class ProjectAnalyzer:
         if "services" in dirs and len([d for d in dirs if d.endswith("service")]) > 3:
             self.analysis["architecture"].add("microservices")
 
-    def _analyze_ci_cd(self):
+    def _analyze_ci_cd(self) -> None:
         """Detect CI/CD platforms."""
         ci_files = {
             ".github/workflows": "github-actions",
@@ -289,7 +289,7 @@ class ProjectAnalyzer:
             if (self.project_root / file_path).exists():
                 self.analysis["ci_cd"].add(platform)
 
-    def _analyze_docker(self):
+    def _analyze_docker(self) -> None:
         """Detect Docker usage."""
         if (self.project_root / "Dockerfile").exists():
             self.analysis["tools"].add("docker")
@@ -317,7 +317,7 @@ class ProjectAnalyzer:
             except Exception:
                 pass
 
-    def _analyze_terraform(self):
+    def _analyze_terraform(self) -> None:
         """Detect Terraform and cloud providers."""
         tf_files = list(self.project_root.glob("**/*.t"))
         if tf_files:
@@ -338,7 +338,7 @@ class ProjectAnalyzer:
                 except Exception:
                     pass
 
-    def _analyze_kubernetes(self):
+    def _analyze_kubernetes(self) -> None:
         """Detect Kubernetes usage."""
         k8s_indicators = [
             "deployment.yaml",
@@ -361,7 +361,7 @@ class ProjectAnalyzer:
         if (self.project_root / "Chart.yaml").exists():
             self.analysis["tools"].add("helm")
 
-    def _analyze_testing(self):
+    def _analyze_testing(self) -> None:
         """Analyze testing setup."""
         # Look for test directories
         test_dirs = []
@@ -386,7 +386,7 @@ class ProjectAnalyzer:
                         elif "security" in name:
                             self.analysis["testing"].add("security-tests")
 
-    def _analyze_git_history(self):
+    def _analyze_git_history(self) -> None:
         """Analyze git history for team size."""
         try:
             # Get unique authors from last 6 months
@@ -403,7 +403,7 @@ class ProjectAnalyzer:
         except Exception:
             self.analysis["team_size"] = 1
 
-    def _analyze_domains(self):
+    def _analyze_domains(self) -> None:
         """Detect specific domains based on files and dependencies."""
         # Check for domain-specific files
         domain_patterns = {
@@ -430,7 +430,7 @@ class ProjectAnalyzer:
                             self.analysis["domains"].add(domain)
                             break
 
-    def _determine_project_size(self):
+    def _determine_project_size(self) -> None:
         """Determine project size based on various factors."""
         file_count = sum(
             1
@@ -486,7 +486,7 @@ class ProjectAnalyzer:
                 return True
         return False
 
-    def _parse_pom_xml(self):
+    def _parse_pom_xml(self) -> None:
         """Parse Maven pom.xml for Java projects."""
         try:
             import xml.etree.ElementTree as ET
@@ -510,7 +510,7 @@ class ProjectAnalyzer:
         except Exception:
             pass
 
-    def _parse_gemfile(self):
+    def _parse_gemfile(self) -> None:
         """Parse Ruby Gemfile."""
         try:
             with open(self.project_root / "Gemfile") as f:
@@ -531,7 +531,7 @@ class ProjectAnalyzer:
         except Exception:
             pass
 
-    def _parse_cargo_toml(self):
+    def _parse_cargo_toml(self) -> None:
         """Parse Rust Cargo.toml."""
         try:
             with open(self.project_root / "Cargo.toml") as f:
@@ -589,7 +589,7 @@ class ProjectAnalyzer:
         return "\n".join(lines)
 
 
-def display_analysis(analysis: Dict):
+def display_analysis(analysis: Dict) -> None:
     """Display analysis results in a nice format."""
     console.print("\n[bold green]Project Analysis Results[/bold green]\n")
 
@@ -664,7 +664,7 @@ def display_analysis(analysis: Dict):
 )
 @click.option("--output", type=click.Path(), help="Save analysis to JSON file")
 @click.option("--quiet", is_flag=True, help="Only output JSON (for programmatic use)")
-def main(project_dir, output, quiet):
+def main(project_dir: str, output: str, quiet: bool) -> None:
     """Analyze a project to understand its characteristics."""
 
     project_path = Path(project_dir).resolve()

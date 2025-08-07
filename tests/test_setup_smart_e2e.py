@@ -58,27 +58,27 @@ class TestSetupSmartE2E(unittest.TestCase):
         for file in indicators.get(language, []):
             Path(file).touch()
 
-    def test_language_detection_python(self):
+    def test_language_detection_python(self) -> None:
         """Test Python language detection"""
         self.create_language_indicators("python")
         setup = SmartFrameworkSetup(Path(self.test_dir))
         detected = setup.detect_project_language()
         self.assertEqual(detected, "python")
 
-    def test_language_detection_node(self):
+    def test_language_detection_node(self) -> None:
         """Test Node.js language detection"""
         self.create_language_indicators("node")
         setup = SmartFrameworkSetup(Path(self.test_dir))
         detected = setup.detect_project_language()
         self.assertEqual(detected, "node")
 
-    def test_language_detection_empty_repo(self):
+    def test_language_detection_empty_repo(self) -> None:
         """Test language detection in empty repository"""
         setup = SmartFrameworkSetup(Path(self.test_dir))
         detected = setup.detect_project_language()
         self.assertEqual(detected, "general")
 
-    def test_gitignore_creation_new_file(self):
+    def test_gitignore_creation_new_file(self) -> None:
         """Test .gitignore creation when file doesn't exist"""
         setup = SmartFrameworkSetup(Path(self.test_dir))
         setup.detected_language = "python"
@@ -107,7 +107,7 @@ class TestSetupSmartE2E(unittest.TestCase):
         self.assertIn(".claude/", content)
         self.assertIn("__pycache__/", content)
 
-    def test_gitignore_update_existing_file(self):
+    def test_gitignore_update_existing_file(self) -> None:
         """Test .gitignore update when file already exists"""
         # Create existing .gitignore
         existing_content = "# My project\n*.secret\n"
@@ -133,7 +133,7 @@ class TestSetupSmartE2E(unittest.TestCase):
         self.assertIn("AI-First SDLC Framework Patterns (Added)", content)
         self.assertIn("node_modules/", content)
 
-    def test_initial_test_creation_python(self):
+    def test_initial_test_creation_python(self) -> None:
         """Test framework verification test creation for Python"""
         setup = SmartFrameworkSetup(Path(self.test_dir))
         setup.detected_language = "python"
@@ -152,7 +152,7 @@ class TestSetupSmartE2E(unittest.TestCase):
         self.assertTrue(test_path.exists())
         self.assertIn("Test template", test_path.read_text())
 
-    def test_initial_test_creation_node(self):
+    def test_initial_test_creation_node(self) -> None:
         """Test framework verification test creation for Node.js"""
         setup = SmartFrameworkSetup(Path(self.test_dir))
         setup.detected_language = "node"
@@ -172,7 +172,7 @@ class TestSetupSmartE2E(unittest.TestCase):
         self.assertTrue(test_path.parent.is_dir())
         self.assertIn("Node test template", test_path.read_text())
 
-    def test_readme_creation(self):
+    def test_readme_creation(self) -> None:
         """Test README.md creation with project info"""
         setup = SmartFrameworkSetup(
             Path(self.test_dir), "Building an AI chat application"
@@ -192,7 +192,7 @@ class TestSetupSmartE2E(unittest.TestCase):
         self.assertIn("AI-First SDLC framework", content)
         self.assertIn("CLAUDE.md", content)
 
-    def test_quickstart_mode_integration(self):
+    def test_quickstart_mode_integration(self) -> None:
         """Test full quickstart mode with all components"""
         # Run setup with quickstart
         setup = SmartFrameworkSetup(Path(self.test_dir), "Test project")
@@ -223,7 +223,7 @@ class TestSetupSmartE2E(unittest.TestCase):
             (Path(self.test_dir) / ".ai-sdlc-temp").exists()
         )  # Should be cleaned up
 
-    def test_ai_friendly_gitignore_patterns(self):
+    def test_ai_friendly_gitignore_patterns(self) -> None:
         """Test that AI-specific patterns are comprehensive"""
         setup = SmartFrameworkSetup(Path(self.test_dir))
 
@@ -282,7 +282,7 @@ HANDOFF_*.md"""
         for pattern in context_patterns:
             self.assertIn(pattern, gitignore, f"Missing context pattern: {pattern}")
 
-    def test_language_detection_subdirectories(self):
+    def test_language_detection_subdirectories(self) -> None:
         """Test language detection works with files in subdirectories"""
         # Create Python files in subdirectory
         src_dir = Path(self.test_dir) / "src"
@@ -293,7 +293,7 @@ HANDOFF_*.md"""
         detected = setup.detect_project_language()
         self.assertEqual(detected, "python")
 
-    def test_error_handling_missing_templates(self):
+    def test_error_handling_missing_templates(self) -> None:
         """Test graceful handling when templates are missing"""
         setup = SmartFrameworkSetup(Path(self.test_dir))
         setup.detected_language = "python"
@@ -308,7 +308,7 @@ HANDOFF_*.md"""
 class TestAIFriendliness(unittest.TestCase):
     """Test that generated files are AI-friendly"""
 
-    def test_claude_md_clarity(self):
+    def test_claude_md_clarity(self) -> None:
         """Test CLAUDE.md has clear AI instructions"""
         # Required sections that should be present in CLAUDE.md
         expected_sections = [
@@ -322,7 +322,7 @@ class TestAIFriendliness(unittest.TestCase):
         # For now, we verify the structure exists
         self.assertTrue(len(expected_sections) > 0)  # Verify we have expectations
 
-    def test_readme_ai_guidance(self):
+    def test_readme_ai_guidance(self) -> None:
         """Test README points AI to CLAUDE.md"""
         test_dir = tempfile.mkdtemp()
         try:
@@ -336,7 +336,7 @@ class TestAIFriendliness(unittest.TestCase):
         finally:
             shutil.rmtree(test_dir)
 
-    def test_test_files_have_clear_purpose(self):
+    def test_test_files_have_clear_purpose(self) -> None:
         """Test that framework verification tests explain their purpose"""
         # Check Python test template
         test_content = (

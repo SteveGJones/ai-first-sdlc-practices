@@ -18,10 +18,8 @@ import shutil
 def create_pre_push_hook() -> str:
     """Create pre-push hook content"""
     return """#!/bin/bash
-#
 # Pre-push hook for AI-First SDLC
 # Prevents pushing broken code to remote repository
-#
 
 echo "🔍 Running pre-push validation..."
 
@@ -54,10 +52,8 @@ echo "✅ Pre-push validation passed! Pushing to remote..."
 def create_commit_msg_hook() -> str:
     """Create commit-msg hook for enforcing commit standards"""
     return """#!/bin/bash
-#
 # Commit message hook for AI-First SDLC
 # Enforces commit message standards
-#
 
 commit_regex='^(feat|fix|docs|style|refactor|test|chore)(\\(.+\\))?: .{1,50}'
 
@@ -93,10 +89,8 @@ fi
 def create_pre_commit_hook() -> str:
     """Create pre-commit hook for immediate syntax validation"""
     return """#!/bin/bash
-#
 # Pre-commit hook for AI-First SDLC
 # Fast syntax validation before commit
-#
 
 echo "🚀 Running pre-commit syntax validation..."
 

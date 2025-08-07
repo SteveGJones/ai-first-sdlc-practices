@@ -191,8 +191,7 @@ class SDLCLevelManager:
                 age_seconds = datetime.now().timestamp() - first_commit
                 return int(age_seconds / 86400)  # Convert to days
         except Exception:
-            pass
-        return 0
+            return 0
 
     def _count_files(self) -> int:
         """Count source files in project."""
@@ -231,8 +230,7 @@ class SDLCLevelManager:
             if result.returncode == 0:
                 return "enabled"
         except Exception:
-            pass
-        return "unknown"
+            return "unknown"
 
     def _suggest_level(self, analysis: Dict) -> str:
         """Suggest appropriate level based on analysis."""

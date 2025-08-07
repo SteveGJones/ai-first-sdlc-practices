@@ -44,7 +44,7 @@ Claude will ask you for your project's purpose and then proceed with setup using
 
 ## Project Overview
 
-This is the AI-First SDLC Practices framework - a comprehensive methodology for integrating AI agents as primary developers while maintaining quality and process compliance. The framework provides tools, templates, and automation to enforce best practices in AI-assisted software development.
+This is the AI-First SDLC Practices framework - a comprehensive methodology for integrating AI agents as primary developers while maintaining quality and process compliance. The framework provides tools, templates, and automation to enforce best practices in AI development and AI-assisted software development.
 
 ## Repository Structure
 
@@ -322,7 +322,7 @@ When modifying framework tools:
 
 ## Key Framework Principles
 
-1. **No Direct Main Branch Commits**: All changes must go through feature branches and PRs
+1. **No Direct Main Branch Commits**: All changes must go through feature branches and PRs. Never push directly to main branch as part of our git workflow.
 2. **Feature Proposals Required**: Document before implementing
 3. **Progress Tracking**: Maintain visibility of work
 4. **Context Preservation**: Enable seamless handoffs
