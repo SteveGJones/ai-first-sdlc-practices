@@ -118,7 +118,7 @@ class ContextManager:
         }
 
         # Save as handoff context
-        session_id = self.save_context("handof", handoff)
+        session_id = self.save_context("handoff", handoff)
 
         # Generate markdown document
         markdown = self._generate_handoff_markdown(handoff, session_id)
@@ -343,7 +343,7 @@ class ContextManager:
         return "ℹ️ No linter found"
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="AI Context Manager - Preserve context across sessions"
     )
@@ -353,7 +353,7 @@ def main():
     # Save context
     save_parser = subparsers.add_parser("save", help="Save current context")
     save_parser.add_argument(
-        "type", choices=["work", "handof", "debug", "custom"], help="Context type"
+        "type", choices=["work", "handoff", "debug", "custom"], help="Context type"
     )
     save_parser.add_argument("--data", help="JSON data to save")
     save_parser.add_argument("--file", help="File containing JSON data")
@@ -363,7 +363,7 @@ def main():
     load_parser.add_argument("session_id", nargs="?", help="Session ID to load")
 
     # Create handoff
-    handoff_parser = subparsers.add_parser("handof", help="Create handoff document")
+    handoff_parser = subparsers.add_parser("handoff", help="Create handoff document")
     handoff_parser.add_argument(
         "--completed", nargs="+", default=[], help="Completed tasks"
     )
@@ -405,16 +405,17 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    cm = ContextManager()
+    cm: ContextManager = ContextManager()
 
     if args.command == "save":
-        data = {}
+        data: Dict[str, Any] = {}
         if args.data:
             data = json.loads(args.data)
         elif args.file:
             with open(args.file, "r") as f:
                 data = json.load(f)
-        session_id = cm.save_context(data)
+        # Call save_context with 2 args + self: context_type, data (session_id is optional)
+        session_id: str = cm.save_context("manual", data)
         print(f"Session ID: {session_id}")
 
     elif args.command == "load":
@@ -424,7 +425,7 @@ def main():
         else:
             print("No context found")
 
-    elif args.command == "handof":
+    elif args.command == "handoff":
         # Parse blockers
         blockers = []
         for blocker in args.blocker:

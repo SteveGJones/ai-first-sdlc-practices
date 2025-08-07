@@ -194,6 +194,68 @@ class ValidationRunner:
             self.log("Security checks passed", "SUCCESS")
             return True
 
+    def check_static_analysis(self) -> bool:
+        """Run CodeQL-style static analysis checks"""
+        self.log("🔍 Running static analysis checks...", "INFO")
+
+        # Check for argument count mismatches and other static analysis issues
+        python_files = list(Path("tools").rglob("*.py"))
+        issues_found = []
+
+        for file_path in python_files:
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+
+                # Parse the AST to check for potential issues
+                tree = ast.parse(content)
+
+                # Look for potential argument count issues
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Call):
+                        # This is a simplified check - in practice would need more sophisticated analysis
+                        if hasattr(node.func, "attr"):
+                            func_name = node.func.attr
+                            if (
+                                func_name in ["save_context", "setup"]
+                                and len(node.args) == 1
+                            ):
+                                issues_found.append(
+                                    f"{file_path}:{node.lineno}: Potential argument count issue in {func_name} call"
+                                )
+
+                    elif isinstance(node, ast.ClassDef):
+                        # Check for class instantiation issues
+                        for child in ast.walk(node):
+                            if isinstance(child, ast.Call) and hasattr(
+                                child.func, "id"
+                            ):
+                                class_name = child.func.id
+                                if (
+                                    class_name.endswith("Configurator")
+                                    and len(child.args) > 4
+                                ):
+                                    msg = (
+                                        f"{file_path}:{child.lineno}: "
+                                        f"Potential argument order issue in {class_name} instantiation"
+                                    )
+                                    issues_found.append(msg)
+
+            except (SyntaxError, UnicodeDecodeError) as e:
+                issues_found.append(f"{file_path}: Parse error: {e}")
+
+        if issues_found:
+            self.warnings.extend(issues_found[:5])  # Limit output
+            self.log(
+                f"Static analysis found {len(issues_found)} potential issues", "WARNING"
+            )
+            for issue in issues_found[:3]:  # Show first 3 issues
+                self.log(issue, "WARNING")
+            return True  # Don't fail build on warnings, just report
+        else:
+            self.log("Static analysis checks passed", "SUCCESS")
+            return True
+
     def run_quick_validation(self) -> bool:
         """Run only the fastest, most critical checks"""
         self.log("🚀 Running quick validation...", "INFO")
@@ -220,6 +282,7 @@ class ValidationRunner:
             ("Architecture", self.check_architecture_compliance),
             ("Type Safety", self.check_type_safety),
             ("Security", self.check_security),
+            ("Static Analysis", self.check_static_analysis),
         ]
 
         all_passed = True

@@ -226,7 +226,7 @@ def extract_repo_from_url(url: str) -> str:
         raise ValueError(f"Could not extract repository from URL: {url}")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Setup branch protection rules for git repository"
     )
@@ -303,9 +303,11 @@ def main():
             print(f"Please provide --token or set {env_var} environment variable")
             sys.exit(1)
 
-    # Configure branch protection
-    configurator = BranchProtectionConfigurator(platform, repo, token, args.branch)
-    success = configurator.setup(args.force)
+    # Configure branch protection - instantiate with 3 args: platform, token, repo
+    configurator: BranchProtectionConfigurator = BranchProtectionConfigurator(
+        platform, token, repo
+    )
+    success: bool = configurator.configure(args.branch)
     if success:
         print("\n✅ Branch protection successfully configured!")
         print("\n📋 AI-First SDLC Compliance Checklist:")
