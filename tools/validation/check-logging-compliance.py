@@ -334,7 +334,7 @@ class LoggingComplianceChecker:
         func_name = func_node.name
 
         # Get function lines
-        func_lines = content.split("\n")[func_node.lineno - 1:func_node.end_lineno]
+        func_lines = content.split("\n")[func_node.lineno - 1 : func_node.end_lineno]
         func_body = "\n".join(func_lines)
 
         # Skip very short functions

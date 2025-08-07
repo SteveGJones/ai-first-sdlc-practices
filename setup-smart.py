@@ -2065,7 +2065,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                     return False
 
                 print("✅ Branch protection enabled for main branch")
-                print("   - Require pull request reviews")  
+                print("   - Require pull request reviews")
                 print("   - Require status checks to pass")
                 print("   - No direct pushes allowed")
                 return True
