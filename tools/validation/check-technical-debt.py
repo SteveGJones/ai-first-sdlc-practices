@@ -396,6 +396,14 @@ class TechnicalDebtDetector:
             if 1900 <= number <= 2100 or number in [80, 443, 3000, 8080, 8000]:
                 continue
 
+            # Skip common percentages (10, 20, 30...100)
+            if number % 10 == 0 and 10 <= number <= 100:
+                continue
+
+            # Skip common line lengths and dimensions
+            if number in [60, 72, 79, 120, 127, 128, 256, 512, 1024, 2048, 4096]:
+                continue
+
             line_no = content[: match.start()].count("\n") + 1
             self.debt_items["code_smells"].append(
                 {
