@@ -64,6 +64,7 @@ class ValidationPipeline:
             "type-safety": self.check_type_safety,
             "architecture": self.check_architecture_documentation,
             "logging": self.check_logging_compliance,
+            "github-actions": self.check_github_actions_permissions,
         }
 
         # Default to all checks
@@ -1198,6 +1199,65 @@ class ValidationPipeline:
                 "Ensure Python dependencies are installed",
             )
 
+    def check_github_actions_permissions(self) -> None:
+        """Check GitHub Actions workflows have proper permissions"""
+        if self.is_empty_repo:
+            self.add_skip("GitHub Actions Permissions", "Empty repository - no workflows to check")
+            return
+
+        workflows_dir = self.project_root / ".github" / "workflows"
+        if not workflows_dir.exists():
+            self.add_skip("GitHub Actions Permissions", "No GitHub Actions workflows found")
+            return
+
+        # Check if permissions validator exists
+        validator_path = (
+            self.project_root / "tools" / "validation" / "check-github-actions-permissions.py"
+        )
+        if not validator_path.exists():
+            self.add_warning(
+                "GitHub Actions Permissions",
+                "GitHub Actions permissions validator not found",
+                "Create check-github-actions-permissions.py to validate workflow permissions",
+            )
+            return
+
+        try:
+            result = subprocess.run(
+                [sys.executable, str(validator_path)],
+                cwd=self.project_root,
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+
+            if result.returncode == 0:
+                self.add_success("GitHub Actions Permissions", "All workflows have appropriate permissions")
+            else:
+                # Parse the output to extract specific issues
+                output_lines = result.stdout.split('\n')
+                issues = [line for line in output_lines if line.startswith('❌') or line.startswith('⚠️')]
+                
+                if issues:
+                    self.add_error(
+                        "GitHub Actions Permissions",
+                        f"Found {len(issues)} permission issues",
+                        "Add explicit permissions block to workflows (see output for details)",
+                    )
+                else:
+                    self.add_warning(
+                        "GitHub Actions Permissions", 
+                        "Permission check failed",
+                        "Manually review workflow permissions",
+                    )
+
+        except Exception as e:
+            self.add_warning(
+                "GitHub Actions Permissions",
+                f"Failed to run permissions check: {e}",
+                "Manually verify GitHub Actions workflow permissions",
+            )
+
     def _get_current_branch(self) -> Optional[str]:
         """Get current git branch"""
         # Check if we're in GitHub Actions CI environment
@@ -1379,6 +1439,7 @@ def main() -> None:
             "type-safety",
             "architecture",
             "logging",
+            "github-actions",
         ],
         help="Specific checks to run (default: all)",
     )

@@ -7,6 +7,14 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+# Explicit permissions required for GITHUB_TOKEN
+permissions:
+  contents: read        # Required to checkout code
+  issues: write         # Required to comment on PRs (PRs are issues in GitHub API)
+  pull-requests: write  # Required for PR-specific operations
+  actions: read         # Required to read workflow status
+  checks: write         # Required to write check results
+
 jobs:
   validate-framework:
     runs-on: ubuntu-latest
