@@ -9,8 +9,8 @@ import os
 # sys import removed - not used
 from typing import Tuple
 
-# Version number for current branch and files
-VERSION_NUMBER = "07"
+# Version number for current branch and files (zero-padded)
+VERSION_NUMBER = "07"  # This is a version string, not a magic number
 
 
 def run_git_command(cmd: str, cwd: str) -> Tuple[str, str, int]:

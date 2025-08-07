@@ -376,9 +376,13 @@ pre-commit>=3.0.0
             requirements_path.write_text(requirements_content)
             print("✅ Created requirements.txt")
 
+        # Standard configuration values
+        BLACK_LINE_LENGTH = 88
+        SETUPTOOLS_MIN_VERSION = 45
+        
         # Create pyproject.toml
-        pyproject_content = """[tool.black]
-line-length = 88
+        pyproject_content = f"""[tool.black]
+line-length = {BLACK_LINE_LENGTH}
 target-version = ['py39']
 
 [tool.mypy]
@@ -391,7 +395,7 @@ python_files = "test_*.py"
 addopts = "-v --cov=src --cov-report=html"
 
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>={SETUPTOOLS_MIN_VERSION}", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]

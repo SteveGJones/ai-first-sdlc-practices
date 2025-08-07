@@ -213,7 +213,7 @@ class TestSetupSmartE2E(unittest.TestCase):
         setup.download_file = mock_download
 
         # Run quickstart setup
-        setup.setup_quickstart()
+        setup.setup_project(quickstart=True)
         # Verify minimal components created in quickstart mode
         self.assertTrue((Path(self.test_dir) / "README.md").exists())
         self.assertTrue((Path(self.test_dir) / ".gitignore").exists())
