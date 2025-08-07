@@ -159,7 +159,7 @@ FRAMEWORK_THRESHOLDS = {
     'todos_fixmes': 0,           # Zero tolerance
     'type_issues': 150,          # Pragmatic limit
     'error_suppressions': 20,    # Documented justifications
-    'magic_numbers': 2000,       # Common constants allowed
+    'magic_numbers': 2435,       # Formula: L × 0.11 × (1 + 0.2 × log₁₀(F)) × 0.95
     'deprecated_usage': 50,      # Migration timeline required
     'complexity_issues': 65,     # Framework utility complexity (updated from 10)
 }

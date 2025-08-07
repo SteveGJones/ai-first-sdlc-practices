@@ -243,9 +243,10 @@ def main():
     if create_commit_msg_hook(hooks_dir):
         success_count += 1
 
-    print(f"\n{'='*50}")
+    separator = "=" * 50
+    print(f"\n{separator}")
     print("🎯 Enhanced Git Hooks Installation Summary")
-    print("=" * 50)
+    print(separator)
 
     if success_count == 3:
         print("✅ All hooks installed successfully!")

@@ -292,7 +292,7 @@ class CodeQLStyleAnalyzer:
     def print_results(self, results: Dict[str, Any], verbose: bool = False):
         """Print analysis results in a readable format"""
         print("\n🔍 CodeQL-Style Static Analysis Results")
-        print(f"{'='*50}")
+        print("=" * 50)
         print(f"Files Analyzed: {results['total_files']}")
         print(f"Files with Issues: {results['files_with_issues']}")
         print(f"Total Issues: {results['total_issues']}")
@@ -377,7 +377,7 @@ def main():
         overall_success = local_validation_passed and codeql_passed
         print(f"\n{'='*60}")
         print("🎯 ENHANCED QUALITY GATE SUMMARY")
-        print(f"{'='*60}")
+        print("=" * 60)
         if overall_success:
             print("✅ ALL CHECKS PASSED - Ready to push!")
         else:
