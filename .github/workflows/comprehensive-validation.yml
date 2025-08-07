@@ -20,7 +20,7 @@ on:
 permissions:
   contents: read        # Required to checkout code
   issues: write         # Required to comment on PRs (PRs are issues in GitHub API)
-  pull-requests: write  # Required for PR-specific operations  
+  pull-requests: write  # Required for PR-specific operations
   actions: read         # Required to read workflow status
   checks: write         # Required to write check results
   security-events: write # Required for security scanning

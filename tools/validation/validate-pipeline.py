@@ -1202,17 +1202,24 @@ class ValidationPipeline:
     def check_github_actions_permissions(self) -> None:
         """Check GitHub Actions workflows have proper permissions"""
         if self.is_empty_repo:
-            self.add_skip("GitHub Actions Permissions", "Empty repository - no workflows to check")
+            self.add_skip(
+                "GitHub Actions Permissions", "Empty repository - no workflows to check"
+            )
             return
 
         workflows_dir = self.project_root / ".github" / "workflows"
         if not workflows_dir.exists():
-            self.add_skip("GitHub Actions Permissions", "No GitHub Actions workflows found")
+            self.add_skip(
+                "GitHub Actions Permissions", "No GitHub Actions workflows found"
+            )
             return
 
         # Check if permissions validator exists
         validator_path = (
-            self.project_root / "tools" / "validation" / "check-github-actions-permissions.py"
+            self.project_root
+            / "tools"
+            / "validation"
+            / "check-github-actions-permissions.py"
         )
         if not validator_path.exists():
             self.add_warning(
@@ -1232,12 +1239,19 @@ class ValidationPipeline:
             )
 
             if result.returncode == 0:
-                self.add_success("GitHub Actions Permissions", "All workflows have appropriate permissions")
+                self.add_success(
+                    "GitHub Actions Permissions",
+                    "All workflows have appropriate permissions",
+                )
             else:
                 # Parse the output to extract specific issues
-                output_lines = result.stdout.split('\n')
-                issues = [line for line in output_lines if line.startswith('❌') or line.startswith('⚠️')]
-                
+                output_lines = result.stdout.split("\n")
+                issues = [
+                    line
+                    for line in output_lines
+                    if line.startswith("❌") or line.startswith("⚠️")
+                ]
+
                 if issues:
                     self.add_error(
                         "GitHub Actions Permissions",
@@ -1246,7 +1260,7 @@ class ValidationPipeline:
                     )
                 else:
                     self.add_warning(
-                        "GitHub Actions Permissions", 
+                        "GitHub Actions Permissions",
                         "Permission check failed",
                         "Manually review workflow permissions",
                     )
