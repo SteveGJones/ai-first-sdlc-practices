@@ -2,13 +2,18 @@
 
 ## What It Does
 
-Coordinate AI specialists for 2-3x faster development by matching the right team to your project type.
+Coordinate AI specialists for 2-3x faster development by matching the right team to your project type. Now with intelligent kickoff support for fresh projects!
 
 ## Quick Start
 
 ```bash
 python simple_team_coach.py "your project description"
 ```
+
+### Three Modes:
+1. **Fresh Start** - "I want to build..." → Discovery questions
+2. **Enhancement** - "Add feature to..." → Integration planning  
+3. **Direct** - "Build web app..." → Team coordination
 
 ## How It Works
 

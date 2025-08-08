@@ -58,6 +58,24 @@ class SimpleTeamCoach:
             }
         }
         
+    def identify_scenario(self, project: str) -> str:
+        """First identify if this is a fresh start needing discovery"""
+        project_lower = project.lower()
+        
+        # Check if this is a vague fresh start
+        if any(phrase in project_lower for phrase in [
+            "i want to", "i need to", "help me", "i have an idea",
+            "thinking about", "looking to", "trying to", "would like"
+        ]):
+            return "fresh_start"
+        
+        # Check for feature additions
+        if any(word in project_lower for word in ["add", "extend", "enhance", "integrate"]):
+            return "enhancement"
+            
+        # Otherwise identify the specific challenge type
+        return self.identify_challenge(project)
+    
     def identify_challenge(self, project: str) -> str:
         """Identify what type of challenge this is"""
         project_lower = project.lower()
@@ -134,8 +152,133 @@ class SimpleTeamCoach:
             "risk_reduction": "Lower (specialists catch issues early)"
         }
     
+    def generate_enhancement_plan(self, project: str) -> str:
+        """Generate plan for adding features to existing system"""
+        report = []
+        report.append("=" * 60)
+        report.append("FEATURE ENHANCEMENT - Integration Mode")
+        report.append("=" * 60)
+        report.append("")
+        report.append(f"Your request: {project}")
+        report.append("")
+        
+        report.append("ENHANCEMENT KICKOFF PROCESS:")
+        report.append("-" * 30)
+        report.append("")
+        report.append("Step 1: CONTEXT GATHERING (First 3 minutes)")
+        report.append("Ask solution-architect:")
+        report.append("   'solution-architect, we have [existing system].")
+        report.append("    I want to add [feature]. What's the integration approach?'")
+        report.append("")
+        
+        report.append("Step 2: IMPACT ASSESSMENT")
+        report.append("Ask database-architect:")
+        report.append("   'Given our existing schema, how do we add [feature]?'")
+        report.append("")
+        
+        report.append("Step 3: INTEGRATION PLANNING")
+        report.append("Ask api-architect:")
+        report.append("   'What endpoints/interfaces need modification?'")
+        report.append("")
+        
+        report.append("Step 4: RISK EVALUATION")
+        report.append("Ask security-specialist:")
+        report.append("   'What security implications does this feature have?'")
+        report.append("")
+        
+        report.append("PARALLEL COORDINATION:")
+        report.append("-" * 30)
+        report.append("While architects plan, engage:")
+        report.append("• frontend-engineer: UI changes needed")
+        report.append("• ai-test-engineer: Test strategy for feature")
+        report.append("• devops-specialist: Deployment considerations")
+        report.append("")
+        
+        report.append("SUCCESS PATTERN:")
+        report.append("-" * 30)
+        report.append("1. Understand existing architecture (3 min)")
+        report.append("2. Design integration approach (5 min)")
+        report.append("3. Identify affected components (2 min)")
+        report.append("4. Plan incremental rollout (5 min)")
+        report.append("")
+        report.append("Total kickoff time: 15 minutes to clear plan")
+        
+        return "\n".join(report)
+    
+    def generate_fresh_start_plan(self, project: str) -> str:
+        """Generate discovery plan for fresh projects"""
+        report = []
+        report.append("=" * 60)
+        report.append("FRESH PROJECT KICKOFF - Discovery Mode")
+        report.append("=" * 60)
+        report.append("")
+        report.append(f"Your input: {project}")
+        report.append("")
+        report.append("THE FIRST 5 MINUTES ARE CRITICAL!")
+        report.append("-" * 30)
+        report.append("")
+        
+        report.append("KICKOFF DISCOVERY QUESTIONS:")
+        report.append("-" * 30)
+        report.append("Ask solution-architect these 5 questions to clarify your vision:")
+        report.append("")
+        report.append("1. PROBLEM DEFINITION")
+        report.append("   'solution-architect, I want to solve [problem]. What are the key challenges?'")
+        report.append("")
+        report.append("2. USER UNDERSTANDING") 
+        report.append("   'Who are the users and what's their main pain point?'")
+        report.append("")
+        report.append("3. SCALE ASSESSMENT")
+        report.append("   'What scale should we design for initially vs future?'")
+        report.append("")
+        report.append("4. CORE FEATURES")
+        report.append("   'What's the ONE feature that must work perfectly?'")
+        report.append("")
+        report.append("5. SUCCESS CRITERIA")
+        report.append("   'How do we measure if this succeeds?'")
+        report.append("")
+        
+        report.append("AFTER DISCOVERY (5-10 minutes):")
+        report.append("-" * 30)
+        report.append("Once solution-architect helps clarify your vision:")
+        report.append("")
+        report.append("1. Re-run this tool with your refined project description")
+        report.append("   Example: python simple_team_coach.py 'task management for remote teams'")
+        report.append("")
+        report.append("2. You'll get your specialized team and coordination plan")
+        report.append("")
+        report.append("3. Begin execution with clear direction")
+        report.append("")
+        
+        report.append("WHY THIS MATTERS:")
+        report.append("-" * 30)
+        report.append("• Vague starts lead to 60% project failure")
+        report.append("• Clear vision enables 3x faster development")
+        report.append("• Right team from the start saves 20+ hours")
+        report.append("• Discovery prevents expensive pivots later")
+        report.append("")
+        
+        report.append("QUICK TIP:")
+        report.append("-" * 30)
+        report.append("If you already know what you want, be specific:")
+        report.append("  ❌ 'I want to build something'")
+        report.append("  ✅ 'Build task management app for 100 users'")
+        report.append("")
+        report.append("Start with discovery. Build with confidence.")
+        
+        return "\n".join(report)
+    
     def generate_report(self, project: str) -> str:
         """Generate complete coordination plan"""
+        # Check scenario first
+        scenario = self.identify_scenario(project)
+        
+        if scenario == "fresh_start":
+            return self.generate_fresh_start_plan(project)
+        elif scenario == "enhancement":
+            return self.generate_enhancement_plan(project)
+        
+        # Otherwise proceed with team coordination
         team = self.get_team(project)
         steps = self.get_coordination_plan(team, project)
         improvement = self.estimate_improvement(len(team["core_team"]))
