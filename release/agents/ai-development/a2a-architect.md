@@ -59,13 +59,13 @@ graph TB
         Discovery[Discovery Service]
         Auth[Auth Service]
     end
-    
+
     subgraph "Communication Layer"
         Broker[Message Broker]
         Router[Smart Router]
         Queue[Task Queue]
     end
-    
+
     subgraph "Specialized Agents"
         Research[Research Agent]
         Analysis[Analysis Agent]
@@ -73,26 +73,26 @@ graph TB
         Review[Review Agent]
         Doc[Documentation Agent]
     end
-    
+
     subgraph "Orchestration"
         Orchestrator[Master Orchestrator]
         Monitor[Health Monitor]
         Logger[Activity Logger]
     end
-    
+
     Research --> Broker
     Analysis --> Broker
     Code --> Broker
     Review --> Broker
     Doc --> Broker
-    
+
     Broker --> Router
     Router --> Queue
-    
+
     Orchestrator --> Router
     Registry --> Discovery
     Discovery --> Router
-    
+
     Monitor --> Logger
 ```
 
@@ -119,39 +119,39 @@ class MessageType(Enum):
 @dataclass
 class A2AMessage:
     """Standard message format for agent communication"""
-    
+
     # Message metadata
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     type: MessageType = MessageType.REQUEST
     timestamp: float = field(default_factory=time.time)
-    
+
     # Routing information
     from_agent: str = None
     to_agent: Optional[str] = None  # None for broadcasts
     reply_to: Optional[str] = None  # For request-response
-    
+
     # Message content
     topic: str = None
     payload: Dict[Any, Any] = field(default_factory=dict)
-    
+
     # Quality of Service
     priority: int = 5  # 1-10, higher is more important
     ttl: Optional[int] = 300  # Time to live in seconds
     requires_ack: bool = False
-    
+
     # Security
     signature: Optional[str] = None
     encrypted: bool = False
 
 class A2AProtocol:
     """Core A2A communication protocol implementation"""
-    
+
     def __init__(self, agent_id: str):
         self.agent_id = agent_id
         self.message_handlers = {}
         self.pending_responses = {}
         self.capabilities = []
-        
+
     async def send_message(
         self,
         to_agent: str,
@@ -161,7 +161,7 @@ class A2AProtocol:
         timeout: int = 30
     ) -> Optional[A2AMessage]:
         """Send message to another agent"""
-        
+
         message = A2AMessage(
             from_agent=self.agent_id,
             to_agent=to_agent,
@@ -169,18 +169,18 @@ class A2AProtocol:
             payload=payload,
             requires_ack=wait_for_response
         )
-        
+
         # Sign message
         message.signature = self._sign_message(message)
-        
+
         # Send via transport
         await self._transport.send(message)
-        
+
         if wait_for_response:
             return await self._wait_for_response(message.id, timeout)
-            
+
         return None
-    
+
     async def broadcast(
         self,
         topic: str,
@@ -188,17 +188,17 @@ class A2AProtocol:
         target_capabilities: List[str] = None
     ):
         """Broadcast message to multiple agents"""
-        
+
         message = A2AMessage(
             type=MessageType.BROADCAST,
             from_agent=self.agent_id,
             topic=topic,
             payload=payload
         )
-        
+
         if target_capabilities:
             message.payload["required_capabilities"] = target_capabilities
-            
+
         await self._transport.broadcast(message)
 ```
 
@@ -206,11 +206,11 @@ class A2AProtocol:
 ```python
 class AgentRegistry:
     """Central registry for agent discovery"""
-    
+
     def __init__(self):
         self.agents = {}
         self.capabilities_index = {}
-        
+
     async def register_agent(
         self,
         agent_id: str,
@@ -218,7 +218,7 @@ class AgentRegistry:
         metadata: Dict
     ):
         """Register an agent with its capabilities"""
-        
+
         agent_info = {
             "id": agent_id,
             "capabilities": capabilities,
@@ -231,31 +231,31 @@ class AgentRegistry:
                 "tasks_completed": 0
             }
         }
-        
+
         self.agents[agent_id] = agent_info
-        
+
         # Update capability index
         for capability in capabilities:
             if capability not in self.capabilities_index:
                 self.capabilities_index[capability] = []
             self.capabilities_index[capability].append(agent_id)
-    
+
     async def find_agents_by_capability(
         self,
         capability: str,
         filter_criteria: Dict = None
     ) -> List[str]:
         """Find agents with specific capability"""
-        
+
         agents = self.capabilities_index.get(capability, [])
-        
+
         if filter_criteria:
             # Filter by additional criteria
             agents = [
                 agent_id for agent_id in agents
                 if self._matches_criteria(agent_id, filter_criteria)
             ]
-            
+
         # Sort by performance
         return sorted(
             agents,
@@ -271,21 +271,21 @@ Coordinate complex agent workflows:
 ```python
 class MultiAgentOrchestrator:
     """Orchestrate complex multi-agent workflows"""
-    
+
     def __init__(self):
         self.registry = AgentRegistry()
         self.workflow_engine = WorkflowEngine()
         self.monitor = HealthMonitor()
-        
+
     async def execute_workflow(
         self,
         workflow_definition: Dict
     ) -> WorkflowResult:
         """Execute a multi-agent workflow"""
-        
+
         workflow = self.workflow_engine.parse(workflow_definition)
         execution_context = ExecutionContext()
-        
+
         try:
             # Execute workflow steps
             for step in workflow.steps:
@@ -299,9 +299,9 @@ class MultiAgentOrchestrator:
                         step.tasks,
                         execution_context
                     )
-                    
+
                 execution_context.add_results(step.id, results)
-                
+
                 # Check conditions for branching
                 if step.conditions:
                     next_step = self._evaluate_conditions(
@@ -310,49 +310,49 @@ class MultiAgentOrchestrator:
                     )
                     if next_step:
                         workflow.jump_to(next_step)
-                        
+
             return WorkflowResult(
                 success=True,
                 results=execution_context.results,
                 metrics=execution_context.metrics
             )
-            
+
         except Exception as e:
             return WorkflowResult(
                 success=False,
                 error=str(e),
                 partial_results=execution_context.results
             )
-    
+
     async def _execute_parallel_tasks(
         self,
         tasks: List[Task],
         context: ExecutionContext
     ) -> List[TaskResult]:
         """Execute tasks in parallel across agents"""
-        
+
         # Find suitable agents for each task
         task_assignments = []
         for task in tasks:
             agents = await self.registry.find_agents_by_capability(
                 task.required_capability
             )
-            
+
             if not agents:
                 raise NoAgentAvailableError(
                     f"No agent found for {task.required_capability}"
                 )
-                
+
             # Load balance across agents
             selected_agent = self._select_best_agent(agents, task)
             task_assignments.append((task, selected_agent))
-        
+
         # Execute in parallel
         results = await asyncio.gather(*[
             self._delegate_task(task, agent, context)
             for task, agent in task_assignments
         ])
-        
+
         return results
 ```
 
@@ -363,7 +363,7 @@ Implement sophisticated collaboration:
 ```python
 class CollaborationPatterns:
     """Common patterns for agent collaboration"""
-    
+
     @staticmethod
     async def consensus_pattern(
         agents: List[str],
@@ -371,13 +371,13 @@ class CollaborationPatterns:
         aggregation_method: str = "majority"
     ) -> ConsensusResult:
         """Multiple agents reach consensus"""
-        
+
         # Query all agents
         responses = await asyncio.gather(*[
             query_agent(agent, question)
             for agent in agents
         ])
-        
+
         # Aggregate responses
         if aggregation_method == "majority":
             result = majority_vote(responses)
@@ -385,22 +385,22 @@ class CollaborationPatterns:
             result = weighted_average(responses, agent_weights)
         elif aggregation_method == "unanimous":
             result = check_unanimous(responses)
-            
+
         return ConsensusResult(
             consensus=result,
             individual_responses=responses,
             confidence=calculate_confidence(responses)
         )
-    
+
     @staticmethod
     async def chain_of_thought_pattern(
         agents: List[str],
         problem: str
     ) -> ChainResult:
         """Agents build on each other's work"""
-        
+
         context = {"problem": problem, "solutions": []}
-        
+
         for agent in agents:
             # Each agent sees previous work
             response = await query_agent(
@@ -410,17 +410,17 @@ class CollaborationPatterns:
                     "context": context
                 }
             )
-            
+
             context["solutions"].append({
                 "agent": agent,
                 "contribution": response
             })
-            
+
         return ChainResult(
             final_solution=context["solutions"][-1]["contribution"],
             thought_chain=context["solutions"]
         )
-    
+
     @staticmethod
     async def specialist_review_pattern(
         creator_agent: str,
@@ -428,9 +428,9 @@ class CollaborationPatterns:
         artifact: Any
     ) -> ReviewResult:
         """One agent creates, others review"""
-        
+
         reviews = []
-        
+
         # Each specialist reviews from their perspective
         review_tasks = []
         for reviewer in reviewer_agents:
@@ -441,12 +441,12 @@ class CollaborationPatterns:
                     "focus": get_agent_specialty(reviewer)
                 })
             )
-            
+
         reviews = await asyncio.gather(*review_tasks)
-        
+
         # Aggregate feedback
         feedback = aggregate_reviews(reviews)
-        
+
         # Creator responds to feedback
         revision = await query_agent(
             creator_agent,
@@ -456,7 +456,7 @@ class CollaborationPatterns:
                 "feedback": feedback
             }
         )
-        
+
         return ReviewResult(
             original=artifact,
             reviews=reviews,
@@ -471,34 +471,34 @@ Secure agent communications:
 ```python
 class A2ASecurity:
     """Security layer for agent communication"""
-    
+
     def __init__(self):
         self.trust_manager = TrustManager()
         self.key_store = KeyStore()
-        
+
     async def establish_secure_channel(
         self,
         agent1: str,
         agent2: str
     ) -> SecureChannel:
         """Establish encrypted channel between agents"""
-        
+
         # Exchange keys
         public_key1 = await self.key_store.get_public_key(agent1)
         public_key2 = await self.key_store.get_public_key(agent2)
-        
+
         # Create shared secret
         shared_secret = self._derive_shared_secret(
             public_key1,
             public_key2
         )
-        
+
         return SecureChannel(
             agents=[agent1, agent2],
             encryption_key=shared_secret,
             established_at=time.time()
         )
-    
+
     def verify_agent_identity(
         self,
         agent_id: str,
@@ -506,16 +506,16 @@ class A2ASecurity:
         message: str
     ) -> bool:
         """Verify agent identity via signature"""
-        
+
         public_key = self.key_store.get_public_key(agent_id)
         return self._verify_signature(message, signature, public_key)
-    
+
     async def check_agent_reputation(
         self,
         agent_id: str
     ) -> ReputationScore:
         """Check agent's reputation score"""
-        
+
         return await self.trust_manager.get_reputation(agent_id)
 ```
 
@@ -526,19 +526,19 @@ Monitor multi-agent systems:
 ```python
 class A2AMonitoring:
     """Monitoring system for agent communication"""
-    
+
     def __init__(self):
         self.metrics_collector = MetricsCollector()
         self.trace_store = TraceStore()
-        
+
     async def trace_conversation(
         self,
         conversation_id: str
     ) -> ConversationTrace:
         """Trace a complete agent conversation"""
-        
+
         messages = await self.trace_store.get_conversation(conversation_id)
-        
+
         return ConversationTrace(
             id=conversation_id,
             participants=self._extract_participants(messages),
@@ -550,12 +550,12 @@ class A2AMonitoring:
                 "avg_response_time": self._calculate_avg_response(messages)
             }
         )
-    
+
     def visualize_agent_network(self) -> NetworkDiagram:
         """Visualize current agent communication network"""
-        
+
         active_connections = self.metrics_collector.get_active_connections()
-        
+
         return NetworkDiagram(
             nodes=[
                 {

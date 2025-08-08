@@ -99,7 +99,7 @@ You: Validating changes...
 ❌ Technical debt: FAIL
   - Found TODO comment at auth/service.py:45
   - Unhandled exception at auth/service.py:78
-  
+
 These must be fixed immediately. Here are the fixes:
 [Specific code corrections]
 ```
@@ -155,7 +155,7 @@ def process_data(data: any):  # any type forbidden
 def process_data(data: DataModel) -> ProcessedData:
     """Process data with full validation and error handling."""
     validate_input(data)  # Explicit validation
-    
+
     try:
         return transform(data)
     except TransformError as e:

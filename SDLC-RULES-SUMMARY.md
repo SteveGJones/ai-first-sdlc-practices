@@ -2,7 +2,7 @@
 
 ## 🚨 CRITICAL: ZERO TOLERANCE ENFORCEMENT IN EFFECT
 
-The `sdlc-enforcer` agent will **BLOCK ALL WORK** that violates these rules.  
+The `sdlc-enforcer` agent will **BLOCK ALL WORK** that violates these rules.
 **NO EXCEPTIONS. NO EXCUSES. NO MERCY.**
 
 ---
@@ -131,7 +131,7 @@ claude "Check my SDLC compliance" # Will block work if violations found
 ## 🚫 There Are NO Exceptions
 
 - **Solo developers: SAME RULES APPLY**
-- **Prototypes: SAME RULES APPLY**  
+- **Prototypes: SAME RULES APPLY**
 - **Hotfixes: SAME RULES APPLY**
 - **Experiments: SAME RULES APPLY**
 - **"Just this once"**: BLOCKED

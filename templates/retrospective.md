@@ -1,9 +1,9 @@
 # Feature Retrospective: [Feature Name]
 
-**Date:** [YYYY-MM-DD]  
-**Feature Branch:** `feature/[branch-name]`  
-**Duration:** [Actual time from start to completion]  
-**Team Members:** [List all contributors - humans and AI agents]  
+**Date:** [YYYY-MM-DD]
+**Feature Branch:** `feature/[branch-name]`
+**Duration:** [Actual time from start to completion]
+**Team Members:** [List all contributors - humans and AI agents]
 **Facilitator:** [Name of person/AI conducting retrospective]
 
 ---
@@ -71,20 +71,20 @@
 ## What Could Be Improved 🟡
 
 ### Technical Challenges
-- **[Challenge 1]**: 
+- **[Challenge 1]**:
   - What happened: [Description]
   - Impact: [How it affected the project]
   - Root cause: [Why it happened]
   - Improvement: [How to prevent in future]
 
-- **[Challenge 2]**: 
+- **[Challenge 2]**:
   - What happened: [Description]
   - Impact: [How it affected the project]
   - Root cause: [Why it happened]
   - Improvement: [How to prevent in future]
 
 ### Process Issues
-- **[Issue 1]**: 
+- **[Issue 1]**:
   - What happened: [Description]
   - Impact: [How it affected the project]
   - Root cause: [Why it happened]
@@ -144,7 +144,7 @@
 - [ ] **[Action 1]**: [Specific action to take]
   - Owner: [Name]
   - Due: [Date]
-  
+
 - [ ] **[Action 2]**: [Specific action to take]
   - Owner: [Name]
   - Due: [Date]
@@ -278,8 +278,8 @@ Based on this retrospective, the following documentation should be updated:
 
 ---
 
-**Retrospective Completed By:** [Name]  
-**Date:** [YYYY-MM-DD]  
+**Retrospective Completed By:** [Name]
+**Date:** [YYYY-MM-DD]
 **Approved By:** [Team Lead/Manager Name]
 
 <!-- SELF-REVIEW CHECKPOINT

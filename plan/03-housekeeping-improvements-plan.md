@@ -1,10 +1,10 @@
 # Implementation Plan: Framework Housekeeping Improvements
 
-**Feature:** [Feature Proposal](../docs/feature-proposals/03-housekeeping-improvements.md)  
-**Branch:** `feature/housekeeping-improvements`  
-**Estimated Duration:** 3-4 days  
-**Start Date:** 2025-07-13  
-**Target Completion:** 2025-07-17  
+**Feature:** [Feature Proposal](../docs/feature-proposals/03-housekeeping-improvements.md)
+**Branch:** `feature/housekeeping-improvements`
+**Estimated Duration:** 3-4 days
+**Start Date:** 2025-07-13
+**Target Completion:** 2025-07-17
 **Assignee:** Claude (AI Agent)
 
 ---
@@ -54,7 +54,7 @@ ai-first-sdlc-practices/
 ## Implementation Phases
 
 ### Phase 1: Template Creation and Structure
-**Duration:** 0.5 days  
+**Duration:** 0.5 days
 **Status:** ⏸️ Not Started
 
 #### Objectives
@@ -77,18 +77,18 @@ ai-first-sdlc-practices/
     .claude/
     *.claude.bak
     .claude-sessions/
-    
+
     # Cursor
     .cursor/
     .cursor-tutor/
-    
+
     # Aider
     .aider*
     .aider.tags.cache.v3/
-    
+
     # GitHub Copilot
     .copilot/
-    
+
     # General AI
     .ai-context/
     .ai-sessions/
@@ -121,7 +121,7 @@ ai-first-sdlc-practices/
 ---
 
 ### Phase 2: Setup Script Enhancement
-**Duration:** 1.5 days  
+**Duration:** 1.5 days
 **Status:** ⏸️ Not Started
 
 #### Objectives
@@ -205,7 +205,7 @@ def create_project_gitignore(language='general'):
 ---
 
 ### Phase 3: Validation Pipeline Enhancement
-**Duration:** 1 day  
+**Duration:** 1 day
 **Status:** ⏸️ Not Started
 
 #### Objectives
@@ -247,9 +247,9 @@ def create_project_gitignore(language='general'):
 def check_empty_repository():
     """Check if this is an empty repository needing initialization."""
     code_patterns = ['*.py', '*.js', '*.go', '*.java', '*.rs']
-    code_files = sum(len(glob.glob(f"**/{pattern}", recursive=True)) 
+    code_files = sum(len(glob.glob(f"**/{pattern}", recursive=True))
                     for pattern in code_patterns)
-    
+
     if code_files == 0 and os.path.exists('CLAUDE.md'):
         return True, "Framework setup detected in empty repository"
     return False, None
@@ -276,7 +276,7 @@ def check_plan_requirement(proposal_path):
 ---
 
 ### Phase 4: Testing, Documentation & Integration
-**Duration:** 1 day  
+**Duration:** 1 day
 **Status:** ⏸️ Not Started
 
 #### Objectives

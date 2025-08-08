@@ -216,7 +216,7 @@ logger.info(f"Login: {username} / {password}")  # NEVER log passwords
 
 #### Integration with Zero Technical Debt
 - Missing logs = Technical debt = Build failure
-- Poor quality logs = Technical debt = Build failure  
+- Poor quality logs = Technical debt = Build failure
 - Sensitive data in logs = Security debt = Build failure
 
 #### Exemption Configuration

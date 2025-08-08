@@ -1,7 +1,7 @@
 # Feature Proposal: Automated PR Creation
 
-**Author**: Claude (AI Assistant)  
-**Date**: 2025-07-13  
+**Author**: Claude (AI Assistant)
+**Date**: 2025-07-13
 **Target Branch**: `feature/automated-pr-creation`
 
 ## Problem Statement
@@ -36,13 +36,13 @@ def create_pull_request():
     - Verify gh is installed and authenticated
     - Confirm retrospective exists
     - Validate all checks pass
-    
+
     # 2. Generate PR content
     - Extract summary from feature proposal
     - Link to retrospective
     - Include validation results
     - Add implementation highlights
-    
+
     # 3. Create PR
     - Use gh pr create with template
     - Set appropriate labels

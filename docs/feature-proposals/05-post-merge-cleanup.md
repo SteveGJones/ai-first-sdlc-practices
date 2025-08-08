@@ -1,8 +1,8 @@
 # Feature Proposal: Post-Merge Cleanup and Mixed Content Guidelines
 
-**Date:** 2025-07-17  
-**Author:** Claude (AI Agent)  
-**Status:** In Progress  
+**Date:** 2025-07-17
+**Author:** Claude (AI Agent)
+**Status:** In Progress
 **Target Branch:** `fix/post-merge-cleanup`
 
 ## Summary

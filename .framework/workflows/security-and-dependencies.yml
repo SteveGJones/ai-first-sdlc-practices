@@ -12,31 +12,31 @@ on:
 jobs:
   dependency-check:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install safety pip-audit
-    
+
     - name: Check for security vulnerabilities with safety
       run: |
         pip install -r requirements.txt
         safety check --json --continue-on-error
       continue-on-error: true
-    
+
     - name: Check for vulnerabilities with pip-audit
       run: |
         pip-audit --requirement requirements.txt --desc
       continue-on-error: true
-    
+
     - name: Check for outdated dependencies
       run: |
         pip list --outdated --format=json > outdated-deps.json
@@ -47,16 +47,16 @@ jobs:
 
   code-security:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Run framework's security check
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         python tools/validation/validate-pipeline.py --check security --ci
-    
+
     - name: Check for hardcoded secrets
       uses: trufflesecurity/trufflehog@main
       with:
@@ -73,25 +73,25 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    
+
     strategy:
       fail-fast: false
       matrix:
         language: [ 'python' ]
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-    
+
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
         languages: ${{ matrix.language }}
         queries: security-and-quality
-    
+
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
-    
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
       with:
@@ -100,15 +100,15 @@ jobs:
   # License compliance check
   license-check:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-    
+
     - name: Check licenses
       run: |
         pip install pip-licenses

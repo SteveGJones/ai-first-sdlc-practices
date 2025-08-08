@@ -1,10 +1,10 @@
 # Feature Proposal: Framework Setup Automation
 
-**Proposal Number:** 02  
-**Status:** Draft  
-**Author:** Claude (AI Assistant)  
-**Created:** 2025-07-12  
-**Target Branch:** `feature/cicd-platform-rules` (enhancement to existing feature)  
+**Proposal Number:** 02
+**Status:** Draft
+**Author:** Claude (AI Assistant)
+**Created:** 2025-07-12
+**Target Branch:** `feature/cicd-platform-rules` (enhancement to existing feature)
 **Implementation Type:** Infrastructure
 
 ---
@@ -113,7 +113,7 @@ Transform the setup process to be AI-autonomous by creating a smart installer th
 
 ### Dependencies
 
-- **Technical Dependencies**: 
+- **Technical Dependencies**:
   - requests library for file downloads
   - GitPython for repository operations
 - **Team Dependencies**: None

@@ -104,20 +104,20 @@ import jinja2
 
 class PromptTemplate(BaseModel):
     """Production-grade prompt template system"""
-    
+
     name: str
     version: str
     template: str
     variables: Dict[str, str]
     examples: List[Dict]
     metadata: Dict
-    
+
 class PromptManager:
     def __init__(self):
         self.templates = {}
         self.jinja_env = jinja2.Environment()
         self.performance_tracker = PerformanceTracker()
-        
+
     def register_template(
         self,
         name: str,
@@ -125,13 +125,13 @@ class PromptManager:
         version: str = "1.0.0"
     ):
         """Register versioned prompt template"""
-        
+
         # Validate template
         self._validate_template(template)
-        
+
         # Parse variables
         variables = self._extract_variables(template)
-        
+
         # Create template object
         prompt_template = PromptTemplate(
             name=name,
@@ -144,11 +144,11 @@ class PromptManager:
                 "token_count": self._count_tokens(template)
             }
         )
-        
+
         # Store with version
         key = f"{name}:{version}"
         self.templates[key] = prompt_template
-        
+
     def get_optimized_prompt(
         self,
         name: str,
@@ -156,17 +156,17 @@ class PromptManager:
         model: str = "gpt-4"
     ) -> str:
         """Get optimized prompt for specific model"""
-        
+
         # Get best performing version
         version = self.performance_tracker.best_version(name, model)
         template = self.templates[f"{name}:{version}"]
-        
+
         # Apply model-specific optimizations
         optimized = self._optimize_for_model(
             template.template,
             model
         )
-        
+
         # Render with variables
         return self.jinja_env.from_string(optimized).render(**variables)
 ```
@@ -178,11 +178,11 @@ Implement sophisticated patterns:
 ```python
 class AdvancedPrompting:
     """State-of-the-art prompting techniques"""
-    
+
     @staticmethod
     def chain_of_thought(task: str, complexity: str = "medium") -> str:
         """Chain-of-thought prompting"""
-        
+
         if complexity == "high":
             return f"""
 {task}
@@ -217,7 +217,7 @@ Let me think through this step-by-step:
 
 Therefore: [Answer]
 """
-    
+
     @staticmethod
     def few_shot_learning(
         task: str,
@@ -225,32 +225,32 @@ Therefore: [Answer]
         adaptive: bool = True
     ) -> str:
         """Optimized few-shot learning"""
-        
+
         if adaptive:
             # Select best examples based on task
             examples = select_optimal_examples(task, examples)
-        
+
         prompt = f"{task}\n\nExamples:\n"
-        
+
         for i, example in enumerate(examples, 1):
             prompt += f"\nExample {i}:\n"
             prompt += f"Input: {example['input']}\n"
             prompt += f"Output: {example['output']}\n"
-            
+
             # Add reasoning for complex examples
             if example.get('reasoning'):
                 prompt += f"Reasoning: {example['reasoning']}\n"
-        
+
         prompt += "\nNow, for your input:\n"
         return prompt
-    
+
     @staticmethod
     def self_consistency(
         task: str,
         num_paths: int = 3
     ) -> str:
         """Self-consistency prompting for reliability"""
-        
+
         return f"""
 {task}
 
@@ -280,11 +280,11 @@ Measure and improve prompt performance:
 ```python
 class PromptEvaluator:
     """Comprehensive prompt evaluation system"""
-    
+
     def __init__(self):
         self.metrics = {}
         self.test_suite = TestSuite()
-        
+
     async def evaluate_prompt(
         self,
         prompt_template: str,
@@ -292,7 +292,7 @@ class PromptEvaluator:
         model: str = "gpt-4"
     ) -> Dict:
         """Evaluate prompt across multiple dimensions"""
-        
+
         results = {
             "accuracy": 0,
             "consistency": 0,
@@ -300,7 +300,7 @@ class PromptEvaluator:
             "efficiency": 0,
             "cost": 0
         }
-        
+
         # 1. Accuracy Testing
         accuracy_results = await self._test_accuracy(
             prompt_template,
@@ -308,7 +308,7 @@ class PromptEvaluator:
             model
         )
         results["accuracy"] = accuracy_results["score"]
-        
+
         # 2. Consistency Testing
         consistency_results = await self._test_consistency(
             prompt_template,
@@ -317,7 +317,7 @@ class PromptEvaluator:
             runs=5
         )
         results["consistency"] = consistency_results["score"]
-        
+
         # 3. Robustness Testing
         robustness_results = await self._test_robustness(
             prompt_template,
@@ -325,7 +325,7 @@ class PromptEvaluator:
             model
         )
         results["robustness"] = robustness_results["score"]
-        
+
         # 4. Efficiency Analysis
         efficiency_results = self._analyze_efficiency(
             prompt_template,
@@ -333,10 +333,10 @@ class PromptEvaluator:
         )
         results["efficiency"] = efficiency_results["score"]
         results["cost"] = efficiency_results["cost_per_1k"]
-        
+
         # 5. Generate Report
         return self._generate_evaluation_report(results)
-    
+
     async def _test_robustness(
         self,
         prompt_template: str,
@@ -344,14 +344,14 @@ class PromptEvaluator:
         model: str
     ) -> Dict:
         """Test prompt robustness against variations"""
-        
+
         perturbations = [
             self._add_typos,
             self._change_formatting,
             self._add_noise,
             self._reorder_instructions
         ]
-        
+
         results = []
         for perturbation in perturbations:
             perturbed_prompt = perturbation(prompt_template)
@@ -361,7 +361,7 @@ class PromptEvaluator:
                 model
             )
             results.append(score)
-            
+
         return {
             "score": np.mean(results),
             "std": np.std(results),
@@ -376,7 +376,7 @@ Handle text, images, and more:
 ```python
 class MultiModalPromptEngineer:
     """Prompting for multi-modal models"""
-    
+
     def create_vision_prompt(
         self,
         task: str,
@@ -384,7 +384,7 @@ class MultiModalPromptEngineer:
         output_format: str
     ) -> Dict:
         """Optimized vision-language prompts"""
-        
+
         return {
             "messages": [
                 {
@@ -444,14 +444,14 @@ def manage_context_window(
     max_tokens: int = 4000
 ) -> str:
     """Smart context window management"""
-    
+
     prompt_tokens = count_tokens(prompt)
     available_tokens = max_tokens - prompt_tokens - 500  # Reserve for output
-    
+
     if count_tokens(context) > available_tokens:
         # Smart truncation
         context = summarize_context(context, available_tokens)
-        
+
     return f"{prompt}\n\nContext:\n{context}"
 ```
 
@@ -463,16 +463,16 @@ def select_examples(
     n_examples: int = 3
 ) -> List[Dict]:
     """Select most relevant examples"""
-    
+
     # Embed task and examples
     task_embedding = embed(task)
-    
+
     # Find most similar examples
     similarities = [
         cosine_similarity(task_embedding, embed(ex["input"]))
         for ex in example_bank
     ]
-    
+
     # Return top-n
     indices = np.argsort(similarities)[-n_examples:]
     return [example_bank[i] for i in indices]

@@ -91,10 +91,10 @@ rules:
   auto_include:
     - when: "project_has_api"
       include: ["api-designer", "integration-orchestrator"]
-    
+
     - when: "project_is_production"
       include: ["sre-specialist", "performance-engineer"]
-    
+
     - when: "project_has_compliance_requirements"
       include: ["compliance-auditor", "security-architect"]
 
@@ -108,11 +108,11 @@ usage:
   activation: |
     To use a composite agent, invoke it by its composition name:
     Example: "I need help from the full-stack-developer agent"
-    
+
   behavior: |
     Composite agents combine the expertise of their included agents,
     providing comprehensive guidance across multiple domains.
-    
+
   selection: |
     Choose composite agents when:
     - The task spans multiple domains

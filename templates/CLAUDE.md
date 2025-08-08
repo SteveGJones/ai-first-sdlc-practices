@@ -105,7 +105,7 @@ git push origin main
 
 ### Troubleshooting Protection Issues
 1. **"Protection not found"**: Run setup script to enable protection
-2. **"Permission denied"**: Need admin access to repository 
+2. **"Permission denied"**: Need admin access to repository
 3. **"Required checks failing"**: Fix validation/test issues before merge
 4. **"Authentication failed"**: Run `gh auth login` to authenticate
 
@@ -144,7 +144,7 @@ ls tools/setup-branch-protection-gh.py tools/validate-pipeline.py 2>/dev/null
 # Python projects
 flake8 . && mypy . && pytest && safety check
 
-# Node.js/TypeScript projects  
+# Node.js/TypeScript projects
 npm run lint && npm run typecheck && npm test && npm audit
 
 # Go projects
@@ -165,7 +165,7 @@ A task is ONLY complete when:
 - ✅ All code is written with proper types (no `any` types)
 - ✅ All linting passes with zero warnings
 - ✅ All tests pass with appropriate coverage
-- ✅ Security audit shows zero vulnerabilities  
+- ✅ Security audit shows zero vulnerabilities
 - ✅ No deprecation warnings exist
 - ✅ Documentation is updated
 - ✅ Code is production-ready
@@ -317,7 +317,7 @@ USE these advantages. Your architecture documents should be so thorough that imp
    - Create in `docs/feature-proposals/`
    - Include target branch name
    - Define success criteria
-   
+
 2. **Architecture Documents** (MANDATORY - ALL 6)
    - Requirements Traceability Matrix
    - What-If Analysis
@@ -325,7 +325,7 @@ USE these advantages. Your architecture documents should be so thorough that imp
    - System Invariants
    - Integration Design
    - Failure Mode Analysis
-   
+
 3. **Implementation Plan** (For complex features)
    - Create in `plan/`
    - Break down into phases
@@ -348,7 +348,7 @@ USE these advantages. Your architecture documents should be so thorough that imp
 For ALL artifact creation (proposals, plans, designs, code, tests):
 
 1. **Create Complete Artifact**: Write the entire document/code/test
-2. **Self-Review Against Requirements**: 
+2. **Self-Review Against Requirements**:
    - Does this fully address the original request?
    - Are all requirements covered?
    - Is it consistent and clear?
@@ -500,10 +500,10 @@ except Exception:  # Too broad
 def test_function_name_describes_behavior():
     # Arrange
     input_data = create_test_data()
-    
+
     # Act
     result = function_under_test(input_data)
-    
+
     # Assert
     assert result == expected_value
 ```
@@ -521,14 +521,14 @@ def test_function_name_describes_behavior():
 def calculate_discount(price: float, discount_percent: float) -> float:
     """
     Calculate the discounted price.
-    
+
     Args:
         price: Original price in dollars
         discount_percent: Discount percentage (0-100)
-        
+
     Returns:
         Discounted price
-        
+
     Raises:
         ValueError: If discount_percent is not between 0 and 100
     """

@@ -45,42 +45,42 @@ After setup, Claude will run verification and show you:
 
 ## Example Complete Interaction
 
-**You**: 
+**You**:
 ```
 Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices in this project.
 ```
 
-**Claude**: 
+**Claude**:
 ```
 I'll help you set up the AI-First SDLC framework. First, I need to know:
 
 What is the purpose of this project? (e.g., "building a REST API", "creating a web app", etc.)
 ```
 
-**You**: 
+**You**:
 ```
 Building a task management API with FastAPI
 ```
 
-**Claude**: 
+**Claude**:
 ```
 Perfect! I'll set up the AI-First SDLC framework for your task management API project...
 [Downloads and runs setup]
 ```
 
-**Claude** (if needed): 
+**Claude** (if needed):
 ```
 The GitHub CLI needs authentication to set up branch protection.
 Please run: gh auth login
 Let me know when you're done.
 ```
 
-**You**: 
+**You**:
 ```
 Done, I've authenticated.
 ```
 
-**Claude**: 
+**Claude**:
 ```
 Great! Continuing with setup...
 [Completes setup and shows verification results]

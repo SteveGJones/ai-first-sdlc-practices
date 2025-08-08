@@ -1,8 +1,8 @@
 # Feature Proposal: AI-First Version Management and Update System
 
-**Date:** 2025-07-20  
-**Author:** Claude (AI Agent)  
-**Status:** Revised  
+**Date:** 2025-07-20
+**Author:** Claude (AI Agent)
+**Status:** Revised
 **Target Branch:** `feature/version-management-updates`
 
 ## Summary
@@ -34,7 +34,7 @@ Current gaps:
 ├── docs/
 │   ├── releases/             # AI-readable migration instructions
 │   │   └── vX.Y.Z-*.md      # Step-by-step for Claude
-│   └── updates/             
+│   └── updates/
 │       ├── whats-new.md    # Recent changes summary
 │       └── UPDATE-PROMPT.md # Standard prompt for users
 └── tools/

@@ -97,13 +97,13 @@ reviews:
     required_for:
       - complexity: [high, medium]
       - tags: [architecture, api, integration]
-    
+
   security:
     agent: critical-goal-reviewer
     required_for:
       - tags: [auth, data, security, logging]
       - sensitive_data: true
-    
+
   completeness:
     agent: project-plan-tracker
     required_for:

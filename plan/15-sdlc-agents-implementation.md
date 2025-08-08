@@ -114,27 +114,27 @@ from pathlib import Path
 
 def test_deployment_method(method_name, deploy_func):
     """Test a specific deployment method"""
-    
+
     print(f"\n=== Testing {method_name} ===")
-    
+
     # 1. Baseline test
     print("1. Baseline test: @test-deploy-agent help")
     input("Press Enter after testing...")
-    
+
     # 2. Deploy agent
     print("2. Deploying agent...")
     deploy_func()
-    
+
     # 3. Immediate test
     print("3. Immediate test: @test-deploy-agent help")
     input("Press Enter after testing...")
-    
+
     # 4. Wait and test
     print("4. Waiting 30 seconds...")
     time.sleep(30)
     print("5. Delayed test: @test-deploy-agent help")
     input("Press Enter after testing...")
-    
+
     # 6. Cleanup
     cleanup()
 
@@ -150,7 +150,7 @@ def method_2_generate():
     """Method 2: Generate agent file"""
     target = Path.home() / "claude/agents/test-deploy-agent.md"
     target.parent.mkdir(parents=True, exist_ok=True)
-    
+
     content = '''---
 name: test-deploy-agent
 version: 1.0.0
@@ -163,7 +163,7 @@ You are a test agent for deployment testing. If you can see this message, dynami
 ## Test Response
 When asked for help, respond: "Dynamic deployment successful! I was deployed at [timestamp]"
 '''
-    
+
     with open(target, 'w') as f:
         f.write(content)
     print(f"Generated at: {target}")
@@ -173,7 +173,7 @@ def method_3_symlink():
     source = Path("test-agents/test-deploy-agent.md").absolute()
     target = Path.home() / "claude/agents/test-deploy-agent.md"
     target.parent.mkdir(parents=True, exist_ok=True)
-    
+
     if target.exists():
         target.unlink()
     target.symlink_to(source)
@@ -235,7 +235,7 @@ test_deployment_method("Symlink", method_3_symlink)
 - [ ] First 2 SDLC agents (if deployment works)
 - [ ] Deployment script/tool
 
-### Week 2  
+### Week 2
 - [ ] All 5 SDLC agents completed
 - [ ] Integration test results
 - [ ] Updated documentation

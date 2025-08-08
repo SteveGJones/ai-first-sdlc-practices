@@ -1,9 +1,9 @@
 # CLAUDE.md
 
 > # 🚨 CRITICAL: DO NOT USE THIS FILE 🚨
-> 
+>
 > ## THIS FILE IS DEPRECATED AND WILL CAUSE RULE VIOLATIONS
-> 
+>
 > **MANDATORY**: Use these files instead:
 > 1. **CLAUDE-CORE.md** - Compact core instructions (88% smaller)
 > 2. **SDLC-RULES-SUMMARY.md** - Critical enforcement rules
@@ -28,7 +28,7 @@ To have Claude set up this framework in your EXISTING project, use:
 ```
 I want to add AI-First SDLC practices to this project. Please:
 1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md
-2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md 
+2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md
 3. Download and run: curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
 4. Run: python setup-smart.py "[describe your project]" --non-interactive
 Do NOT clone the repository - we're adding the framework to THIS project.
@@ -44,7 +44,7 @@ Claude will ask you for your project's purpose and then proceed with setup using
 
 ## Project Overview
 
-This is the AI-First SDLC Practices framework - a comprehensive methodology for integrating AI agents as primary developers while maintaining quality and process compliance. The framework provides tools, templates, and automation to enforce best practices in AI-assisted software development.
+This is the AI-First SDLC Practices framework - a comprehensive methodology for integrating AI agents as primary developers while maintaining quality and process compliance. The framework provides tools, templates, and automation to enforce best practices in AI development and AI-assisted software development.
 
 ## Repository Structure
 
@@ -93,7 +93,7 @@ The setup script will create these directories AT THE PROJECT ROOT:
 user-project/
 ├── docs/
 │   └── feature-proposals/     # Feature proposals go here
-├── plan/                      # Implementation plans go here  
+├── plan/                      # Implementation plans go here
 ├── retrospectives/            # Retrospectives go here
 ├── tools/                     # Framework tools
 │   ├── automation/
@@ -217,6 +217,36 @@ Instead, proactively engage agents:
 
 This proactive approach ensures consistent quality and compliance across all development activities.
 
+## 🛡️ Local Validation for AI Agents (CRITICAL)
+
+As an AI agent, you MUST run local validation to prevent the push-fail-fix cycle:
+
+### After Writing Code
+```bash
+# ALWAYS run syntax check after code changes
+python tools/validation/local-validation.py --syntax
+```
+
+### Before Committing
+```bash
+# Run quick validation to catch common issues
+python tools/validation/local-validation.py --quick
+```
+
+### Before Creating PR
+```bash
+# Run full validation to mirror CI/CD
+python tools/validation/local-validation.py --pre-push
+```
+
+### Why This Matters
+- **Prevents syntax errors** from reaching the repository
+- **Avoids CI/CD failures** that waste time and resources
+- **Maintains professional standards** expected from AI developers
+- **Reduces user frustration** from repeated fix commits
+
+**Remember**: Finding errors locally in 5 seconds is better than finding them in CI/CD after 5 minutes.
+
 ## Development Commands
 
 ```bash
@@ -225,6 +255,21 @@ pip install -e .
 
 # Install dependencies
 pip install -r requirements.txt
+
+# CRITICAL: Local validation to prevent push-fail-fix cycles
+# Run BEFORE committing or pushing to avoid CI/CD failures
+
+# Quick syntax validation (5 seconds) - run after writing code
+python tools/validation/local-validation.py --syntax
+
+# Fast validation (30 seconds) - run before committing
+python tools/validation/local-validation.py --quick
+
+# Full validation (2-5 minutes) - run before pushing
+python tools/validation/local-validation.py --pre-push
+
+# Install Git hooks for automatic validation
+python tools/automation/install-git-hooks.py
 
 # Run validation pipeline on a project
 python tools/validation/validate-pipeline.py
@@ -245,6 +290,9 @@ python tools/automation/setup-branch-protection-gh.py
 
 # Alternative (if gh not available)
 python tools/automation/setup-branch-protection.py
+
+# Check SDLC level (NOT 'show' - that command doesn't exist)
+python tools/automation/sdlc-level.py check
 ```
 
 ## Architecture
@@ -274,7 +322,7 @@ When modifying framework tools:
 
 ## Key Framework Principles
 
-1. **No Direct Main Branch Commits**: All changes must go through feature branches and PRs
+1. **No Direct Main Branch Commits**: All changes must go through feature branches and PRs. Never push directly to main branch as part of our git workflow.
 2. **Feature Proposals Required**: Document before implementing
 3. **Progress Tracking**: Maintain visibility of work
 4. **Context Preservation**: Enable seamless handoffs
@@ -363,10 +411,10 @@ If the project has no VERSION file (pre-1.3.0 installation):
    ```bash
    # Check for v1.2.0 features (self-review)
    grep -q "Self-Review Process" CLAUDE.md && echo "At least v1.2.0"
-   
+
    # Check for v1.1.0 features (CI/CD examples)
    ls examples/ci-cd/ 2>/dev/null && echo "At least v1.1.0"
-   
+
    # If neither exists, assume v1.0.0
    ```
 2. Start updates from the determined version
@@ -474,7 +522,7 @@ When creating design documentation:
 
 ### ✅ DO Include:
 - Functional specifications and user stories
-- Business rules and constraints  
+- Business rules and constraints
 - Architecture diagrams (Mermaid, PlantUML, ASCII)
 - Data flow and state diagrams
 - Integration points and APIs
@@ -553,10 +601,17 @@ python tools/validation/validate-architecture.py --strict
 
 # 5. NOW implement changes (with Zero Technical Debt mindset)
 
+# 5a. CRITICAL: Run local validation after EVERY code change
+python tools/validation/local-validation.py --syntax  # After writing code
+python tools/validation/local-validation.py --quick   # Before committing
+
 # 6. UPDATE retrospective after major changes
 # Don't wait until the end!
 
 # 7. Run ALL validations
+# First run locally to catch issues:
+python tools/validation/local-validation.py --pre-push
+# Then run full pipeline:
 python tools/validation/validate-pipeline.py --ci \
   --checks branch proposal architecture technical-debt type-safety
 

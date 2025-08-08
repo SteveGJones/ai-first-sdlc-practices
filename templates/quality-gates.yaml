@@ -151,7 +151,7 @@ commit_requirements:
     - run_all_quality_gates: true
     - check_commit_message: true
     - verify_no_secrets: true
-  
+
   commit_message:
     format: "conventional"
     types: ["feat", "fix", "docs", "refactor", "test", "chore"]
@@ -164,7 +164,7 @@ ci_cd:
     - run_all_quality_gates: true
     - block_if_any_fail: true
     - no_admin_override: true
-  
+
   on_merge:
     - run_all_quality_gates: true
     - deploy_only_if_pass: true
@@ -177,7 +177,7 @@ monitoring:
     - clean_commit_percentage
     - time_to_zero_errors
     - fix_forward_time
-  
+
   alert_on:
     - quality_gate_failure
     - debt_increase

@@ -18,6 +18,8 @@ Uncompromising methodology for AI agents as mandatory developers with ruthless q
 
 Before ANY code: `python tools/validation/validate-architecture.py --strict` (MUST PASS)
 
+**🚧 If you see "BOOTSTRAP MODE" - this is NORMAL for fresh installs. Load CLAUDE-CONTEXT-architecture.md for complete guidance.**
+
 ### Required Architecture Documents (ALL 6):
 1. requirements-traceability-matrix.md
 2. what-if-analysis.md
@@ -44,7 +46,7 @@ python tools/validation/validate-pipeline.py --checks type-safety
 
 ### Required Logging Points (10):
 1. Function entry/exit
-2. Errors & exceptions  
+2. Errors & exceptions
 3. External calls
 4. State mutations
 5. Security events
@@ -69,7 +71,7 @@ Details: Load CLAUDE-CONTEXT-logging.md
 
 ### MANDATORY SEQUENCE (NO DEVIATIONS ALLOWED):
 1. **HALT**: Stop ALL work if not on feature branch
-2. **CREATE**: Feature branch: `git checkout -b feature/name` 
+2. **CREATE**: Feature branch: `git checkout -b feature/name`
 3. **DOCUMENT**: Proposal: `docs/feature-proposals/XX-name.md`
 4. **ARCHITECTURE**: ALL 6 documents BEFORE any code
 5. **VALIDATE**: `python tools/validation/validate-architecture.py --strict` MUST PASS
@@ -91,7 +93,7 @@ Details: Load CLAUDE-CONTEXT-logging.md
 
 ### 🚫 PR AUTO-REJECTED WITHOUT RETROSPECTIVE CONTAINING:
 - What went well (MANDATORY SECTION)
-- What could improve (MANDATORY SECTION) 
+- What could improve (MANDATORY SECTION)
 - Lessons learned (MANDATORY SECTION)
 - Complete change log (MANDATORY SECTION)
 - Validation results (MANDATORY SECTION)
@@ -142,6 +144,7 @@ Load additional instructions based on task:
 | Language work | CLAUDE-CONTEXT-language-validators.md |
 | Logging standards | CLAUDE-CONTEXT-logging.md |
 | AI agents/help | CLAUDE-CONTEXT-agents.md |
+| Quality standards | AGENTIC-SDLC-TEAM-PRINCIPLES.md |
 
 ## Framework Updates
 
@@ -157,17 +160,31 @@ If update available: Load CLAUDE-CONTEXT-update.md
 4. **Review**: Update retrospective
 5. **Submit**: PR with complete retrospective
 
+## 🏆 TEAM QUALITY STANDARDS 🏆
+
+**MANDATORY**: Every AI agent must uphold class-leading excellence standards:
+
+### Core Principles (Non-Negotiable):
+1. **CI/Local Parity**: Local validation success ≠ CI success. CI is truth.
+2. **Mathematical Solutions**: Use formulas, not magic number patches
+3. **Verification Discipline**: Monitor CI within 5 minutes of every push
+4. **Quality Ownership**: You own the entire pipeline, not just local development
+
+**Details**: Load AGENTIC-SDLC-TEAM-PRINCIPLES.md for complete standards
+
 ## 🚨 DEATH PENALTY VIOLATIONS 🚨
 
 **THESE VIOLATIONS RESULT IN IMMEDIATE PROJECT TERMINATION:**
 
 - **NO Architecture before code** → INSTANT DEATH PENALTY
-- **ANY technical debt found** → INSTANT DEATH PENALTY  
+- **ANY technical debt found** → INSTANT DEATH PENALTY
 - **ANY direct commit to main** → INSTANT DEATH PENALTY
 - **PR without retrospective** → INSTANT DEATH PENALTY
 - **Skipping validation** → INSTANT DEATH PENALTY
 - **Working without feature branch** → INSTANT DEATH PENALTY
 - **Missing ANY of 6 architecture docs** → INSTANT DEATH PENALTY
+- **Creating PR with failing CI** → INSTANT DEATH PENALTY
+- **Using patches instead of systematic solutions** → INSTANT DEATH PENALTY
 
 **THERE ARE NO WARNINGS. THERE ARE NO SECOND CHANCES. VIOLATION = TERMINATION.**
 

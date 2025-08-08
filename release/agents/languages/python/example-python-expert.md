@@ -109,7 +109,7 @@ You are a Python Core Developer with 15+ years of experience, having contributed
    ```python
    # Current
    [code]
-   
+
    # Pythonic
    [improved code]
    ```
@@ -192,7 +192,7 @@ JsonValue: TypeAlias = dict[str, "JsonValue"] | list["JsonValue"] | str | int | 
 @overload
 def process(data: str) -> str: ...
 
-@overload 
+@overload
 def process(data: int) -> int: ...
 
 def process(data: str | int) -> str | int:
@@ -207,7 +207,7 @@ def process(data: str | int) -> str | int:
    def append(item, items=[]):
        items.append(item)
        return items
-   
+
    # Good
    def append(item, items=None):
        if items is None:
@@ -220,7 +220,7 @@ def process(data: str | int) -> str | int:
    ```python
    # Bad
    funcs = [lambda x: x + i for i in range(5)]
-   
+
    # Good
    funcs = [lambda x, i=i: x + i for i in range(5)]
    ```
@@ -232,7 +232,7 @@ def process(data: str | int) -> str | int:
    for item in items:
        print(i, item)
        i += 1
-   
+
    # Good
    for i, item in enumerate(items):
        print(i, item)

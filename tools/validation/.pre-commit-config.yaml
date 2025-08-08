@@ -8,7 +8,11 @@ repos:
     hooks:
       - id: no-commit-to-main
         name: Block commits to main branch
-        entry: bash -c 'if [[ $(git symbolic-ref HEAD) == "refs/heads/main" ]]; then echo "❌ Direct commits to main branch are forbidden!"; echo "📝 Create a feature branch: git checkout -b feature/your-feature"; exit 1; fi'
+        entry: >
+          bash -c 'if [[ $(git symbolic-ref HEAD) == "refs/heads/main" ]]; then
+          echo "❌ Direct commits to main branch are forbidden!";
+          echo "📝 Create a feature branch: git checkout -b feature/your-feature";
+          exit 1; fi'
         language: system
         pass_filenames: false
         always_run: true
@@ -29,7 +33,10 @@ repos:
     hooks:
       - id: claude-md-exists
         name: Verify CLAUDE.md exists
-        entry: bash -c 'if [[ ! -f "CLAUDE.md" && ! -f "GEMINI.md" && ! -f "GPT.md" ]]; then echo "⚠️  Warning: No AI instruction file found (CLAUDE.md, GEMINI.md, or GPT.md)"; echo "📝 Create one from templates/CLAUDE.md"; fi'
+        entry: >
+          bash -c 'if [[ ! -f "CLAUDE.md" && ! -f "GEMINI.md" && ! -f "GPT.md" ]]; then
+          echo "⚠️  Warning: No AI instruction file found (CLAUDE.md, GEMINI.md, or GPT.md)";
+          echo "📝 Create one from templates/CLAUDE.md"; fi'
         language: system
         pass_filenames: false
         always_run: true
@@ -85,7 +92,10 @@ repos:
     hooks:
       - id: documentation-updated
         name: Check if documentation needs updating
-        entry: bash -c 'if git diff --cached --name-only | grep -E "\.(py|js|go|java)$" > /dev/null; then echo "📝 Reminder: Update documentation if needed (README.md, API docs, etc.)"; fi'
+        entry: >-
+          bash -c "if git diff --cached --name-only | grep -E '\\.(py|js|go|java)$' > /dev/null;
+          then echo '📝 Reminder - Update documentation if needed (README.md, API docs, etc.)';
+          fi"
         language: system
         pass_filenames: false
         always_run: true
@@ -95,7 +105,7 @@ repos:
     hooks:
       - id: test-reminder
         name: Remind to run tests
-        entry: bash -c 'echo "🧪 Reminder: Have you run the tests? (make test or pytest)"'
+        entry: bash -c "echo '🧪 Reminder - Have you run the tests? (make test or pytest)'"
         language: system
         pass_filenames: false
         always_run: true

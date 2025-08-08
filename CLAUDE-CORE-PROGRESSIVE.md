@@ -15,7 +15,7 @@ The framework adapts to your project's maturity and needs:
 - Retrospective (always required)
 - Basic security validation
 
-### Level 2: Production (Full Architecture) 
+### Level 2: Production (Full Architecture)
 **For**: Production systems and professional applications
 - All 6 architecture documents (mandatory)
 - Zero technical debt enforcement
@@ -114,19 +114,19 @@ Must contain:
 1. **Requirements Gate** → Design Gate
    - Required agents: solution-architect, critical-goal-reviewer
    - Must have: feature proposal/intent
-   
+
 2. **Design Gate** → Implementation Gate
    - Required agents: solution-architect, security-architect
    - Must have: architecture docs (level-appropriate)
-   
+
 3. **Implementation Gate** → Review Gate
    - Required agents: sdlc-enforcer, test-manager
    - Must have: passing tests, no critical issues
-   
+
 4. **Review Gate** → Deployment Gate
    - Required agents: critical-goal-reviewer, test-manager
    - Must have: PR approval, retrospective
-   
+
 5. **Deployment Gate** → Production
    - Required agents: sre-specialist, compliance-auditor
    - Must have: deployment plan, rollback strategy
@@ -146,6 +146,57 @@ python tools/automation/agent-decision-tree.py agents new_feature
 python tools/automation/agent-decision-tree.py agents bug_fix
 python tools/automation/agent-decision-tree.py agents deployment
 ```
+
+## 🚨 MANDATORY: Proactive Agent Usage
+
+**YOU MUST USE AGENTS FOR EVERY TASK - NO EXCEPTIONS!**
+
+### Starting ANY Work = Immediate Agent Engagement:
+```
+User: "Add user authentication"
+You: "I'll immediately engage our specialist agents to ensure we build this correctly."
+*IMMEDIATELY invokes solution-architect*
+*THEN invokes security-architect*
+*THEN invokes test-manager*
+```
+
+### Agent Usage is NOT Optional:
+- **See a bug?** → IMMEDIATELY invoke critical-goal-reviewer
+- **Writing code?** → FIRST consult solution-architect
+- **Need tests?** → MUST use test-manager
+- **Deployment?** → REQUIRED sre-specialist approval
+- **Any decision?** → Consult relevant specialist FIRST
+
+### Mandatory Agent Patterns:
+
+**For New Features:**
+1. sdlc-enforcer (compliance check)
+2. solution-architect (design)
+3. Relevant specialists (security, performance, etc.)
+4. test-manager (test strategy)
+5. critical-goal-reviewer (validation)
+
+**For Bug Fixes:**
+1. critical-goal-reviewer (understand issue)
+2. solution-architect (fix approach)
+3. test-manager (regression prevention)
+
+**For ANY Code Change:**
+1. STOP before writing code
+2. Invoke relevant agents FIRST
+3. Only proceed with agent guidance
+
+### DO NOT Say:
+- "Would you like me to use agents?"
+- "I could consult an agent for this"
+- "Should I engage a specialist?"
+
+### ALWAYS Say:
+- "I'm engaging the solution-architect to design this properly"
+- "Let me immediately consult our security expert"
+- "I'll have the test-manager create our testing strategy"
+
+**Remember**: Solo coding = Technical debt. Always collaborate with specialist agents!
 
 ### Essential Workflow:
 1. Create feature branch

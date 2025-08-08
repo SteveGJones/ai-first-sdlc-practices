@@ -1,8 +1,8 @@
 # Feature Proposal: Self-Review Process and Design Documentation Standards
 
-**Date:** 2025-07-17  
-**Author:** Claude (AI Agent)  
-**Status:** Proposed  
+**Date:** 2025-07-17
+**Author:** Claude (AI Agent)
+**Status:** Proposed
 **Target Branch:** `feature/self-review-design-docs`
 
 ## Summary
@@ -52,7 +52,7 @@ Understand Requirements → Create Artifact → Self-Review → (If gaps) Revise
 For ALL artifact creation (proposals, plans, designs, code, tests):
 
 1. **Create Complete Artifact**: Write the entire document/code/test
-2. **Self-Review Against Requirements**: 
+2. **Self-Review Against Requirements**:
    - Does this fully address the original request?
    - Are all requirements covered?
    - Is it consistent and clear?
@@ -130,7 +130,7 @@ Before finalizing, verify:
 
 <!-- WARNING: This is DESIGN documentation
 - DO NOT include source code
-- DO NOT detail implementation algorithms  
+- DO NOT detail implementation algorithms
 - DO NOT specify framework-specific patterns
 Focus on WHAT and WHY, not HOW
 -->
@@ -142,20 +142,20 @@ Add new check to `validate-pipeline.py`:
 def check_design_documentation(self):
     """Check design docs for excessive implementation details"""
     design_files = glob.glob('**/design-*.md', recursive=True)
-    
+
     for file in design_files:
         content = Path(file).read_text()
-        
+
         # Count code blocks
         code_blocks = len(re.findall(r'```(?!mermaid|diagram)', content))
         total_lines = len(content.splitlines())
         code_lines = len(re.findall(r'```[\s\S]*?```', content))
-        
+
         code_ratio = code_lines / total_lines if total_lines > 0 else 0
-        
+
         if code_ratio > 0.2:  # More than 20% code
             self.add_warning(
-                "Design Documentation", 
+                "Design Documentation",
                 f"{file} contains {code_ratio:.0%} code",
                 "Consider moving implementation details to separate docs"
             )
@@ -184,7 +184,7 @@ def check_design_documentation(self):
   - Update CLAUDE.md and templates
   - Create examples
   - Test workflow
-  
+
 - Phase 2 (Design Standards): 4-5 hours
   - Create design templates
   - Add validation checks

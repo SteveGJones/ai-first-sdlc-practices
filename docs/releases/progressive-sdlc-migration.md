@@ -52,10 +52,10 @@ The AI-First SDLC Framework now supports progressive enforcement levels to bette
    ```bash
    # For early-stage projects
    python tools/automation/sdlc-level.py set prototype
-   
+
    # For production systems (default)
    python tools/automation/sdlc-level.py set production
-   
+
    # For large teams
    python tools/automation/sdlc-level.py set enterprise
    ```
@@ -64,7 +64,7 @@ The AI-First SDLC Framework now supports progressive enforcement levels to bette
    ```bash
    # Use progressive validation
    python tools/validation/validate-pipeline-progressive.py
-   
+
    # Or specify level explicitly
    python tools/validation/validate-pipeline-progressive.py --level prototype
    ```

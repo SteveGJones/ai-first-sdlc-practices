@@ -1,8 +1,8 @@
 # Implementation Plan: Zero Technical Debt Policy
 
-**Feature:** Zero Technical Debt Policy for AI Agents  
-**Branch:** `feature/zero-technical-debt`  
-**Duration:** 7 days  
+**Feature:** Zero Technical Debt Policy for AI Agents
+**Branch:** `feature/zero-technical-debt`
+**Duration:** 7 days
 **Author:** Claude (AI Agent)
 
 ---
@@ -23,8 +23,8 @@ This plan details the implementation of mandatory Zero Technical Debt constraint
 ### Tasks
 
 #### Task 1.1: Create ZERO-TECHNICAL-DEBT.md Policy Document
-**Duration:** 2 hours  
-**Dependencies:** None  
+**Duration:** 2 hours
+**Dependencies:** None
 **Deliverable:** Complete policy document at root level
 
 Contents:
@@ -35,8 +35,8 @@ Contents:
 - Examples of good vs bad practices
 
 #### Task 1.2: Create Architectural Templates
-**Duration:** 4 hours  
-**Dependencies:** Task 1.1  
+**Duration:** 4 hours
+**Dependencies:** Task 1.1
 **Deliverables:** Templates in `templates/architecture/`
 
 Templates to create:
@@ -48,20 +48,20 @@ Templates to create:
 6. `integration-design.md` - Integration-first approach
 
 #### Task 1.3: Update CLAUDE.md Template
-**Duration:** 2 hours  
-**Dependencies:** Task 1.1, 1.2  
+**Duration:** 2 hours
+**Dependencies:** Task 1.1, 1.2
 **Deliverable:** Enhanced `templates/CLAUDE.md`
 
 Add sections:
 - MANDATORY: Architecture-First Development
-- MANDATORY: Quality Gates  
+- MANDATORY: Quality Gates
 - FORBIDDEN practices
 - Required checks after every change
 - Architectural review triggers
 
 #### Task 1.4: Create Architecture Validation Tool
-**Duration:** 3 hours  
-**Dependencies:** Task 1.2  
+**Duration:** 3 hours
+**Dependencies:** Task 1.2
 **Deliverable:** `tools/validation/validate-architecture.py`
 
 Features:
@@ -82,8 +82,8 @@ Features:
 ### Tasks
 
 #### Task 2.1: Create Quality Gates Configuration
-**Duration:** 2 hours  
-**Dependencies:** Phase 1  
+**Duration:** 2 hours
+**Dependencies:** Phase 1
 **Deliverable:** `templates/quality-gates.yaml`
 
 Define for each language:
@@ -93,8 +93,8 @@ Define for each language:
 - Required tool versions
 
 #### Task 2.2: Enhance Validation Pipeline
-**Duration:** 4 hours  
-**Dependencies:** Task 2.1  
+**Duration:** 4 hours
+**Dependencies:** Task 2.1
 **Deliverable:** Updated `tools/validation/validate-pipeline.py`
 
 Add checks:
@@ -104,8 +104,8 @@ Add checks:
 - `architecture-completeness` - Verify arch docs exist
 
 #### Task 2.3: Create Language-Specific Validators
-**Duration:** 6 hours  
-**Dependencies:** Task 2.1  
+**Duration:** 6 hours
+**Dependencies:** Task 2.1
 **Deliverables:** Language validators in `tools/validation/`
 
 Create validators:
@@ -117,8 +117,8 @@ Create validators:
 - `validate-ruby.py` - rubocop, test, audit
 
 #### Task 2.4: Create Technical Debt Detector
-**Duration:** 3 hours  
-**Dependencies:** Task 2.2  
+**Duration:** 3 hours
+**Dependencies:** Task 2.2
 **Deliverable:** `tools/validation/validate-debt.py`
 
 Detect:
@@ -141,8 +141,8 @@ Detect:
 ### Tasks
 
 #### Task 3.1: Update Setup Script
-**Duration:** 4 hours  
-**Dependencies:** Phase 1, 2  
+**Duration:** 4 hours
+**Dependencies:** Phase 1, 2
 **Deliverable:** Enhanced `setup-smart.py`
 
 Add features:
@@ -153,8 +153,8 @@ Add features:
 - Install latest stable tool versions only
 
 #### Task 3.2: Create Pre-commit Hook Configuration
-**Duration:** 2 hours  
-**Dependencies:** Phase 2  
+**Duration:** 2 hours
+**Dependencies:** Phase 2
 **Deliverable:** `templates/.pre-commit-config.yaml`
 
 Hooks to include:
@@ -165,8 +165,8 @@ Hooks to include:
 - Verify security scan clean
 
 #### Task 3.3: Update CI/CD Templates
-**Duration:** 3 hours  
-**Dependencies:** Task 3.2  
+**Duration:** 3 hours
+**Dependencies:** Task 3.2
 **Deliverables:** Updated CI configs
 
 For each platform:
@@ -177,8 +177,8 @@ For each platform:
 - Generate debt reports
 
 #### Task 3.4: Create Quick Check Script
-**Duration:** 2 hours  
-**Dependencies:** Phase 2  
+**Duration:** 2 hours
+**Dependencies:** Phase 2
 **Deliverable:** `tools/quick-check.py`
 
 One command to run ALL validations:
@@ -200,8 +200,8 @@ One command to run ALL validations:
 ### Tasks
 
 #### Task 4.1: Create Enforcement Mechanisms
-**Duration:** 3 hours  
-**Dependencies:** Phase 3  
+**Duration:** 3 hours
+**Dependencies:** Phase 3
 **Deliverables:** Enforcement tools
 
 Create blockers for:
@@ -211,8 +211,8 @@ Create blockers for:
 - Commits with any errors
 
 #### Task 4.2: Create Example Project
-**Duration:** 4 hours  
-**Dependencies:** All previous  
+**Duration:** 4 hours
+**Dependencies:** All previous
 **Deliverable:** `examples/zero-debt-project/`
 
 Demonstrate:
@@ -223,8 +223,8 @@ Demonstrate:
 - Zero technical debt
 
 #### Task 4.3: Create Anti-Pattern Examples
-**Duration:** 2 hours  
-**Dependencies:** Task 4.2  
+**Duration:** 2 hours
+**Dependencies:** Task 4.2
 **Deliverable:** `docs/anti-patterns.md`
 
 Show what NOT to do:
@@ -235,8 +235,8 @@ Show what NOT to do:
 - Outdated dependencies
 
 #### Task 4.4: Final Testing
-**Duration:** 3 hours  
-**Dependencies:** All previous  
+**Duration:** 3 hours
+**Dependencies:** All previous
 **Deliverable:** Test results
 
 Test scenarios:
@@ -286,17 +286,17 @@ Test scenarios:
 ### Technical Risks
 1. **Tool compatibility issues**
    - Mitigation: Test on multiple platforms
-   
+
 2. **Performance impact**
    - Mitigation: Optimize validation scripts
-   
+
 3. **Missing language support**
    - Mitigation: Document requirements for unsupported languages
 
 ### Implementation Risks
 1. **Scope creep**
    - Mitigation: Stick to plan phases
-   
+
 2. **Complex edge cases**
    - Mitigation: Document as found, handle in v2
 

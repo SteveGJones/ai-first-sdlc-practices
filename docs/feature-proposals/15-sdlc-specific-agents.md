@@ -120,7 +120,7 @@ os.symlink(agent_source, agent_target)
 
 ### Week 1: Agent Development
 - Day 1-2: Create `kickstart-architect` agent
-- Day 3-4: Create `framework-validator` agent  
+- Day 3-4: Create `framework-validator` agent
 - Day 5: Create deployment test harness
 
 ### Week 2: Deployment Testing

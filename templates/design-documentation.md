@@ -1,8 +1,8 @@
 # Design Documentation: [Feature Name]
 
-**Date:** [YYYY-MM-DD]  
-**Author:** [Your Name]  
-**Status:** Draft | In Review | Approved  
+**Date:** [YYYY-MM-DD]
+**Author:** [Your Name]
+**Status:** Draft | In Review | Approved
 **Version:** 1.0
 
 ---
@@ -70,19 +70,19 @@ graph TB
     subgraph "User Interface"
         UI[Web/Mobile UI]
     end
-    
+
     subgraph "Application Layer"
         API[API Gateway]
         Auth[Auth Service]
         Core[Core Logic]
     end
-    
+
     subgraph "Data Layer"
         Cache[(Cache)]
         DB[(Database)]
         Queue[Message Queue]
     end
-    
+
     UI --> API
     API --> Auth
     API --> Core
@@ -108,7 +108,7 @@ sequenceDiagram
     participant API
     participant Service
     participant Database
-    
+
     User->>UI: Initiates action
     UI->>API: Send request
     API->>Service: Process logic

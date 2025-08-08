@@ -104,7 +104,7 @@ Choose your level based on project maturity, not team size.
 Add level selection during setup:
 
 ```python
-@click.option('--level', 
+@click.option('--level',
               type=click.Choice(['prototype', 'production', 'enterprise']),
               default='prototype',
               help='SDLC enforcement level')
@@ -121,7 +121,7 @@ Make validate-pipeline.py level-aware:
 class ProgressiveValidator:
     LEVEL_CHECKS = {
         'prototype': ['branch', 'intent', 'retrospective', 'security'],
-        'production': ['branch', 'proposal', 'architecture', 'technical-debt', 
+        'production': ['branch', 'proposal', 'architecture', 'technical-debt',
                       'type-safety', 'security', 'tests', 'retrospective'],
         'enterprise': ['all-checks', 'compliance', 'audit-trail']
     }
@@ -193,7 +193,7 @@ python .sdlc/tools/level-advisor.py migrate --to production
 
 ## Timeline
 
-**Week 1**: 
+**Week 1**:
 - Update core documentation
 - Implement level detection
 - Create prototype templates

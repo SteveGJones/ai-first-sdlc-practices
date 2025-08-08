@@ -4,26 +4,26 @@
 deployment:
   name: prototype-direct-deployment
   level: prototype
-  
+
   strategy:
     type: direct
     description: "Direct push to development environment"
-    
+
   environments:
     - name: development
       url: https://dev.example.com
       auto_deploy: true
       rollback: manual
-      
+
   validation:
     pre_deployment:
       - basic_health_check
       - feature_intent_exists
-      
+
     post_deployment:
       - endpoint_responsive
       - no_critical_errors
-      
+
   monitoring:
     level: basic
     alerts:
@@ -31,27 +31,27 @@ deployment:
       - service_down
     channels:
       - email
-      
+
   rollback:
     strategy: manual
     instructions: |
       1. Revert to previous commit
       2. Redeploy previous version
       3. Notify team
-      
+
   agents:
     required:
       - sre-specialist  # Basic deployment guidance
     optional:
       - devops-specialist  # If infrastructure changes
-      
+
   timeline:
     deployment_window: "anytime"
     deployment_duration: "< 5 minutes"
     validation_duration: "< 2 minutes"
-    
+
   checklist:
-    - [ ] Feature intent documented
-    - [ ] Basic tests passing (if any)
-    - [ ] Development environment accessible
-    - [ ] Team notified (if applicable)
+    - "[ ] Feature intent documented"
+    - "[ ] Basic tests passing (if any)"
+    - "[ ] Development environment accessible"
+    - "[ ] Team notified (if applicable)"

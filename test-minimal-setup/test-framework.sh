@@ -28,7 +28,7 @@ test_result() {
     local test_name="$1"
     local result="$2"
     local message="$3"
-    
+
     if [ "$result" = "pass" ]; then
         echo -e "✅ ${test_name}"
         ((PASSED++))
@@ -45,7 +45,7 @@ test_result() {
 test_framework_structure() {
     local required_files=("README.md" "CLAUDE.md")
     local required_dirs=("docs/feature-proposals" "retrospectives")
-    
+
     # Check required files
     for file in "${required_files[@]}"; do
         if [ ! -f "$file" ]; then
@@ -53,7 +53,7 @@ test_framework_structure() {
             return
         fi
     done
-    
+
     # Check required directories
     for dir in "${required_dirs[@]}"; do
         if [ ! -d "$dir" ]; then
@@ -61,7 +61,7 @@ test_framework_structure() {
             return
         fi
     done
-    
+
     test_result "Framework Structure" "pass"
 }
 
@@ -71,17 +71,17 @@ test_claude_md_content() {
         test_result "CLAUDE.md Content" "fail" "CLAUDE.md not found"
         return
     fi
-    
+
     local content=$(tr '[:upper:]' '[:lower:]' < CLAUDE.md)
     local required_patterns=("claude.md" "ai development" "git workflow" "never push directly to main")
-    
+
     for pattern in "${required_patterns[@]}"; do
         if ! echo "$content" | grep -q "$pattern"; then
             test_result "CLAUDE.md Content" "fail" "Missing required pattern: $pattern"
             return
         fi
     done
-    
+
     test_result "CLAUDE.md Content" "pass"
 }
 
@@ -91,17 +91,17 @@ test_gitignore_exists() {
         test_result "Gitignore Check" "warn" ".gitignore not found (run setup-smart.py to create)"
         return
     fi
-    
+
     local content=$(tr '[:upper:]' '[:lower:]' < .gitignore)
     local ai_patterns=(".claude" ".cursor" ".aider")
     local found_patterns=0
-    
+
     for pattern in "${ai_patterns[@]}"; do
         if echo "$content" | grep -q "$pattern"; then
             ((found_patterns++))
         fi
     done
-    
+
     if [ $found_patterns -eq 0 ]; then
         test_result "Gitignore Check" "warn" "Consider adding AI tool patterns to .gitignore"
     else
@@ -113,14 +113,14 @@ test_gitignore_exists() {
 test_shell_environment() {
     # Check for basic commands
     local required_commands=("git" "grep" "find")
-    
+
     for cmd in "${required_commands[@]}"; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
             test_result "Shell Environment" "fail" "Required command not found: $cmd"
             return
         fi
     done
-    
+
     test_result "Shell Environment" "pass"
 }
 
@@ -130,13 +130,13 @@ test_git_repository() {
         test_result "Git Repository" "fail" "Not a git repository (run 'git init')"
         return
     fi
-    
+
     # Check if we can run git commands
     if ! git status >/dev/null 2>&1; then
         test_result "Git Repository" "fail" "Git repository corrupted or inaccessible"
         return
     fi
-    
+
     test_result "Git Repository" "pass"
 }
 
@@ -144,17 +144,17 @@ test_git_repository() {
 main() {
     echo -e "${BLUE}🔍 Running AI-First SDLC framework verification...${NC}"
     echo
-    
+
     # Run all tests
     test_framework_structure
     test_claude_md_content
     test_gitignore_exists
     test_shell_environment
     test_git_repository
-    
+
     echo
     echo -e "${BLUE}📊 Results: ${GREEN}${PASSED} passed${NC}, ${RED}${FAILED} failed${NC}"
-    
+
     if [ $FAILED -eq 0 ]; then
         echo -e "${GREEN}🎉 Framework verification complete! Ready for development.${NC}"
         exit 0

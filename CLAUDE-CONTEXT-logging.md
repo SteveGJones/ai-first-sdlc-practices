@@ -91,7 +91,7 @@ logger.info("bad login")
 # GOOD - Business metrics
 logger.info("Order milestone", extra={
     "order_id": order.id,
-    "stage": "payment_complete", 
+    "stage": "payment_complete",
     "amount": order.total,
     "items": len(order.items),
     "customer_lifetime_value": customer.ltv
@@ -281,28 +281,28 @@ logger = structlog.get_logger()
 def create_user(username: str, email: str):
     start = time.time()
     request_id = get_request_id()
-    
+
     log = logger.bind(
         method="create_user",
         request_id=request_id
     )
-    
+
     log.info("Creating user",
         username=username,
         email_domain=email.split('@')[1]
     )
-    
+
     try:
         user = db.create_user(username, email)
-        
+
         duration = (time.time() - start) * 1000
         log.info("User created",
             user_id=user.id,
             duration_ms=duration
         )
-        
+
         return user
-        
+
     except Exception as e:
         duration = (time.time() - start) * 1000
         log.error("User creation failed",
@@ -329,27 +329,27 @@ const logger = winston.createLogger({
 async function createUser(username: string, email: string) {
   const start = Date.now();
   const requestId = uuidv4();
-  
+
   const log = logger.child({
     method: 'createUser',
     requestId
   });
-  
+
   log.info('Creating user', {
     username,
     emailDomain: email.split('@')[1]
   });
-  
+
   try {
     const user = await db.createUser(username, email);
-    
+
     log.info('User created', {
       userId: user.id,
       durationMs: Date.now() - start
     });
-    
+
     return user;
-    
+
   } catch (error) {
     log.error('User creation failed', {
       errorType: error.constructor.name,
@@ -406,11 +406,11 @@ handlers:
     maxBytes: 104857600  # 100MB
     backupCount: 30
     formatter: json
-    
+
   console:
     class: logging.StreamHandler
     formatter: json
-    
+
 loggers:
   '':
     level: INFO

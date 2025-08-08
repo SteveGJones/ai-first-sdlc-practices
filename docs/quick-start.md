@@ -147,7 +147,7 @@ If you discover the main branch is not protected, run:
 python tools/setup-branch-protection-gh.py
 
 Key commands to verify protection:
-- Check branch: git branch --show-current  
+- Check branch: git branch --show-current
 - Verify protection: gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts'
 ```
 
@@ -186,12 +186,12 @@ See CLAUDE.md for details.
    # 1. Create proposal
    cp docs/feature-proposals/feature-proposal.md \
       docs/feature-proposals/02-your-feature.md
-   
+
    # 2. Create branch (after proposal approved)
    git checkout -b feature/your-feature
-   
+
    # 3. Implement (following CLAUDE.md)
-   
+
    # 4. Create retrospective
    cp retrospectives/retrospective.md \
       retrospectives/your-feature-retrospective.md

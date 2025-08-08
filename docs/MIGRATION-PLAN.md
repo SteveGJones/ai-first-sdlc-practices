@@ -12,7 +12,7 @@ Migrate from the current two-tool system to a unified, DevOps-grade installer th
 - No agent-only installation option
 
 ### 2. Technical Issues
-- Two separate tools: `setup-smart.py` + `agent-installer.py`  
+- Two separate tools: `setup-smart.py` + `agent-installer.py`
 - Full GitHub ZIP download for every agent installation
 - Temporary directory cleanup failures
 - YAML parsing errors in agent metadata
@@ -31,14 +31,14 @@ Migrate from the current two-tool system to a unified, DevOps-grade installer th
 #### A. Create Unified Installer
 - [x] **File**: `tools/automation/claude-installer.py`
 - **Purpose**: Single entry point for all installation needs
-- **Modes**: 
+- **Modes**:
   - `agents-only`: Just AI agents (< 30 seconds)
-  - `with-framework`: Agents + essential tools (< 60 seconds) 
+  - `with-framework`: Agents + essential tools (< 60 seconds)
   - `full-setup`: Complete framework (< 120 seconds)
 
 #### B. GitHub API Integration
 - **Replace**: Full ZIP download with selective file downloads
-- **Benefits**: 
+- **Benefits**:
   - 90% faster downloads
   - No temporary directory issues
   - Atomic installations with rollback
@@ -81,7 +81,7 @@ installation:
   mode: "agents-only"
   version: "1.6.0"
   auto_update: false
-  
+
 agents:
   installed: [...]
   available_updates: [...]
@@ -204,7 +204,7 @@ python3 claude-installer.py --migrate-existing
 
 ### Performance Targets
 - Agents-only installation: < 30 seconds (vs 120+ seconds currently)
-- With-framework installation: < 60 seconds  
+- With-framework installation: < 60 seconds
 - Full-setup installation: < 120 seconds
 - Update operations: < 10 seconds
 - Installation failure rate: < 1%
@@ -223,7 +223,7 @@ python3 claude-installer.py --migrate-existing
 - **Mitigation**: Atomic installations with automatic rollback
 - **Fallback**: Offline installation packages
 
-### 2. Compatibility Issues  
+### 2. Compatibility Issues
 - **Risk**: Breaking existing projects
 - **Mitigation**: Comprehensive backward compatibility testing
 - **Fallback**: Migration assistance and manual recovery guides

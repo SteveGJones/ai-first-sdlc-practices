@@ -171,7 +171,7 @@ Always apply these principles:
    from slowapi import Limiter
    limiter = Limiter(key_func=get_remote_address)
    app.state.limiter = limiter
-   
+
    @app.get("/api/users")
    @limiter.limit("100/minute")
    async def get_users():

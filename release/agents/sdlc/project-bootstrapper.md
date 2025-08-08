@@ -140,7 +140,7 @@ payment-api/
 
 ## ADR-001: API Framework Selection
 **Decision**: Use FastAPI for the REST API
-**Rationale**: 
+**Rationale**:
 - Automatic OpenAPI documentation
 - Built-in validation with Pydantic
 - Async support for high performance
@@ -148,7 +148,7 @@ payment-api/
 **Alternatives Considered**:
 - Flask: More flexible but requires more setup
 - Django REST: Too heavyweight for microservice
-**Consequences**: 
+**Consequences**:
 - Faster development with automatic validation
 - Must use Python 3.8+ for full features
 
@@ -174,7 +174,7 @@ def detect_language(description: str) -> dict:
         'java': ['java', 'spring', 'springboot'],
         'rust': ['rust', 'actix', 'rocket']
     }
-    
+
     # Detect and configure appropriately
 ```
 

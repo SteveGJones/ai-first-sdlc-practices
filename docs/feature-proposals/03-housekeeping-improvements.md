@@ -1,10 +1,10 @@
 # Feature Proposal: Framework Housekeeping Improvements
 
-**Proposal Number:** 03  
-**Status:** Draft  
-**Author:** Claude (AI Agent)  
-**Created:** 2025-07-13  
-**Target Branch:** `feature/housekeeping-improvements`  
+**Proposal Number:** 03
+**Status:** Draft
+**Author:** Claude (AI Agent)
+**Created:** 2025-07-13
+**Target Branch:** `feature/housekeeping-improvements`
 **Implementation Type:** Code, Templates, Process
 
 ---
@@ -133,7 +133,7 @@ Enhance `validate-pipeline.py` to:
 
 ### Dependencies
 
-- **Technical Dependencies**: 
+- **Technical Dependencies**:
   - Python 3.8+ (existing requirement)
   - Git CLI (for repository detection)
   - No new external dependencies
@@ -212,7 +212,7 @@ Enhance `validate-pipeline.py` to:
 
 - **Internal announcement**: Update CHANGELOG.md
 - **User notification**: Update README with new features
-- **Documentation updates**: 
+- **Documentation updates**:
   - Setup guide
   - AI-AUTONOMY.md
   - CLAUDE.md template

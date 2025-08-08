@@ -1,9 +1,9 @@
 # Feature Proposal: Framework File Organization
 
-**Feature ID**: FP-018  
-**Title**: Organize Framework Files in .sdlc Directory  
-**Author**: AI Assistant  
-**Date**: 2024-01-04  
+**Feature ID**: FP-018
+**Title**: Organize Framework Files in .sdlc Directory
+**Author**: AI Assistant
+**Date**: 2024-01-04
 **Status**: Draft
 
 ## Summary
@@ -14,7 +14,7 @@ Reorganize AI-First SDLC Framework files into a `.sdlc/` directory to reduce pro
 
 The AI-First SDLC Framework currently installs 50+ files and directories in the project root:
 - `tools/` directory with validation scripts
-- `templates/` directory with architecture templates  
+- `templates/` directory with architecture templates
 - Multiple configuration files
 - Documentation and process directories
 
@@ -40,25 +40,25 @@ Recent agent installation issues highlighted this problem when the full team rev
 user-project/
 ├── .sdlc/                    # Framework internals (hidden)
 │   ├── tools/               # Validation and automation scripts
-│   │   ├── validation/      
-│   │   └── automation/      
+│   │   ├── validation/
+│   │   └── automation/
 │   ├── templates/           # All templates
-│   │   ├── architecture/    
-│   │   └── proposals/       
+│   │   ├── architecture/
+│   │   └── proposals/
 │   ├── agents/              # Installed agents (optional)
 │   ├── config/              # Framework configuration
-│   │   └── settings.json    
+│   │   └── settings.json
 │   └── VERSION              # Framework version
 ├── sdlc-tools/              # User-facing command tools
 │   ├── validate             # Run validation checks
 │   ├── new-feature          # Create feature proposals
-│   ├── install-agents       # Manage AI agents  
+│   ├── install-agents       # Manage AI agents
 │   ├── check-debt           # Check technical debt
 │   ├── track-progress       # Track development tasks
 │   └── README.md           # Tool documentation
 ├── docs/                    # User-facing (REQUIRED at root)
-│   ├── feature-proposals/   
-│   └── architecture/        
+│   ├── feature-proposals/
+│   └── architecture/
 ├── retrospectives/          # User-facing (REQUIRED at root)
 ├── plan/                    # User-facing (REQUIRED at root)
 ├── CLAUDE.md               # AI instructions (REQUIRED at root)

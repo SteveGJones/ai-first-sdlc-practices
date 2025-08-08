@@ -1,9 +1,9 @@
 # Retrospective: CI/CD Platform Rules Implementation
 
-**Feature**: CI/CD Platform Rules  
-**Branch**: `feature/cicd-platform-rules`  
-**Date**: 2025-07-12  
-**Author**: Claude (AI Assistant)  
+**Feature**: CI/CD Platform Rules
+**Branch**: `feature/cicd-platform-rules`
+**Date**: 2025-07-12
+**Author**: Claude (AI Assistant)
 
 ---
 
@@ -18,10 +18,10 @@
    - GitHub Actions (existing, for reference)
    - GitLab CI
    - Jenkins
-   - Azure DevOps  
+   - Azure DevOps
    - CircleCI
 
-3. **Documentation Quality**: 
+3. **Documentation Quality**:
    - Created detailed platform integration guide
    - Updated QUICK-REFERENCE.md with CI/CD section
    - Provided troubleshooting and best practices
@@ -37,7 +37,7 @@
    - Should be: `if commit and not any(prefix in commit.lower() for prefix in prefixes):`
    - This prevented full validation from running
 
-2. **Testing Limitations**: 
+2. **Testing Limitations**:
    - Unable to test configurations on actual CI/CD platforms
    - Would benefit from integration tests or mock environments
 
@@ -165,7 +165,7 @@ This removes the need for multiple human prompts and ensures consistent applicat
 - `tools/automation/setup-branch-protection-gh.py`: Fixed JSON formatting bug
 - `README.md`, `docs/quick-start.md`, `docs/HOWTO.md`: Added specific Claude prompts
 
-**Testing Results**: 
+**Testing Results**:
 - ✅ Branch protection script now works correctly with proper JSON formatting
 - ✅ Claude receives comprehensive branch protection education in both full template and fallback versions
 - ✅ Humans have clear prompts to give Claude for both setup and development sessions
@@ -200,7 +200,7 @@ This removes the need for multiple human prompts and ensures consistent applicat
 
 1. **Overly Permissive File Permissions (2 instances - HIGH)**:
    - `setup-smart.py:72`: Changed from `0o755` to `0o700` (owner-only access)
-   - `tools/setup.py:214`: Changed from `0o755` to `0o700` (owner-only access)
+   - `tools/framework-setup.py:214`: Changed from `0o755` to `0o700` (owner-only access)
    - **Impact**: Prevented world-readable executable scripts that could expose sensitive logic
 
 2. **Incomplete URL Substring Sanitization (4 instances - HIGH)**:
@@ -327,7 +327,7 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 
 1. **Updated README.md** with clear Claude prompt:
    ```
-   Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices 
+   Please set up the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices
    in this project for [your purpose].
    ```
 
@@ -352,7 +352,7 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 **User Feedback**: Claude didn't create retrospectives automatically, suggesting they should be an explicit TODO item and part of the "definition of done" before PR creation.
 
 **Improvements Implemented**:
-1. **Enhanced CLAUDE.md Template**: 
+1. **Enhanced CLAUDE.md Template**:
    - Added explicit PR checklist with retrospective as mandatory
    - Created visual workflow showing retrospective before PR
    - Added "REQUIRED BEFORE PR" labels throughout
@@ -401,7 +401,7 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 
 **Fixes Applied**:
 1. **docs/workflow-diagram.md**: Updated main workflow to show: Push → Retrospective → PR → Review → Merge
-2. **docs/HOWTO.md**: 
+2. **docs/HOWTO.md**:
    - Fixed workflow diagram to include retrospective before PR
    - Added explicit Step 4 for retrospective creation
    - Added Step 6 for PR creation
@@ -409,7 +409,7 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 
 **Documents Reviewed**:
 - ✅ templates/CLAUDE.md - Already correct
-- ✅ docs/workflow-retrospective-first.md - Already correct  
+- ✅ docs/workflow-retrospective-first.md - Already correct
 - ✅ docs/workflow-diagram.md - Fixed
 - ✅ docs/HOWTO.md - Fixed
 - ✅ Feature proposals show correct workflow
@@ -459,7 +459,7 @@ This completes the framework's evolution from human-assisted to fully AI-autonom
 1. Provides guidelines for both human and AI contributors
 2. Documents the full contribution process including:
    - Feature proposal requirement
-   - Testing standards  
+   - Testing standards
    - PR checklist with retrospective requirement
    - Commit message format
 3. Includes specific workflows for different contribution types

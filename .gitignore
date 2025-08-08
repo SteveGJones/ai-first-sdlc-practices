@@ -88,3 +88,10 @@ htmlcov/
 # Documentation build
 site/
 mkdocs.yml
+
+# Generated reports
+debt-report.json
+validation-report.json
+validation-report.md
+compliance-report.json
+compliance-report.md

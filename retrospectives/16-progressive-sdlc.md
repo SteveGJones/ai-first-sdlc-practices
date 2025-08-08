@@ -1,7 +1,7 @@
 # Retrospective: Progressive SDLC Implementation
 
-**Feature**: Progressive SDLC with 3 Levels  
-**Branch**: `feature/sdlc-specific-agents`  
+**Feature**: Progressive SDLC with 3 Levels
+**Branch**: `feature/sdlc-specific-agents`
 **Date**: 2025-08-05
 
 ## What Went Well

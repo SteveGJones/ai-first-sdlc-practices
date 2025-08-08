@@ -70,7 +70,7 @@ Navigate to **Settings** > **Authentication**
 ### 2. Choose Authentication Method
 Select one:
 - **OAuth 2.0** - For social login
-- **SAML** - For enterprise SSO  
+- **SAML** - For enterprise SSO
 - **Basic Auth** - For simple setups
 
 ### 3. Configure Provider
@@ -84,7 +84,7 @@ Create appropriate documentation for each need:
 ```python
 class DocumentationType:
     """Different documentation types and their patterns"""
-    
+
     @staticmethod
     def tutorial():
         """Learning-oriented: Teaching a skill"""
@@ -93,8 +93,8 @@ class DocumentationType:
 
 In this tutorial, you'll learn how to create a custom widget from scratch.
 
-**Time**: 30 minutes  
-**Skill Level**: Beginner  
+**Time**: 30 minutes
+**Skill Level**: Beginner
 **You'll Learn**:
 - Widget architecture basics
 - How to create components
@@ -168,11 +168,11 @@ def retry_request(
         except requests.exceptions.RequestException as e:
             if attempt == max_retries - 1:
                 raise
-            
+
             wait_time = backoff_factor ** attempt
             print(f"Attempt {attempt + 1} failed. Retrying in {wait_time}s...")
             time.sleep(wait_time)
-    
+
     return None
 ```
 
@@ -190,7 +190,7 @@ def retry_request(
 
 ❌ **Don't retry**:
 - 400 Bad Request
-- 401 Unauthorized  
+- 401 Unauthorized
 - 404 Not Found
 - Business logic errors
 """
@@ -220,14 +220,14 @@ Complete reference for all widget configuration options.
 - **Required**: Yes
 - **Description**: Human-readable widget name displayed in the UI
 - **Example**: `"Sales Dashboard"`
-- **Constraints**: 
+- **Constraints**:
   - Max length: 50 characters
   - Must be unique within dashboard
 
 ### `type`
 - **Type**: `enum`
 - **Required**: Yes
-- **Values**: 
+- **Values**:
   - `"chart"` - Display data as charts
   - `"table"` - Display data in tabular format
   - `"text"` - Display text/metrics
@@ -296,11 +296,11 @@ Enhance docs with visuals:
 ```python
 class VisualDocumentation:
     """Creating effective visual documentation"""
-    
+
     @staticmethod
     def create_diagram_docs():
         """When and how to use diagrams"""
-        
+
         return """
 ## API Flow Diagram
 
@@ -310,7 +310,7 @@ sequenceDiagram
     participant Client
     participant API
     participant Database
-    
+
     User->>Client: Submit form
     Client->>Client: Validate input
     Client->>API: POST /users
@@ -331,7 +331,7 @@ This diagram shows:
     @staticmethod
     def annotated_screenshots():
         """Effective screenshot documentation"""
-        
+
         return """
 ## Setting Up Authentication
 
@@ -353,41 +353,41 @@ Keep documentation current:
 ```python
 class DocumentationMaintenance:
     """Strategies for maintaining documentation"""
-    
+
     def __init__(self):
         self.version_manager = VersionManager()
         self.review_scheduler = ReviewScheduler()
-        
+
     def create_maintenance_plan(self) -> MaintenancePlan:
         """Comprehensive maintenance strategy"""
-        
+
         return MaintenancePlan(
             # Version-specific documentation
             versioning_strategy="""
             ## Version Documentation Strategy
-            
+
             ### Current Version
             - Always default to latest stable
             - Clear version selector
             - Migration guides between versions
-            
+
             ### Version Banner
             ```html
             <div class="version-banner">
-                📌 You're viewing docs for v2.0. 
+                📌 You're viewing docs for v2.0.
                 <a href="/v3.0">View latest (v3.0)</a>
             </div>
             ```
             """,
-            
+
             # Review cycles
             review_schedule={
                 "api_reference": "monthly",
-                "tutorials": "quarterly", 
+                "tutorials": "quarterly",
                 "concepts": "bi-annually",
                 "quickstart": "monthly"
             },
-            
+
             # Update triggers
             update_triggers=[
                 "Product release",
@@ -421,7 +421,7 @@ Background
 ## Problem
 You need to process large files without running out of memory.
 
-## Solution  
+## Solution
 Use streaming to process files in chunks:
 
 [Code example]

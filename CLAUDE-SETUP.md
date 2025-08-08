@@ -6,7 +6,7 @@ Setup instructions for AI-First SDLC framework. Load when initializing new proje
 ```
 I want to add AI-First SDLC practices to this project. Please:
 1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md
-2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md 
+2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md
 3. Download and run: curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
 4. Run: python setup-smart.py "[describe your project]" --non-interactive
 Do NOT clone the repository - we're adding the framework to THIS project.
@@ -139,4 +139,25 @@ pip install click pyyaml
 - Check repository settings
 
 ## Next Steps
-After setup, return to CLAUDE-CORE.md for development workflow.
+
+After setup, when you begin development work:
+
+### 1. Architecture Validation (EXPECTED BEHAVIOR)
+```bash
+python tools/validation/validate-architecture.py --strict
+```
+
+**🚧 You will see "BOOTSTRAP MODE" - this is NORMAL and EXPECTED for fresh installs.**
+
+Bootstrap mode means:
+- Templates were installed but not yet customized for your project
+- System is waiting for you to complete architecture documents
+- This is the correct starting state, not an error
+
+### 2. Complete Architecture Setup
+- Load CLAUDE-CONTEXT-architecture.md for detailed bootstrap guidance
+- Customize the 6 required architecture templates for your specific project
+- System will progress from bootstrap → intermediate → strict validation
+
+### 3. Resume Development
+After architecture documents are complete, return to CLAUDE-CORE.md for normal development workflow.

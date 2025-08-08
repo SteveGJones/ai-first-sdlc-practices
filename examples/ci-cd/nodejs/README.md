@@ -14,7 +14,7 @@ cp .github/workflows/ai-sdlc-nodejs.yml your-project/.github/workflows/
 
 # Copy configuration templates (remove .template extension)
 cp package.json.template your-project/package.json
-cp tsconfig.json.template your-project/tsconfig.json  
+cp tsconfig.json.template your-project/tsconfig.json
 cp .eslintrc.json.template your-project/.eslintrc.json
 cp .prettierrc.json.template your-project/.prettierrc.json
 

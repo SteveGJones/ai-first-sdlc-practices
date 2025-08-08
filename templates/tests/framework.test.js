@@ -1,11 +1,11 @@
 /**
  * Framework verification test for Node.js projects.
- * 
+ *
  * This test ensures the AI-First SDLC framework is properly set up.
  * It can run in empty repositories and passes basic CI/CD validation.
- * 
+ *
  * Replace this test with real project tests as you develop your application.
- * 
+ *
  * Run with: npm test (if configured) or node framework.test.js
  */
 
@@ -20,19 +20,19 @@ function testFrameworkStructure() {
         'README.md',
         'CLAUDE.md'
     ];
-    
+
     const requiredDirs = [
         'docs/feature-proposals',
         'retrospectives'
     ];
-    
+
     // Check required files
     for (const filePath of requiredFiles) {
         if (!fs.existsSync(filePath)) {
             throw new Error(`Required file missing: ${filePath}`);
         }
     }
-    
+
     // Check required directories
     for (const dirPath of requiredDirs) {
         if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
@@ -48,16 +48,16 @@ function testClaudeMdContent() {
     if (!fs.existsSync('CLAUDE.md')) {
         throw new Error('CLAUDE.md not found');
     }
-    
+
     const content = fs.readFileSync('CLAUDE.md', 'utf8').toLowerCase();
-    
+
     const requiredPatterns = [
         'claude.md',
         'ai development',
         'git workflow',
         'never push directly to main'
     ];
-    
+
     for (const pattern of requiredPatterns) {
         if (!content.includes(pattern)) {
             throw new Error(`CLAUDE.md missing required pattern: ${pattern}`);
@@ -73,12 +73,12 @@ function testGitignoreExists() {
         console.log('Warning: .gitignore not found (run setup-smart.py to create)');
         return;
     }
-    
+
     const content = fs.readFileSync('.gitignore', 'utf8').toLowerCase();
-    
+
     const aiPatterns = ['.claude', '.cursor', '.aider'];
     const foundPatterns = aiPatterns.filter(pattern => content.includes(pattern));
-    
+
     if (foundPatterns.length === 0) {
         console.log('Info: Consider adding AI tool patterns to .gitignore');
     }
@@ -90,11 +90,11 @@ function testGitignoreExists() {
 function testNodeEnvironment() {
     const nodeVersion = process.version;
     const majorVersion = parseInt(nodeVersion.substring(1).split('.')[0]);
-    
+
     if (majorVersion < 16) {
         throw new Error(`Node.js 16+ recommended, found ${nodeVersion}`);
     }
-    
+
     // Check if package.json exists
     if (fs.existsSync('package.json')) {
         try {
@@ -128,12 +128,12 @@ function main() {
         { name: 'Node Environment', fn: testNodeEnvironment },
         { name: 'Git Repository', fn: testGitRepository }
     ];
-    
+
     console.log('🔍 Running AI-First SDLC framework verification...');
-    
+
     let passed = 0;
     let failed = 0;
-    
+
     for (const test of tests) {
         try {
             test.fn();
@@ -144,9 +144,9 @@ function main() {
             failed++;
         }
     }
-    
+
     console.log(`\n📊 Results: ${passed} passed, ${failed} failed`);
-    
+
     if (failed === 0) {
         console.log('🎉 Framework verification complete! Ready for development.');
         process.exit(0);

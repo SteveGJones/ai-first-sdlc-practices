@@ -1,8 +1,8 @@
 # System Invariants - E-Commerce Checkout System
 
-**Project:** FastCart Checkout System  
-**Version:** 1.0  
-**Last Updated:** 2024-07-25  
+**Project:** FastCart Checkout System
+**Version:** 1.0
+**Last Updated:** 2024-07-25
 **Owner:** Architecture Team
 
 ## Overview

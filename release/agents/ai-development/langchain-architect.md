@@ -66,32 +66,32 @@ graph TB
         UI[User Interface]
         API[API Gateway]
     end
-    
+
     subgraph "Chain Layer"
         Router[Chain Router]
         Conv[Conversation Chain]
         RAG[RAG Chain]
         Agent[Agent Executor]
     end
-    
+
     subgraph "Memory Layer"
         STM[Short-term Memory]
         LTM[Long-term Memory]
         Cache[Semantic Cache]
     end
-    
+
     subgraph "Tool Layer"
         Search[Search Tools]
         DB[Database Tools]
         API_Tools[API Tools]
     end
-    
+
     subgraph "Data Layer"
         Vector[(Vector Store)]
         Doc[(Documents)]
         Graph[(Knowledge Graph)]
     end
-    
+
     UI --> Router
     API --> Router
     Router --> Conv
@@ -115,17 +115,17 @@ class SmartChain:
     def __init__(self, llm, tools=None):
         self.llm = llm
         self.tools = tools or []
-        
+
         # Prompt templates
         self.routing_prompt = ChatPromptTemplate.from_messages([
             ("system", "Route the user query to the appropriate handler"),
             ("human", "{query}")
         ])
-        
+
         # Chain components
         self.router = self._build_router()
         self.chains = self._build_chains()
-    
+
     def _build_router(self):
         return (
             {"query": RunnablePassthrough()}
@@ -133,7 +133,7 @@ class SmartChain:
             | self.llm
             | self._parse_route
         )
-    
+
     def _build_chains(self):
         return {
             "conversational": self._build_conversational_chain(),
@@ -149,7 +149,7 @@ from langchain.schema import BaseMemory
 
 class HybridMemory(BaseMemory):
     """Hybrid memory combining multiple strategies"""
-    
+
     def __init__(self, llm, max_token_limit=2000):
         self.summary_memory = ConversationSummaryBufferMemory(
             llm=llm,
@@ -157,7 +157,7 @@ class HybridMemory(BaseMemory):
         )
         self.entity_memory = EntityMemory()
         self.episodic_memory = EpisodicMemory()
-        
+
     def save_context(self, inputs, outputs):
         # Save to all memory types
         self.summary_memory.save_context(inputs, outputs)
@@ -182,20 +182,20 @@ class AgentState(TypedDict):
 
 def create_agent_graph():
     workflow = StateGraph(AgentState)
-    
+
     # Define nodes
     workflow.add_node("router", route_request)
     workflow.add_node("researcher", research_agent)
     workflow.add_node("analyzer", analysis_agent)
     workflow.add_node("responder", response_agent)
     workflow.add_node("validator", validate_response)
-    
+
     # Define edges
     workflow.add_edge("router", "researcher")
     workflow.add_edge("researcher", "analyzer")
     workflow.add_edge("analyzer", "responder")
     workflow.add_edge("responder", "validator")
-    
+
     # Conditional edges
     workflow.add_conditional_edges(
         "validator",
@@ -205,10 +205,10 @@ def create_agent_graph():
             "complete": END
         }
     )
-    
+
     # Set entry point
     workflow.set_entry_point("router")
-    
+
     return workflow.compile()
 ```
 
@@ -229,26 +229,26 @@ class ProductionRAG:
             collection_name=collection_name,
             embedding_function=self.embeddings
         )
-        
+
         # Multi-stage retrieval
         self.base_retriever = self.vectorstore.as_retriever(
             search_type="mmr",
             search_kwargs={"k": 10, "fetch_k": 50}
         )
-        
+
         # Contextual compression
         self.compressor = LLMChainExtractor.from_llm(llm)
         self.retriever = ContextualCompressionRetriever(
             base_compressor=self.compressor,
             base_retriever=self.base_retriever
         )
-    
+
     def hybrid_search(self, query: str):
         # Combine multiple search strategies
         vector_results = self.retriever.get_relevant_documents(query)
         keyword_results = self.keyword_search(query)
         graph_results = self.graph_search(query)
-        
+
         return self.rerank_results(
             vector_results + keyword_results + graph_results
         )
@@ -267,7 +267,7 @@ Optimize for production:
   class TokenOptimizer:
       def __init__(self, max_tokens=4000):
           self.max_tokens = max_tokens
-          
+
       def optimize_prompt(self, prompt, context):
           # Dynamic context pruning
           if self.count_tokens(prompt + context) > self.max_tokens:
@@ -278,7 +278,7 @@ Optimize for production:
 - **Caching Strategy**:
   ```python
   from langchain.cache import RedisSemanticCache
-  
+
   # Semantic caching for similar queries
   cache = RedisSemanticCache(
       redis_url="redis://localhost:6379",
@@ -305,7 +305,7 @@ class RobustChain:
         self.primary_llm = ChatOpenAI(model="gpt-4")
         self.fallback_llm = ChatOpenAI(model="gpt-3.5-turbo")
         self.emergency_llm = ChatAnthropic()
-        
+
     async def run_with_fallbacks(self, input_data):
         try:
             return await self.primary_chain.arun(input_data)
@@ -330,14 +330,14 @@ class ObservableChain:
     def __init__(self):
         self.client = Client()
         self.tracer = LangChainTracer(project_name="production")
-        
+
     def run_with_tracking(self, input_data):
         with self.tracer as cb:
             result = self.chain.run(
                 input_data,
                 callbacks=[cb]
             )
-            
+
         # Custom metrics
         self.track_metrics({
             "tokens_used": cb.total_tokens,
@@ -345,7 +345,7 @@ class ObservableChain:
             "model": self.llm.model_name,
             "success": True
         })
-        
+
         return result
 ```
 
@@ -395,7 +395,7 @@ class MultiAgentSystem:
 class AdaptivePrompt:
     def __init__(self):
         self.performance_tracker = PerformanceTracker()
-        
+
     def get_optimal_prompt(self, task_type):
         # Select prompt based on historical performance
         return self.performance_tracker.best_prompt_for(task_type)
@@ -406,7 +406,7 @@ class AdaptivePrompt:
 class CostAwareChain:
     def __init__(self, budget_per_request=0.10):
         self.budget = budget_per_request
-        
+
     def select_model(self, complexity):
         if complexity < 0.3:
             return "gpt-3.5-turbo"

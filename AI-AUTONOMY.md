@@ -198,13 +198,13 @@ echo "- Branch protection: $(gh api repos/:owner/:repo/branches/main/protection 
 def setup_ai_first_sdlc(project_purpose):
     # 1. Download setup script
     download_file("setup-smart.py")
-    
+
     # 2. Determine CI platform
     ci_platform = detect_ci_platform() or "github"
-    
+
     # 3. Run setup
     run_command(f"python setup-smart.py '{project_purpose}' --non-interactive --ci-platform {ci_platform}")
-    
+
     # 4. Verify setup
     if file_exists("CLAUDE-CORE.md"):
         content = read_file("CLAUDE-CORE.md")
@@ -216,23 +216,23 @@ def setup_ai_first_sdlc(project_purpose):
     elif file_exists("CLAUDE.md"):
         content = read_file("CLAUDE.md")
         follow_instructions(content)
-    
+
     # 5. Check branch protection
     if not is_branch_protected("main"):
         inform_user("Branch protection not enabled. Run: python tools/setup-branch-protection-gh.py")
-    
+
     # 6. Report status
     report_setup_status()
-    
+
     # 7. Create initial feature proposal
     create_file("docs/feature-proposals/01-initial-implementation.md")
-    
+
     # 8. Start work
     run_command("git checkout -b feature/initial-implementation")
-    
+
     # 9. Create architecture documents (Zero Technical Debt)
     create_architecture_documents()
-    
+
     # 10. Validate architecture before coding
     run_command("python tools/validation/validate-architecture.py --strict")
 ```

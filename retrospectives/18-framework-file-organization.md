@@ -1,7 +1,7 @@
 # Retrospective: Framework File Organization
 
-**Feature**: Framework File Organization (.sdlc directory)  
-**Branch**: feature/sdlc-specific-agents  
+**Feature**: Framework File Organization (.sdlc directory)
+**Branch**: feature/sdlc-specific-agents
 **Date**: 2024-01-04
 
 ## What Went Well

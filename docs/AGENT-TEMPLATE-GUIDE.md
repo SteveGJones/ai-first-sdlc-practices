@@ -53,12 +53,12 @@ color: [blue|red|green|yellow|purple|orange|pink|cyan]
 
 #### Key Components:
 
-**name**: 
+**name**:
 - Must exactly match the filename (e.g., `test-agent` for `test-agent.md`)
 - Use kebab-case naming convention
 - Should be descriptive and specific to the agent's role
 
-**description**: 
+**description**:
 - Comprehensive description including:
   - Primary purpose and when to use the agent
   - Multiple usage examples with context
@@ -68,7 +68,7 @@ color: [blue|red|green|yellow|purple|orange|pink|cyan]
     - Assistant response
     - Commentary explaining why this agent is appropriate
 
-**color**: 
+**color**:
 - Visual identifier for the agent
 - Choose from: blue, red, green, yellow, purple, orange, pink, cyan
 

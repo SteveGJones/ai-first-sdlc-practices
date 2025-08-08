@@ -4,26 +4,26 @@
 deployment:
   name: production-blue-green-deployment
   level: production
-  
+
   strategy:
     type: blue-green
     description: "Zero-downtime deployment with instant rollback capability"
-    
+
   environments:
     - name: staging
       url: https://staging.example.com
       auto_deploy: true
       validation_required: true
-      
+
     - name: production-blue
       url: https://blue.example.com
       auto_deploy: false
       approval_required: true
-      
+
     - name: production-green
       url: https://green.example.com
       active: true  # Currently serving traffic
-      
+
   validation:
     pre_deployment:
       - all_tests_passing
@@ -31,21 +31,22 @@ deployment:
       - architecture_complete
       - security_scan_clean
       - performance_baseline_met
-      
+
     staging_validation:
-      - smoke_tests
-      - integration_tests
-      - performance_tests
-      - security_tests
+      tests:
+        - smoke_tests
+        - integration_tests
+        - performance_tests
+        - security_tests
       duration: "30 minutes"
-      
+
     post_deployment:
       - health_checks_passing
       - metrics_within_tolerance
       - no_error_spike
       - response_time_acceptable
       - business_kpis_normal
-      
+
   monitoring:
     level: comprehensive
     metrics:
@@ -55,7 +56,7 @@ deployment:
       - cpu_usage
       - memory_usage
       - business_transactions
-      
+
     alerts:
       critical:
         - error_rate > 5%
@@ -65,38 +66,38 @@ deployment:
         - error_rate > 2%
         - response_time > 1s
         - cpu_usage > 80%
-        
+
     channels:
       - pagerduty
       - slack
       - email
-      
+
   rollback:
     strategy: automated
     triggers:
       - error_rate > 10%
       - availability < 99%
       - manual_trigger
-      
+
     process:
       1. Automatic traffic switch to green
       2. Alert team of rollback
       3. Preserve blue for investigation
       4. Generate incident report
-      
+
   agents:
     required:
       - sre-specialist         # Production readiness
       - security-architect     # Security clearance
       - compliance-auditor     # Compliance check
       - critical-goal-reviewer # Goal alignment
-      
+
     approval_sequence:
       - test-manager: "All tests passing"
       - security-architect: "Security approved"
       - sre-specialist: "Production ready"
       - compliance-auditor: "Compliance verified"
-      
+
   timeline:
     deployment_window: "Tuesday/Thursday 10am-2pm"
     freeze_periods:
@@ -104,28 +105,28 @@ deployment:
       - "Weekends"
       - "Holidays"
       - "End of quarter"
-      
+
     deployment_phases:
       - staging: "30 minutes"
       - blue_deployment: "15 minutes"
       - validation: "30 minutes"
       - traffic_switch: "5 minutes"
       - monitoring: "2 hours"
-      
+
   checklist:
     pre_deployment:
-      - [ ] All 6 architecture documents complete
-      - [ ] Zero technical debt validation passed
-      - [ ] Test coverage > 80%
-      - [ ] Security scan clean
-      - [ ] Performance benchmarks met
-      - [ ] Retrospective updated
-      - [ ] Agent approvals obtained
-      - [ ] Rollback plan tested
-      
+      - "[ ] All 6 architecture documents complete"
+      - "[ ] Zero technical debt validation passed"
+      - "[ ] Test coverage > 80%"
+      - "[ ] Security scan clean"
+      - "[ ] Performance benchmarks met"
+      - "[ ] Retrospective updated"
+      - "[ ] Agent approvals obtained"
+      - "[ ] Rollback plan tested"
+
     post_deployment:
-      - [ ] Health checks green
-      - [ ] Metrics within tolerance
-      - [ ] No customer complaints
-      - [ ] Team debriefed
-      - [ ] Documentation updated
+      - "[ ] Health checks green"
+      - "[ ] Metrics within tolerance"
+      - "[ ] No customer complaints"
+      - "[ ] Team debriefed"
+      - "[ ] Documentation updated"

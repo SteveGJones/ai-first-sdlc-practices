@@ -1,8 +1,8 @@
 # Feature Proposal: Mixed Content Guidelines for AI Agents
 
-**Date:** 2025-07-17  
-**Author:** Claude (AI Agent)  
-**Status:** Proposed  
+**Date:** 2025-07-17
+**Author:** Claude (AI Agent)
+**Status:** Proposed
 **Related Issues:** Lessons learned from agent-package-specification project
 
 ## Summary

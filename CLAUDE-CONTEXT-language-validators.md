@@ -28,12 +28,12 @@ def main():
     checks = [
         # See language-specific sections below
     ]
-    
+
     all_passed = True
     for name, command in checks:
         if not run_check(name, command):
             all_passed = False
-    
+
     return 0 if all_passed else 1
 
 if __name__ == "__main__":
@@ -133,7 +133,7 @@ def check_language_specific():
     validator_path = "tools/validation/validate-[language].py"
     if not os.path.exists(validator_path):
         return False, "Language validator not found"
-    
+
     result = subprocess.run([sys.executable, validator_path])
     return result.returncode == 0, "Language validation"
 ```

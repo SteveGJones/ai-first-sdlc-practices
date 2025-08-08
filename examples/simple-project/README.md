@@ -18,7 +18,7 @@ simple-project/
 
 1. Run the setup script:
    ```bash
-   python ../../tools/setup.py
+   python ../../tools/framework-setup.py
    ```
 
 2. Create your first feature:

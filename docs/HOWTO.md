@@ -234,11 +234,11 @@ Download and run: python setup-smart.py "[project purpose]"
 Then read CLAUDE.md and run the repository health check to verify main branch protection is enabled.
 ```
 
-### Development Session Prompt  
+### Development Session Prompt
 For ongoing development work:
 
 ```
-Please read and follow CLAUDE.md in the project root. 
+Please read and follow CLAUDE.md in the project root.
 
 CRITICAL FIRST STEPS:
 1. Run the repository health check to verify main branch protection
@@ -655,15 +655,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-      
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pre-commit install
-      
+
       - name: Run validation
         run: python tools/validate-pipeline.py --ci
-      
+
       - name: Check feature proposal
         run: python tools/check-feature-proposal.py
 ```

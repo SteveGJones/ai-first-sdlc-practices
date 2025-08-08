@@ -35,7 +35,7 @@ python tools/automation/sdlc-level.py migrate <target-level>
 - **Allowed**: TODOs, rapid iteration, direct commits (solo)
 - **Validation**: Basic security, branch checks
 
-### Production Level  
+### Production Level
 - **Purpose**: Professional applications, real users
 - **Required Documentation**:
   - All 6 architecture documents (see CLAUDE-CONTEXT-architecture.md)
