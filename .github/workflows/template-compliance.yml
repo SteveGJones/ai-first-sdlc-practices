@@ -217,7 +217,7 @@ jobs:
       
       - name: Upload Compliance Report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: template-compliance-report
           path: template-compliance-report.json
