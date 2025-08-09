@@ -152,7 +152,7 @@ python tools/automation/dashboard-generator.py ascii --data-file data.json
 ### 3. Clear Progression Path
 Each maturity level builds naturally:
 1. **Solo**: Individual mastery foundation
-2. **Builders**: Small team collaboration 
+2. **Builders**: Small team collaboration
 3. **Collaborators**: Seamless teamwork culture
 4. **Orchestrators**: System-level coordination
 5. **Innovators**: Industry leadership impact

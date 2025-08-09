@@ -57,7 +57,7 @@ You: *incorporates feedback*
 - Features Built: 3+
 - Solo Runs: 0
 
-## Week 2 Goals  
+## Week 2 Goals
 - Chemistry Score: 85%+
 - Features Built: 8+
 - Team Size: 6+ agents

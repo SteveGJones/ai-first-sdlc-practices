@@ -68,7 +68,7 @@ Run the tests. Document results.
 ### Week 1: Learn the Trio
 **Days 1-3**: One agent at a time
 - Day 1: Work with just architect
-- Day 2: Work with just builder  
+- Day 2: Work with just builder
 - Day 3: Work with just reviewer
 
 **Days 4-7**: Simple coordination

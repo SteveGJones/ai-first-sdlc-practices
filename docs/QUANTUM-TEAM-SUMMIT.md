@@ -112,7 +112,7 @@
 
 #### Play 1: "The Tool Storm"
 - **MCP Orchestrator** spawns 10,000 tool connections
-- **Swarm Coordinator** creates specialized tool-user swarms  
+- **Swarm Coordinator** creates specialized tool-user swarms
 - **A2A Mesh Controller** coordinates tool results
 - **Result**: Any problem solved with perfect tools in milliseconds
 

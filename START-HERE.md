@@ -103,7 +103,7 @@ You must commit to these:
 
 This is your first team-first decision. Don't make it alone!
 
-**Ask yourself**: 
+**Ask yourself**:
 - What do I want to build?
 - What concerns me most?
 - Am I ready to think team-first?

@@ -165,7 +165,7 @@ After comprehensive review by our most critical agents, here's the unvarnished t
 **But the ai-first-kick-starter offers hope:**
 > "The framework transforms chaotic AI development into professional delivery."
 
-**The truth lies between:** We have built something valuable that helps teams today, but we haven't achieved the Billy Wright legendary status we aspire to. 
+**The truth lies between:** We have built something valuable that helps teams today, but we haven't achieved the Billy Wright legendary status we aspire to.
 
 We know what legendary looks like. We have the blueprint. We have some of the tools. But we haven't proven we can consistently deliver championship results.
 

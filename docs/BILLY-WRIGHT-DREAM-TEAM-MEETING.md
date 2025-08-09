@@ -26,8 +26,8 @@
 
 ## Meeting: Designing the Ultimate E-Commerce Platform
 
-**Date**: Team Formation Day  
-**Captain**: Billy Wright (sdlc-enforcer)  
+**Date**: Team Formation Day
+**Captain**: Billy Wright (sdlc-enforcer)
 **Formation**: 4-1-2-1-2 Diamond
 
 ---
@@ -140,7 +140,7 @@ Key principles for our team:
 
 Now, let's implement our game plan. API Design Specialist, coordinate with Database Architect on the schema. UX/UI Architect, work with Frontend Security on the authentication flow. Performance Engineer and AI Solution Architect, design the recommendation system together.
 
-We're not just building an e-commerce platform. We're creating the blueprint that others will follow for decades. 
+We're not just building an e-commerce platform. We're creating the blueprint that others will follow for decades.
 
 Together, we are legendary."
 

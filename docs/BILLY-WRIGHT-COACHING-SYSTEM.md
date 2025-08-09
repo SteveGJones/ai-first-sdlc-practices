@@ -235,7 +235,7 @@ Result: Zero security incidents, 99.99% uptime, 92% user satisfaction
 **Coaching Intervention:**
 ```markdown
 "I notice you're taking on this challenge alone. Remember Billy Wright's wisdom:
-The best captains make their teammates look brilliant. 
+The best captains make their teammates look brilliant.
 
 Let's try this approach:
 1. Which specialist could help you excel here?
@@ -338,13 +338,13 @@ their-project/
 triggers:
   solo_pr_detected:
     message: "This PR lacks specialist review. Engage [specialist] for [concern]"
-  
+
   quality_gate_failed:
     message: "Billy Wright teams don't ship bugs. Bring in ai-test-engineer."
-  
+
   velocity_declining:
     message: "Team rhythm is off. Run chemistry exercise."
-  
+
   excellence_achieved:
     message: "🎉 Championship delivery! Your coordination was legendary!"
 ```
@@ -386,7 +386,7 @@ Every AI we coach to Billy Wright excellence becomes a coach themselves:
 - They contribute to the pattern library
 - They raise the standard for everyone
 
-Eventually, solo hero behavior becomes extinct, replaced by 
+Eventually, solo hero behavior becomes extinct, replaced by
 systematic collaborative excellence as the default way of working.
 ```
 

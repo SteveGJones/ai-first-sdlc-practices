@@ -253,15 +253,15 @@ primary_channels:
   architecture_discussion:
     participants: [solution-architect, ai-solution-architect, security-architect]
     cadence: "Before any major implementation"
-    
+
   quality_validation:
     participants: [test-manager, critical-goal-reviewer, ai-test-engineer]
     cadence: "After every deliverable"
-    
+
   delivery_coordination:
     participants: [delivery-manager, agile-coach, project-plan-tracker]
     cadence: "Daily standup pattern"
-    
+
   performance_optimization:
     participants: [performance-engineer, sre-specialist, devops-specialist]
     cadence: "Continuous monitoring"
@@ -273,13 +273,13 @@ primary_channels:
 message_types:
   request:
     format: "[AGENT] → [AGENT]: [ACTION_REQUIRED] | Context: [BRIEF] | Priority: [HIGH/MED/LOW]"
-    
+
   status_update:
     format: "[AGENT]: [CURRENT_STATUS] | Next: [NEXT_ACTION] | Blocks: [DEPENDENCIES]"
-    
+
   escalation:
     format: "🚨 [AGENT] → [ESCALATION_TARGET]: [CRITICAL_ISSUE] | Impact: [SCOPE] | Urgency: [TIMELINE]"
-    
+
   handoff:
     format: "[AGENT] → [AGENT]: [COMPLETED_WORK] | Context: [SUMMARY] | Next_Steps: [ACTIONS]"
 ```
@@ -289,13 +289,13 @@ message_types:
 ```yaml
 workflow_patterns:
   feature_development:
-    sequence: 
+    sequence:
       - solution-architect (design)
-      - ai-solution-architect (ai-specific design) 
+      - ai-solution-architect (ai-specific design)
       - python-expert (implementation)
       - ai-test-engineer (validation)
       - critical-goal-reviewer (acceptance)
-      
+
   issue_resolution:
     sequence:
       - Any agent (detection)

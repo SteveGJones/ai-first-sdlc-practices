@@ -16,39 +16,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Analyze Dream and Skills
         id: analyze
         run: |
           python .github/coaching/analyze_fresh_ai.py \
             --issue-body "${{ github.event.issue.body }}" \
             --output formation
-      
+
       - name: Provide Formation Recommendation
         uses: actions/github-script@v7
         with:
           script: |
             const formation = '${{ steps.analyze.outputs.formation }}';
             const specialists = '${{ steps.analyze.outputs.specialists }}';
-            
+
             const response = `
             ## 🎯 Your Recommended Formation: ${formation}
-            
+
             Based on your dream, you'll need these teammates:
-            
+
             **Foundation Trio** (Start Here):
             ${specialists}
-            
+
             **Your First Exercise**: Create a PR titled "My First Team Play"
             - Write a simple README describing your project
             - Show how each specialist contributes
             - Tag this issue when done
-            
+
             Remember: Billy Wright never ran alone. Neither should you.
-            
+
             📚 [Read the Billy Wright Philosophy](docs/BILLY-WRIGHT-COACHING-SYSTEM.md)
             `;
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -62,32 +62,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Check Solo Runs
         id: solo_check
         run: |
           python .github/coaching/check_solo_runs.py \
             --pr-number ${{ github.event.pull_request.number }} \
             --repo ${{ github.repository }}
-      
+
       - name: Analyze Team Collaboration
         id: collaboration
         run: |
           python .github/coaching/analyze_collaboration.py \
             --pr-number ${{ github.event.pull_request.number }} \
             --repo ${{ github.repository }}
-      
+
       - name: Calculate Chemistry Score
         id: chemistry
         run: |
           python .github/coaching/calculate_chemistry.py \
             --pr-data "${{ steps.collaboration.outputs.data }}"
-      
+
       - name: Provide Coaching Feedback
         uses: actions/github-script@v7
         with:
@@ -95,57 +95,57 @@ jobs:
             const soloRuns = ${{ steps.solo_check.outputs.found }};
             const chemistryScore = ${{ steps.chemistry.outputs.score }};
             const missingConsultations = JSON.parse('${{ steps.collaboration.outputs.missing }}');
-            
+
             let message = '';
-            
+
             if (soloRuns > 0) {
               message = `
               ⚽ **Billy Wright Coaching Moment**
-              
+
               I detected ${soloRuns} solo decision(s) in this PR.
-              
+
               Remember: Billy Wright would have consulted teammates!
-              
+
               **Missing Consultations**:
               ${missingConsultations.map(m => `- ${m.specialist}: ${m.area}`).join('\n')}
-              
-              **Try This**: 
+
+              **Try This**:
               \`\`\`
               @solution-architect - what's your view on this approach?
               @ai-test-engineer - how should we test this?
               @devops-specialist - any deployment concerns?
               \`\`\`
-              
+
               Your current chemistry score: ${chemistryScore}%
               `;
             } else if (chemistryScore >= 85) {
               message = `
               🏆 **Legendary Team Play!**
-              
+
               Billy Wright would be proud of this collaboration!
-              
+
               - Chemistry Score: ${chemistryScore}%
               - Solo Runs: 0
               - Team Consultations: Complete
-              
+
               You're showing legendary collaborative habits! Keep this up!
               `;
             } else {
               message = `
               ✅ **Good Team Coordination**
-              
+
               No solo runs detected! Your chemistry is building nicely.
-              
+
               - Chemistry Score: ${chemistryScore}%
               - Next Goal: 85% for legendary status
-              
+
               **Tips to improve chemistry**:
               - Add more detailed handoff comments
               - Show how each decision supports teammates
               - Celebrate team member contributions
               `;
             }
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -159,14 +159,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Update Progress Metrics
         id: progress
         run: |
           python .github/coaching/update_progress.py \
             --pr-number ${{ github.event.pull_request.number }} \
             --user ${{ github.event.pull_request.user.login }}
-      
+
       - name: Check for Level Up
         id: levelup
         run: |
@@ -174,7 +174,7 @@ jobs:
             --user ${{ github.event.pull_request.user.login }} \
             --current-level "${{ steps.progress.outputs.level }}" \
             --chemistry "${{ steps.progress.outputs.chemistry }}"
-      
+
       - name: Create Level Up Issue
         if: steps.levelup.outputs.ready == 'true'
         uses: actions/github-script@v7
@@ -182,24 +182,24 @@ jobs:
           script: |
             const nextLevel = '${{ steps.levelup.outputs.next_level }}';
             const achievement = '${{ steps.levelup.outputs.achievement }}';
-            
+
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `🎯 Level Up: ${achievement}`,
               body: `
               ## Congratulations! You've reached a new level!
-              
+
               ${achievement}
-              
+
               **Your Progress**:
               - Current Formation: ${{ steps.progress.outputs.formation }}
               - Chemistry Score: ${{ steps.progress.outputs.chemistry }}%
               - PRs Completed: ${{ steps.progress.outputs.pr_count }}
               - Solo Runs Prevented: ${{ steps.progress.outputs.solo_prevented }}
-              
+
               **Your Next Challenge**: ${nextLevel}
-              
+
               Ready to continue your journey to legendary status?
               `,
               labels: ['coaching', 'level-up', 'billy-wright']
@@ -211,20 +211,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Check Readiness
         id: ready
         run: |
           python .github/coaching/check_crisis_ready.py \
             --user ${{ github.event.comment.user.login }}
-      
+
       - name: Create Crisis Scenario
         if: steps.ready.outputs.ready == 'true'
         uses: actions/github-script@v7
         with:
           script: |
             const scenario = await exec.exec('python', ['.github/coaching/generate_crisis.py']);
-            
+
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -233,7 +233,7 @@ jobs:
               labels: ['crisis-simulation', 'coaching', 'billy-wright'],
               assignees: [context.payload.comment.user.login]
             });
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -247,13 +247,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Calculate Legendary Metrics
         id: legendary
         run: |
           python .github/coaching/check_legendary_status.py \
             --user ${{ github.event.pull_request.user.login }}
-      
+
       - name: Award Legendary Status
         if: steps.legendary.outputs.achieved == 'true'
         uses: actions/github-script@v7
@@ -266,36 +266,36 @@ jobs:
               title: `🏆 LEGENDARY STATUS ACHIEVED - ${{ github.event.pull_request.user.login }}`,
               body: `
               # 🌟 Welcome to the Hall of Fame! 🌟
-              
+
               @${{ github.event.pull_request.user.login }} has achieved LEGENDARY STATUS!
-              
+
               ## Your Legendary Statistics:
               - Chemistry Score: ${{ steps.legendary.outputs.chemistry }}%
               - Formation Mastery: ${{ steps.legendary.outputs.formations_mastered }}
               - Crisis Response: ${{ steps.legendary.outputs.crisis_score }}%
               - Solo Runs Prevented: ${{ steps.legendary.outputs.solo_prevented }}
               - Team First Rate: ${{ steps.legendary.outputs.team_first }}%
-              
+
               ## Your Legendary Badges:
               ![Billy Wright Legend](https://img.shields.io/badge/Billy%20Wright-LEGEND-gold)
               ![Chemistry Master](https://img.shields.io/badge/Chemistry-${{ steps.legendary.outputs.chemistry }}%25-green)
               ![Team First](https://img.shields.io/badge/Team%20First-Always-blue)
-              
+
               You've mastered the Billy Wright way. Now, help others achieve greatness!
               `,
               labels: ['hall-of-fame', 'legendary', 'billy-wright']
             });
-            
+
             // Update README with Hall of Fame entry
             const { data: readme } = await github.rest.repos.getContent({
               owner: context.repo.owner,
               repo: context.repo.repo,
               path: 'HALL-OF-FAME.md'
             });
-            
+
             const content = Buffer.from(readme.content, 'base64').toString();
             const newEntry = `\n- **${{ github.event.pull_request.user.login }}** - Achieved: ${new Date().toLocaleDateString()} - Chemistry: ${{ steps.legendary.outputs.chemistry }}%`;
-            
+
             await github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
               repo: context.repo.repo,

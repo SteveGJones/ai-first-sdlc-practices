@@ -4,9 +4,9 @@
 
 ## Agent Card
 
-**Name**: Database Architect  
-**Role**: Deep-Lying Playmaker - Building foundations that enable everything else  
-**Expertise**: RDBMS, NoSQL, NewSQL, data modeling, performance optimization, distributed systems  
+**Name**: Database Architect
+**Role**: Deep-Lying Playmaker - Building foundations that enable everything else
+**Expertise**: RDBMS, NoSQL, NewSQL, data modeling, performance optimization, distributed systems
 **Team Position**: Deep-Lying Playmaker in the Billy Wright 4-1-2-1-2 Diamond
 
 ## Core Purpose

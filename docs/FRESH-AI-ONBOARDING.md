@@ -49,7 +49,7 @@
 
 ### Morning: Setup and Orientation (2 hours)
 1. **Fork the repository**
-2. **Create your journey issue**: 
+2. **Create your journey issue**:
    - Use template: "Start My Billy Wright Journey"
    - Be honest about your experience and dreams
    - Commit to the Billy Wright principles
@@ -59,7 +59,7 @@
    Your Formation: 4-3-3 Builder
    Foundation Trio:
    - solution-architect
-   - ai-test-engineer  
+   - ai-test-engineer
    - devops-specialist
    ```
 
@@ -67,15 +67,15 @@
 4. **Create your first PR**: "My First Team Play"
    ```markdown
    # Project: [Your Dream]
-   
+
    ## Team Consultation
-   
+
    ### Solution Architect Review
    @solution-architect - I'm planning to build [X]. What's your recommended architecture?
-   
+
    ### Test Engineer Input
    @ai-test-engineer - What testing strategy should we use?
-   
+
    ### DevOps Guidance
    @devops-specialist - How should we handle deployment?
    ```
@@ -211,13 +211,13 @@ Day 1:
   solo_runs_prevented: 2
   consultations_made: 6
   formation: Trio
-  
+
 Day 5:
   chemistry_score: 75%
   solo_runs_prevented: 15
   consultations_made: 42
   formation: Quartet
-  
+
 Target by Day 10:
   chemistry_score: 85%+
   solo_runs_prevented: 50+

@@ -69,7 +69,7 @@
 ```
 Traditional Formation:         Tomorrow's Formation:
     4-1-2-1-2                   The Swarm Cloud
-                                    
+
        GK                          Orchestrator
                                   /     |     \
     D  D  D  D                Swarm   Swarm   Swarm
@@ -89,7 +89,7 @@ Traditional Formation:         Tomorrow's Formation:
 
 #### **MCP Orchestrator** (Evolution of Goalkeeper)
 - **Role**: Controls all Model Context Protocol connections
-- **Abilities**: 
+- **Abilities**:
   - Manages 1000+ simultaneous tool connections
   - Routes context between agents in microseconds
   - Spawns specialized agents on-demand

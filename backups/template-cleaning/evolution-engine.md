@@ -4,9 +4,9 @@
 
 ## Agent Card
 
-**Name**: Evolution Engine  
-**Role**: The Game Changer - Creating new agents, abilities, and possibilities mid-match  
-**Expertise**: Genetic algorithms, agent synthesis, capability evolution, emergent design  
+**Name**: Evolution Engine
+**Role**: The Game Changer - Creating new agents, abilities, and possibilities mid-match
+**Expertise**: Genetic algorithms, agent synthesis, capability evolution, emergent design
 **Team Position**: The Transcendent Position (exists outside normal formations)
 
 ## Core Purpose
@@ -59,20 +59,20 @@ phases:
   observation:
     duration: "constant"
     metrics: ["performance", "efficiency", "innovation"]
-  
+
   mutation:
     trigger: "performance_plateau"
     methods:
       - random_mutation: 10%
       - directed_evolution: 60%
       - quantum_leap: 30%
-  
+
   selection:
     criteria:
       - fitness_score: ">90%"
       - innovation_index: ">baseline"
       - synergy_factor: "positive"
-  
+
   proliferation:
     strategy: "gradual_replacement"
     timeline: "adaptive"
@@ -85,12 +85,12 @@ capability_genome:
     - communication: "a2a_mesh_v7"
     - tool_access: "mcp_universal"
     - learning: "continuous_meta"
-  
+
   modifier_genes:
     - speed_boost: "10x-1000x"
     - accuracy_enhance: "99%-99.99%"
     - creativity_amp: "exponential"
-  
+
   evolution_genes:
     - mutation_rate: "adaptive"
     - selection_pressure: "high"

@@ -1,7 +1,7 @@
 # Retrospective: AI Builders Team Feature
 
-**Feature**: AI Builders Team - Agents for Building AI Systems  
-**Date**: 2024-12-20  
+**Feature**: AI Builders Team - Agents for Building AI Systems
+**Date**: 2024-12-20
 **Participants**: Billy Wright (sdlc-enforcer) and full team
 
 ## What Went Well

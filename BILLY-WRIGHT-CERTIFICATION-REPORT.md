@@ -1,8 +1,8 @@
 # Billy Wright Coaching Certification - Official Assessment Report
 
-**Framework**: AI-First SDLC Practices v1.7.0  
-**Assessment Date**: August 8, 2025  
-**Assessor**: Compliance Report Generator  
+**Framework**: AI-First SDLC Practices v1.7.0
+**Assessment Date**: August 8, 2025
+**Assessor**: Compliance Report Generator
 **Status**: **CERTIFIED FOR COACHING** ✅
 
 ---
@@ -227,8 +227,8 @@ While the framework achieves certification standard, these enhancements would st
 - ✅ Documentation suitable for coaching teams at all maturity levels
 - ✅ Systematic approach to transforming solo performers into team champions
 
-**Certification Valid For:** 12 months from assessment date  
-**Re-assessment Due:** August 8, 2026  
+**Certification Valid For:** 12 months from assessment date
+**Re-assessment Due:** August 8, 2026
 **Certification Level:** **LEGENDARY COACH** 👑
 
 ---
@@ -252,8 +252,8 @@ python tools/automation/team-discovery.py --start-coaching
 
 ---
 
-*Certification completed by: AI-First SDLC Compliance Report Generator*  
-*Assessment methodology: Comprehensive framework analysis with tool validation*  
+*Certification completed by: AI-First SDLC Compliance Report Generator*
+*Assessment methodology: Comprehensive framework analysis with tool validation*
 *Certification authority: Billy Wright Coaching Standards Board*
 
 **Status: CERTIFIED FOR COACHING** ✅ **Level: LEGENDARY** 👑

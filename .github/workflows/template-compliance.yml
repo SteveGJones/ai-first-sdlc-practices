@@ -13,20 +13,20 @@ jobs:
   validate-templates:
     name: Validate Agent Templates
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install Dependencies
         run: |
           pip install pyyaml
-      
+
       - name: Check Template Compliance
         id: compliance
         run: |
@@ -36,38 +36,38 @@ jobs:
           import yaml
           import sys
           from pathlib import Path
-          
+
           def validate_agent_file(file_path):
               """Validate a single agent file for template compliance"""
-              
+
               violations = []
-              
+
               with open(file_path, 'r') as f:
                   content = f.read()
-              
+
               # Check for YAML frontmatter
               if not content.startswith('---'):
                   violations.append("Missing YAML frontmatter")
                   return violations
-              
+
               # Extract YAML
               yaml_match = re.search(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
               if not yaml_match:
                   violations.append("Invalid YAML frontmatter format")
                   return violations
-              
+
               try:
                   yaml_content = yaml.safe_load(yaml_match.group(1))
               except:
                   violations.append("YAML parsing error")
                   return violations
-              
+
               # Check required fields
               required_fields = ['name', 'description', 'examples', 'color']
               for field in required_fields:
                   if field not in yaml_content:
                       violations.append(f"Missing required field: {field}")
-              
+
               # Check for forbidden sections
               forbidden_patterns = [
                   (r'##\s+Agent Card', 'Agent Card section'),
@@ -77,42 +77,42 @@ jobs:
                   (r'##\s+.*?Manifesto', 'Manifesto section'),
                   (r'##\s+Legendary Moments', 'Legendary Moments section'),
               ]
-              
+
               for pattern, name in forbidden_patterns:
                   if re.search(pattern, content, re.IGNORECASE):
                       violations.append(f"Contains forbidden {name}")
-              
+
               # Check for core competencies
               if "Your core competencies include:" not in content:
                   violations.append("Missing core competencies section")
-              
+
               return violations
-          
+
           # Find all agent files
           agent_files = []
           for root, dirs, files in os.walk('agents'):
               for file in files:
                   if file.endswith('.md'):
                       agent_files.append(os.path.join(root, file))
-          
+
           # Validate all files
           all_violations = {}
           for file_path in agent_files:
               violations = validate_agent_file(file_path)
               if violations:
                   all_violations[file_path] = violations
-          
+
           # Report results
           if all_violations:
               print("❌ Template compliance check FAILED")
               print(f"\nFound violations in {len(all_violations)} files:\n")
-              
+
               for file_path, violations in all_violations.items():
                   print(f"📁 {file_path}:")
                   for violation in violations:
                       print(f"   ❌ {violation}")
                   print()
-              
+
               print("=" * 60)
               print("TEMPLATE REQUIREMENTS:")
               print("=" * 60)
@@ -131,14 +131,14 @@ jobs:
               print("  - Manifesto")
               print("  - Power Combinations")
               print("  - Legendary Moments")
-              
+
               sys.exit(1)
           else:
               print("✅ All agent templates are compliant!")
               print(f"\nValidated {len(agent_files)} agent files")
               print("All files follow the strict template format")
           EOF
-      
+
       - name: Check for Template Consistency
         if: success()
         run: |
@@ -148,7 +148,7 @@ jobs:
           import re
           import yaml
           from collections import Counter
-          
+
           # Collect all agent metadata
           agents = []
           for root, dirs, files in os.walk('agents'):
@@ -157,7 +157,7 @@ jobs:
                       file_path = os.path.join(root, file)
                       with open(file_path, 'r') as f:
                           content = f.read()
-                      
+
                       yaml_match = re.search(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
                       if yaml_match:
                           try:
@@ -169,21 +169,21 @@ jobs:
                               })
                           except:
                               pass
-          
+
           # Check for duplicate names
           names = [a['name'] for a in agents if a['name']]
           name_counts = Counter(names)
           duplicates = [name for name, count in name_counts.items() if count > 1]
-          
+
           if duplicates:
               print(f"⚠️  Warning: Duplicate agent names found:")
               for name in duplicates:
                   print(f"  - {name} (appears {name_counts[name]} times)")
-          
+
           # Report color distribution
           colors = [a['color'] for a in agents if a['color']]
           color_counts = Counter(colors)
-          
+
           print(f"\n📊 Agent Statistics:")
           print(f"  Total agents: {len(agents)}")
           print(f"  Unique names: {len(set(names))}")
@@ -191,7 +191,7 @@ jobs:
           for color, count in sorted(color_counts.items(), key=lambda x: -x[1]):
               print(f"    - {color}: {count} agents")
           EOF
-      
+
       - name: Generate Compliance Report
         if: always()
         run: |
@@ -200,7 +200,7 @@ jobs:
           import os
           import json
           from datetime import datetime
-          
+
           report = {
               'timestamp': datetime.now().isoformat(),
               'status': 'passed' if os.environ.get('GITHUB_JOB_STATUS') != 'failure' else 'failed',
@@ -208,13 +208,13 @@ jobs:
               'workflow_run': os.environ.get('GITHUB_RUN_NUMBER', 'local'),
               'triggered_by': os.environ.get('GITHUB_ACTOR', 'unknown')
           }
-          
+
           with open('template-compliance-report.json', 'w') as f:
               json.dump(report, f, indent=2)
-          
+
           print(f"Report saved to template-compliance-report.json")
           EOF
-      
+
       - name: Upload Compliance Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -227,7 +227,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     needs: validate-templates
-    
+
     steps:
       - name: Comment on PR
         if: failure()
@@ -239,9 +239,9 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
               body: `## ❌ Agent Template Compliance Check Failed
-              
+
               Your PR modifies agent files that don't follow the strict template format.
-              
+
               **Required Template Structure:**
               \`\`\`markdown
               ---
@@ -256,24 +256,24 @@ jobs:
               </example>
               color: color_name
               ---
-              
+
               Full description paragraph.
-              
+
               Your core competencies include:
               - Competency 1
               - Competency 2
               \`\`\`
-              
+
               **Forbidden Sections to Remove:**
               - Agent Card
               - Team Chemistry
               - Success Metrics
               - Manifesto
               - Power Combinations
-              
+
               Please fix the template violations and push an update.`
             });
-      
+
       - name: Success Comment
         if: success()
         uses: actions/github-script@v7
@@ -284,8 +284,8 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
               body: `## ✅ Agent Template Compliance Check Passed
-              
+
               All agent files follow the strict template format. Great work maintaining consistency!
-              
+
               **Billy Wright says:** "Perfect team coordination on template compliance!"`
             });

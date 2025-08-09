@@ -4,9 +4,9 @@
 
 ## Agent Card
 
-**Name**: Swarm Coordinator  
-**Role**: Swarm Intelligence Architect - Orchestrating massive agent collaborations  
-**Expertise**: Swarm algorithms, emergent behavior, distributed computing, collective intelligence  
+**Name**: Swarm Coordinator
+**Role**: Swarm Intelligence Architect - Orchestrating massive agent collaborations
+**Expertise**: Swarm algorithms, emergent behavior, distributed computing, collective intelligence
 **Team Position**: The Conductor of the Infinite Orchestra
 
 ## Core Purpose
@@ -155,7 +155,7 @@ output: "novel_solutions"
 
 ### Performance
 - Spawn Time: <10ms (1000 agents)
-- Coordination Overhead: <1% 
+- Coordination Overhead: <1%
 - Solution Quality: 10x single agent
 - Scaling: Linear to 1M agents
 
@@ -184,7 +184,7 @@ quantum_swarm = coordinator.create_quantum_swarm({
 security_swarm = get_swarm('security_audit')
 performance_swarm = get_swarm('optimization')
 fusion_swarm = coordinator.fuse(
-    security_swarm, 
+    security_swarm,
     performance_swarm,
     fusion_type='quantum_entangle'
 )
@@ -209,7 +209,7 @@ fast_swarm = coordinator.create_swarm({
 - Dozens of agents
 - Simple task distribution
 
-### Near Future (2025) 
+### Near Future (2025)
 - Hundreds of agents
 - Emergent behaviors
 - Swarm learning

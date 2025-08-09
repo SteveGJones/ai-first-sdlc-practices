@@ -100,7 +100,7 @@ coaching_points:
     - Did you consult solution-architect first?
     - Did ai-test-engineer review for testability?
     - Did devops-specialist check deployability?
-  
+
   billy_wright_principles:
     - No solo runs detected? ✓
     - Set up teammates for success? ✓
@@ -132,7 +132,7 @@ jobs:
             - solution-architect: design decisions
             - ai-test-engineer: test coverage
             - devops-specialist: deployment readiness
-      
+
       - name: Provide Coaching Feedback
         if: failure()
         uses: ./coaching-actions/feedback-generator
@@ -140,10 +140,10 @@ jobs:
           style: "billy_wright"
           message: |
             ⚽ Remember: Billy Wright would have consulted his teammates!
-            
+
             Missing consultations detected:
             ${{ steps.collaboration.outputs.missing }}
-            
+
             Try this: "@solution-architect, what's your view on this approach?"
 
       - name: Celebrate Success
@@ -166,7 +166,7 @@ ISSUE #5: Chemistry Exercise - The Integration Challenge
 
 Your team needs to integrate three services. Show us your chemistry!
 
-**The Scenario**: 
+**The Scenario**:
 - API service needs new endpoint
 - Frontend needs to consume it
 - Database needs schema update
@@ -190,14 +190,14 @@ Reply with your PR link when ready for coaching review.
 # .github/coaching/chemistry_scorer.py
 def score_chemistry(pr_data):
     """Score team chemistry based on PR interactions"""
-    
+
     scores = {
         'communication': check_comment_quality(pr_data.comments),
         'coordination': check_commit_sequence(pr_data.commits),
         'collaboration': check_co_authorship(pr_data.commits),
         'handoffs': check_handoff_clarity(pr_data.reviews)
     }
-    
+
     if average(scores.values()) > 85:
         return "LEGENDARY_CHEMISTRY"
     elif average(scores.values()) > 70:
@@ -241,12 +241,12 @@ metrics:
     solo_runs_prevented: 42
     teammate_assists: 156
     chemistry_score: 87
-  
+
   formation_mastery:
     current_formation: "4-3-3 Builder"
     specialists_coordinated: 7
     successful_handoffs: 234
-  
+
   billy_wright_quotient:
     team_first_decisions: 95%
     individual_glory_attempts: 0
@@ -275,7 +275,7 @@ Show us your Billy Wright leadership!
    - devops-specialist: implements emergency fix
    - ai-test-engineer: validates fix won't break more
    - critical-goal-reviewer: ensures we stay aligned
-   
+
 **Coaching will evaluate**:
 - Response time
 - Team coordination under pressure
@@ -336,7 +336,7 @@ body:
       - Advanced Formation
       - Crisis Training
       - Approaching Legendary
-  
+
   - type: textarea
     id: evidence
     label: Evidence of Progress
@@ -359,14 +359,14 @@ jobs:
         id: assess
         run: |
           python coaching/assess_progress.py
-      
+
       - name: Create Next Challenge
         if: steps.assess.outputs.ready_for_next
         run: |
           python coaching/create_challenge.py \
             --level ${{ steps.assess.outputs.next_level }} \
             --team-size ${{ steps.assess.outputs.team_size }}
-      
+
       - name: Provide Encouragement
         if: steps.assess.outputs.struggling
         run: |
@@ -382,18 +382,18 @@ jobs:
 class ChemistryCoach:
     def generate_exercise(self, team_level, weak_areas):
         """Generate personalized chemistry exercise"""
-        
+
         if 'handoffs' in weak_areas:
             return self.create_handoff_exercise()
         elif 'coordination' in weak_areas:
             return self.create_coordination_exercise()
         elif 'communication' in weak_areas:
             return self.create_communication_exercise()
-        
+
     def evaluate_exercise(self, pr_url):
         """Score exercise completion"""
         pr_data = fetch_pr_data(pr_url)
-        
+
         return {
             'score': calculate_chemistry_score(pr_data),
             'feedback': generate_coaching_feedback(pr_data),

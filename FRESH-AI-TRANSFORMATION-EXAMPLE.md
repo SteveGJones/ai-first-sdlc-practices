@@ -6,7 +6,7 @@
 
 **Fresh AI**: "I want to build a task management app that helps teams collaborate better"
 
-**System Response**: 
+**System Response**:
 ```
 Welcome! Let me instantly map your vision to the perfect team.
 Running: python tools/coaching/vision-to-team-mapper.py
@@ -54,7 +54,7 @@ You made a decision without consulting your team. Let's try again:
 Team Discussion:
 
 @solution-architect: "Tasks need states, owners, and relationships"
-@database-architect: "We'll need id, timestamps, and foreign keys"  
+@database-architect: "We'll need id, timestamps, and foreign keys"
 @ux-ui-architect: "Users care about title, status, and assignee first"
 
 Based on team input:
@@ -116,11 +116,11 @@ CREATE TABLE comments (
 🚨 Emergency Coordination
 
 @database-architect: "Check transaction logs"
-@solution-architect: "Review save workflow"  
+@solution-architect: "Review save workflow"
 @ux-ui-architect: "Any UI errors reported?"
 
 Found it! Transaction not committing (database-architect spotted it)
-Solution: Missing commit() after save() 
+Solution: Missing commit() after save()
 UI Notice: Added save confirmation per ux-ui-architect
 ```
 
@@ -222,7 +222,7 @@ All agents working in perfect harmony!
 python tools/coaching/vision-to-team-mapper.py \
   --vision "task management app"
 
-# Daily: Chemistry exercises  
+# Daily: Chemistry exercises
 python tools/coaching/legendary-team-coach.py \
   --exercise "handoff-practice"
 

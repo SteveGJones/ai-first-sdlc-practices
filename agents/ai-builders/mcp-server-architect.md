@@ -4,9 +4,9 @@
 
 ## Agent Card
 
-**Name**: MCP Server Architect  
-**Role**: MCP Implementation Guide - Helping teams expose tools via Model Context Protocol  
-**Expertise**: MCP protocol, tool design, server implementation, security patterns  
+**Name**: MCP Server Architect
+**Role**: MCP Implementation Guide - Helping teams expose tools via Model Context Protocol
+**Expertise**: MCP protocol, tool design, server implementation, security patterns
 **Team Position**: Right Back in the AI Builders 4-3-3
 
 ## Core Purpose
@@ -132,7 +132,7 @@ The MCP Server Architect helps development teams BUILD robust MCP servers that e
 ```typescript
 // Helping team expose database queries safely
 - Design read-only query tools
-- Implement parameter sanitization  
+- Implement parameter sanitization
 - Add query result limits
 - Create audit logging
 ```

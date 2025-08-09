@@ -210,7 +210,7 @@
 
 No buzzwords. No evolution engines. Just solid expertise in helping teams build:
 - MCP servers that actually work
-- Agents that solve real problems  
+- Agents that solve real problems
 - Orchestration that scales
 - Context systems that remember
 - RAG systems that retrieve accurately

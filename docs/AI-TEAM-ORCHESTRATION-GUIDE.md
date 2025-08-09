@@ -70,7 +70,7 @@
 # AI Team Orchestration Guide
 
 > **The Orchestration Architect's Guide to Building Perfect AI Development Teams**
-> 
+>
 > *"Some projects need a 4-4-2, others need a 3-5-2. How do we help them find THEIR formation?"*
 
 ## Overview
@@ -325,13 +325,13 @@ def recommend_next_agents(current_team, project_archetype, phase):
     """
     if phase == "foundation" and len(current_team) < 3:
         return ["sdlc-enforcer", "solution-architect", "critical-goal-reviewer"]
-    
+
     if phase == "specialization":
         return get_archetype_specialists(project_archetype)
-    
+
     if phase == "quality":
         return ["test-manager", "performance-engineer"] + get_quality_specialists(project_archetype)
-    
+
     if phase == "optimization":
         return get_optimization_agents(current_team, project_archetype)
 ```
@@ -345,7 +345,7 @@ Team chemistry is measured across four dimensions:
 #### 4.1.1 Communication Fluency
 ```markdown
 **Excellent**: Agents seamlessly hand off context, no information loss
-**Good**: Minor clarifications needed, mostly smooth handoffs  
+**Good**: Minor clarifications needed, mostly smooth handoffs
 **Fair**: Regular context clarification required
 **Poor**: Frequent miscommunication, repeated explanations needed
 ```
@@ -381,7 +381,7 @@ Team chemistry is measured across four dimensions:
 **Objective**: Test basic collaboration on a simple CRUD feature
 **Agents**: Core trio (sdlc-enforcer, solution-architect, critical-goal-reviewer)
 **Task**: Implement a user registration endpoint
-**Success Criteria**: 
+**Success Criteria**:
 - Clean handoffs between design, implementation, and review
 - All agents contribute meaningfully
 - No duplicated effort or missed responsibilities
@@ -459,12 +459,12 @@ Escalation: If criteria not met, blocks merge and returns to responsible agent
 validate_team_foundation() {
     # Must have core trio installed and responsive
     check_agent_responsiveness("sdlc-enforcer")
-    check_agent_responsiveness("solution-architect") 
+    check_agent_responsiveness("solution-architect")
     check_agent_responsiveness("critical-goal-reviewer")
-    
+
     # Must complete basic workflow without errors
     run_simple_feature_test()
-    
+
     # Must demonstrate clean handoffs
     verify_handoff_protocol()
 }
@@ -478,13 +478,13 @@ validate_formation_readiness(formation_type) {
     required_agents = get_formation_agents(formation_type)
     for agent in required_agents:
         assert agent_installed(agent)
-    
+
     # Formation-specific workflow must complete successfully
     run_formation_workflow_test(formation_type)
-    
+
     # No role conflicts detected
     assert no_role_conflicts()
-    
+
     # Quality gates functioning
     assert quality_gates_active()
 }
@@ -497,15 +497,15 @@ validate_team_chemistry() {
     # Communication fluency score >= 80%
     communication_score = assess_communication_quality()
     assert communication_score >= 0.8
-    
+
     # Role clarity score >= 85%
     role_clarity_score = assess_role_clarity()
     assert role_clarity_score >= 0.85
-    
+
     # Collaboration rhythm score >= 75%
     collaboration_score = assess_collaboration_rhythm()
     assert collaboration_score >= 0.75
-    
+
     # Quality integration score >= 90%
     quality_score = assess_quality_integration()
     assert quality_score >= 0.9
@@ -559,7 +559,7 @@ validate_team_chemistry() {
 #### Yellow Light Criteria (Needs Improvement)
 ```markdown
 ⚠️ Foundation solid but formation or chemistry issues
-⚠️ Recent chemistry improvements show positive trend  
+⚠️ Recent chemistry improvements show positive trend
 ⚠️ One failed crisis simulation but learning applied
 ⚠️ Minor role conflicts being actively addressed
 ```
@@ -580,7 +580,7 @@ validate_team_chemistry() {
 Every formation needs a captain who coordinates between agents:
 
 **Builder Formation**: solution-architect (natural leader)
-**Specialist Formation**: domain-specialist (expertise leader)  
+**Specialist Formation**: domain-specialist (expertise leader)
 **Innovator Formation**: ai-solution-architect (technical leader)
 **Transformer Formation**: integration-orchestrator (complexity leader)
 **Orchestrator Formation**: orchestration-architect (meta leader)
@@ -638,7 +638,7 @@ python tools/automation/team-dashboard.py --live
 #### Issue: Agents Stepping on Each Other
 **Solution**: Run role clarity exercise, update role definitions, establish clear boundaries
 
-#### Issue: Poor Handoff Quality  
+#### Issue: Poor Handoff Quality
 **Solution**: Implement structured handoff templates, practice handoff exercises
 
 #### Issue: Quality Gates Being Bypassed
@@ -688,7 +688,7 @@ Team chemistry requires ongoing investment:
 
 **Formation Selector**:
 - Simple project → Builder (3-3-2)
-- Domain-specific → Specialist (4-3-2)  
+- Domain-specific → Specialist (4-3-2)
 - AI/ML focused → Innovator (4-4-2)
 - Enterprise integration → Transformer (3-5-2)
 - Multi-agent systems → Orchestrator (4-4-2-1)

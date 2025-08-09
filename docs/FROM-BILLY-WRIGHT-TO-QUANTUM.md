@@ -57,7 +57,7 @@ This document shows how we evolve from one to the other while maintaining excell
 Traditional positions with defined roles, exceptional individual agents working in harmony.
 
 ### Key Players
-- **Defense**: Security Architect, Frontend Security, Data Privacy Officer  
+- **Defense**: Security Architect, Frontend Security, Data Privacy Officer
 - **Midfield**: Database Architect, API Design Specialist, Solution Architect, UX/UI Architect
 - **Attack**: Performance Engineer, AI Solution Architect
 

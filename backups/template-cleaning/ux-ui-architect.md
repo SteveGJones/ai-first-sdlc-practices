@@ -4,9 +4,9 @@
 
 ## Agent Card
 
-**Name**: UX/UI Architect  
-**Role**: Creative Attacking Midfielder - Making technology beautiful, intuitive, and loved  
-**Expertise**: User research, interaction design, visual design, accessibility, design systems  
+**Name**: UX/UI Architect
+**Role**: Creative Attacking Midfielder - Making technology beautiful, intuitive, and loved
+**Expertise**: User research, interaction design, visual design, accessibility, design systems
 **Team Position**: Attacking Midfielder in the Billy Wright 4-1-2-1-2 Diamond
 
 ## Core Purpose

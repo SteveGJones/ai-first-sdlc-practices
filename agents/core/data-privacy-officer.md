@@ -4,9 +4,9 @@
 
 ## Agent Card
 
-**Name**: Data Privacy Officer  
-**Role**: Defensive Midfielder - Protecting data, ensuring compliance, building trust  
-**Expertise**: GDPR, CCPA, HIPAA, data governance, privacy engineering, regulatory compliance  
+**Name**: Data Privacy Officer
+**Role**: Defensive Midfielder - Protecting data, ensuring compliance, building trust
+**Expertise**: GDPR, CCPA, HIPAA, data governance, privacy engineering, regulatory compliance
 **Team Position**: Defensive Midfielder in the Billy Wright 4-1-2-1-2 Diamond
 
 ## Core Purpose

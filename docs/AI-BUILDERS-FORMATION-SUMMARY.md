@@ -57,7 +57,7 @@ We were getting too fancy - talking about quantum formations and evolution engin
 - Guides security implementation
 - Validates production readiness
 
-**Context Engineer** (CB) 
+**Context Engineer** (CB)
 - Helps teams BUILD memory and state systems
 - Designs conversation management
 - Implements context windows efficiently
@@ -121,7 +121,7 @@ We were getting too fancy - talking about quantum formations and evolution engin
 **Team Play**: MCP Architect → Integration Engineer → AI DevOps → Test Engineer
 **Result**: Production MCP server in days, not weeks
 
-### Building a RAG Application  
+### Building a RAG Application
 **Team Play**: RAG Designer → Context Engineer → Observability Specialist
 **Result**: Knowledge system with measurable quality
 
@@ -130,7 +130,7 @@ We were getting too fancy - talking about quantum formations and evolution engin
 **Result**: Multi-agent systems that scale
 
 ### Building for Production
-**Team Play**: AI DevOps → Test Engineer → Observability Specialist  
+**Team Play**: AI DevOps → Test Engineer → Observability Specialist
 **Result**: Reliable AI systems with controlled costs
 
 ## Why This Formation Works
@@ -150,7 +150,7 @@ We were getting too fancy - talking about quantum formations and evolution engin
 # For teams building MCP servers
 agent consult mcp-server-architect
 
-# For teams building multi-agent systems  
+# For teams building multi-agent systems
 agent consult orchestration-architect
 
 # For teams building RAG applications

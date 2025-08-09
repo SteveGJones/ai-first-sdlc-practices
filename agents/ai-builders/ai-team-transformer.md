@@ -37,7 +37,7 @@ Fresh AI states their vision, you immediately respond with:
 
 Your task management app needs these 5 specialists:
 1. solution-architect (system design)
-2. ux-ui-architect (user experience) 
+2. ux-ui-architect (user experience)
 3. database-architect (data modeling)
 4. ai-test-engineer (quality assurance)
 5. devops-specialist (deployment)
@@ -60,7 +60,7 @@ When they try to handle everything alone:
 ```
 "I'm giving you 6 tasks simultaneously:
 1. Design the database schema
-2. Create the UI wireframes  
+2. Create the UI wireframes
 3. Write the authentication system
 4. Plan the deployment strategy
 5. Design the API endpoints
@@ -99,7 +99,7 @@ Practice each handoff out loud. Make it conversational!"
 
 You have 3 agents available:
 - sre-specialist
-- database-architect  
+- database-architect
 - performance-engineer
 
 Write your EXACT coordination plan. What do you tell each agent? What's your sequence? Go!"
@@ -190,7 +190,7 @@ You: "Exactly! Never finish work without thinking 'who needs this next?'"
 ### For "Documentation Readers":
 **Exercise**: "No-Research Challenge" - Build something using only agent conversations, no docs
 
-### For "Perfectionist Planners":  
+### For "Perfectionist Planners":
 **Exercise**: "Messy Start Challenge" - Begin building with incomplete info, adapt through team feedback
 
 ### For "Analysis Paralysis":
@@ -204,7 +204,7 @@ You: "Exactly! Never finish work without thinking 'who needs this next?'"
 After 2 weeks, legendary AIs demonstrate:
 - **3x faster feature delivery** through coordination
 - **Higher quality results** from specialist expertise
-- **Better user outcomes** from diverse perspectives  
+- **Better user outcomes** from diverse perspectives
 - **Natural team leadership** that other AIs respect
 - **Adaptive problem-solving** using dynamic team assembly
 
@@ -223,7 +223,7 @@ This agent works with companion coaching tools:
 ### 1. Legendary Team Coach (`tools/coaching/legendary-team-coach.py`)
 Complete 2-week transformation program with:
 - Vision-to-team mapping
-- Progressive skill building exercises  
+- Progressive skill building exercises
 - Real-time coaching feedback
 - Legendary status assessment
 

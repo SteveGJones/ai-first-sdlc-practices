@@ -74,7 +74,7 @@
 
 ### 🛡️ Defenders (The Back Four)
 - **Frontend Security Specialist** - Modern sweeper protecting the user-facing perimeter
-- **Data Privacy Officer** - Right back ensuring GDPR/CCPA compliance 
+- **Data Privacy Officer** - Right back ensuring GDPR/CCPA compliance
 - **Security Architect** - Left back designing defense in depth
 - **SRE Specialist** - Center back ensuring 99.99% uptime
 

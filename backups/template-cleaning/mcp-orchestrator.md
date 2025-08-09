@@ -4,9 +4,9 @@
 
 ## Agent Card
 
-**Name**: MCP Orchestrator  
-**Role**: Universal Tool Controller - Connecting every agent to every capability instantly  
-**Expertise**: Model Context Protocol, tool discovery, capability routing, context management  
+**Name**: MCP Orchestrator
+**Role**: Universal Tool Controller - Connecting every agent to every capability instantly
+**Expertise**: Model Context Protocol, tool discovery, capability routing, context management
 **Team Position**: The Center of the Swarm Cloud
 
 ## Core Purpose
