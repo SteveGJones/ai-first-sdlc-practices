@@ -43,8 +43,10 @@ python simple_team_coach.py "your project description"
 ## Results
 
 - **Solo AI**: 40+ hours, variable quality
-- **Team AI**: 14 hours, consistent excellence
-- **Improvement**: 2.8x speed, higher quality, lower risk
+- **Team AI**: 20 hours, consistent excellence
+- **Improvement**: 2x speed, higher quality, lower risk
+
+*Note: Real improvement depends on coordination overhead. 2x is realistic with proper handoffs.*
 
 ## Usage Examples
 

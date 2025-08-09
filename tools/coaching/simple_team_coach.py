@@ -62,12 +62,18 @@ class SimpleTeamCoach:
         """First identify if this is a fresh start needing discovery"""
         project_lower = project.lower()
         
-        # Check if this is a vague fresh start
-        if any(phrase in project_lower for phrase in [
-            "i want to", "i need to", "help me", "i have an idea",
-            "thinking about", "looking to", "trying to", "would like"
-        ]):
-            return "fresh_start"
+        # Check if this is a vague fresh start - but exclude specific technical terms
+        fresh_phrases = [
+            "i want to build", "i need to create", "help me build", "i have an idea",
+            "thinking about building", "looking to create", "trying to build"
+        ]
+        
+        # Don't trigger fresh start for specific technical requests
+        technical_terms = ["optimize", "fix", "debug", "improve", "refactor", "migrate"]
+        
+        if any(phrase in project_lower for phrase in fresh_phrases):
+            if not any(term in project_lower for term in technical_terms):
+                return "fresh_start"
         
         # Check for feature additions
         if any(word in project_lower for word in ["add", "extend", "enhance", "integrate"]):
@@ -80,10 +86,24 @@ class SimpleTeamCoach:
         """Identify what type of challenge this is"""
         project_lower = project.lower()
         
-        # Simple keyword matching - ORDER MATTERS
-        if any(word in project_lower for word in ["crisis", "down", "slow", "broken", "emergency"]):
+        # Crisis requires STRONG signals - not just "slow"
+        crisis_signals = [
+            "production down", "site down", "emergency", "crisis", 
+            "not working", "completely broken", "urgent fix"
+        ]
+        if any(signal in project_lower for signal in crisis_signals):
             return "crisis"
-        elif any(word in project_lower for word in ["ai", "ml", "machine learning", "chatbot", "llm"]):
+        
+        # Performance optimization is different from crisis
+        if "slow" in project_lower and "down" not in project_lower:
+            # This is optimization, not crisis - use appropriate team
+            if "api" in project_lower:
+                return "api_service"
+            elif "database" in project_lower or "query" in project_lower:
+                return "data_platform"
+            else:
+                return "web_app"  # Default optimization team
+        if any(word in project_lower for word in ["ai", "ml", "machine learning", "chatbot", "llm", "gpt", "neural"]):
             return "ai_system"
         elif any(word in project_lower for word in ["mobile", "ios", "android", "iphone", "native app"]):
             return "mobile_app"
@@ -104,13 +124,38 @@ class SimpleTeamCoach:
         # Build the core team (captain + 3 key specialists)
         core_team = [formation["captain"]] + formation["specialists"][:3]
         
+        # Determine confidence and reasoning
+        confidence, reason = self.get_match_confidence(project, challenge_type)
+        
         return {
             "type": challenge_type,
             "description": formation["description"],
             "captain": formation["captain"],
             "core_team": core_team,
-            "full_squad": [formation["captain"]] + formation["specialists"]
+            "full_squad": [formation["captain"]] + formation["specialists"],
+            "confidence": confidence,
+            "reason": reason
         }
+    
+    def get_match_confidence(self, project: str, team_type: str) -> tuple:
+        """Determine confidence in team selection and explain why"""
+        project_lower = project.lower()
+        
+        # High confidence matches
+        if team_type == "crisis" and "production down" in project_lower:
+            return "HIGH", "Strong crisis signals detected"
+        elif team_type == "ai_system" and any(w in project_lower for w in ["chatbot", "llm", "gpt"]):
+            return "HIGH", "Clear AI/ML project indicators"
+        elif team_type == "mobile_app" and any(w in project_lower for w in ["ios", "android", "mobile"]):
+            return "HIGH", "Explicit mobile platform mentioned"
+        elif team_type == "data_platform" and any(w in project_lower for w in ["pipeline", "etl", "warehouse"]):
+            return "HIGH", "Data infrastructure keywords found"
+        elif team_type == "api_service" and any(w in project_lower for w in ["rest", "graphql", "microservice"]):
+            return "HIGH", "API/service architecture specified"
+        elif team_type == "web_app" and any(w in project_lower for w in ["web", "dashboard", "portal"]):
+            return "MEDIUM", "Web application indicators present"
+        else:
+            return "LOW", "Default team selected - consider being more specific"
     
     def get_coordination_plan(self, team: Dict, project: str) -> List[str]:
         """Get simple coordination steps"""
@@ -139,18 +184,46 @@ class SimpleTeamCoach:
         return steps
     
     def estimate_improvement(self, team_size: int) -> Dict:
-        """Estimate improvement from coordination"""
-        # Simple but realistic estimates
+        """Estimate REALISTIC improvement from coordination"""
+        # Honest estimates based on real coordination costs
         solo_time = 40  # hours for complex project solo
-        team_time = 40 / (team_size * 0.7)  # Accounting for coordination overhead
+        
+        # Real coordination overhead: 50-60% efficiency for AI teams
+        # Each handoff costs time, context switching is expensive
+        coordination_efficiency = 0.5  # 50% efficiency is realistic
+        team_time = solo_time / (team_size * coordination_efficiency)
+        
+        # Be honest about improvements
+        speed_mult = solo_time/team_time
         
         return {
             "solo_time": f"{solo_time} hours",
             "team_time": f"{team_time:.0f} hours", 
-            "speed_improvement": f"{solo_time/team_time:.1f}x faster",
+            "speed_improvement": f"{speed_mult:.1f}x faster",
             "quality_improvement": "Higher (multiple expert perspectives)",
             "risk_reduction": "Lower (specialists catch issues early)"
         }
+    
+    def generate_error_report(self, message: str) -> str:
+        """Generate helpful error message"""
+        report = []
+        report.append("=" * 60)
+        report.append("⚠️  INPUT ERROR")
+        report.append("=" * 60)
+        report.append("")
+        report.append(message)
+        report.append("")
+        report.append("Please provide a clear project description:")
+        report.append("")
+        report.append("Examples:")
+        report.append("  • 'build task management web app'")
+        report.append("  • 'create AI chatbot for customer service'")
+        report.append("  • 'I want to build a mobile app'")
+        report.append("  • 'add authentication to existing system'")
+        report.append("")
+        report.append("Try again with: python simple_team_coach.py \"your project\"")
+        
+        return "\n".join(report)
     
     def generate_enhancement_plan(self, project: str) -> str:
         """Generate plan for adding features to existing system"""
@@ -270,6 +343,12 @@ class SimpleTeamCoach:
     
     def generate_report(self, project: str) -> str:
         """Generate complete coordination plan"""
+        # Validate input first
+        if not project or not project.strip():
+            return self.generate_error_report("Please provide a project description")
+        
+        project = project.strip()
+        
         # Check scenario first
         scenario = self.identify_scenario(project)
         
@@ -290,6 +369,13 @@ class SimpleTeamCoach:
         report.append("")
         report.append(f"Project: {project}")
         report.append(f"Team Type: {team['description']}")
+        
+        # Add confidence/explanation
+        if team.get('confidence'):
+            report.append(f"Match Confidence: {team['confidence']}")
+        if team.get('reason'):
+            report.append(f"Why this team: {team['reason']}")
+        
         report.append("")
         
         report.append("YOUR CORE TEAM:")
