@@ -89,39 +89,32 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         # Simulate crisis leadership moments
-        crisis_moments = [
-            {
-                "situation": "Production database failure during peak traffic",
-                "action": "Immediately coordinated emergency response, delegated tasks, and implemented hotfix within 30 minutes",
-                "impact": 95,
-                "team_response": "Team rallied around Alex's calm leadership and clear direction",
-                "lessons": [
-                    "Emergency protocols worked",
-                    "Team coordination improved",
-                    "Need better monitoring",
-                ],
-            },
-            {
-                "situation": "Critical security vulnerability discovered in production",
-                "action": "Led rapid response team, communicated with stakeholders, and deployed patch within 2 hours",
-                "impact": 90,
-                "team_response": "Stakeholders praised clear communication and quick resolution",
-                "lessons": [
-                    "Security scanning automation needed",
-                    "Communication protocols effective",
-                ],
-            },
-            {
-                "situation": "New team member struggling with complex legacy code",
-                "action": "Pair programmed while under pressure, taught debugging techniques, and delivered on time",
-                "impact": 85,
-                "team_response": "New team member gained confidence and skills",
-                "lessons": [
-                    "Mentoring under pressure is effective",
-                    "Documentation needs improvement",
-                ],
-            },
-        ]
+        crisis_moments = [{"situation": "Production database failure during peak traffic",
+                           "action": "Immediately coordinated emergency response, delegated tasks, and implemented hotfix within 30 minutes",
+                           "impact": 95,
+                           "team_response": "Team rallied around Alex's calm leadership and clear direction",
+                           "lessons": ["Emergency protocols worked",
+                                        "Team coordination improved",
+                                        "Need better monitoring",
+                                       ],
+                           },
+                          {"situation": "Critical security vulnerability discovered in production",
+                           "action": "Led rapid response team, communicated with stakeholders, and deployed patch within 2 hours",
+                           "impact": 90,
+                           "team_response": "Stakeholders praised clear communication and quick resolution",
+                           "lessons": ["Security scanning automation needed",
+                                       "Communication protocols effective",
+                                       ],
+                           },
+                          {"situation": "New team member struggling with complex legacy code",
+                           "action": "Pair programmed while under pressure, taught debugging techniques, and delivered on time",
+                           "impact": 85,
+                           "team_response": "New team member gained confidence and skills",
+                           "lessons": ["Mentoring under pressure is effective",
+                                       "Documentation needs improvement",
+                                       ],
+                           },
+                          ]
 
         click.echo("📋 Recent Leadership Moments:")
         click.echo("")
@@ -184,41 +177,34 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         # Simulate strategic leadership moments
-        strategic_moments = [
-            {
-                "situation": "Team struggling with technical debt and delivery velocity",
-                "action": "Developed 6-month architecture modernization roadmap, identified key talent development needs",
-                "impact": 90,
-                "team_response": "Team excited about clear vision and growth opportunities",
-                "lessons": [
-                    "Architecture decisions impact velocity",
-                    "Team needs growth paths",
-                    "Process improvements needed",
-                ],
-            },
-            {
-                "situation": "Junior developers lacking advanced skills",
-                "action": "Created mentorship program, paired experienced developers with juniors, established learning goals",
-                "impact": 88,
-                "team_response": "Junior developers showed rapid skill improvement and increased confidence",
-                "lessons": [
-                    "Structured mentoring works",
-                    "Growth tracking important",
-                    "Knowledge sharing improves team",
-                ],
-            },
-            {
-                "situation": "Cross-team coordination challenges affecting delivery",
-                "action": "Designed new integration patterns, established team communication protocols, created shared standards",
-                "impact": 85,
-                "team_response": "Other teams adopted the coordination model, delivery improved across organization",
-                "lessons": [
-                    "System thinking prevents problems",
-                    "Standards enable scale",
-                    "Communication is critical",
-                ],
-            },
-        ]
+        strategic_moments = [{"situation": "Team struggling with technical debt and delivery velocity",
+                              "action": "Developed 6-month architecture modernization roadmap, identified key talent development needs",
+                              "impact": 90,
+                              "team_response": "Team excited about clear vision and growth opportunities",
+                              "lessons": ["Architecture decisions impact velocity",
+                                           "Team needs growth paths",
+                                           "Process improvements needed",
+                                          ],
+                              },
+                             {"situation": "Junior developers lacking advanced skills",
+                              "action": "Created mentorship program, paired experienced developers with juniors, established learning goals",
+                              "impact": 88,
+                              "team_response": "Junior developers showed rapid skill improvement and increased confidence",
+                              "lessons": ["Structured mentoring works",
+                                          "Growth tracking important",
+                                          "Knowledge sharing improves team",
+                                          ],
+                              },
+                             {"situation": "Cross-team coordination challenges affecting delivery",
+                              "action": "Designed new integration patterns, established team communication protocols, created shared standards",
+                              "impact": 85,
+                              "team_response": "Other teams adopted the coordination model, delivery improved across organization",
+                              "lessons": ["System thinking prevents problems",
+                                          "Standards enable scale",
+                                          "Communication is critical",
+                                          ],
+                              },
+                             ]
 
         click.echo("📋 Recent Leadership Moments:")
         click.echo("")
@@ -584,7 +570,7 @@ def demo(scenario):
     demo_scenarios = LeadershipDemoScenarios()
 
     if scenario == "emerging_billy_wright" or scenario == "all":
-        result = demo_scenarios.demo_emerging_billy_wright_leader()
+        demo_scenarios.demo_emerging_billy_wright_leader()
         click.echo("\n" + "=" * 80 + "\n")
 
     if scenario == "emerging_stan_cullis" or scenario == "all":

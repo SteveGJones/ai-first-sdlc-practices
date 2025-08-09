@@ -1446,9 +1446,13 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
             "templates/feature-proposal.md": ".sdlc/templates/proposals/feature-proposal.md",
             "templates/implementation-plan.md": ".sdlc/templates/proposals/implementation-plan.md",
             "templates/retrospective.md": ".sdlc/templates/proposals/retrospective.md",
-            "templates/architecture/requirements-traceability-matrix.md": ".sdlc/templates/architecture/requirements-traceability-matrix.md",
+            "templates/architecture/requirements-traceability-matrix.md": (
+                ".sdlc/templates/architecture/requirements-traceability-matrix.md"
+            ),
             "templates/architecture/what-if-analysis.md": ".sdlc/templates/architecture/what-if-analysis.md",
-            "templates/architecture/architecture-decision-record.md": ".sdlc/templates/architecture/architecture-decision-record.md",
+            "templates/architecture/architecture-decision-record.md": (
+                ".sdlc/templates/architecture/architecture-decision-record.md"
+            ),
             "templates/architecture/system-invariants.md": ".sdlc/templates/architecture/system-invariants.md",
             "templates/architecture/integration-design.md": ".sdlc/templates/architecture/integration-design.md",
             "templates/architecture/failure-mode-analysis.md": ".sdlc/templates/architecture/failure-mode-analysis.md",

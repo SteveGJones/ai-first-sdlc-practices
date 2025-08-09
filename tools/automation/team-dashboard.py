@@ -231,7 +231,7 @@ class TeamDashboard:
         click.echo("👥 ACTIVE AGENTS")
         agents_per_line = 4
         for i in range(0, len(metrics.active_agents), agents_per_line):
-            agents_chunk = metrics.active_agents[i : i + agents_per_line]
+            agents_chunk = metrics.active_agents[i: i + agents_per_line]
             click.echo(f"├── {' | '.join(agents_chunk)}")
         click.echo()
 
@@ -326,7 +326,7 @@ class TeamDashboard:
 
                 # Keep history within limits
                 if len(self.metrics_history) > self.dashboard_config["history_retention"]:
-                    self.metrics_history = self.metrics_history[-self.dashboard_config["history_retention"] :]
+                    self.metrics_history = self.metrics_history[-self.dashboard_config["history_retention"]:]
 
                 # Display dashboard
                 self.display_dashboard(current_metrics)

@@ -51,7 +51,10 @@ def demo_feature_development():
         sender="solution-architect",
         receiver="ai-solution-architect",
         message_type="request",
-        content="DESIGN_REQUEST: AI recommendation engine | Requirements: real-time personalization, scalable to 1M+ users | Integration: existing e-commerce API",
+        content=(
+            "DESIGN_REQUEST: AI recommendation engine | Requirements: real-time personalization, "
+            "scalable to 1M+ users | Integration: existing e-commerce API"
+        ),
         priority="HIGH",
         context="New feature development workflow",
     )
@@ -63,7 +66,10 @@ def demo_feature_development():
         sender="ai-solution-architect",
         receiver="python-expert",
         message_type="handoff",
-        content="AI_DESIGN: Recommendation system | Architecture: ML pipeline with real-time inference API | Tech Stack: Python, TensorFlow, Redis cache | API: RESTful with WebSocket for real-time updates",
+        content=(
+            "AI_DESIGN: Recommendation system | Architecture: ML pipeline with real-time inference API | "
+            "Tech Stack: Python, TensorFlow, Redis cache | API: RESTful with WebSocket for real-time updates"
+        ),
         priority="HIGH",
         context="Feature implementation handoff",
     )
@@ -75,7 +81,10 @@ def demo_feature_development():
         sender="python-expert",
         receiver="ai-test-engineer",
         message_type="status_update",
-        content="IMPLEMENTATION_PROGRESS: ML pipeline 80% complete | Next: API integration and caching layer | Testing needed: model accuracy, inference latency",
+        content=(
+            "IMPLEMENTATION_PROGRESS: ML pipeline 80% complete | Next: API integration and caching layer | "
+            "Testing needed: model accuracy, inference latency"
+        ),
         priority="MED",
         context="Implementation progress update",
     )
@@ -87,7 +96,10 @@ def demo_feature_development():
         sender="ai-test-engineer",
         receiver="critical-goal-reviewer",
         message_type="request",
-        content="QUALITY_VALIDATION: AI recommendation engine | Test Results: 94% accuracy, <50ms inference time | Coverage: 89% | Ready for acceptance review",
+        content=(
+            "QUALITY_VALIDATION: AI recommendation engine | Test Results: 94% accuracy, <50ms inference time | "
+            "Coverage: 89% | Ready for acceptance review"
+        ),
         priority="HIGH",
         context="Quality gate for production readiness",
     )
@@ -132,7 +144,10 @@ def demo_performance_crisis():
         sender="sre-specialist",
         receiver="devops-specialist",
         message_type="escalation",
-        content="CRISIS_RESPONSE: Scale infrastructure immediately | Current load: 300% of normal | Action: Auto-scaling + cache optimization",
+        content=(
+            "CRISIS_RESPONSE: Scale infrastructure immediately | Current load: 300% of normal | "
+            "Action: Auto-scaling + cache optimization"
+        ),
         priority="HIGH",
         context="Crisis response coordination",
     )
@@ -144,7 +159,10 @@ def demo_performance_crisis():
         sender="retrospective-miner",
         receiver="agile-coach",
         message_type="handoff",
-        content="CRISIS_RETROSPECTIVE: Root cause - cache invalidation storm | Resolution: Circuit breaker pattern | Prevention: Enhanced monitoring alerts",
+        content=(
+            "CRISIS_RETROSPECTIVE: Root cause - cache invalidation storm | Resolution: Circuit breaker pattern | "
+            "Prevention: Enhanced monitoring alerts"
+        ),
         priority="MED",
         context="Crisis lessons learned",
     )

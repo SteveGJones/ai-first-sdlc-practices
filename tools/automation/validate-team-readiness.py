@@ -564,7 +564,7 @@ class TeamReadinessValidator:
 
     def _assess_role_clarity(self) -> Dict[str, Any]:
         """Assess role clarity among team agents"""
-        config = self.formation_configs.get(self.formation_type, {})
+        # config = self.formation_configs.get(self.formation_type, {})
         # required_agents = config.get("required_agents", [])  # May be used for future agent validation
 
         # Score based on having clear formation structure
@@ -877,7 +877,7 @@ def main(formation: str, output: str, format: str, quick: bool, verbose: bool):
 def generate_markdown_report(report: TeamReadinessReport) -> str:
     """Generate markdown report from validation results"""
 
-    readiness_emoji = {"ready": "✅", "needs_improvement": "⚠️", "not_ready": "❌"}
+    # readiness_emoji = {"ready": "✅", "needs_improvement": "⚠️", "not_ready": "❌"}
     # emoji = readiness_emoji[report.overall_readiness.value]  # Will be used in emoji support
 
     markdown = """# Team Readiness Validation Report
