@@ -74,12 +74,12 @@ jobs:
                       violations.append("Examples must be a list")
                   elif len(yaml_content['examples']) == 0:
                       violations.append("Examples list cannot be empty")
-              
+
               # Optional: Check for minimal content after YAML
               content_after_yaml = content.split('---', 2)[-1].strip()
               if len(content_after_yaml) < 50:
                   violations.append("Agent description after YAML is too short (less than 50 characters)")
-              
+
               # NOTE: We NO LONGER check for:
               # - Forbidden sections (Team Chemistry, Success Metrics, etc.) - these add value
               # - Required "core competencies" phrase - agents can structure content as needed
@@ -178,7 +178,15 @@ jobs:
                   print(f"  - {name} (appears {name_counts[name]} times)")
 
           # Report color distribution
-          colors = [a['color'] for a in agents if a['color']]
+          colors = []
+          for a in agents:
+              color = a.get('color')
+              if color:
+                  # Ensure color is a string, not a list or other type
+                  if isinstance(color, str):
+                      colors.append(color)
+                  elif isinstance(color, list) and len(color) > 0:
+                      colors.append(color[0])  # Take first color if it's a list
           color_counts = Counter(colors)
 
           print(f"\n📊 Agent Statistics:")
@@ -261,7 +269,7 @@ jobs:
               - Examples must be a non-empty list
               - Include meaningful content after the YAML (50+ characters)
 
-              **Note:** Additional sections like Team Chemistry, Success Metrics, etc. 
+              **Note:** Additional sections like Team Chemistry, Success Metrics, etc.
               are now ALLOWED. Focus on fixing missing YAML fields and format issues.`
             });
 

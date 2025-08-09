@@ -7,15 +7,12 @@ Preserves valuable content while removing forbidden sections.
 """
 
 import re
-import os
-import sys
 import shutil
 import argparse
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 import yaml
-import json
 
 
 @dataclass
@@ -95,7 +92,7 @@ class AgentMigrator:
         if yaml_match:
             try:
                 existing_yaml = yaml.safe_load(yaml_match.group(1))
-            except:
+            except yaml.YAMLError:
                 pass
 
         # Extract agent name
@@ -214,7 +211,10 @@ class AgentMigrator:
 
         full_description = " ".join(full_description_parts).strip()
         if not full_description:
-            full_description = f"I am {agent.name.replace('_', ' ')}, a specialist agent focused on delivering excellence in my domain."
+            full_description = (
+                f"I am {agent.name.replace('_', ' ')}, "
+                "a specialist agent focused on delivering excellence in my domain."
+            )
 
         # Build core competencies
         competencies = agent.capabilities
@@ -317,7 +317,7 @@ Your core competencies include:"""
                 for field in required_fields:
                     if field not in yaml_content:
                         violations.append(f"Missing required YAML field: {field}")
-            except:
+            except yaml.YAMLError:
                 violations.append("Invalid YAML frontmatter")
 
         # Check for core competencies

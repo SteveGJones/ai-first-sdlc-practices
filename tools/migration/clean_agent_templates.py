@@ -163,7 +163,7 @@ class AgentTemplateCleaner:
                     }
                 )
             elif success and not removed_sections:
-                print(f"  ✓ Already clean (no forbidden sections found)")
+                print("  ✓ Already clean (no forbidden sections found)")
                 results["details"].append(
                     {
                         "file": file_path,

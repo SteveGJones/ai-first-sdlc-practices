@@ -5,10 +5,9 @@ Handles files without YAML frontmatter by extracting content and reformatting.
 """
 
 import re
-import os
 import shutil
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 import argparse
 
 
@@ -135,7 +134,10 @@ class StrictTemplateConverter:
 
         full_description = " ".join(full_desc_parts).strip()
         if not full_description:
-            full_description = f"I am {info['name'].replace('_', ' ')}, focused on {info['expertise'] or 'specialized tasks'} with a collaborative team-first approach."
+            full_description = (
+                f"I am {info['name'].replace('_', ' ')}, focused on "
+                f"{info['expertise'] or 'specialized tasks'} with a collaborative team-first approach."
+            )
 
         # Build core competencies
         competencies = []
@@ -215,7 +217,11 @@ Your core competencies include:"""
                 {
                     "context": "User data collection needs privacy review",
                     "user": "We want to collect user location data for our new feature",
-                    "assistant": "I'll review this for privacy compliance. We need to ensure proper consent mechanisms, data minimization, and purpose limitation. Let me work with the UX team on clear consent flows and the database team on retention policies.",
+                    "assistant": (
+                        "I'll review this for privacy compliance. We need to ensure proper consent mechanisms, "
+                        "data minimization, and purpose limitation. Let me work with the UX team on clear consent flows "
+                        "and the database team on retention policies."
+                    ),
                     "commentary": "The agent immediately focuses on privacy requirements and collaboration",
                 }
             )
@@ -224,7 +230,10 @@ Your core competencies include:"""
                 {
                     "context": "Database design for new feature",
                     "user": "We need to store user preferences and activity data",
-                    "assistant": "I'll design an efficient schema for this. Let me collaborate with the privacy officer on data retention, the API team on access patterns, and the performance engineer on optimization strategies.",
+                    "assistant": (
+                        "I'll design an efficient schema for this. Let me collaborate with the privacy officer on "
+                        "data retention, the API team on access patterns, and the performance engineer on optimization strategies."
+                    ),
                     "commentary": "The agent considers multiple perspectives for database design",
                 }
             )
@@ -233,7 +242,11 @@ Your core competencies include:"""
                 {
                     "context": "API endpoint design needed",
                     "user": "We need endpoints for user management",
-                    "assistant": "I'll design RESTful endpoints following best practices. Let me coordinate with the security team on authentication, the database architect on data models, and the frontend team on response formats.",
+                    "assistant": (
+                        "I'll design RESTful endpoints following best practices. Let me coordinate with the security team "
+                        "on authentication, the database architect on data models, "
+                        "and the frontend team on response formats."
+                    ),
                     "commentary": "The agent brings together multiple teams for API design",
                 }
             )
@@ -242,7 +255,11 @@ Your core competencies include:"""
                 {
                     "context": "System needs to adapt to new requirements",
                     "user": "Our system needs to handle dynamic agent capabilities",
-                    "assistant": "I'll design an evolutionary architecture for this. Let me work with the orchestration team on coordination patterns, the context engineer on state management, and the DevOps team on deployment strategies.",
+                    "assistant": (
+                        "I'll design an evolutionary architecture for this. "
+                        "Let me work with the orchestration team on coordination patterns, "
+                        "the context engineer on state management, and the DevOps team on deployment strategies."
+                    ),
                     "commentary": "The agent focuses on adaptable, future-proof solutions",
                 }
             )
@@ -252,7 +269,11 @@ Your core competencies include:"""
                 {
                     "context": f"Team needs {name} expertise",
                     "user": f"Can you help with {name} requirements?",
-                    "assistant": f"I'll apply my {name} expertise to help. Let me understand your specific needs and coordinate with relevant team members to ensure comprehensive coverage.",
+                    "assistant": (
+                        f"I'll apply my {name} expertise to help. "
+                        "Let me understand your specific needs and coordinate with "
+                        "relevant team members to ensure comprehensive coverage."
+                    ),
                     "commentary": f"The agent provides specialized {name} assistance",
                 }
             )
@@ -262,7 +283,11 @@ Your core competencies include:"""
             {
                 "context": "Cross-team coordination needed",
                 "user": "This feature touches multiple systems",
-                "assistant": f"As the {name}, I'll coordinate across teams. Let me identify all stakeholders, understand interdependencies, and facilitate collaborative planning sessions.",
+                "assistant": (
+                    f"As the {name}, I'll coordinate across teams. "
+                    "Let me identify all stakeholders, understand interdependencies, "
+                    "and facilitate collaborative planning sessions."
+                ),
                 "commentary": "The agent demonstrates team-first collaborative approach",
             }
         )

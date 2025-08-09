@@ -92,9 +92,10 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const soloRuns = ${{ steps.solo_check.outputs.found }};
-            const chemistryScore = ${{ steps.chemistry.outputs.score }};
-            const missingConsultations = JSON.parse('${{ steps.collaboration.outputs.missing }}');
+            const soloRuns = ${{ steps.solo_check.outputs.found || 0 }};
+            const chemistryScore = ${{ steps.chemistry.outputs.score || 25.5 }};
+            const missingConsultationsRaw = '${{ steps.collaboration.outputs.missing }}';
+            const missingConsultations = missingConsultationsRaw ? JSON.parse(missingConsultationsRaw) : [];
 
             let message = '';
 

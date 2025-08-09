@@ -91,6 +91,7 @@ class ProgressiveValidationPipeline(ValidationPipeline):
                     return str(level)
             except (FileNotFoundError, json.JSONDecodeError, PermissionError):
                 # File doesn't exist or can't be parsed - use default
+                pass
 
         # Otherwise default to production
         return "production"

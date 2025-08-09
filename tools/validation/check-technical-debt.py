@@ -78,12 +78,15 @@ class TechnicalDebtDetector:
         if self.context == "framework":
             # Calculate magic_numbers dynamically based on codebase size
             import math
+
             # Formula: L × 0.11 × (1 + 0.2 × log₁₀(F)) × 0.95
             # Use actual counts if available, otherwise use conservative defaults
-            lines = getattr(self, 'total_lines', 0) or 34542
-            files = getattr(self, 'files_scanned', 0) or 71
-            magic_number_limit = int(lines * 0.11 * (1 + 0.2 * math.log10(max(1, files))) * 0.95)
-            
+            lines = getattr(self, "total_lines", 0) or 34542
+            files = getattr(self, "files_scanned", 0) or 71
+            magic_number_limit = int(
+                lines * 0.11 * (1 + 0.2 * math.log10(max(1, files))) * 0.95
+            )
+
             return {
                 "security_issues": 0,  # Zero tolerance
                 "todos_fixmes": 0,  # Zero tolerance
@@ -816,7 +819,7 @@ class TechnicalDebtDetector:
     def _check_policy_compliance(self) -> int:
         """Check compliance against context-specific policy thresholds"""
         violations = 0
-        
+
         # Recalculate thresholds with actual file counts
         self.thresholds = self._get_thresholds()
 
