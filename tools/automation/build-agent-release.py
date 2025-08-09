@@ -33,8 +33,7 @@ class AgentReleaseBuilder:
     def clean_release_dir(self) -> None:
         """Clean the release directory."""
         if self.release_agents_dir.exists():
-            console.print(
-                "[yellow]Cleaning existing release directory...[/yellow]")
+            console.print("[yellow]Cleaning existing release directory...[/yellow]")
             shutil.rmtree(self.release_agents_dir)
 
         self.release_agents_dir.mkdir(parents=True, exist_ok=True)
@@ -128,8 +127,9 @@ class AgentReleaseBuilder:
                 }
 
                 # Track core agents
-                if category == "core" or metadata.get(
-                        "category", "").startswith("core/"):
+                if category == "core" or metadata.get("category", "").startswith(
+                    "core/"
+                ):
                     manifest["core_agents"].append(agent_name)
                     manifest["statistics"]["core_agents"] += 1
                 else:
@@ -159,10 +159,8 @@ class AgentReleaseBuilder:
 
         # Display statistics
         console.print("\n[bold]Release Statistics:[/bold]")
-        console.print(
-            f"  Core agents: {manifest['statistics']['core_agents']}")
-        console.print(
-            f"  Optional agents: {manifest['statistics']['optional_agents']}")
+        console.print(f"  Core agents: {manifest['statistics']['core_agents']}")
+        console.print(f"  Optional agents: {manifest['statistics']['optional_agents']}")
         console.print(f"  Categories: {len(manifest['categories'])}")
 
     def create_agent_index(self) -> bool:
@@ -208,8 +206,7 @@ Domain-specific agents for various use cases:
 
         # Add other categories
         for category_dir in sorted(self.release_agents_dir.iterdir()):
-            if category_dir.is_dir() and category_dir.name not in [
-                    "core", "languages"]:
+            if category_dir.is_dir() and category_dir.name not in ["core", "languages"]:
                 index_content += (
                     f"\n#### {category_dir.name.replace('-', ' ').title()}\n"
                 )
@@ -290,8 +287,7 @@ python tools/validation/validate-agents.py agents/
         # Step 6: Version info
         self.create_version_file()
 
-        console.print(
-            "\n[bold green]✓ Agent release build complete![/bold green]")
+        console.print("\n[bold green]✓ Agent release build complete![/bold green]")
         console.print(f"Release directory: {self.release_dir}")
 
         return True

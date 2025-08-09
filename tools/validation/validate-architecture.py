@@ -17,10 +17,7 @@ from datetime import datetime
 class ArchitectureValidator:
     """Validates that all architectural requirements are met before coding"""
 
-    def __init__(
-            self,
-            project_root: Optional[Path] = None,
-            mode: str = "strict"):
+    def __init__(self, project_root: Optional[Path] = None, mode: str = "strict"):
         self.project_root = project_root or Path.cwd()
         self.results = []
         self.has_errors = False
@@ -166,8 +163,7 @@ class ArchitectureValidator:
         # Check each required document
         for doc_name, validator in self.required_docs.items():
             doc_path = self.architecture_dir / doc_name
-            print(
-                f"\n📄 Checking {doc_name} ({completed_docs + 1}/{total_docs})...")
+            print(f"\n📄 Checking {doc_name} ({completed_docs + 1}/{total_docs})...")
 
             if not doc_path.exists():
                 self.add_warning(
@@ -329,7 +325,8 @@ class ArchitectureValidator:
             ),
         }
         return guidance_map.get(
-            doc_name, "Replace ALL template placeholders with project-specific content")
+            doc_name, "Replace ALL template placeholders with project-specific content"
+        )
 
     def _print_enhanced_bootstrap_guidance(
         self, progress_percentage: int, completed_docs: int, total_docs: int
@@ -356,8 +353,7 @@ class ArchitectureValidator:
             print("\n🎯 CURRENT FOCUS: Complete template customization")
             print("\n✅ FOR EACH INCOMPLETE TEMPLATE:")
             print("   1. Open the file in docs/architecture/")
-            print(
-                "   2. Find ALL placeholders like [Feature Name], [YYYY-MM-DD]")
+            print("   2. Find ALL placeholders like [Feature Name], [YYYY-MM-DD]")
             print("   3. Replace with project-specific content")
             print("   4. Save and run validation again")
         elif progress_percentage < 100:
@@ -366,7 +362,8 @@ class ArchitectureValidator:
             print("   1. Complete any remaining templates shown above")
             print(
                 "   2. Create first ADR: cp templates/architecture/ADR-template.md "
-                "docs/architecture/decisions/ADR-001-initial-architecture.md")
+                "docs/architecture/decisions/ADR-001-initial-architecture.md"
+            )
             print("   3. Customize ADR with first architectural decision")
         else:
             print("\n🎯 READY FOR NEXT PHASE: All templates completed!")
@@ -438,8 +435,7 @@ class ArchitectureValidator:
             impl_pattern = r"REQ-\d{3}.*?\|.*?\|.*?\|.*?\|.*?\|.*?\|.*?\|"
             traced_reqs = re.findall(impl_pattern, content, re.MULTILINE)
 
-            if len(traced_reqs) < len(requirements) * \
-                    0.8:  # 80% should be traced
+            if len(traced_reqs) < len(requirements) * 0.8:  # 80% should be traced
                 self.add_warning(
                     "Requirements Matrix",
                     "Incomplete traceability",
@@ -456,8 +452,8 @@ class ArchitectureValidator:
 
         if requirements and len(requirements) >= 3:
             self.add_success(
-                "Requirements Matrix",
-                f"Found {len(requirements)} requirements")
+                "Requirements Matrix", f"Found {len(requirements)} requirements"
+            )
 
     def _validate_what_if_analysis(self, doc_path: Path) -> None:
         """Validate What-If Analysis"""
@@ -507,8 +503,9 @@ class ArchitectureValidator:
                 )
 
         if scenarios and len(scenarios) >= 5:
-            self.add_success("What-If Analysis",
-                             f"Found {len(scenarios)} scenarios analyzed")
+            self.add_success(
+                "What-If Analysis", f"Found {len(scenarios)} scenarios analyzed"
+            )
 
     def _validate_system_invariants(self, doc_path: Path) -> None:
         """Validate System Invariants"""
@@ -544,9 +541,7 @@ class ArchitectureValidator:
 
         # Check for verification methods
         if "Verification" in content or "verify" in content.lower():
-            self.add_success(
-                "System Invariants",
-                "Includes verification methods")
+            self.add_success("System Invariants", "Includes verification methods")
         else:
             self.add_error(
                 "System Invariants",
@@ -555,8 +550,9 @@ class ArchitectureValidator:
             )
 
         if invariants and len(invariants) >= 10:
-            self.add_success("System Invariants",
-                             f"Found {len(invariants)} invariants defined")
+            self.add_success(
+                "System Invariants", f"Found {len(invariants)} invariants defined"
+            )
 
     def _validate_integration_design(self, doc_path: Path) -> None:
         """Validate Integration Design"""
@@ -589,9 +585,7 @@ class ArchitectureValidator:
 
         # Check for hardest-first approach
         if "Criticality:" in content and "HIGH" in content:
-            self.add_success(
-                "Integration Design",
-                "Prioritizes critical integrations")
+            self.add_success("Integration Design", "Prioritizes critical integrations")
         else:
             self.add_warning(
                 "Integration Design",
@@ -601,9 +595,7 @@ class ArchitectureValidator:
 
         # Check for API specifications
         if "Rate Limit" in content and "Timeout" in content:
-            self.add_success(
-                "Integration Design",
-                "Includes API limits and timeouts")
+            self.add_success("Integration Design", "Includes API limits and timeouts")
 
     def _validate_failure_analysis(self, doc_path: Path) -> None:
         """Validate Failure Mode Analysis"""
@@ -622,8 +614,7 @@ class ArchitectureValidator:
             )
 
         # Check for high-risk items
-        high_risk_rpns = [int(score)
-                          for score in rpn_scores if int(score) > 50]
+        high_risk_rpns = [int(score) for score in rpn_scores if int(score) > 50]
         if high_risk_rpns and "Mitigation" in content:
             self.add_success(
                 "Failure Analysis",
@@ -640,9 +631,7 @@ class ArchitectureValidator:
 
         # Check for recovery procedures
         if "Recovery" in content or "Runbook" in content:
-            self.add_success(
-                "Failure Analysis",
-                "Includes recovery procedures")
+            self.add_success("Failure Analysis", "Includes recovery procedures")
         else:
             self.add_error(
                 "Failure Analysis",
@@ -677,13 +666,8 @@ class ArchitectureValidator:
             content = adr_file.read_text()
 
             # Check required sections
-            required_sections = [
-                "Context",
-                "Decision",
-                "Consequences",
-                "Status"]
-            has_all_sections = all(
-                section in content for section in required_sections)
+            required_sections = ["Context", "Decision", "Consequences", "Status"]
+            has_all_sections = all(section in content for section in required_sections)
 
             if has_all_sections:
                 valid_adrs += 1
@@ -695,9 +679,7 @@ class ArchitectureValidator:
                 )
 
         if valid_adrs > 0:
-            self.add_success(
-                "Architecture Decisions",
-                f"Found {valid_adrs} valid ADRs")
+            self.add_success("Architecture Decisions", f"Found {valid_adrs} valid ADRs")
 
     def add_success(self, component: str, message: str):
         """Add success result"""
@@ -744,11 +726,11 @@ class ArchitectureValidator:
                 "has_warnings": self.has_warnings,
                 "results": [
                     {
-                        "status": "pass"
-                        if icon == "✅"
-                        else "warn"
-                        if "⚠️" in icon
-                        else "fail",
+                        "status": (
+                            "pass"
+                            if icon == "✅"
+                            else "warn" if "⚠️" in icon else "fail"
+                        ),
                         "component": component,
                         "message": message,
                         "fix": fix,
@@ -770,9 +752,7 @@ class ArchitectureValidator:
 
             md += "\n## Summary\n"
             if self.has_errors:
-                md += (
-                    "❌ **FAILED** - Complete all architecture documents before coding\n"
-                )
+                md += "❌ **FAILED** - Complete all architecture documents before coding\n"
             elif self.has_warnings:
                 md += "⚠️  **PASSED** with warnings - Consider addressing issues\n"
             else:
@@ -786,7 +766,8 @@ class ArchitectureValidator:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Validate architecture documents for Zero Technical Debt compliance")
+        description="Validate architecture documents for Zero Technical Debt compliance"
+    )
     parser.add_argument(
         "--project-root",
         type=Path,
@@ -803,9 +784,7 @@ def main():
         choices=["json", "markdown"],
         help="Export format for validation report",
     )
-    parser.add_argument(
-        "--output",
-        help="Output file for export (default: stdout)")
+    parser.add_argument("--output", help="Output file for export (default: stdout)")
     parser.add_argument(
         "--strict",
         action="store_true",

@@ -232,6 +232,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     needs: validate-templates
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: read
 
     steps:
       - name: Comment on PR

@@ -131,11 +131,10 @@ class TeamDashboard:
             chemistry_files = list(Path(".").glob("*chemistry*results*.json"))
             if chemistry_files:
                 # Get most recent chemistry results
-                latest_file = max(
-                    chemistry_files,
-                    key=lambda x: x.stat().st_mtime)
-                if (datetime.now() -
-                        datetime.fromtimestamp(latest_file.stat().st_mtime)).days < 7:
+                latest_file = max(chemistry_files, key=lambda x: x.stat().st_mtime)
+                if (
+                    datetime.now() - datetime.fromtimestamp(latest_file.stat().st_mtime)
+                ).days < 7:
                     base_score += 0.15  # Bonus for recent chemistry work
 
             return min(1.0, base_score)
@@ -151,10 +150,7 @@ class TeamDashboard:
             return [f.stem for f in agents_dir.glob("*.md")]
 
         # Default set of common agents
-        return [
-            "sdlc-enforcer",
-            "solution-architect",
-            "critical-goal-reviewer"]
+        return ["sdlc-enforcer", "solution-architect", "critical-goal-reviewer"]
 
     def _get_recent_activity(self) -> List[str]:
         """Get recent team activity"""
@@ -185,8 +181,7 @@ class TeamDashboard:
                 < 24
             ]
             if recent_logs:
-                activity.append(
-                    f"Validation runs: {len(recent_logs)} in last 24h")
+                activity.append(f"Validation runs: {len(recent_logs)} in last 24h")
 
         # Check for recent feature proposals
         proposal_dir = Path("docs/feature-proposals")
@@ -197,8 +192,7 @@ class TeamDashboard:
                 if (datetime.now() - datetime.fromtimestamp(f.stat().st_mtime)).days < 7
             ]
             if recent_proposals:
-                activity.append(
-                    f"New proposals: {len(recent_proposals)} this week")
+                activity.append(f"New proposals: {len(recent_proposals)} this week")
 
         return activity or ["No recent activity detected"]
 
@@ -217,10 +211,7 @@ class TeamDashboard:
         else:
             return "stable"
 
-    def display_dashboard(
-            self,
-            metrics: TeamMetrics,
-            clear_screen: bool = True):
+    def display_dashboard(self, metrics: TeamMetrics, clear_screen: bool = True):
         """Display the team dashboard"""
 
         if clear_screen:
@@ -269,7 +260,7 @@ class TeamDashboard:
         click.echo("👥 ACTIVE AGENTS")
         agents_per_line = 4
         for i in range(0, len(metrics.active_agents), agents_per_line):
-            agents_chunk = metrics.active_agents[i: i + agents_per_line]
+            agents_chunk = metrics.active_agents[i : i + agents_per_line]
             click.echo(f"├── {' | '.join(agents_chunk)}")
         click.echo()
 
@@ -364,8 +355,7 @@ class TeamDashboard:
     def run_live_dashboard(self, formation_type: str):
         """Run live dashboard with auto-refresh"""
 
-        click.echo(
-            f"🚀 Starting live dashboard for {formation_type} formation...")
+        click.echo(f"🚀 Starting live dashboard for {formation_type} formation...")
         click.echo("Press 'q' to quit, or any key for manual refresh")
         click.echo()
 
@@ -381,7 +371,7 @@ class TeamDashboard:
                     > self.dashboard_config["history_retention"]
                 ):
                     self.metrics_history = self.metrics_history[
-                        -self.dashboard_config["history_retention"]:
+                        -self.dashboard_config["history_retention"] :
                     ]
 
                 # Display dashboard
@@ -575,19 +565,15 @@ Formation Types:
     default="builder",
     help="Formation type to monitor",
 )
-@click.option("--live", is_flag=True,
-              help="Run live dashboard with auto-refresh")
-@click.option("--snapshot", is_flag=True,
-              help="Show single snapshot of team status")
+@click.option("--live", is_flag=True, help="Run live dashboard with auto-refresh")
+@click.option("--snapshot", is_flag=True, help="Show single snapshot of team status")
 @click.option("--export", type=click.Path(), help="Export metrics to file")
-@click.option("--refresh-interval", type=int, default=30,
-              help="Auto-refresh interval in seconds")
+@click.option(
+    "--refresh-interval", type=int, default=30, help="Auto-refresh interval in seconds"
+)
 def main(
-        formation: str,
-        live: bool,
-        snapshot: bool,
-        export: str,
-        refresh_interval: int):
+    formation: str, live: bool, snapshot: bool, export: str, refresh_interval: int
+):
     """AI Team Performance Dashboard"""
 
     dashboard = TeamDashboard()

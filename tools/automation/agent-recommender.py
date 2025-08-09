@@ -30,92 +30,118 @@ class AgentRecommender:
         """Load the agent registry with recommendations rules."""
         # This would normally load from the manifest, but we'll define rules
         # here
-        return {"core": {"sdlc-coach": {"always": True,
-                                        "description": "Essential for AI-First SDLC compliance",
-                                        },
-                         "test-manager": {"always": True,
-                                          "description": "Oversees all testing activities",
-                                          },
-                         "solution-architect": {"always": True,
-                                                "description": "Ensures architectural coherence",
-                                                },
-                         "security-architect": {"conditions": ["web-app",
-                                                               "api",
-                                                               "production"],
-                                                "description": "Security best practices and threat modeling",
-                                                },
-                         },
-                "sdlc": {"framework-validator": {"always": True,
-                                                 "description": "Real-time compliance validation",
-                                                 },
-                         "kickstart-architect": {"new_project": True,
-                                                 "description": "Optimal project kickstarters",
-                                                 },
-                         "project-bootstrapper": {"new_project": True,
-                                                  "description": "One-command project setup",
-                                                  },
-                         "retrospective-miner": {"mature_project": True,
-                                                 "description": "Extract insights from retrospectives",
-                                                 },
-                         "language-python-expert": {"languages": ["python"],
-                                                    "description": "Python-specific SDLC guidance",
-                                                    },
-                         },
-                "languages": {"python-expert": {"languages": ["python"],
-                                                "description": "Python best practices and patterns",
-                                                },
-                              "python-test-engineer": {"languages": ["python"],
-                                                       "testing": True,
-                                                       "description": "Python testing strategies",
-                                                       },
-                              "javascript-expert": {"languages": ["javascript",
-                                                                  "typescript"],
-                                                    "description": "JavaScript/TypeScript best practices",
-                                                    },
-                              "react-architect": {"frameworks": ["react"],
-                                                  "description": "React patterns and optimization",
-                                                  },
-                              "go-expert": {"languages": ["go"],
-                                            "description": "Go idioms and concurrency",
-                                            },
-                              "java-architect": {"languages": ["java"],
-                                                 "description": "Java patterns and Spring expertise",
-                                                 },
-                              },
-                "specialized": {"api-designer": {"project_types": ["api"],
-                                                 "description": "RESTful and GraphQL API design",
-                                                 },
-                                "database-architect": {"databases": True,
-                                                       "description": "Database design and optimization",
-                                                       },
-                                "kubernetes-architect": {"tools": ["kubernetes"],
-                                                         "description": "K8s deployment and scaling",
-                                                         },
-                                "aws-solutions-architect": {"cloud_platforms": ["aws"],
-                                                            "description": "AWS services and cost optimization",
-                                                            },
-                                "ml-architect": {"domains": ["machine-learning"],
-                                                 "description": "ML system design and MLOps",
-                                                 },
-                                "frontend-performance": {"project_types": ["frontend"],
-                                                         "description": "Web performance optimization",
-                                                         },
-                                "microservices-architect": {"architecture": ["microservices"],
-                                                            "description": "Distributed system design",
-                                                            },
-                                "event-streaming-expert": {"tools": ["kafka"],
-                                                           "architecture": ["event-driven"],
-                                                           "description": "Event-driven architecture",
-                                                           },
-                                "ci-cd-architect": {"ci_cd": True,
-                                                    "description": "Pipeline optimization and automation",
-                                                    },
-                                "accessibility-expert": {"project_types": ["frontend",
-                                                                           "web-app"],
-                                                         "description": "WCAG compliance and a11y",
-                                                         },
-                                },
-                }
+        return {
+            "core": {
+                "sdlc-coach": {
+                    "always": True,
+                    "description": "Essential for AI-First SDLC compliance",
+                },
+                "test-manager": {
+                    "always": True,
+                    "description": "Oversees all testing activities",
+                },
+                "solution-architect": {
+                    "always": True,
+                    "description": "Ensures architectural coherence",
+                },
+                "security-architect": {
+                    "conditions": ["web-app", "api", "production"],
+                    "description": "Security best practices and threat modeling",
+                },
+            },
+            "sdlc": {
+                "framework-validator": {
+                    "always": True,
+                    "description": "Real-time compliance validation",
+                },
+                "kickstart-architect": {
+                    "new_project": True,
+                    "description": "Optimal project kickstarters",
+                },
+                "project-bootstrapper": {
+                    "new_project": True,
+                    "description": "One-command project setup",
+                },
+                "retrospective-miner": {
+                    "mature_project": True,
+                    "description": "Extract insights from retrospectives",
+                },
+                "language-python-expert": {
+                    "languages": ["python"],
+                    "description": "Python-specific SDLC guidance",
+                },
+            },
+            "languages": {
+                "python-expert": {
+                    "languages": ["python"],
+                    "description": "Python best practices and patterns",
+                },
+                "python-test-engineer": {
+                    "languages": ["python"],
+                    "testing": True,
+                    "description": "Python testing strategies",
+                },
+                "javascript-expert": {
+                    "languages": ["javascript", "typescript"],
+                    "description": "JavaScript/TypeScript best practices",
+                },
+                "react-architect": {
+                    "frameworks": ["react"],
+                    "description": "React patterns and optimization",
+                },
+                "go-expert": {
+                    "languages": ["go"],
+                    "description": "Go idioms and concurrency",
+                },
+                "java-architect": {
+                    "languages": ["java"],
+                    "description": "Java patterns and Spring expertise",
+                },
+            },
+            "specialized": {
+                "api-designer": {
+                    "project_types": ["api"],
+                    "description": "RESTful and GraphQL API design",
+                },
+                "database-architect": {
+                    "databases": True,
+                    "description": "Database design and optimization",
+                },
+                "kubernetes-architect": {
+                    "tools": ["kubernetes"],
+                    "description": "K8s deployment and scaling",
+                },
+                "aws-solutions-architect": {
+                    "cloud_platforms": ["aws"],
+                    "description": "AWS services and cost optimization",
+                },
+                "ml-architect": {
+                    "domains": ["machine-learning"],
+                    "description": "ML system design and MLOps",
+                },
+                "frontend-performance": {
+                    "project_types": ["frontend"],
+                    "description": "Web performance optimization",
+                },
+                "microservices-architect": {
+                    "architecture": ["microservices"],
+                    "description": "Distributed system design",
+                },
+                "event-streaming-expert": {
+                    "tools": ["kafka"],
+                    "architecture": ["event-driven"],
+                    "description": "Event-driven architecture",
+                },
+                "ci-cd-architect": {
+                    "ci_cd": True,
+                    "description": "Pipeline optimization and automation",
+                },
+                "accessibility-expert": {
+                    "project_types": ["frontend", "web-app"],
+                    "description": "WCAG compliance and a11y",
+                },
+            },
+        }
 
     def recommend(
         self, analysis: Dict, objectives: str = None
@@ -194,8 +220,7 @@ class AgentRecommender:
                 )
 
         # Specialized agents based on project characteristics
-        for agent_name, agent_info in self.agent_registry["specialized"].items(
-        ):
+        for agent_name, agent_info in self.agent_registry["specialized"].items():
             if self._matches_specialized(agent_info, analysis):
                 recommendations["recommended"].append(
                     {
@@ -266,8 +291,7 @@ class AgentRecommender:
 
         # Check tools
         if agent_info.get("tools"):
-            if any(tool in analysis.get("tools", [])
-                   for tool in agent_info["tools"]):
+            if any(tool in analysis.get("tools", []) for tool in agent_info["tools"]):
                 return True
 
         # Check cloud platforms
@@ -319,27 +343,19 @@ class AgentRecommender:
             word in objectives_lower
             for word in ["security", "secure", "compliance", "audit"]
         ):
-            self._promote_agent(
-                recommendations,
-                "security-architect",
-                "essential")
+            self._promote_agent(recommendations, "security-architect", "essential")
 
         # Scale focus
         if any(
-            word in objectives_lower for word in [
-                "scale",
-                "growth",
-                "million",
-                "users"]):
+            word in objectives_lower for word in ["scale", "growth", "million", "users"]
+        ):
             self._promote_agent(recommendations, "microservices-architect")
             self._promote_agent(recommendations, "kubernetes-architect")
 
         # Quality focus
         if any(
-            word in objectives_lower for word in [
-                "quality",
-                "testing",
-                "reliability"]):
+            word in objectives_lower for word in ["quality", "testing", "reliability"]
+        ):
             self._promote_agent(recommendations, "test-strategist")
 
         # AI/ML focus
@@ -382,9 +398,8 @@ class AgentRecommender:
         if "microservices" in analysis.get("architecture", []):
             # Microservices need special attention
             self._promote_agent(
-                recommendations,
-                "integration-architect",
-                "strongly_recommended")
+                recommendations, "integration-architect", "strongly_recommended"
+            )
 
         return recommendations
 
@@ -422,8 +437,7 @@ class AgentRecommender:
             {"name": agent_name, "category": category, "reason": reason}
         )
 
-    def generate_phase_recommendations(
-            self, phase: str, analysis: Dict) -> List[Dict]:
+    def generate_phase_recommendations(self, phase: str, analysis: Dict) -> List[Dict]:
         """Recommend agents for specific project phases."""
         phase_agents = {
             "planning": [
@@ -436,10 +450,7 @@ class AgentRecommender:
                 "framework-specialists",
                 "api-designer",
             ],
-            "testing": [
-                "test-manager",
-                "test-strategist",
-                "performance-tester"],
+            "testing": ["test-manager", "test-strategist", "performance-tester"],
             "deployment": [
                 "kubernetes-architect",
                 "ci-cd-architect",
@@ -460,8 +471,7 @@ class AgentRecommender:
                     # Add language-specific experts
                     for lang in analysis.get("languages", {}).keys():
                         agent_name = f"{lang}-expert"
-                        if agent_name in self.agent_registry.get(
-                                "languages", {}):
+                        if agent_name in self.agent_registry.get("languages", {}):
                             recommendations.append(
                                 {
                                     "name": agent_name,
@@ -486,8 +496,7 @@ class AgentRecommender:
         return recommendations
 
 
-def display_recommendations(
-        recommendations: Dict[str, List[Dict]], analysis: Dict):
+def display_recommendations(recommendations: Dict[str, List[Dict]], analysis: Dict):
     """Display agent recommendations in a nice format."""
     console.print("\n[bold green]AI Agent Recommendations[/bold green]\n")
 
@@ -499,11 +508,7 @@ def display_recommendations(
         summary += f" using {', '.join(list(analysis['frameworks'])[:2])}"
     summary += f"\nRecommending {total} specialized AI agents"
 
-    console.print(
-        Panel(
-            summary,
-            title="Analysis Summary",
-            border_style="blue"))
+    console.print(Panel(summary, title="Analysis Summary", border_style="blue"))
     console.print()
 
     # Recommendations by priority
@@ -531,10 +536,7 @@ def display_recommendations(
             table.add_column("Reason")
 
             for agent in agents:
-                table.add_row(
-                    agent["name"],
-                    agent["category"],
-                    agent["reason"])
+                table.add_row(agent["name"], agent["category"], agent["reason"])
 
             console.print(table)
             console.print()
@@ -546,9 +548,9 @@ def display_recommendations(
 
 
 @click.command()
-@click.option("--analysis-file",
-              type=click.Path(exists=True),
-              help="Project analysis JSON file")
+@click.option(
+    "--analysis-file", type=click.Path(exists=True), help="Project analysis JSON file"
+)
 @click.option(
     "--project-dir",
     type=click.Path(exists=True),
@@ -563,8 +565,7 @@ def display_recommendations(
     ),
     help="Current project phase",
 )
-@click.option("--output", type=click.Path(),
-              help="Save recommendations to JSON")
+@click.option("--output", type=click.Path(), help="Save recommendations to JSON")
 def main(analysis_file, project_dir, objectives, phase, output):
     """Recommend AI agents based on project analysis and objectives."""
 
@@ -586,11 +587,9 @@ def main(analysis_file, project_dir, objectives, phase, output):
 
     # Add phase-specific recommendations if provided
     if phase:
-        phase_recs = recommender.generate_phase_recommendations(
-            phase, analysis)
+        phase_recs = recommender.generate_phase_recommendations(phase, analysis)
         if phase_recs:
-            console.print(
-                f"\n[bold]Additional agents for {phase} phase:[/bold]")
+            console.print(f"\n[bold]Additional agents for {phase} phase:[/bold]")
             for rec in phase_recs:
                 console.print(f"  • {rec['name']}: {rec['reason']}")
 

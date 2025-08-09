@@ -171,9 +171,11 @@ class LeadershipMetricsTracker:
             person_id=data["person_id"],
             name=data["name"],
             primary_style=LeadershipType(data["primary_style"]),
-            secondary_style=LeadershipType(data["secondary_style"])
-            if data.get("secondary_style")
-            else None,
+            secondary_style=(
+                LeadershipType(data["secondary_style"])
+                if data.get("secondary_style")
+                else None
+            ),
             current_metrics=LeadershipMetrics(**data["current_metrics"]),
             leadership_moments=[
                 LeadershipMoment(
@@ -222,9 +224,9 @@ class LeadershipMetricsTracker:
         # Git analysis for execution leadership (Billy Wright style)
         data["crisis_commits"] = self._analyze_crisis_commits()
         data["code_review_leadership"] = self._analyze_code_review_leadership()
-        data[
-            "pair_programming_leadership"
-        ] = self._analyze_pair_programming_leadership()
+        data["pair_programming_leadership"] = (
+            self._analyze_pair_programming_leadership()
+        )
         data["technical_decisions"] = self._analyze_technical_decisions()
 
         # Documentation analysis for strategic leadership (Stan Cullis style)
@@ -235,9 +237,9 @@ class LeadershipMetricsTracker:
 
         # Cross-cutting leadership indicators
         data["retrospective_leadership"] = self._analyze_retrospective_leadership()
-        data[
-            "feature_proposal_leadership"
-        ] = self._analyze_feature_proposal_leadership()
+        data["feature_proposal_leadership"] = (
+            self._analyze_feature_proposal_leadership()
+        )
         data["team_coordination"] = self._analyze_team_coordination()
 
         return data
@@ -277,8 +279,7 @@ class LeadershipMetricsTracker:
 
                 if result.returncode == 0 and result.stdout.strip():
                     for line in result.stdout.strip().split("\n"):
-                        hash_val, author, subject, timestamp = line.split(
-                            "|", 3)
+                        hash_val, author, subject, timestamp = line.split("|", 3)
 
                         if author not in crisis_commits:
                             crisis_commits[author] = []
@@ -338,11 +339,7 @@ class LeadershipMetricsTracker:
                 score -= 15
 
         # Systematic approach indicators
-        if any(
-            word in message_lower for word in [
-                "test",
-                "validate",
-                "verify"]):
+        if any(word in message_lower for word in ["test", "validate", "verify"]):
             score += 15
 
         return min(100, max(0, score))
@@ -391,8 +388,9 @@ class LeadershipMetricsTracker:
                     ):
                         review_leadership[author]["quality_improvements"] += 1
 
-                    if any(word in subject.lower()
-                            for word in ["help", "guide", "explain"]):
+                    if any(
+                        word in subject.lower() for word in ["help", "guide", "explain"]
+                    ):
                         review_leadership[author]["mentoring_moments"] += 1
 
             return dict(review_leadership)
@@ -602,8 +600,7 @@ class LeadershipMetricsTracker:
         real_time_decisions = self._calculate_real_time_decision_score(
             person_id, leadership_data
         )
-        team_rallying = self._calculate_team_rallying_score(
-            person_id, leadership_data)
+        team_rallying = self._calculate_team_rallying_score(person_id, leadership_data)
         technical_leadership = self._calculate_technical_leadership_score(
             person_id, leadership_data
         )
@@ -631,7 +628,8 @@ class LeadershipMetricsTracker:
             person_id, leadership_data
         )
         organizational_influence = self._calculate_organizational_influence_score(
-            person_id, leadership_data)
+            person_id, leadership_data
+        )
 
         return LeadershipMetrics(
             crisis_response_score=crisis_response,
@@ -648,8 +646,7 @@ class LeadershipMetricsTracker:
             organizational_influence=organizational_influence,
         )
 
-    def _calculate_crisis_response_score(
-            self, person_id: str, data: Dict) -> float:
+    def _calculate_crisis_response_score(self, person_id: str, data: Dict) -> float:
         """Calculate crisis response leadership score"""
         crisis_commits = data.get("crisis_commits", {}).get(person_id, [])
 
@@ -657,12 +654,10 @@ class LeadershipMetricsTracker:
             return 0.0
 
         # Average the crisis response scores
-        total_score = sum(commit["leadership_score"]
-                          for commit in crisis_commits)
+        total_score = sum(commit["leadership_score"] for commit in crisis_commits)
         return total_score / len(crisis_commits)
 
-    def _calculate_strategic_vision_score(
-            self, person_id: str, data: Dict) -> float:
+    def _calculate_strategic_vision_score(self, person_id: str, data: Dict) -> float:
         """Calculate strategic vision leadership score"""
         arch_contributions = data.get("architecture_contributions", {}).get(
             person_id, {}
@@ -687,8 +682,7 @@ class LeadershipMetricsTracker:
 
         report = []
         report.append("# 🏆 Leadership Development Report")
-        report.append(
-            f"**Analysis Date**: {datetime.now().strftime('%B %d, %Y')}")
+        report.append(f"**Analysis Date**: {datetime.now().strftime('%B %d, %Y')}")
         report.append("")
         report.append(
             "*Inspired by Wolverhampton Wanderers Legends Billy Wright and Stan Cullis*"
@@ -708,10 +702,8 @@ class LeadershipMetricsTracker:
         report.append("## ⚽ Leadership Styles in Your Team")
         report.append("")
 
-        billy_wright_leaders = self._identify_billy_wright_leaders(
-            analysis_results)
-        stan_cullis_leaders = self._identify_stan_cullis_leaders(
-            analysis_results)
+        billy_wright_leaders = self._identify_billy_wright_leaders(analysis_results)
+        stan_cullis_leaders = self._identify_stan_cullis_leaders(analysis_results)
         dual_legends = self._identify_dual_legends(analysis_results)
 
         if dual_legends:
@@ -721,8 +713,7 @@ class LeadershipMetricsTracker:
             )
             report.append("")
             for leader in dual_legends:
-                report.append(
-                    f"- **{leader['name']}**: {leader['description']}")
+                report.append(f"- **{leader['name']}**: {leader['description']}")
             report.append("")
 
         if billy_wright_leaders:
@@ -762,16 +753,14 @@ class LeadershipMetricsTracker:
             report.append("## 🏅 Recent Leadership Moments")
             report.append("")
             for moment in recent_moments[:5]:  # Top 5 recent moments
-                report.append(
-                    f"**{moment['leader']}** - *{moment['situation']}*")
+                report.append(f"**{moment['leader']}** - *{moment['situation']}*")
                 report.append(
                     f"└─ {moment['action']} (Impact: {moment['impact_score']:.1f}/100)"
                 )
                 report.append("")
 
         # Development Recommendations
-        recommendations = analysis_results.get(
-            "development_recommendations", [])
+        recommendations = analysis_results.get("development_recommendations", [])
         if recommendations:
             report.append("## 🎯 Leadership Development Opportunities")
             report.append("")
@@ -862,8 +851,7 @@ class LeadershipMetricsTracker:
                 name=leader_id,  # Will be updated with real name later
                 primary_style=leadership_type,
                 secondary_style=None,
-                current_metrics=LeadershipMetrics(
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                current_metrics=LeadershipMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                 leadership_moments=[moment],
                 development_goals=[],
                 mentorship_relationships={},
@@ -883,8 +871,7 @@ class LeadershipMetricsTracker:
 
         report = []
         report.append(f"# 🌟 Leadership Profile: {profile.name}")
-        report.append(
-            f"**Assessment Date**: {datetime.now().strftime('%B %d, %Y')}")
+        report.append(f"**Assessment Date**: {datetime.now().strftime('%B %d, %Y')}")
         report.append("")
 
         # Leadership Style Analysis
@@ -949,24 +936,19 @@ class LeadershipMetricsTracker:
             report.append("## 🏅 Recent Leadership Moments")
             report.append("")
             recent_moments = sorted(
-                profile.leadership_moments,
-                key=lambda m: m.timestamp,
-                reverse=True)[
-                :5]
+                profile.leadership_moments, key=lambda m: m.timestamp, reverse=True
+            )[:5]
 
             for moment in recent_moments:
                 style_symbol = self.LEADERSHIP_STYLES[moment.leadership_type][
                     "recognition_symbol"
                 ]
-                date = datetime.fromisoformat(
-                    moment.timestamp).strftime("%b %d")
-                report.append(
-                    f"**{date}** {style_symbol} *{moment.situation}*")
+                date = datetime.fromisoformat(moment.timestamp).strftime("%b %d")
+                report.append(f"**{date}** {style_symbol} *{moment.situation}*")
                 report.append(f"└─ Action: {moment.action_taken}")
                 report.append(f"└─ Impact: {moment.impact_score:.1f}/100")
                 if moment.lessons_learned:
-                    report.append(
-                        f"└─ Lessons: {', '.join(moment.lessons_learned)}")
+                    report.append(f"└─ Lessons: {', '.join(moment.lessons_learned)}")
                 report.append("")
 
         # Development Goals
@@ -1090,9 +1072,9 @@ class LeadershipMetricsTracker:
                 "person_id": profile.person_id,
                 "name": profile.name,
                 "primary_style": profile.primary_style.value,
-                "secondary_style": profile.secondary_style.value
-                if profile.secondary_style
-                else None,
+                "secondary_style": (
+                    profile.secondary_style.value if profile.secondary_style else None
+                ),
                 "current_metrics": asdict(profile.current_metrics),
                 "leadership_moments": [
                     {
@@ -1169,16 +1151,9 @@ def profile(person_id, output):
     required=True,
     help="Type of leadership demonstrated",
 )
-@click.option("--impact", type=float, default=75.0,
-              help="Impact score (0-100)")
+@click.option("--impact", type=float, default=75.0, help="Impact score (0-100)")
 @click.option("--response", help="Team response to the leadership")
-def record_moment(
-        leader_id,
-        situation,
-        action,
-        leadership_type,
-        impact,
-        response):
+def record_moment(leader_id, situation, action, leadership_type, impact, response):
     """Record a specific leadership moment"""
     tracker = LeadershipMetricsTracker()
 
@@ -1191,8 +1166,7 @@ def record_moment(
         team_response=response or "",
     )
 
-    style_name = tracker.LEADERSHIP_STYLES[LeadershipType(
-        leadership_type)]["title"]
+    style_name = tracker.LEADERSHIP_STYLES[LeadershipType(leadership_type)]["title"]
     click.echo(f"🏅 Leadership moment recorded for {leader_id}")
     click.echo(f"   Style: {style_name}")
     click.echo(f"   Impact: {impact}/100")

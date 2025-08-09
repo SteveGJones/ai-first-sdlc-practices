@@ -231,96 +231,84 @@ class TechnicalDebtDetector:
         self, file_path: Path, lines: List[str], suffix: str
     ) -> None:
         """Check for commented-out code"""
-        comment_patterns = {".py": (r"^\s*#\s*",
-                                    ["import",
-                                     "de",
-                                     "class",
-                                     "i",
-                                     "for",
-                                     "while",
-                                     "return",
-                                     "raise",
-                                     "try",
-                                     ],
-                                    ),
-                            ".js": (r"^\s*//\s*",
-                                    ["import",
-                                     "export",
-                                     "function",
-                                     "class",
-                                     "i",
-                                     "for",
-                                     "while",
-                                     "return",
-                                     "const",
-                                     "let",
-                                     "var",
-                                     ],
-                                    ),
-                            ".ts": (r"^\s*//\s*",
-                                    ["import",
-                                     "export",
-                                     "function",
-                                     "class",
-                                     "i",
-                                     "for",
-                                     "while",
-                                     "return",
-                                     "const",
-                                     "let",
-                                     "var",
-                                     ],
-                                    ),
-                            ".java": (r"^\s*//\s*",
-                                      ["import",
-                                       "public",
-                                       "private",
-                                       "class",
-                                       "i",
-                                       "for",
-                                       "while",
-                                       "return",
-                                       "throw",
-                                       ],
-                                      ),
-                            ".go": (r"^\s*//\s*",
-                                    ["import",
-                                     "func",
-                                     "type",
-                                     "i",
-                                     "for",
-                                     "return",
-                                     "package"],
-                                    ),
-                            ".rs": (r"^\s*//\s*",
-                                    ["use",
-                                     "fn",
-                                     "impl",
-                                     "struct",
-                                     "i",
-                                     "for",
-                                     "while",
-                                     "return"],
-                                    ),
-                            ".cpp": (r"^\s*//\s*",
-                                     ["#include",
-                                      "class",
-                                      "i",
-                                      "for",
-                                      "while",
-                                      "return",
-                                      "namespace"],
-                                     ),
-                            ".rb": (r"^\s*#\s*",
-                                    ["require",
-                                     "de",
-                                     "class",
-                                     "i",
-                                     "for",
-                                     "while",
-                                     "return"],
-                                    ),
-                            }
+        comment_patterns = {
+            ".py": (
+                r"^\s*#\s*",
+                [
+                    "import",
+                    "de",
+                    "class",
+                    "i",
+                    "for",
+                    "while",
+                    "return",
+                    "raise",
+                    "try",
+                ],
+            ),
+            ".js": (
+                r"^\s*//\s*",
+                [
+                    "import",
+                    "export",
+                    "function",
+                    "class",
+                    "i",
+                    "for",
+                    "while",
+                    "return",
+                    "const",
+                    "let",
+                    "var",
+                ],
+            ),
+            ".ts": (
+                r"^\s*//\s*",
+                [
+                    "import",
+                    "export",
+                    "function",
+                    "class",
+                    "i",
+                    "for",
+                    "while",
+                    "return",
+                    "const",
+                    "let",
+                    "var",
+                ],
+            ),
+            ".java": (
+                r"^\s*//\s*",
+                [
+                    "import",
+                    "public",
+                    "private",
+                    "class",
+                    "i",
+                    "for",
+                    "while",
+                    "return",
+                    "throw",
+                ],
+            ),
+            ".go": (
+                r"^\s*//\s*",
+                ["import", "func", "type", "i", "for", "return", "package"],
+            ),
+            ".rs": (
+                r"^\s*//\s*",
+                ["use", "fn", "impl", "struct", "i", "for", "while", "return"],
+            ),
+            ".cpp": (
+                r"^\s*//\s*",
+                ["#include", "class", "i", "for", "while", "return", "namespace"],
+            ),
+            ".rb": (
+                r"^\s*#\s*",
+                ["require", "de", "class", "i", "for", "while", "return"],
+            ),
+        }
 
         if suffix not in comment_patterns:
             return
@@ -339,11 +327,7 @@ class TechnicalDebtDetector:
                     }
                 )
 
-    def _check_type_issues(
-            self,
-            file_path: Path,
-            content: str,
-            suffix: str) -> None:
+    def _check_type_issues(self, file_path: Path, content: str, suffix: str) -> None:
         """Check for type safety issues"""
         # TypeScript/JavaScript any types
         if suffix in [".ts", ".tsx"]:
@@ -362,8 +346,7 @@ class TechnicalDebtDetector:
         # Python missing type hints (simple heuristic)
         elif suffix == ".py":
             # Check for functions without return type hints
-            func_pattern = re.compile(
-                r"^\s*def\s+(\w+)\s*\([^)]*\)\s*:", re.MULTILINE)
+            func_pattern = re.compile(r"^\s*def\s+(\w+)\s*\([^)]*\)\s*:", re.MULTILINE)
             typed_func_pattern = re.compile(
                 r"^\s*def\s+(\w+)\s*\([^)]*\)\s*->\s*[^:]+:", re.MULTILINE
             )
@@ -412,11 +395,7 @@ class TechnicalDebtDetector:
                     }
                 )
 
-    def _check_code_smells(
-            self,
-            file_path: Path,
-            content: str,
-            suffix: str) -> None:
+    def _check_code_smells(self, file_path: Path, content: str, suffix: str) -> None:
         """Check for common code smells"""
         # Long functions
         if suffix in [".py", ".js", ".ts", ".java", ".go", ".rs"]:
@@ -438,18 +417,7 @@ class TechnicalDebtDetector:
                 continue
 
             # Skip common line lengths and dimensions
-            if number in [
-                    60,
-                    72,
-                    79,
-                    120,
-                    127,
-                    128,
-                    256,
-                    512,
-                    1024,
-                    2048,
-                    4096]:
+            if number in [60, 72, 79, 120, 127, 128, 256, 512, 1024, 2048, 4096]:
                 continue
 
             # Skip common HTTP status codes and well-known numbers
@@ -529,11 +497,7 @@ class TechnicalDebtDetector:
                 }
             )
 
-    def _check_long_functions(
-            self,
-            file_path: Path,
-            content: str,
-            suffix: str) -> None:
+    def _check_long_functions(self, file_path: Path, content: str, suffix: str) -> None:
         """Check for functions that are too long"""
         patterns = {
             ".py": r"^\s*def\s+\w+.*?(?=^\s*def|\Z)",
@@ -660,11 +624,7 @@ class TechnicalDebtDetector:
                     }
                 )
 
-    def _check_complexity(
-            self,
-            file_path: Path,
-            content: str,
-            suffix: str) -> None:
+    def _check_complexity(self, file_path: Path, content: str, suffix: str) -> None:
         """Check for high cyclomatic complexity"""
         # This is a simplified check - real complexity calculation would be
         # better
@@ -900,10 +860,8 @@ def main():
         description="Detect technical debt in your codebase"
     )
     parser.add_argument(
-        "path",
-        nargs="?",
-        default=".",
-        help="Path to scan (default: current directory)")
+        "path", nargs="?", default=".", help="Path to scan (default: current directory)"
+    )
     parser.add_argument(
         "--format",
         choices=["console", "json", "markdown"],
@@ -924,9 +882,7 @@ def main():
     )
     parser.add_argument(
         "--context",
-        choices=[
-            "application",
-            "framework"],
+        choices=["application", "framework"],
         default="application",
         help="Code context for policy compliance (default: application, auto-detects framework)",
     )

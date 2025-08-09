@@ -193,9 +193,8 @@ def demo_communication_analysis():
 
     print("\n   Most Active Agents:")
     sorted_agents = sorted(
-        analysis["most_active_agents"].items(),
-        key=lambda x: x[1],
-        reverse=True)
+        analysis["most_active_agents"].items(), key=lambda x: x[1], reverse=True
+    )
     for agent, count in sorted_agents[:5]:
         print(f"     {agent}: {count} messages")
 

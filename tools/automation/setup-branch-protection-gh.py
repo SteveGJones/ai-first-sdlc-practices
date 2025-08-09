@@ -31,8 +31,7 @@ def check_gh_installed() -> bool:
         subprocess.run(["gh", "--version"], capture_output=True, check=True)
 
         # Check if authenticated
-        subprocess.run(["gh", "auth", "status"],
-                       capture_output=True, check=True)
+        subprocess.run(["gh", "auth", "status"], capture_output=True, check=True)
 
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -150,7 +149,8 @@ def detect_collaboration_pattern() -> Dict[str, Any]:
             "external_reviews": external_reviews,
             "self_merges": self_merges,
             "confidence": (
-                "high" if total_prs > 5 else "medium" if total_prs > 0 else "low"),
+                "high" if total_prs > 5 else "medium" if total_prs > 0 else "low"
+            ),
         }
 
     except (subprocess.CalledProcessError, json.JSONDecodeError, KeyError) as e:
@@ -319,10 +319,7 @@ def setup_branch_protection(
 
     # Default required checks for AI-First SDLC
     if required_checks is None:
-        required_checks = [
-            "validate",
-            "test-framework-tools (3.8)",
-            "code-quality"]
+        required_checks = ["validate", "test-framework-tools (3.8)", "code-quality"]
 
     try:
         # Build the protection rules based on collaboration pattern
@@ -350,9 +347,7 @@ def setup_branch_protection(
         else:
             # Team mode: stricter review requirements
             protection_json = {
-                "required_status_checks": {
-                    "strict": True,
-                    "contexts": required_checks},
+                "required_status_checks": {"strict": True, "contexts": required_checks},
                 "enforce_admins": True,
                 "required_pull_request_reviews": {
                     "required_approving_review_count": 1,
@@ -379,8 +374,7 @@ def setup_branch_protection(
         # Debug: print the command
         if "--dry-run" not in sys.argv:
             print(f"Debug: Running command: {' '.join(protection_cmd[:4])}...")
-            print(
-                f"Debug: JSON input:\n{json.dumps(protection_json, indent=2)}")
+            print(f"Debug: JSON input:\n{json.dumps(protection_json, indent=2)}")
 
         # Execute the command with JSON input via stdin
         result = subprocess.run(
@@ -392,8 +386,7 @@ def setup_branch_protection(
 
         if result.returncode == 0:
             mode_str = "Solo Developer" if solo_mode else "Team Collaboration"
-            print(
-                f"✅ Branch protection enabled for '{branch}' ({mode_str} mode)")
+            print(f"✅ Branch protection enabled for '{branch}' ({mode_str} mode)")
             print("   - No direct pushes allowed")
 
             if solo_mode:
@@ -538,21 +531,16 @@ Examples:
             confidence = collaboration["confidence"]
 
             print(f"📊 Analysis Results ({confidence} confidence):")
-            print(
-                f"   - Total contributors: {collaboration['total_contributors']}")
-            print(
-                f"   - Active contributors: {collaboration['active_contributors']}")
+            print(f"   - Total contributors: {collaboration['total_contributors']}")
+            print(f"   - Active contributors: {collaboration['active_contributors']}")
             print(f"   - Total PRs: {collaboration['total_prs']}")
-            print(
-                f"   - External reviews: {collaboration['external_reviews']}")
+            print(f"   - External reviews: {collaboration['external_reviews']}")
             print(f"   - Self-merges: {collaboration['self_merges']}")
 
             mode_str = "Solo Developer" if solo_mode else "Team Collaboration"
             print(f"🎯 Detected mode: {mode_str}")
         else:
-            print(
-                "⚠️  Could not analyze collaboration pattern, defaulting to team mode"
-            )
+            print("⚠️  Could not analyze collaboration pattern, defaulting to team mode")
             solo_mode = False
 
     # Check for existing approval bots
@@ -592,8 +580,7 @@ Examples:
         print(f"  - Required status checks: {', '.join(checks)}")
         print("  - Dismiss stale reviews")
 
-        if args.create_bot_workflow or (
-                enable_auto_approval and not approval_bot):
+        if args.create_bot_workflow or (enable_auto_approval and not approval_bot):
             print("  - Create auto-approval GitHub Actions workflow")
 
         sys.exit(0)
@@ -630,8 +617,7 @@ Examples:
 
         print("5. All AI-First SDLC validation checks must pass")
 
-        if args.create_bot_workflow or (
-                enable_auto_approval and not approval_bot):
+        if args.create_bot_workflow or (enable_auto_approval and not approval_bot):
             print("\n⚠️  Don't forget to commit and push the auto-approval workflow:")
             print("   git add .github/workflows/auto-approve.yml")
             print(

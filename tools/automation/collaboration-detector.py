@@ -44,10 +44,7 @@ class CollaborationDetector:
     def _count_active_contributors(self, days: int) -> int:
         """Count unique contributors in the last N days."""
         try:
-            since_date = (
-                datetime.now() -
-                timedelta(
-                    days=days)).strftime("%Y-%m-%d")
+            since_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
             result = subprocess.run(
                 ["git", "log", f"--since={since_date}", "--format=%ae"],
                 cwd=self.repo_path,
@@ -88,10 +85,7 @@ class CollaborationDetector:
         # For simplicity, we'll check if there are multiple authors on recent
         # branches
         try:
-            since_date = (
-                datetime.now() -
-                timedelta(
-                    days=days)).strftime("%Y-%m-%d")
+            since_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
             # Get branches merged in the timeframe
             result = subprocess.run(
                 ["git", "log", "--merges", f"--since={since_date}", "--format=%s"],
@@ -103,8 +97,7 @@ class CollaborationDetector:
             # Simple heuristic: count merge commits that mention "pull request"
             # or "PR"
             merge_messages = result.stdout.lower()
-            pr_count = merge_messages.count(
-                "pull request") + merge_messages.count("#")
+            pr_count = merge_messages.count("pull request") + merge_messages.count("#")
             return pr_count
         except subprocess.CalledProcessError:
             return 0
@@ -147,8 +140,9 @@ class CollaborationDetector:
                 text=True,
                 check=True,
             )
-            branches = (result.stdout.strip().split("\n")
-                        if result.stdout.strip() else [])
+            branches = (
+                result.stdout.strip().split("\n") if result.stdout.strip() else []
+            )
 
             pr_branches = [
                 b
@@ -188,8 +182,9 @@ class CollaborationDetector:
 
 
 @click.command()
-@click.option("--repo-path", type=click.Path(exists=True),
-              help="Repository path to analyze")
+@click.option(
+    "--repo-path", type=click.Path(exists=True), help="Repository path to analyze"
+)
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 def main(repo_path, output_json):
     """Detect collaboration patterns in a git repository."""
@@ -206,10 +201,8 @@ def main(repo_path, output_json):
     else:
         click.echo(f"🔍 Collaboration Mode: {mode.upper()}")
         click.echo("\n📊 Metrics:")
-        click.echo(
-            f"  Active contributors (30d): {metrics['active_contributors_30d']}")
-        click.echo(
-            f"  Active contributors (90d): {metrics['active_contributors_90d']}")
+        click.echo(f"  Active contributors (30d): {metrics['active_contributors_30d']}")
+        click.echo(f"  Active contributors (90d): {metrics['active_contributors_90d']}")
         click.echo(f"  External PRs (90d): {metrics['external_prs_90d']}")
         click.echo(f"  Total contributors: {metrics['total_contributors']}")
         click.echo(
@@ -222,8 +215,7 @@ def main(repo_path, output_json):
             click.echo("  - Consider automated PR approval bot")
         elif mode == "solo_managed":
             click.echo("\n⚡ Solo-Managed Mode")
-            click.echo(
-                "  - Primary developer with occasional external contributions")
+            click.echo("  - Primary developer with occasional external contributions")
             click.echo("  - Flexible review requirements recommended")
         else:
             click.echo("\n👥 Team Collaboration Mode")

@@ -72,10 +72,7 @@ class ProgressiveValidationPipeline(ValidationPipeline):
         },
     }
 
-    def __init__(
-            self,
-            project_root: Optional[Path] = None,
-            level: str = "production"):
+    def __init__(self, project_root: Optional[Path] = None, level: str = "production"):
         super().__init__(project_root)
         self.level = level
         self.level_config = self.LEVEL_CHECKS.get(
@@ -122,7 +119,8 @@ class ProgressiveValidationPipeline(ValidationPipeline):
                 "status": "info",
                 "message": f"Running {self.level} level validation",
                 "details": f'Required checks: {", ".join(self.level_config["required"])}',
-            })
+            }
+        )
 
         # Run the parent validation
         validation_passed = super().run_validation(checks)
@@ -151,7 +149,8 @@ class ProgressiveValidationPipeline(ValidationPipeline):
                     "status": "pass" if passed else "fail",
                     "message": f"SDLC Gate Check - {phase.capitalize()} Phase",
                     "details": "Gate requirements met" if passed else "\n".join(issues),
-                })
+                }
+            )
 
             return passed
 
@@ -270,22 +269,15 @@ def main() -> None:
         help="Specific checks to run (default: level-appropriate)",
     )
     parser.add_argument(
-        "--strict",
-        action="store_true",
-        help="Run only required checks for the level")
+        "--strict", action="store_true", help="Run only required checks for the level"
+    )
     parser.add_argument(
-        "--export",
-        choices=[
-            "json",
-            "markdown"],
-        help="Export results to format")
+        "--export", choices=["json", "markdown"], help="Export results to format"
+    )
+    parser.add_argument("--output", help="Output file for export (default: stdout)")
     parser.add_argument(
-        "--output",
-        help="Output file for export (default: stdout)")
-    parser.add_argument(
-        "--ci",
-        action="store_true",
-        help="CI mode - exit with error code on failures")
+        "--ci", action="store_true", help="CI mode - exit with error code on failures"
+    )
 
     args = parser.parse_args()
 

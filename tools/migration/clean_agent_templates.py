@@ -87,8 +87,7 @@ class AgentTemplateCleaner:
 
             # Clean each forbidden section from the body
             for pattern in self.forbidden_sections:
-                matches = re.findall(
-                    pattern, body_section, re.DOTALL | re.IGNORECASE)
+                matches = re.findall(pattern, body_section, re.DOTALL | re.IGNORECASE)
                 if matches:
                     # Extract section name for reporting
                     section_match = re.search(r"##\s+([^\n]+)", matches[0])
@@ -98,7 +97,8 @@ class AgentTemplateCleaner:
 
                     # Remove the section
                     body_section = re.sub(
-                        pattern, "", body_section, flags=re.DOTALL | re.IGNORECASE)
+                        pattern, "", body_section, flags=re.DOTALL | re.IGNORECASE
+                    )
 
             # Clean up excessive blank lines (more than 2 consecutive)
             body_section = re.sub(r"\n{3,}", "\n\n", body_section)
@@ -141,16 +141,14 @@ class AgentTemplateCleaner:
             shutil.copy2(file_path, backup_path)
 
             # Clean the file
-            success, cleaned_content, removed_sections = self.clean_file(
-                file_path)
+            success, cleaned_content, removed_sections = self.clean_file(file_path)
 
             if success and removed_sections:
                 # Write cleaned content
                 with open(file_path, "w") as f:
                     f.write(cleaned_content)
 
-                print(
-                    f"  ✅ Cleaned - Removed {len(removed_sections)} sections:")
+                print(f"  ✅ Cleaned - Removed {len(removed_sections)} sections:")
                 for section in removed_sections:
                     print(f"     - {section}")
 
@@ -182,9 +180,9 @@ class AgentTemplateCleaner:
                     {
                         "file": file_path,
                         "status": "failed",
-                        "error": removed_sections[0]
-                        if removed_sections
-                        else "Unknown error",
+                        "error": (
+                            removed_sections[0] if removed_sections else "Unknown error"
+                        ),
                     }
                 )
 

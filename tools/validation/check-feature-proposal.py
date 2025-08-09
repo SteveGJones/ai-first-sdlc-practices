@@ -27,8 +27,7 @@ def get_current_branch() -> Optional[str]:
     except subprocess.CalledProcessError:
         # In CI or detached HEAD, try to get branch from environment or git describe
         # GitHub Actions
-        branch = os.environ.get(
-            "GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME")
+        branch = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME")
         if branch:
             return branch
 

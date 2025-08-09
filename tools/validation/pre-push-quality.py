@@ -64,8 +64,7 @@ class CodeQLStyleAnalyzer:
                         if isinstance(child, ast.FunctionDef):
                             if child.name == "__init__":
                                 # Count constructor arguments
-                                required_args = len(
-                                    child.args.args) - 1  # Exclude self
+                                required_args = len(child.args.args) - 1  # Exclude self
                                 required_args -= len(child.args.defaults)
                                 class_methods[class_name] = required_args
 
@@ -100,9 +99,11 @@ class CodeQLStyleAnalyzer:
                                 "column": node.col_offset,
                                 "message": f"save_context() expects 2-3 arguments but got {len(node.args)}",
                                 "severity": "error",
-                                "code_snippet": lines[node.lineno - 1].strip()
-                                if node.lineno <= len(lines)
-                                else "",
+                                "code_snippet": (
+                                    lines[node.lineno - 1].strip()
+                                    if node.lineno <= len(lines)
+                                    else ""
+                                ),
                                 "suggestion": 'Add context_type parameter: save_context("manual", data)',
                             }
                         )
@@ -120,9 +121,11 @@ class CodeQLStyleAnalyzer:
                                     "column": node.col_offset,
                                     "message": f"{func_name} constructor arguments may be in wrong order",
                                     "severity": "error",
-                                    "code_snippet": lines[node.lineno - 1].strip()
-                                    if node.lineno <= len(lines)
-                                    else "",
+                                    "code_snippet": (
+                                        lines[node.lineno - 1].strip()
+                                        if node.lineno <= len(lines)
+                                        else ""
+                                    ),
                                     "suggestion": "Check constructor signature: __init__(platform, token, repo)",
                                 }
                             )
@@ -136,9 +139,11 @@ class CodeQLStyleAnalyzer:
                                 "column": node.col_offset,
                                 "message": f"{func_name}() expects {expected_args} arguments but got {len(node.args)}",
                                 "severity": "warning",
-                                "code_snippet": lines[node.lineno - 1].strip()
-                                if node.lineno <= len(lines)
-                                else "",
+                                "code_snippet": (
+                                    lines[node.lineno - 1].strip()
+                                    if node.lineno <= len(lines)
+                                    else ""
+                                ),
                                 "suggestion": f"Check function signature and provide {expected_args} arguments",
                             }
                         )
@@ -159,8 +164,7 @@ class CodeQLStyleAnalyzer:
 
         return issues
 
-    def analyze_undefined_methods(
-            self, file_path: Path) -> List[Dict[str, Any]]:
+    def analyze_undefined_methods(self, file_path: Path) -> List[Dict[str, Any]]:
         """Detect calls to undefined methods"""
         issues = []
 
@@ -170,30 +174,36 @@ class CodeQLStyleAnalyzer:
 
             # Look for common undefined method patterns
             undefined_patterns = [
-                (r"\.setup\(.*\)",
-                 'Method "setup" may not exist - check if it should be "configure"',
-                 ),
-                (r"\.contains\(",
-                 'Method "contains" does not exist on strings - use "in" operator',
-                 ),
-                (r"urlopen\(",
-                 "urllib.urlopen is deprecated - use urllib.request.urlopen",
-                 ),
+                (
+                    r"\.setup\(.*\)",
+                    'Method "setup" may not exist - check if it should be "configure"',
+                ),
+                (
+                    r"\.contains\(",
+                    'Method "contains" does not exist on strings - use "in" operator',
+                ),
+                (
+                    r"urlopen\(",
+                    "urllib.urlopen is deprecated - use urllib.request.urlopen",
+                ),
             ]
 
             lines = content.split("\n")
             for i, line in enumerate(lines, 1):
                 for pattern, message in undefined_patterns:
                     if re.search(pattern, line):
-                        issues.append({"type": "undefined_method",
-                                       "file": str(file_path),
-                                       "line": i,
-                                       "column": 0,
-                                       "message": message,
-                                       "severity": "error",
-                                       "code_snippet": line.strip(),
-                                       "suggestion": "Check method name and availability",
-                                       })
+                        issues.append(
+                            {
+                                "type": "undefined_method",
+                                "file": str(file_path),
+                                "line": i,
+                                "column": 0,
+                                "message": message,
+                                "severity": "error",
+                                "code_snippet": line.strip(),
+                                "suggestion": "Check method name and availability",
+                            }
+                        )
 
         except (UnicodeDecodeError, PermissionError, FileNotFoundError):
             # Skip files that can't be analyzed (binary, permissions, etc.)
@@ -213,20 +223,21 @@ class CodeQLStyleAnalyzer:
             for i, line in enumerate(lines, 1):
                 # Check for common type issues
                 if ": any" in line.lower() or "= any(" in line.lower():
-                    issues.append({"type": "type_safety",
-                                   "file": str(file_path),
-                                   "line": i,
-                                   "column": 0,
-                                   "message": 'Usage of "any" type reduces type safety',
-                                   "severity": "warning",
-                                   "code_snippet": line.strip(),
-                                   "suggestion": 'Use specific types instead of "any"',
-                                   })
+                    issues.append(
+                        {
+                            "type": "type_safety",
+                            "file": str(file_path),
+                            "line": i,
+                            "column": 0,
+                            "message": 'Usage of "any" type reduces type safety',
+                            "severity": "warning",
+                            "code_snippet": line.strip(),
+                            "suggestion": 'Use specific types instead of "any"',
+                        }
+                    )
 
                 # Check for missing return types
-                if re.match(
-                    r"\s*def\s+\w+\([^)]*\):$",
-                        line) and "self" in line:
+                if re.match(r"\s*def\s+\w+\([^)]*\):$", line) and "self" in line:
                     issues.append(
                         {
                             "type": "missing_type_annotation",
@@ -237,7 +248,8 @@ class CodeQLStyleAnalyzer:
                             "severity": "info",
                             "code_snippet": line.strip(),
                             "suggestion": "Add return type annotation -> ReturnType",
-                        })
+                        }
+                    )
 
         except (UnicodeDecodeError, PermissionError, FileNotFoundError):
             # Skip files that can't be analyzed (binary, permissions, etc.)
@@ -330,19 +342,14 @@ class CodeQLStyleAnalyzer:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Enhanced Pre-Push Quality Gate")
+    parser = argparse.ArgumentParser(description="Enhanced Pre-Push Quality Gate")
     parser.add_argument(
         "--fix", action="store_true", help="Auto-fix issues when possible"
     )
     parser.add_argument(
         "--codeql", action="store_true", help="Run CodeQL-style analysis only"
     )
-    parser.add_argument(
-        "--verbose",
-        "-v",
-        action="store_true",
-        help="Verbose output")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument("--json", help="Output results to JSON file")
 
     args = parser.parse_args()

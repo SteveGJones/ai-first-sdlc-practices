@@ -79,10 +79,7 @@ class ClaudeInstaller:
     }
 
     # Core agents that should be installed in all modes
-    CORE_AGENTS = [
-        "sdlc-enforcer",
-        "solution-architect",
-        "critical-goal-reviewer"]
+    CORE_AGENTS = ["sdlc-enforcer", "solution-architect", "critical-goal-reviewer"]
 
     def __init__(self, project_root: Path, mode: str = "agents-only"):
         self.project_root = project_root
@@ -94,13 +91,11 @@ class ClaudeInstaller:
     def validate_environment(self) -> bool:
         """Validate installation environment."""
         if not self.project_root.exists():
-            print(
-                f"Error: Project directory does not exist: {self.project_root}")
+            print(f"Error: Project directory does not exist: {self.project_root}")
             return False
 
         if not self.project_root.is_dir():
-            print(
-                f"Error: Project path is not a directory: {self.project_root}")
+            print(f"Error: Project path is not a directory: {self.project_root}")
             return False
 
         # Check if we can write to the target directory
@@ -170,10 +165,7 @@ class ClaudeInstaller:
 
             return agents
 
-    def download_agent(
-            self,
-            agent_name: str,
-            category: str) -> Optional[AgentSpec]:
+    def download_agent(self, agent_name: str, category: str) -> Optional[AgentSpec]:
         """Download a single agent."""
         try:
             source_path = f"agents/{category}/{agent_name}.md"
@@ -426,15 +418,10 @@ def main():
     )
 
     parser.add_argument(
-        "--project-root",
-        type=Path,
-        default=Path.cwd(),
-        help="Project root directory")
+        "--project-root", type=Path, default=Path.cwd(), help="Project root directory"
+    )
 
-    parser.add_argument(
-        "--list",
-        action="store_true",
-        help="List installed agents")
+    parser.add_argument("--list", action="store_true", help="List installed agents")
 
     args = parser.parse_args()
 

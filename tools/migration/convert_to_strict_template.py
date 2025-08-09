@@ -69,8 +69,7 @@ class StrictTemplateConverter:
                 info["role"] = role_match.group(1).strip()
 
             # Extract expertise
-            expertise_match = re.search(
-                r"\*\*Expertise\*\*:\s*([^\n]+)", card_content)
+            expertise_match = re.search(r"\*\*Expertise\*\*:\s*([^\n]+)", card_content)
             if expertise_match:
                 info["expertise"] = expertise_match.group(1).strip()
 
@@ -92,10 +91,7 @@ class StrictTemplateConverter:
             info["capabilities"] = cap_headings
 
             # Also extract bullet points
-            bullets = re.findall(
-                r"^[-*]\s+([^\n]+)",
-                cap_content,
-                re.MULTILINE)
+            bullets = re.findall(r"^[-*]\s+([^\n]+)", cap_content, re.MULTILINE)
             # Limit to 10 key capabilities
             info["capabilities"].extend(bullets[:10])
 
@@ -141,7 +137,8 @@ class StrictTemplateConverter:
         if not full_description:
             full_description = (
                 f"I am {info['name'].replace('_', ' ')}, focused on "
-                f"{info['expertise'] or 'specialized tasks'} with a collaborative team-first approach.")
+                f"{info['expertise'] or 'specialized tasks'} with a collaborative team-first approach."
+            )
 
         # Build core competencies
         competencies = []
@@ -155,10 +152,8 @@ class StrictTemplateConverter:
         if not competencies:
             # Generate from expertise
             if info["expertise"]:
-                expertise_items = [e.strip()
-                                   for e in info["expertise"].split(",")]
-                competencies = [
-                    f"Expert in {item}" for item in expertise_items[:6]]
+                expertise_items = [e.strip() for e in info["expertise"].split(",")]
+                competencies = [f"Expert in {item}" for item in expertise_items[:6]]
 
         if not competencies:
             # Default competencies
@@ -226,9 +221,11 @@ Your core competencies include:"""
                     "assistant": (
                         "I'll review this for privacy compliance. We need to ensure proper consent mechanisms, "
                         "data minimization, and purpose limitation. Let me work with the UX team on clear consent flows "
-                        "and the database team on retention policies."),
+                        "and the database team on retention policies."
+                    ),
                     "commentary": "The agent immediately focuses on privacy requirements and collaboration",
-                })
+                }
+            )
         elif "database" in info["name"]:
             examples.append(
                 {
@@ -249,9 +246,11 @@ Your core competencies include:"""
                     "assistant": (
                         "I'll design RESTful endpoints following best practices. Let me coordinate with the security team "
                         "on authentication, the database architect on data models, "
-                        "and the frontend team on response formats."),
+                        "and the frontend team on response formats."
+                    ),
                     "commentary": "The agent brings together multiple teams for API design",
-                })
+                }
+            )
         elif "evolution" in info["name"] or "future" in info["name"]:
             examples.append(
                 {
@@ -274,9 +273,11 @@ Your core competencies include:"""
                     "assistant": (
                         f"I'll apply my {name} expertise to help. "
                         "Let me understand your specific needs and coordinate with "
-                        "relevant team members to ensure comprehensive coverage."),
+                        "relevant team members to ensure comprehensive coverage."
+                    ),
                     "commentary": f"The agent provides specialized {name} assistance",
-                })
+                }
+            )
 
         # Add a collaboration example
         examples.append(
@@ -286,9 +287,11 @@ Your core competencies include:"""
                 "assistant": (
                     f"As the {name}, I'll coordinate across teams. "
                     "Let me identify all stakeholders, understand interdependencies, "
-                    "and facilitate collaborative planning sessions."),
+                    "and facilitate collaborative planning sessions."
+                ),
                 "commentary": "The agent demonstrates team-first collaborative approach",
-            })
+            }
+        )
 
         return examples
 
@@ -361,8 +364,7 @@ Your core competencies include:"""
             if not Path(file_path).exists():
                 print(f"⚠️  Not found: {file_path}")
                 results["failed"] += 1
-                results["details"].append(
-                    {"file": file_path, "status": "not_found"})
+                results["details"].append({"file": file_path, "status": "not_found"})
                 continue
 
             print(f"Converting: {file_path}")
@@ -396,9 +398,8 @@ def main():
     )
     parser.add_argument("--file", help="Convert single file")
     parser.add_argument(
-        "--check",
-        action="store_true",
-        help="Check which files need conversion")
+        "--check", action="store_true", help="Check which files need conversion"
+    )
 
     args = parser.parse_args()
 

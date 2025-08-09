@@ -92,12 +92,16 @@ class TodoItem:
             status=TodoStatus[data["status"]],
             priority=TodoPriority[data["priority"]],
             id=data.get("id"),
-            created_at=datetime.fromisoformat(data["created_at"])
-            if data.get("created_at")
-            else None,
-            updated_at=datetime.fromisoformat(data["updated_at"])
-            if data.get("updated_at")
-            else None,
+            created_at=(
+                datetime.fromisoformat(data["created_at"])
+                if data.get("created_at")
+                else None
+            ),
+            updated_at=(
+                datetime.fromisoformat(data["updated_at"])
+                if data.get("updated_at")
+                else None
+            ),
             blocked_by=data.get("blocked_by"),
             branch=data.get("branch"),
         )
@@ -171,8 +175,7 @@ class ProgressTracker:
                 todo.status = TodoStatus(new_status)
                 todo.updated_at = datetime.now().isoformat()
                 self.save_todos(todos)
-                print(
-                    f"✅ Updated '{todo.content}': {old_status} → {new_status}")
+                print(f"✅ Updated '{todo.content}': {old_status} → {new_status}")
                 return
 
         print(f"❌ Todo not found: {todo_id}")
@@ -237,11 +240,7 @@ class ProgressTracker:
         branch_todos = [t for t in todos if t.branch == branch]
 
         # Count by status
-        status_counts = {
-            "pending": 0,
-            "in_progress": 0,
-            "completed": 0,
-            "blocked": 0}
+        status_counts = {"pending": 0, "in_progress": 0, "completed": 0, "blocked": 0}
 
         for todo in branch_todos:
             status_counts[todo.status.value] += 1
@@ -266,8 +265,7 @@ class ProgressTracker:
 
         # List tasks by status
         for status in ["in_progress", "blocked", "pending", "completed"]:
-            status_todos = [
-                t for t in branch_todos if t.status.value == status]
+            status_todos = [t for t in branch_todos if t.status.value == status]
             if status_todos:
                 report += f"\n## {status.replace('_', ' ').title()}\n"
                 for todo in status_todos:
@@ -277,9 +275,7 @@ class ProgressTracker:
                         else (
                             "🚫"
                             if status == "blocked"
-                            else "⏸️"
-                            if status == "pending"
-                            else "✅"
+                            else "⏸️" if status == "pending" else "✅"
                         )
                     )
                     report += f"- {marker} {todo.content}"
@@ -300,8 +296,7 @@ class ProgressTracker:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="AI-First SDLC Progress Tracker")
+    parser = argparse.ArgumentParser(description="AI-First SDLC Progress Tracker")
 
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
@@ -323,9 +318,7 @@ def main():
         choices=["pending", "in_progress", "completed", "blocked"],
         help="New status",
     )
-    update_parser.add_argument(
-        "--blocked-by",
-        help="What is blocking this task")
+    update_parser.add_argument("--blocked-by", help="What is blocking this task")
 
     # List todos
     list_parser = subparsers.add_parser("list", help="List todos")
@@ -337,14 +330,11 @@ def main():
     list_parser.add_argument("--branch", help="Filter by branch")
 
     # Generate report
-    report_parser = subparsers.add_parser(
-        "report", help="Generate status report")
-    report_parser.add_argument("--output",
-                               help="Output file (default: stdout)")
+    report_parser = subparsers.add_parser("report", help="Generate status report")
+    report_parser.add_argument("--output", help="Output file (default: stdout)")
 
     # Save session
-    session_parser = subparsers.add_parser(
-        "session", help="Save session context")
+    session_parser = subparsers.add_parser("session", help="Save session context")
     session_parser.add_argument("--notes", help="Session notes")
 
     # Show last session
@@ -395,9 +385,7 @@ def main():
                     else (
                         "🚧"
                         if todo.status == TodoStatus.IN_PROGRESS
-                        else "🚫"
-                        if todo.status == TodoStatus.BLOCKED
-                        else "⏸️"
+                        else "🚫" if todo.status == TodoStatus.BLOCKED else "⏸️"
                     )
                 )
 
@@ -407,14 +395,11 @@ def main():
                     else (
                         "🟡"
                         if todo.priority == TodoPriority.HIGH
-                        else "🟢"
-                        if todo.priority == TodoPriority.MEDIUM
-                        else "⚪"
+                        else "🟢" if todo.priority == TodoPriority.MEDIUM else "⚪"
                     )
                 )
 
-                print(
-                    f"{status_icon} {priority_icon} [{todo.id[:6]}] {todo.content}")
+                print(f"{status_icon} {priority_icon} [{todo.id[:6]}] {todo.content}")
                 if todo.blocked_by:
                     print(f"   └─ Blocked by: {todo.blocked_by}")
 

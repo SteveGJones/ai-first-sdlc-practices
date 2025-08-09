@@ -173,8 +173,9 @@ class HallOfFameManager:
         """Induct a team into the Hall of Fame"""
 
         # Load nomination
-        nomination_file = (self.hall_of_fame_dir /
-                           f"nomination_{team_name.replace(' ', '_')}.json")
+        nomination_file = (
+            self.hall_of_fame_dir / f"nomination_{team_name.replace(' ', '_')}.json"
+        )
         if not nomination_file.exists():
             raise ValueError(f"No nomination found for team: {team_name}")
 
@@ -204,8 +205,7 @@ class HallOfFameManager:
         )
 
         # Save to Hall of Fame
-        hof_file = self.hall_of_fame_dir / \
-            f"hof_{team_name.replace(' ', '_')}.json"
+        hof_file = self.hall_of_fame_dir / f"hof_{team_name.replace(' ', '_')}.json"
         with open(hof_file, "w") as f:
             json.dump(asdict(entry), f, indent=2)
 
@@ -253,8 +253,7 @@ class HallOfFameManager:
             f"- **Teams Mentored**: {total_mentorship} teams elevated to higher levels"
         )
 
-        total_contributions = sum(
-            entry["community_contributions"] for entry in entries)
+        total_contributions = sum(entry["community_contributions"] for entry in entries)
         gallery.append(
             f"- **Community Contributions**: {total_contributions} open source improvements"
         )
@@ -334,8 +333,7 @@ class HallOfFameManager:
         gallery.append(
             "2. **Focus on Excellence**: Consistently improve across all maturity dimensions"
         )
-        gallery.append(
-            "3. **Mentor Others**: Help other teams reach their potential")
+        gallery.append("3. **Mentor Others**: Help other teams reach their potential")
         gallery.append(
             "4. **Contribute to Community**: Share your innovations with the broader ecosystem"
         )
@@ -343,14 +341,12 @@ class HallOfFameManager:
             "5. **Document Your Journey**: Track progress and share lessons learned"
         )
         gallery.append("")
-        gallery.append(
-            "*The Hall of Fame awaits your legendary achievements!*")
+        gallery.append("*The Hall of Fame awaits your legendary achievements!*")
         gallery.append("")
 
         return "\n".join(gallery)
 
-    def _validate_legendary_requirements(
-            self, team_data: Dict, metrics: Dict) -> bool:
+    def _validate_legendary_requirements(self, team_data: Dict, metrics: Dict) -> bool:
         """Validate that a team meets legendary requirements"""
 
         # Minimum team size
@@ -445,8 +441,7 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
         lines.append("")
 
         # Key info
-        lines.append(
-            f"**Team Size**: {entry['team_size']} legendary developers")
+        lines.append(f"**Team Size**: {entry['team_size']} legendary developers")
         lines.append(f"**Legacy Impact**: {entry['legacy_impact']}")
 
         if entry.get("mentorship_count", 0) > 0:
@@ -487,8 +482,7 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
 
         return lines
 
-    def _calculate_average_scores(
-            self, entries: List[Dict]) -> Dict[str, float]:
+    def _calculate_average_scores(self, entries: List[Dict]) -> Dict[str, float]:
         """Calculate average scores across all entries"""
         if not entries:
             return {}
@@ -510,14 +504,9 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
 
         return averages
 
-    def _analyze_achievement_categories(
-            self, entries: List[Dict]) -> Dict[str, Dict]:
+    def _analyze_achievement_categories(self, entries: List[Dict]) -> Dict[str, Dict]:
         """Analyze achievements by category"""
-        categories = defaultdict(
-            lambda: {
-                "count": 0,
-                "teams": [],
-                "icon": "🏆"})
+        categories = defaultdict(lambda: {"count": 0, "teams": [], "icon": "🏆"})
 
         # Map achievements to categories (simplified)
         category_mapping = {
@@ -556,7 +545,8 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
 
                 for category, info in category_mapping.items():
                     if any(
-                            keyword in achievement_lower for keyword in info["keywords"]):
+                        keyword in achievement_lower for keyword in info["keywords"]
+                    ):
                         team_categories.add(category)
                         categories[category]["icon"] = info["icon"]
 
@@ -566,9 +556,11 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
                 categories[category]["teams"].append(
                     {
                         "name": entry["team_name"],
-                        "achievement": entry["key_achievements"][0]
-                        if entry.get("key_achievements")
-                        else "Legendary Excellence",
+                        "achievement": (
+                            entry["key_achievements"][0]
+                            if entry.get("key_achievements")
+                            else "Legendary Excellence"
+                        ),
                     }
                 )
 
@@ -625,11 +617,9 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
         for achievement in entry.key_achievements[:3]:  # Top 3
             certificate.append(f"  🏆 {achievement}")
         certificate.append("")
-        certificate.append(
-            f"Team Size: {entry.team_size} legendary developers")
+        certificate.append(f"Team Size: {entry.team_size} legendary developers")
         certificate.append(f"Legacy Impact: {entry.legacy_impact}")
-        certificate.append(
-            f"Community Contributions: {entry.community_contributions}")
+        certificate.append(f"Community Contributions: {entry.community_contributions}")
         certificate.append("")
         certificate.append(
             f"Inducted on: {datetime.fromisoformat(entry.achievement_date).strftime('%B %d, %Y')}"
@@ -648,7 +638,8 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
         certificate.append("")
         certificate.append("=" * 80)
         certificate.append(
-            "🌟 CONGRATULATIONS ON REACHING THE SUMMIT OF EXCELLENCE! 🌟")
+            "🌟 CONGRATULATIONS ON REACHING THE SUMMIT OF EXCELLENCE! 🌟"
+        )
         certificate.append("=" * 80)
 
         # Save certificate
@@ -679,10 +670,7 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
 
         return achievements
 
-    def analyze_legendary_readiness(
-            self,
-            team_data: Dict,
-            metrics: Dict) -> Dict:
+    def analyze_legendary_readiness(self, team_data: Dict, metrics: Dict) -> Dict:
         """Analyze how close a team is to legendary status"""
         readiness = {
             "overall_readiness": 0,
@@ -712,33 +700,28 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
             )
         else:
             gap = 95 - avg_score
-            readiness["gaps"].append(
-                f"❌ Overall score needs {gap:.1f} more points")
-            readiness["next_steps"].append(
-                f"Improve overall score by {gap:.1f} points")
+            readiness["gaps"].append(f"❌ Overall score needs {gap:.1f} more points")
+            readiness["next_steps"].append(f"Improve overall score by {gap:.1f} points")
 
         if metrics.get("collaboration_score", 0) >= 95:
             readiness["requirements_met"] += 1
             readiness["achievements_earned"].append(
-                "✅ Collaboration excellence (95%+)")
+                "✅ Collaboration excellence (95%+)"
+            )
         else:
             gap = 95 - metrics.get("collaboration_score", 0)
             readiness["gaps"].append(
                 f"❌ Collaboration score needs {gap:.1f} more points"
             )
-            readiness["next_steps"].append(
-                "Focus on team collaboration practices")
+            readiness["next_steps"].append("Focus on team collaboration practices")
 
         if metrics.get("innovation_rate", 0) >= 90:
             readiness["requirements_met"] += 1
-            readiness["achievements_earned"].append(
-                "✅ Innovation excellence (90%+)")
+            readiness["achievements_earned"].append("✅ Innovation excellence (90%+)")
         else:
             gap = 90 - metrics.get("innovation_rate", 0)
-            readiness["gaps"].append(
-                f"❌ Innovation rate needs {gap:.1f} more points")
-            readiness["next_steps"].append(
-                "Increase innovation and experimentation")
+            readiness["gaps"].append(f"❌ Innovation rate needs {gap:.1f} more points")
+            readiness["next_steps"].append("Increase innovation and experimentation")
 
         if team_data.get("community_impact", 0) >= 90:
             readiness["requirements_met"] += 1
@@ -759,8 +742,7 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
         else:
             needed = 3 - team_data.get("teams_mentored", 0)
             readiness["gaps"].append(f"❌ Need to mentor {needed} more teams")
-            readiness["next_steps"].append(
-                "Begin mentoring other development teams")
+            readiness["next_steps"].append("Begin mentoring other development teams")
 
         # Calculate overall readiness percentage
         readiness["overall_readiness"] = (
@@ -779,9 +761,9 @@ def cli():
 
 @cli.command()
 @click.option("--team-name", required=True, help="Team name to nominate")
-@click.option("--data-file",
-              type=click.Path(exists=True),
-              help="JSON file with team data")
+@click.option(
+    "--data-file", type=click.Path(exists=True), help="JSON file with team data"
+)
 def nominate(team_name, data_file):
     """Nominate a team for Hall of Fame induction"""
     manager = HallOfFameManager()
@@ -863,9 +845,9 @@ def gallery(output):
 
 @cli.command()
 @click.option("--team-name", required=True, help="Team name to analyze")
-@click.option("--data-file",
-              type=click.Path(exists=True),
-              help="JSON file with team data")
+@click.option(
+    "--data-file", type=click.Path(exists=True), help="JSON file with team data"
+)
 def readiness(team_name, data_file):
     """Analyze team readiness for legendary status"""
     manager = HallOfFameManager()
@@ -879,13 +861,11 @@ def readiness(team_name, data_file):
         click.echo("Data file required for readiness analysis.")
         return
 
-    readiness_analysis = manager.analyze_legendary_readiness(
-        team_data, metrics)
+    readiness_analysis = manager.analyze_legendary_readiness(team_data, metrics)
 
     click.echo(f"🎯 Legendary Status Readiness: {team_name}")
     click.echo("=" * 50)
-    click.echo(
-        f"Overall Readiness: {readiness_analysis['overall_readiness']:.1f}%")
+    click.echo(f"Overall Readiness: {readiness_analysis['overall_readiness']:.1f}%")
     click.echo(
         f"Requirements Met: {readiness_analysis['requirements_met']}/{readiness_analysis['total_requirements']}"
     )

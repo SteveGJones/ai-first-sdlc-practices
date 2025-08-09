@@ -61,8 +61,7 @@ class ContextManager:
             json.dump(context, f, indent=2)
 
         # Save to history
-        history_file = self.context_history_dir / \
-            f"{session_id}_{context_type}.json"
+        history_file = self.context_history_dir / f"{session_id}_{context_type}.json"
         with open(history_file, "w") as f:
             json.dump(context, f, indent=2)
 
@@ -214,8 +213,7 @@ class ContextManager:
                         with open(file_path, "r") as f:
                             # Just capture first 50 lines
                             lines = f.readlines()[:50]
-                            snapshot["code_snippets"][file_path] = "".join(
-                                lines)
+                            snapshot["code_snippets"][file_path] = "".join(lines)
                     except Exception:
                         pass
 
@@ -355,36 +353,24 @@ def main() -> None:
     # Save context
     save_parser = subparsers.add_parser("save", help="Save current context")
     save_parser.add_argument(
-        "type",
-        choices=[
-            "work",
-            "handoff",
-            "debug",
-            "custom"],
-        help="Context type")
+        "type", choices=["work", "handoff", "debug", "custom"], help="Context type"
+    )
     save_parser.add_argument("--data", help="JSON data to save")
     save_parser.add_argument("--file", help="File containing JSON data")
 
     # Load context
     load_parser = subparsers.add_parser("load", help="Load saved context")
-    load_parser.add_argument(
-        "session_id",
-        nargs="?",
-        help="Session ID to load")
+    load_parser.add_argument("session_id", nargs="?", help="Session ID to load")
 
     # Create handoff
-    handoff_parser = subparsers.add_parser(
-        "handoff", help="Create handoff document")
+    handoff_parser = subparsers.add_parser("handoff", help="Create handoff document")
     handoff_parser.add_argument(
         "--completed", nargs="+", default=[], help="Completed tasks"
     )
     handoff_parser.add_argument("--current", help="Current task in progress")
     handoff_parser.add_argument(
-        "--next",
-        dest="next_tasks",
-        nargs="+",
-        default=[],
-        help="Next tasks to do")
+        "--next", dest="next_tasks", nargs="+", default=[], help="Next tasks to do"
+    )
     handoff_parser.add_argument(
         "--blocker",
         action="append",
@@ -405,20 +391,13 @@ def main() -> None:
     )
     snapshot_parser.add_argument("feature", help="Feature name")
     snapshot_parser.add_argument("phase", help="Implementation phase")
-    snapshot_parser.add_argument(
-        "--files",
-        nargs="+",
-        help="Key files to snapshot")
+    snapshot_parser.add_argument("--files", nargs="+", help="Key files to snapshot")
     snapshot_parser.add_argument("--notes", help="Implementation notes")
 
     # List contexts
     list_parser = subparsers.add_parser("list", help="List saved contexts")
     list_parser.add_argument("--type", help="Filter by type")
-    list_parser.add_argument(
-        "--limit",
-        type=int,
-        default=10,
-        help="Number to show")
+    list_parser.add_argument("--limit", type=int, default=10, help="Number to show")
 
     args = parser.parse_args()
 

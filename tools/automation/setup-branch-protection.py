@@ -31,9 +31,7 @@ class BranchProtectionConfigurator:
                 "Accept": "application/vnd.github.v3+json",
             }
         elif self.platform == "gitlab":
-            return {
-                "PRIVATE-TOKEN": self.token,
-                "Content-Type": "application/json"}
+            return {"PRIVATE-TOKEN": self.token, "Content-Type": "application/json"}
         elif self.platform == "bitbucket":
             return {
                 "Authorization": f"Bearer {self.token}",
@@ -66,8 +64,7 @@ class BranchProtectionConfigurator:
         }
 
         try:
-            response = requests.put(
-                url, headers=self.headers, json=protection_rules)
+            response = requests.put(url, headers=self.headers, json=protection_rules)
             if response.status_code in [200, 201]:
                 print(f"✅ GitHub branch protection enabled for '{branch}'")
                 return True
@@ -94,8 +91,7 @@ class BranchProtectionConfigurator:
         }
 
         try:
-            response = requests.post(
-                url, headers=self.headers, json=protection_rules)
+            response = requests.post(url, headers=self.headers, json=protection_rules)
             if response.status_code in [200, 201]:
                 print(f"✅ GitLab branch protection enabled for '{branch}'")
                 return True
@@ -119,8 +115,7 @@ class BranchProtectionConfigurator:
         }
 
         try:
-            response = requests.post(
-                url, headers=self.headers, json=protection_rules)
+            response = requests.post(url, headers=self.headers, json=protection_rules)
             if response.status_code in [200, 201]:
                 print(f"✅ Bitbucket branch protection enabled for '{branch}'")
                 return True
@@ -133,8 +128,7 @@ class BranchProtectionConfigurator:
 
     def configure(self, branch: str = "main") -> bool:
         """Configure branch protection for the platform"""
-        print(
-            f"🔧 Configuring {self.platform} branch protection for {self.repo}...")
+        print(f"🔧 Configuring {self.platform} branch protection for {self.repo}...")
 
         if self.platform == "github":
             return self.configure_github(branch)
@@ -147,10 +141,7 @@ class BranchProtectionConfigurator:
             return False
 
 
-def generate_config_file(
-        platform: str,
-        repo: str,
-        branch: str = "main") -> None:
+def generate_config_file(platform: str, repo: str, branch: str = "main") -> None:
     """Generate configuration file for manual setup"""
     config = {
         "platform": platform,
@@ -257,9 +248,8 @@ def main() -> None:
         help="API token for authentication (or set GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_TOKEN)",
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Export format for validation report")
+        "--dry-run", action="store_true", help="Export format for validation report"
+    )
 
     args = parser.parse_args()
 
@@ -310,8 +300,7 @@ def main() -> None:
 
         if not token:
             print("❌ No API token provided")
-            print(
-                f"Please provide --token or set {env_var} environment variable")
+            print(f"Please provide --token or set {env_var} environment variable")
             sys.exit(1)
 
     # Configure branch protection - instantiate with 3 args: platform, token,

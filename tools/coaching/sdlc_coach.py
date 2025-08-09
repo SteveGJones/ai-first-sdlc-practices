@@ -115,8 +115,7 @@ class AgenticSDLCCoach:
         print("-" * 40)
         proposal_path = self._enforce_feature_proposal(description)
         if not proposal_path:
-            return self._block_development(
-                "No feature proposal = NO DEVELOPMENT")
+            return self._block_development("No feature proposal = NO DEVELOPMENT")
 
         # Step 2: Architecture
         print("\n📐 STEP 2: Architecture Documents (ALL 6 REQUIRED)")
@@ -172,10 +171,7 @@ class AgenticSDLCCoach:
         print("-" * 40)
         retro_path = self._create_retrospective_template()
 
-        return {
-            "gates": gates,
-            "tracking": tracking,
-            "retrospective": retro_path}
+        return {"gates": gates, "tracking": tracking, "retrospective": retro_path}
 
     def _build_success_response(
         self, proposal, arch, team, gates, tracking, retro, desc
@@ -230,8 +226,7 @@ class AgenticSDLCCoach:
 
         # Validate proposal (check-feature-proposal.py uses branch, not file
         # path)
-        result = self._run_validation_tool(
-            self.framework_tools["proposal_checker"])
+        result = self._run_validation_tool(self.framework_tools["proposal_checker"])
 
         if not result["success"]:
             print(f"❌ BLOCKED: Invalid feature proposal")
@@ -318,48 +313,37 @@ class AgenticSDLCCoach:
                 invalid.append(f"{role}: {agent_name} NOT FOUND")
 
         if invalid:
-            return {
-                "valid": False,
-                "issues": invalid,
-                "available": available_agents}
+            return {"valid": False, "issues": invalid, "available": available_agents}
 
         print(f"✅ Team validated with {len(team)} specialists")
-        return {
-            "valid": True,
-            "team": team,
-            "available": len(available_agents)}
+        return {"valid": True, "team": team, "available": len(available_agents)}
 
     def _scan_available_agents(self, agents_dir: Path) -> List[Dict]:
         """Scan for all available agents in the repository"""
         available_agents = []
-        
+
         # Scan ALL directories that contain agents
         for category_dir in agents_dir.iterdir():
-            if category_dir.is_dir() and not category_dir.name.startswith('.'):
+            if category_dir.is_dir() and not category_dir.name.startswith("."):
                 category = category_dir.name
                 agents = self._scan_category_agents(category_dir, category)
                 available_agents.extend(agents)
 
         return available_agents
 
-    def _scan_category_agents(
-            self,
-            cat_dir: Path,
-            category: str) -> List[Dict]:
+    def _scan_category_agents(self, cat_dir: Path, category: str) -> List[Dict]:
         """Scan agents in a specific category"""
         if not cat_dir.exists():
             return []
 
         agents = []
         for agent_file in cat_dir.glob("*.md"):
-            agents.append({"name": agent_file.stem,
-                           "category": category, "path": agent_file})
+            agents.append(
+                {"name": agent_file.stem, "category": category, "path": agent_file}
+            )
         return agents
 
-    def _select_optimal_team(
-            self,
-            description: str,
-            available_agents: List) -> Dict:
+    def _select_optimal_team(self, description: str, available_agents: List) -> Dict:
         """Select team WITH SDLC ENFORCEMENT ROLES"""
         desc_lower = description.lower()
 
@@ -466,10 +450,7 @@ class AgenticSDLCCoach:
         print(f"📝 Retrospective template: {retro_file.name}")
         return retro_file
 
-    def _generate_coaching_plan(
-            self,
-            team: Dict,
-            description: str) -> List[str]:
+    def _generate_coaching_plan(self, team: Dict, description: str) -> List[str]:
         """Generate ENFORCED coaching plan"""
         plan = [
             "1. Complete feature proposal (if not done)",
@@ -481,8 +462,7 @@ class AgenticSDLCCoach:
         ]
 
         for role, agent in team["team"].items():
-            plan.append(
-                f"   - {role}: Engage {agent} for {role} responsibilities")
+            plan.append(f"   - {role}: Engage {agent} for {role} responsibilities")
 
         plan.extend(
             [
@@ -540,12 +520,7 @@ class AgenticSDLCCoach:
         """Parse technical debt violations from output"""
         violations = []
         for line in output.split("\n"):
-            if any(
-                marker in line for marker in [
-                    "TODO",
-                    "FIXME",
-                    "HACK",
-                    "any type"]):
+            if any(marker in line for marker in ["TODO", "FIXME", "HACK", "any type"]):
                 violations.append(line.strip())
         return violations
 

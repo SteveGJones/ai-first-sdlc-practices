@@ -50,10 +50,7 @@ class AgentCompositionManager:
         """List all available compositions."""
         return list(self.compositions.get("compositions", {}).keys())
 
-    def create_composite_agent(
-            self,
-            composition_name: str,
-            output_path: Path) -> bool:
+    def create_composite_agent(self, composition_name: str, output_path: Path) -> bool:
         """Create a composite agent markdown file from a composition."""
         composition = self.get_composition(composition_name)
         if not composition:
@@ -63,20 +60,17 @@ class AgentCompositionManager:
             return False
 
         # Generate the composite agent content
-        content = self._generate_composite_agent_content(
-            composition_name, composition)
+        content = self._generate_composite_agent_content(composition_name, composition)
 
         # Write to file
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w") as f:
             f.write(content)
 
-        console.print(
-            f"[green]✓ Created composite agent: {output_path}[/green]")
+        console.print(f"[green]✓ Created composite agent: {output_path}[/green]")
         return True
 
-    def _generate_composite_agent_content(
-            self, name: str, composition: Dict) -> str:
+    def _generate_composite_agent_content(self, name: str, composition: Dict) -> str:
         """Generate markdown content for a composite agent."""
         includes = composition.get("includes", [])
         use_cases = composition.get("use_cases", [])
@@ -100,7 +94,8 @@ class AgentCompositionManager:
         description_text = (
             f"{composition.get('description', '')}\\n\\n"
             f"This is a composite agent that combines the expertise of: {', '.join(includes)}."
-            f"\\n\\nExamples:\\n{examples_text}")
+            f"\\n\\nExamples:\\n{examples_text}"
+        )
 
         content = f"""---
 name: {name}
@@ -198,8 +193,7 @@ Use cases:
         """Display detailed information about a composition."""
         composition = self.get_composition(composition_name)
         if not composition:
-            console.print(
-                f"[red]Composition '{composition_name}' not found[/red]")
+            console.print(f"[red]Composition '{composition_name}' not found[/red]")
             return
 
         # Create info panel
@@ -218,10 +212,7 @@ Use cases:
 {chr(10).join(f'  • {uc}' for uc in composition.get('use_cases', []))}
 """
 
-        console.print(
-            Panel(
-                panel_content,
-                title=f"Composition: {composition_name}"))
+        console.print(Panel(panel_content, title=f"Composition: {composition_name}"))
 
 
 @click.group()
@@ -245,9 +236,7 @@ def list():
     table.add_column("Includes", style="green")
 
     for comp_name in compositions:
-        comp_data = manager.compositions.get(
-            "compositions", {}).get(
-            comp_name, {})
+        comp_data = manager.compositions.get("compositions", {}).get(comp_name, {})
         if comp_data:
             includes = ", ".join(comp_data.get("includes", []))
             table.add_row(
@@ -269,8 +258,7 @@ def info(name: str):
 
 @cli.command()
 @click.argument("name")
-@click.option("--output", "-o", type=Path,
-              help="Output path for composite agent")
+@click.option("--output", "-o", type=Path, help="Output path for composite agent")
 def create(name: str, output: Optional[Path]):
     """Create a composite agent from a composition."""
     manager = AgentCompositionManager()
@@ -280,8 +268,7 @@ def create(name: str, output: Optional[Path]):
 
     if manager.create_composite_agent(name, output):
         console.print("\n[green]Composite agent created successfully![/green]")
-        console.print(
-            f"You can now use this agent by referencing: [cyan]{name}[/cyan]")
+        console.print(f"You can now use this agent by referencing: [cyan]{name}[/cyan]")
 
 
 @cli.command()

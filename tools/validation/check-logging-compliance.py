@@ -234,17 +234,14 @@ class LoggingComplianceChecker:
             content = file_path.read_text(encoding="utf-8")
 
             # Check for sensitive data in logs
-            sensitive_violations = self._check_sensitive_data(
-                content, file_path)
+            sensitive_violations = self._check_sensitive_data(content, file_path)
             violations.extend(sensitive_violations)
 
             # Language-specific checks
             if file_path.suffix == ".py":
                 violations.extend(self._check_python_file(file_path, content))
             elif file_path.suffix in [".js", ".ts"]:
-                violations.extend(
-                    self._check_javascript_file(
-                        file_path, content))
+                violations.extend(self._check_javascript_file(file_path, content))
 
         except Exception as e:
             print(f"Error checking {file_path}: {e}")
@@ -296,13 +293,13 @@ class LoggingComplianceChecker:
                             "function": "N/A",
                             "violation": "sensitive_data_log",
                             "message": f'Potential sensitive data "{sensitive}" in log',
-                        })
+                        }
+                    )
                     self.stats["sensitive_data_logs"] += 1
 
         return violations
 
-    def _check_python_file(self, file_path: Path,
-                           content: str) -> List[Dict[str, Any]]:
+    def _check_python_file(self, file_path: Path, content: str) -> List[Dict[str, Any]]:
         """Check Python file for logging compliance"""
         violations: List[Dict[str, Any]] = []
 
@@ -337,8 +334,7 @@ class LoggingComplianceChecker:
         func_name = func_node.name
 
         # Get function lines
-        func_lines = content.split("\n")[
-            func_node.lineno - 1: func_node.end_lineno]
+        func_lines = content.split("\n")[func_node.lineno - 1 : func_node.end_lineno]
         func_body = "\n".join(func_lines)
 
         # Skip very short functions
@@ -357,7 +353,8 @@ class LoggingComplianceChecker:
                     "function": func_name,
                     "violation": "missing_entry_log",
                     "message": f"Function {func_name} missing entry/exit logging",
-                })
+                }
+            )
             self.stats["missing_entry_logs"] += 1
 
         # Check for error handling with logging
@@ -386,7 +383,8 @@ class LoggingComplianceChecker:
                                     "function": func_name,
                                     "violation": "missing_error_log",
                                     "message": "Exception handler missing error logging",
-                                })
+                                }
+                            )
                             self.stats["missing_error_logs"] += 1
                         in_except = False
 
@@ -483,12 +481,15 @@ class LoggingComplianceChecker:
                     or "reject" in func_body
                 ):
                     if not has_logging:
-                        violations.append({"file": str(file_path),
-                                           "line": func_node.lineno,
-                                           "function": func_name,
-                                           "violation": "missing_validation_log",
-                                           "message": "Validation failure without logging",
-                                           })
+                        violations.append(
+                            {
+                                "file": str(file_path),
+                                "line": func_node.lineno,
+                                "function": func_name,
+                                "violation": "missing_validation_log",
+                                "message": "Validation failure without logging",
+                            }
+                        )
                         self.stats["missing_validation_logs"] += 1
                         break
 
@@ -548,8 +549,7 @@ class LoggingComplianceChecker:
                 line_no = content[:func_start].count("\n") + 1
 
                 # Check for logging
-                has_logging = self._has_logging_pattern(
-                    func_body, file_path.suffix)
+                has_logging = self._has_logging_pattern(func_body, file_path.suffix)
 
                 # Skip very short functions
                 if func_body.count("\n") < 3:

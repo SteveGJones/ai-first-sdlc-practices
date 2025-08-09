@@ -172,8 +172,7 @@ class TeamDiscoveryEngine:
                         self.scores[archetype] += points
                     return selected_option
                 else:
-                    click.echo(
-                        f"Please enter a number between 1 and {len(options)}")
+                    click.echo(f"Please enter a number between 1 and {len(options)}")
             except click.Abort:
                 raise
             except BaseException:
@@ -355,10 +354,12 @@ class TeamDiscoveryEngine:
 
         # Calculate installation phases
         core_agents = archetype.core_agents[:3]  # First 3 are always core
-        phase_2_agents = (archetype.core_agents[3:6] if len(
-            archetype.core_agents) > 3 else [])
-        phase_3_agents = (archetype.core_agents[6:9] if len(
-            archetype.core_agents) > 6 else [])
+        phase_2_agents = (
+            archetype.core_agents[3:6] if len(archetype.core_agents) > 3 else []
+        )
+        phase_3_agents = (
+            archetype.core_agents[6:9] if len(archetype.core_agents) > 6 else []
+        )
         phase_4_agents = (
             archetype.core_agents[9:] if len(archetype.core_agents) > 9 else []
         )
@@ -433,8 +434,7 @@ class TeamDiscoveryEngine:
 
         return base_criteria + archetype_criteria.get(archetype_key, [])
 
-    def _get_chemistry_exercises(
-            self, archetype_key: str) -> List[Dict[str, str]]:
+    def _get_chemistry_exercises(self, archetype_key: str) -> List[Dict[str, str]]:
         """Get chemistry development exercises for this archetype"""
         base_exercises = [
             {
@@ -442,42 +442,58 @@ class TeamDiscoveryEngine:
                 "description": "Implement a basic CRUD endpoint with full team collaboration",
                 "agents": "Core trio",
                 "success_criteria": "Clean handoffs, no duplicated effort, all agents contribute",
-            }]
+            }
+        ]
 
-        archetype_exercises = {"builder": [{"name": "Documentation Flow",
-                                            "description": "Create feature documentation with technical-writer integration",
-                                            "agents": "solution-architect, language-expert, technical-writer",
-                                            "success_criteria": "Complete docs generated, review process smooth",
-                                            }],
-                               "specialist": [{"name": "Compliance Validation",
-                                               "description": "Implement feature with full compliance checking",
-                                               "agents": "domain-specialist, compliance-auditor, solution-architect",
-                                               "success_criteria": "All compliance gates pass, domain rules enforced",
-                                               }],
-                               "innovator": [{"name": "AI Pipeline Integration",
-                                              "description": "Implement AI feature with testing and optimization",
-                                              "agents": "ai-solution-architect, prompt-engineer, ai-test-engineer",
-                                              "success_criteria": "AI functionality works, tests comprehensive, performance acceptable",
-                                              }],
-                               "transformer": [{"name": "Multi-System Integration",
-                                                "description": "Connect to external API with full error handling and monitoring",
-                                                "agents": "integration-orchestrator, sre-specialist, devops-specialist",
-                                                "success_criteria": "Robust integration, monitoring active, failure handling works",
-                                                }],
-                               "orchestrator": [{"name": "Agent Orchestration Challenge",
-                                                 "description": "Coordinate multiple agents on complex multi-step workflow",
-                                                 "agents": "orchestration-architect, a2a-architect, agent-developer",
-                                                 "success_criteria": "Complex workflow completes, agent coordination seamless",
-                                                 }],
-                               }
+        archetype_exercises = {
+            "builder": [
+                {
+                    "name": "Documentation Flow",
+                    "description": "Create feature documentation with technical-writer integration",
+                    "agents": "solution-architect, language-expert, technical-writer",
+                    "success_criteria": "Complete docs generated, review process smooth",
+                }
+            ],
+            "specialist": [
+                {
+                    "name": "Compliance Validation",
+                    "description": "Implement feature with full compliance checking",
+                    "agents": "domain-specialist, compliance-auditor, solution-architect",
+                    "success_criteria": "All compliance gates pass, domain rules enforced",
+                }
+            ],
+            "innovator": [
+                {
+                    "name": "AI Pipeline Integration",
+                    "description": "Implement AI feature with testing and optimization",
+                    "agents": "ai-solution-architect, prompt-engineer, ai-test-engineer",
+                    "success_criteria": "AI functionality works, tests comprehensive, performance acceptable",
+                }
+            ],
+            "transformer": [
+                {
+                    "name": "Multi-System Integration",
+                    "description": "Connect to external API with full error handling and monitoring",
+                    "agents": "integration-orchestrator, sre-specialist, devops-specialist",
+                    "success_criteria": "Robust integration, monitoring active, failure handling works",
+                }
+            ],
+            "orchestrator": [
+                {
+                    "name": "Agent Orchestration Challenge",
+                    "description": "Coordinate multiple agents on complex multi-step workflow",
+                    "agents": "orchestration-architect, a2a-architect, agent-developer",
+                    "success_criteria": "Complex workflow completes, agent coordination seamless",
+                }
+            ],
+        }
 
         return base_exercises + archetype_exercises.get(archetype_key, [])
 
 
 @click.command()
 @click.option("--interactive", is_flag=True, help="Run interactive assessment")
-@click.option("--output", type=click.Path(),
-              help="Output file for recommendations")
+@click.option("--output", type=click.Path(), help="Output file for recommendations")
 @click.option(
     "--format",
     type=click.Choice(["json", "markdown"]),
@@ -512,8 +528,7 @@ def main(interactive: bool, output: str, format: str):
 
         # Show next steps
         click.echo(f"\n🎯 Next Steps:")
-        click.echo(
-            f"1. Review the {recommendations['archetype']} formation details")
+        click.echo(f"1. Review the {recommendations['archetype']} formation details")
         click.echo(
             f"2. Install Phase 1 agents: {', '.join(recommendations['installation_phases']['phase_1_foundation']['agents'])}"
         )
@@ -583,8 +598,7 @@ Your team will be ready when:
         report += f"- **{question.replace('_', ' ').title()}**: {answer}\n"
 
     report += "\n### Archetype Scores\n"
-    for archetype, score in sorted(
-            scores.items(), key=lambda x: x[1], reverse=True):
+    for archetype, score in sorted(scores.items(), key=lambda x: x[1], reverse=True):
         archetype_name = ARCHETYPES[archetype].name
         report += f"- **{archetype_name}**: {score} points\n"
 
