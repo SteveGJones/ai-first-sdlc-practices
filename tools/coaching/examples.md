@@ -1,260 +1,219 @@
-# AI Team Coordination Examples
+# Agentic SDLC Coach - Real Examples
 
-## NEW: Fresh Project Kickoff
+## Example 1: First Run - BLOCKED
 
-**Input:**
 ```bash
-python simple_team_coach.py "I want to build something to help teams collaborate"
+$ python sdlc_coach.py "build e-commerce platform"
+
+================================================================================
+AGENTIC SDLC COACH - ZERO TOLERANCE ENFORCEMENT
+================================================================================
+
+📋 STEP 1: Feature Proposal (MANDATORY)
+----------------------------------------
+⚠️  No feature proposal found!
+Creating template at: docs/feature-proposals/20250809-project-kickoff.md
+❌ BLOCKED: Complete the feature proposal first
+
+🚫🚫🚫🚫 DEVELOPMENT BLOCKED - NON-COMPLIANT 🚫🚫🚫🚫
+
+Reason: No feature proposal = NO DEVELOPMENT
+
+NO SHORTCUTS. NO EXCEPTIONS. FIX IT OR DON'T DEVELOP.
+
+Stan Cullis says: 'Standards aren't optional. Meet them or sit out.'
 ```
 
-**Output:**
-```
-FRESH PROJECT KICKOFF - Discovery Mode
+**What Happens**: The coach creates a template but BLOCKS you from proceeding until you complete it properly.
 
-THE FIRST 5 MINUTES ARE CRITICAL!
+## Example 2: After Completing Feature Proposal
 
-KICKOFF DISCOVERY QUESTIONS:
-Ask solution-architect these 5 questions to clarify your vision:
-
-1. PROBLEM DEFINITION
-   'solution-architect, I want to solve [problem]. What are the key challenges?'
-
-2. USER UNDERSTANDING
-   'Who are the users and what's their main pain point?'
-
-3. SCALE ASSESSMENT
-   'What scale should we design for initially vs future?'
-
-4. CORE FEATURES
-   'What's the ONE feature that must work perfectly?'
-
-5. SUCCESS CRITERIA
-   'How do we measure if this succeeds?'
-```
-
-**Why This Matters:**
-- Prevents 60% of project failures caused by vague requirements
-- Saves 20+ hours of wrong direction development
-- Gets you to the right team faster
-
----
-
-## Example 1: E-Commerce Platform
-
-**Input:**
 ```bash
-python simple_team_coach.py "build e-commerce platform with inventory management"
+$ python sdlc_coach.py "build e-commerce platform"
+
+================================================================================
+AGENTIC SDLC COACH - ZERO TOLERANCE ENFORCEMENT
+================================================================================
+
+📋 STEP 1: Feature Proposal (MANDATORY)
+----------------------------------------
+✅ Feature proposal validated: 20250809-project-kickoff.md
+
+📐 STEP 2: Architecture Documents (ALL 6 REQUIRED)
+----------------------------------------
+❌ Missing architecture documents: ['requirements-traceability-matrix.md', 'what-if-analysis.md', 'architecture-decision-record.md', 'system-invariants.md', 'integration-design.md', 'failure-mode-analysis.md']
+   Run: python tools/validation/validate-architecture.py --strict
+
+🚫🚫🚫🚫 DEVELOPMENT BLOCKED - NON-COMPLIANT 🚫🚫🚫🚫
+
+Reason: Missing architecture docs: ['requirements-traceability-matrix.md', ...]
+
+This is block #2
+
+NO SHORTCUTS. NO EXCEPTIONS. FIX IT OR DON'T DEVELOP.
 ```
 
-**Output:**
-```
-============================================================
-AI TEAM COORDINATION PLAN
-============================================================
+**What Happens**: Now it blocks on missing architecture. You MUST complete ALL 6 documents.
 
-Project: build e-commerce platform with inventory management
-Team Type: Full-stack web application team
+## Example 3: Full Compliance Achieved
 
-YOUR CORE TEAM:
-------------------------------
-Captain: solution-architect (sets strategy)
-Specialist: database-architect
-Specialist: api-architect
-Specialist: frontend-engineer
-
-COORDINATION STEPS:
-------------------------------
-Step 1: Ask solution-architect
-   'solution-architect, I need build e-commerce platform with inventory management. What's the best approach?'
-
-Step 2: Coordinate specialists based on solution-architect's approach
-   'Based on that, database-architect, what's your part?'
-   'Based on that, api-architect, what's your part?'
-   'Based on that, frontend-engineer, what's your part?'
-
-Step 3: Integrate responses
-   'Team, based on all inputs, here's the plan...'
-
-Step 4: Execute with coordination
-   Each specialist works their part in parallel
-
-EXPECTED IMPROVEMENTS:
-------------------------------
-Solo approach: 40 hours
-Team approach: 14 hours
-Speed: 2.8x faster
-Quality: Higher (multiple expert perspectives)
-Risk: Lower (specialists catch issues early)
-```
-
-**Actual Usage:**
-1. Copy the captain question exactly
-2. Engage each specialist with their specific part
-3. Watch as database-architect designs inventory schema
-4. api-architect creates REST endpoints
-5. frontend-engineer builds responsive UI
-6. Solution complete in 14 hours instead of 40+
-
----
-
-## Example 2: Production Crisis
-
-**Input:**
 ```bash
-python simple_team_coach.py "website down, database connection errors"
+$ python sdlc_coach.py "build e-commerce platform"
+
+================================================================================
+AGENTIC SDLC COACH - ZERO TOLERANCE ENFORCEMENT
+================================================================================
+
+📋 STEP 1: Feature Proposal (MANDATORY)
+----------------------------------------
+✅ Feature proposal validated: 20250809-project-kickoff.md
+
+📐 STEP 2: Architecture Documents (ALL 6 REQUIRED)
+----------------------------------------
+✅ All 6 architecture documents validated
+
+🚫 STEP 3: Zero Technical Debt Check
+----------------------------------------
+✅ Zero technical debt verified
+
+🤖 STEP 4: Agent Discovery and Validation
+----------------------------------------
+📊 Found 47 agents across categories
+✅ Team validated with 7 specialists
+
+🚧 STEP 5: Quality Gates Setup
+----------------------------------------
+🚧 Quality gates configured:
+   pre_commit: 2 checks
+   pre_push: 2 checks
+   continuous: 2 checks
+
+📊 STEP 6: Progress Tracking Initialization
+----------------------------------------
+✅ Progress tracking initialized
+
+📝 STEP 7: Retrospective Template
+----------------------------------------
+📝 Retrospective template: 20250809-project-retrospective.md
+
+================================================================================
+✅ SDLC COMPLIANCE VERIFIED - DEVELOPMENT AUTHORIZED
+================================================================================
+
+📋 YOUR COACHING PLAN:
+----------------------------------------
+1. Complete feature proposal (if not done)
+2. Fill ALL architecture documents
+3. Run validation suite after EVERY change:
+   - python tools/validation/local-validation.py --syntax
+   - python tools/validation/check-technical-debt.py --threshold 0
+4. Use your team:
+   - enforcer: Engage ai-first-kick-starter for enforcer responsibilities
+   - reviewer: Engage critical-goal-reviewer for reviewer responsibilities
+   - tracker: Engage project-plan-tracker for tracker responsibilities
+   - architect: Engage solution-architect for architect responsibilities
+   - database: Engage database-architect for database responsibilities
+   - api: Engage api-architect for api responsibilities
+   - frontend: Engage frontend-engineer for frontend responsibilities
+5. Track progress continuously:
+   - python tools/automation/progress-tracker.py add 'task'
+6. Update retrospective incrementally
+7. Run full validation before PR:
+   - python tools/validation/validate-pipeline.py --ci
+
+Follow this plan. No deviations. No shortcuts.
+Billy Wright says: 'Excellence is habit, not accident.'
 ```
 
-**Output:**
-```
-============================================================
-AI TEAM COORDINATION PLAN
-============================================================
+**What Happens**: ONLY after full compliance do you get authorized to develop, with a strict coaching plan.
 
-Project: website down, database connection errors
-Team Type: Crisis response team (parallel debugging)
+## Example 4: Technical Debt Violation
 
-YOUR CORE TEAM:
-------------------------------
-Captain: site-reliability-engineer (leads crisis)
-Specialist: database-architect
-Specialist: performance-engineer
-Specialist: devops-specialist
-
-COORDINATION STEPS:
-------------------------------
-Step 1: PARALLEL INVESTIGATION (Crisis Mode)
-   'site-reliability-engineer, website down with database errors. Lead the investigation.'
-   'database-architect, check connection pool and query performance NOW.'
-   'performance-engineer, analyze resource usage and bottlenecks NOW.'
-   'devops-specialist, check infrastructure and deployment status NOW.'
-
-Step 2: Rapid synthesis of findings
-   Combine all discoveries immediately
-
-Step 3: Implement fix
-   Execute solution with highest probability
-
-EXPECTED IMPROVEMENTS:
-------------------------------
-Solo approach: 2-3 hours of debugging
-Team approach: 15-30 minutes to resolution
-Speed: 4-6x faster crisis resolution
-Risk: Parallel investigation catches root cause faster
-```
-
-**Real Outcome:**
-- SRE finds connection pool exhaustion
-- Database architect identifies slow queries
-- Performance engineer spots memory leak
-- DevOps rolls back problematic deploy
-- **Resolution: 22 minutes instead of 3 hours**
-
----
-
-## Example 3: AI Chatbot Development
-
-**Input:**
 ```bash
-python simple_team_coach.py "create customer service chatbot with knowledge base"
+$ python sdlc_coach.py "quick prototype app"
+
+================================================================================
+AGENTIC SDLC COACH - ZERO TOLERANCE ENFORCEMENT
+================================================================================
+
+📋 STEP 1: Feature Proposal (MANDATORY)
+----------------------------------------
+✅ Feature proposal validated: 20250809-quick-prototype.md
+
+📐 STEP 2: Architecture Documents (ALL 6 REQUIRED)
+----------------------------------------
+✅ All 6 architecture documents validated
+
+🚫 STEP 3: Zero Technical Debt Check
+----------------------------------------
+❌ Technical debt detected: 3 violations
+   - src/main.py:45: TODO: Implement error handling
+   - src/api.py:23: FIXME: This is a hack
+   - src/models.py:67: any type annotation found
+
+🚫🚫🚫🚫 DEVELOPMENT BLOCKED - NON-COMPLIANT 🚫🚫🚫🚫
+
+Reason: Technical debt found: ['TODO: Implement error handling', 'FIXME: This is a hack', 'any type annotation']
+
+This is block #3
+
+NO SHORTCUTS. NO EXCEPTIONS. FIX IT OR DON'T DEVELOP.
+
+Stan Cullis says: 'Standards aren't optional. Meet them or sit out.'
 ```
 
-**Output:**
-```
-============================================================
-AI TEAM COORDINATION PLAN
-============================================================
+**What Happens**: Even ONE TODO blocks everything. Zero tolerance means ZERO.
 
-Project: create customer service chatbot with knowledge base
-Team Type: AI/ML system development team
+## Example 5: Invalid Team Composition
 
-YOUR CORE TEAM:
-------------------------------
-Captain: ai-solution-architect (sets strategy)
-Specialist: prompt-engineer
-Specialist: ai-test-engineer
-Specialist: context-engineer
+```bash
+🤖 STEP 4: Agent Discovery and Validation
+----------------------------------------
+📊 Found 47 agents across categories
+❌ Invalid team composition: ['enforcer: sdlc-enforcer NOT FOUND', 'frontend: react-specialist NOT FOUND']
 
-COORDINATION STEPS:
-------------------------------
-Step 1: Ask ai-solution-architect
-   'ai-solution-architect, I need create customer service chatbot with knowledge base. What's the best approach?'
+🚫🚫🚫🚫 DEVELOPMENT BLOCKED - NON-COMPLIANT 🚫🚫🚫🚫
 
-Step 2: Coordinate specialists based on ai-solution-architect's approach
-   'Based on that, prompt-engineer, what's your part?'
-   'Based on that, ai-test-engineer, what's your part?'
-   'Based on that, context-engineer, what's your part?'
-
-Step 3: Integrate responses
-   'Team, based on all inputs, here's the plan...'
-
-Step 4: Execute with coordination
-   Each specialist works their part in parallel
+Reason: Invalid team composition: ['enforcer: sdlc-enforcer NOT FOUND', 'frontend: react-specialist NOT FOUND']
 ```
 
-**Implementation Flow:**
-1. AI-solution-architect designs RAG architecture
-2. Prompt-engineer creates conversation templates
-3. Context-engineer builds knowledge retrieval
-4. AI-test-engineer validates responses
-5. **Result: Production-ready in 12 hours**
+**What Happens**: If specified agents don't exist, development is blocked.
+
+## Common Patterns
+
+### The Progression
+1. **First Run**: Always blocked on feature proposal
+2. **Second Run**: Blocked on architecture
+3. **Third Run**: Blocked on technical debt
+4. **Fourth Run**: Maybe blocked on agents
+5. **Fifth Run**: Finally authorized (if compliant)
+
+### The Lesson
+Each block teaches you what PROFESSIONAL development requires:
+- Documentation FIRST
+- Architecture BEFORE code
+- Zero debt ALWAYS
+- Validated teams ONLY
+- Continuous validation
+
+### The Result
+By the time you're authorized to develop:
+- You have a complete plan
+- Architecture is documented
+- Standards are clear
+- Team is validated
+- Gates are in place
+
+## Emergency Override?
+
+**THERE ISN'T ONE.**
+
+No flags. No options. No "quick mode". No "skip validation".
+
+If you want to skip standards, use a different tool.
+
+This is the Stan Cullis system. Standards aren't optional.
 
 ---
 
-## Key Patterns to Notice
-
-### Pattern 1: Captain Sets Strategy
-The captain (architect) always goes first to establish the approach. Other specialists build on this foundation.
-
-### Pattern 2: Specific Questions Get Better Results
-Instead of "design the system", ask "I need X that handles Y for Z users. What's the best approach?"
-
-### Pattern 3: Crisis = Parallel, Development = Sequential
-- Crisis: All agents investigate simultaneously
-- Development: Captain first, then specialists build on strategy
-
-### Pattern 4: Integration Matters
-After getting all inputs, synthesize them into cohesive plan. Don't just concatenate responses.
-
----
-
-## Common Mistakes to Avoid
-
-### ❌ Vague Instructions
-**Wrong:** "solution-architect, help with e-commerce"
-**Right:** "solution-architect, I need e-commerce handling 10K products with real-time inventory. What architecture?"
-
-### ❌ Solo Hero Mode
-**Wrong:** Trying to solve everything yourself
-**Right:** Engage specialists for their expertise
-
-### ❌ Sequential in Crisis
-**Wrong:** "First check logs, then database, then..."
-**Right:** "Everyone investigate NOW" (parallel)
-
-### ❌ Ignoring Integration
-**Wrong:** Just listing what each agent said
-**Right:** Weaving responses into unified solution
-
----
-
-## Quick Reference
-
-| Project Type | Captain | Key Specialists | Expected Speed |
-|-------------|---------|-----------------|----------------|
-| Web App | solution-architect | database, api, frontend | 2.8x |
-| Crisis | site-reliability-engineer | database, performance, devops | 4-6x |
-| AI System | ai-solution-architect | prompt, context, ai-test | 3x |
-| Mobile App | mobile-architect | backend, ui-ux, api | 2.5x |
-| Data Platform | data-architect | database, pipeline, analytics | 3x |
-
----
-
-## The Bottom Line
-
-Using this tool with real projects consistently delivers:
-- **2-3x faster development**
-- **Higher quality** from specialist expertise
-- **Lower risk** from multiple perspectives
-- **Better solutions** from team collaboration
-
-Just run the tool, follow the coordination steps, and watch the improvement.
+**Remember**: Every block is a lesson. Every enforcement is teaching. By the time you can develop, you're already professional.
