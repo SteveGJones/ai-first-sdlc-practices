@@ -24,8 +24,7 @@ before_script:
   # Clone the AI-First SDLC tools if not in repo
   - |
     if [ ! -f "tools/validation/validate-pipeline.py" ]; then
-      git clone \
-        https://github.com/SteveGJones/ai-first-sdlc-practices.git \
+      git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git \
         /tmp/ai-sdlc
       cp -r /tmp/ai-sdlc/tools .
     fi
@@ -59,9 +58,7 @@ validate:ai-sdlc:
   image: python:${PYTHON_VERSION}
   script:
     # Run the comprehensive validation pipeline with new checks
-    - |
-      python tools/validation/validate-pipeline.py --ci \
-        --checks branch proposal architecture technical-debt type-safety
+    - python tools/validation/validate-pipeline.py --ci --checks branch proposal architecture technical-debt type-safety
     # For merge requests, check feature proposal
     - |
       if [ -n "$CI_MERGE_REQUEST_ID" ]; then
