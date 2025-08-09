@@ -17,8 +17,10 @@ import importlib.util
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 setup_smart_path = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "setup-smart.py"
-)
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__))),
+    "setup-smart.py")
 spec = importlib.util.spec_from_file_location("setup_smart", setup_smart_path)
 setup_smart = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(setup_smart)
@@ -36,10 +38,10 @@ class TestSetupSmartE2E(unittest.TestCase):
 
         # Initialize git repo
         subprocess.run(["git", "init"], capture_output=True)
-        subprocess.run(
-            ["git", "config", "user.email", "test@example.com"], capture_output=True
-        )
-        subprocess.run(["git", "config", "user.name", "Test User"], capture_output=True)
+        subprocess.run(["git", "config", "user.email",
+                        "test@example.com"], capture_output=True)
+        subprocess.run(["git", "config", "user.name",
+                       "Test User"], capture_output=True)
 
     def tearDown(self):
         """Clean up test directory"""
@@ -142,7 +144,8 @@ class TestSetupSmartE2E(unittest.TestCase):
         temp_dir = Path(self.test_dir) / ".ai-sdlc-temp"
         temp_dir.mkdir()
         template = temp_dir / "test_framework_setup.py"
-        template.write_text('#!/usr/bin/env python3\n# Test template\nprint("test")')
+        template.write_text(
+            '#!/usr/bin/env python3\n# Test template\nprint("test")')
 
         # Create test
         setup.create_initial_test()
@@ -207,7 +210,8 @@ class TestSetupSmartE2E(unittest.TestCase):
                 temp_dir = setup.project_dir / ".ai-sdlc-temp"
                 temp_dir.mkdir(exist_ok=True)
                 template_name = Path(remote).name
-                (temp_dir / template_name).write_text(f"# Template: {template_name}")
+                (temp_dir /
+                 template_name).write_text(f"# Template: {template_name}")
             return True
 
         setup.download_file = mock_download
@@ -268,7 +272,12 @@ HANDOFF_*.md"""
         gitignore = (Path(self.test_dir) / ".gitignore").read_text()
 
         # Check for major AI tools
-        ai_tools = [".claude/", ".cursor/", ".aider", ".copilot/", ".continue/"]
+        ai_tools = [
+            ".claude/",
+            ".cursor/",
+            ".aider",
+            ".copilot/",
+            ".continue/"]
         for tool in ai_tools:
             self.assertIn(tool, gitignore, f"Missing AI tool pattern: {tool}")
 
@@ -280,7 +289,10 @@ HANDOFF_*.md"""
             ".ai-sessions/",
         ]
         for pattern in context_patterns:
-            self.assertIn(pattern, gitignore, f"Missing context pattern: {pattern}")
+            self.assertIn(
+                pattern,
+                gitignore,
+                f"Missing context pattern: {pattern}")
 
     def test_language_detection_subdirectories(self) -> None:
         """Test language detection works with files in subdirectories"""
@@ -320,7 +332,8 @@ class TestAIFriendliness(unittest.TestCase):
 
         # These would be checked against actual CLAUDE.md template
         # For now, we verify the structure exists
-        self.assertTrue(len(expected_sections) > 0)  # Verify we have expectations
+        # Verify we have expectations
+        self.assertTrue(len(expected_sections) > 0)
 
     def test_readme_ai_guidance(self) -> None:
         """Test README points AI to CLAUDE.md"""
@@ -399,7 +412,8 @@ def run_integration_test():
             has_test = any(Path(".").glob("**/test*"))
 
             print(f"  ✅ Setup: {'Success' if success else 'Failed'}")
-            print(f"  ✅ .gitignore: {'Created' if has_gitignore else 'Missing'}")
+            print(
+                f"  ✅ .gitignore: {'Created' if has_gitignore else 'Missing'}")
             print(f"  ✅ README.md: {'Created' if has_readme else 'Missing'}")
             print(f"  ✅ Test file: {'Created' if has_test else 'Missing'}")
 
@@ -409,7 +423,8 @@ def run_integration_test():
                     pattern in gitignore_content
                     for pattern in [".claude/", ".cursor/", ".aider"]
                 )
-                print(f"  ✅ AI patterns: {'Found' if has_ai_patterns else 'Missing'}")
+                print(
+                    f"  ✅ AI patterns: {'Found' if has_ai_patterns else 'Missing'}")
 
         finally:
             os.chdir("/")

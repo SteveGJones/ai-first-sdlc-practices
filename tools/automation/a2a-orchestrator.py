@@ -75,7 +75,8 @@ class A2AOrchestrator:
                     config = yaml.safe_load(f)
                 self._parse_agent_config(config)
         except Exception as e:
-            click.echo(f"Warning: Could not load config from {self.config_path}: {e}")
+            click.echo(
+                f"Warning: Could not load config from {self.config_path}: {e}")
             self._load_default_formation()
 
     def _load_default_formation(self):
@@ -100,10 +101,14 @@ class A2AOrchestrator:
                 name="sdlc-enforcer",
                 role="goalkeeper",
                 position="compliance-referee",
-                primary_passes_to=["framework-validator", "compliance-auditor"],
+                primary_passes_to=[
+                    "framework-validator",
+                    "compliance-auditor"],
                 receives_from=["all"],
                 escalation_targets=["compliance-auditor"],
-                specializations=["compliance-enforcement", "process-governance"],
+                specializations=[
+                    "compliance-enforcement",
+                    "process-governance"],
                 communication_patterns={
                     "monitors": "all agent activities for compliance",
                     "alerts": "compliance violations immediately",
@@ -115,7 +120,9 @@ class A2AOrchestrator:
                 name="compliance-auditor",
                 role="defender",
                 position="compliance-specialist",
-                primary_passes_to=["documentation-architect", "delivery-manager"],
+                primary_passes_to=[
+                    "documentation-architect",
+                    "delivery-manager"],
                 receives_from=["sdlc-enforcer", "security-architect"],
                 escalation_targets=["delivery-manager"],
                 specializations=["regulatory-compliance", "audit-trails"],
@@ -132,7 +139,9 @@ class A2AOrchestrator:
                 primary_passes_to=["solution-architect"],
                 receives_from=["sdlc-enforcer", "all"],
                 escalation_targets=["sdlc-enforcer"],
-                specializations=["framework-adherence", "structure-validation"],
+                specializations=[
+                    "framework-adherence",
+                    "structure-validation"],
                 communication_patterns={
                     "validates": "framework structure and compliance",
                     "recommends": "structural improvements",
@@ -151,7 +160,9 @@ class A2AOrchestrator:
                 ],
                 receives_from=["all"],
                 escalation_targets=["critical-goal-reviewer"],
-                specializations=["system-architecture", "technical-leadership"],
+                specializations=[
+                    "system-architecture",
+                    "technical-leadership"],
                 communication_patterns={
                     "coordinates": "all technical decisions",
                     "designs": "system architecture and patterns",
@@ -257,9 +268,11 @@ class A2AOrchestrator:
             )
             return False
 
-        click.echo(f"📨 {message.sender} → {message.receiver}: {message.content}")
+        click.echo(
+            f"📨 {message.sender} → {message.receiver}: {message.content}")
         if message.priority == "HIGH":
-            click.echo(f"🚨 HIGH PRIORITY MESSAGE - Deadline: {message.deadline}")
+            click.echo(
+                f"🚨 HIGH PRIORITY MESSAGE - Deadline: {message.deadline}")
 
         return True
 
@@ -277,18 +290,28 @@ class A2AOrchestrator:
         content_lower = content.lower()
 
         if any(
-            word in content_lower for word in ["security", "vulnerability", "threat"]
-        ):
+            word in content_lower for word in [
+                "security",
+                "vulnerability",
+                "threat"]):
             suggested_receivers.append("security-architect")
         if any(
-            word in content_lower for word in ["performance", "slow", "optimization"]
-        ):
+            word in content_lower for word in [
+                "performance",
+                "slow",
+                "optimization"]):
             suggested_receivers.append("performance-engineer")
-        if any(word in content_lower for word in ["test", "validation", "quality"]):
+        if any(
+            word in content_lower for word in [
+                "test",
+                "validation",
+                "quality"]):
             suggested_receivers.append("ai-test-engineer")
         if any(
-            word in content_lower for word in ["deploy", "infrastructure", "scaling"]
-        ):
+            word in content_lower for word in [
+                "deploy",
+                "infrastructure",
+                "scaling"]):
             suggested_receivers.append("devops-specialist")
 
         # If no specific routing found, use sender's primary pass targets
@@ -350,7 +373,11 @@ class A2AOrchestrator:
 
         return self.active_workflows[workflow_id]
 
-    def escalate_issue(self, agent: str, issue: str, urgency: str = "HIGH") -> bool:
+    def escalate_issue(
+            self,
+            agent: str,
+            issue: str,
+            urgency: str = "HIGH") -> bool:
         """Escalate issue through proper channels"""
         if agent not in self.agent_capabilities:
             click.echo(f"❌ Agent {agent} not found in formation")
@@ -436,7 +463,8 @@ def cli():
 @click.option("--sender", required=True, help="Agent sending the message")
 @click.option("--receiver", required=True, help="Agent receiving the message")
 @click.option("--content", required=True, help="Message content")
-@click.option("--priority", default="MED", type=click.Choice(["HIGH", "MED", "LOW"]))
+@click.option("--priority", default="MED",
+              type=click.Choice(["HIGH", "MED", "LOW"]))
 @click.option(
     "--type",
     "msg_type",
@@ -445,7 +473,14 @@ def cli():
 )
 @click.option("--context", default="", help="Additional context")
 @click.option("--deadline-hours", type=int, help="Deadline in hours")
-def send(sender, receiver, content, priority, msg_type, context, deadline_hours):
+def send(
+        sender,
+        receiver,
+        content,
+        priority,
+        msg_type,
+        context,
+        deadline_hours):
     """Send a structured message between agents"""
     orchestrator = A2AOrchestrator()
 
@@ -497,7 +532,8 @@ def start_workflow(name, initiator, description):
 @cli.command()
 @click.option("--agent", required=True, help="Agent escalating the issue")
 @click.option("--issue", required=True, help="Issue to escalate")
-@click.option("--urgency", default="HIGH", type=click.Choice(["HIGH", "MED", "LOW"]))
+@click.option("--urgency", default="HIGH",
+              type=click.Choice(["HIGH", "MED", "LOW"]))
 def escalate(agent, issue, urgency):
     """Escalate an issue through proper channels"""
     orchestrator = A2AOrchestrator()
@@ -556,8 +592,9 @@ def analyze():
 
     click.echo("\nMost Active Agents:")
     sorted_agents = sorted(
-        analysis["most_active_agents"].items(), key=lambda x: x[1], reverse=True
-    )
+        analysis["most_active_agents"].items(),
+        key=lambda x: x[1],
+        reverse=True)
     for agent, count in sorted_agents[:5]:
         click.echo(f"  {agent}: {count} messages")
 

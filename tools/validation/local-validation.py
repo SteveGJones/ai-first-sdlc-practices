@@ -35,7 +35,11 @@ class ValidationRunner:
         """Log messages with timestamps"""
         if self.verbose or level in ["ERROR", "WARNING"]:
             timestamp = time.strftime("%H:%M:%S")
-            prefix = {"INFO": "ℹ️", "WARNING": "⚠️", "ERROR": "❌", "SUCCESS": "✅"}
+            prefix = {
+                "INFO": "ℹ️",
+                "WARNING": "⚠️",
+                "ERROR": "❌",
+                "SUCCESS": "✅"}
             print(f"[{timestamp}] {prefix.get(level, '')} {message}")
 
     def run_command(
@@ -64,7 +68,8 @@ class ValidationRunner:
         python_files = []
         for root, dirs, files in os.walk("."):
             # Skip hidden dirs and test dirs
-            dirs[:] = [d for d in dirs if not d.startswith(".") and "test-" not in d]
+            dirs[:] = [d for d in dirs if not d.startswith(
+                ".") and "test-" not in d]
             for file in files:
                 if file.endswith(".py"):
                     python_files.append(os.path.join(root, file))
@@ -93,8 +98,8 @@ class ValidationRunner:
             return False
         else:
             self.log(
-                f"All {len(python_files)} Python files have valid syntax", "SUCCESS"
-            )
+                f"All {len(python_files)} Python files have valid syntax",
+                "SUCCESS")
             return True
 
     def check_pre_commit_hooks(self) -> bool:
@@ -119,7 +124,8 @@ class ValidationRunner:
         """Check technical debt using framework tools"""
         self.log("🔍 Checking technical debt...", "INFO")
 
-        # Use the pipeline's technical debt check which properly applies framework policy
+        # Use the pipeline's technical debt check which properly applies
+        # framework policy
         returncode, stdout, stderr = self.run_command(
             [
                 "python",
@@ -213,7 +219,8 @@ class ValidationRunner:
                 # Look for potential argument count issues
                 for node in ast.walk(tree):
                     if isinstance(node, ast.Call):
-                        # This is a simplified check - in practice would need more sophisticated analysis
+                        # This is a simplified check - in practice would need
+                        # more sophisticated analysis
                         if hasattr(node.func, "attr"):
                             func_name = node.func.attr
                             if (
@@ -237,8 +244,7 @@ class ValidationRunner:
                                 ):
                                     msg = (
                                         f"{file_path}:{child.lineno}: "
-                                        f"Potential argument order issue in {class_name} instantiation"
-                                    )
+                                        f"Potential argument order issue in {class_name} instantiation")
                                     issues_found.append(msg)
 
             except (SyntaxError, UnicodeDecodeError) as e:
@@ -247,8 +253,8 @@ class ValidationRunner:
         if issues_found:
             self.warnings.extend(issues_found[:5])  # Limit output
             self.log(
-                f"Static analysis found {len(issues_found)} potential issues", "WARNING"
-            )
+                f"Static analysis found {len(issues_found)} potential issues",
+                "WARNING")
             for issue in issues_found[:3]:  # Show first 3 issues
                 self.log(issue, "WARNING")
             return True  # Don't fail build on warnings, just report
@@ -356,7 +362,11 @@ Examples:
     parser.add_argument(
         "--pre-push", action="store_true", help="Run pre-push validation"
     )
-    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Verbose output")
 
     args = parser.parse_args()
 

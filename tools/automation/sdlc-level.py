@@ -206,9 +206,8 @@ class SDLCLevelManager:
             ]
 
             for file in files:
-                if any(
-                    file.endswith(ext) for ext in [".py", ".js", ".ts", ".java", ".go"]
-                ):
+                if any(file.endswith(ext)
+                        for ext in [".py", ".js", ".ts", ".java", ".go"]):
                     count += 1
         return count
 
@@ -337,8 +336,10 @@ def check(output_json):
 
 
 @cli.command()
-@click.argument("level", type=click.Choice(["prototype", "production", "enterprise"]))
-@click.option("--force", is_flag=True, help="Force level change without checks")
+@click.argument("level",
+                type=click.Choice(["prototype", "production", "enterprise"]))
+@click.option("--force", is_flag=True,
+              help="Force level change without checks")
 def set(level, force):
     """Set the SDLC level for this project."""
     manager = SDLCLevelManager()
@@ -364,9 +365,8 @@ def set(level, force):
 
 
 @cli.command()
-@click.argument(
-    "target_level", type=click.Choice(["prototype", "production", "enterprise"])
-)
+@click.argument("target_level",
+                type=click.Choice(["prototype", "production", "enterprise"]))
 def migrate(target_level):
     """Guide migration to a different SDLC level."""
     manager = SDLCLevelManager()

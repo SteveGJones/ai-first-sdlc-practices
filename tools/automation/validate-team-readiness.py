@@ -183,8 +183,12 @@ class TeamReadinessValidator:
         results = []
 
         # Core trio availability
-        core_trio = ["sdlc-enforcer", "solution-architect", "critical-goal-reviewer"]
-        core_available = all(agent in self.agents_available for agent in core_trio)
+        core_trio = [
+            "sdlc-enforcer",
+            "solution-architect",
+            "critical-goal-reviewer"]
+        core_available = all(
+            agent in self.agents_available for agent in core_trio)
 
         results.append(
             ValidationResult(
@@ -247,8 +251,7 @@ class TeamReadinessValidator:
         # All required agents installed
         required_agents = config["required_agents"]
         missing_agents = [
-            agent for agent in required_agents if agent not in self.agents_available
-        ]
+            agent for agent in required_agents if agent not in self.agents_available]
         agents_complete = len(missing_agents) == 0
 
         results.append(
@@ -377,7 +380,8 @@ class TeamReadinessValidator:
         # Simulate a basic workflow test
         try:
             # Check if core framework files exist
-            required_files = ["CLAUDE.md", "tools/validation/validate-pipeline.py"]
+            required_files = ["CLAUDE.md",
+                              "tools/validation/validate-pipeline.py"]
             missing_files = [f for f in required_files if not Path(f).exists()]
 
             if missing_files:
@@ -499,7 +503,8 @@ class TeamReadinessValidator:
         config = self.formation_configs.get(self.formation_type, {})
         required_agents = config.get("required_agents", [])
 
-        # Check for obvious conflicts (e.g., multiple architects without coordination)
+        # Check for obvious conflicts (e.g., multiple architects without
+        # coordination)
         architects = [
             a
             for a in required_agents
@@ -544,7 +549,7 @@ class TeamReadinessValidator:
                         )
                         if result.returncode == 0:
                             working_tools.append(tool)
-                    except:
+                    except BaseException:
                         pass
 
             score = len(working_tools) / len(quality_tools)
@@ -594,7 +599,8 @@ class TeamReadinessValidator:
 
         recommendations = []
         if score < 0.8:
-            recommendations.append("Implement structured agent handoff protocols")
+            recommendations.append(
+                "Implement structured agent handoff protocols")
         if score < 0.6:
             recommendations.append("Create agent communication guidelines")
 
@@ -632,7 +638,8 @@ class TeamReadinessValidator:
 
         recommendations = []
         if score < 0.85:
-            recommendations.append("Add coordination agent to improve role clarity")
+            recommendations.append(
+                "Add coordination agent to improve role clarity")
         if len(self.agents_available) > 6 and not has_coordinator:
             recommendations.append(
                 "Consider adding orchestration-architect for large teams"
@@ -645,12 +652,12 @@ class TeamReadinessValidator:
         # Score based on team size and formation appropriateness
         config = self.formation_configs.get(self.formation_type, {})
         ideal_agents = len(config.get("required_agents", []))
-        actual_agents = len(
-            [a for a in config.get("required_agents", []) if a in self.agents_available]
-        )
+        actual_agents = len([a for a in config.get(
+            "required_agents", []) if a in self.agents_available])
 
         if ideal_agents == 0:
-            return {"score": 0.0, "recommendations": ["Define formation requirements"]}
+            return {"score": 0.0, "recommendations": [
+                "Define formation requirements"]}
 
         # Score based on how complete the formation is
         completeness_score = actual_agents / ideal_agents
@@ -671,7 +678,9 @@ class TeamReadinessValidator:
             recommendations.append(
                 f"Complete {self.formation_type} formation to improve collaboration"
             )
-        if self.formation_type in ["transformer", "orchestrator"] and score < 0.8:
+        if self.formation_type in [
+            "transformer",
+                "orchestrator"] and score < 0.8:
             recommendations.append(
                 "Complex formations require more chemistry development"
             )
@@ -731,8 +740,12 @@ class TeamReadinessValidator:
         )
 
         overall_score = (
-            foundation_score * 0.4 + formation_score * 0.35 + chemistry_score * 0.25
-        )
+            foundation_score *
+            0.4 +
+            formation_score *
+            0.35 +
+            chemistry_score *
+            0.25)
 
         # Determine readiness level
         if overall_score >= 0.85 and all(r.passed for r in foundation_metrics):
@@ -744,7 +757,10 @@ class TeamReadinessValidator:
 
         # Generate recommendations
         all_recommendations = []
-        for metrics in [foundation_metrics, formation_metrics, chemistry_metrics]:
+        for metrics in [
+                foundation_metrics,
+                formation_metrics,
+                chemistry_metrics]:
             for result in metrics:
                 all_recommendations.extend(result.recommendations)
 
@@ -760,7 +776,9 @@ class TeamReadinessValidator:
             foundation_metrics=foundation_metrics,
             formation_metrics=formation_metrics,
             chemistry_metrics=chemistry_metrics,
-            recommendations=list(set(all_recommendations)),  # Remove duplicates
+            recommendations=list(
+                set(all_recommendations)),
+            # Remove duplicates
             next_steps=next_steps,
         )
 
@@ -782,7 +800,8 @@ class TeamReadinessValidator:
                 steps.append("Install and verify core trio functionality")
             if formation_score < 0.6:
                 steps.append("Complete agent installation for your formation")
-            steps.append("Do not attempt complex development until readiness improves")
+            steps.append(
+                "Do not attempt complex development until readiness improves")
 
         elif readiness_level == ReadinessLevel.YELLOW:
             steps.append("⚠️ Team shows promise but needs improvement")
@@ -790,7 +809,8 @@ class TeamReadinessValidator:
                 steps.append("Focus on chemistry development exercises")
             if formation_score < 0.85:
                 steps.append("Complete formation setup and test workflows")
-            steps.append("Proceed with simple features while improving team readiness")
+            steps.append(
+                "Proceed with simple features while improving team readiness")
 
         else:  # GREEN
             steps.append("✅ Team is ready for production development!")
@@ -810,14 +830,16 @@ class TeamReadinessValidator:
     ),
     help="Formation type to validate",
 )
-@click.option("--output", type=click.Path(), help="Output file for detailed report")
+@click.option("--output", type=click.Path(),
+              help="Output file for detailed report")
 @click.option(
     "--format",
     type=click.Choice(["json", "markdown"]),
     default="markdown",
     help="Output format",
 )
-@click.option("--quick", is_flag=True, help="Run quick validation (foundation only)")
+@click.option("--quick", is_flag=True,
+              help="Run quick validation (foundation only)")
 @click.option("--verbose", is_flag=True, help="Show detailed validation steps")
 def main(formation: str, output: str, format: str, quick: bool, verbose: bool):
     """Validate AI agent team readiness for production development"""
@@ -948,7 +970,10 @@ def main(formation: str, output: str, format: str, quick: bool, verbose: bool):
 def generate_markdown_report(report: TeamReadinessReport) -> str:
     """Generate markdown report from validation results"""
 
-    readiness_emoji = {"ready": "✅", "needs_improvement": "⚠️", "not_ready": "❌"}
+    readiness_emoji = {
+        "ready": "✅",
+        "needs_improvement": "⚠️",
+        "not_ready": "❌"}
     emoji = readiness_emoji[report.overall_readiness.value]
 
     markdown = f"""# Team Readiness Validation Report

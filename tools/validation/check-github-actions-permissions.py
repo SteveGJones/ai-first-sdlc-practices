@@ -25,7 +25,9 @@ def load_workflow(workflow_path: Path) -> Optional[Dict]:
         return None
 
 
-def check_pr_comment_permissions(workflow: Dict, workflow_name: str) -> List[str]:
+def check_pr_comment_permissions(
+        workflow: Dict,
+        workflow_name: str) -> List[str]:
     """Check if workflow has proper permissions for PR commenting."""
     issues = []
 

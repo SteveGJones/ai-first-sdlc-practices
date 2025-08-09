@@ -40,8 +40,8 @@ console = Console()
 GITHUB_REPO = "SteveGJones/ai-first-sdlc-practices"
 GITHUB_BRANCH = "main"
 AGENTS_URL = (
-    f"https://github.com/{GITHUB_REPO}/archive/refs/heads/" f"{GITHUB_BRANCH}.zip"
-)
+    f"https://github.com/{GITHUB_REPO}/archive/refs/heads/"
+    f"{GITHUB_BRANCH}.zip")
 
 # Define agent tiers for deployment
 AGENT_TIERS = {
@@ -118,9 +118,8 @@ class AgentInstaller:
                 zip_ref.extractall(self._temp_dir)
 
             # Find the agents directory
-            extracted_dir = (
-                Path(self._temp_dir) / f"ai-first-sdlc-practices-{GITHUB_BRANCH}"
-            )
+            extracted_dir = (Path(self._temp_dir) /
+                             f"ai-first-sdlc-practices-{GITHUB_BRANCH}")
             agents_dir = extracted_dir / "agents"
 
             if not agents_dir.exists():
@@ -220,7 +219,8 @@ class AgentInstaller:
                     metadata["name"] = value
                 elif key == "description":
                     # Take only the first sentence for descriptions
-                    metadata["description"] = value.split(".")[0] + "." if value else ""
+                    metadata["description"] = value.split(
+                        ".")[0] + "." if value else ""
                 elif key == "version":
                     metadata["version"] = value
                 elif key == "category":
@@ -321,7 +321,8 @@ class AgentInstaller:
 
         # Debug: Check source file exists
         if not agent_path.exists():
-            console.print(f"[red]Error: Source file does not exist: {agent_path}[/red]")
+            console.print(
+                f"[red]Error: Source file does not exist: {agent_path}[/red]")
             return False
 
         # Actually copy the file
@@ -362,7 +363,8 @@ class AgentInstaller:
 
         core_dir = self.agent_source / "core"
         if not core_dir.exists():
-            console.print(f"[red]Core agents directory not found at: {core_dir}[/red]")
+            console.print(
+                f"[red]Core agents directory not found at: {core_dir}[/red]")
             return
 
         console.print(f"[dim]Looking for agents in: {core_dir}[/dim]")
@@ -385,7 +387,8 @@ class AgentInstaller:
 
     def install_language_agents(self, languages: List[str]):
         """Install language-specific agents."""
-        console.print(f"\n[bold]Installing agents for: {', '.join(languages)}[/bold]")
+        console.print(
+            f"\n[bold]Installing agents for: {', '.join(languages)}[/bold]")
 
         languages_dir = self.agent_source / "languages"
         installed_count = 0
@@ -420,7 +423,8 @@ class AgentInstaller:
         installed = {"universal": [], "context_aware": [], "on_demand": []}
 
         # Tier 1: Always install universal agents
-        console.print("\n[bold]Installing Tier 1: Universal Core Agents[/bold]")
+        console.print(
+            "\n[bold]Installing Tier 1: Universal Core Agents[/bold]")
         for agent_name in AGENT_TIERS["universal"]:
             if self._install_by_name(agent_name):
                 installed["universal"].append(agent_name)
@@ -428,13 +432,15 @@ class AgentInstaller:
 
         # Tier 2: Install context-aware agents based on project analysis
         if project_context:
-            console.print("\n[bold]Installing Tier 2: Context-Aware Agents[/bold]")
+            console.print(
+                "\n[bold]Installing Tier 2: Context-Aware Agents[/bold]")
 
             # Language-specific agents
             detected_languages = project_context.get("languages", [])
             for lang in detected_languages:
                 if lang.lower() in AGENT_TIERS["language_specific"]:
-                    for agent_name in AGENT_TIERS["language_specific"][lang.lower()]:
+                    for agent_name in AGENT_TIERS["language_specific"][lang.lower(
+                    )]:
                         if self._install_by_name(agent_name):
                             installed["context_aware"].append(agent_name)
                             console.print(f"  ✓ {agent_name} (for {lang})")
@@ -503,7 +509,8 @@ class AgentInstaller:
                     ),
                 }
             except Exception as e:
-                console.print(f"[yellow]Could not analyze project: {e}[/yellow]")
+                console.print(
+                    f"[yellow]Could not analyze project: {e}[/yellow]")
 
         # Install based on tiers
         return self.install_tiered_agents(project_context)
@@ -523,7 +530,8 @@ class AgentInstaller:
                 version = metadata.get("version", "1.0.0")
                 installed = " [green]✓[/green]" if name in self.installed_agents else ""
 
-                agent_branch = category_branch.add(f"{name} v{version}{installed}")
+                agent_branch = category_branch.add(
+                    f"{name} v{version}{installed}")
 
                 if "description" in metadata:
                     desc = metadata["description"]
@@ -567,7 +575,8 @@ class AgentInstaller:
             "recommendations": recommendations,
         }
 
-    def install_recommended_agents(self, recommendations: Dict[str, List[Dict]]):
+    def install_recommended_agents(
+            self, recommendations: Dict[str, List[Dict]]):
         """Install agents based on recommendations."""
         # Install essential agents automatically
         console.print("\n[bold red]Installing Essential Agents[/bold red]")
@@ -578,7 +587,8 @@ class AgentInstaller:
 
         # Ask about strongly recommended
         if recommendations.get("strongly_recommended"):
-            console.print("\n[bold yellow]Strongly Recommended Agents[/bold yellow]")
+            console.print(
+                "\n[bold yellow]Strongly Recommended Agents[/bold yellow]")
             table = Table(show_header=True)
             table.add_column("Agent", style="yellow")
             table.add_column("Reason")
@@ -588,7 +598,9 @@ class AgentInstaller:
 
             console.print(table)
 
-            if Confirm.ask("\nInstall all strongly recommended agents?", default=True):
+            if Confirm.ask(
+                "\nInstall all strongly recommended agents?",
+                    default=True):
                 for agent in recommendations["strongly_recommended"]:
                     self._install_by_name(agent["name"])
 
@@ -614,7 +626,8 @@ class AgentInstaller:
                         agent_info["path"], agent_info["metadata"]
                     )
 
-        console.print(f"[yellow]Agent '{agent_name}' not found in repository[/yellow]")
+        console.print(
+            f"[yellow]Agent '{agent_name}' not found in repository[/yellow]")
         return False
 
     def interactive_install(self):
@@ -632,7 +645,8 @@ class AgentInstaller:
                 )
             )
 
-            self.install_recommended_agents(recommendation_data["recommendations"])
+            self.install_recommended_agents(
+                recommendation_data["recommendations"])
 
             # Ask if they want to see all available agents
             if Confirm.ask(
@@ -676,7 +690,8 @@ class AgentInstaller:
         ]
 
         for category in optional_categories:
-            console.print(f"\n[bold]{category.replace('_', ' ').title()} Agents[/bold]")
+            console.print(
+                f"\n[bold]{category.replace('_', ' ').title()} Agents[/bold]")
 
             table = Table(show_header=True)
             table.add_column("Agent", style="cyan")
@@ -734,8 +749,10 @@ class AgentInstaller:
 @click.option(
     "--languages", "-l", multiple=True, help="Languages to install agents for"
 )
-@click.option("--list", "list_agents", is_flag=True, help="List available agents")
-@click.option("--install", "-i", multiple=True, help="Specific agents to install")
+@click.option("--list", "list_agents", is_flag=True,
+              help="List available agents")
+@click.option("--install", "-i", multiple=True,
+              help="Specific agents to install")
 @click.option(
     "--analyze", is_flag=True, help="Analyze project and show recommendations"
 )
@@ -788,8 +805,8 @@ def main(
     if analyze or recommend_only:
         if not ANALYSIS_AVAILABLE:
             console.print(
-                ("[red]Project analysis not available. " "Missing dependencies.[/red]")
-            )
+                ("[red]Project analysis not available. "
+                 "Missing dependencies.[/red]"))
             sys.exit(1)
 
         recommendation_data = None  # This would be set by analysis function
@@ -867,7 +884,8 @@ def main(
                 )
             )
     else:
-        console.print("\n[red]WARNING: Installation directory does not exist![/red]")
+        console.print(
+            "\n[red]WARNING: Installation directory does not exist![/red]")
 
     # Important notes
     console.print("\n[bold yellow]⚠️  Important Notes[/bold yellow]")
@@ -875,22 +893,23 @@ def main(
     # Determine which directory structure we're using
     if ".sdlc" in str(installer.claude_agents_dir):
         console.print(
-            (f"\n1. Agents have been installed to: " f"{installer.claude_agents_dir}")
-        )
+            (f"\n1. Agents have been installed to: "
+             f"{installer.claude_agents_dir}"))
         console.print("   (Using organized .sdlc structure)")
     else:
         console.print(
-            (f"\n1. Agents have been installed to: " f"{installer.claude_agents_dir}")
-        )
+            (f"\n1. Agents have been installed to: "
+             f"{installer.claude_agents_dir}"))
 
     console.print(
-        ("2. [bold red]RESTART YOUR AI ASSISTANT[/bold red] " "to activate the agents!")
-    )
+        ("2. [bold red]RESTART YOUR AI ASSISTANT[/bold red] "
+         "to activate the agents!"))
     console.print("\nFor system-wide availability, you can also copy to:")
     console.print(
-        (f"   [cyan]cp -r {installer.claude_agents_dir}/* " f"~/.claude/agents/[/cyan]")
-    )
-    console.print("\nNote: Project-specific agents are not automatically available")
+        (f"   [cyan]cp -r {installer.claude_agents_dir}/* "
+         f"~/.claude/agents/[/cyan]"))
+    console.print(
+        "\nNote: Project-specific agents are not automatically available")
 
     # Clean up temporary directory after all operations are complete
     installer._cleanup_temp()

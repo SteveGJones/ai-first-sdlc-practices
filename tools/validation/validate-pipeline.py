@@ -40,8 +40,9 @@ class ValidationPipeline:
 
         # Count how many framework markers exist
         marker_count = sum(
-            1 for marker in framework_markers if (self.project_root / marker).exists()
-        )
+            1 for marker in framework_markers if (
+                self.project_root /
+                marker).exists())
 
         # If we have most framework markers, this is the framework repo
         return marker_count >= 3
@@ -170,7 +171,8 @@ class ValidationPipeline:
                             content = f.read()
                             if branch in content:
                                 found = True
-                                self.add_success("Feature Proposal", f"Found in {file}")
+                                self.add_success(
+                                    "Feature Proposal", f"Found in {file}")
                                 break
                     except Exception:
                         continue
@@ -252,9 +254,13 @@ class ValidationPipeline:
                 "Create plan in plan/ directory before implementing",
             )
         elif plans:
-            self.add_success("Implementation Plan", f"Found {len(plans)} plan(s)")
+            self.add_success(
+                "Implementation Plan",
+                f"Found {len(plans)} plan(s)")
         else:
-            self.add_skip("Implementation Plan", "No plans required (simple feature)")
+            self.add_skip(
+                "Implementation Plan",
+                "No plans required (simple feature)")
 
     def check_ai_documentation(self) -> None:
         """Check for AI instruction files"""
@@ -266,7 +272,9 @@ class ValidationPipeline:
                 found_files.append(ai_file)
 
         if found_files:
-            self.add_success("AI Documentation", f"Found: {', '.join(found_files)}")
+            self.add_success(
+                "AI Documentation",
+                f"Found: {', '.join(found_files)}")
         else:
             self.add_error(
                 "AI Documentation",
@@ -520,7 +528,8 @@ class ValidationPipeline:
                     )
 
                     if result.returncode == 0:
-                        self.add_success("Dependencies", f"{dep_file} dependencies OK")
+                        self.add_success(
+                            "Dependencies", f"{dep_file} dependencies OK")
                     else:
                         self.add_warning(
                             "Dependencies",
@@ -567,7 +576,8 @@ class ValidationPipeline:
             ]
 
             for commit in commits:
-                if commit and not any(prefix in commit.lower() for prefix in prefixes):
+                if commit and not any(prefix in commit.lower()
+                                      for prefix in prefixes):
                     parts = commit.split(" ", 1)
                     if len(parts) > 1:
                         non_compliant.append(parts[1][:50])
@@ -579,7 +589,9 @@ class ValidationPipeline:
                     "Use conventional commit format: type: description",
                 )
             else:
-                self.add_success("Commit Compliance", "All commits follow conventions")
+                self.add_success(
+                    "Commit Compliance",
+                    "All commits follow conventions")
 
         except subprocess.CalledProcessError:
             self.add_skip("Commit Compliance", "No commit history")
@@ -601,10 +613,10 @@ class ValidationPipeline:
                     try:
                         with open(file, "r") as f:
                             content = f.read()
-                            # Check if retrospective mentions the branch or feature
-                            branch_name = branch.replace("feature/", "").replace(
-                                "fix/", ""
-                            )
+                            # Check if retrospective mentions the branch or
+                            # feature
+                            branch_name = branch.replace(
+                                "feature/", "").replace("fix/", "")
                             if branch_name in content or branch in content:
                                 found = True
                                 # Check retrospective freshness
@@ -701,7 +713,8 @@ class ValidationPipeline:
 
                 # Find code blocks (excluding mermaid/diagram blocks)
                 code_block_pattern = r"```(?!mermaid|diagram|plantuml|graphviz|dot|svg|ascii)[^\n]*\n([\s\S]*?)```"
-                code_blocks = re.findall(code_block_pattern, content, re.MULTILINE)
+                code_blocks = re.findall(
+                    code_block_pattern, content, re.MULTILINE)
 
                 # Count lines in code blocks
                 code_lines = 0
@@ -714,7 +727,8 @@ class ValidationPipeline:
 
                 # Check if too much code
                 if code_ratio > 0.2:  # More than 20% code
-                    relative_path = os.path.relpath(file_path, self.project_root)
+                    relative_path = os.path.relpath(
+                        file_path, self.project_root)
                     self.add_warning(
                         "Design Documentation",
                         f"{relative_path} contains {code_ratio:.0%} code content",
@@ -734,7 +748,8 @@ class ValidationPipeline:
 
                 for pattern, description in impl_patterns:
                     if re.search(pattern, content, re.IGNORECASE):
-                        # Check if it's in a code block (which we already warned about)
+                        # Check if it's in a code block (which we already
+                        # warned about)
                         if not any(
                             re.search(pattern, block, re.IGNORECASE)
                             for block in code_blocks
@@ -759,7 +774,9 @@ class ValidationPipeline:
     def check_technical_debt(self) -> None:
         """Check for technical debt indicators"""
         if self.is_empty_repo:
-            self.add_skip("Technical Debt", "Empty repository - no code to check")
+            self.add_skip(
+                "Technical Debt",
+                "Empty repository - no code to check")
             return
 
         debt_indicators, files_checked = self._scan_for_debt_indicators()
@@ -811,10 +828,12 @@ class ValidationPipeline:
             todo_pattern = r"(?:#|//|/\*)\s*(TODO|FIXME|HACK|XXX|BUG):"
             todos = len(re.findall(todo_pattern, content, re.IGNORECASE))
             if todos > 0:
-                indicators.append(f"{file_path.name}: {todos} TODO/FIXME comments")
+                indicators.append(
+                    f"{file_path.name}: {todos} TODO/FIXME comments")
 
             # Check for commented-out code
-            commented_lines = self._count_commented_code(content, file_path.suffix)
+            commented_lines = self._count_commented_code(
+                content, file_path.suffix)
             if commented_lines > 0:
                 indicators.append(
                     f"{file_path.name}: {commented_lines} lines of commented code"
@@ -824,7 +843,8 @@ class ValidationPipeline:
             if file_path.suffix in [".ts", ".tsx"]:
                 any_types = len(re.findall(r":\s*any\b", content))
                 if any_types > 0:
-                    indicators.append(f"{file_path.name}: {any_types} 'any' types")
+                    indicators.append(
+                        f"{file_path.name}: {any_types} 'any' types")
 
             # Check for error suppressions
             suppressions = self._count_error_suppressions(content)
@@ -849,7 +869,11 @@ class ValidationPipeline:
         }
 
         if suffix in comment_patterns:
-            return len(re.findall(comment_patterns[suffix], content, re.MULTILINE))
+            return len(
+                re.findall(
+                    comment_patterns[suffix],
+                    content,
+                    re.MULTILINE))
         return 0
 
     def _count_error_suppressions(self, content: str) -> int:
@@ -876,13 +900,13 @@ class ValidationPipeline:
         if debt_indicators:
             # Apply Framework Compliance Policy thresholds for framework repo
             if self.is_framework_repo:
-                # Count error suppressions separately as they have a specific threshold
+                # Count error suppressions separately as they have a specific
+                # threshold
                 suppression_count = sum(
                     1 for ind in debt_indicators if "error suppressions" in ind
                 )
                 todo_count = sum(
-                    1 for ind in debt_indicators if "TODO" in ind or "FIXME" in ind
-                )
+                    1 for ind in debt_indicators if "TODO" in ind or "FIXME" in ind)
 
                 # Framework allows up to 13 error suppressions
                 if suppression_count <= 13 and todo_count == 0:
@@ -1024,10 +1048,10 @@ class ValidationPipeline:
                         else:
                             issues.append(
                                 "mypy main section not configured for strict type checking "
-                                "(Framework allows relaxed rules in tool-specific sections)"
-                            )
+                                "(Framework allows relaxed rules in tool-specific sections)")
                     else:
-                        issues.append("mypy configuration missing [mypy] section")
+                        issues.append(
+                            "mypy configuration missing [mypy] section")
                 except configparser.Error:
                     # Fall back to simple check if parsing fails
                     if "strict = True" in content or "strict=True" in content:
@@ -1037,7 +1061,8 @@ class ValidationPipeline:
             else:
                 # For application code, enforce strict type checking throughout
                 if "disallow_untyped_defs" not in content or "False" in content:
-                    issues.append("mypy not configured for strict type checking")
+                    issues.append(
+                        "mypy not configured for strict type checking")
                 else:
                     mypy_config_found = True
 
@@ -1053,9 +1078,8 @@ class ValidationPipeline:
         """Check Python code for type annotations"""
         issues: List[str] = []
         py_files = list(Path(self.project_root).glob("**/*.py"))
-        py_files = [
-            f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)
-        ]
+        py_files = [f for f in py_files if "venv" not in str(
+            f) and "__pycache__" not in str(f)]
 
         if not py_files:
             return issues
@@ -1075,7 +1099,8 @@ class ValidationPipeline:
                 continue
 
         if missing_annotations > len(py_files) * 0.2:
-            issues.append(f"{missing_annotations} Python files lack type annotations")
+            issues.append(
+                f"{missing_annotations} Python files lack type annotations")
 
         return issues
 
@@ -1135,7 +1160,9 @@ class ValidationPipeline:
     def check_logging_compliance(self) -> None:
         """Check if code has proper logging at mandatory points"""
         if self.is_empty_repo:
-            self.add_skip("Logging Compliance", "Empty repository - no code to check")
+            self.add_skip(
+                "Logging Compliance",
+                "Empty repository - no code to check")
             return
 
         # Framework tools have different logging requirements
@@ -1148,8 +1175,10 @@ class ValidationPipeline:
 
         # Check if logging validator exists
         validator_path = (
-            self.project_root / "tools" / "validation" / "check-logging-compliance.py"
-        )
+            self.project_root /
+            "tools" /
+            "validation" /
+            "check-logging-compliance.py")
         if not validator_path.exists():
             self.add_warning(
                 "Logging Compliance",
@@ -1171,9 +1200,7 @@ class ValidationPipeline:
                 # Extract violation count from output
                 output_lines = result.stdout.splitlines()
                 violation_line = next(
-                    (line for line in output_lines if "Total Violations:" in line),
-                    None,
-                )
+                    (line for line in output_lines if "Total Violations:" in line), None, )
 
                 if violation_line:
                     self.add_error(
@@ -1204,15 +1231,15 @@ class ValidationPipeline:
         """Check GitHub Actions workflows have proper permissions"""
         if self.is_empty_repo:
             self.add_skip(
-                "GitHub Actions Permissions", "Empty repository - no workflows to check"
-            )
+                "GitHub Actions Permissions",
+                "Empty repository - no workflows to check")
             return
 
         workflows_dir = self.project_root / ".github" / "workflows"
         if not workflows_dir.exists():
             self.add_skip(
-                "GitHub Actions Permissions", "No GitHub Actions workflows found"
-            )
+                "GitHub Actions Permissions",
+                "No GitHub Actions workflows found")
             return
 
         # Check if permissions validator exists
@@ -1329,8 +1356,8 @@ class ValidationPipeline:
             files = glob.glob(f"**/{pattern}", recursive=True)
             # Exclude framework tools directory
             code_files = [
-                f for f in files if not f.startswith(("tools/", ".ai-sdlc-temp/"))
-            ]
+                f for f in files if not f.startswith(
+                    ("tools/", ".ai-sdlc-temp/"))]
             code_file_count += len(code_files)
 
         # Check if we only have framework files
@@ -1434,7 +1461,8 @@ class ValidationPipeline:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="AI-First SDLC Validation Pipeline")
+    parser = argparse.ArgumentParser(
+        description="AI-First SDLC Validation Pipeline")
     parser.add_argument(
         "--checks",
         nargs="+",
@@ -1463,7 +1491,9 @@ def main() -> None:
         choices=["json", "markdown"],
         help="Export results to format",
     )
-    parser.add_argument("--output", help="Output file for export (default: stdout)")
+    parser.add_argument(
+        "--output",
+        help="Output file for export (default: stdout)")
     parser.add_argument(
         "--ci",
         action="store_true",

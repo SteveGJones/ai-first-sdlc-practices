@@ -113,37 +113,34 @@ class AgentValidator:
             missing_fields = REQUIRED_FIELDS - set(metadata.keys())
             if missing_fields:
                 self.errors.append(
-                    (
-                        agent_name,
-                        f"Missing required fields: {', '.join(missing_fields)}",
-                    )
-                )
+                    (agent_name, f"Missing required fields: {', '.join(missing_fields)}", ))
 
             # Validate version format
             version = metadata.get("version", "")
             if not self._is_valid_version(version):
-                self.errors.append((agent_name, f"Invalid version format: {version}"))
+                self.errors.append(
+                    (agent_name, f"Invalid version format: {version}"))
 
             # Validate category
             category = metadata.get("category", "")
             if not self._is_valid_category(category):
-                self.warnings.append((agent_name, f"Non-standard category: {category}"))
+                self.warnings.append(
+                    (agent_name, f"Non-standard category: {category}"))
 
             # Check priority if specified
             if "priority" in metadata:
                 if metadata["priority"] not in VALID_PRIORITIES:
                     self.warnings.append(
-                        (agent_name, f"Invalid priority: {metadata['priority']}")
-                    )
+                        (agent_name, f"Invalid priority: {metadata['priority']}"))
 
             # Validate expertise list
             if "expertise" in metadata:
                 if not isinstance(metadata["expertise"], list):
-                    self.errors.append((agent_name, "Expertise must be a list"))
+                    self.errors.append(
+                        (agent_name, "Expertise must be a list"))
                 elif len(metadata["expertise"]) < 3:
                     self.warnings.append(
-                        (agent_name, "Agent should have at least 3 areas of expertise")
-                    )
+                        (agent_name, "Agent should have at least 3 areas of expertise"))
 
             # Validate triggers
             if "triggers" in metadata:
@@ -158,11 +155,7 @@ class AgentValidator:
             content_lines = metadata.get("_content_lines", 0)
             if content_lines < 50:
                 self.warnings.append(
-                    (
-                        agent_name,
-                        f"Agent content seems too short ({content_lines} lines)",
-                    )
-                )
+                    (agent_name, f"Agent content seems too short ({content_lines} lines)", ))
 
             # Check for key sections in content
             content = metadata.get("_content", "")
@@ -180,11 +173,7 @@ class AgentValidator:
 
             if missing_sections:
                 self.warnings.append(
-                    (
-                        agent_name,
-                        f"Missing content sections: {', '.join(missing_sections)}",
-                    )
-                )
+                    (agent_name, f"Missing content sections: {', '.join(missing_sections)}", ))
 
         except Exception as e:
             self.errors.append((str(relative_path), str(e)))
@@ -249,16 +238,15 @@ class AgentValidator:
         for agent_info in self.all_agents.values():
             category = agent_info["metadata"].get("category", "")
             base_category = category.split("/")[0]
-            category_counts[base_category] = category_counts.get(base_category, 0) + 1
+            category_counts[base_category] = category_counts.get(
+                base_category, 0) + 1
 
         # Check for required core agents
         if "core" not in category_counts or category_counts["core"] < 10:
             self.warnings.append(
-                (
-                    "Framework",
-                    f"Only {category_counts.get('core', 0)} core agents found (expected 10+)",
-                )
-            )
+                ("Framework",
+                 f"Only {category_counts.get('core', 0)} core agents found (expected 10+)",
+                 ))
 
     def _report_results(self) -> None:
         """Display validation results."""
@@ -296,7 +284,8 @@ class AgentValidator:
 
         # Success message
         if not self.errors:
-            console.print("\n[bold green]✓ All agents passed validation![/bold green]")
+            console.print(
+                "\n[bold green]✓ All agents passed validation![/bold green]")
         else:
             console.print("\n[bold red]✗ Validation failed![/bold red]")
 
@@ -311,13 +300,14 @@ class AgentValidator:
 
             if not has_error:
                 manifest["agents"][agent_name] = {
-                    "version": metadata.get("version", "1.0.0"),
-                    "category": metadata.get("category", "unknown"),
-                    "description": metadata.get("description", ""),
-                    "dependencies": metadata.get("dependencies", []),
-                    "priority": metadata.get("priority", "medium"),
-                    "path": str(agent_info["path"].relative_to(self.agent_dir)),
-                }
+                    "version": metadata.get(
+                        "version", "1.0.0"), "category": metadata.get(
+                        "category", "unknown"), "description": metadata.get(
+                        "description", ""), "dependencies": metadata.get(
+                        "dependencies", []), "priority": metadata.get(
+                        "priority", "medium"), "path": str(
+                            agent_info["path"].relative_to(
+                                self.agent_dir)), }
 
         with open(output_path, "w") as f:
             yaml.dump(manifest, f, default_flow_style=False, sort_keys=False)
@@ -328,7 +318,8 @@ class AgentValidator:
 @click.command()
 @click.argument("agent_dir", type=click.Path(exists=True))
 @click.option("--strict", is_flag=True, help="Treat warnings as errors")
-@click.option("--manifest", type=click.Path(), help="Generate agent manifest file")
+@click.option("--manifest", type=click.Path(),
+              help="Generate agent manifest file")
 @click.option("--fix", is_flag=True, help="Attempt to fix common issues")
 def main(agent_dir: str, strict: bool, manifest: str, fix: bool) -> None:
     """Validate AI agent files for the AI-First SDLC framework."""

@@ -23,7 +23,10 @@ class AIFirstSDLCSetup:
         self.templates_dir = self.framework_root / "templates"
         self.tools_dir = self.framework_root / "tools"
 
-    def setup_project(self, components: List[str] = None, force: bool = False) -> bool:
+    def setup_project(
+            self,
+            components: List[str] = None,
+            force: bool = False) -> bool:
         """Setup AI-First SDLC in project"""
 
         print("🚀 AI-First SDLC Framework Setup")
@@ -85,8 +88,8 @@ class AIFirstSDLCSetup:
             project_name = self.project_root.name
             content = content.replace("[Your Project Name]", project_name)
             content = content.replace(
-                "[Brief description]", f"AI-First development of {project_name}"
-            )
+                "[Brief description]",
+                f"AI-First development of {project_name}")
 
             # Write to project
             with open(claude_target, "w") as f:
@@ -152,7 +155,8 @@ class AIFirstSDLCSetup:
 
         # Check if pre-commit is installed
         try:
-            subprocess.run(["pre-commit", "--version"], capture_output=True, check=True)
+            subprocess.run(["pre-commit", "--version"],
+                           capture_output=True, check=True)
         except (subprocess.CalledProcessError, FileNotFoundError):
             print("   ⚠️  pre-commit not installed")
             print("   Install with: pip install pre-commit")
@@ -174,7 +178,8 @@ class AIFirstSDLCSetup:
 
         # Install pre-commit hooks
         try:
-            subprocess.run(["pre-commit", "install"], cwd=self.project_root, check=True)
+            subprocess.run(["pre-commit", "install"],
+                           cwd=self.project_root, check=True)
             print("   ✅ Installed pre-commit hooks")
         except subprocess.CalledProcessError as e:
             print(f"   ❌ Error installing hooks: {e}")
@@ -316,13 +321,18 @@ def main():
         choices=["ai-docs", "templates", "hooks", "tools"],
         help="Components to setup (default: all)",
     )
-    parser.add_argument("--force", action="store_true", help="Overwrite existing files")
     parser.add_argument(
-        "--init-git", action="store_true", help="Initialize git repository if needed"
-    )
+        "--force",
+        action="store_true",
+        help="Overwrite existing files")
     parser.add_argument(
-        "--skip-config", action="store_true", help="Skip creating .ai-sdlc.json config"
-    )
+        "--init-git",
+        action="store_true",
+        help="Initialize git repository if needed")
+    parser.add_argument(
+        "--skip-config",
+        action="store_true",
+        help="Skip creating .ai-sdlc.json config")
     parser.add_argument(
         "--project-dir",
         type=Path,

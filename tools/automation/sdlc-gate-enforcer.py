@@ -43,13 +43,17 @@ class SDLCGateEnforcer:
             "gates": {
                 "requirements": {
                     "mandatory": True,
-                    "required_agents": ["solution-architect", "critical-goal-reviewer"],
+                    "required_agents": [
+                        "solution-architect",
+                        "critical-goal-reviewer"],
                     "consensus_type": "all",
                     "documents_required": ["docs/feature-proposals/XX-feature.md"],
                 },
                 "design": {
                     "mandatory": True,
-                    "required_agents": ["solution-architect", "security-architect"],
+                    "required_agents": [
+                        "solution-architect",
+                        "security-architect"],
                     "consensus_type": "majority",
                     "documents_required": [
                         "docs/architecture/requirements-traceability-matrix.md",
@@ -62,19 +66,24 @@ class SDLCGateEnforcer:
                 },
                 "implementation": {
                     "mandatory": True,
-                    "required_agents": ["sdlc-enforcer", "test-manager"],
+                    "required_agents": [
+                        "sdlc-enforcer",
+                        "test-manager"],
                     "continuous_validation": True,
                 },
                 "review": {
                     "mandatory": True,
-                    "required_agents": ["critical-goal-reviewer", "test-manager"],
+                    "required_agents": [
+                        "critical-goal-reviewer",
+                        "test-manager"],
                 },
                 "deployment": {
                     "mandatory": True,
-                    "required_agents": ["sre-specialist", "compliance-auditor"],
+                    "required_agents": [
+                        "sre-specialist",
+                        "compliance-auditor"],
                 },
-            }
-        }
+            }}
 
     def _get_current_level(self) -> str:
         """Get current SDLC level."""
@@ -85,7 +94,9 @@ class SDLCGateEnforcer:
 
     def _get_gate_config(self, gate_name: str) -> Dict:
         """Get configuration for a specific gate, including level overrides."""
-        gate_config = self.gates_config.get("gates", {}).get(gate_name, {}).copy()
+        gate_config = self.gates_config.get(
+            "gates", {}).get(
+            gate_name, {}).copy()
 
         # Apply level-specific overrides
         level_overrides = self.gates_config.get("level_overrides", {}).get(
@@ -124,7 +135,8 @@ class SDLCGateEnforcer:
                 # Pattern-based check
                 doc_dir = self.project_path / Path(doc_pattern).parent
                 if not doc_dir.exists() or not any(doc_dir.iterdir()):
-                    issues.append(f"Missing required document matching: {doc_pattern}")
+                    issues.append(
+                        f"Missing required document matching: {doc_pattern}")
             else:
                 # Exact file check
                 if not (self.project_path / doc_pattern).exists():
@@ -194,9 +206,8 @@ class SDLCGateEnforcer:
         consensus_type = gate_config.get("consensus_type", "all")
 
         if consensus_type == "all":
-            if all(
-                agent in status[gate_name]["approvals"] for agent in required_agents
-            ):
+            if all(agent in status[gate_name]["approvals"]
+                    for agent in required_agents):
                 status[gate_name]["status"] = "approved"
         elif consensus_type == "majority":
             approved_count = sum(
@@ -234,7 +245,8 @@ class SDLCGateEnforcer:
         # Check if current phase gate is complete
         gate_complete, issues = self.check_gate(current_phase)
         if not gate_complete:
-            return False, [f"Current phase '{current_phase}' not complete:"] + issues
+            return False, [
+                f"Current phase '{current_phase}' not complete:"] + issues
 
         return True, []
 
@@ -244,7 +256,10 @@ class SDLCGateEnforcer:
         scenario_config = sequences.get(scenario, {})
         return scenario_config.get("sequence", [])
 
-    def resolve_conflict(self, gate_name: str, conflicting_agents: List[str]) -> str:
+    def resolve_conflict(
+            self,
+            gate_name: str,
+            conflicting_agents: List[str]) -> str:
         """Resolve conflicts between agent decisions."""
         conflict_rules = self.gates_config.get("conflict_resolution", {})
 
@@ -305,7 +320,8 @@ def approve(gate_name, agent_name):
 def proceed(current_phase, next_phase):
     """Check if progression to next phase is allowed."""
     enforcer = SDLCGateEnforcer()
-    allowed, issues = enforcer.can_proceed_to_next_phase(current_phase, next_phase)
+    allowed, issues = enforcer.can_proceed_to_next_phase(
+        current_phase, next_phase)
 
     if allowed:
         click.echo(f"✅ Can proceed from '{current_phase}' to '{next_phase}'")
@@ -325,7 +341,12 @@ def status():
     click.echo(f"   Level: {enforcer.current_level}")
     click.echo()
 
-    phases = ["requirements", "design", "implementation", "review", "deployment"]
+    phases = [
+        "requirements",
+        "design",
+        "implementation",
+        "review",
+        "deployment"]
     for phase in phases:
         gate_status = status.get(phase, {})
         status_icon = "✅" if gate_status.get("status") == "approved" else "⏳"

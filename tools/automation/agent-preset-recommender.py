@@ -212,7 +212,14 @@ class ProjectAnalyzer:
                     ext = Path(file).suffix.lower()
 
                     # Categorize files
-                    if ext in [".py", ".js", ".ts", ".java", ".cpp", ".go", ".rs"]:
+                    if ext in [
+                        ".py",
+                        ".js",
+                        ".ts",
+                        ".java",
+                        ".cpp",
+                        ".go",
+                            ".rs"]:
                         file_stats["source_files"] += 1
                     elif "test" in file.lower() or "spec" in file.lower():
                         file_stats["test_files"] += 1
@@ -285,7 +292,8 @@ class ProjectAnalyzer:
             deps["libraries"].extend(all_deps.keys())
 
         except (json.JSONDecodeError, FileNotFoundError, KeyError):
-            # Silently ignore parsing errors for package.json - not all projects have valid format
+            # Silently ignore parsing errors for package.json - not all
+            # projects have valid format
             pass
 
     def _parse_requirements_txt(self, file_path: Path, deps: Dict):
@@ -492,7 +500,8 @@ class ProjectAnalyzer:
 
     def _analyze_size(self) -> str:
         """Determine project size category."""
-        file_count = self.characteristics.get("files", {}).get("total_files", 0)
+        file_count = self.characteristics.get(
+            "files", {}).get("total_files", 0)
 
         if file_count < 50:
             return "small"
@@ -548,13 +557,23 @@ class ProjectAnalyzer:
             return "library"
 
         # Check for data pipeline
-        data_libs = ["pandas", "numpy", "sklearn", "tensorflow", "pytorch", "airflow"]
+        data_libs = [
+            "pandas",
+            "numpy",
+            "sklearn",
+            "tensorflow",
+            "pytorch",
+            "airflow"]
         for lib in deps.get("libraries", []):
             if any(data_lib in lib for data_lib in data_libs):
                 return "data-pipeline"
 
         # Check for mobile app
-        mobile_files = ["App.js", "App.tsx", "MainActivity.java", "AppDelegate.swift"]
+        mobile_files = [
+            "App.js",
+            "App.tsx",
+            "MainActivity.java",
+            "AppDelegate.swift"]
         for mf in mobile_files:
             if list(self.project_path.rglob(mf)):
                 return "mobile-app"
@@ -575,7 +594,8 @@ class ProjectAnalyzer:
         tech = set()
 
         # From file extensions
-        file_types = self.characteristics.get("files", {}).get("file_types", {})
+        file_types = self.characteristics.get(
+            "files", {}).get("file_types", {})
         if ".py" in file_types:
             tech.add("python")
         if ".js" in file_types or ".jsx" in file_types:
@@ -658,12 +678,19 @@ class AgentRecommender:
         special = []
 
         # Add based on project size
-        size = self.analysis.get("characteristics", {}).get("project_size", "medium")
+        size = self.analysis.get(
+            "characteristics",
+            {}).get(
+            "project_size",
+            "medium")
         if size in ["large", "enterprise"]:
-            special.extend(["delivery-manager", "agile-coach", "compliance-auditor"])
+            special.extend(
+                ["delivery-manager", "agile-coach", "compliance-auditor"])
 
         # Add based on structure
-        structure = self.analysis.get("characteristics", {}).get("structure", {})
+        structure = self.analysis.get(
+            "characteristics", {}).get(
+            "structure", {})
         if structure.get("is_monorepo"):
             special.append("project-plan-tracker")
 
@@ -687,14 +714,16 @@ def format_recommendations(recommendations: Dict, analysis: Dict) -> str:
     # Header
     project_type = analysis.get("project_type", "unknown")
     preset = AGENT_PRESETS.get(project_type, {})
-    output.append(f"🎯 Agent Recommendations for {preset.get('name', 'Project')}")
+    output.append(
+        f"🎯 Agent Recommendations for {preset.get('name', 'Project')}")
     output.append(f"   {preset.get('description', '')}")
     output.append("")
 
     # Project characteristics
     output.append("📊 Project Analysis:")
     output.append(f"   Type: {project_type}")
-    output.append(f"   Technologies: {', '.join(analysis.get('technologies', []))}")
+    output.append(
+        f"   Technologies: {', '.join(analysis.get('technologies', []))}")
     output.append(
         f"   Size: {analysis.get('characteristics', {}).get('project_size', 'unknown')}"
     )
@@ -754,16 +783,18 @@ def format_recommendations(recommendations: Dict, analysis: Dict) -> str:
 
     # Save recommendation
     output.append("💾 Save Recommendations:")
-    output.append("   python tools/automation/agent-preset-recommender.py --save")
-    output.append("   # Creates .agent-recommendations.json for future reference")
+    output.append(
+        "   python tools/automation/agent-preset-recommender.py --save")
+    output.append(
+        "   # Creates .agent-recommendations.json for future reference")
 
     return "\n".join(output)
 
 
 @click.command()
-@click.option(
-    "--project-path", type=click.Path(exists=True), help="Project path to analyze"
-)
+@click.option("--project-path",
+              type=click.Path(exists=True),
+              help="Project path to analyze")
 @click.option(
     "--type",
     "project_type",

@@ -367,7 +367,8 @@ class AgentContextCoordinator:
                 agents_with_recent_updates.append(memory["agent_type"])
 
         # Check for unacknowledged handoffs
-        unacknowledged_handoffs = [t for t in transitions if not t["acknowledged"]]
+        unacknowledged_handoffs = [
+            t for t in transitions if not t["acknowledged"]]
 
         # Check for conflicting decisions
         decision_conflicts = self._detect_decision_conflicts(decisions)
@@ -377,12 +378,18 @@ class AgentContextCoordinator:
         recent_update_coverage = len(set(agents_with_recent_updates)) / max(
             total_agents, 1
         )
-        handoff_health = 1 - (len(unacknowledged_handoffs) / max(len(transitions), 1))
-        decision_health = 1 - (len(decision_conflicts) / max(len(decisions), 1))
+        handoff_health = 1 - \
+            (len(unacknowledged_handoffs) / max(len(transitions), 1))
+        decision_health = 1 - \
+            (len(decision_conflicts) / max(len(decisions), 1))
 
         health_score = (
-            recent_update_coverage * 0.4 + handoff_health * 0.3 + decision_health * 0.3
-        )
+            recent_update_coverage *
+            0.4 +
+            handoff_health *
+            0.3 +
+            decision_health *
+            0.3)
 
         return {
             "health_score": health_score,
@@ -411,7 +418,8 @@ class AgentContextCoordinator:
 
         return md
 
-    def _generate_decision_markdown(self, decision: CollaborativeDecision) -> str:
+    def _generate_decision_markdown(
+            self, decision: CollaborativeDecision) -> str:
         """Generate markdown for collaborative decision"""
         md = f"## 🧠 COLLABORATIVE DECISION: {decision.title}\n\n"
         md += f"**Decision ID**: {decision.decision_id}\n"
@@ -503,11 +511,14 @@ def main():
         "create_memory", help="Create agent memory block"
     )
     create_parser.add_argument("agent_type", help="Type of agent")
-    create_parser.add_argument("session_context", help="Current session context")
+    create_parser.add_argument(
+        "session_context",
+        help="Current session context")
     create_parser.add_argument("current_focus", help="Current focus area")
 
     # Update memory
-    update_parser = subparsers.add_parser("update_memory", help="Update agent memory")
+    update_parser = subparsers.add_parser(
+        "update_memory", help="Update agent memory")
     update_parser.add_argument("agent_type", help="Type of agent")
     update_parser.add_argument(
         "--decision", help="Decision in format 'decision:rationale'"
@@ -516,8 +527,13 @@ def main():
     update_parser.add_argument("--dependency", help="Cross-agent dependency")
     update_parser.add_argument("--handoff", help="Handoff notes")
     update_parser.add_argument(
-        "--status", choices=["active", "waiting", "complete", "blocked", "handed_off"]
-    )
+        "--status",
+        choices=[
+            "active",
+            "waiting",
+            "complete",
+            "blocked",
+            "handed_off"])
     update_parser.add_argument("--focus", help="Current focus")
 
     # Create transition
@@ -526,13 +542,17 @@ def main():
     )
     transition_parser.add_argument("from_agent", help="Source agent")
     transition_parser.add_argument("to_agent", help="Destination agent")
-    transition_parser.add_argument("context", help="Context transfer description")
     transition_parser.add_argument(
-        "--requirements", nargs="+", default=[], help="Requirements for next agent"
-    )
+        "context", help="Context transfer description")
+    transition_parser.add_argument(
+        "--requirements",
+        nargs="+",
+        default=[],
+        help="Requirements for next agent")
 
     # Acknowledge handoff
-    ack_parser = subparsers.add_parser("acknowledge", help="Acknowledge handoff")
+    ack_parser = subparsers.add_parser(
+        "acknowledge", help="Acknowledge handoff")
     ack_parser.add_argument("from_agent", help="Source agent")
     ack_parser.add_argument("to_agent", help="Destination agent")
 
@@ -544,10 +564,22 @@ def main():
     decision_parser.add_argument(
         "--participants", nargs="+", required=True, help="Participating agents"
     )
-    decision_parser.add_argument("--context", required=True, help="Decision context")
-    decision_parser.add_argument("--consensus", required=True, help="Agreed consensus")
-    decision_parser.add_argument("--owner", required=True, help="Implementation owner")
-    decision_parser.add_argument("--review", required=True, help="Review checkpoint")
+    decision_parser.add_argument(
+        "--context",
+        required=True,
+        help="Decision context")
+    decision_parser.add_argument(
+        "--consensus",
+        required=True,
+        help="Agreed consensus")
+    decision_parser.add_argument(
+        "--owner",
+        required=True,
+        help="Implementation owner")
+    decision_parser.add_argument(
+        "--review",
+        required=True,
+        help="Review checkpoint")
 
     # Status board
     status_parser = subparsers.add_parser(
@@ -577,7 +609,8 @@ def main():
         if args.decision:
             parts = args.decision.split(":", 1)
             if len(parts) == 2:
-                updates["decision"] = {"decision": parts[0], "rationale": parts[1]}
+                updates["decision"] = {
+                    "decision": parts[0], "rationale": parts[1]}
         if args.tag:
             updates["expertise_tag"] = args.tag
         if args.dependency:

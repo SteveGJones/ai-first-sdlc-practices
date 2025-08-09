@@ -80,7 +80,8 @@ class TechnicalDebtDetector:
             import math
 
             # Formula: L × 0.11 × (1 + 0.2 × log₁₀(F)) × 0.95
-            # Use actual counts if available, otherwise use conservative defaults
+            # Use actual counts if available, otherwise use conservative
+            # defaults
             lines = getattr(self, "total_lines", 0) or 34542
             files = getattr(self, "files_scanned", 0) or 71
             magic_number_limit = int(
@@ -95,7 +96,8 @@ class TechnicalDebtDetector:
                 "magic_numbers": magic_number_limit,  # Dynamic calculation based on codebase
                 "deprecated_usage": 50,  # Migration timeline required
                 "commented_code": 10,  # Examples and documentation
-                "complexity_issues": 65,  # Framework utility complexity (updated 2025-08-06)
+                # Framework utility complexity (updated 2025-08-06)
+                "complexity_issues": 65,
             }
         else:  # application
             return {
@@ -201,7 +203,8 @@ class TechnicalDebtDetector:
         )
 
         for line_no, line in enumerate(lines, 1):
-            # Skip strings that contain TODO as part of normal text (like "todo app")
+            # Skip strings that contain TODO as part of normal text (like "todo
+            # app")
             if any(
                 marker in line
                 for marker in ['"todo', "'todo", "todo app", "Todo App", "TODO App"]
@@ -228,84 +231,96 @@ class TechnicalDebtDetector:
         self, file_path: Path, lines: List[str], suffix: str
     ) -> None:
         """Check for commented-out code"""
-        comment_patterns = {
-            ".py": (
-                r"^\s*#\s*",
-                [
-                    "import",
-                    "de",
-                    "class",
-                    "i",
-                    "for",
-                    "while",
-                    "return",
-                    "raise",
-                    "try",
-                ],
-            ),
-            ".js": (
-                r"^\s*//\s*",
-                [
-                    "import",
-                    "export",
-                    "function",
-                    "class",
-                    "i",
-                    "for",
-                    "while",
-                    "return",
-                    "const",
-                    "let",
-                    "var",
-                ],
-            ),
-            ".ts": (
-                r"^\s*//\s*",
-                [
-                    "import",
-                    "export",
-                    "function",
-                    "class",
-                    "i",
-                    "for",
-                    "while",
-                    "return",
-                    "const",
-                    "let",
-                    "var",
-                ],
-            ),
-            ".java": (
-                r"^\s*//\s*",
-                [
-                    "import",
-                    "public",
-                    "private",
-                    "class",
-                    "i",
-                    "for",
-                    "while",
-                    "return",
-                    "throw",
-                ],
-            ),
-            ".go": (
-                r"^\s*//\s*",
-                ["import", "func", "type", "i", "for", "return", "package"],
-            ),
-            ".rs": (
-                r"^\s*//\s*",
-                ["use", "fn", "impl", "struct", "i", "for", "while", "return"],
-            ),
-            ".cpp": (
-                r"^\s*//\s*",
-                ["#include", "class", "i", "for", "while", "return", "namespace"],
-            ),
-            ".rb": (
-                r"^\s*#\s*",
-                ["require", "de", "class", "i", "for", "while", "return"],
-            ),
-        }
+        comment_patterns = {".py": (r"^\s*#\s*",
+                                    ["import",
+                                     "de",
+                                     "class",
+                                     "i",
+                                     "for",
+                                     "while",
+                                     "return",
+                                     "raise",
+                                     "try",
+                                     ],
+                                    ),
+                            ".js": (r"^\s*//\s*",
+                                    ["import",
+                                     "export",
+                                     "function",
+                                     "class",
+                                     "i",
+                                     "for",
+                                     "while",
+                                     "return",
+                                     "const",
+                                     "let",
+                                     "var",
+                                     ],
+                                    ),
+                            ".ts": (r"^\s*//\s*",
+                                    ["import",
+                                     "export",
+                                     "function",
+                                     "class",
+                                     "i",
+                                     "for",
+                                     "while",
+                                     "return",
+                                     "const",
+                                     "let",
+                                     "var",
+                                     ],
+                                    ),
+                            ".java": (r"^\s*//\s*",
+                                      ["import",
+                                       "public",
+                                       "private",
+                                       "class",
+                                       "i",
+                                       "for",
+                                       "while",
+                                       "return",
+                                       "throw",
+                                       ],
+                                      ),
+                            ".go": (r"^\s*//\s*",
+                                    ["import",
+                                     "func",
+                                     "type",
+                                     "i",
+                                     "for",
+                                     "return",
+                                     "package"],
+                                    ),
+                            ".rs": (r"^\s*//\s*",
+                                    ["use",
+                                     "fn",
+                                     "impl",
+                                     "struct",
+                                     "i",
+                                     "for",
+                                     "while",
+                                     "return"],
+                                    ),
+                            ".cpp": (r"^\s*//\s*",
+                                     ["#include",
+                                      "class",
+                                      "i",
+                                      "for",
+                                      "while",
+                                      "return",
+                                      "namespace"],
+                                     ),
+                            ".rb": (r"^\s*#\s*",
+                                    ["require",
+                                     "de",
+                                     "class",
+                                     "i",
+                                     "for",
+                                     "while",
+                                     "return"],
+                                    ),
+                            }
 
         if suffix not in comment_patterns:
             return
@@ -324,7 +339,11 @@ class TechnicalDebtDetector:
                     }
                 )
 
-    def _check_type_issues(self, file_path: Path, content: str, suffix: str) -> None:
+    def _check_type_issues(
+            self,
+            file_path: Path,
+            content: str,
+            suffix: str) -> None:
         """Check for type safety issues"""
         # TypeScript/JavaScript any types
         if suffix in [".ts", ".tsx"]:
@@ -343,7 +362,8 @@ class TechnicalDebtDetector:
         # Python missing type hints (simple heuristic)
         elif suffix == ".py":
             # Check for functions without return type hints
-            func_pattern = re.compile(r"^\s*def\s+(\w+)\s*\([^)]*\)\s*:", re.MULTILINE)
+            func_pattern = re.compile(
+                r"^\s*def\s+(\w+)\s*\([^)]*\)\s*:", re.MULTILINE)
             typed_func_pattern = re.compile(
                 r"^\s*def\s+(\w+)\s*\([^)]*\)\s*->\s*[^:]+:", re.MULTILINE
             )
@@ -392,7 +412,11 @@ class TechnicalDebtDetector:
                     }
                 )
 
-    def _check_code_smells(self, file_path: Path, content: str, suffix: str) -> None:
+    def _check_code_smells(
+            self,
+            file_path: Path,
+            content: str,
+            suffix: str) -> None:
         """Check for common code smells"""
         # Long functions
         if suffix in [".py", ".js", ".ts", ".java", ".go", ".rs"]:
@@ -414,7 +438,18 @@ class TechnicalDebtDetector:
                 continue
 
             # Skip common line lengths and dimensions
-            if number in [60, 72, 79, 120, 127, 128, 256, 512, 1024, 2048, 4096]:
+            if number in [
+                    60,
+                    72,
+                    79,
+                    120,
+                    127,
+                    128,
+                    256,
+                    512,
+                    1024,
+                    2048,
+                    4096]:
                 continue
 
             # Skip common HTTP status codes and well-known numbers
@@ -494,7 +529,11 @@ class TechnicalDebtDetector:
                 }
             )
 
-    def _check_long_functions(self, file_path: Path, content: str, suffix: str) -> None:
+    def _check_long_functions(
+            self,
+            file_path: Path,
+            content: str,
+            suffix: str) -> None:
         """Check for functions that are too long"""
         patterns = {
             ".py": r"^\s*def\s+\w+.*?(?=^\s*def|\Z)",
@@ -621,9 +660,14 @@ class TechnicalDebtDetector:
                     }
                 )
 
-    def _check_complexity(self, file_path: Path, content: str, suffix: str) -> None:
+    def _check_complexity(
+            self,
+            file_path: Path,
+            content: str,
+            suffix: str) -> None:
         """Check for high cyclomatic complexity"""
-        # This is a simplified check - real complexity calculation would be better
+        # This is a simplified check - real complexity calculation would be
+        # better
         complexity_keywords = [
             "i",
             "eli",
@@ -856,8 +900,10 @@ def main():
         description="Detect technical debt in your codebase"
     )
     parser.add_argument(
-        "path", nargs="?", default=".", help="Path to scan (default: current directory)"
-    )
+        "path",
+        nargs="?",
+        default=".",
+        help="Path to scan (default: current directory)")
     parser.add_argument(
         "--format",
         choices=["console", "json", "markdown"],
@@ -878,7 +924,9 @@ def main():
     )
     parser.add_argument(
         "--context",
-        choices=["application", "framework"],
+        choices=[
+            "application",
+            "framework"],
         default="application",
         help="Code context for policy compliance (default: application, auto-detects framework)",
     )

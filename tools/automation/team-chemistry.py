@@ -110,17 +110,20 @@ class SimpleFeatureChallenge(ChemistryExercise):
         click.echo("Phase 1: Architecture and Design")
         time.sleep(1)
         if "solution-architect" in self.participants:
-            observations.append("Solution architect provided clear system design")
+            observations.append(
+                "Solution architect provided clear system design")
             success_factors.append(0.25)
         else:
-            observations.append("No dedicated architect - design phase struggled")
+            observations.append(
+                "No dedicated architect - design phase struggled")
             success_factors.append(0.1)
 
         # Phase 2: Implementation
         click.echo("Phase 2: Implementation")
         time.sleep(1)
         if "language-expert" in self.participants:
-            observations.append("Language expert implemented with best practices")
+            observations.append(
+                "Language expert implemented with best practices")
             success_factors.append(0.25)
         else:
             observations.append("Implementation lacked language expertise")
@@ -130,7 +133,8 @@ class SimpleFeatureChallenge(ChemistryExercise):
         click.echo("Phase 3: Review and Quality Assurance")
         time.sleep(1)
         if "critical-goal-reviewer" in self.participants:
-            observations.append("Critical goal reviewer ensured requirements met")
+            observations.append(
+                "Critical goal reviewer ensured requirements met")
             success_factors.append(0.25)
         else:
             observations.append("Quality review phase was incomplete")
@@ -226,7 +230,8 @@ class IntegrationChallenge(ChemistryExercise):
 
             if responsible_agent == "All participants":
                 success_factors.append(0.2)
-                observations.append(f"All agents collaborated on {phase_name.lower()}")
+                observations.append(
+                    f"All agents collaborated on {phase_name.lower()}")
             elif responsible_agent in self.participants:
                 success_factors.append(0.2)
                 observations.append(
@@ -241,7 +246,8 @@ class IntegrationChallenge(ChemistryExercise):
         # Formation-specific adjustments
         if formation_type in ["transformer", "orchestrator"]:
             success_factors.append(0.1)  # Bonus for appropriate formation
-            observations.append("Formation well-suited for integration complexity")
+            observations.append(
+                "Formation well-suited for integration complexity")
 
         success_score = min(1.0, sum(success_factors))
 
@@ -249,7 +255,8 @@ class IntegrationChallenge(ChemistryExercise):
         if success_score < 0.8:
             improvements.append("Add missing integration specialists")
         if "Missing" in str(observations):
-            improvements.append("Install required agents for complex integrations")
+            improvements.append(
+                "Install required agents for complex integrations")
 
         next_exercises = []
         if success_score >= 0.8:
@@ -326,7 +333,8 @@ class CrisisSimulation(ChemistryExercise):
             )
         else:
             success_factors.append(0.1)
-            observations.append("No dedicated crisis response agents available")
+            observations.append(
+                "No dedicated crisis response agents available")
 
         # Phase 2: Diagnosis
         click.echo("Phase 2: Root Cause Analysis")
@@ -336,7 +344,8 @@ class CrisisSimulation(ChemistryExercise):
             observations.append("Complex formation enabled thorough diagnosis")
         else:
             success_factors.append(0.15)
-            observations.append("Basic diagnosis completed with available agents")
+            observations.append(
+                "Basic diagnosis completed with available agents")
 
         # Phase 3: Escalation Protocol
         click.echo("Phase 3: Escalation and Coordination")
@@ -377,7 +386,8 @@ class CrisisSimulation(ChemistryExercise):
         if success_score < 0.7:
             improvements.append("Add crisis response specialists to formation")
         if success_score < 0.8:
-            improvements.append("Improve escalation protocols and coordination")
+            improvements.append(
+                "Improve escalation protocols and coordination")
         if "ad-hoc" in str(observations):
             improvements.append(
                 "Consider adding orchestration-architect for crisis coordination"
@@ -463,7 +473,8 @@ class HandoffProtocolExercise(ChemistryExercise):
                     f"Good {scenario.lower()} handoff with minor improvements needed"
                 )
             else:
-                observations.append(f"Poor {scenario.lower()} handoff - needs work")
+                observations.append(
+                    f"Poor {scenario.lower()} handoff - needs work")
 
         success_score = sum(success_factors)
 
@@ -477,7 +488,8 @@ class HandoffProtocolExercise(ChemistryExercise):
 
         next_exercises = []
         if success_score >= 0.8:
-            next_exercises.extend(["simple-feature-challenge", "integration-challenge"])
+            next_exercises.extend(
+                ["simple-feature-challenge", "integration-challenge"])
         else:
             next_exercises.extend(["role-clarity"])
 
@@ -553,8 +565,8 @@ class TeamChemistryEngine:
             if r.exercise_type == ExerciseType.HANDOFF_PROTOCOL
         ]
         communication_fluency = (
-            sum(handoff_scores) / len(handoff_scores) if handoff_scores else 0.7
-        )
+            sum(handoff_scores) /
+            len(handoff_scores) if handoff_scores else 0.7)
 
         # Role clarity from role conflicts and coordination
         role_indicators = []
@@ -565,12 +577,12 @@ class TeamChemistryEngine:
                 role_indicators.append(0.9)
             else:
                 role_indicators.append(0.7)
-        role_clarity = (
-            sum(role_indicators) / len(role_indicators) if role_indicators else 0.7
-        )
+        role_clarity = (sum(role_indicators) /
+                        len(role_indicators) if role_indicators else 0.7)
 
         # Collaboration rhythm from overall exercise success
-        avg_success = sum(r.success_score for r in recent_results) / len(recent_results)
+        avg_success = sum(
+            r.success_score for r in recent_results) / len(recent_results)
         collaboration_rhythm = avg_success
 
         # Quality integration from crisis and quality-focused exercises
@@ -581,9 +593,8 @@ class TeamChemistryEngine:
             in [ExerciseType.CRISIS_SIMULATION, ExerciseType.INTEGRATION]
         ]
         if quality_exercises:
-            quality_integration = sum(r.success_score for r in quality_exercises) / len(
-                quality_exercises
-            )
+            quality_integration = sum(
+                r.success_score for r in quality_exercises) / len(quality_exercises)
         else:
             quality_integration = 0.75  # Default if no quality exercises
 
@@ -689,9 +700,8 @@ class TeamChemistryEngine:
 @click.option("--assess", is_flag=True, help="Assess current team chemistry")
 @click.option("--recommend", is_flag=True, help="Get exercise recommendations")
 @click.option("--output", type=click.Path(), help="Save results to file")
-@click.option(
-    "--interactive", is_flag=True, help="Interactive chemistry development session"
-)
+@click.option("--interactive", is_flag=True,
+              help="Interactive chemistry development session")
 def main(
     exercise: str,
     formation: str,
@@ -716,18 +726,22 @@ def main(
             metrics = engine.assess_team_chemistry(formation)
             next_exercise = engine.recommend_next_exercise(formation, metrics)
             click.echo(f"🎯 Recommended next exercise: {next_exercise.value}")
-            click.echo(f"📝 This will help improve your team's weakest chemistry areas")
+            click.echo(
+                f"📝 This will help improve your team's weakest chemistry areas")
         elif exercise:
             exercise_type = ExerciseType(exercise)
-            click.echo(f"🚀 Running {exercise_type.value} for {formation} formation")
-            result = engine.run_exercise(exercise_type, formation, available_agents)
+            click.echo(
+                f"🚀 Running {exercise_type.value} for {formation} formation")
+            result = engine.run_exercise(
+                exercise_type, formation, available_agents)
             display_exercise_result(result)
 
             if output:
                 engine.save_results(output)
                 click.echo(f"📄 Results saved to {output}")
         else:
-            click.echo("Use --exercise, --assess, --recommend, or --interactive")
+            click.echo(
+                "Use --exercise, --assess, --recommend, or --interactive")
 
     except Exception as e:
         click.echo(f"❌ Error: {e}")
@@ -761,7 +775,8 @@ def run_interactive_session(
 
             if 1 <= exercise_choice <= len(exercise_types):
                 exercise_type = exercise_types[exercise_choice - 1]
-                result = engine.run_exercise(exercise_type, formation, available_agents)
+                result = engine.run_exercise(
+                    exercise_type, formation, available_agents)
                 display_exercise_result(result)
             else:
                 click.echo("Invalid selection")

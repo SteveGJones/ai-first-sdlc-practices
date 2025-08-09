@@ -53,7 +53,8 @@ def check_package_json() -> bool:
                 missing_scripts.append(script)
 
         if missing_scripts:
-            print(f"❌ Missing required scripts in package.json: {missing_scripts}")
+            print(
+                f"❌ Missing required scripts in package.json: {missing_scripts}")
             return False
 
         print("✅ package.json validation passed")
@@ -65,7 +66,10 @@ def check_package_json() -> bool:
 
 def check_typescript_config() -> bool:
     """Validate TypeScript configuration if present"""
-    tsconfig_files = ["tsconfig.json", "tsconfig.app.json", "tsconfig.lib.json"]
+    tsconfig_files = [
+        "tsconfig.json",
+        "tsconfig.app.json",
+        "tsconfig.lib.json"]
 
     for tsconfig in tsconfig_files:
         if Path(tsconfig).exists():
@@ -91,7 +95,8 @@ def check_typescript_config() -> bool:
                         missing_strict.append(f"{option}: {required_value}")
 
                 if missing_strict:
-                    print(f"❌ {tsconfig} missing strict options: {missing_strict}")
+                    print(
+                        f"❌ {tsconfig} missing strict options: {missing_strict}")
                     return False
 
                 print(f"✅ {tsconfig} validation passed")

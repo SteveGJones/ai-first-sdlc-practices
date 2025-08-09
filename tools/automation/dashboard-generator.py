@@ -462,7 +462,10 @@ class DashboardGenerator:
             return "C"
         return "D"
 
-    def _generate_achievements_html(self, team_data: Dict, metrics: Dict) -> str:
+    def _generate_achievements_html(
+            self,
+            team_data: Dict,
+            metrics: Dict) -> str:
         """Generate achievements HTML"""
         achievements = []
 
@@ -592,7 +595,8 @@ class DashboardGenerator:
         metrics_over_time = {}
 
         for assessment in history:
-            date = datetime.fromisoformat(assessment["date"]).strftime("%Y-%m-%d")
+            date = datetime.fromisoformat(
+                assessment["date"]).strftime("%Y-%m-%d")
             dates.append(date)
 
             for metric, value in assessment.get("metrics", {}).items():
@@ -615,7 +619,8 @@ class DashboardGenerator:
 
         return str(dashboard_file)
 
-    def generate_simple_ascii_dashboard(self, metrics: Dict, level: str) -> str:
+    def generate_simple_ascii_dashboard(
+            self, metrics: Dict, level: str) -> str:
         """Generate simple ASCII dashboard for terminal display"""
         lines = []
         lines.append("=" * 60)
@@ -623,7 +628,8 @@ class DashboardGenerator:
         lines.append("=" * 60)
         lines.append("")
         lines.append(f"Current Level: {level.title()}")
-        lines.append(f"Assessment: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+        lines.append(
+            f"Assessment: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
         lines.append("")
         lines.append("METRICS:")
         lines.append("-" * 40)
@@ -652,9 +658,9 @@ def cli():
 
 @cli.command()
 @click.option("--team-name", default="Development Team", help="Team name")
-@click.option(
-    "--data-file", type=click.Path(exists=True), help="JSON file with team data"
-)
+@click.option("--data-file",
+              type=click.Path(exists=True),
+              help="JSON file with team data")
 @click.option("--output", "-o", help="Output HTML file name")
 def html(team_name, data_file, output):
     """Generate HTML dashboard"""
@@ -697,14 +703,14 @@ def html(team_name, data_file, output):
                 if "darwin" in os.sys.platform.lower()
                 else f'xdg-open "{output_file}"'
             )
-    except:
+    except BaseException:
         click.echo("Dashboard saved. Open the HTML file in your browser to view.")
 
 
 @cli.command()
-@click.option(
-    "--data-file", type=click.Path(exists=True), help="JSON file with team data"
-)
+@click.option("--data-file",
+              type=click.Path(exists=True),
+              help="JSON file with team data")
 def ascii(data_file):
     """Generate ASCII dashboard for terminal"""
     generator = DashboardGenerator()

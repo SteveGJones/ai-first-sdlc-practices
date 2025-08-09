@@ -22,10 +22,18 @@ class FrameworkMigrator:
     def check_existing_installation(self) -> bool:
         """Check if this is an existing framework installation"""
         indicators = [
-            self.project_root / "tools" / "validate-pipeline.py",
-            self.project_root / "tools" / "validation" / "validate-pipeline.py",
-            self.project_root / "CLAUDE.md",
-            self.project_root / "docs" / "feature-proposals",
+            self.project_root /
+            "tools" /
+            "validate-pipeline.py",
+            self.project_root /
+            "tools" /
+            "validation" /
+            "validate-pipeline.py",
+            self.project_root /
+            "CLAUDE.md",
+            self.project_root /
+            "docs" /
+            "feature-proposals",
         ]
 
         return any(path.exists() for path in indicators)
@@ -367,17 +375,21 @@ Part of the [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sd
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Migrate existing AI-First SDLC installation to organized structure"
-    )
+        description="Migrate existing AI-First SDLC installation to organized structure")
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Show what would be moved without making changes",
     )
-    parser.add_argument("--execute", action="store_true", help="Perform the migration")
     parser.add_argument(
-        "--project-root", type=Path, default=Path.cwd(), help="Project root directory"
-    )
+        "--execute",
+        action="store_true",
+        help="Perform the migration")
+    parser.add_argument(
+        "--project-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Project root directory")
 
     args = parser.parse_args()
 

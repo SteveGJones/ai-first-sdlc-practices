@@ -269,7 +269,8 @@ class ProjectAnalyzer:
             self.analysis["architecture"].add("serverless")
             self.analysis["cloud_platforms"].add("aws")
 
-        if "services" in dirs and len([d for d in dirs if d.endswith("service")]) > 3:
+        if "services" in dirs and len(
+                [d for d in dirs if d.endswith("service")]) > 3:
             self.analysis["architecture"].add("microservices")
 
     def _analyze_ci_cd(self) -> None:
@@ -576,7 +577,8 @@ class ProjectAnalyzer:
             )
 
         if self.analysis["databases"]:
-            lines.append(f"Databases: {', '.join(sorted(self.analysis['databases']))}")
+            lines.append(
+                f"Databases: {', '.join(sorted(self.analysis['databases']))}")
 
         if self.analysis["cloud_platforms"]:
             lines.append(
@@ -605,7 +607,9 @@ def display_analysis(analysis: Dict) -> None:
             key=lambda x: x[1]["percentage"],
             reverse=True,
         ):
-            table.add_row(lang.title(), str(info["files"]), f"{info['percentage']}%")
+            table.add_row(
+                lang.title(), str(
+                    info["files"]), f"{info['percentage']}%")
         console.print(table)
         console.print()
 
@@ -620,7 +624,10 @@ def display_analysis(analysis: Dict) -> None:
         )
 
     if analysis["frameworks"]:
-        characteristics.add_row("Frameworks", ", ".join(sorted(analysis["frameworks"])))
+        characteristics.add_row(
+            "Frameworks", ", ".join(
+                sorted(
+                    analysis["frameworks"])))
 
     if analysis["project_types"]:
         characteristics.add_row(
@@ -633,10 +640,16 @@ def display_analysis(analysis: Dict) -> None:
         )
 
     if analysis["databases"]:
-        characteristics.add_row("Databases", ", ".join(sorted(analysis["databases"])))
+        characteristics.add_row(
+            "Databases", ", ".join(
+                sorted(
+                    analysis["databases"])))
 
     if analysis["testing"]:
-        characteristics.add_row("Testing", ", ".join(sorted(analysis["testing"])))
+        characteristics.add_row(
+            "Testing", ", ".join(
+                sorted(
+                    analysis["testing"])))
 
     if analysis["cloud_platforms"]:
         characteristics.add_row(
@@ -647,7 +660,10 @@ def display_analysis(analysis: Dict) -> None:
         characteristics.add_row("CI/CD", ", ".join(sorted(analysis["ci_cd"])))
 
     if analysis["domains"]:
-        characteristics.add_row("Domains", ", ".join(sorted(analysis["domains"])))
+        characteristics.add_row(
+            "Domains", ", ".join(
+                sorted(
+                    analysis["domains"])))
 
     characteristics.add_row("Project Size", analysis["project_size"].title())
     characteristics.add_row("Team Size", f"{analysis['team_size']} developers")
@@ -663,7 +679,8 @@ def display_analysis(analysis: Dict) -> None:
     help="Project directory to analyze",
 )
 @click.option("--output", type=click.Path(), help="Save analysis to JSON file")
-@click.option("--quiet", is_flag=True, help="Only output JSON (for programmatic use)")
+@click.option("--quiet", is_flag=True,
+              help="Only output JSON (for programmatic use)")
 def main(project_dir: str, output: str, quiet: bool) -> None:
     """Analyze a project to understand its characteristics."""
 

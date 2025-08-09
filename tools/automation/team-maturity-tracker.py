@@ -182,7 +182,8 @@ class TeamMaturityTracker:
         self.tracking_dir = self.project_path / ".sdlc" / "maturity"
         self.tracking_dir.mkdir(parents=True, exist_ok=True)
 
-    def analyze_current_maturity(self) -> Tuple[MaturityLevel, TeamMetrics, Dict]:
+    def analyze_current_maturity(
+            self) -> Tuple[MaturityLevel, TeamMetrics, Dict]:
         """Analyze current team maturity level and metrics"""
 
         # Gather team data
@@ -362,7 +363,8 @@ class TeamMaturityTracker:
         report.append(f"# {config.celebration_emoji} Team Maturity Report")
         report.append(f"**Current Level**: {config.title}")
         report.append(f"**Team Status**: {config.description}")
-        report.append(f"**Assessment Date**: {datetime.now().strftime('%B %d, %Y')}")
+        report.append(
+            f"**Assessment Date**: {datetime.now().strftime('%B %d, %Y')}")
         report.append("")
 
         # Executive Dashboard
@@ -375,7 +377,8 @@ class TeamMaturityTracker:
             metric_display = metric_name.replace("_", " ").title()
             bar = self._create_progress_bar(score, 100)
             grade = self._score_to_grade(score)
-            report.append(f"**{metric_display}**: {bar} {score:.1f}% ({grade})")
+            report.append(
+                f"**{metric_display}**: {bar} {score:.1f}% ({grade})")
 
         report.append("")
 
@@ -396,7 +399,8 @@ class TeamMaturityTracker:
 
         # Growth Opportunities
         report.append("## 🌱 Growth Opportunities")
-        opportunities = self._identify_opportunities(metrics_dict, team_data, level)
+        opportunities = self._identify_opportunities(
+            metrics_dict, team_data, level)
         for opportunity in opportunities:
             report.append(f"- {opportunity}")
         report.append("")
@@ -411,7 +415,8 @@ class TeamMaturityTracker:
             report.append("")
 
             # Readiness assessment
-            readiness = self._assess_next_level_readiness(level, metrics, team_data)
+            readiness = self._assess_next_level_readiness(
+                level, metrics, team_data)
             report.append(f"**Readiness Score**: {readiness['score']:.1f}%")
             report.append("")
 
@@ -487,7 +492,10 @@ class TeamMaturityTracker:
         strengths = []
 
         # Sort metrics by score to find top performers
-        sorted_metrics = sorted(metrics.items(), key=lambda x: x[1], reverse=True)
+        sorted_metrics = sorted(
+            metrics.items(),
+            key=lambda x: x[1],
+            reverse=True)
 
         for metric, score in sorted_metrics[:3]:  # Top 3 metrics
             if score >= 70:  # Only celebrate good scores
@@ -505,11 +513,13 @@ class TeamMaturityTracker:
                         f"✨ **Strong {metric_name}**: Impressive consistency!"
                     )
                 else:
-                    strengths.append(f"👍 **Good {metric_name}**: Solid foundation!")
+                    strengths.append(
+                        f"👍 **Good {metric_name}**: Solid foundation!")
 
         # Add specific achievements
         if team_data["team_size"] >= 5:
-            strengths.append("🤝 **Team Scale**: Successfully coordinating larger team!")
+            strengths.append(
+                "🤝 **Team Scale**: Successfully coordinating larger team!")
         if team_data["technical_debt"] < 3:
             strengths.append(
                 "💎 **Code Quality**: Maintaining excellent technical standards!"
@@ -578,8 +588,10 @@ class TeamMaturityTracker:
         return current_level
 
     def _assess_next_level_readiness(
-        self, current_level: MaturityLevel, metrics: TeamMetrics, team_data: Dict
-    ) -> Dict:
+            self,
+            current_level: MaturityLevel,
+            metrics: TeamMetrics,
+            team_data: Dict) -> Dict:
         """Assess readiness for the next maturity level"""
         next_level = self._get_next_level(current_level)
         next_config = self.MATURITY_LEVELS[next_level]
@@ -692,7 +704,8 @@ class TeamMaturityTracker:
 
         # Recent activity
         if team_data.get("commit_frequency", 0) > 1:
-            spotlight.append("🔥 **High Velocity**: Consistently shipping improvements!")
+            spotlight.append(
+                "🔥 **High Velocity**: Consistently shipping improvements!")
         elif team_data.get("commit_frequency", 0) > 0.5:
             spotlight.append(
                 "📈 **Steady Progress**: Maintaining good development rhythm!"
@@ -708,7 +721,8 @@ class TeamMaturityTracker:
                 "🌍 **Community Contributors**: Sharing value with the broader ecosystem!"
             )
         if team_data.get("retrospectives", 0) >= 5:
-            spotlight.append("🔄 **Continuous Learners**: Strong retrospective culture!")
+            spotlight.append(
+                "🔄 **Continuous Learners**: Strong retrospective culture!")
 
         return spotlight
 
@@ -740,13 +754,18 @@ class TeamMaturityTracker:
 
         return False
 
-    def _generate_celebration(self, level: MaturityLevel, team_data: Dict) -> List[str]:
+    def _generate_celebration(
+            self,
+            level: MaturityLevel,
+            team_data: Dict) -> List[str]:
         """Generate celebration content"""
         config = self.MATURITY_LEVELS[level]
         celebration = []
 
-        celebration.append(f"🎊 **Congratulations on reaching {config.title} status!**")
-        celebration.append(f"{config.celebration_emoji} {config.milestone_reward}")
+        celebration.append(
+            f"🎊 **Congratulations on reaching {config.title} status!**")
+        celebration.append(
+            f"{config.celebration_emoji} {config.milestone_reward}")
         celebration.append("")
         celebration.append("**Your Achievement Unlocks:**")
 
@@ -842,7 +861,9 @@ class TeamMaturityTracker:
             return {}
 
         return {
-            "team_name": team_data.get("team_name", "Legendary Team"),
+            "team_name": team_data.get(
+                "team_name",
+                "Legendary Team"),
             "achievement_date": datetime.now().isoformat(),
             "team_size": team_data["team_size"],
             "final_scores": asdict(metrics),
@@ -854,8 +875,12 @@ class TeamMaturityTracker:
                 "👑 Inducted into AI-First SDLC Hall of Fame",
             ],
             "legacy_impact": self._calculate_legacy_impact(team_data),
-            "mentorship_influence": team_data.get("teams_mentored", 0),
-            "community_contributions": team_data.get("external_contributions", 0),
+            "mentorship_influence": team_data.get(
+                "teams_mentored",
+                0),
+            "community_contributions": team_data.get(
+                "external_contributions",
+                0),
         }
 
     def _calculate_legacy_impact(self, team_data: Dict) -> str:
@@ -914,9 +939,8 @@ class TeamMaturityTracker:
                 text=True,
             )
             if result.returncode == 0:
-                names = (
-                    result.stdout.strip().split("\n") if result.stdout.strip() else []
-                )
+                names = (result.stdout.strip().split("\n")
+                         if result.stdout.strip() else [])
                 return list(set(names))  # Unique names
         except Exception:
             pass
@@ -1146,7 +1170,8 @@ class TeamMaturityTracker:
             )
 
             if result.returncode == 0 and result.stdout.strip():
-                timestamps = [int(ts) for ts in result.stdout.strip().split("\n")]
+                timestamps = [int(ts)
+                              for ts in result.stdout.strip().split("\n")]
 
                 if len(timestamps) < 2:
                     return 50  # Default for low activity
@@ -1240,7 +1265,8 @@ def assess(output, output_json):
         }
         output_text = json.dumps(result, indent=2)
     else:
-        output_text = tracker.generate_maturity_report(level, metrics, team_data)
+        output_text = tracker.generate_maturity_report(
+            level, metrics, team_data)
 
     if output:
         with open(output, "w") as f:
@@ -1262,7 +1288,8 @@ def hall_of_fame():
     # This would load and display hall of fame entries
     click.echo("🌟 Coming soon: Legendary teams who've reached the pinnacle!")
     click.echo("")
-    click.echo("Be the first to achieve legendary status and claim your place here!")
+    click.echo(
+        "Be the first to achieve legendary status and claim your place here!")
 
 
 @cli.command()

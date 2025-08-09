@@ -41,7 +41,10 @@ class TestAIFriendlyTemplates(unittest.TestCase):
         ]
 
         for section in required_sections:
-            self.assertIn(section, content, f"Missing critical section: {section}")
+            self.assertIn(
+                section,
+                content,
+                f"Missing critical section: {section}")
 
         # Check for mandatory workflow instructions
         mandatory_patterns = [
@@ -91,7 +94,10 @@ class TestAIFriendlyTemplates(unittest.TestCase):
         ]
 
         for pattern in general_patterns:
-            self.assertIn(pattern, content, f"Missing general AI pattern: {pattern}")
+            self.assertIn(
+                pattern,
+                content,
+                f"Missing general AI pattern: {pattern}")
 
     def test_framework_verification_tests_clarity(self) -> None:
         """Test that framework verification tests are clear about their purpose"""
@@ -138,7 +144,10 @@ class TestAIFriendlyTemplates(unittest.TestCase):
         ]
 
         for section in ai_sections:
-            self.assertIn(section, content, f"Missing AI-specific section: {section}")
+            self.assertIn(
+                section,
+                content,
+                f"Missing AI-specific section: {section}")
 
         # Should guide on what to document
         guidance_keywords = [
@@ -149,7 +158,10 @@ class TestAIFriendlyTemplates(unittest.TestCase):
         ]
 
         for keyword in guidance_keywords:
-            self.assertIn(keyword, content, f"Missing guidance keyword: {keyword}")
+            self.assertIn(
+                keyword,
+                content,
+                f"Missing guidance keyword: {keyword}")
 
     def test_feature_proposal_template_clarity(self) -> None:
         """Test feature proposal template is clear for AI agents"""
@@ -169,7 +181,10 @@ class TestAIFriendlyTemplates(unittest.TestCase):
         ]
 
         for element in structure_elements:
-            self.assertIn(element, content, f"Missing structure element: {element}")
+            self.assertIn(
+                element,
+                content,
+                f"Missing structure element: {element}")
 
         # Should have placeholders that are clear
         self.assertGreater(
@@ -200,7 +215,8 @@ class TestGeneratedFileAIFriendliness(unittest.TestCase):
     def test_generated_readme_structure(self) -> None:
         """Test that generated README guides AI agents properly"""
         # This would test actual generated README
-        # Key points: Links to CLAUDE.md, mentions AI-First SDLC, clear structure
+        # Key points: Links to CLAUDE.md, mentions AI-First SDLC, clear
+        # structure
 
     def test_generated_gitignore_completeness(self) -> None:
         """Test that generated .gitignore is comprehensive"""
@@ -255,7 +271,11 @@ def analyze_ai_friendliness_score():
         ai_tools = gitignore_dir / "ai-tools.gitignore"
         if ai_tools.exists():
             content = ai_tools.read_text()
-            if all(tool in content for tool in [".claude/", ".cursor/", ".aider"]):
+            if all(
+                tool in content for tool in [
+                    ".claude/",
+                    ".cursor/",
+                    ".aider"]):
                 scores["Context Preservation"] += 25
 
     # Analyze test templates

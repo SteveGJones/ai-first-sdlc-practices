@@ -4,6 +4,8 @@ A2A Communication System Demo
 Demonstrates the Billy Wright tactical formation in action
 """
 
+import click
+import importlib.util
 import sys
 import time
 from pathlib import Path
@@ -12,7 +14,6 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
 
 # Import with the correct module name (dash becomes underscore)
-import importlib.util
 
 spec = importlib.util.spec_from_file_location(
     "a2a_orchestrator", Path(__file__).parent / "a2a-orchestrator.py"
@@ -22,7 +23,6 @@ spec.loader.exec_module(a2a_module)
 
 A2AOrchestrator = a2a_module.A2AOrchestrator
 AgentMessage = a2a_module.AgentMessage
-import click
 
 
 def demo_feature_development():
@@ -193,8 +193,9 @@ def demo_communication_analysis():
 
     print("\n   Most Active Agents:")
     sorted_agents = sorted(
-        analysis["most_active_agents"].items(), key=lambda x: x[1], reverse=True
-    )
+        analysis["most_active_agents"].items(),
+        key=lambda x: x[1],
+        reverse=True)
     for agent, count in sorted_agents[:5]:
         print(f"     {agent}: {count} messages")
 

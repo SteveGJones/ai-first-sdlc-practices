@@ -49,7 +49,8 @@ def check_file_sizes() -> Tuple[List[str], int]:
             print(f"{status} {filename}: {lines}/{limit} lines")
 
             if lines > limit:
-                violations.append(f"{filename} exceeds limit by {lines - limit} lines")
+                violations.append(
+                    f"{filename} exceeds limit by {lines - limit} lines")
         else:
             print(f"⚠️  {filename}: NOT FOUND")
 

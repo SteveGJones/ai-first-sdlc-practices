@@ -132,7 +132,10 @@ class AgentMigrator:
             file_path=file_path,
         )
 
-    def _extract_section(self, content: str, section_type: str) -> Optional[str]:
+    def _extract_section(
+            self,
+            content: str,
+            section_type: str) -> Optional[str]:
         """Extract a specific section from content"""
 
         pattern = self.section_patterns.get(section_type)
@@ -213,8 +216,7 @@ class AgentMigrator:
         if not full_description:
             full_description = (
                 f"I am {agent.name.replace('_', ' ')}, "
-                "a specialist agent focused on delivering excellence in my domain."
-            )
+                "a specialist agent focused on delivering excellence in my domain.")
 
         # Build core competencies
         competencies = agent.capabilities
@@ -234,8 +236,9 @@ class AgentMigrator:
 
         # Generate examples
         examples = (
-            agent.existing_yaml.get("examples", []) if agent.existing_yaml else []
-        )
+            agent.existing_yaml.get(
+                "examples",
+                []) if agent.existing_yaml else [])
         if not examples:
             # Generate a basic example
             examples = [
@@ -244,13 +247,11 @@ class AgentMigrator:
                     "user": f"I need help with {agent.name.replace('_', ' ')} tasks",
                     "assistant": f"I'll help you with that using my {agent.name.replace('_', ' ')} expertise",
                     "commentary": f"Use this agent for {agent.name.replace('_', ' ')} related work",
-                }
-            ]
+                }]
 
         # Determine color
-        color = (
-            agent.existing_yaml.get("color", "blue") if agent.existing_yaml else "blue"
-        )
+        color = (agent.existing_yaml.get("color", "blue")
+                 if agent.existing_yaml else "blue")
 
         # Build the strict format template
         template = f"""---
@@ -316,7 +317,8 @@ Your core competencies include:"""
                 required_fields = ["name", "description", "examples", "color"]
                 for field in required_fields:
                     if field not in yaml_content:
-                        violations.append(f"Missing required YAML field: {field}")
+                        violations.append(
+                            f"Missing required YAML field: {field}")
             except yaml.YAMLError:
                 violations.append("Invalid YAML frontmatter")
 
@@ -374,7 +376,10 @@ Your core competencies include:"""
             )
 
         except Exception as e:
-            return MigrationResult(file_path=file_path, success=False, error=str(e))
+            return MigrationResult(
+                file_path=file_path,
+                success=False,
+                error=str(e))
 
     def migrate_all(self) -> Dict[str, any]:
         """Migrate all non-compliant files"""
@@ -386,9 +391,9 @@ Your core competencies include:"""
             if not full_path.exists():
                 results.append(
                     MigrationResult(
-                        file_path=file_path, success=False, error="File not found"
-                    )
-                )
+                        file_path=file_path,
+                        success=False,
+                        error="File not found"))
                 continue
 
             print(f"Migrating {file_path}...")
@@ -396,7 +401,8 @@ Your core competencies include:"""
             results.append(result)
 
             if result.success:
-                print(f"  ✅ Success - Fixed: {', '.join(result.violations_fixed)}")
+                print(
+                    f"  ✅ Success - Fixed: {', '.join(result.violations_fixed)}")
             else:
                 print(f"  ❌ Failed: {result.error}")
 

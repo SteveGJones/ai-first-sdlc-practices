@@ -356,7 +356,8 @@ def agents(scenario, answer):
         click.echo(f"❓ Answer these questions for scenario '{scenario}':")
         for q in unanswered:
             click.echo(f"   • {q}")
-        click.echo('\nExample: --answer "Is this a major architectural change?=yes"')
+        click.echo(
+            '\nExample: --answer "Is this a major architectural change?=yes"')
         return
 
     # Get agents
@@ -421,7 +422,8 @@ def sequence(current_scenario, next_scenario):
 
     # Show full sequence
     click.echo("\n📋 Complete agent sequence:")
-    all_agents = current_agents + [a for a in next_agents if a not in current_agents]
+    all_agents = current_agents + \
+        [a for a in next_agents if a not in current_agents]
     for i, agent in enumerate(all_agents, 1):
         if agent in current_agents and agent in next_agents:
             click.echo(f"   {i}. {agent} (both scenarios)")
