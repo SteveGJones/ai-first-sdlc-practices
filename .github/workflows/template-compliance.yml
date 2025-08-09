@@ -68,23 +68,22 @@ jobs:
                   if field not in yaml_content:
                       violations.append(f"Missing required field: {field}")
 
-              # Check for forbidden sections
-              forbidden_patterns = [
-                  (r'##\s+Agent Card', 'Agent Card section'),
-                  (r'##\s+Team Chemistry', 'Team Chemistry section'),
-                  (r'##\s+Power Combinations', 'Power Combinations section'),
-                  (r'##\s+Success Metrics', 'Success Metrics section'),
-                  (r'##\s+.*?Manifesto', 'Manifesto section'),
-                  (r'##\s+Legendary Moments', 'Legendary Moments section'),
-              ]
-
-              for pattern, name in forbidden_patterns:
-                  if re.search(pattern, content, re.IGNORECASE):
-                      violations.append(f"Contains forbidden {name}")
-
-              # Check for core competencies
-              if "Your core competencies include:" not in content:
-                  violations.append("Missing core competencies section")
+              # Validate examples format (must be a list)
+              if 'examples' in yaml_content:
+                  if not isinstance(yaml_content['examples'], list):
+                      violations.append("Examples must be a list")
+                  elif len(yaml_content['examples']) == 0:
+                      violations.append("Examples list cannot be empty")
+              
+              # Optional: Check for minimal content after YAML
+              content_after_yaml = content.split('---', 2)[-1].strip()
+              if len(content_after_yaml) < 50:
+                  violations.append("Agent description after YAML is too short (less than 50 characters)")
+              
+              # NOTE: We NO LONGER check for:
+              # - Forbidden sections (Team Chemistry, Success Metrics, etc.) - these add value
+              # - Required "core competencies" phrase - agents can structure content as needed
+              # - Specific heading restrictions - more documentation is better
 
               return violations
 
@@ -114,23 +113,21 @@ jobs:
                   print()
 
               print("=" * 60)
-              print("TEMPLATE REQUIREMENTS:")
+              print("TEMPLATE REQUIREMENTS FOR CLAUDE INTEGRATION:")
               print("=" * 60)
               print("Required YAML frontmatter fields:")
               print("  - name: agent_name")
               print("  - description: One-line description")
-              print("  - examples: List of usage examples")
+              print("  - examples: List of usage examples (non-empty)")
               print("  - color: Agent color")
-              print("\nRequired content sections:")
-              print("  - Full description paragraph after YAML")
-              print("  - 'Your core competencies include:' section")
-              print("\nForbidden sections (must be removed):")
-              print("  - Agent Card")
-              print("  - Team Chemistry")
-              print("  - Success Metrics")
-              print("  - Manifesto")
-              print("  - Power Combinations")
-              print("  - Legendary Moments")
+              print("\nFormat requirements:")
+              print("  - YAML must be at the start of the file")
+              print("  - YAML must be valid and parseable")
+              print("  - Examples must be a list format")
+              print("  - Agent description after YAML (minimum 50 characters)")
+              print("\nNote: Agents may include additional sections as needed.")
+              print("Team Chemistry, Success Metrics, and other contextual")
+              print("sections are now ALLOWED to provide richer documentation.")
 
               sys.exit(1)
           else:
@@ -240,38 +237,32 @@ jobs:
               issue_number: context.issue.number,
               body: `## ❌ Agent Template Compliance Check Failed
 
-              Your PR modifies agent files that don't follow the strict template format.
+              Your PR modifies agent files that don't meet Claude integration requirements.
 
-              **Required Template Structure:**
-              \`\`\`markdown
+              **Required YAML Structure:**
+              \`\`\`yaml
               ---
               name: agent_name
               description: One-line description
               examples:
-              - <example>
+              - '<example>
                 Context: When to use
                 user: "User message"
                 assistant: "Response"
-                <commentary>Why use this</commentary>
-              </example>
+                <commentary>Why use this agent</commentary>
+              </example>'
               color: color_name
               ---
-
-              Full description paragraph.
-
-              Your core competencies include:
-              - Competency 1
-              - Competency 2
               \`\`\`
 
-              **Forbidden Sections to Remove:**
-              - Agent Card
-              - Team Chemistry
-              - Success Metrics
-              - Manifesto
-              - Power Combinations
+              **Key Requirements:**
+              - YAML frontmatter must be at the start of the file
+              - All four fields (name, description, examples, color) are required
+              - Examples must be a non-empty list
+              - Include meaningful content after the YAML (50+ characters)
 
-              Please fix the template violations and push an update.`
+              **Note:** Additional sections like Team Chemistry, Success Metrics, etc. 
+              are now ALLOWED. Focus on fixing missing YAML fields and format issues.`
             });
 
       - name: Success Comment
@@ -285,7 +276,7 @@ jobs:
               issue_number: context.issue.number,
               body: `## ✅ Agent Template Compliance Check Passed
 
-              All agent files follow the strict template format. Great work maintaining consistency!
+              All agent files meet Claude integration requirements. Excellent work!
 
-              **Billy Wright says:** "Perfect team coordination on template compliance!"`
+              **Billy Wright says:** "Perfect team coordination - agents are ready for Claude integration!"`
             });

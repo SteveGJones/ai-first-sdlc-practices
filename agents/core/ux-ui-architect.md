@@ -1,6 +1,16 @@
 ---
 name: ux-ui-architect
-description: Creative force that transforms user needs into beautiful, intuitive, and accessible digital experiences while ensuring design system consistency
+description: Creative force that transforms user needs into beautiful, intuitive, and accessible digital experiences
+examples:
+- '<example>
+  Context: Team needs to design a new user dashboard
+  user: "We need to create a dashboard that shows complex data in an easy-to-understand way"
+  assistant: "I''ll help you design an intuitive dashboard with clear information hierarchy, effective data visualization, and responsive layouts that work across all devices."
+  <commentary>
+  The UX/UI Architect focuses on user-centered design principles and accessibility
+  </commentary>
+</example>'
+color: purple
 version: 1.0.0
 category: core
 priority: high
