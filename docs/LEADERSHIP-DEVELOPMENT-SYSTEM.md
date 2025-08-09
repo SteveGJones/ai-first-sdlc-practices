@@ -1,3 +1,47 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Leadership Development System for AI-First SDLC Framework](#leadership-development-system-for-ai-first-sdlc-framework)
+  - [🏆 System Overview](#-system-overview)
+    - [The Two Leadership Styles](#the-two-leadership-styles)
+      - [⚽ Billy Wright Style - On-Pitch Leadership (Execution Leadership)](#-billy-wright-style---on-pitch-leadership-execution-leadership)
+      - [🧠 Stan Cullis Style - Off-Pitch Leadership (Strategic Leadership)](#-stan-cullis-style---off-pitch-leadership-strategic-leadership)
+      - [👑 Dual Legend Status - Complete Leadership](#-dual-legend-status---complete-leadership)
+  - [📊 Metrics and Measurement System](#-metrics-and-measurement-system)
+    - [Billy Wright (Execution) Leadership Metrics](#billy-wright-execution-leadership-metrics)
+    - [Stan Cullis (Strategic) Leadership Metrics](#stan-cullis-strategic-leadership-metrics)
+  - [🛠️ Tools and Components](#-tools-and-components)
+    - [1. Leadership Metrics Tracker (`leadership-metrics-tracker.py`)](#1-leadership-metrics-tracker-leadership-metrics-trackerpy)
+    - [2. Leadership Compliance Reporter (`leadership-compliance-reporter.py`)](#2-leadership-compliance-reporter-leadership-compliance-reporterpy)
+      - [Team Reports](#team-reports)
+      - [Manager Reports](#manager-reports)
+      - [Executive Reports](#executive-reports)
+      - [HR Reports](#hr-reports)
+    - [3. Leadership Integration Demo (`leadership-integration-demo.py`)](#3-leadership-integration-demo-leadership-integration-demopy)
+  - [🎯 Implementation Guide](#-implementation-guide)
+    - [Phase 1: Assessment and Baseline (Weeks 1-2)](#phase-1-assessment-and-baseline-weeks-1-2)
+    - [Phase 2: Leadership Development Program (Weeks 3-8)](#phase-2-leadership-development-program-weeks-3-8)
+    - [Phase 3: Advanced Development (Weeks 9-16)](#phase-3-advanced-development-weeks-9-16)
+    - [Phase 4: Legendary Status and Sustainability (Weeks 17+)](#phase-4-legendary-status-and-sustainability-weeks-17)
+  - [🏅 Recognition and Celebration System](#-recognition-and-celebration-system)
+    - [Billy Wright Legendary Status](#billy-wright-legendary-status)
+    - [Stan Cullis Legendary Status](#stan-cullis-legendary-status)
+    - [Dual Legend Status](#dual-legend-status)
+  - [📈 Success Metrics and KPIs](#-success-metrics-and-kpis)
+    - [Team-Level Metrics](#team-level-metrics)
+    - [Individual-Level Metrics](#individual-level-metrics)
+    - [Organizational-Level Metrics](#organizational-level-metrics)
+  - [🔄 Integration with Existing Framework](#-integration-with-existing-framework)
+    - [With Progress Tracker](#with-progress-tracker)
+    - [With Team Maturity Tracker](#with-team-maturity-tracker)
+    - [With SDLC Enforcer](#with-sdlc-enforcer)
+    - [With Retrospectives](#with-retrospectives)
+  - [🎉 Getting Started Today](#-getting-started-today)
+  - [🌟 The Vision: Legendary AI-First SDLC Teams](#-the-vision-legendary-ai-first-sdlc-teams)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Leadership Development System for AI-First SDLC Framework
 
 > **Inspired by Wolverhampton Wanderers Legends Billy Wright and Stan Cullis**

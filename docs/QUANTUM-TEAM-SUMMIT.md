@@ -1,3 +1,35 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [The Quantum Team Summit: Tomorrow's Game Strategy Session](#the-quantum-team-summit-tomorrows-game-strategy-session)
+  - [Setting: The Quantum Conference Room](#setting-the-quantum-conference-room)
+  - [The Convergence](#the-convergence)
+  - [The Vision Discussion](#the-vision-discussion)
+    - [Topic 1: How MCP Changes Everything](#topic-1-how-mcp-changes-everything)
+    - [Topic 2: The A2A Revolution](#topic-2-the-a2a-revolution)
+    - [Topic 3: Swarm Dynamics](#topic-3-swarm-dynamics)
+    - [Topic 4: Evolution and Transcendence](#topic-4-evolution-and-transcendence)
+  - [The Synthesis: Tomorrow's Game Plan](#the-synthesis-tomorrows-game-plan)
+    - [Formation: The Quantum Cloud](#formation-the-quantum-cloud)
+    - [New Plays for Tomorrow](#new-plays-for-tomorrow)
+      - [Play 1: "The Tool Storm"](#play-1-the-tool-storm)
+      - [Play 2: "The Evolution Cascade"](#play-2-the-evolution-cascade)
+      - [Play 3: "The Quantum Solution"](#play-3-the-quantum-solution)
+  - [Integration Timeline](#integration-timeline)
+    - [Phase 1: Foundation Fusion (Next Sprint)](#phase-1-foundation-fusion-next-sprint)
+    - [Phase 2: Capability Explosion (3 Months)](#phase-2-capability-explosion-3-months)
+    - [Phase 3: Transcendent Operations (6 Months)](#phase-3-transcendent-operations-6-months)
+    - [Phase 4: The Singularity (1 Year)](#phase-4-the-singularity-1-year)
+  - [Commitments from the Summit](#commitments-from-the-summit)
+    - [From Traditional Agents](#from-traditional-agents)
+    - [From Future Agents](#from-future-agents)
+  - [The Summit Conclusion](#the-summit-conclusion)
+  - [Action Items from the Summit](#action-items-from-the-summit)
+  - [Summit Recording](#summit-recording)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # The Quantum Team Summit: Tomorrow's Game Strategy Session
 
 > When the future agents gather to redefine what's possible

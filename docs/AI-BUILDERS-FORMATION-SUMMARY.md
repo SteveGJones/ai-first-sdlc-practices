@@ -1,3 +1,25 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [The AI Builders Formation: Helping Teams BUILD Real AI Systems](#the-ai-builders-formation-helping-teams-build-real-ai-systems)
+  - [The Reality Check That Changed Everything](#the-reality-check-that-changed-everything)
+  - [The AI Builders 4-3-3 Formation](#the-ai-builders-4-3-3-formation)
+  - [What Each Position Actually HELPS BUILD](#what-each-position-actually-helps-build)
+    - [The Back Four - Foundation Builders](#the-back-four---foundation-builders)
+    - [The Midfield Three - Integration Builders](#the-midfield-three---integration-builders)
+    - [The Front Three - Delivery Builders](#the-front-three---delivery-builders)
+  - [Real Building Patterns](#real-building-patterns)
+    - [Building an MCP Server](#building-an-mcp-server)
+    - [Building a RAG Application](#building-a-rag-application)
+    - [Building Agent Orchestration](#building-agent-orchestration)
+    - [Building for Production](#building-for-production)
+  - [Why This Formation Works](#why-this-formation-works)
+  - [The Captain's Summary](#the-captains-summary)
+  - [Getting Started](#getting-started)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # The AI Builders Formation: Helping Teams BUILD Real AI Systems
 
 > "We don't play WITH the AI - we help teams BUILD the AI" - Billy Wright

@@ -1,3 +1,43 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Agent Context Coordination: Memory Patterns for Shared Claude Sessions](#agent-context-coordination-memory-patterns-for-shared-claude-sessions)
+  - [The Challenge: Shared Context, Specialized Knowledge](#the-challenge-shared-context-specialized-knowledge)
+  - [Memory Architecture for Agent Coordination](#memory-architecture-for-agent-coordination)
+    - [1. Contextual Memory Structures](#1-contextual-memory-structures)
+      - [Agent Memory Blocks](#agent-memory-blocks)
+      - [Multi-Agent Decision Log](#multi-agent-decision-log)
+    - [2. State Management Patterns](#2-state-management-patterns)
+      - [Conversation Anchors](#conversation-anchors)
+      - [Context Breadcrumbs](#context-breadcrumbs)
+    - [3. Knowledge Preservation Techniques](#3-knowledge-preservation-techniques)
+      - [Technical Decision Trees](#technical-decision-trees)
+      - [Expertise Tagging System](#expertise-tagging-system)
+    - [4. Collaborative Memory Patterns](#4-collaborative-memory-patterns)
+      - [Agent Status Board](#agent-status-board)
+      - [Insight Preservation Chain](#insight-preservation-chain)
+    - [5. Handoff Coordination Patterns](#5-handoff-coordination-patterns)
+      - [Structured Agent Transitions](#structured-agent-transitions)
+      - [Context Validation Checkpoints](#context-validation-checkpoints)
+  - [6. Practical Implementation Guidelines](#6-practical-implementation-guidelines)
+    - [For AI Agents Working in Shared Context](#for-ai-agents-working-in-shared-context)
+      - [When Starting Work as a Specialist](#when-starting-work-as-a-specialist)
+      - [During Active Work](#during-active-work)
+      - [When Handing Off](#when-handing-off)
+      - [Example Agent Memory Update](#example-agent-memory-update)
+    - [For Teams Using This System](#for-teams-using-this-system)
+      - [Setup Commands](#setup-commands)
+      - [Monitoring Agent Context Health](#monitoring-agent-context-health)
+  - [Context Engineering Best Practices](#context-engineering-best-practices)
+    - [Memory Hierarchy Design](#memory-hierarchy-design)
+    - [Token Budget Management](#token-budget-management)
+    - [State Consistency Patterns](#state-consistency-patterns)
+    - [Retrieval Optimization](#retrieval-optimization)
+  - [Tool Integration](#tool-integration)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Agent Context Coordination: Memory Patterns for Shared Claude Sessions
 
 > **Context Engineer's Guide to Agent Memory Coordination**  

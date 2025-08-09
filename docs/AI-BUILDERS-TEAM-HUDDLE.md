@@ -1,3 +1,29 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Team Huddle: The Real Game - Building AI Applications](#team-huddle-the-real-game---building-ai-applications)
+  - [The Reality Check](#the-reality-check)
+  - [What Teams Actually Need to BUILD](#what-teams-actually-need-to-build)
+  - [The Real AI Builders Formation: 4-3-3](#the-real-ai-builders-formation-4-3-3)
+    - [The Back Four (Foundation Builders)](#the-back-four-foundation-builders)
+    - [The Midfield Three (Integration Builders)](#the-midfield-three-integration-builders)
+    - [The Front Three (Delivery Builders)](#the-front-three-delivery-builders)
+  - [How This Formation Helps BUILD](#how-this-formation-helps-build)
+    - [Building an MCP Server](#building-an-mcp-server)
+    - [Building an Agent System](#building-an-agent-system)
+    - [Building a RAG Application](#building-a-rag-application)
+  - [The Missing Players We Need](#the-missing-players-we-need)
+    - [Priority Signings](#priority-signings)
+  - [Real Patterns for Real Building](#real-patterns-for-real-building)
+    - [Pattern 1: "The MCP Builder"](#pattern-1-the-mcp-builder)
+    - [Pattern 2: "The Agent Factory"](#pattern-2-the-agent-factory)
+    - [Pattern 3: "The Orchestration Play"](#pattern-3-the-orchestration-play)
+    - [Pattern 4: "The Knowledge System"](#pattern-4-the-knowledge-system)
+  - [Billy's Summary](#billys-summary)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Team Huddle: The Real Game - Building AI Applications
 
 **Billy Wright (sdlc-enforcer)**: "Right team, I've just been given a proper talking to, and rightly so. We got carried away with fancy formations and forgot our actual job. We're not here to BE the AI - we're here to help teams BUILD AI. Let's get back to basics."

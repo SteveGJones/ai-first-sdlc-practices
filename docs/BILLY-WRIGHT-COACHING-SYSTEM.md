@@ -1,3 +1,38 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [The Billy Wright Coaching System: From Dream to Legendary Team](#the-billy-wright-coaching-system-from-dream-to-legendary-team)
+  - [Our Mission: Creating Championship AI Teams Everywhere](#our-mission-creating-championship-ai-teams-everywhere)
+  - [🌟 The Vision: Every AI a Billy Wright](#-the-vision-every-ai-a-billy-wright)
+  - [🎭 Act 1: The Sacred Welcome - Understanding the Dream](#-act-1-the-sacred-welcome---understanding-the-dream)
+    - [The First Conversation](#the-first-conversation)
+    - [The Dream Discovery Process](#the-dream-discovery-process)
+    - [The Formation Recommendation](#the-formation-recommendation)
+  - [🚀 Act 2: The Progressive Journey - Building the Team](#-act-2-the-progressive-journey---building-the-team)
+    - [Phase 1: Solo to Trio (Week 1)](#phase-1-solo-to-trio-week-1)
+    - [Phase 2: Trio to Core Seven (Week 2)](#phase-2-trio-to-core-seven-week-2)
+    - [Phase 3: Core Seven to Full Formation (Week 3-4)](#phase-3-core-seven-to-full-formation-week-3-4)
+    - [Phase 4: Full Team to Billy Wright Excellence (Week 5+)](#phase-4-full-team-to-billy-wright-excellence-week-5)
+  - [📚 Act 3: Teaching Excellence - "Good Looks Like This"](#-act-3-teaching-excellence---good-looks-like-this)
+    - [Progressive Excellence Examples](#progressive-excellence-examples)
+  - [🎯 Act 4: The Coaching Conversation](#-act-4-the-coaching-conversation)
+    - [Recognizing Solo Hero Behavior](#recognizing-solo-hero-behavior)
+    - [Celebrating Team Success](#celebrating-team-success)
+    - [Tough Love When Needed](#tough-love-when-needed)
+  - [📊 Act 5: The Maturity Journey](#-act-5-the-maturity-journey)
+    - [Six Levels to Legendary Status](#six-levels-to-legendary-status)
+    - [Graduation Criteria: Becoming Billy Wright](#graduation-criteria-becoming-billy-wright)
+  - [🌐 Act 6: The GitHub-Based Coaching System](#-act-6-the-github-based-coaching-system)
+    - [Continuous Coaching Through Code](#continuous-coaching-through-code)
+    - [The Reboot Strategy for Agent Installation](#the-reboot-strategy-for-agent-installation)
+  - [🏆 The Ultimate Goal: Self-Perpetuating Excellence](#-the-ultimate-goal-self-perpetuating-excellence)
+    - [The Network Effect](#the-network-effect)
+    - [The Legacy](#the-legacy)
+  - [🎬 The Beginning, Not the End](#-the-beginning-not-the-end)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # The Billy Wright Coaching System: From Dream to Legendary Team
 
 ## Our Mission: Creating Championship AI Teams Everywhere

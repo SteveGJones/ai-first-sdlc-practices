@@ -1,3 +1,34 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Leadership Development System - Implementation Summary](#leadership-development-system---implementation-summary)
+  - [🏆 What We've Built](#-what-weve-built)
+    - [⚽ Billy Wright Style - On-Pitch Leadership (Execution Leadership)](#-billy-wright-style---on-pitch-leadership-execution-leadership)
+    - [🧠 Stan Cullis Style - Off-Pitch Leadership (Strategic Leadership)](#-stan-cullis-style---off-pitch-leadership-strategic-leadership)
+    - [👑 Dual Legend Status - Complete Leadership](#-dual-legend-status---complete-leadership)
+  - [🛠️ Tools Created](#-tools-created)
+    - [1. Leadership Metrics Tracker (`leadership-metrics-tracker.py`)](#1-leadership-metrics-tracker-leadership-metrics-trackerpy)
+    - [2. Leadership Compliance Reporter (`leadership-compliance-reporter.py`)](#2-leadership-compliance-reporter-leadership-compliance-reporterpy)
+    - [3. Integration Demonstrations (`leadership-integration-demo.py`)](#3-integration-demonstrations-leadership-integration-demopy)
+  - [📊 How It Identifies Emerging Leaders](#-how-it-identifies-emerging-leaders)
+    - [Billy Wright Leaders Identified Through:](#billy-wright-leaders-identified-through)
+    - [Stan Cullis Leaders Identified Through:](#stan-cullis-leaders-identified-through)
+    - [Dual Legend Development Through:](#dual-legend-development-through)
+  - [🎯 Sample Results From Our Demo](#-sample-results-from-our-demo)
+    - [Team Leadership Landscape:](#team-leadership-landscape)
+    - [Team Metrics:](#team-metrics)
+  - [🎉 Celebrations and Recognition System](#-celebrations-and-recognition-system)
+    - [Billy Wright Legendary Status (85+ average)](#billy-wright-legendary-status-85-average)
+    - [Stan Cullis Legendary Status (85+ average)](#stan-cullis-legendary-status-85-average)
+    - [Dual Legend Status (90+ dual average, 85+ both styles)](#dual-legend-status-90-dual-average-85-both-styles)
+  - [🚀 Getting Started](#-getting-started)
+  - [📈 Integration with Existing Framework](#-integration-with-existing-framework)
+  - [🌟 The Vision Realized](#-the-vision-realized)
+  - [📁 Files Created](#-files-created)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Leadership Development System - Implementation Summary
 
 ## 🏆 What We've Built

@@ -1,3 +1,32 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Collaborative Memory Structures for AI Agent Teams](#collaborative-memory-structures-for-ai-agent-teams)
+  - [The Collaboration Challenge in Shared Context](#the-collaboration-challenge-in-shared-context)
+  - [Memory Architecture for Collaborative Intelligence](#memory-architecture-for-collaborative-intelligence)
+    - [1. Layered Memory Structure](#1-layered-memory-structure)
+      - [Layer 1: Session Context (Ephemeral)](#layer-1-session-context-ephemeral)
+      - [Layer 2: Agent Expertise Domains (Persistent)](#layer-2-agent-expertise-domains-persistent)
+      - [Layer 3: Collaborative Intelligence (Shared)](#layer-3-collaborative-intelligence-shared)
+    - [2. Knowledge Building Patterns](#2-knowledge-building-patterns)
+      - [Progressive Expertise Building](#progressive-expertise-building)
+      - [Cross-Agent Validation Chains](#cross-agent-validation-chains)
+    - [3. Collaborative Decision Structures](#3-collaborative-decision-structures)
+      - [Multi-Perspective Decision Matrix](#multi-perspective-decision-matrix)
+      - [Expertise Synthesis Pattern](#expertise-synthesis-pattern)
+    - [4. Memory Maintenance Patterns](#4-memory-maintenance-patterns)
+      - [Knowledge Freshness Tracking](#knowledge-freshness-tracking)
+      - [Collaborative Memory Cleanup](#collaborative-memory-cleanup)
+    - [5. Collaboration Quality Metrics](#5-collaboration-quality-metrics)
+      - [Memory Structure Health Assessment](#memory-structure-health-assessment)
+      - [Collaborative Intelligence Indicators](#collaborative-intelligence-indicators)
+  - [Implementation Guidelines](#implementation-guidelines)
+    - [For AI Development Teams](#for-ai-development-teams)
+    - [For Context Engineers](#for-context-engineers)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Collaborative Memory Structures for AI Agent Teams
 
 > **Memory architectures that enable effective collaboration in shared Claude context**  

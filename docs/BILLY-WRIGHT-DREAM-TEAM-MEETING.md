@@ -1,3 +1,25 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Billy Wright Dream Team - Full Team Meeting](#billy-wright-dream-team---full-team-meeting)
+  - [Meeting: Designing the Ultimate E-Commerce Platform](#meeting-designing-the-ultimate-e-commerce-platform)
+  - [Team Assembly](#team-assembly)
+    - [The Starting XI Present:](#the-starting-xi-present)
+  - [The Tactical Discussion](#the-tactical-discussion)
+    - [Opening: Setting the Vision](#opening-setting-the-vision)
+    - [The Defensive Foundation](#the-defensive-foundation)
+    - [The Midfield Engine](#the-midfield-engine)
+    - [The Strike Force](#the-strike-force)
+  - [The Team Combinations in Action](#the-team-combinations-in-action)
+    - [The "Tiki-Taka" Data Flow](#the-tiki-taka-data-flow)
+    - [The "Catenaccio" Security Wall](#the-catenaccio-security-wall)
+    - [The "Total Football" Scalability](#the-total-football-scalability)
+  - [The Captain's Summary](#the-captains-summary)
+  - [Next Steps from the Team Meeting](#next-steps-from-the-team-meeting)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Billy Wright Dream Team - Full Team Meeting
 
 > The legendary captain calls his team together for their first full tactical session

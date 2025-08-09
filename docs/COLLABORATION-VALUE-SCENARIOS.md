@@ -1,3 +1,43 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Collaboration Value Scenarios: Proven Team Patterns](#collaboration-value-scenarios-proven-team-patterns)
+  - [Executive Summary](#executive-summary)
+  - [Scenario 1: 3-Tier Python Applications](#scenario-1-3-tier-python-applications)
+    - [The Challenge](#the-challenge)
+    - [Billy Wright Formation (4-3-3)](#billy-wright-formation-4-3-3)
+    - [Collaboration Pattern](#collaboration-pattern)
+    - [Measurable Improvements](#measurable-improvements)
+    - [ROI Calculation](#roi-calculation)
+  - [Scenario 2: Building MCP Servers](#scenario-2-building-mcp-servers)
+    - [The Challenge](#the-challenge-1)
+    - [Critical Collaboration Points](#critical-collaboration-points)
+    - [Collaboration Workflow](#collaboration-workflow)
+    - [Quality Improvements](#quality-improvements)
+  - [Scenario 3: Building AI Agents](#scenario-3-building-ai-agents)
+    - [The Challenge](#the-challenge-2)
+    - [Agent Development Lifecycle](#agent-development-lifecycle)
+    - [Collaboration Benefits](#collaboration-benefits)
+    - [Measurable Results](#measurable-results)
+  - [Scenario 4: Architecture & Design Tools](#scenario-4-architecture--design-tools)
+    - [The Challenge](#the-challenge-3)
+    - [Multi-Agent Contribution Matrix](#multi-agent-contribution-matrix)
+    - [Collaboration Implementation](#collaboration-implementation)
+    - [Value Metrics](#value-metrics)
+  - [Collaboration ROI Summary](#collaboration-roi-summary)
+    - [Overall Benefits Across All Scenarios](#overall-benefits-across-all-scenarios)
+  - [Implementation Guide](#implementation-guide)
+    - [Starting Small: The Minimum Viable Team](#starting-small-the-minimum-viable-team)
+      - [Python 3-Tier: Essential Trio](#python-3-tier-essential-trio)
+      - [MCP Server: Security First](#mcp-server-security-first)
+      - [Agent Building: Quality Core](#agent-building-quality-core)
+      - [Architecture Tools: Validation Focus](#architecture-tools-validation-focus)
+    - [Scaling Up: Adding Specialists](#scaling-up-adding-specialists)
+  - [Conclusion](#conclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Collaboration Value Scenarios: Proven Team Patterns
 
 ## Executive Summary

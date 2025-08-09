@@ -1,3 +1,31 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [A2A Tactical Team Discussion](#a2a-tactical-team-discussion)
+  - [Agent-to-Agent Communication Protocol for Team Synergy](#agent-to-agent-communication-protocol-for-team-synergy)
+  - [Team Formation Analysis](#team-formation-analysis)
+  - [🎤 TEAM DISCUSSION: "What's Your Game?"](#-team-discussion-whats-your-game)
+    - [🥅 **GOALKEEPERS** - Last Line of Defense](#-goalkeepers---last-line-of-defense)
+    - [📋 **DEFENSIVE LINE** - Foundation Builders](#-defensive-line---foundation-builders)
+    - [⚡ **MIDFIELD ENGINE** - The Orchestrators](#-midfield-engine---the-orchestrators)
+    - [🎯 **PLAYMAKERS** - Creative Forces](#-playmakers---creative-forces)
+    - [🏆 **OUTCOME STRIKERS** - Results Deliverers](#-outcome-strikers---results-deliverers)
+    - [🔧 **SPECIALIZED UNITS** - Domain Experts](#-specialized-units---domain-experts)
+  - [🏈 **TACTICAL INSIGHTS FROM THE TEAM**](#-tactical-insights-from-the-team)
+    - [**Key Passing Patterns Identified:**](#key-passing-patterns-identified)
+    - [**Communication Gaps Identified:**](#communication-gaps-identified)
+    - [**Team Formation Strengths:**](#team-formation-strengths)
+  - [📋 **A2A COMMUNICATION PROTOCOL RECOMMENDATIONS**](#-a2a-communication-protocol-recommendations)
+    - [**1. Structured Communication Channels**](#1-structured-communication-channels)
+    - [**2. Message Passing Standards**](#2-message-passing-standards)
+    - [**3. Coordination Protocols**](#3-coordination-protocols)
+  - [🎯 **THE BILLY WRIGHT VISION**](#-the-billy-wright-vision)
+    - [**Our Team Principles:**](#our-team-principles)
+    - [**Success Metrics:**](#success-metrics)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # A2A Tactical Team Discussion
 ## Agent-to-Agent Communication Protocol for Team Synergy
 

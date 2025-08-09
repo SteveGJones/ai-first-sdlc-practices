@@ -1,3 +1,47 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Team Orchestration Quick Start Guide](#team-orchestration-quick-start-guide)
+  - [Overview](#overview)
+  - [Step 1: Discover Your Team (5 minutes)](#step-1-discover-your-team-5-minutes)
+  - [Step 2: Validate Team Readiness (3 minutes)](#step-2-validate-team-readiness-3-minutes)
+  - [Step 3: Build Team Chemistry (7 minutes)](#step-3-build-team-chemistry-7-minutes)
+  - [Step 4: Monitor Team Performance (Ongoing)](#step-4-monitor-team-performance-ongoing)
+  - [Formation Quick Reference](#formation-quick-reference)
+    - [🏗️ The Builder (3-3-2)](#-the-builder-3-3-2)
+    - [🎯 The Specialist (4-3-2)](#-the-specialist-4-3-2)
+    - [🚀 The Innovator (4-4-2)](#-the-innovator-4-4-2)
+    - [⚡ The Transformer (3-5-2)](#-the-transformer-3-5-2)
+    - [🎪 The Orchestrator (4-4-2-1)](#-the-orchestrator-4-4-2-1)
+  - [Readiness Checklist](#readiness-checklist)
+    - [✅ Foundation Ready (Required for all formations)](#-foundation-ready-required-for-all-formations)
+    - [✅ Formation Ready (Formation-specific)](#-formation-ready-formation-specific)
+    - [✅ Production Ready (Ready to build complex features)](#-production-ready-ready-to-build-complex-features)
+  - [Common Workflows](#common-workflows)
+    - [Starting a New Project](#starting-a-new-project)
+    - [Optimizing Existing Team](#optimizing-existing-team)
+    - [Evolving Formation (Project Growth)](#evolving-formation-project-growth)
+  - [Troubleshooting](#troubleshooting)
+    - ["Team Not Ready" - Low Readiness Score](#team-not-ready---low-readiness-score)
+    - ["Poor Team Chemistry" - Low Chemistry Score](#poor-team-chemistry---low-chemistry-score)
+    - ["Wrong Formation" - Team Struggles with Project Complexity](#wrong-formation---team-struggles-with-project-complexity)
+    - [Agents Conflicting or Duplicating Work](#agents-conflicting-or-duplicating-work)
+  - [Advanced Usage](#advanced-usage)
+    - [Custom Formation Creation](#custom-formation-creation)
+    - [Multi-Project Team Management](#multi-project-team-management)
+    - [Formation Evolution Patterns](#formation-evolution-patterns)
+  - [Success Metrics](#success-metrics)
+    - [Team Performance Indicators](#team-performance-indicators)
+    - [Chemistry Health Indicators](#chemistry-health-indicators)
+  - [Getting Help](#getting-help)
+    - [Built-in Help](#built-in-help)
+    - [Documentation](#documentation)
+    - [Community Resources](#community-resources)
+  - [Quick Success Formula](#quick-success-formula)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Team Orchestration Quick Start Guide
 
 > **From Zero to Perfect Team Formation in 15 Minutes**

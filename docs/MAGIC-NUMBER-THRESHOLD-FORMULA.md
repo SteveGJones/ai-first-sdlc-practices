@@ -1,3 +1,25 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Magic Number Threshold Formula](#magic-number-threshold-formula)
+  - [Executive Summary](#executive-summary)
+  - [The Formula](#the-formula)
+  - [Mathematical Justification](#mathematical-justification)
+    - [Base Rate (R = 0.11)](#base-rate-r--011)
+    - [Complexity Factor (C)](#complexity-factor-c)
+    - [Maturity Factor (M)](#maturity-factor-m)
+  - [Example Calculation](#example-calculation)
+  - [Implementation](#implementation)
+    - [Automated Calculation](#automated-calculation)
+    - [CI/CD Integration](#cicd-integration)
+  - [Benefits](#benefits)
+  - [Periodic Review](#periodic-review)
+  - [Migration Guide](#migration-guide)
+  - [References](#references)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Magic Number Threshold Formula
 
 ## Executive Summary

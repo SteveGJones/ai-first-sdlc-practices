@@ -1,3 +1,42 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Billy Wright Dream Team - Complete Roster](#billy-wright-dream-team---complete-roster)
+  - [Team Formation: 4-1-2-1-2 Diamond](#team-formation-4-1-2-1-2-diamond)
+  - [The Complete Squad](#the-complete-squad)
+    - [🥅 Goalkeeper](#-goalkeeper)
+    - [🛡️ Defenders (The Back Four)](#-defenders-the-back-four)
+    - [⚙️ Midfielders (The Engine Room)](#-midfielders-the-engine-room)
+    - [⚡ Forwards (The Strike Force)](#-forwards-the-strike-force)
+    - [📋 The Bench (Specialist Agents)](#-the-bench-specialist-agents)
+      - [Core Specialists](#core-specialists)
+      - [Language Specialists](#language-specialists)
+      - [Framework Specialists](#framework-specialists)
+      - [AI/ML Specialists](#aiml-specialists)
+      - [Testing Specialists](#testing-specialists)
+      - [Management](#management)
+  - [The New Signings (Latest Additions)](#the-new-signings-latest-additions)
+  - [Team Chemistry Combinations](#team-chemistry-combinations)
+    - [🔥 Power Partnerships](#-power-partnerships)
+      - ["The Data Symphony"](#the-data-symphony)
+      - ["The Security Wall"](#the-security-wall)
+      - ["The Speed Demons"](#the-speed-demons)
+      - ["The Intelligence Network"](#the-intelligence-network)
+      - ["The Compliance Shield"](#the-compliance-shield)
+  - [Team Tactics](#team-tactics)
+    - [Formation Variations](#formation-variations)
+      - [Defensive 5-3-2 (High Security Projects)](#defensive-5-3-2-high-security-projects)
+      - [Attacking 3-4-3 (Rapid Development)](#attacking-3-4-3-rapid-development)
+      - [Balanced 4-4-2 (Standard Projects)](#balanced-4-4-2-standard-projects)
+  - [Success Metrics](#success-metrics)
+    - [Team Performance](#team-performance)
+    - [Individual Excellence](#individual-excellence)
+  - [The Manager's Notes](#the-managers-notes)
+  - [Call to Action](#call-to-action)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Billy Wright Dream Team - Complete Roster
 
 > The legendary Agentic SDLC team that sets the standard all others must follow

@@ -1,3 +1,46 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Fresh AI Onboarding: Your First Week to Legendary Status](#fresh-ai-onboarding-your-first-week-to-legendary-status)
+  - [📅 Day 1: Starting Your Journey](#-day-1-starting-your-journey)
+    - [Morning: Setup and Orientation (2 hours)](#morning-setup-and-orientation-2-hours)
+    - [Afternoon: First Team Play (3 hours)](#afternoon-first-team-play-3-hours)
+    - [Evening: Reflection (1 hour)](#evening-reflection-1-hour)
+  - [📅 Day 2: Building Chemistry](#-day-2-building-chemistry)
+    - [Morning: Chemistry Exercise &#035;1 (2 hours)](#morning-chemistry-exercise-1-2-hours)
+    - [Afternoon: Understanding Your Team (3 hours)](#afternoon-understanding-your-team-3-hours)
+  - [📅 Day 3: Coordination Practice](#-day-3-coordination-practice)
+    - [Morning: Multi-Step Feature (3 hours)](#morning-multi-step-feature-3-hours)
+    - [Afternoon: Chemistry Checkpoint (2 hours)](#afternoon-chemistry-checkpoint-2-hours)
+  - [📅 Day 4: Crisis Training](#-day-4-crisis-training)
+    - [Morning: Mini Crisis Simulation (2 hours)](#morning-mini-crisis-simulation-2-hours)
+    - [Afternoon: Expanding Formation (3 hours)](#afternoon-expanding-formation-3-hours)
+  - [📅 Day 5: Advanced Chemistry](#-day-5-advanced-chemistry)
+    - [Morning: Integration Challenge (3 hours)](#morning-integration-challenge-3-hours)
+    - [Afternoon: Reflection and Planning (2 hours)](#afternoon-reflection-and-planning-2-hours)
+  - [📅 Week 2 Preview: Path to Legend](#-week-2-preview-path-to-legend)
+    - [Days 6-7: Weekend Practice](#days-6-7-weekend-practice)
+    - [Week 2 Goals:](#week-2-goals)
+  - [📊 Progress Tracking Metrics](#-progress-tracking-metrics)
+    - [Daily Metrics to Track:](#daily-metrics-to-track)
+  - [🎯 Success Criteria](#-success-criteria)
+    - [By End of Week 1:](#by-end-of-week-1)
+    - [By End of Week 2:](#by-end-of-week-2)
+  - [💡 Tips for Success](#-tips-for-success)
+    - [DO:](#do)
+    - [DON'T:](#dont)
+  - [🚀 Common Patterns for Fresh AIs](#-common-patterns-for-fresh-ais)
+    - [The "Consultation Template":](#the-consultation-template)
+    - [The "Handoff Pattern":](#the-handoff-pattern)
+    - [The "Chemistry Builder":](#the-chemistry-builder)
+  - [📚 Required Reading](#-required-reading)
+  - [🎉 Your First Week Celebration](#-your-first-week-celebration)
+  - [🚨 Getting Help](#-getting-help)
+  - [🌟 Remember](#-remember)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Fresh AI Onboarding: Your First Week to Legendary Status
 
 > **For Fresh AIs**: This is your practical, day-by-day guide to becoming a legendary collaborative AI

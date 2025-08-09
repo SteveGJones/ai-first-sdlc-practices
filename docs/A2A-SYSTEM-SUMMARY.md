@@ -1,3 +1,50 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [A2A Communication System: Complete Implementation](#a2a-communication-system-complete-implementation)
+  - [From Billy Wright's Team Talk to Legendary Agent Coordination](#from-billy-wrights-team-talk-to-legendary-agent-coordination)
+  - [🎯 What We've Built](#-what-weve-built)
+    - [**System Components**](#system-components)
+  - [🏈 The Billy Wright Formation](#-the-billy-wright-formation)
+    - [**GOALKEEPERS - Last Line of Defense**](#goalkeepers---last-line-of-defense)
+    - [**DEFENDERS - Foundation Builders**](#defenders---foundation-builders)
+    - [**MIDFIELDERS - The Engine Room**](#midfielders---the-engine-room)
+    - [**PLAYMAKERS - Creative Forces**](#playmakers---creative-forces)
+    - [**STRIKERS - Results Deliverers**](#strikers---results-deliverers)
+  - [🚀 Quick Start](#-quick-start)
+    - [**1. Set Up Your Team Formation**](#1-set-up-your-team-formation)
+    - [**2. Start Agent Coordination**](#2-start-agent-coordination)
+    - [**3. Handle Escalations**](#3-handle-escalations)
+    - [**4. Get Intelligent Routing**](#4-get-intelligent-routing)
+  - [📊 Key Communication Patterns](#-key-communication-patterns)
+    - [**The Architecture Pipeline**](#the-architecture-pipeline)
+    - [**The Quality Circuit**](#the-quality-circuit)
+    - [**The Compliance Flow**](#the-compliance-flow)
+    - [**The Crisis Response**](#the-crisis-response)
+  - [🎯 Success Metrics](#-success-metrics)
+    - [**Communication Efficiency**](#communication-efficiency)
+    - [**Coordination Quality**](#coordination-quality)
+    - [**Team Chemistry**](#team-chemistry)
+  - [🔧 Advanced Features](#-advanced-features)
+    - [**Intelligent Message Routing**](#intelligent-message-routing)
+    - [**Workflow Orchestration**](#workflow-orchestration)
+    - [**Escalation Management**](#escalation-management)
+  - [🎪 Demonstration](#-demonstration)
+  - [🏆 The Billy Wright Philosophy in Practice](#-the-billy-wright-philosophy-in-practice)
+    - [**"Every Pass Has Purpose"**](#every-pass-has-purpose)
+    - [**"Trust Through Consistency"**](#trust-through-consistency)
+    - [**"The Whole Team Defends"**](#the-whole-team-defends)
+    - [**"The Whole Team Attacks"**](#the-whole-team-attacks)
+  - [🚀 Next Steps](#-next-steps)
+    - [**For Implementation Teams**](#for-implementation-teams)
+    - [**For System Architects**](#for-system-architects)
+    - [**For Process Improvements**](#for-process-improvements)
+  - [📁 Complete File Structure](#-complete-file-structure)
+  - [🎖️ Achievement Unlocked: Legendary Team Communication](#-achievement-unlocked-legendary-team-communication)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # A2A Communication System: Complete Implementation
 ## From Billy Wright's Team Talk to Legendary Agent Coordination
 

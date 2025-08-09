@@ -1,3 +1,36 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [🎯 Compliance Reporting System - Implementation Summary](#-compliance-reporting-system---implementation-summary)
+  - [🏗️ What Was Built](#-what-was-built)
+    - [1. Team Maturity Tracker (`tools/automation/team-maturity-tracker.py`)](#1-team-maturity-tracker-toolsautomationteam-maturity-trackerpy)
+    - [2. Hall of Fame Manager (`tools/automation/hall-of-fame-manager.py`)](#2-hall-of-fame-manager-toolsautomationhall-of-fame-managerpy)
+    - [3. Dashboard Generator (`tools/automation/dashboard-generator.py`)](#3-dashboard-generator-toolsautomationdashboard-generatorpy)
+    - [4. Report Template (`templates/team-progress-report.md`)](#4-report-template-templatesteam-progress-reportmd)
+    - [5. Comprehensive Documentation (`docs/TEAM-MATURITY-SYSTEM.md`)](#5-comprehensive-documentation-docsteam-maturity-systemmd)
+  - [🎯 Key Design Principles](#-key-design-principles)
+    - [1. Inspiring, Not Bureaucratic](#1-inspiring-not-bureaucratic)
+    - [2. Real Metrics vs Theater](#2-real-metrics-vs-theater)
+    - [3. Clear Progression Path](#3-clear-progression-path)
+    - [4. Meaningful Celebrations](#4-meaningful-celebrations)
+  - [📊 The 8 Excellence Dimensions](#-the-8-excellence-dimensions)
+  - [🎉 Celebration and Recognition System](#-celebration-and-recognition-system)
+    - [Level Advancement Rewards](#level-advancement-rewards)
+    - [Hall of Fame Categories](#hall-of-fame-categories)
+  - [🚀 Getting Started](#-getting-started)
+    - [For Teams](#for-teams)
+    - [For Organizations](#for-organizations)
+  - [💡 Success Metrics](#-success-metrics)
+    - [Team Level](#team-level)
+    - [Organizational Level](#organizational-level)
+    - [Industry Level](#industry-level)
+  - [🔮 Future Enhancements](#-future-enhancements)
+    - [Planned Features](#planned-features)
+    - [Research Areas](#research-areas)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # 🎯 Compliance Reporting System - Implementation Summary
 
 **Created**: Team maturity tracking and compliance reporting system that measures **real teamwork vs theater** through meaningful metrics and inspiring progression.

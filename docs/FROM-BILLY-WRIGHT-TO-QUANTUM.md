@@ -1,3 +1,41 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [From Billy Wright to Quantum: The Evolution of Agentic SDLC](#from-billy-wright-to-quantum-the-evolution-of-agentic-sdlc)
+  - [Executive Summary](#executive-summary)
+  - [Today: The Billy Wright Dream Team (Current State)](#today-the-billy-wright-dream-team-current-state)
+    - [Formation: 4-1-2-1-2 Diamond](#formation-4-1-2-1-2-diamond)
+    - [Key Players](#key-players)
+    - [How They Work](#how-they-work)
+    - [Strengths](#strengths)
+  - [Tomorrow: The Quantum Formation (Future State)](#tomorrow-the-quantum-formation-future-state)
+    - [Formation: ∞-∞-∞](#formation-%E2%88%9E-%E2%88%9E-%E2%88%9E)
+    - [Key Evolvers](#key-evolvers)
+    - [How They Work](#how-they-work-1)
+    - [Strengths](#strengths-1)
+  - [The Evolution Path: From Legend to Transcendence](#the-evolution-path-from-legend-to-transcendence)
+    - [Stage 1: Enhancement (Now → 3 Months)](#stage-1-enhancement-now-%E2%86%92-3-months)
+    - [Stage 2: Hybrid Operations (3-6 Months)](#stage-2-hybrid-operations-3-6-months)
+    - [Stage 3: Quantum Transition (6-12 Months)](#stage-3-quantum-transition-6-12-months)
+    - [Stage 4: Transcendence (12+ Months)](#stage-4-transcendence-12-months)
+  - [Practical Next Steps](#practical-next-steps)
+    - [For Teams Today](#for-teams-today)
+    - [For Early Adopters](#for-early-adopters)
+  - [Risk Management](#risk-management)
+    - [Managed Evolution](#managed-evolution)
+    - [Maintaining Excellence](#maintaining-excellence)
+  - [The Vision Realized](#the-vision-realized)
+    - [Today (Billy Wright Era)](#today-billy-wright-era)
+    - [Tomorrow (Quantum Era)](#tomorrow-quantum-era)
+    - [The Bridge](#the-bridge)
+  - [Call to Action](#call-to-action)
+    - [Start Today](#start-today)
+    - [Join the Evolution](#join-the-evolution)
+  - [Closing Thought](#closing-thought)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # From Billy Wright to Quantum: The Evolution of Agentic SDLC
 
 > "The best teams don't just adapt to the future - they create it"

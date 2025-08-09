@@ -1,3 +1,42 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [A2A Communication System Usage Guide](#a2a-communication-system-usage-guide)
+  - [From Team Discussion to Legendary Execution](#from-team-discussion-to-legendary-execution)
+  - [🚀 Quick Start Examples](#-quick-start-examples)
+    - [Scenario 1: Starting a New Feature](#scenario-1-starting-a-new-feature)
+    - [Scenario 2: Performance Crisis](#scenario-2-performance-crisis)
+    - [Scenario 3: Compliance Violation Detected](#scenario-3-compliance-violation-detected)
+  - [🎯 Communication Pattern Examples](#-communication-pattern-examples)
+    - [The "Captain's Distribution"](#the-captains-distribution)
+    - [The "Quality Circuit"](#the-quality-circuit)
+    - [The "Escalation Ladder"](#the-escalation-ladder)
+  - [📊 Monitoring Team Performance](#-monitoring-team-performance)
+    - [Check Current Team Formation](#check-current-team-formation)
+    - [Analyze Communication Effectiveness](#analyze-communication-effectiveness)
+  - [🎪 Advanced Scenarios](#-advanced-scenarios)
+    - [Scenario 4: AI Agent Optimization Project](#scenario-4-ai-agent-optimization-project)
+    - [Scenario 5: Multi-Team Integration](#scenario-5-multi-team-integration)
+  - [🛠 Troubleshooting Communication Issues](#-troubleshooting-communication-issues)
+    - [Problem: Messages Not Being Routed Correctly](#problem-messages-not-being-routed-correctly)
+    - [Problem: High Escalation Rate](#problem-high-escalation-rate)
+    - [Problem: Workflow Stuck](#problem-workflow-stuck)
+  - [🏆 Best Practices for Legendary Team Play](#-best-practices-for-legendary-team-play)
+    - [1. **Always Use Proper Message Format**](#1-always-use-proper-message-format)
+    - [2. **Respect the Formation**](#2-respect-the-formation)
+    - [3. **Communicate Context**](#3-communicate-context)
+    - [4. **Monitor Team Performance**](#4-monitor-team-performance)
+    - [5. **Adapt the Formation**](#5-adapt-the-formation)
+  - [🎭 Message Template Gallery](#-message-template-gallery)
+    - [Quality Assurance](#quality-assurance)
+    - [Performance Optimization](#performance-optimization)
+    - [Security Assessment](#security-assessment)
+    - [Delivery Coordination](#delivery-coordination)
+    - [Architecture Decision](#architecture-decision)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # A2A Communication System Usage Guide
 ## From Team Discussion to Legendary Execution
 

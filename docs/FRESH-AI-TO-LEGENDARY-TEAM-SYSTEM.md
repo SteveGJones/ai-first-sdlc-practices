@@ -1,3 +1,34 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Fresh AI to Legendary Team Transformation System](#fresh-ai-to-legendary-team-transformation-system)
+  - [The Problem We Solved](#the-problem-we-solved)
+  - [The Solution: Practical Transformation Through Doing](#the-solution-practical-transformation-through-doing)
+  - [Core System Components](#core-system-components)
+    - [1. The AI Team Transformer Agent](#1-the-ai-team-transformer-agent)
+    - [2. The Coaching Tool Suite](#2-the-coaching-tool-suite)
+      - [Legendary Team Coach (`legendary-team-coach.py`)](#legendary-team-coach-legendary-team-coachpy)
+      - [Vision-to-Team Mapper (`vision-to-team-mapper.py`)](#vision-to-team-mapper-vision-to-team-mapperpy)
+      - [Team Transformation Scripts (`team-transformation-scripts.py`)](#team-transformation-scripts-team-transformation-scriptspy)
+    - [3. The Complete Demo (`fresh-ai-transformation-demo.py`)](#3-the-complete-demo-fresh-ai-transformation-demopy)
+  - [How It Works](#how-it-works)
+    - [Stage 1: Vision Intake (Day 1-2)](#stage-1-vision-intake-day-1-2)
+    - [Stage 2: Foundation Building (Day 3-7)](#stage-2-foundation-building-day-3-7)
+    - [Stage 3: Advanced Coordination (Week 2)](#stage-3-advanced-coordination-week-2)
+    - [Stage 4: Legendary Assessment](#stage-4-legendary-assessment)
+  - [The Transformation Results](#the-transformation-results)
+    - [Before: Solo Hero Pattern](#before-solo-hero-pattern)
+    - [After: Legendary Team Conductor](#after-legendary-team-conductor)
+  - [Key Innovation: Learning Through Doing](#key-innovation-learning-through-doing)
+  - [Quick Start for Fresh AIs](#quick-start-for-fresh-ais)
+  - [Integration with AI-First SDLC](#integration-with-ai-first-sdlc)
+  - [The Magic Formula](#the-magic-formula)
+  - [Success Metrics](#success-metrics)
+  - [For the Framework Team](#for-the-framework-team)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Fresh AI to Legendary Team Transformation System
 
 ## The Problem We Solved

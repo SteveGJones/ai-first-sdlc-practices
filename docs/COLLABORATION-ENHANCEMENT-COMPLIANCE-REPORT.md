@@ -1,3 +1,41 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Collaboration Enhancement Initiative - Framework Compliance Assessment Report](#collaboration-enhancement-initiative---framework-compliance-assessment-report)
+  - [Executive Summary](#executive-summary)
+    - [Compliance Status: ⚠️ PARTIAL COMPLIANCE WITH CRITICAL GAPS](#compliance-status--partial-compliance-with-critical-gaps)
+  - [Detailed Compliance Assessment](#detailed-compliance-assessment)
+    - [1. Framework Adherence Analysis](#1-framework-adherence-analysis)
+      - [✅ **COMPLIANT AREAS**](#-compliant-areas)
+      - [❌ **CRITICAL NON-COMPLIANCE**](#-critical-non-compliance)
+    - [2. Multi-Agent Involvement Evidence](#2-multi-agent-involvement-evidence)
+      - [**Demonstrated Collaborative Development**](#demonstrated-collaborative-development)
+      - [**Agent Specialization Evidence**](#agent-specialization-evidence)
+    - [3. Required Artifacts Assessment](#3-required-artifacts-assessment)
+      - [✅ **CREATED ARTIFACTS**](#-created-artifacts)
+      - [❌ **MISSING ARTIFACTS**](#-missing-artifacts)
+    - [4. Self-Demonstration of Collaborative Practices](#4-self-demonstration-of-collaborative-practices)
+      - [✅ **DEMONSTRATED EXCELLENCE**](#-demonstrated-excellence)
+      - [⚠️ **AREAS FOR IMPROVEMENT**](#-areas-for-improvement)
+    - [5. Framework Compliance Metrics](#5-framework-compliance-metrics)
+      - [**Quantitative Compliance Assessment**](#quantitative-compliance-assessment)
+      - [**Compliance Trend Analysis**](#compliance-trend-analysis)
+    - [6. Risk Assessment](#6-risk-assessment)
+      - [**HIGH PRIORITY RISKS**](#high-priority-risks)
+      - [**MEDIUM PRIORITY RISKS**](#medium-priority-risks)
+    - [7. Recommendations and Action Items](#7-recommendations-and-action-items)
+      - [**IMMEDIATE ACTIONS (Required for Merge)**](#immediate-actions-required-for-merge)
+      - [**SHORT-TERM IMPROVEMENTS (Next Sprint)**](#short-term-improvements-next-sprint)
+      - [**STRATEGIC IMPROVEMENTS (This Quarter)**](#strategic-improvements-this-quarter)
+    - [8. Compliance Score and Approval Status](#8-compliance-score-and-approval-status)
+      - [**Final Compliance Assessment**](#final-compliance-assessment)
+      - [**APPROVAL STATUS: ⚠️ CONDITIONAL APPROVAL**](#approval-status--conditional-approval)
+    - [9. Conclusion and Strategic Assessment](#9-conclusion-and-strategic-assessment)
+  - [Compliance Certification](#compliance-certification)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Collaboration Enhancement Initiative - Framework Compliance Assessment Report
 
 **Report Date**: August 8, 2025  

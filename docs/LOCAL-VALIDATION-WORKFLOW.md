@@ -1,3 +1,55 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Local Validation Workflow - End Push-Fail-Fix Cycles](#local-validation-workflow---end-push-fail-fix-cycles)
+  - [🎯 Problem Statement](#-problem-statement)
+  - [🛡️ Solution: Multi-Layer Local Validation](#-solution-multi-layer-local-validation)
+    - [Layer 1: Pre-Commit Hooks (Basic Validation)](#layer-1-pre-commit-hooks-basic-validation)
+    - [Layer 2: Pre-Push Hooks (Full Validation)](#layer-2-pre-push-hooks-full-validation)
+    - [Layer 3: Manual Validation (Developer Control)](#layer-3-manual-validation-developer-control)
+  - [🚀 Quick Setup (5 Minutes)](#-quick-setup-5-minutes)
+    - [Step 1: Install Git Hooks](#step-1-install-git-hooks)
+    - [Step 2: Install Pre-Commit Framework](#step-2-install-pre-commit-framework)
+    - [Step 3: Test Installation](#step-3-test-installation)
+  - [🔄 Developer Workflow](#-developer-workflow)
+    - [Before Starting Work](#before-starting-work)
+    - [During Development (AI Agents Must Follow)](#during-development-ai-agents-must-follow)
+    - [Before Pushing](#before-pushing)
+  - [🛠️ Available Commands](#-available-commands)
+    - [Local Validation Script](#local-validation-script)
+    - [Pre-Commit System](#pre-commit-system)
+    - [Framework-Specific Tools](#framework-specific-tools)
+  - [🚨 Emergency Procedures](#-emergency-procedures)
+    - [When Validation Fails](#when-validation-fails)
+      - [1. Syntax Errors](#1-syntax-errors)
+      - [2. Pre-Commit Hook Failures](#2-pre-commit-hook-failures)
+      - [3. Pre-Push Hook Failures](#3-pre-push-hook-failures)
+    - [When to Use --no-verify (RARE!)](#when-to-use---no-verify-rare)
+  - [🎯 Benefits of This System](#-benefits-of-this-system)
+    - [For Individual Developers](#for-individual-developers)
+    - [For the Team](#for-the-team)
+    - [For AI-First Development](#for-ai-first-development)
+  - [📊 Validation Levels Explained](#-validation-levels-explained)
+    - [Syntax Level (--syntax)](#syntax-level---syntax)
+    - [Quick Level (--quick)](#quick-level---quick)
+    - [Pre-Push Level (--pre-push)](#pre-push-level---pre-push)
+    - [Full Level (default)](#full-level-default)
+  - [🔧 IDE Integration](#-ide-integration)
+    - [VS Code Setup](#vs-code-setup)
+    - [PyCharm Setup](#pycharm-setup)
+    - [Universal Setup](#universal-setup)
+  - [📈 Measuring Success](#-measuring-success)
+    - [Metrics to Track](#metrics-to-track)
+    - [Monthly Review Questions](#monthly-review-questions)
+  - [🚀 Advanced Features](#-advanced-features)
+    - [Custom Validation Rules](#custom-validation-rules)
+    - [Integration with External Tools](#integration-with-external-tools)
+    - [Performance Optimization](#performance-optimization)
+  - [🎉 Conclusion](#-conclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Local Validation Workflow - End Push-Fail-Fix Cycles
 
 ## 🎯 Problem Statement

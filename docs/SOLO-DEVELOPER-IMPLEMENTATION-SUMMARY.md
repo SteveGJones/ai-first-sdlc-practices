@@ -1,3 +1,29 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Solo Developer Support Implementation Summary](#solo-developer-support-implementation-summary)
+  - [Overview](#overview)
+  - [Key Features Implemented](#key-features-implemented)
+    - [1. Smart Branch Protection (`tools/automation/setup-branch-protection-gh.py`)](#1-smart-branch-protection-toolsautomationsetup-branch-protection-ghpy)
+    - [2. Collaboration Pattern Detection (`tools/automation/collaboration-detector.py`)](#2-collaboration-pattern-detection-toolsautomationcollaboration-detectorpy)
+    - [3. Enhanced Agent Recommendations (`tools/automation/agent-preset-recommender.py`)](#3-enhanced-agent-recommendations-toolsautomationagent-preset-recommenderpy)
+    - [4. Updated SDLC Enforcer Agent](#4-updated-sdlc-enforcer-agent)
+    - [5. Comprehensive Documentation](#5-comprehensive-documentation)
+  - [Technical Implementation Details](#technical-implementation-details)
+    - [Auto-Approval Workflow](#auto-approval-workflow)
+    - [Branch Protection Configuration](#branch-protection-configuration)
+  - [Benefits Delivered](#benefits-delivered)
+    - [For Solo Developers](#for-solo-developers)
+    - [For Teams](#for-teams)
+    - [For the Framework](#for-the-framework)
+  - [Testing Coverage](#testing-coverage)
+  - [Migration Path](#migration-path)
+  - [Future Enhancements](#future-enhancements)
+  - [Conclusion](#conclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Solo Developer Support Implementation Summary
 
 ## Overview

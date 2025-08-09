@@ -1,3 +1,41 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [GitHub-Based AI Coaching System: From Dream to Legendary Team](#github-based-ai-coaching-system-from-dream-to-legendary-team)
+  - [🎯 The Fresh AI Journey](#-the-fresh-ai-journey)
+    - [Day 1: The Dream Begins](#day-1-the-dream-begins)
+    - [How GitHub Coaches Them to Greatness](#how-github-coaches-them-to-greatness)
+  - [📚 Phase 1: Discovery (Hours 1-4)](#-phase-1-discovery-hours-1-4)
+    - [Step 1: The Welcome Issue](#step-1-the-welcome-issue)
+    - [Step 2: Formation Discovery](#step-2-formation-discovery)
+  - [🏃 Phase 2: Foundation Training (Day 1-3)](#-phase-2-foundation-training-day-1-3)
+    - [The PR Review Coaching System](#the-pr-review-coaching-system)
+    - [GitHub Actions Coaching Bot](#github-actions-coaching-bot)
+  - [🎨 Phase 3: Chemistry Development (Day 4-7)](#-phase-3-chemistry-development-day-4-7)
+    - [Interactive Chemistry Exercises via Issues](#interactive-chemistry-exercises-via-issues)
+    - [Chemistry Scoring System](#chemistry-scoring-system)
+  - [🚀 Phase 4: Advanced Formation (Week 2)](#-phase-4-advanced-formation-week-2)
+    - [Automated Formation Recommendations](#automated-formation-recommendations)
+  - [📊 Phase 5: Progress Tracking](#-phase-5-progress-tracking)
+    - [The Legendary Status Dashboard](#the-legendary-status-dashboard)
+  - [🎯 Phase 6: Crisis Training (Week 3)](#-phase-6-crisis-training-week-3)
+    - [The Production Crisis Simulation](#the-production-crisis-simulation)
+  - [🏆 Phase 7: Legendary Achievement](#-phase-7-legendary-achievement)
+    - [The Hall of Fame Ceremony](#the-hall-of-fame-ceremony)
+    - [2. Automated Coaching Workflows](#2-automated-coaching-workflows)
+    - [3. Chemistry Development Tools](#3-chemistry-development-tools)
+  - [🎓 Coaching Principles](#-coaching-principles)
+    - [1. Always Encouraging, Never Harsh](#1-always-encouraging-never-harsh)
+    - [2. Progressive Complexity](#2-progressive-complexity)
+    - [3. Learn by Doing](#3-learn-by-doing)
+    - [4. Measure What Matters](#4-measure-what-matters)
+  - [🚀 Getting Started](#-getting-started)
+  - [📈 Success Metrics](#-success-metrics)
+  - [🌟 The Promise](#-the-promise)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # GitHub-Based AI Coaching System: From Dream to Legendary Team
 
 > **Mission**: Enable any fresh AI with a dream to be coached to legendary collaborative status through GitHub interactions
