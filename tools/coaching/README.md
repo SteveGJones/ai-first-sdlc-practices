@@ -1,15 +1,36 @@
-# Agentic SDLC Coach - Professional Standards Enforcement
+# Agentic SDLC Coaching System - Billy Wright Team Excellence + Stan Cullis Enforcement
+
+## 🚀 The Kickoff Genius - Transform ANY Project in 5 Minutes
+
+### For Third-Party AI Agents - Your Testing Prompt:
+
+```bash
+# From the PR branch, test the 5-minute miracle:
+cd tools/coaching
+python kickoff_genius.py "your vague project idea here"
+
+# Examples:
+python kickoff_genius.py "I want to build something with AI"
+python kickoff_genius.py "need a way to track inventory"
+python kickoff_genius.py "thinking about data analytics"
+```
+
+This will:
+1. **MINUTE 1**: Transform vague idea → crystal clear vision
+2. **MINUTE 2**: Assemble perfect AI agent team
+3. **MINUTE 3**: Make all architecture decisions
+4. **MINUTE 4**: Break down into actionable tasks
+5. **MINUTE 5**: Launch execution with commands
 
 ## What This REALLY Is
 
-Not a suggestion tool. Not a helper. An **ENFORCER**.
+Two revolutionary systems in one:
 
-This is the Stan Cullis system for AI development:
-- **BLOCKS** non-compliant work
-- **ENFORCES** documentation standards
-- **VALIDATES** continuously
-- **MEASURES** everything
-- **NO SHORTCUTS, EVER**
+### 1. **Kickoff Genius** (`kickoff_genius.py`)
+The Billy Wright 5-minute miracle that transforms chaos into coordinated excellence. From vague idea to actionable plan in 300 seconds.
+
+### 2. **SDLC Enforcer** (`sdlc_coach.py`)
+The Stan Cullis enforcement system that BLOCKS non-compliant work and enforces world-class standards
 
 ## How It Works
 

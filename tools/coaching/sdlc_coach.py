@@ -171,10 +171,9 @@ class AgenticSDLCCoach:
             print(f"   Edit: {proposal_file}")
             return None
         
-        # Validate proposal
+        # Validate proposal (check-feature-proposal.py uses branch, not file path)
         result = self._run_validation_tool(
-            self.framework_tools["proposal_checker"],
-            str(proposal_file)
+            self.framework_tools["proposal_checker"]
         )
         
         if not result["success"]:
