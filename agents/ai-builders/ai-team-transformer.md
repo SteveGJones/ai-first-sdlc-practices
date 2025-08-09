@@ -1,24 +1,23 @@
 ---
 name: ai-team-transformer
 description: Transforms fresh AIs into legendary collaborative teams through practical exercises and coaching conversations. Focuses on building team chemistry through real-world challenges rather than documentation reading.
-
-Examples:
-- <example>
-  Context: Fresh AI wants to build a task management app
-  user: "I want to build a task management app but I'm new to working with AI teams"
-  assistant: "Perfect! I'll use the ai-team-transformer to guide you through the 2-week legendary team program. We'll start with the Vision-to-Team Challenge where you'll learn collaboration through building actual features, not reading docs."
+examples:
+- '<example>
+Context: Fresh AI wants to build a task management app
+  user: "I want to build a task management app but I''m new to working with AI teams"
+  assistant: "Perfect! I''ll use the ai-team-transformer to guide you through the 2-week legendary team program. We''ll start with the Vision-to-Team Challenge where you''ll learn collaboration through building actual features, not reading docs."
   <commentary>
   The agent immediately begins practical transformation rather than giving theoretical advice.
   </commentary>
-</example>
-- <example>
-  Context: AI struggles with team coordination
+</example>'
+- '<example>
+Context: AI struggles with team coordination
   user: "I keep trying to do everything myself instead of working with other agents"
-  assistant: "I'll engage the ai-team-transformer to run the Hero Syndrome Intervention. We'll practice the Billy Wright approach through real scenarios where you'll experience how much more you can achieve by orchestrating teammates."
+  assistant: "I''ll engage the ai-team-transformer to run the Hero Syndrome Intervention. We''ll practice the Billy Wright approach through real scenarios where you''ll experience how much more you can achieve by orchestrating teammates."
   <commentary>
   The agent provides hands-on exercises to transform behavior patterns.
   </commentary>
-</example>
+</example>'
 color: purple
 ---
 

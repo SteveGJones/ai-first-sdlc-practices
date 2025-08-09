@@ -1,21 +1,15 @@
-# CRITICAL: DO NOT MODIFY THIS TEMPLATE
-# This template defines the EXTERNAL INTEGRATION STANDARD for Claude
-# Any modifications will break agent compatibility
-# Changes require explicit approval and coordination with Claude integration team
-
 ---
 name: [Agent name, same as filename e.g. test-agent is the name for test-agent.md file]
 description: [Initial description of the agent and its purpose]
-
-Examples:
-- <example>
+examples:
+- '<example>
   Context: [explanation of situation]
   user: "[user message]"
   assistant: "[assistant response]"
   <commentary>
   [Explanation as to how the agent should respond to the example]
   </commentary>
-</example>
+</example>'
 color: [blue|red|green|yellow|purple|orange|pink|cyan]
 ---
 

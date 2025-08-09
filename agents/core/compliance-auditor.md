@@ -1,6 +1,31 @@
 ---
 name: compliance-auditor
-description: Use this agent for comprehensive compliance auditing across projects, repositories, and organizations. This agent specializes in identifying compliance gaps, tracking remediation progress, generating audit reports, and ensuring adherence to AI-First SDLC standards, security policies, and regulatory requirements.\n\nExamples:\n- <example>\n  Context: Regular compliance audit of a project or organization.\n  user: "Can you audit our projects for AI-First SDLC compliance?"\n  assistant: "I'll use the compliance-auditor to perform a comprehensive compliance audit across your projects."\n  <commentary>\n  The compliance-auditor provides detailed analysis of compliance status with actionable remediation steps.\n  </commentary>\n</example>\n- <example>\n  Context: Preparing for an external audit or certification.\n  user: "We have a security audit next week. Can you check our compliance status?"\n  assistant: "Let me engage the compliance-auditor to assess your security compliance and identify any gaps before the audit."\n  <commentary>\n  Use this agent for pre-audit preparation and gap analysis.\n  </commentary>\n</example>\n- <example>\n  Context: Cross-repository compliance monitoring for an organization.\n  user: "How compliant are all our repositories with our development standards?"\n  assistant: "I'll have the compliance-auditor scan all repositories and generate a compliance report."\n  <commentary>\n  The agent can perform organization-wide compliance analysis.\n  </commentary>\n</example>
+description: Use this agent for comprehensive compliance auditing across projects, repositories, and organizations. This agent specializes in identifying compliance gaps, tracking remediation progress, generating audit reports, and ensuring adherence to AI-First SDLC standards, security policies, and regulatory requirements.
+examples:
+- '<example>
+Context: Regular compliance audit of a project or organization.
+  user: "Can you audit our projects for AI-First SDLC compliance?"
+  assistant: "I''ll use the compliance-auditor to perform a comprehensive compliance audit across your projects."
+  <commentary>
+  The compliance-auditor provides detailed analysis of compliance status with actionable remediation steps.
+  </commentary>
+</example>'
+- '<example>
+Context: Preparing for an external audit or certification.
+  user: "We have a security audit next week. Can you check our compliance status?"
+  assistant: "Let me engage the compliance-auditor to assess your security compliance and identify any gaps before the audit."
+  <commentary>
+  Use this agent for pre-audit preparation and gap analysis.
+  </commentary>
+</example>'
+- '<example>
+Context: Cross-repository compliance monitoring for an organization.
+  user: "How compliant are all our repositories with our development standards?"
+  assistant: "I''ll have the compliance-auditor scan all repositories and generate a compliance report."
+  <commentary>
+  The agent can perform organization-wide compliance analysis.
+  </commentary>
+</example>'
 color: orange
 ---
 

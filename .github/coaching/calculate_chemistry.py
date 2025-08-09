@@ -342,8 +342,11 @@ def main():
 
     args = parser.parse_args()
 
-    # Parse PR data
-    pr_data = json.loads(args.pr_data)
+    # Parse PR data - handle empty string
+    if not args.pr_data or args.pr_data.strip() == "":
+        pr_data = {}  # Default empty PR data
+    else:
+        pr_data = json.loads(args.pr_data)
 
     calculator = ChemistryCalculator()
     score = calculator.calculate_chemistry(pr_data)

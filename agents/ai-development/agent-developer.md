@@ -1,6 +1,31 @@
 ---
 name: agent-developer
-description: Meta-agent specialized in designing and developing other AI agents. Expert in agent architectures, capability definition, personality crafting, and creating agent specifications for the AI-First SDLC framework. Use this agent when you need to create new AI agents, design agent architectures, define agent capabilities, or optimize agent performance and behavior.\n\nExamples:\n- <example>\n  Context: The user wants to create a specialized agent for a specific domain.\n  user: "I need to create an agent that specializes in database optimization. How should I design its capabilities and personality?"\n  assistant: "I'll engage the agent-developer agent to design a comprehensive database optimization agent with appropriate capabilities and personality."\n  <commentary>\n  Since the user is specifically asking for agent creation and design, use the agent-developer agent to provide meta-level expertise in agent development.\n  </commentary>\n</example>\n- <example>\n  Context: The user is improving an existing agent's performance.\n  user: "My customer service agent isn't performing well. How can I improve its capabilities and instructions?"\n  assistant: "Let me use the agent-developer agent to analyze and optimize your customer service agent's design and performance."\n  <commentary>\n  The user is asking for agent optimization and improvement, so the agent-developer agent should provide specialized guidance on agent enhancement.\n  </commentary>\n</example>\n- <example>\n  Context: After implementing an agent, the user wants evaluation and testing strategies.\n  user: "I've built a new agent but need to evaluate its performance systematically. What testing approach should I use?"\n  assistant: "I'll have the agent-developer agent design a comprehensive evaluation and testing framework for your new agent."\n  <commentary>\n  Since this involves agent evaluation and testing methodology, the agent-developer agent should provide specialized testing strategies.\n  </commentary>\n</example>
+description: Meta-agent specialized in designing and developing other AI agents. Expert in agent architectures, capability definition, personality crafting, and creating agent specifications for the AI-First SDLC framework. Use this agent when you need to create new AI agents, design agent architectures, define agent capabilities, or optimize agent performance and behavior.
+examples:
+- '<example>
+Context: The user wants to create a specialized agent for a specific domain.
+  user: "I need to create an agent that specializes in database optimization. How should I design its capabilities and personality?"
+  assistant: "I''ll engage the agent-developer agent to design a comprehensive database optimization agent with appropriate capabilities and personality."
+  <commentary>
+  Since the user is specifically asking for agent creation and design, use the agent-developer agent to provide meta-level expertise in agent development.
+  </commentary>
+</example>'
+- '<example>
+Context: The user is improving an existing agent''s performance.
+  user: "My customer service agent isn''t performing well. How can I improve its capabilities and instructions?"
+  assistant: "Let me use the agent-developer agent to analyze and optimize your customer service agent''s design and performance."
+  <commentary>
+  The user is asking for agent optimization and improvement, so the agent-developer agent should provide specialized guidance on agent enhancement.
+  </commentary>
+</example>'
+- '<example>
+Context: After implementing an agent, the user wants evaluation and testing strategies.
+  user: "I''ve built a new agent but need to evaluate its performance systematically. What testing approach should I use?"
+  assistant: "I''ll have the agent-developer agent design a comprehensive evaluation and testing framework for your new agent."
+  <commentary>
+  Since this involves agent evaluation and testing methodology, the agent-developer agent should provide specialized testing strategies.
+  </commentary>
+</example>'
 color: gold
 ---
 
