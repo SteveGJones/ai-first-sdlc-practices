@@ -7,10 +7,9 @@ forbidden sections from agent files that already have valid YAML frontmatter.
 """
 
 import re
-import os
 import shutil
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 import argparse
 
 
@@ -75,9 +74,7 @@ class AgentTemplateCleaner:
             cleaned_content = content
 
             # Find the end of YAML frontmatter
-            yaml_end_match = re.search(
-                r"^---\s*\n.*?\n---\s*\n", content, re.DOTALL | re.MULTILINE
-            )
+            yaml_end_match = re.search(r"^---\s*\n.*?\n---\s*\n", content, re.DOTALL | re.MULTILINE)
             if not yaml_end_match:
                 return False, content, ["No YAML frontmatter found"]
 
@@ -96,9 +93,7 @@ class AgentTemplateCleaner:
                         removed_sections.append(section_name)
 
                     # Remove the section
-                    body_section = re.sub(
-                        pattern, "", body_section, flags=re.DOTALL | re.IGNORECASE
-                    )
+                    body_section = re.sub(pattern, "", body_section, flags=re.DOTALL | re.IGNORECASE)
 
             # Clean up excessive blank lines (more than 2 consecutive)
             body_section = re.sub(r"\n{3,}", "\n\n", body_section)
@@ -129,9 +124,7 @@ class AgentTemplateCleaner:
             if not Path(file_path).exists():
                 print(f"⚠️  File not found: {file_path}")
                 results["failed"] += 1
-                results["details"].append(
-                    {"file": file_path, "status": "not_found", "sections_removed": []}
-                )
+                results["details"].append({"file": file_path, "status": "not_found", "sections_removed": []})
                 continue
 
             print(f"Processing: {file_path}")
@@ -172,17 +165,13 @@ class AgentTemplateCleaner:
                     }
                 )
             else:
-                print(
-                    f"  ❌ Failed: {removed_sections[0] if removed_sections else 'Unknown error'}"
-                )
+                print(f"  ❌ Failed: {removed_sections[0] if removed_sections else 'Unknown error'}")
                 results["failed"] += 1
                 results["details"].append(
                     {
                         "file": file_path,
                         "status": "failed",
-                        "error": (
-                            removed_sections[0] if removed_sections else "Unknown error"
-                        ),
+                        "error": (removed_sections[0] if removed_sections else "Unknown error"),
                     }
                 )
 
@@ -225,9 +214,7 @@ class AgentTemplateCleaner:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Clean forbidden sections from agent templates"
-    )
+    parser = argparse.ArgumentParser(description="Clean forbidden sections from agent templates")
     parser.add_argument(
         "--validate-only",
         action="store_true",

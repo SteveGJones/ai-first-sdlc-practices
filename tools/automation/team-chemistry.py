@@ -11,7 +11,7 @@ import click
 import time
 import random
 from pathlib import Path
-from typing import Dict, List, Tuple, Any, Optional
+from typing import List
 from dataclasses import dataclass
 from enum import Enum
 
@@ -165,7 +165,7 @@ class SimpleFeatureChallenge(ChemistryExercise):
         else:
             next_exercises.extend(["handoff-protocol", "role-clarity"])
 
-        click.echo(f"\n✅ Exercise completed!")
+        click.echo("\n✅ Exercise completed!")
         click.echo(f"📊 Success Score: {success_score:.1%}")
 
         return ExerciseResult(
@@ -229,14 +229,10 @@ class IntegrationChallenge(ChemistryExercise):
                 observations.append(f"All agents collaborated on {phase_name.lower()}")
             elif responsible_agent in self.participants:
                 success_factors.append(0.2)
-                observations.append(
-                    f"{responsible_agent} handled {phase_name.lower()} effectively"
-                )
+                observations.append(f"{responsible_agent} handled {phase_name.lower()} effectively")
             else:
                 success_factors.append(0.1)
-                observations.append(
-                    f"Missing {responsible_agent} for {phase_name.lower()}"
-                )
+                observations.append(f"Missing {responsible_agent} for {phase_name.lower()}")
 
         # Formation-specific adjustments
         if formation_type in ["transformer", "orchestrator"]:
@@ -257,7 +253,7 @@ class IntegrationChallenge(ChemistryExercise):
         else:
             next_exercises.extend(["simple-feature-challenge", "role-clarity"])
 
-        click.echo(f"\n✅ Exercise completed!")
+        click.echo("\n✅ Exercise completed!")
         click.echo(f"📊 Success Score: {success_score:.1%}")
 
         return ExerciseResult(
@@ -291,7 +287,7 @@ class CrisisSimulation(ChemistryExercise):
 
     def run(self, formation_type: str) -> ExerciseResult:
         """Simulate running the crisis simulation"""
-        click.echo(f"🚨 CRISIS SIMULATION STARTED")
+        click.echo("🚨 CRISIS SIMULATION STARTED")
         click.echo(f"📝 {self.description}")
         click.echo("⏰ Time pressure: Production is down!")
         click.echo("=" * 50)
@@ -314,16 +310,12 @@ class CrisisSimulation(ChemistryExercise):
             "orchestration-architect",
         ]
         available_crisis_agents = [
-            agent
-            for agent in crisis_agents
-            if agent in self.participants or formation_type == "orchestrator"
+            agent for agent in crisis_agents if agent in self.participants or formation_type == "orchestrator"
         ]
 
         if available_crisis_agents:
             success_factors.append(0.2)
-            observations.append(
-                f"Crisis response agents available: {', '.join(available_crisis_agents)}"
-            )
+            observations.append(f"Crisis response agents available: {', '.join(available_crisis_agents)}")
         else:
             success_factors.append(0.1)
             observations.append("No dedicated crisis response agents available")
@@ -341,10 +333,7 @@ class CrisisSimulation(ChemistryExercise):
         # Phase 3: Escalation Protocol
         click.echo("Phase 3: Escalation and Coordination")
         time.sleep(1)
-        if (
-            "orchestration-architect" in self.participants
-            or formation_type == "orchestrator"
-        ):
+        if "orchestration-architect" in self.participants or formation_type == "orchestrator":
             success_factors.append(0.2)
             observations.append("Proper escalation protocols followed")
         else:
@@ -379,19 +368,15 @@ class CrisisSimulation(ChemistryExercise):
         if success_score < 0.8:
             improvements.append("Improve escalation protocols and coordination")
         if "ad-hoc" in str(observations):
-            improvements.append(
-                "Consider adding orchestration-architect for crisis coordination"
-            )
+            improvements.append("Consider adding orchestration-architect for crisis coordination")
 
         next_exercises = []
         if success_score >= 0.8:
             next_exercises.append("Team is crisis-ready!")
         else:
-            next_exercises.extend(
-                ["handoff-protocol", "role-clarity", "integration-challenge"]
-            )
+            next_exercises.extend(["handoff-protocol", "role-clarity", "integration-challenge"])
 
-        click.echo(f"\n✅ Crisis simulation completed!")
+        click.echo("\n✅ Crisis simulation completed!")
         click.echo(f"📊 Crisis Response Score: {success_score:.1%}")
 
         return ExerciseResult(
@@ -416,7 +401,7 @@ class HandoffProtocolExercise(ChemistryExercise):
             participants=["Any two agents"],
             success_criteria=[
                 "Complete context transfer achieved",
-                "No information lost in handoff",
+                "No information lost in hando",
                 "Clear acceptance confirmation",
                 "Structured handoff format used",
             ],
@@ -446,9 +431,7 @@ class HandoffProtocolExercise(ChemistryExercise):
 
             # Simulate handoff quality based on formation complexity
             if formation_type in ["orchestrator", "transformer"]:
-                scenario_success = random.uniform(
-                    0.8, 1.0
-                )  # Complex formations are better at handoffs
+                scenario_success = random.uniform(0.8, 1.0)  # Complex formations are better at handoffs
             elif formation_type in ["innovator", "specialist"]:
                 scenario_success = random.uniform(0.7, 0.95)
             else:  # builder
@@ -459,9 +442,7 @@ class HandoffProtocolExercise(ChemistryExercise):
             if scenario_success > 0.85:
                 observations.append(f"Excellent {scenario.lower()} handoff")
             elif scenario_success > 0.7:
-                observations.append(
-                    f"Good {scenario.lower()} handoff with minor improvements needed"
-                )
+                observations.append(f"Good {scenario.lower()} handoff with minor improvements needed")
             else:
                 observations.append(f"Poor {scenario.lower()} handoff - needs work")
 
@@ -481,7 +462,7 @@ class HandoffProtocolExercise(ChemistryExercise):
         else:
             next_exercises.extend(["role-clarity"])
 
-        click.echo(f"\n✅ Handoff practice completed!")
+        click.echo("\n✅ Handoff practice completed!")
         click.echo(f"📊 Handoff Quality Score: {success_score:.1%}")
 
         return ExerciseResult(
@@ -547,14 +528,8 @@ class TeamChemistryEngine:
         recent_results = self.results_history[-5:]  # Last 5 exercises
 
         # Communication fluency from handoff exercises
-        handoff_scores = [
-            r.success_score
-            for r in recent_results
-            if r.exercise_type == ExerciseType.HANDOFF_PROTOCOL
-        ]
-        communication_fluency = (
-            sum(handoff_scores) / len(handoff_scores) if handoff_scores else 0.7
-        )
+        handoff_scores = [r.success_score for r in recent_results if r.exercise_type == ExerciseType.HANDOFF_PROTOCOL]
+        communication_fluency = sum(handoff_scores) / len(handoff_scores) if handoff_scores else 0.7
 
         # Role clarity from role conflicts and coordination
         role_indicators = []
@@ -565,9 +540,7 @@ class TeamChemistryEngine:
                 role_indicators.append(0.9)
             else:
                 role_indicators.append(0.7)
-        role_clarity = (
-            sum(role_indicators) / len(role_indicators) if role_indicators else 0.7
-        )
+        role_clarity = sum(role_indicators) / len(role_indicators) if role_indicators else 0.7
 
         # Collaboration rhythm from overall exercise success
         avg_success = sum(r.success_score for r in recent_results) / len(recent_results)
@@ -575,15 +548,10 @@ class TeamChemistryEngine:
 
         # Quality integration from crisis and quality-focused exercises
         quality_exercises = [
-            r
-            for r in recent_results
-            if r.exercise_type
-            in [ExerciseType.CRISIS_SIMULATION, ExerciseType.INTEGRATION]
+            r for r in recent_results if r.exercise_type in [ExerciseType.CRISIS_SIMULATION, ExerciseType.INTEGRATION]
         ]
         if quality_exercises:
-            quality_integration = sum(r.success_score for r in quality_exercises) / len(
-                quality_exercises
-            )
+            quality_integration = sum(r.success_score for r in quality_exercises) / len(quality_exercises)
         else:
             quality_integration = 0.75  # Default if no quality exercises
 
@@ -596,12 +564,7 @@ class TeamChemistryEngine:
             "orchestrator": 1.2,
         }.get(formation_type, 1.0)
 
-        base_chemistry = (
-            communication_fluency
-            + role_clarity
-            + collaboration_rhythm
-            + quality_integration
-        ) / 4
+        base_chemistry = (communication_fluency + role_clarity + collaboration_rhythm + quality_integration) / 4
         overall_chemistry = min(1.0, base_chemistry * formation_multiplier)
 
         return ChemistryMetrics(
@@ -612,9 +575,7 @@ class TeamChemistryEngine:
             overall_chemistry=overall_chemistry,
         )
 
-    def recommend_next_exercise(
-        self, formation_type: str, current_chemistry: ChemistryMetrics
-    ) -> ExerciseType:
+    def recommend_next_exercise(self, formation_type: str, current_chemistry: ChemistryMetrics) -> ExerciseType:
         """Recommend the next chemistry exercise based on current state"""
 
         # Identify weakest area
@@ -630,9 +591,7 @@ class TeamChemistryEngine:
 
         if weak_areas:
             # Focus on weakest area
-            weakest_area, exercise = min(
-                weak_areas, key=lambda x: getattr(current_chemistry, x[0])
-            )
+            weakest_area, exercise = min(weak_areas, key=lambda x: getattr(current_chemistry, x[0]))
             return exercise
 
         # If all areas are strong, cycle through exercises for maintenance
@@ -679,9 +638,7 @@ class TeamChemistryEngine:
 )
 @click.option(
     "--formation",
-    type=click.Choice(
-        ["builder", "specialist", "innovator", "transformer", "orchestrator"]
-    ),
+    type=click.Choice(["builder", "specialist", "innovator", "transformer", "orchestrator"]),
     default="builder",
     help="Formation type",
 )
@@ -689,9 +646,7 @@ class TeamChemistryEngine:
 @click.option("--assess", is_flag=True, help="Assess current team chemistry")
 @click.option("--recommend", is_flag=True, help="Get exercise recommendations")
 @click.option("--output", type=click.Path(), help="Save results to file")
-@click.option(
-    "--interactive", is_flag=True, help="Interactive chemistry development session"
-)
+@click.option("--interactive", is_flag=True, help="Interactive chemistry development session")
 def main(
     exercise: str,
     formation: str,
@@ -716,7 +671,7 @@ def main(
             metrics = engine.assess_team_chemistry(formation)
             next_exercise = engine.recommend_next_exercise(formation, metrics)
             click.echo(f"🎯 Recommended next exercise: {next_exercise.value}")
-            click.echo(f"📝 This will help improve your team's weakest chemistry areas")
+            click.echo("📝 This will help improve your team's weakest chemistry areas")
         elif exercise:
             exercise_type = ExerciseType(exercise)
             click.echo(f"🚀 Running {exercise_type.value} for {formation} formation")
@@ -733,9 +688,7 @@ def main(
         click.echo(f"❌ Error: {e}")
 
 
-def run_interactive_session(
-    engine: TeamChemistryEngine, formation: str, available_agents: List[str]
-):
+def run_interactive_session(engine: TeamChemistryEngine, formation: str, available_agents: List[str]):
     """Run an interactive chemistry development session"""
     click.echo("🎯 Interactive Team Chemistry Development Session")
     click.echo(f"Formation: {formation.title()}")
@@ -779,9 +732,7 @@ def run_interactive_session(
             if engine.results_history:
                 click.echo("\n📊 Exercise History:")
                 for i, result in enumerate(engine.results_history[-5:], 1):
-                    click.echo(
-                        f"{i}. {result.exercise_name} - Score: {result.success_score:.1%}"
-                    )
+                    click.echo(f"{i}. {result.exercise_name} - Score: {result.success_score:.1%}")
             else:
                 click.echo("No exercises completed yet")
 

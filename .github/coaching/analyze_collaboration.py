@@ -6,11 +6,8 @@ Analyzes how well AI agents coordinate as a team, measuring
 collaboration quality, communication patterns, and team synergy.
 """
 
-import json
 import sys
-from pathlib import Path
-from typing import Dict, List, Tuple
-from datetime import datetime
+from typing import Dict
 
 
 def analyze_collaboration_patterns(pr_data: Dict) -> Dict:
@@ -37,9 +34,7 @@ def analyze_collaboration_patterns(pr_data: Dict) -> Dict:
     commits = pr_data.get("commits", [])
     if len(commits) > 1:
         # Look for iterative improvement
-        if any("fix" in c.lower() for c in commits) and any(
-            "test" in c.lower() for c in commits
-        ):
+        if any("fix" in c.lower() for c in commits) and any("test" in c.lower() for c in commits):
             collaboration_score += 15
             patterns.append("Iterative improvement with testing")
 

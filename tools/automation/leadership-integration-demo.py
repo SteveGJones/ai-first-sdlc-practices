@@ -24,13 +24,9 @@ Scenarios:
 
 from leadership_compliance_reporter import LeadershipComplianceReporter
 from leadership_metrics_tracker import LeadershipMetricsTracker, LeadershipType
-import json
 import click
-import random
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any
-import subprocess
+from typing import Dict, Any
 
 # Import our leadership tools
 import sys
@@ -151,17 +147,13 @@ class LeadershipDemoScenarios:
             )
 
         # Calculate Billy Wright metrics
-        billy_wright_score = sum(m["impact"] for m in crisis_moments) / len(
-            crisis_moments
-        )
+        billy_wright_score = sum(m["impact"] for m in crisis_moments) / len(crisis_moments)
 
         click.echo("⚽ Billy Wright Leadership Assessment:")
         click.echo(f"   Crisis Response Score: {billy_wright_score:.1f}/100")
-        click.echo(f"   Leadership Style: Execution-Focused")
-        click.echo(
-            f"   Key Strengths: Real-time decision making, team rallying, technical expertise"
-        )
-        click.echo(f"   Development Area: Strategic long-term planning")
+        click.echo("   Leadership Style: Execution-Focused")
+        click.echo("   Key Strengths: Real-time decision making, team rallying, technical expertise")
+        click.echo("   Development Area: Strategic long-term planning")
         click.echo("")
 
         if billy_wright_score >= 85:
@@ -252,17 +244,13 @@ class LeadershipDemoScenarios:
             )
 
         # Calculate Stan Cullis metrics
-        stan_cullis_score = sum(m["impact"] for m in strategic_moments) / len(
-            strategic_moments
-        )
+        stan_cullis_score = sum(m["impact"] for m in strategic_moments) / len(strategic_moments)
 
         click.echo("🧠 Stan Cullis Leadership Assessment:")
         click.echo(f"   Strategic Vision Score: {stan_cullis_score:.1f}/100")
-        click.echo(f"   Leadership Style: Vision-Focused")
-        click.echo(
-            f"   Key Strengths: Long-term planning, talent development, system design"
-        )
-        click.echo(f"   Development Area: Crisis response and real-time decisions")
+        click.echo("   Leadership Style: Vision-Focused")
+        click.echo("   Key Strengths: Long-term planning, talent development, system design")
+        click.echo("   Development Area: Crisis response and real-time decisions")
         click.echo("")
 
         if stan_cullis_score >= 85:
@@ -354,9 +342,7 @@ class LeadershipDemoScenarios:
             click.echo("")
             click.echo("🏆 Marcus Johnson Hall of Fame Entry:")
             click.echo("   • First team member to achieve dual legend status")
-            click.echo(
-                "   • Demonstrates both execution excellence and strategic vision"
-            )
+            click.echo("   • Demonstrates both execution excellence and strategic vision")
             click.echo("   • Mentors others in developing balanced leadership")
             click.echo("   • Sets the standard for complete AI-First SDLC leadership")
             click.echo("")
@@ -379,8 +365,6 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         # Simulate team analysis
-        team_results = {}
-
         click.echo("🔍 Analyzing Team Leadership Landscape...")
         click.echo("")
 
@@ -395,22 +379,14 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         total_billy_wright = (
-            alex_result["score"]
-            + sarah_result.get("billy_wright_score", 70)
-            + marcus_result["billy_wright_score"]
+            alex_result["score"] + sarah_result.get("billy_wright_score", 70) + marcus_result["billy_wright_score"]
         ) / 3
         total_stan_cullis = (
-            alex_result.get("stan_cullis_score", 60)
-            + sarah_result["score"]
-            + marcus_result["stan_cullis_score"]
+            alex_result.get("stan_cullis_score", 60) + sarah_result["score"] + marcus_result["stan_cullis_score"]
         ) / 3
 
-        click.echo(
-            f"⚽ Team Billy Wright (Execution) Average: {total_billy_wright:.1f}/100"
-        )
-        click.echo(
-            f"🧠 Team Stan Cullis (Strategic) Average: {total_stan_cullis:.1f}/100"
-        )
+        click.echo(f"⚽ Team Billy Wright (Execution) Average: {total_billy_wright:.1f}/100")
+        click.echo(f"🧠 Team Stan Cullis (Strategic) Average: {total_stan_cullis:.1f}/100")
         click.echo("")
 
         # Leadership distribution
@@ -454,9 +430,7 @@ class LeadershipDemoScenarios:
             maturity_level = "Emerging Leadership"
             maturity_icon = "🌱"
 
-        click.echo(
-            f"{maturity_icon} Team Leadership Maturity: {maturity_level} ({overall_maturity:.1f}/100)"
-        )
+        click.echo(f"{maturity_icon} Team Leadership Maturity: {maturity_level} ({overall_maturity:.1f}/100)")
         click.echo("")
 
         return {
@@ -487,9 +461,7 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         click.echo("⚠️  SIMULATED CRISIS SCENARIO")
-        click.echo(
-            "Critical production system failure during Black Friday peak traffic"
-        )
+        click.echo("Critical production system failure during Black Friday peak traffic")
         click.echo("Multiple systems affected, customer transactions failing")
         click.echo("Revenue impact: $10,000/minute")
         click.echo("")
@@ -553,41 +525,27 @@ class LeadershipDemoScenarios:
         click.echo("📈 Crisis Leadership Analysis:")
         click.echo("")
 
-        total_leadership_score = sum(
-            e["leadership_score"] for e in crisis_timeline
-        ) / len(crisis_timeline)
+        total_leadership_score = sum(e["leadership_score"] for e in crisis_timeline) / len(crisis_timeline)
 
         click.echo(f"Overall Crisis Response Score: {total_leadership_score:.1f}/100")
         click.echo("")
         click.echo("🏆 Leadership Highlights:")
-        click.echo(
-            "   • Billy Wright leader excelled in immediate response and team coordination"
-        )
-        click.echo(
-            "   • Stan Cullis leader managed stakeholder communication and strategic response"
-        )
-        click.echo(
-            "   • Dual Legend leader bridged tactical and strategic responses effectively"
-        )
-        click.echo(
-            "   • Team demonstrated complementary leadership styles under pressure"
-        )
+        click.echo("   • Billy Wright leader excelled in immediate response and team coordination")
+        click.echo("   • Stan Cullis leader managed stakeholder communication and strategic response")
+        click.echo("   • Dual Legend leader bridged tactical and strategic responses effectively")
+        click.echo("   • Team demonstrated complementary leadership styles under pressure")
         click.echo("")
 
         click.echo("📚 Leadership Lessons Learned:")
         click.echo("   • Crisis reveals true leadership capabilities")
-        click.echo(
-            "   • Different leadership styles are needed at different crisis stages"
-        )
+        click.echo("   • Different leadership styles are needed at different crisis stages")
         click.echo("   • Dual legend leaders can switch between styles as needed")
         click.echo("   • Team leadership distribution provides resilience")
         click.echo("")
 
         if total_leadership_score >= 90:
             click.echo("🎉 TEAM ACHIEVEMENT: Legendary Crisis Response!")
-            click.echo(
-                "   Your team demonstrates world-class leadership under pressure"
-            )
+            click.echo("   Your team demonstrates world-class leadership under pressure")
             click.echo("")
 
         return {
@@ -602,7 +560,6 @@ class LeadershipDemoScenarios:
 @click.group()
 def cli():
     """Leadership Development Integration Demo"""
-    pass
 
 
 @cli.command()
@@ -631,19 +588,19 @@ def demo(scenario):
         click.echo("\n" + "=" * 80 + "\n")
 
     if scenario == "emerging_stan_cullis" or scenario == "all":
-        result = demo_scenarios.demo_emerging_stan_cullis_leader()
+        demo_scenarios.demo_emerging_stan_cullis_leader()
         click.echo("\n" + "=" * 80 + "\n")
 
     if scenario == "dual_legend" or scenario == "all":
-        result = demo_scenarios.demo_dual_legend_development()
+        demo_scenarios.demo_dual_legend_development()
         click.echo("\n" + "=" * 80 + "\n")
 
     if scenario == "team_assessment" or scenario == "all":
-        result = demo_scenarios.demo_team_assessment()
+        demo_scenarios.demo_team_assessment()
         click.echo("\n" + "=" * 80 + "\n")
 
     if scenario == "crisis_response" or scenario == "all":
-        result = demo_scenarios.demo_crisis_response_leadership()
+        demo_scenarios.demo_crisis_response_leadership()
         click.echo("\n" + "=" * 80 + "\n")
 
     if scenario == "all":
@@ -674,7 +631,7 @@ def integration_test():
     click.echo("1. Testing Leadership Metrics Tracker...")
     try:
         tracker = LeadershipMetricsTracker()
-        analysis = tracker.analyze_current_leadership()
+        tracker.analyze_current_leadership()
         click.echo("   ✅ Leadership analysis completed")
     except Exception as e:
         click.echo(f"   ❌ Leadership tracker error: {e}")
@@ -683,7 +640,7 @@ def integration_test():
     click.echo("2. Testing Compliance Reporter...")
     try:
         reporter = LeadershipComplianceReporter()
-        dashboard_data = reporter.generate_leadership_dashboard_data()
+        reporter.generate_leadership_dashboard_data()
         click.echo("   ✅ Dashboard data generated")
     except Exception as e:
         click.echo(f"   ❌ Compliance reporter error: {e}")

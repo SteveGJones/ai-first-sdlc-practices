@@ -250,9 +250,7 @@ class AgentDecisionTree:
             },
         }
 
-    def get_agents_for_scenario(
-        self, scenario: ScenarioType, answers: Dict[str, bool] = None
-    ) -> List[str]:
+    def get_agents_for_scenario(self, scenario: ScenarioType, answers: Dict[str, bool] = None) -> List[str]:
         """Get ordered list of agents for a scenario."""
         if scenario not in self.decision_trees:
             return []

@@ -53,8 +53,7 @@ def test_claude_md_content() -> None:
 
     for pattern in required_patterns:
         if pattern not in content:
-            raise AssertionError(
-                f"CLAUDE.md missing required pattern: {pattern}")
+            raise AssertionError(f"CLAUDE.md missing required pattern: {pattern}")
 
 
 def test_gitignore_exists() -> None:

@@ -7,9 +7,7 @@ coordinating with the team. In the Billy Wright system, every
 pass should set up a teammate for success.
 """
 
-import json
 import sys
-from pathlib import Path
 from typing import Dict, List
 
 

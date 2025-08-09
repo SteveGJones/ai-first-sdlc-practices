@@ -19,9 +19,7 @@ import urllib.error
 class SmartFrameworkSetup:
     """Smart installer for AI-First SDLC Framework"""
 
-    GITHUB_RAW_BASE = (
-        "https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main"
-    )
+    GITHUB_RAW_BASE = "https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main"
 
     # Files to download for basic setup
     ESSENTIAL_FILES = {
@@ -32,9 +30,7 @@ class SmartFrameworkSetup:
         "CLAUDE-CONTEXT-architecture.md": "CLAUDE-CONTEXT-architecture.md",
         "CLAUDE-CONTEXT-validation.md": "CLAUDE-CONTEXT-validation.md",
         "CLAUDE-CONTEXT-update.md": "CLAUDE-CONTEXT-update.md",
-        "CLAUDE-CONTEXT-language-validators.md": (
-            "CLAUDE-CONTEXT-language-validators.md"
-        ),
+        "CLAUDE-CONTEXT-language-validators.md": ("CLAUDE-CONTEXT-language-validators.md"),
         "CLAUDE-CONTEXT-logging.md": "CLAUDE-CONTEXT-logging.md",
         "CLAUDE-CONTEXT-levels.md": "CLAUDE-CONTEXT-levels.md",
         "CLAUDE-CONTEXT-agents.md": "CLAUDE-CONTEXT-agents.md",
@@ -131,10 +127,7 @@ class SmartFrameworkSetup:
         self.organized = organized
         self.sdlc_level = sdlc_level  # Use .sdlc directory structure
 
-    def download_file(
-            self,
-            remote_path: str,
-            local_path: Optional[Path]) -> bool:
+    def download_file(self, remote_path: str, local_path: Optional[Path]) -> bool:
         """Download a file from the framework repository"""
         url = f"{self.GITHUB_RAW_BASE}/{remote_path}"
 
@@ -269,8 +262,7 @@ class SmartFrameworkSetup:
 
                 while True:
                     try:
-                        choice = input(
-                            "\nSelect language (1-7) [7]: ").strip() or "7"
+                        choice = input("\nSelect language (1-7) [7]: ").strip() or "7"
                         choice_map = {
                             "1": "python",
                             "2": "node",
@@ -306,13 +298,16 @@ class SmartFrameworkSetup:
                 template_content.replace(
                     "**Project**: [Your Project Name]",
                     f"**Project**: {self.project_name}",
-                ) .replace(
+                )
+                .replace(
                     "**Purpose**: [Brief description of what this project does]",
                     f"**Purpose**: {self.project_purpose}",
-                ) .replace(
+                )
+                .replace(
                     "[CUSTOMIZE: Brief overview of your project and its main purpose]",
                     f"This project focuses on {self.project_purpose.lower()}.",
-                ))
+                )
+            )
 
             return customized_content
 
@@ -580,8 +575,7 @@ mypy .
         if "## Overview" in content:
             parts = content.split("## Getting Started")
             if len(parts) == 2:
-                content = parts[0] + python_section + \
-                    "\n## Getting Started" + parts[1]
+                content = parts[0] + python_section + "\n## Getting Started" + parts[1]
             else:
                 # Insert after Overview
                 parts = content.split("## Overview")
@@ -616,9 +610,7 @@ mypy .
         # Create level configuration
         level_config = {
             "level": self.sdlc_level,
-            "set_date": subprocess.run(
-                ["date", "+%Y-%m-%dT%H:%M:%S"], capture_output=True, text=True
-            ).stdout.strip(),
+            "set_date": subprocess.run(["date", "+%Y-%m-%dT%H:%M:%S"], capture_output=True, text=True).stdout.strip(),
             "framework_version": "1.6.0",
         }
 
@@ -726,10 +718,7 @@ Implement AI-First SDLC framework with:
         # Try both organized and regular directory structures
         architecture_dirs = [
             self.project_dir / "docs" / "architecture",  # Regular setup
-            self.project_dir
-            / ".sdlc"
-            / "templates"
-            / "architecture",  # Organized setup
+            self.project_dir / ".sdlc" / "templates" / "architecture",  # Organized setup
         ]
 
         architecture_dir = None
@@ -806,14 +795,16 @@ Implement AI-First SDLC framework with:
             f"| {self.project_name.upper()}-NFR-001 | MUST | System performance "
             f"requirements | All Components | - | tests/performance/ | ❌ |\n"
             f"| {self.project_name.upper()}-NFR-002 | MUST | Security and authentication "
-            f"| Auth Service | src/auth/ | tests/test_auth.py | ❌ |")
+            f"| Auth Service | src/auth/ | tests/test_auth.py | ❌ |"
+        )
 
         # Replace the template rows
         template_rows = (
             "| FR-001 | MUST | [Feature] | [Service] | [path/file.ext] | [test/file.ext] | ❌ |\n"
             "| FR-002 | MUST | | | | | ❌ |\n"
             "| NFR-001 | MUST | [Performance/Security] | | | | ❌ |\n"
-            "| NFR-002 | MUST | | | | | ❌ |")
+            "| NFR-002 | MUST | | | | | ❌ |"
+        )
         content = content.replace(template_rows, project_reqs)
 
         return content
@@ -850,9 +841,7 @@ Implement AI-First SDLC framework with:
             import shutil
             from datetime import datetime
 
-            backup_name = (
-                f".gitignore.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            )
+            backup_name = f".gitignore.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             backup_path = self.project_dir / backup_name
             shutil.copy2(gitignore_path, backup_path)
             print(f"📁 Created backup: {backup_name}")
@@ -871,11 +860,7 @@ Implement AI-First SDLC framework with:
         templates_to_combine = [
             "base.gitignore",
             "ai-tools.gitignore",
-            (
-                f"{self.detected_language}.gitignore"
-                if self.detected_language != "general"
-                else "general.gitignore"
-            ),
+            (f"{self.detected_language}.gitignore" if self.detected_language != "general" else "general.gitignore"),
         ]
 
         combined_content = []
@@ -887,15 +872,12 @@ Implement AI-First SDLC framework with:
                     with open(template_path, "r") as f:
                         content = f.read()
                         if content.strip():  # Only add non-empty templates
-                            combined_content.append(
-                                f"# === {template_name.replace('.gitignore', '').title()} Patterns ==="
-                            )
+                            combined_content.append(f"# === {template_name.replace('.gitignore', '').title()} Patterns ===")
                             combined_content.append(content.strip())
                             # Empty line between sections
                             combined_content.append("")
             except Exception as e:
-                self.errors.append(
-                    f"Could not read template {template_name}: {e}")
+                self.errors.append(f"Could not read template {template_name}: {e}")
 
         # Combine with existing content if any
         if existing_content:
@@ -916,11 +898,7 @@ Implement AI-First SDLC framework with:
                     filtered_lines = []
                     for line in section.split("\n"):
                         line_stripped = line.strip()
-                        if (
-                            not line_stripped
-                            or line_stripped.startswith("#")
-                            or line_stripped not in existing_patterns
-                        ):
+                        if not line_stripped or line_stripped.startswith("#") or line_stripped not in existing_patterns:
                             filtered_lines.append(line)
                     if filtered_lines:
                         filtered_content.append("\n".join(filtered_lines))
@@ -936,9 +914,7 @@ Implement AI-First SDLC framework with:
         with open(gitignore_path, "w") as f:
             f.write(final_content)
 
-        print(
-            f"✅ Created comprehensive .gitignore (detected language: {self.detected_language})"
-        )
+        print(f"✅ Created comprehensive .gitignore (detected language: {self.detected_language})")
         return True
 
     def create_initial_test(self) -> bool:
@@ -961,9 +937,7 @@ Implement AI-First SDLC framework with:
         }
 
         # Get test file info
-        template_name, target_path = test_mappings.get(
-            self.detected_language, test_mappings["general"]
-        )
+        template_name, target_path = test_mappings.get(self.detected_language, test_mappings["general"])
 
         # Create test directory if needed
         test_file_path = self.project_dir / target_path
@@ -1089,10 +1063,7 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         print(f"Purpose: {self.project_purpose}")
         print()
 
-    def _handle_quickstart_mode(
-            self,
-            skip_ci: bool,
-            github_token: str) -> bool:
+    def _handle_quickstart_mode(self, skip_ci: bool, github_token: str) -> bool:
         """Handle quickstart and organized setup modes"""
         mode_name = "organized" if self.organized else "quickstart"
         print(f"\n⚡ Running in {mode_name} mode...")
@@ -1186,12 +1157,8 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         print("\n✅ Quickstart setup completed in < 10 seconds!")
         print("\n📚 Next steps:")
         print("  1. Review the generated files")
-        print(
-            f'  2. Run the full setup with: python setup-smart.py "{self.project_purpose}"'
-        )
-        print(
-            "  3. Commit your changes: git add . && git commit -m 'Initial AI-First SDLC setup'"
-        )
+        print(f'  2. Run the full setup with: python setup-smart.py "{self.project_purpose}"')
+        print("  3. Commit your changes: git add . && git commit -m 'Initial AI-First SDLC setup'")
 
     def _setup_git_repository(self):
         """Setup git repository and branch"""
@@ -1248,8 +1215,7 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
 
         # Add language-specific directories
         if language == "python":
-            dirs.extend(["src", "tests", "src/" +
-                         self.project_name.replace("-", "_")])
+            dirs.extend(["src", "tests", "src/" + self.project_name.replace("-", "_")])
         elif language == "node":
             dirs.extend(["src", "test"])
         elif language == "go":
@@ -1271,9 +1237,7 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
             print("\n✅ Using hierarchical instruction system (CLAUDE-CORE.md)")
             self._create_claude_deprecation_notice()
         else:
-            print(
-                "\n⚠️  WARNING: Hierarchical system not found. Please update framework."
-            )
+            print("\n⚠️  WARNING: Hierarchical system not found. Please update framework.")
             self._create_claude_error_notice()
 
         # Create symlinks for other AI files
@@ -1380,9 +1344,7 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
                 print("\n🔒 Setting up branch protection using token...")
                 self.setup_branch_protection(github_token)
             else:
-                print(
-                    "\n💡 Tip: Install 'gh' CLI or provide GITHUB_TOKEN for automatic branch protection"
-                )
+                print("\n💡 Tip: Install 'gh' CLI or provide GITHUB_TOKEN for automatic branch protection")
 
     def _create_first_commit_if_needed(self):
         """Create first commit if in non-interactive mode"""
@@ -1408,9 +1370,7 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
 
         self.print_next_steps()
 
-    def setup_organized_project(
-        self, skip_ci: bool = False, github_token: str = None
-    ) -> bool:
+    def setup_organized_project(self, skip_ci: bool = False, github_token: str = None) -> bool:
         """Setup project with organized .sdlc directory structure"""
         print("\n📂 Setting up organized framework structure...")
 
@@ -1865,8 +1825,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         """Setup CI/CD for organized structure"""
         # Similar to regular CI/CD but update paths
         # This would need platform-specific templates with .sdlc paths
-        print(
-            f"✅ CI/CD setup for {platform} (paths adjusted for .sdlc structure)")
+        print(f"✅ CI/CD setup for {platform} (paths adjusted for .sdlc structure)")
 
     def run_organized_validation(self):
         """Run validation with organized structure"""
@@ -1893,8 +1852,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         try:
             subprocess.run(["git", "init"], check=True)
             subprocess.run(["git", "add", "."], check=True)
-            subprocess.run(
-                ["git", "commit", "-m", "Initial commit"], check=True)
+            subprocess.run(["git", "commit", "-m", "Initial commit"], check=True)
             return True
         except subprocess.CalledProcessError as e:
             self.errors.append(f"Failed to initialize git: {e}")
@@ -1965,9 +1923,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         context = {
             "project": self.project_name,
             "purpose": self.project_purpose,
-            "setup_date": subprocess.run(
-                ["date"], capture_output=True, text=True
-            ).stdout.strip(),
+            "setup_date": subprocess.run(["date"], capture_output=True, text=True).stdout.strip(),
             "current_task": "Complete AI-First SDLC setup",
             "next_steps": [
                 "Review and customize CLAUDE.md",
@@ -1995,9 +1951,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
             )
             print(result.stdout)
             if result.returncode != 0:
-                self.errors.append(
-                    "Validation failed (this is expected for initial setup)"
-                )
+                self.errors.append("Validation failed (this is expected for initial setup)")
             return result.returncode == 0
         except Exception as e:
             self.errors.append(f"Could not run validation: {e}")
@@ -2007,12 +1961,10 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         """Check if gh CLI is available and authenticated"""
         try:
             # Check if gh is installed
-            subprocess.run(["gh", "--version"],
-                           capture_output=True, check=True)
+            subprocess.run(["gh", "--version"], capture_output=True, check=True)
 
             # Check if authenticated
-            subprocess.run(["gh", "auth", "status"],
-                           capture_output=True, check=True)
+            subprocess.run(["gh", "auth", "status"], capture_output=True, check=True)
 
             return True
         except FileNotFoundError:
@@ -2026,8 +1978,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("   💡 To authenticate: gh auth login")
                 return False
 
-            response = (
-                input("Would you like to authenticate now? [Y/n]: ").strip().lower())
+            response = input("Would you like to authenticate now? [Y/n]: ").strip().lower()
 
             if response == "" or response == "y":
                 print("Running 'gh auth login'...")
@@ -2049,10 +2000,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("   Using GitHub CLI (gh) for secure setup...")
 
                 # Download the gh-based protection script
-                gh_script_path = (
-                    self.project_dir /
-                    "tools" /
-                    "setup-branch-protection-gh.py")
+                gh_script_path = self.project_dir / "tools" / "setup-branch-protection-gh.py"
 
                 if self.download_file(
                     "tools/automation/setup-branch-protection-gh.py",
@@ -2098,12 +2046,10 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
             # Use proper URL parsing to avoid security issues
             if remote_url.startswith("git@github.com:"):
                 # SSH: git@github.com:owner/repo.git
-                match = re.search(
-                    r"^git@github\.com:(.+?)(?:\.git)?$", remote_url)
+                match = re.search(r"^git@github\.com:(.+?)(?:\.git)?$", remote_url)
             elif remote_url.startswith("https://github.com/"):
                 # HTTPS: https://github.com/owner/repo.git
-                match = re.search(
-                    r"^https://github\.com/(.+?)(?:\.git)?$", remote_url)
+                match = re.search(r"^https://github\.com/(.+?)(?:\.git)?$", remote_url)
             else:
                 print("❌ Repository URL is not from github.com")
                 return False
@@ -2112,9 +2058,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 repo_path = match.group(1)
 
                 # Download and run the branch protection script
-                protection_script = (
-                    self.project_dir / "tools" / "setup-branch-protection.py"
-                )
+                protection_script = self.project_dir / "tools" / "setup-branch-protection.py"
                 if not protection_script.exists():
                     print("⚠️  Branch protection tool not found")
                     return False
@@ -2136,8 +2080,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 )
 
                 if result.returncode != 0:
-                    print(
-                        f"❌ Failed to set up branch protection: {result.stderr}")
+                    print(f"❌ Failed to set up branch protection: {result.stderr}")
                     return False
 
                 print("✅ Branch protection enabled for main branch")
@@ -2186,8 +2129,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 ]
 
                 # If we have project purpose, pass it as objectives
-                if (self.project_purpose and self.project_purpose !=
-                        "AI-assisted software development"):
+                if self.project_purpose and self.project_purpose != "AI-assisted software development":
                     # Create a temp file with analysis including objectives
                     # Note: analysis_data was unused - removed to fix F841
 
@@ -2202,18 +2144,14 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                 print("   🚀 Installing essential agents...")
 
                 # Try to run the installer
-                result = subprocess.run(
-                    cmd, cwd=self.project_dir, capture_output=True, text=True
-                )
+                result = subprocess.run(cmd, cwd=self.project_dir, capture_output=True, text=True)
                 if result.returncode != 0:
                     # Fallback to downloading core agents directly
                     return self._install_core_agents_fallback()
 
                 print("   ✅ Installed smart agent selection")
                 print("   💡 Run 'python tools/agent-installer.py' for more agents")
-                print(
-                    "   💡 Use 'python tools/agent-help.py <challenge>' to find agents"
-                )
+                print("   💡 Use 'python tools/agent-help.py <challenge>' to find agents")
             else:
                 # Interactive mode - just download core agents
                 return self._install_core_agents_fallback()
@@ -2323,9 +2261,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
                     "require_retrospectives": True,
                 },
                 "detected_stack": {
-                    "languages": (
-                        [self.detected_language] if self.detected_language else []
-                    ),
+                    "languages": ([self.detected_language] if self.detected_language else []),
                     "frameworks": [],
                     "project_type": self.project_type,
                 },
@@ -2377,9 +2313,7 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
             # Stage all essential files
             for file in essential_files:
                 file_path = self.project_dir / file
-                if file_path.exists() or any(
-                    (self.project_dir / p).exists() for p in Path(file).parents
-                ):
+                if file_path.exists() or any((self.project_dir / p).exists() for p in Path(file).parents):
                     try:
                         subprocess.run(
                             ["git", "add", file],
@@ -2499,10 +2433,7 @@ Run 'python tools/agent-installer.py' to install specialist agents.
         print("\n4. Install recommended AI agents:")
 
         # Check if this is an MCP project
-        is_mcp_project = (
-            "mcp" in self.project_purpose.lower()
-            or "model context protocol" in self.project_purpose.lower()
-        )
+        is_mcp_project = "mcp" in self.project_purpose.lower() or "model context protocol" in self.project_purpose.lower()
 
         if is_mcp_project:
             self._print_mcp_agents()
@@ -2545,35 +2476,24 @@ Run 'python tools/agent-installer.py' to install specialist agents.
         print("   ")
         print("   📚 Based on your project type, also consider:")
 
-        if (
-            "python" in self.project_purpose.lower()
-            or "api" in self.project_purpose.lower()
-        ):
+        if "python" in self.project_purpose.lower() or "api" in self.project_purpose.lower():
             print("     • python-expert - Python best practices")
             print("     • ai-test-engineer - AI system testing")
-        if (
-            "langchain" in self.project_purpose.lower()
-            or "llm" in self.project_purpose.lower()
-        ):
+        if "langchain" in self.project_purpose.lower() or "llm" in self.project_purpose.lower():
             print("     • langchain-architect - LangChain expertise")
             print("     • prompt-engineer - Prompt optimization")
 
     def _print_agent_installation_info(self):
         """Print agent installation information and requirements"""
         print("   ")
-        print(
-            "   ⚠️  IMPORTANT: Installing agents requires a reboot of your AI assistant!"
-        )
+        print("   ⚠️  IMPORTANT: Installing agents requires a reboot of your AI assistant!")
         print("   ")
         print("   To install agents, use:")
         print("   python tools/agent-installer.py --install <agent-name>")
-        print(
-            "   Example: python tools/agent-installer.py --install mcp-server-architect"
-        )
+        print("   Example: python tools/agent-installer.py --install mcp-server-architect")
         print("   ")
         print("   To discover more agents for your needs:")
-        print(
-            "   - Ask: 'What agents should I install for [your specific need]?'")
+        print("   - Ask: 'What agents should I install for [your specific need]?'")
         print("   - The ai-first-kick-starter agent can recommend agents anytime")
         print("   - List all available agents: python tools/agent-installer.py --list")
         print("\n🚨 CRITICAL: AI AGENTS MUST BE USED PROACTIVELY!")
@@ -2594,9 +2514,7 @@ Run 'python tools/agent-installer.py' to install specialist agents.
         print("   🛡️  Prevent syntax errors and validation failures before push!")
         print("   python tools/automation/install-git-hooks.py")
         print("   ")
-        print(
-            "   This installs pre-commit and pre-push validation to catch issues locally."
-        )
+        print("   This installs pre-commit and pre-push validation to catch issues locally.")
         print("   See docs/LOCAL-VALIDATION-WORKFLOW.md for details.")
 
         print("\n6. Customize CLAUDE.md with project-specific details:")
@@ -2605,17 +2523,13 @@ Run 'python tools/agent-installer.py' to install specialist agents.
         print("   python tools/progress-tracker.py list")
         print("\n8. When ready, push the branch:")
         print("   git add .")
-        print(
-            '   git commit -m "feat: implement AI-First SDLC framework with Zero Technical Debt"'
-        )
+        print('   git commit -m "feat: implement AI-First SDLC framework with Zero Technical Debt"')
         print("   git push -u origin ai-first-kick-start")
         print("\n9. Create retrospective (REQUIRED before PR):")
         print("   Create file: retrospectives/00-ai-first-setup.md")
         print("   Document what went well, what could improve, and lessons learned")
         print("\n10. Create a pull request to merge into main")
-        print(
-            "   Note: PR will be rejected without retrospective AND architecture docs!"
-        )
+        print("   Note: PR will be rejected without retrospective AND architecture docs!")
 
     def _print_documentation_links(self):
         """Print documentation and reference links"""
@@ -2626,9 +2540,7 @@ Run 'python tools/agent-installer.py' to install specialist agents.
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Smart setup for AI-First SDLC Framework"
-    )
+    parser = argparse.ArgumentParser(description="Smart setup for AI-First SDLC Framework")
     parser.add_argument(
         "purpose",
         nargs="?",
@@ -2641,13 +2553,8 @@ def main():
         default=Path.cwd(),
         help="Project directory (default: current)",
     )
-    parser.add_argument(
-        "--skip-ci",
-        action="store_true",
-        help="Skip CI/CD setup")
-    parser.add_argument(
-        "--version", default="main", help="Framework version/branch to use"
-    )
+    parser.add_argument("--skip-ci", action="store_true", help="Skip CI/CD setup")
+    parser.add_argument("--version", default="main", help="Framework version/branch to use")
     parser.add_argument(
         "--github-token",
         default=os.environ.get("GITHUB_TOKEN"),
@@ -2683,10 +2590,7 @@ def main():
     args = parser.parse_args()
 
     # For AI agents: detect if being called with framework URL pattern
-    if (
-        args.purpose
-        and "github.com/SteveGJones/ai-first-sdlc-practices" in args.purpose
-    ):
+    if args.purpose and "github.com/SteveGJones/ai-first-sdlc-practices" in args.purpose:
         # Extract actual purpose if provided after URL
         parts = args.purpose.split(" for ")
         if len(parts) > 1:
@@ -2707,14 +2611,10 @@ def main():
 
     # Update version if specified
     if args.version != "main":
-        setup.GITHUB_RAW_BASE = setup.GITHUB_RAW_BASE.replace(
-            "/main", f"/{args.version}"
-        )
+        setup.GITHUB_RAW_BASE = setup.GITHUB_RAW_BASE.replace("/main", f"/{args.version}")
 
     # Run setup
-    success = setup.run_setup(
-        args.skip_ci, args.github_token, args.quickstart or args.organized
-    )
+    success = setup.run_setup(args.skip_ci, args.github_token, args.quickstart or args.organized)
 
     sys.exit(0 if success else 1)
 

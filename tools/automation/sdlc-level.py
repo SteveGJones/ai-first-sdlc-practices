@@ -198,17 +198,10 @@ class SDLCLevelManager:
         count = 0
         for root, dirs, files in os.walk(self.project_path):
             # Skip hidden and build directories
-            dirs[:] = [
-                d
-                for d in dirs
-                if not d.startswith(".")
-                and d not in ["node_modules", "__pycache__", "dist", "build"]
-            ]
+            dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ["node_modules", "__pycache__", "dist", "build"]]
 
             for file in files:
-                if any(
-                    file.endswith(ext) for ext in [".py", ".js", ".ts", ".java", ".go"]
-                ):
+                if any(file.endswith(ext) for ext in [".py", ".js", ".ts", ".java", ".go"]):
                     count += 1
         return count
 
@@ -294,9 +287,7 @@ class SDLCLevelManager:
             readiness["no_todos"] = not self._check_for_todos()
 
         if level_config["branch_protection"] in ["required", "strict"]:
-            readiness["branch_protection"] = (
-                self._check_branch_protection() == "enabled"
-            )
+            readiness["branch_protection"] = self._check_branch_protection() == "enabled"
 
         return readiness
 
@@ -304,7 +295,6 @@ class SDLCLevelManager:
 @click.group()
 def cli():
     """SDLC Level Management for AI-First Framework"""
-    pass
 
 
 @cli.command()
@@ -364,9 +354,7 @@ def set(level, force):
 
 
 @cli.command()
-@click.argument(
-    "target_level", type=click.Choice(["prototype", "production", "enterprise"])
-)
+@click.argument("target_level", type=click.Choice(["prototype", "production", "enterprise"]))
 def migrate(target_level):
     """Guide migration to a different SDLC level."""
     manager = SDLCLevelManager()

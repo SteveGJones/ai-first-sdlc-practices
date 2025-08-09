@@ -11,9 +11,9 @@ import click
 import time
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 import tempfile
 
 
@@ -90,9 +90,7 @@ class TeamDashboard:
     def _get_readiness_score(self, formation_type: str) -> float:
         """Get team readiness score using validation tool"""
         try:
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".json", delete=False
-            ) as f:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
                 temp_file = f.name
 
             result = subprocess.run(
@@ -132,9 +130,7 @@ class TeamDashboard:
             if chemistry_files:
                 # Get most recent chemistry results
                 latest_file = max(chemistry_files, key=lambda x: x.stat().st_mtime)
-                if (
-                    datetime.now() - datetime.fromtimestamp(latest_file.stat().st_mtime)
-                ).days < 7:
+                if (datetime.now() - datetime.fromtimestamp(latest_file.stat().st_mtime)).days < 7:
                     base_score += 0.15  # Bonus for recent chemistry work
 
             return min(1.0, base_score)
@@ -174,12 +170,7 @@ class TeamDashboard:
         # Check for recent validation runs
         log_files = list(Path(".").glob("*validation*.log"))
         if log_files:
-            recent_logs = [
-                f
-                for f in log_files
-                if (datetime.now() - datetime.fromtimestamp(f.stat().st_mtime)).hours
-                < 24
-            ]
+            recent_logs = [f for f in log_files if (datetime.now() - datetime.fromtimestamp(f.stat().st_mtime)).hours < 24]
             if recent_logs:
                 activity.append(f"Validation runs: {len(recent_logs)} in last 24h")
 
@@ -187,9 +178,7 @@ class TeamDashboard:
         proposal_dir = Path("docs/feature-proposals")
         if proposal_dir.exists():
             recent_proposals = [
-                f
-                for f in proposal_dir.glob("*.md")
-                if (datetime.now() - datetime.fromtimestamp(f.stat().st_mtime)).days < 7
+                f for f in proposal_dir.glob("*.md") if (datetime.now() - datetime.fromtimestamp(f.stat().st_mtime)).days < 7
             ]
             if recent_proposals:
                 activity.append(f"New proposals: {len(recent_proposals)} this week")
@@ -218,42 +207,24 @@ class TeamDashboard:
             click.clear()
 
         # Header
-        formation_info = self.dashboard_config["formations"].get(
-            metrics.formation_type, {"symbol": "🤖", "color": "white"}
-        )
+        formation_info = self.dashboard_config["formations"].get(metrics.formation_type, {"symbol": "🤖", "color": "white"})
 
         click.echo("=" * 80)
-        click.echo(
-            f"{formation_info['symbol']} AI TEAM DASHBOARD - {metrics.formation_type.upper()} FORMATION"
-        )
+        click.echo(f"{formation_info['symbol']} AI TEAM DASHBOARD - {metrics.formation_type.upper()} FORMATION")
         click.echo("=" * 80)
-        click.echo(
-            f"Last Updated: {metrics.last_updated.strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+        click.echo(f"Last Updated: {metrics.last_updated.strftime('%Y-%m-%d %H:%M:%S')}")
         click.echo()
 
         # Core Metrics
-        readiness_status = self._get_status_indicator(
-            metrics.readiness_score, "readiness"
-        )
-        chemistry_status = self._get_status_indicator(
-            metrics.chemistry_score, "chemistry"
-        )
-        trend_indicator = {"improving": "📈", "stable": "➡️", "declining": "📉"}[
-            metrics.performance_trend
-        ]
+        readiness_status = self._get_status_indicator(metrics.readiness_score, "readiness")
+        chemistry_status = self._get_status_indicator(metrics.chemistry_score, "chemistry")
+        trend_indicator = {"improving": "📈", "stable": "➡️", "declining": "📉"}[metrics.performance_trend]
 
         click.echo("🎯 TEAM METRICS")
-        click.echo(
-            f"├── Readiness Score:    {readiness_status} {metrics.readiness_score:.1%}"
-        )
-        click.echo(
-            f"├── Chemistry Score:    {chemistry_status} {metrics.chemistry_score:.1%}"
-        )
+        click.echo(f"├── Readiness Score:    {readiness_status} {metrics.readiness_score:.1%}")
+        click.echo(f"├── Chemistry Score:    {chemistry_status} {metrics.chemistry_score:.1%}")
         click.echo(f"├── Active Agents:      👥 {metrics.agent_count}")
-        click.echo(
-            f"└── Performance Trend:  {trend_indicator} {metrics.performance_trend.title()}"
-        )
+        click.echo(f"└── Performance Trend:  {trend_indicator} {metrics.performance_trend.title()}")
         click.echo()
 
         # Agent Status
@@ -309,23 +280,15 @@ class TeamDashboard:
 
         # Readiness alerts
         if metrics.readiness_score < thresholds["readiness_critical"]:
-            alerts.append(
-                "🚨 CRITICAL: Team readiness below 60% - immediate attention required"
-            )
+            alerts.append("🚨 CRITICAL: Team readiness below 60% - immediate attention required")
         elif metrics.readiness_score < thresholds["readiness_warning"]:
-            alerts.append(
-                "⚠️ WARNING: Team readiness below 80% - improvement recommended"
-            )
+            alerts.append("⚠️ WARNING: Team readiness below 80% - improvement recommended")
 
         # Chemistry alerts
         if metrics.chemistry_score < thresholds["chemistry_critical"]:
-            alerts.append(
-                "🚨 CRITICAL: Team chemistry below 70% - run chemistry exercises"
-            )
+            alerts.append("🚨 CRITICAL: Team chemistry below 70% - run chemistry exercises")
         elif metrics.chemistry_score < thresholds["chemistry_warning"]:
-            alerts.append(
-                "⚠️ WARNING: Team chemistry below 80% - consider team development"
-            )
+            alerts.append("⚠️ WARNING: Team chemistry below 80% - consider team development")
 
         # Agent count alerts
         formation_configs = {
@@ -336,9 +299,7 @@ class TeamDashboard:
             "orchestrator": {"min_agents": 10, "optimal": 12},
         }
 
-        config = formation_configs.get(
-            metrics.formation_type, {"min_agents": 6, "optimal": 8}
-        )
+        config = formation_configs.get(metrics.formation_type, {"min_agents": 6, "optimal": 8})
         if metrics.agent_count < config["min_agents"]:
             alerts.append(
                 f"⚠️ WARNING: Only {metrics.agent_count} agents active, {config['min_agents']} minimum for {metrics.formation_type}"
@@ -346,9 +307,7 @@ class TeamDashboard:
 
         # Trend alerts
         if metrics.performance_trend == "declining":
-            alerts.append(
-                "📉 ATTENTION: Performance trend declining - investigate team issues"
-            )
+            alerts.append("📉 ATTENTION: Performance trend declining - investigate team issues")
 
         return alerts
 
@@ -366,29 +325,20 @@ class TeamDashboard:
                 self.metrics_history.append(current_metrics)
 
                 # Keep history within limits
-                if (
-                    len(self.metrics_history)
-                    > self.dashboard_config["history_retention"]
-                ):
-                    self.metrics_history = self.metrics_history[
-                        -self.dashboard_config["history_retention"] :
-                    ]
+                if len(self.metrics_history) > self.dashboard_config["history_retention"]:
+                    self.metrics_history = self.metrics_history[-self.dashboard_config["history_retention"] :]
 
                 # Display dashboard
                 self.display_dashboard(current_metrics)
 
                 # Wait for input or timeout
-                click.echo(
-                    f"\n⏱️ Auto-refresh in {self.dashboard_config['refresh_interval']} seconds..."
-                )
+                click.echo(f"\n⏱️ Auto-refresh in {self.dashboard_config['refresh_interval']} seconds...")
 
                 # Non-blocking input with timeout
                 import select
                 import sys
 
-                ready, _, _ = select.select(
-                    [sys.stdin], [], [], self.dashboard_config["refresh_interval"]
-                )
+                ready, _, _ = select.select([sys.stdin], [], [], self.dashboard_config["refresh_interval"])
 
                 if ready:
                     user_input = sys.stdin.readline().strip().lower()
@@ -482,13 +432,10 @@ class TeamDashboard:
             click.echo(f"  • {activity}")
 
         if len(self.metrics_history) > 1:
-            click.echo(
-                f"\nTrend History (last {len(self.metrics_history)} measurements):"
-            )
+            click.echo(f"\nTrend History (last {len(self.metrics_history)} measurements):")
             for i, m in enumerate(self.metrics_history[-5:]):
                 click.echo(
-                    f"  {i+1}. {m.last_updated.strftime('%H:%M')} - "
-                    f"R:{m.readiness_score:.1%} C:{m.chemistry_score:.1%}"
+                    f"  {i+1}. {m.last_updated.strftime('%H:%M')} - " f"R:{m.readiness_score:.1%} C:{m.chemistry_score:.1%}"
                 )
 
         click.echo("\nPress Enter to continue...")
@@ -559,21 +506,15 @@ Formation Types:
 @click.command()
 @click.option(
     "--formation",
-    type=click.Choice(
-        ["builder", "specialist", "innovator", "transformer", "orchestrator"]
-    ),
+    type=click.Choice(["builder", "specialist", "innovator", "transformer", "orchestrator"]),
     default="builder",
     help="Formation type to monitor",
 )
 @click.option("--live", is_flag=True, help="Run live dashboard with auto-refresh")
 @click.option("--snapshot", is_flag=True, help="Show single snapshot of team status")
 @click.option("--export", type=click.Path(), help="Export metrics to file")
-@click.option(
-    "--refresh-interval", type=int, default=30, help="Auto-refresh interval in seconds"
-)
-def main(
-    formation: str, live: bool, snapshot: bool, export: str, refresh_interval: int
-):
+@click.option("--refresh-interval", type=int, default=30, help="Auto-refresh interval in seconds")
+def main(formation: str, live: bool, snapshot: bool, export: str, refresh_interval: int):
     """AI Team Performance Dashboard"""
 
     dashboard = TeamDashboard()
@@ -597,9 +538,7 @@ def main(
             dashboard.export_metrics(export)
             click.echo(f"📊 Metrics exported to {export}")
         else:
-            click.echo(
-                "Use --live for interactive dashboard, --snapshot for single view, or --export to save metrics"
-            )
+            click.echo("Use --live for interactive dashboard, --snapshot for single view, or --export to save metrics")
 
     except KeyboardInterrupt:
         click.echo("\n👋 Dashboard terminated by user")

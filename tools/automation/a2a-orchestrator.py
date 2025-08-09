@@ -9,9 +9,7 @@ for multi-agent workflows with proper message passing and escalation.
 Based on the A2A Tactical Team Discussion findings.
 """
 
-import json
 import yaml
-import time
 import uuid
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
@@ -210,7 +208,6 @@ class A2AOrchestrator:
         """Parse YAML configuration into agent capabilities"""
         # Implementation for parsing existing config format
         # This would adapt the current agent-compositions.yaml format
-        pass
 
     def create_message(
         self,
@@ -248,13 +245,8 @@ class A2AOrchestrator:
 
     def send_message(self, message: AgentMessage) -> bool:
         """Send message and validate receiver capability"""
-        if (
-            message.receiver not in self.agent_capabilities
-            and message.receiver != "all"
-        ):
-            click.echo(
-                f"⚠️  Warning: Receiver '{message.receiver}' not found in agent formation"
-            )
+        if message.receiver not in self.agent_capabilities and message.receiver != "all":
+            click.echo(f"⚠️  Warning: Receiver '{message.receiver}' not found in agent formation")
             return False
 
         click.echo(f"📨 {message.sender} → {message.receiver}: {message.content}")
@@ -276,19 +268,13 @@ class A2AOrchestrator:
         # Check for keywords that suggest specific routing
         content_lower = content.lower()
 
-        if any(
-            word in content_lower for word in ["security", "vulnerability", "threat"]
-        ):
+        if any(word in content_lower for word in ["security", "vulnerability", "threat"]):
             suggested_receivers.append("security-architect")
-        if any(
-            word in content_lower for word in ["performance", "slow", "optimization"]
-        ):
+        if any(word in content_lower for word in ["performance", "slow", "optimization"]):
             suggested_receivers.append("performance-engineer")
         if any(word in content_lower for word in ["test", "validation", "quality"]):
             suggested_receivers.append("ai-test-engineer")
-        if any(
-            word in content_lower for word in ["deploy", "infrastructure", "scaling"]
-        ):
+        if any(word in content_lower for word in ["deploy", "infrastructure", "scaling"]):
             suggested_receivers.append("devops-specialist")
 
         # If no specific routing found, use sender's primary pass targets
@@ -297,9 +283,7 @@ class A2AOrchestrator:
 
         return suggested_receivers
 
-    def start_workflow(
-        self, workflow_name: str, initiator: str, description: str
-    ) -> str:
+    def start_workflow(self, workflow_name: str, initiator: str, description: str) -> str:
         """Start a coordinated multi-agent workflow"""
         workflow_id = str(uuid.uuid4())[:8]
 
@@ -407,21 +391,15 @@ class A2AOrchestrator:
 
         for msg in self.message_history:
             analysis["by_priority"][msg.priority] += 1
-            analysis["by_type"][msg.message_type] = (
-                analysis["by_type"].get(msg.message_type, 0) + 1
-            )
+            analysis["by_type"][msg.message_type] = analysis["by_type"].get(msg.message_type, 0) + 1
 
             # Track agent activity
-            analysis["most_active_agents"][msg.sender] = (
-                analysis["most_active_agents"].get(msg.sender, 0) + 1
-            )
+            analysis["most_active_agents"][msg.sender] = analysis["most_active_agents"].get(msg.sender, 0) + 1
 
             if msg.message_type == "escalation":
                 analysis["escalation_rate"] += 1
 
-        analysis["escalation_rate"] = (
-            analysis["escalation_rate"] / len(self.message_history)
-        ) * 100
+        analysis["escalation_rate"] = (analysis["escalation_rate"] / len(self.message_history)) * 100
 
         return analysis
 
@@ -429,7 +407,6 @@ class A2AOrchestrator:
 @click.group()
 def cli():
     """Agent-to-Agent Communication Orchestrator - Billy Wright Formation"""
-    pass
 
 
 @cli.command()
@@ -522,9 +499,7 @@ def formation():
             click.echo(f"\n{role.upper()}:")
             for agent in agents:
                 if agent in orchestrator.agent_capabilities:
-                    specializations = orchestrator.agent_capabilities[
-                        agent
-                    ].specializations
+                    specializations = orchestrator.agent_capabilities[agent].specializations
                     click.echo(f"  • {agent} - {', '.join(specializations)}")
                 else:
                     click.echo(f"  • {agent}")
@@ -555,9 +530,7 @@ def analyze():
         click.echo(f"  {msg_type}: {count}")
 
     click.echo("\nMost Active Agents:")
-    sorted_agents = sorted(
-        analysis["most_active_agents"].items(), key=lambda x: x[1], reverse=True
-    )
+    sorted_agents = sorted(analysis["most_active_agents"].items(), key=lambda x: x[1], reverse=True)
     for agent, count in sorted_agents[:5]:
         click.echo(f"  {agent}: {count} messages")
 

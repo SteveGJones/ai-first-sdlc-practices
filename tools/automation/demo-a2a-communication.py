@@ -7,7 +7,6 @@ Demonstrates the Billy Wright tactical formation in action
 import click
 import importlib.util
 import sys
-import time
 from pathlib import Path
 
 # Add the tools directory to path so we can import the orchestrator
@@ -15,9 +14,7 @@ sys.path.append(str(Path(__file__).parent))
 
 # Import with the correct module name (dash becomes underscore)
 
-spec = importlib.util.spec_from_file_location(
-    "a2a_orchestrator", Path(__file__).parent / "a2a-orchestrator.py"
-)
+spec = importlib.util.spec_from_file_location("a2a_orchestrator", Path(__file__).parent / "a2a-orchestrator.py")
 a2a_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(a2a_module)
 
@@ -34,7 +31,7 @@ def demo_feature_development():
 
     # 1. Start the workflow
     print("\n1. 📋 Starting Feature Development Workflow...")
-    workflow_id = orchestrator.start_workflow(
+    orchestrator.start_workflow(
         "feature_development",
         "product-owner",
         "AI-powered recommendation engine for e-commerce platform",
@@ -96,9 +93,7 @@ def demo_feature_development():
     )
     orchestrator.send_message(validation_msg)
 
-    print(
-        f"\n✅ Workflow Complete! Feature development coordinated through {len(orchestrator.message_history)} messages"
-    )
+    print(f"\n✅ Workflow Complete! Feature development coordinated through {len(orchestrator.message_history)} messages")
     return orchestrator
 
 
@@ -125,7 +120,7 @@ def demo_performance_crisis():
 
     # 2. Escalation to SRE
     print("\n2. 🚨 Escalating to SRE Specialist...")
-    success = orchestrator.escalate_issue(
+    orchestrator.escalate_issue(
         "performance-engineer",
         "Critical performance degradation: 300% slower response times affecting all users",
         "HIGH",
@@ -155,9 +150,7 @@ def demo_performance_crisis():
     )
     orchestrator.send_message(resolution_msg)
 
-    print(
-        f"\n✅ Crisis Resolved! Coordinated response through {len(orchestrator.message_history)} critical messages"
-    )
+    print(f"\n✅ Crisis Resolved! Coordinated response through {len(orchestrator.message_history)} critical messages")
     return orchestrator
 
 
@@ -192,9 +185,7 @@ def demo_communication_analysis():
         print(f"     {msg_type}: {count} messages")
 
     print("\n   Most Active Agents:")
-    sorted_agents = sorted(
-        analysis["most_active_agents"].items(), key=lambda x: x[1], reverse=True
-    )
+    sorted_agents = sorted(analysis["most_active_agents"].items(), key=lambda x: x[1], reverse=True)
     for agent, count in sorted_agents[:5]:
         print(f"     {agent}: {count} messages")
 
@@ -219,13 +210,9 @@ def demo_team_formation():
                     print(f"  • {agent}: {specializations}")
 
                     # Show communication patterns
-                    print(
-                        f"    → Passes to: {', '.join(capability.primary_passes_to[:3])}"
-                    )
+                    print(f"    → Passes to: {', '.join(capability.primary_passes_to[:3])}")
                     if len(capability.primary_passes_to) > 3:
-                        print(
-                            f"      (and {len(capability.primary_passes_to) - 3} others)"
-                        )
+                        print(f"      (and {len(capability.primary_passes_to) - 3} others)")
 
 
 @click.command()
@@ -260,9 +247,7 @@ def main(demo):
     print("\nNext Steps:")
     print("1. Review the tactical discussion: docs/A2A-TACTICAL-TEAM-DISCUSSION.md")
     print("2. Study the usage guide: docs/A2A-USAGE-GUIDE.md")
-    print(
-        "3. Customize communication protocols: agents/a2a-communication-protocols.yaml"
-    )
+    print("3. Customize communication protocols: agents/a2a-communication-protocols.yaml")
     print("4. Start using: python tools/automation/a2a-orchestrator.py --help")
 
 

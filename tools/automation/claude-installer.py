@@ -188,9 +188,7 @@ class ClaudeInstaller:
             print(f"Warning: Could not download agent {agent_name}: {e}")
             return None
 
-    def find_agent_category(
-        self, agent_name: str, available: Dict[str, List[str]]
-    ) -> Optional[str]:
+    def find_agent_category(self, agent_name: str, available: Dict[str, List[str]]) -> Optional[str]:
         """Find which category an agent belongs to."""
         for category, agents in available.items():
             if agent_name in agents:
@@ -406,9 +404,7 @@ class ClaudeInstaller:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Claude AI Agent Installer - DevOps Grade"
-    )
+    parser = argparse.ArgumentParser(description="Claude AI Agent Installer - DevOps Grade")
 
     parser.add_argument(
         "--mode",
@@ -417,9 +413,7 @@ def main():
         help="Installation mode",
     )
 
-    parser.add_argument(
-        "--project-root", type=Path, default=Path.cwd(), help="Project root directory"
-    )
+    parser.add_argument("--project-root", type=Path, default=Path.cwd(), help="Project root directory")
 
     parser.add_argument("--list", action="store_true", help="List installed agents")
 

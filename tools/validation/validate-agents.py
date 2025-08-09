@@ -132,27 +132,21 @@ class AgentValidator:
             # Check priority if specified
             if "priority" in metadata:
                 if metadata["priority"] not in VALID_PRIORITIES:
-                    self.warnings.append(
-                        (agent_name, f"Invalid priority: {metadata['priority']}")
-                    )
+                    self.warnings.append((agent_name, f"Invalid priority: {metadata['priority']}"))
 
             # Validate expertise list
             if "expertise" in metadata:
                 if not isinstance(metadata["expertise"], list):
                     self.errors.append((agent_name, "Expertise must be a list"))
                 elif len(metadata["expertise"]) < 3:
-                    self.warnings.append(
-                        (agent_name, "Agent should have at least 3 areas of expertise")
-                    )
+                    self.warnings.append((agent_name, "Agent should have at least 3 areas of expertise"))
 
             # Validate triggers
             if "triggers" in metadata:
                 if not isinstance(metadata["triggers"], list):
                     self.errors.append((agent_name, "Triggers must be a list"))
                 elif len(metadata["triggers"]) < 2:
-                    self.warnings.append(
-                        (agent_name, "Agent should have at least 2 triggers")
-                    )
+                    self.warnings.append((agent_name, "Agent should have at least 2 triggers"))
 
             # Content quality checks
             content_lines = metadata.get("_content_lines", 0)
@@ -238,9 +232,7 @@ class AgentValidator:
                                 "languages/",
                             ]
                         ):
-                            self.warnings.append(
-                                (agent_name, f"Unknown dependency: {dep}")
-                            )
+                            self.warnings.append((agent_name, f"Unknown dependency: {dep}"))
 
     def _validate_categories(self) -> None:
         """Ensure proper category distribution."""

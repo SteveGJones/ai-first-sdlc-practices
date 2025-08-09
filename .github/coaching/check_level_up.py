@@ -101,9 +101,7 @@ def check_level_requirements(progress: Dict) -> Tuple[bool, str, str]:
             avg_score = sum(scores) / len(scores)
             min_avg = 40 if next_level == 3 else 60 if next_level == 4 else 80
             if avg_score < min_avg:
-                missing.append(
-                    f"Collaboration average too low ({avg_score:.1f}/{min_avg})"
-                )
+                missing.append(f"Collaboration average too low ({avg_score:.1f}/{min_avg})")
 
     can_level_up = len(missing) == 0
     missing_str = ", ".join(missing) if missing else "All requirements met!"
@@ -138,9 +136,7 @@ def main():
     print(f"Total PRs: {progress.get('total_prs', 0)}")
 
     if progress.get("collaboration_scores"):
-        avg = sum(progress["collaboration_scores"]) / len(
-            progress["collaboration_scores"]
-        )
+        avg = sum(progress["collaboration_scores"]) / len(progress["collaboration_scores"])
         print(f"Avg Collaboration: {avg:.1f}/100")
 
     print(f"\nAchievements: {len(progress.get('achievements', []))}")
@@ -155,7 +151,7 @@ def main():
 
         # Set GitHub Actions output
         if "--github-output" in sys.argv:
-            print(f"::set-output name=can_level_up::true")
+            print("::set-output name=can_level_up::true")
             print(f"::set-output name=next_level::{progress['level'] + 1}")
             print(f"::set-output name=next_title::{next_title}")
     else:
@@ -163,7 +159,7 @@ def main():
         print(f"\nMissing requirements: {missing}")
 
         if "--github-output" in sys.argv:
-            print(f"::set-output name=can_level_up::false")
+            print("::set-output name=can_level_up::false")
 
     sys.exit(0)
 

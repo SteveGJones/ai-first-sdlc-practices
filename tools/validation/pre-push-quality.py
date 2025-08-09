@@ -28,9 +28,7 @@ class CodeQLStyleAnalyzer:
         self.issues: List[Dict[str, Any]] = []
         self.fixes_applied = 0
 
-    def analyze_argument_count_mismatches(
-        self, file_path: Path
-    ) -> List[Dict[str, Any]]:
+    def analyze_argument_count_mismatches(self, file_path: Path) -> List[Dict[str, Any]]:
         """Detect wrong number of arguments in function calls"""
         issues = []
 
@@ -99,18 +97,12 @@ class CodeQLStyleAnalyzer:
                                 "column": node.col_offset,
                                 "message": f"save_context() expects 2-3 arguments but got {len(node.args)}",
                                 "severity": "error",
-                                "code_snippet": (
-                                    lines[node.lineno - 1].strip()
-                                    if node.lineno <= len(lines)
-                                    else ""
-                                ),
+                                "code_snippet": (lines[node.lineno - 1].strip() if node.lineno <= len(lines) else ""),
                                 "suggestion": 'Add context_type parameter: save_context("manual", data)',
                             }
                         )
 
-                    elif (
-                        func_name and func_name.endswith("Configurator") and class_name
-                    ):
+                    elif func_name and func_name.endswith("Configurator") and class_name:
                         # Check class instantiation
                         if len(node.args) == 4:  # Common wrong pattern
                             issues.append(
@@ -121,11 +113,7 @@ class CodeQLStyleAnalyzer:
                                     "column": node.col_offset,
                                     "message": f"{func_name} constructor arguments may be in wrong order",
                                     "severity": "error",
-                                    "code_snippet": (
-                                        lines[node.lineno - 1].strip()
-                                        if node.lineno <= len(lines)
-                                        else ""
-                                    ),
+                                    "code_snippet": (lines[node.lineno - 1].strip() if node.lineno <= len(lines) else ""),
                                     "suggestion": "Check constructor signature: __init__(platform, token, repo)",
                                 }
                             )
@@ -139,11 +127,7 @@ class CodeQLStyleAnalyzer:
                                 "column": node.col_offset,
                                 "message": f"{func_name}() expects {expected_args} arguments but got {len(node.args)}",
                                 "severity": "warning",
-                                "code_snippet": (
-                                    lines[node.lineno - 1].strip()
-                                    if node.lineno <= len(lines)
-                                    else ""
-                                ),
+                                "code_snippet": (lines[node.lineno - 1].strip() if node.lineno <= len(lines) else ""),
                                 "suggestion": f"Check function signature and provide {expected_args} arguments",
                             }
                         )
@@ -343,12 +327,8 @@ class CodeQLStyleAnalyzer:
 
 def main():
     parser = argparse.ArgumentParser(description="Enhanced Pre-Push Quality Gate")
-    parser.add_argument(
-        "--fix", action="store_true", help="Auto-fix issues when possible"
-    )
-    parser.add_argument(
-        "--codeql", action="store_true", help="Run CodeQL-style analysis only"
-    )
+    parser.add_argument("--fix", action="store_true", help="Auto-fix issues when possible")
+    parser.add_argument("--codeql", action="store_true", help="Run CodeQL-style analysis only")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument("--json", help="Output results to JSON file")
 

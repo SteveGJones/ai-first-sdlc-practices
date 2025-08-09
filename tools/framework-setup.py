@@ -84,9 +84,7 @@ class AIFirstSDLCSetup:
             # Replace placeholders
             project_name = self.project_root.name
             content = content.replace("[Your Project Name]", project_name)
-            content = content.replace(
-                "[Brief description]", f"AI-First development of {project_name}"
-            )
+            content = content.replace("[Brief description]", f"AI-First development of {project_name}")
 
             # Write to project
             with open(claude_target, "w") as f:
@@ -307,9 +305,7 @@ class AIFirstSDLCSetup:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Setup AI-First SDLC Framework in your project"
-    )
+    parser = argparse.ArgumentParser(description="Setup AI-First SDLC Framework in your project")
     parser.add_argument(
         "--components",
         nargs="+",
@@ -317,12 +313,8 @@ def main():
         help="Components to setup (default: all)",
     )
     parser.add_argument("--force", action="store_true", help="Overwrite existing files")
-    parser.add_argument(
-        "--init-git", action="store_true", help="Initialize git repository if needed"
-    )
-    parser.add_argument(
-        "--skip-config", action="store_true", help="Skip creating .ai-sdlc.json config"
-    )
+    parser.add_argument("--init-git", action="store_true", help="Initialize git repository if needed")
+    parser.add_argument("--skip-config", action="store_true", help="Skip creating .ai-sdlc.json config")
     parser.add_argument(
         "--project-dir",
         type=Path,

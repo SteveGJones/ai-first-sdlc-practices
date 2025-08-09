@@ -15,9 +15,7 @@ def run_command(name: str, cmd: list, working_dir: str = None) -> bool:
     """Run a command and return success status"""
     print(f"\n🔍 Running {name}...")
     try:
-        result = subprocess.run(
-            cmd, capture_output=True, text=True, cwd=working_dir, check=False
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=working_dir, check=False)
 
         if result.returncode != 0:
             print(f"❌ {name} FAILED")
@@ -53,8 +51,7 @@ def check_package_json() -> bool:
                 missing_scripts.append(script)
 
         if missing_scripts:
-            print(
-                f"❌ Missing required scripts in package.json: {missing_scripts}")
+            print(f"❌ Missing required scripts in package.json: {missing_scripts}")
             return False
 
         print("✅ package.json validation passed")
@@ -66,10 +63,7 @@ def check_package_json() -> bool:
 
 def check_typescript_config() -> bool:
     """Validate TypeScript configuration if present"""
-    tsconfig_files = [
-        "tsconfig.json",
-        "tsconfig.app.json",
-        "tsconfig.lib.json"]
+    tsconfig_files = ["tsconfig.json", "tsconfig.app.json", "tsconfig.lib.json"]
 
     for tsconfig in tsconfig_files:
         if Path(tsconfig).exists():
@@ -95,8 +89,7 @@ def check_typescript_config() -> bool:
                         missing_strict.append(f"{option}: {required_value}")
 
                 if missing_strict:
-                    print(
-                        f"❌ {tsconfig} missing strict options: {missing_strict}")
+                    print(f"❌ {tsconfig} missing strict options: {missing_strict}")
                     return False
 
                 print(f"✅ {tsconfig} validation passed")
@@ -128,9 +121,7 @@ def main() -> None:
     if Path("package-lock.json").exists() or Path("yarn.lock").exists():
         print("\n📦 Installing dependencies...")
         if Path("yarn.lock").exists():
-            if not run_command(
-                "Yarn Install", ["yarn", "install", "--frozen-lockfile"]
-            ):
+            if not run_command("Yarn Install", ["yarn", "install", "--frozen-lockfile"]):
                 errors += 1
         else:
             if not run_command("NPM Install", ["npm", "ci"]):

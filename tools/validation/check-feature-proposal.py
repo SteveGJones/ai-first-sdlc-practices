@@ -32,9 +32,7 @@ def get_current_branch() -> Optional[str]:
             return branch
 
         # GitLab CI
-        branch = os.environ.get(
-            "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-        ) or os.environ.get("CI_COMMIT_BRANCH")
+        branch = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME") or os.environ.get("CI_COMMIT_BRANCH")
         if branch:
             return branch
 
@@ -115,9 +113,7 @@ def check_proposal_content(proposal_file: Path, branch_name: str) -> bool:
         # Check if branch name matches
         if f"`{branch_name}`" not in content:
             print(f"⚠️  Branch name '{branch_name}' not found in proposal")
-            print(
-                f"   Please ensure 'Target Branch: `{branch_name}`' is in the proposal"
-            )
+            print(f"   Please ensure 'Target Branch: `{branch_name}`' is in the proposal")
 
         if missing_fields:
             print("⚠️  Proposal is missing required sections:")
@@ -135,9 +131,7 @@ def main() -> None:
     """Main validation logic"""
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Check for feature proposal")
-    parser.add_argument(
-        "--branch", help="Branch name to check (default: current branch)"
-    )
+    parser.add_argument("--branch", help="Branch name to check (default: current branch)")
     args = parser.parse_args()
 
     # Get branch name

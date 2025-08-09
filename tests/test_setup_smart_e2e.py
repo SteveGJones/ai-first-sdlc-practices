@@ -16,11 +16,7 @@ import importlib.util
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-setup_smart_path = os.path.join(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__))),
-    "setup-smart.py")
+setup_smart_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "setup-smart.py")
 spec = importlib.util.spec_from_file_location("setup_smart", setup_smart_path)
 setup_smart = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(setup_smart)
@@ -38,10 +34,8 @@ class TestSetupSmartE2E(unittest.TestCase):
 
         # Initialize git repo
         subprocess.run(["git", "init"], capture_output=True)
-        subprocess.run(["git", "config", "user.email",
-                        "test@example.com"], capture_output=True)
-        subprocess.run(["git", "config", "user.name",
-                       "Test User"], capture_output=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], capture_output=True)
+        subprocess.run(["git", "config", "user.name", "Test User"], capture_output=True)
 
     def tearDown(self):
         """Clean up test directory"""
@@ -144,8 +138,7 @@ class TestSetupSmartE2E(unittest.TestCase):
         temp_dir = Path(self.test_dir) / ".ai-sdlc-temp"
         temp_dir.mkdir()
         template = temp_dir / "test_framework_setup.py"
-        template.write_text(
-            '#!/usr/bin/env python3\n# Test template\nprint("test")')
+        template.write_text('#!/usr/bin/env python3\n# Test template\nprint("test")')
 
         # Create test
         setup.create_initial_test()
@@ -177,9 +170,7 @@ class TestSetupSmartE2E(unittest.TestCase):
 
     def test_readme_creation(self) -> None:
         """Test README.md creation with project info"""
-        setup = SmartFrameworkSetup(
-            Path(self.test_dir), "Building an AI chat application"
-        )
+        setup = SmartFrameworkSetup(Path(self.test_dir), "Building an AI chat application")
         setup.project_name = "test-project"
 
         # Create README
@@ -210,8 +201,7 @@ class TestSetupSmartE2E(unittest.TestCase):
                 temp_dir = setup.project_dir / ".ai-sdlc-temp"
                 temp_dir.mkdir(exist_ok=True)
                 template_name = Path(remote).name
-                (temp_dir /
-                 template_name).write_text(f"# Template: {template_name}")
+                (temp_dir / template_name).write_text(f"# Template: {template_name}")
             return True
 
         setup.download_file = mock_download
@@ -223,9 +213,7 @@ class TestSetupSmartE2E(unittest.TestCase):
         self.assertTrue((Path(self.test_dir) / ".gitignore").exists())
         # Quickstart mode is minimal - it doesn't include CLAUDE.md
         self.assertFalse((Path(self.test_dir) / "CLAUDE.md").exists())
-        self.assertFalse(
-            (Path(self.test_dir) / ".ai-sdlc-temp").exists()
-        )  # Should be cleaned up
+        self.assertFalse((Path(self.test_dir) / ".ai-sdlc-temp").exists())  # Should be cleaned up
 
     def test_ai_friendly_gitignore_patterns(self) -> None:
         """Test that AI-specific patterns are comprehensive"""
@@ -272,12 +260,7 @@ HANDOFF_*.md"""
         gitignore = (Path(self.test_dir) / ".gitignore").read_text()
 
         # Check for major AI tools
-        ai_tools = [
-            ".claude/",
-            ".cursor/",
-            ".aider",
-            ".copilot/",
-            ".continue/"]
+        ai_tools = [".claude/", ".cursor/", ".aider", ".copilot/", ".continue/"]
         for tool in ai_tools:
             self.assertIn(tool, gitignore, f"Missing AI tool pattern: {tool}")
 
@@ -289,10 +272,7 @@ HANDOFF_*.md"""
             ".ai-sessions/",
         ]
         for pattern in context_patterns:
-            self.assertIn(
-                pattern,
-                gitignore,
-                f"Missing context pattern: {pattern}")
+            self.assertIn(pattern, gitignore, f"Missing context pattern: {pattern}")
 
     def test_language_detection_subdirectories(self) -> None:
         """Test language detection works with files in subdirectories"""
@@ -352,12 +332,7 @@ class TestAIFriendliness(unittest.TestCase):
     def test_test_files_have_clear_purpose(self) -> None:
         """Test that framework verification tests explain their purpose"""
         # Check Python test template
-        test_content = (
-            Path(__file__).parent.parent
-            / "templates"
-            / "tests"
-            / "test_framework_setup.py"
-        )
+        test_content = Path(__file__).parent.parent / "templates" / "tests" / "test_framework_setup.py"
         if test_content.exists():
             content = test_content.read_text()
             self.assertIn("framework verification", content.lower())
@@ -378,9 +353,7 @@ def run_integration_test():
 
     for scenario_name, files in test_scenarios:
         print(f"\n📋 Testing: {scenario_name}")
-        test_dir = tempfile.mkdtemp(
-            prefix=f"ai-test-{scenario_name.replace(' ', '-')}-"
-        )
+        test_dir = tempfile.mkdtemp(prefix=f"ai-test-{scenario_name.replace(' ', '-')}-")
 
         try:
             # Setup test environment
@@ -412,19 +385,14 @@ def run_integration_test():
             has_test = any(Path(".").glob("**/test*"))
 
             print(f"  ✅ Setup: {'Success' if success else 'Failed'}")
-            print(
-                f"  ✅ .gitignore: {'Created' if has_gitignore else 'Missing'}")
+            print(f"  ✅ .gitignore: {'Created' if has_gitignore else 'Missing'}")
             print(f"  ✅ README.md: {'Created' if has_readme else 'Missing'}")
             print(f"  ✅ Test file: {'Created' if has_test else 'Missing'}")
 
             if has_gitignore:
                 gitignore_content = Path(".gitignore").read_text()
-                has_ai_patterns = any(
-                    pattern in gitignore_content
-                    for pattern in [".claude/", ".cursor/", ".aider"]
-                )
-                print(
-                    f"  ✅ AI patterns: {'Found' if has_ai_patterns else 'Missing'}")
+                has_ai_patterns = any(pattern in gitignore_content for pattern in [".claude/", ".cursor/", ".aider"])
+                print(f"  ✅ AI patterns: {'Found' if has_ai_patterns else 'Missing'}")
 
         finally:
             os.chdir("/")

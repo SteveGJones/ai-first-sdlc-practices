@@ -178,9 +178,7 @@ def main():
         "merged": sys.argv[1].lower() == "true" if len(sys.argv) > 1 else False,
         "collaboration_score": int(sys.argv[2]) if len(sys.argv) > 2 else 0,
         "has_solo_runs": sys.argv[3].lower() == "true" if len(sys.argv) > 3 else False,
-        "validation_passed": sys.argv[4].lower() == "true"
-        if len(sys.argv) > 4
-        else False,
+        "validation_passed": sys.argv[4].lower() == "true" if len(sys.argv) > 4 else False,
     }
 
     # Update progress
@@ -208,9 +206,7 @@ def main():
 
     # Average collaboration score
     if progress["collaboration_scores"]:
-        avg_collab = sum(progress["collaboration_scores"]) / len(
-            progress["collaboration_scores"]
-        )
+        avg_collab = sum(progress["collaboration_scores"]) / len(progress["collaboration_scores"])
         print(f"\nAvg Collaboration: {avg_collab:.1f}/100")
 
     sys.exit(0)

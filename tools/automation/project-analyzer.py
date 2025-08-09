@@ -212,9 +212,9 @@ class ProjectAnalyzer:
             if "webpack" in deps:
                 self.analysis["tools"].add("webpack")
             if "typescript" in deps:
-                self.analysis["languages"]["typescript"] = self.analysis[
-                    "languages"
-                ].get("typescript", {"files": 0, "percentage": 0})
+                self.analysis["languages"]["typescript"] = self.analysis["languages"].get(
+                    "typescript", {"files": 0, "percentage": 0}
+                )
 
         except Exception:
             pass
@@ -432,11 +432,7 @@ class ProjectAnalyzer:
 
     def _determine_project_size(self) -> None:
         """Determine project size based on various factors."""
-        file_count = sum(
-            1
-            for _ in self.project_root.rglob("*")
-            if _.is_file() and not self._is_ignored(_)
-        )
+        file_count = sum(1 for _ in self.project_root.rglob("*") if _.is_file() and not self._is_ignored(_))
 
         if file_count < 50:
             size = "small"
@@ -556,32 +552,22 @@ class ProjectAnalyzer:
         lines = []
 
         if self.analysis.get("primary_language"):
-            lines.append(
-                f"Primary Language: {self.analysis['primary_language'].title()}"
-            )
+            lines.append(f"Primary Language: {self.analysis['primary_language'].title()}")
 
         if self.analysis["frameworks"]:
-            lines.append(
-                f"Frameworks: {', '.join(sorted(self.analysis['frameworks']))}"
-            )
+            lines.append(f"Frameworks: {', '.join(sorted(self.analysis['frameworks']))}")
 
         if self.analysis["project_types"]:
-            lines.append(
-                f"Project Types: {', '.join(sorted(self.analysis['project_types']))}"
-            )
+            lines.append(f"Project Types: {', '.join(sorted(self.analysis['project_types']))}")
 
         if self.analysis["architecture"]:
-            lines.append(
-                f"Architecture: {', '.join(sorted(self.analysis['architecture']))}"
-            )
+            lines.append(f"Architecture: {', '.join(sorted(self.analysis['architecture']))}")
 
         if self.analysis["databases"]:
             lines.append(f"Databases: {', '.join(sorted(self.analysis['databases']))}")
 
         if self.analysis["cloud_platforms"]:
-            lines.append(
-                f"Cloud: {', '.join(sorted(self.analysis['cloud_platforms']))}"
-            )
+            lines.append(f"Cloud: {', '.join(sorted(self.analysis['cloud_platforms']))}")
 
         lines.append(f"Project Size: {self.analysis['project_size']}")
         lines.append(f"Team Size: {self.analysis['team_size']} developers")
@@ -615,22 +601,16 @@ def display_analysis(analysis: Dict) -> None:
     characteristics.add_column("Details")
 
     if analysis.get("primary_language"):
-        characteristics.add_row(
-            "Primary Language", analysis["primary_language"].title()
-        )
+        characteristics.add_row("Primary Language", analysis["primary_language"].title())
 
     if analysis["frameworks"]:
         characteristics.add_row("Frameworks", ", ".join(sorted(analysis["frameworks"])))
 
     if analysis["project_types"]:
-        characteristics.add_row(
-            "Project Types", ", ".join(sorted(analysis["project_types"]))
-        )
+        characteristics.add_row("Project Types", ", ".join(sorted(analysis["project_types"])))
 
     if analysis["architecture"]:
-        characteristics.add_row(
-            "Architecture", ", ".join(sorted(analysis["architecture"]))
-        )
+        characteristics.add_row("Architecture", ", ".join(sorted(analysis["architecture"])))
 
     if analysis["databases"]:
         characteristics.add_row("Databases", ", ".join(sorted(analysis["databases"])))
@@ -639,9 +619,7 @@ def display_analysis(analysis: Dict) -> None:
         characteristics.add_row("Testing", ", ".join(sorted(analysis["testing"])))
 
     if analysis["cloud_platforms"]:
-        characteristics.add_row(
-            "Cloud Platforms", ", ".join(sorted(analysis["cloud_platforms"]))
-        )
+        characteristics.add_row("Cloud Platforms", ", ".join(sorted(analysis["cloud_platforms"])))
 
     if analysis["ci_cd"]:
         characteristics.add_row("CI/CD", ", ".join(sorted(analysis["ci_cd"])))

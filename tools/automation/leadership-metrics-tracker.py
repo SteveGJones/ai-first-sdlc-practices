@@ -25,14 +25,12 @@ when teams achieve legendary dual leadership.
 import json
 import click
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
-import os
 from collections import defaultdict
-import math
 
 
 class LeadershipType(Enum):
@@ -157,10 +155,7 @@ class LeadershipMetricsTracker:
         try:
             with open(profiles_file) as f:
                 data = json.load(f)
-            return {
-                profile_id: self._deserialize_profile(profile_data)
-                for profile_id, profile_data in data.items()
-            }
+            return {profile_id: self._deserialize_profile(profile_data) for profile_id, profile_data in data.items()}
         except Exception as e:
             print(f"⚠️  Error loading leadership profiles: {e}")
             return {}
@@ -171,11 +166,7 @@ class LeadershipMetricsTracker:
             person_id=data["person_id"],
             name=data["name"],
             primary_style=LeadershipType(data["primary_style"]),
-            secondary_style=(
-                LeadershipType(data["secondary_style"])
-                if data.get("secondary_style")
-                else None
-            ),
+            secondary_style=(LeadershipType(data["secondary_style"]) if data.get("secondary_style") else None),
             current_metrics=LeadershipMetrics(**data["current_metrics"]),
             leadership_moments=[
                 LeadershipMoment(
@@ -224,9 +215,7 @@ class LeadershipMetricsTracker:
         # Git analysis for execution leadership (Billy Wright style)
         data["crisis_commits"] = self._analyze_crisis_commits()
         data["code_review_leadership"] = self._analyze_code_review_leadership()
-        data["pair_programming_leadership"] = (
-            self._analyze_pair_programming_leadership()
-        )
+        data["pair_programming_leadership"] = self._analyze_pair_programming_leadership()
         data["technical_decisions"] = self._analyze_technical_decisions()
 
         # Documentation analysis for strategic leadership (Stan Cullis style)
@@ -237,9 +226,7 @@ class LeadershipMetricsTracker:
 
         # Cross-cutting leadership indicators
         data["retrospective_leadership"] = self._analyze_retrospective_leadership()
-        data["feature_proposal_leadership"] = (
-            self._analyze_feature_proposal_leadership()
-        )
+        data["feature_proposal_leadership"] = self._analyze_feature_proposal_leadership()
         data["team_coordination"] = self._analyze_team_coordination()
 
         return data
@@ -290,9 +277,7 @@ class LeadershipMetricsTracker:
                                 "subject": subject,
                                 "timestamp": int(timestamp),
                                 "pattern": pattern,
-                                "leadership_score": self._score_crisis_response(
-                                    subject
-                                ),
+                                "leadership_score": self._score_crisis_response(subject),
                             }
                         )
 
@@ -376,21 +361,13 @@ class LeadershipMetricsTracker:
                     author, subject, timestamp = line.split("|", 2)
 
                     # Score different types of review leadership
-                    if any(
-                        word in subject.lower()
-                        for word in ["review", "feedback", "suggestion"]
-                    ):
+                    if any(word in subject.lower() for word in ["review", "feedback", "suggestion"]):
                         review_leadership[author]["reviews_led"] += 1
 
-                    if any(
-                        word in subject.lower()
-                        for word in ["improve", "refactor", "optimize"]
-                    ):
+                    if any(word in subject.lower() for word in ["improve", "refactor", "optimize"]):
                         review_leadership[author]["quality_improvements"] += 1
 
-                    if any(
-                        word in subject.lower() for word in ["help", "guide", "explain"]
-                    ):
+                    if any(word in subject.lower() for word in ["help", "guide", "explain"]):
                         review_leadership[author]["mentoring_moments"] += 1
 
             return dict(review_leadership)
@@ -430,21 +407,11 @@ class LeadershipMetricsTracker:
                         # Analyze document content for strategic thinking
                         content = doc.read_text().lower()
 
-                        if any(
-                            word in content
-                            for word in ["vision", "strategy", "roadmap", "future"]
-                        ):
-                            arch_contributions[primary_author][
-                                "architectural_vision"
-                            ] += 2
+                        if any(word in content for word in ["vision", "strategy", "roadmap", "future"]):
+                            arch_contributions[primary_author]["architectural_vision"] += 2
 
-                        if any(
-                            word in content
-                            for word in ["decision", "choice", "rationale", "tradeoff"]
-                        ):
-                            arch_contributions[primary_author][
-                                "strategic_decisions"
-                            ] += 1
+                        if any(word in content for word in ["decision", "choice", "rationale", "tradeo"]):
+                            arch_contributions[primary_author]["strategic_decisions"] += 1
 
                         if any(
                             word in content
@@ -566,9 +533,7 @@ class LeadershipMetricsTracker:
                             "should",
                         ]
                         for indicator in improvement_indicators:
-                            retro_leadership[primary_author][
-                                "improvement_suggestions"
-                            ] += content.count(indicator)
+                            retro_leadership[primary_author]["improvement_suggestions"] += content.count(indicator)
 
                         # Team insights indicators
                         insight_indicators = [
@@ -579,57 +544,31 @@ class LeadershipMetricsTracker:
                             "collaboration",
                         ]
                         for indicator in insight_indicators:
-                            retro_leadership[primary_author][
-                                "team_insights"
-                            ] += content.count(indicator)
+                            retro_leadership[primary_author]["team_insights"] += content.count(indicator)
 
                 except Exception:
                     continue
 
         return dict(retro_leadership)
 
-    def _calculate_leadership_metrics(
-        self, person_id: str, leadership_data: Dict
-    ) -> LeadershipMetrics:
+    def _calculate_leadership_metrics(self, person_id: str, leadership_data: Dict) -> LeadershipMetrics:
         """Calculate comprehensive leadership metrics for a person"""
 
         # Billy Wright (Execution) Metrics
-        crisis_response = self._calculate_crisis_response_score(
-            person_id, leadership_data
-        )
-        real_time_decisions = self._calculate_real_time_decision_score(
-            person_id, leadership_data
-        )
+        crisis_response = self._calculate_crisis_response_score(person_id, leadership_data)
+        real_time_decisions = self._calculate_real_time_decision_score(person_id, leadership_data)
         team_rallying = self._calculate_team_rallying_score(person_id, leadership_data)
-        technical_leadership = self._calculate_technical_leadership_score(
-            person_id, leadership_data
-        )
-        execution_consistency = self._calculate_execution_consistency_score(
-            person_id, leadership_data
-        )
-        mentoring_in_action = self._calculate_action_mentoring_score(
-            person_id, leadership_data
-        )
+        technical_leadership = self._calculate_technical_leadership_score(person_id, leadership_data)
+        execution_consistency = self._calculate_execution_consistency_score(person_id, leadership_data)
+        mentoring_in_action = self._calculate_action_mentoring_score(person_id, leadership_data)
 
         # Stan Cullis (Strategic) Metrics
-        strategic_vision = self._calculate_strategic_vision_score(
-            person_id, leadership_data
-        )
-        talent_development = self._calculate_talent_development_score(
-            person_id, leadership_data
-        )
-        system_architecture = self._calculate_system_architecture_score(
-            person_id, leadership_data
-        )
-        process_innovation = self._calculate_process_innovation_score(
-            person_id, leadership_data
-        )
-        knowledge_transfer = self._calculate_knowledge_transfer_score(
-            person_id, leadership_data
-        )
-        organizational_influence = self._calculate_organizational_influence_score(
-            person_id, leadership_data
-        )
+        strategic_vision = self._calculate_strategic_vision_score(person_id, leadership_data)
+        talent_development = self._calculate_talent_development_score(person_id, leadership_data)
+        system_architecture = self._calculate_system_architecture_score(person_id, leadership_data)
+        process_innovation = self._calculate_process_innovation_score(person_id, leadership_data)
+        knowledge_transfer = self._calculate_knowledge_transfer_score(person_id, leadership_data)
+        organizational_influence = self._calculate_organizational_influence_score(person_id, leadership_data)
 
         return LeadershipMetrics(
             crisis_response_score=crisis_response,
@@ -659,9 +598,7 @@ class LeadershipMetricsTracker:
 
     def _calculate_strategic_vision_score(self, person_id: str, data: Dict) -> float:
         """Calculate strategic vision leadership score"""
-        arch_contributions = data.get("architecture_contributions", {}).get(
-            person_id, {}
-        )
+        arch_contributions = data.get("architecture_contributions", {}).get(person_id, {})
         vision_documents = data.get("vision_documents", {}).get(person_id, 0)
 
         score = 0
@@ -684,18 +621,14 @@ class LeadershipMetricsTracker:
         report.append("# 🏆 Leadership Development Report")
         report.append(f"**Analysis Date**: {datetime.now().strftime('%B %d, %Y')}")
         report.append("")
-        report.append(
-            "*Inspired by Wolverhampton Wanderers Legends Billy Wright and Stan Cullis*"
-        )
+        report.append("*Inspired by Wolverhampton Wanderers Legends Billy Wright and Stan Cullis*")
         report.append("")
 
         # Executive Summary
         team_score = analysis_results["team_leadership_score"]
         report.append("## 📊 Leadership Excellence Dashboard")
         report.append("")
-        report.append(
-            f"**Team Leadership Maturity**: {self._create_progress_bar(team_score, 100)} {team_score:.1f}%"
-        )
+        report.append(f"**Team Leadership Maturity**: {self._create_progress_bar(team_score, 100)} {team_score:.1f}%")
         report.append("")
 
         # Leadership Style Distribution
@@ -708,9 +641,7 @@ class LeadershipMetricsTracker:
 
         if dual_legends:
             report.append("### 👑 Dual Legends (Billy Wright + Stan Cullis)")
-            report.append(
-                "*The rare complete leaders who master both execution and strategy*"
-            )
+            report.append("*The rare complete leaders who master both execution and strategy*")
             report.append("")
             for leader in dual_legends:
                 report.append(f"- **{leader['name']}**: {leader['description']}")
@@ -718,9 +649,7 @@ class LeadershipMetricsTracker:
 
         if billy_wright_leaders:
             report.append("### ⚽ Billy Wright Style - On-Pitch Leaders")
-            report.append(
-                "*Masters of execution who lead by example and rally teams under pressure*"
-            )
+            report.append("*Masters of execution who lead by example and rally teams under pressure*")
             report.append("")
             for leader in billy_wright_leaders:
                 report.append(f"- **{leader['name']}**: {leader['strengths']}")
@@ -728,9 +657,7 @@ class LeadershipMetricsTracker:
 
         if stan_cullis_leaders:
             report.append("### 🧠 Stan Cullis Style - Strategic Leaders")
-            report.append(
-                "*Visionaries who develop talent and build systems for lasting success*"
-            )
+            report.append("*Visionaries who develop talent and build systems for lasting success*")
             report.append("")
             for leader in stan_cullis_leaders:
                 report.append(f"- **{leader['name']}**: {leader['strengths']}")
@@ -742,9 +669,7 @@ class LeadershipMetricsTracker:
             report.append("## 🌟 Emerging Leadership Talent")
             report.append("")
             for leader in emerging_leaders:
-                report.append(
-                    f"- **{leader['name']}** ({leader['potential_style']}): {leader['evidence']}"
-                )
+                report.append(f"- **{leader['name']}** ({leader['potential_style']}): {leader['evidence']}")
             report.append("")
 
         # Leadership Moments Hall of Fame
@@ -754,9 +679,7 @@ class LeadershipMetricsTracker:
             report.append("")
             for moment in recent_moments[:5]:  # Top 5 recent moments
                 report.append(f"**{moment['leader']}** - *{moment['situation']}*")
-                report.append(
-                    f"└─ {moment['action']} (Impact: {moment['impact_score']:.1f}/100)"
-                )
+                report.append(f"└─ {moment['action']} (Impact: {moment['impact_score']:.1f}/100)")
                 report.append("")
 
         # Development Recommendations
@@ -767,9 +690,7 @@ class LeadershipMetricsTracker:
             for rec in recommendations:
                 report.append(f"- **{rec['focus_area']}**: {rec['action']}")
                 if rec.get("specific_people"):
-                    report.append(
-                        f"  └─ Recommended for: {', '.join(rec['specific_people'])}"
-                    )
+                    report.append(f"  └─ Recommended for: {', '.join(rec['specific_people'])}")
             report.append("")
 
         # Team Leadership Goals
@@ -780,9 +701,7 @@ class LeadershipMetricsTracker:
         if gaps:
             report.append("**Priority Development Areas:**")
             for gap in gaps:
-                report.append(
-                    f"- {gap['area']}: {gap['current']:.1f}% → Target: {gap['target']:.1f}%"
-                )
+                report.append(f"- {gap['area']}: {gap['current']:.1f}% → Target: {gap['target']:.1f}%")
             report.append("")
 
         # Celebration Section
@@ -792,29 +711,17 @@ class LeadershipMetricsTracker:
             report.append("")
             for celebration in celebrations:
                 report.append(f"🎊 **{celebration['achievement']}**")
-                report.append(
-                    f"└─ {celebration['person']}: {celebration['description']}"
-                )
+                report.append(f"└─ {celebration['person']}: {celebration['description']}")
                 report.append("")
 
         # Next Steps
         report.append("## 📋 Recommended Next Actions")
         report.append("")
-        report.append(
-            "1. **Weekly Leadership Moments**: Document and celebrate daily leadership actions"
-        )
-        report.append(
-            "2. **Cross-Style Mentoring**: Pair Billy Wright leaders with Stan Cullis leaders"
-        )
-        report.append(
-            "3. **Leadership Challenges**: Create situations that develop both leadership styles"
-        )
-        report.append(
-            "4. **Recognition Program**: Celebrate leadership growth and achievements"
-        )
-        report.append(
-            "5. **Monthly Reviews**: Track progress and adjust development plans"
-        )
+        report.append("1. **Weekly Leadership Moments**: Document and celebrate daily leadership actions")
+        report.append("2. **Cross-Style Mentoring**: Pair Billy Wright leaders with Stan Cullis leaders")
+        report.append("3. **Leadership Challenges**: Create situations that develop both leadership styles")
+        report.append("4. **Recognition Program**: Celebrate leadership growth and achievements")
+        report.append("5. **Monthly Reviews**: Track progress and adjust development plans")
 
         return "\n".join(report)
 
@@ -876,18 +783,14 @@ class LeadershipMetricsTracker:
 
         # Leadership Style Analysis
         primary_config = self.LEADERSHIP_STYLES[profile.primary_style]
-        report.append(
-            f"## {primary_config['recognition_symbol']} Primary Leadership Style"
-        )
+        report.append(f"## {primary_config['recognition_symbol']} Primary Leadership Style")
         report.append(f"**{primary_config['title']}**")
         report.append(f"{primary_config['description']}")
         report.append("")
 
         if profile.secondary_style:
             secondary_config = self.LEADERSHIP_STYLES[profile.secondary_style]
-            report.append(
-                f"## {secondary_config['recognition_symbol']} Secondary Leadership Style"
-            )
+            report.append(f"## {secondary_config['recognition_symbol']} Secondary Leadership Style")
             report.append(f"**{secondary_config['title']}**")
             report.append("")
 
@@ -935,14 +838,10 @@ class LeadershipMetricsTracker:
         if profile.leadership_moments:
             report.append("## 🏅 Recent Leadership Moments")
             report.append("")
-            recent_moments = sorted(
-                profile.leadership_moments, key=lambda m: m.timestamp, reverse=True
-            )[:5]
+            recent_moments = sorted(profile.leadership_moments, key=lambda m: m.timestamp, reverse=True)[:5]
 
             for moment in recent_moments:
-                style_symbol = self.LEADERSHIP_STYLES[moment.leadership_type][
-                    "recognition_symbol"
-                ]
+                style_symbol = self.LEADERSHIP_STYLES[moment.leadership_type]["recognition_symbol"]
                 date = datetime.fromisoformat(moment.timestamp).strftime("%b %d")
                 report.append(f"**{date}** {style_symbol} *{moment.situation}*")
                 report.append(f"└─ Action: {moment.action_taken}")
@@ -991,52 +890,32 @@ class LeadershipMetricsTracker:
             / 6
         )
 
-        billy_threshold = self.LEADERSHIP_STYLES[LeadershipType.BILLY_WRIGHT][
-            "legendary_threshold"
-        ]
-        stan_threshold = self.LEADERSHIP_STYLES[LeadershipType.STAN_CULLIS][
-            "legendary_threshold"
-        ]
-        dual_threshold = self.LEADERSHIP_STYLES[LeadershipType.DUAL_LEGEND][
-            "legendary_threshold"
-        ]
+        billy_threshold = self.LEADERSHIP_STYLES[LeadershipType.BILLY_WRIGHT]["legendary_threshold"]
+        stan_threshold = self.LEADERSHIP_STYLES[LeadershipType.STAN_CULLIS]["legendary_threshold"]
+        dual_threshold = self.LEADERSHIP_STYLES[LeadershipType.DUAL_LEGEND]["legendary_threshold"]
 
         if billy_avg >= billy_threshold:
             report.append("✅ **Billy Wright Legendary Status Achieved!**")
         else:
             gap = billy_threshold - billy_avg
-            report.append(
-                f"⚽ **Billy Wright Progress**: {gap:.1f} points to legendary status"
-            )
+            report.append(f"⚽ **Billy Wright Progress**: {gap:.1f} points to legendary status")
 
         if stan_avg >= stan_threshold:
             report.append("✅ **Stan Cullis Legendary Status Achieved!**")
         else:
             gap = stan_threshold - stan_avg
-            report.append(
-                f"🧠 **Stan Cullis Progress**: {gap:.1f} points to legendary status"
-            )
+            report.append(f"🧠 **Stan Cullis Progress**: {gap:.1f} points to legendary status")
 
         overall_avg = (billy_avg + stan_avg) / 2
-        if (
-            overall_avg >= dual_threshold
-            and billy_avg >= billy_threshold
-            and stan_avg >= stan_threshold
-        ):
+        if overall_avg >= dual_threshold and billy_avg >= billy_threshold and stan_avg >= stan_threshold:
             report.append("👑 **DUAL LEGEND STATUS ACHIEVED!**")
-            report.append(
-                "*You have mastered both Billy Wright execution leadership and Stan Cullis strategic leadership*"
-            )
+            report.append("*You have mastered both Billy Wright execution leadership and Stan Cullis strategic leadership*")
         else:
-            report.append(
-                f"👑 **Dual Legend Progress**: {dual_threshold - overall_avg:.1f} points to ultimate status"
-            )
+            report.append(f"👑 **Dual Legend Progress**: {dual_threshold - overall_avg:.1f} points to ultimate status")
 
         return "\n".join(report)
 
-    def _create_progress_bar(
-        self, value: float, max_value: float, width: int = 20
-    ) -> str:
+    def _create_progress_bar(self, value: float, max_value: float, width: int = 20) -> str:
         """Create a visual progress bar"""
         filled = int((value / max_value) * width)
         return f"{'█' * filled}{'░' * (width - filled)}"
@@ -1072,9 +951,7 @@ class LeadershipMetricsTracker:
                 "person_id": profile.person_id,
                 "name": profile.name,
                 "primary_style": profile.primary_style.value,
-                "secondary_style": (
-                    profile.secondary_style.value if profile.secondary_style else None
-                ),
+                "secondary_style": (profile.secondary_style.value if profile.secondary_style else None),
                 "current_metrics": asdict(profile.current_metrics),
                 "leadership_moments": [
                     {
@@ -1101,7 +978,6 @@ class LeadershipMetricsTracker:
 @click.group()
 def cli():
     """Leadership Development Tracker - Billy Wright + Stan Cullis Style Leadership"""
-    pass
 
 
 @cli.command()
@@ -1157,7 +1033,7 @@ def record_moment(leader_id, situation, action, leadership_type, impact, respons
     """Record a specific leadership moment"""
     tracker = LeadershipMetricsTracker()
 
-    moment = tracker.track_leadership_moment(
+    tracker.track_leadership_moment(
         leader_id=leader_id,
         situation=situation,
         action_taken=action,
@@ -1175,7 +1051,7 @@ def record_moment(leader_id, situation, action, leadership_type, impact, respons
 @cli.command()
 def legends():
     """Show current legendary leaders"""
-    tracker = LeadershipMetricsTracker()
+    # tracker = LeadershipMetricsTracker()  # Will be used when showing actual leaders
 
     click.echo("👑 AI-First SDLC Leadership Hall of Fame")
     click.echo("=" * 50)
@@ -1185,9 +1061,9 @@ def legends():
     click.echo("Be the first to achieve legendary leadership status!")
     click.echo("")
     click.echo("Legendary Thresholds:")
-    click.echo(f"  ⚽ Billy Wright: 85% average execution leadership")
-    click.echo(f"  🧠 Stan Cullis: 85% average strategic leadership")
-    click.echo(f"  👑 Dual Legend: 90% average across both styles")
+    click.echo("  ⚽ Billy Wright: 85% average execution leadership")
+    click.echo("  🧠 Stan Cullis: 85% average strategic leadership")
+    click.echo("  👑 Dual Legend: 90% average across both styles")
 
 
 if __name__ == "__main__":

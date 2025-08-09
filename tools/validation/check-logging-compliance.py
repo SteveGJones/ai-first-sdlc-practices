@@ -248,9 +248,7 @@ class LoggingComplianceChecker:
 
         return violations
 
-    def _check_sensitive_data(
-        self, file_path: Path, content: str
-    ) -> List[Dict[str, Any]]:
+    def _check_sensitive_data(self, file_path: Path, content: str) -> List[Dict[str, Any]]:
         """Check for sensitive data being logged"""
         violations: List[Dict[str, Any]] = []
         lines = content.split("\n")
@@ -313,9 +311,7 @@ class LoggingComplianceChecker:
                     if self.should_skip_function(node.name):
                         continue
 
-                    func_violations = self._check_python_function(
-                        node, content, file_path
-                    )
+                    func_violations = self._check_python_function(node, content, file_path)
                     violations.extend(func_violations)
 
         except SyntaxError:
@@ -439,11 +435,7 @@ class LoggingComplianceChecker:
 
         # Check for performance checks
         if any(re.search(p, func_body) for p in self.performance_patterns):
-            if (
-                ">=" in func_body
-                or "<=" in func_body
-                or "threshold" in func_body.lower()
-            ):
+            if ">=" in func_body or "<=" in func_body or "threshold" in func_body.lower():
                 if not has_logging:
                     violations.append(
                         {
@@ -475,11 +467,7 @@ class LoggingComplianceChecker:
         # Check for validation operations
         for pattern in self.validation_patterns:
             if re.search(pattern, func_body):
-                if (
-                    "raise" in func_body
-                    or "throw" in func_body
-                    or "reject" in func_body
-                ):
+                if "raise" in func_body or "throw" in func_body or "reject" in func_body:
                     if not has_logging:
                         violations.append(
                             {
@@ -512,9 +500,7 @@ class LoggingComplianceChecker:
 
         return violations
 
-    def _check_javascript_file(
-        self, file_path: Path, content: str
-    ) -> List[Dict[str, Any]]:
+    def _check_javascript_file(self, file_path: Path, content: str) -> List[Dict[str, Any]]:
         """Check JavaScript/TypeScript file for logging compliance"""
         violations: List[Dict[str, Any]] = []
 
@@ -652,9 +638,7 @@ class LoggingComplianceChecker:
         }
 
         for vtype, violations in by_type.items():
-            print(
-                f"\n❌ {violation_names.get(vtype, vtype)}: {len(violations)} violations"
-            )
+            print(f"\n❌ {violation_names.get(vtype, vtype)}: {len(violations)} violations")
             print("-" * 50)
 
             for v in violations[:5]:  # Show first 5
@@ -683,9 +667,7 @@ class LoggingComplianceChecker:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Check logging compliance for Zero Technical Debt"
-    )
+    parser = argparse.ArgumentParser(description="Check logging compliance for Zero Technical Debt")
     parser.add_argument(
         "path",
         nargs="?",

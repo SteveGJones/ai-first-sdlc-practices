@@ -92,16 +92,8 @@ class TodoItem:
             status=TodoStatus[data["status"]],
             priority=TodoPriority[data["priority"]],
             id=data.get("id"),
-            created_at=(
-                datetime.fromisoformat(data["created_at"])
-                if data.get("created_at")
-                else None
-            ),
-            updated_at=(
-                datetime.fromisoformat(data["updated_at"])
-                if data.get("updated_at")
-                else None
-            ),
+            created_at=(datetime.fromisoformat(data["created_at"]) if data.get("created_at") else None),
+            updated_at=(datetime.fromisoformat(data["updated_at"]) if data.get("updated_at") else None),
             blocked_by=data.get("blocked_by"),
             branch=data.get("branch"),
         )
@@ -180,9 +172,7 @@ class ProgressTracker:
 
         print(f"❌ Todo not found: {todo_id}")
 
-    def list_todos(
-        self, status: Optional[str] = None, branch: Optional[str] = None
-    ) -> List[TodoItem]:
+    def list_todos(self, status: Optional[str] = None, branch: Optional[str] = None) -> List[TodoItem]:
         """List todos with optional filtering"""
         todos = self.load_todos()
 
@@ -254,9 +244,7 @@ class ProgressTracker:
         if total > 0:
             completed_pct = (status_counts["completed"] / total) * 100
             report += f"- Total tasks: {total}\n"
-            report += (
-                f"- Completed: {status_counts['completed']} ({completed_pct:.1f}%)\n"
-            )
+            report += f"- Completed: {status_counts['completed']} ({completed_pct:.1f}%)\n"
             report += f"- In Progress: {status_counts['in_progress']}\n"
             report += f"- Pending: {status_counts['pending']}\n"
             report += f"- Blocked: {status_counts['blocked']}\n"
@@ -272,11 +260,7 @@ class ProgressTracker:
                     marker = (
                         "🚧"
                         if status == "in_progress"
-                        else (
-                            "🚫"
-                            if status == "blocked"
-                            else "⏸️" if status == "pending" else "✅"
-                        )
+                        else ("🚫" if status == "blocked" else "⏸️" if status == "pending" else "✅")
                     )
                     report += f"- {marker} {todo.content}"
                     if todo.blocked_by:
@@ -383,9 +367,7 @@ def main():
                     "✅"
                     if todo.status == TodoStatus.COMPLETED
                     else (
-                        "🚧"
-                        if todo.status == TodoStatus.IN_PROGRESS
-                        else "🚫" if todo.status == TodoStatus.BLOCKED else "⏸️"
+                        "🚧" if todo.status == TodoStatus.IN_PROGRESS else "🚫" if todo.status == TodoStatus.BLOCKED else "⏸️"
                     )
                 )
 
@@ -393,9 +375,7 @@ def main():
                     "🔴"
                     if todo.priority == TodoPriority.CRITICAL
                     else (
-                        "🟡"
-                        if todo.priority == TodoPriority.HIGH
-                        else "🟢" if todo.priority == TodoPriority.MEDIUM else "⚪"
+                        "🟡" if todo.priority == TodoPriority.HIGH else "🟢" if todo.priority == TodoPriority.MEDIUM else "⚪"
                     )
                 )
 

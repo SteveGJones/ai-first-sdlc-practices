@@ -143,9 +143,7 @@ class AgentRecommender:
             },
         }
 
-    def recommend(
-        self, analysis: Dict, objectives: str = None
-    ) -> Dict[str, List[Dict]]:
+    def recommend(self, analysis: Dict, objectives: str = None) -> Dict[str, List[Dict]]:
         """Recommend agents based on project analysis."""
         recommendations = {
             "essential": [],
@@ -207,8 +205,7 @@ class AgentRecommender:
             if self._matches_language(agent_info, analysis):
                 priority = (
                     "strongly_recommended"
-                    if analysis.get("primary_language")
-                    in agent_info.get("languages", [])
+                    if analysis.get("primary_language") in agent_info.get("languages", [])
                     else "recommended"
                 )
                 recommendations[priority].append(
@@ -232,9 +229,7 @@ class AgentRecommender:
 
         # Adjust based on objectives
         if objectives:
-            recommendations = self._adjust_for_objectives(
-                recommendations, objectives, analysis
-            )
+            recommendations = self._adjust_for_objectives(recommendations, objectives, analysis)
 
         # Adjust based on project size and team
         recommendations = self._adjust_for_scale(recommendations, analysis)
@@ -264,10 +259,7 @@ class AgentRecommender:
         if any(lang in project_langs for lang in agent_langs):
             # Check additional conditions
             if agent_info.get("frameworks"):
-                if not any(
-                    fw in analysis.get("frameworks", [])
-                    for fw in agent_info["frameworks"]
-                ):
+                if not any(fw in analysis.get("frameworks", []) for fw in agent_info["frameworks"]):
                     return False
             if agent_info.get("testing") and not analysis.get("testing"):
                 return False
@@ -279,10 +271,7 @@ class AgentRecommender:
         """Check if specialized agent matches project."""
         # Check project types
         if agent_info.get("project_types"):
-            if any(
-                pt in analysis.get("project_types", [])
-                for pt in agent_info["project_types"]
-            ):
+            if any(pt in analysis.get("project_types", []) for pt in agent_info["project_types"]):
                 return True
 
         # Check databases
@@ -296,26 +285,17 @@ class AgentRecommender:
 
         # Check cloud platforms
         if agent_info.get("cloud_platforms"):
-            if any(
-                cp in analysis.get("cloud_platforms", [])
-                for cp in agent_info["cloud_platforms"]
-            ):
+            if any(cp in analysis.get("cloud_platforms", []) for cp in agent_info["cloud_platforms"]):
                 return True
 
         # Check domains
         if agent_info.get("domains"):
-            if any(
-                domain in analysis.get("domains", [])
-                for domain in agent_info["domains"]
-            ):
+            if any(domain in analysis.get("domains", []) for domain in agent_info["domains"]):
                 return True
 
         # Check architecture
         if agent_info.get("architecture"):
-            if any(
-                arch in analysis.get("architecture", [])
-                for arch in agent_info["architecture"]
-            ):
+            if any(arch in analysis.get("architecture", []) for arch in agent_info["architecture"]):
                 return True
 
         # Check CI/CD
@@ -324,45 +304,30 @@ class AgentRecommender:
 
         return False
 
-    def _adjust_for_objectives(
-        self, recommendations: Dict, objectives: str, analysis: Dict
-    ) -> Dict:
+    def _adjust_for_objectives(self, recommendations: Dict, objectives: str, analysis: Dict) -> Dict:
         """Adjust recommendations based on stated objectives."""
         objectives_lower = objectives.lower()
 
         # Performance focus
-        if any(
-            word in objectives_lower
-            for word in ["performance", "speed", "fast", "optimize"]
-        ):
+        if any(word in objectives_lower for word in ["performance", "speed", "fast", "optimize"]):
             self._promote_agent(recommendations, "frontend-performance")
             self._promote_agent(recommendations, "database-architect")
 
         # Security focus
-        if any(
-            word in objectives_lower
-            for word in ["security", "secure", "compliance", "audit"]
-        ):
+        if any(word in objectives_lower for word in ["security", "secure", "compliance", "audit"]):
             self._promote_agent(recommendations, "security-architect", "essential")
 
         # Scale focus
-        if any(
-            word in objectives_lower for word in ["scale", "growth", "million", "users"]
-        ):
+        if any(word in objectives_lower for word in ["scale", "growth", "million", "users"]):
             self._promote_agent(recommendations, "microservices-architect")
             self._promote_agent(recommendations, "kubernetes-architect")
 
         # Quality focus
-        if any(
-            word in objectives_lower for word in ["quality", "testing", "reliability"]
-        ):
+        if any(word in objectives_lower for word in ["quality", "testing", "reliability"]):
             self._promote_agent(recommendations, "test-strategist")
 
         # AI/ML focus
-        if any(
-            word in objectives_lower
-            for word in ["ai", "ml", "machine learning", "artificial"]
-        ):
+        if any(word in objectives_lower for word in ["ai", "ml", "machine learning", "artificial"]):
             self._add_agent(
                 recommendations,
                 "ml-architect",
@@ -397,9 +362,7 @@ class AgentRecommender:
 
         if "microservices" in analysis.get("architecture", []):
             # Microservices need special attention
-            self._promote_agent(
-                recommendations, "integration-architect", "strongly_recommended"
-            )
+            self._promote_agent(recommendations, "integration-architect", "strongly_recommended")
 
         return recommendations
 
@@ -433,9 +396,7 @@ class AgentRecommender:
             if any(agent["name"] == agent_name for agent in rec_level):
                 return
 
-        recommendations[level].append(
-            {"name": agent_name, "category": category, "reason": reason}
-        )
+        recommendations[level].append({"name": agent_name, "category": category, "reason": reason})
 
     def generate_phase_recommendations(self, phase: str, analysis: Dict) -> List[Dict]:
         """Recommend agents for specific project phases."""
@@ -489,9 +450,7 @@ class AgentRecommender:
                             }
                         )
                 else:
-                    recommendations.append(
-                        {"name": agent_type, "reason": f"Critical for {phase} phase"}
-                    )
+                    recommendations.append({"name": agent_type, "reason": f"Critical for {phase} phase"})
 
         return recommendations
 
@@ -548,9 +507,7 @@ def display_recommendations(recommendations: Dict[str, List[Dict]], analysis: Di
 
 
 @click.command()
-@click.option(
-    "--analysis-file", type=click.Path(exists=True), help="Project analysis JSON file"
-)
+@click.option("--analysis-file", type=click.Path(exists=True), help="Project analysis JSON file")
 @click.option(
     "--project-dir",
     type=click.Path(exists=True),
@@ -560,9 +517,7 @@ def display_recommendations(recommendations: Dict[str, List[Dict]], analysis: Di
 @click.option("--objectives", help="Project objectives/goals")
 @click.option(
     "--phase",
-    type=click.Choice(
-        ["planning", "development", "testing", "deployment", "maintenance"]
-    ),
+    type=click.Choice(["planning", "development", "testing", "deployment", "maintenance"]),
     help="Current project phase",
 )
 @click.option("--output", type=click.Path(), help="Save recommendations to JSON")

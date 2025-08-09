@@ -8,10 +8,9 @@ Creates HTML dashboards with charts, progress indicators, and celebration elemen
 
 import json
 import click
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any
-import subprocess
+from typing import Dict, List
 import os
 
 
@@ -23,9 +22,7 @@ class DashboardGenerator:
         self.dashboard_dir = self.project_path / ".sdlc" / "dashboards"
         self.dashboard_dir.mkdir(parents=True, exist_ok=True)
 
-    def generate_html_dashboard(
-        self, team_data: Dict, metrics: Dict, level: str
-    ) -> str:
+    def generate_html_dashboard(self, team_data: Dict, metrics: Dict, level: str) -> str:
         """Generate HTML dashboard with charts and progress indicators"""
 
         html = self._get_html_template()
@@ -470,17 +467,11 @@ class DashboardGenerator:
         for metric, score in metrics.items():
             metric_display = metric.replace("_", " ").title()
             if score >= 90:
-                achievements.append(
-                    f"🏆 Outstanding {metric_display}: {score:.1f}% excellence!"
-                )
+                achievements.append(f"🏆 Outstanding {metric_display}: {score:.1f}% excellence!")
             elif score >= 80:
-                achievements.append(
-                    f"⭐ Strong {metric_display}: {score:.1f}% performance!"
-                )
+                achievements.append(f"⭐ Strong {metric_display}: {score:.1f}% performance!")
             elif score >= 70:
-                achievements.append(
-                    f"✨ Good {metric_display}: {score:.1f}% foundation!"
-                )
+                achievements.append(f"✨ Good {metric_display}: {score:.1f}% foundation!")
 
         # Team-specific achievements
         if team_data.get("team_size", 1) >= 5:
@@ -524,9 +515,7 @@ class DashboardGenerator:
             ),
         }
 
-        next_level, message = level_progression.get(
-            current_level.lower(), ("Unknown", "Keep improving!")
-        )
+        next_level, message = level_progression.get(current_level.lower(), ("Unknown", "Keep improving!"))
 
         if current_level.lower() == "legendary":
             return f"""
@@ -553,33 +542,21 @@ class DashboardGenerator:
 
         team_size = team_data.get("team_size", 1)
         if team_size == 1:
-            spotlight.append(
-                "🦸 <strong>Solo Hero</strong>: Mastering the craft with dedication!"
-            )
+            spotlight.append("🦸 <strong>Solo Hero</strong>: Mastering the craft with dedication!")
         elif team_size <= 3:
-            spotlight.append(
-                f"🔧 <strong>Tight Crew</strong>: {team_size} focused builders!"
-            )
+            spotlight.append(f"🔧 <strong>Tight Crew</strong>: {team_size} focused builders!")
         elif team_size <= 7:
-            spotlight.append(
-                f"⚡ <strong>Power Squad</strong>: {team_size} collaborators firing on all cylinders!"
-            )
+            spotlight.append(f"⚡ <strong>Power Squad</strong>: {team_size} collaborators firing on all cylinders!")
         else:
-            spotlight.append(
-                f"🎼 <strong>Orchestra</strong>: {team_size} talented individuals creating symphonies!"
-            )
+            spotlight.append(f"🎼 <strong>Orchestra</strong>: {team_size} talented individuals creating symphonies!")
 
         # Add activity indicators
         commit_freq = team_data.get("commit_frequency", 0)
         if commit_freq > 1:
-            spotlight.append(
-                "🔥 <strong>High Velocity</strong>: Consistently shipping improvements!"
-            )
+            spotlight.append("🔥 <strong>High Velocity</strong>: Consistently shipping improvements!")
 
         if team_data.get("technical_debt", 10) < 3:
-            spotlight.append(
-                "💎 <strong>Quality Masters</strong>: Exceptional code standards!"
-            )
+            spotlight.append("💎 <strong>Quality Masters</strong>: Exceptional code standards!")
 
         return "<p>" + "</p><p>".join(spotlight) + "</p>"
 
@@ -647,14 +624,11 @@ class DashboardGenerator:
 @click.group()
 def cli():
     """Dashboard Generator - Create visual team maturity reports"""
-    pass
 
 
 @cli.command()
 @click.option("--team-name", default="Development Team", help="Team name")
-@click.option(
-    "--data-file", type=click.Path(exists=True), help="JSON file with team data"
-)
+@click.option("--data-file", type=click.Path(exists=True), help="JSON file with team data")
 @click.option("--output", "-o", help="Output HTML file name")
 def html(team_name, data_file, output):
     """Generate HTML dashboard"""
@@ -692,19 +666,13 @@ def html(team_name, data_file, output):
         if os.name == "nt":  # Windows
             os.startfile(output_file)
         elif os.name == "posix":  # macOS/Linux
-            os.system(
-                f'open "{output_file}"'
-                if "darwin" in os.sys.platform.lower()
-                else f'xdg-open "{output_file}"'
-            )
+            os.system(f'open "{output_file}"' if "darwin" in os.sys.platform.lower() else f'xdg-open "{output_file}"')
     except BaseException:
         click.echo("Dashboard saved. Open the HTML file in your browser to view.")
 
 
 @cli.command()
-@click.option(
-    "--data-file", type=click.Path(exists=True), help="JSON file with team data"
-)
+@click.option("--data-file", type=click.Path(exists=True), help="JSON file with team data")
 def ascii(data_file):
     """Generate ASCII dashboard for terminal"""
     generator = DashboardGenerator()

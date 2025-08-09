@@ -16,12 +16,10 @@ Like Billy Wright, we:
 - NEVER compromise on quality
 """
 
-import os
 import sys
-import json
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from datetime import datetime
 
 
@@ -63,8 +61,7 @@ class AgenticSDLCCoach:
         if not all(available.values()):
             missing = [k for k, v in available.items() if not v]
             raise RuntimeError(
-                f"BLOCKED: Missing framework tools: {missing}\n"
-                f"Run: python tools/setup.py to install framework"
+                f"BLOCKED: Missing framework tools: {missing}\n" "Run: python tools/setup.py to install framework"
             )
 
         return required_tools
@@ -122,27 +119,21 @@ class AgenticSDLCCoach:
         print("-" * 40)
         arch_status = self._enforce_architecture_documents()
         if not arch_status["complete"]:
-            return self._block_development(
-                f"Missing architecture docs: {arch_status['missing']}"
-            )
+            return self._block_development(f"Missing architecture docs: {arch_status['missing']}")
 
         # Step 3: Technical Debt
         print("\n🚫 STEP 3: Zero Technical Debt Check")
         print("-" * 40)
         debt_status = self._check_technical_debt()
         if debt_status["violations"] > 0:
-            return self._block_development(
-                f"Technical debt found: {debt_status['details']}"
-            )
+            return self._block_development(f"Technical debt found: {debt_status['details']}")
 
         # Step 4: Agents
         print("\n🤖 STEP 4: Agent Discovery and Validation")
         print("-" * 40)
         team = self._discover_and_validate_agents(description)
         if not team["valid"]:
-            return self._block_development(
-                f"Invalid team composition: {team['issues']}"
-            )
+            return self._block_development(f"Invalid team composition: {team['issues']}")
 
         # Step 5-7: Setup steps
         gates = self._run_setup_steps(description)
@@ -173,9 +164,7 @@ class AgenticSDLCCoach:
 
         return {"gates": gates, "tracking": tracking, "retrospective": retro_path}
 
-    def _build_success_response(
-        self, proposal, arch, team, gates, tracking, retro, desc
-    ) -> Dict:
+    def _build_success_response(self, proposal, arch, team, gates, tracking, retro, desc) -> Dict:
         """Build the success response"""
         return {
             "status": "AUTHORIZED",
@@ -198,10 +187,10 @@ class AgenticSDLCCoach:
         proposal_file = proposal_dir / f"{timestamp}-project-kickoff.md"
 
         if not proposal_file.exists():
-            print(f"⚠️  No feature proposal found!")
+            print("⚠️  No feature proposal found!")
             print(f"Creating template at: {proposal_file}")
 
-            template = f"""# Feature Proposal: Project Kickoff
+            template = """# Feature Proposal: Project Kickoff
 
 ## Motivation
 {description}
@@ -220,7 +209,7 @@ class AgenticSDLCCoach:
 """
             proposal_file.write_text(template)
 
-            print(f"❌ BLOCKED: Complete the feature proposal first")
+            print("❌ BLOCKED: Complete the feature proposal first")
             print(f"   Edit: {proposal_file}")
             return None
 
@@ -229,7 +218,7 @@ class AgenticSDLCCoach:
         result = self._run_validation_tool(self.framework_tools["proposal_checker"])
 
         if not result["success"]:
-            print(f"❌ BLOCKED: Invalid feature proposal")
+            print("❌ BLOCKED: Invalid feature proposal")
             print(f"   Issues: {result['output']}")
             return None
 
@@ -257,29 +246,23 @@ class AgenticSDLCCoach:
 
         if missing:
             print(f"❌ Missing architecture documents: {missing}")
-            print(
-                f"   Run: python {self.framework_tools['architecture_validator']} --strict"
-            )
+            print(f"   Run: python {self.framework_tools['architecture_validator']} --strict")
             return {"complete": False, "missing": missing}
 
         # Validate architecture
-        result = self._run_validation_tool(
-            self.framework_tools["architecture_validator"], "--strict"
-        )
+        result = self._run_validation_tool(self.framework_tools["architecture_validator"], "--strict")
 
         if not result["success"]:
-            print(f"❌ Architecture validation failed")
+            print("❌ Architecture validation failed")
             print(f"   {result['output']}")
             return {"complete": False, "issues": result["output"]}
 
-        print(f"✅ All 6 architecture documents validated")
+        print("✅ All 6 architecture documents validated")
         return {"complete": True, "documents": required_docs}
 
     def _check_technical_debt(self) -> Dict:
         """Zero tolerance for technical debt"""
-        result = self._run_validation_tool(
-            self.framework_tools["debt_checker"], "--threshold", "0"
-        )
+        result = self._run_validation_tool(self.framework_tools["debt_checker"], "--threshold", "0")
 
         if not result["success"]:
             violations = self._parse_debt_violations(result["output"])
@@ -288,7 +271,7 @@ class AgenticSDLCCoach:
                 print(f"   - {v}")
             return {"violations": len(violations), "details": violations}
 
-        print(f"✅ Zero technical debt verified")
+        print("✅ Zero technical debt verified")
         return {"violations": 0}
 
     def _discover_and_validate_agents(self, description: str) -> Dict:
@@ -338,9 +321,7 @@ class AgenticSDLCCoach:
 
         agents = []
         for agent_file in cat_dir.glob("*.md"):
-            agents.append(
-                {"name": agent_file.stem, "category": category, "path": agent_file}
-            )
+            agents.append({"name": agent_file.stem, "category": category, "path": agent_file})
         return agents
 
     def _select_optimal_team(self, description: str, available_agents: List) -> Dict:
@@ -412,9 +393,9 @@ class AgenticSDLCCoach:
         }
 
         if result["success"]:
-            print(f"✅ Progress tracking initialized")
+            print("✅ Progress tracking initialized")
         else:
-            print(f"⚠️  Progress tracking setup failed (non-blocking)")
+            print("⚠️  Progress tracking setup failed (non-blocking)")
 
         return tracking
 

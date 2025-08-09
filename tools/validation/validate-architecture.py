@@ -97,9 +97,7 @@ class ArchitectureValidator:
                 content = doc_path.read_text()
 
                 # Count template markers
-                marker_count = sum(
-                    1 for marker in self.template_markers if marker in content
-                )
+                marker_count = sum(1 for marker in self.template_markers if marker in content)
                 if marker_count >= 3:  # Still has significant template content
                     unmodified_templates += 1
 
@@ -120,9 +118,7 @@ class ArchitectureValidator:
             print("\n✨ Fresh installation detected - AI should complete templates")
             print("📝 Templates will be validated for basic structure only")
             print("🎯 Goal: Create project-specific architecture documents")
-            print(
-                "📚 Full guidance: Load CLAUDE-CONTEXT-architecture.md for complete instructions"
-            )
+            print("📚 Full guidance: Load CLAUDE-CONTEXT-architecture.md for complete instructions")
             print(
                 "🚀 Quick start: mkdir -p docs/architecture/decisions && cp templates/architecture/*.md docs/architecture/\n"
             )
@@ -132,17 +128,13 @@ class ArchitectureValidator:
             print("\n📝 Some templates completed, others still need work")
             print("🎯 Goal: Complete ALL architecture documents")
             print("⚠️  Code forbidden until all documents are complete")
-            print(
-                "🚀 Quick fix: Replace remaining [placeholders] with project content\n"
-            )
+            print("🚀 Quick fix: Replace remaining [placeholders] with project content\n")
         else:
             print("🛑 STRICT MODE - Architecture Validation REQUIRED")
             print("=" * 60)
             print("\n⚠️  YOU ARE FORBIDDEN FROM WRITING CODE UNTIL THIS PASSES")
             print("⚠️  NO EXCEPTIONS. NO EXCUSES. NO WORKAROUNDS.")
-            print(
-                "🔄 If new to framework: Run without --strict to enable bootstrap mode\n"
-            )
+            print("🔄 If new to framework: Run without --strict to enable bootstrap mode\n")
 
     def _run_mode_specific_validation(self) -> bool:
         """Run validation appropriate for current mode"""
@@ -173,9 +165,7 @@ class ArchitectureValidator:
                 )
             else:
                 content = doc_path.read_text()
-                marker_count = sum(
-                    1 for marker in self.template_markers if marker in content
-                )
+                marker_count = sum(1 for marker in self.template_markers if marker in content)
 
                 if marker_count >= 3:
                     self.add_warning(
@@ -184,9 +174,7 @@ class ArchitectureValidator:
                         self._get_template_customization_guidance(doc_name),
                     )
                 else:
-                    self.add_success(
-                        doc_name, "Has been customized with project content"
-                    )
+                    self.add_success(doc_name, "Has been customized with project content")
                     completed_docs += 1
 
         # Check for ADRs directory
@@ -204,9 +192,7 @@ class ArchitectureValidator:
         progress_percentage = int((completed_docs / total_docs) * 100)
 
         self._print_results()
-        self._print_enhanced_bootstrap_guidance(
-            progress_percentage, completed_docs, total_docs
-        )
+        self._print_enhanced_bootstrap_guidance(progress_percentage, completed_docs, total_docs)
 
         return not self.has_errors  # Warnings are OK in bootstrap mode
 
@@ -228,9 +214,7 @@ class ArchitectureValidator:
                 )
             else:
                 content = doc_path.read_text()
-                marker_count = sum(
-                    1 for marker in self.template_markers if marker in content
-                )
+                marker_count = sum(1 for marker in self.template_markers if marker in content)
 
                 if marker_count >= 3:
                     self.add_error(
@@ -316,39 +300,27 @@ class ArchitectureValidator:
                 "Define 10+ invariants: data rules, security bounds, performance limits. Replace generic examples"
             ),
             "integration-design.md": (
-                "Document ALL external APIs, auth flows, data sync. "
-                "Replace [Service] with actual integrations"
+                "Document ALL external APIs, auth flows, data sync. " "Replace [Service] with actual integrations"
             ),
             "failure-mode-analysis.md": (
-                "Analyze failure modes for each component, calculate RPN scores, "
-                "add recovery procedures"
+                "Analyze failure modes for each component, calculate RPN scores, " "add recovery procedures"
             ),
         }
-        return guidance_map.get(
-            doc_name, "Replace ALL template placeholders with project-specific content"
-        )
+        return guidance_map.get(doc_name, "Replace ALL template placeholders with project-specific content")
 
-    def _print_enhanced_bootstrap_guidance(
-        self, progress_percentage: int, completed_docs: int, total_docs: int
-    ):
+    def _print_enhanced_bootstrap_guidance(self, progress_percentage: int, completed_docs: int, total_docs: int):
         """Print enhanced guidance for AI in bootstrap mode"""
         print("\n" + "=" * 60)
         print("🚀 AI BOOTSTRAP GUIDANCE - NEXT ACTIONS")
         print("=" * 60)
-        print(
-            f"\n📊 PROGRESS: {progress_percentage}% complete ({completed_docs}/{total_docs} docs)"
-        )
+        print(f"\n📊 PROGRESS: {progress_percentage}% complete ({completed_docs}/{total_docs} docs)")
 
         if progress_percentage == 0:
-            print(
-                "\n🎯 IMMEDIATE PRIORITY: Create architecture directory and copy templates"
-            )
+            print("\n🎯 IMMEDIATE PRIORITY: Create architecture directory and copy templates")
             print("\n✅ RUN THESE COMMANDS NOW:")
             print("   mkdir -p docs/architecture/decisions")
             print("   cp templates/architecture/*.md docs/architecture/")
-            print(
-                "   python tools/validation/validate-architecture.py  # Check progress"
-            )
+            print("   python tools/validation/validate-architecture.py  # Check progress")
         elif progress_percentage < 50:
             print("\n🎯 CURRENT FOCUS: Complete template customization")
             print("\n✅ FOR EACH INCOMPLETE TEMPLATE:")
@@ -368,9 +340,7 @@ class ArchitectureValidator:
         else:
             print("\n🎯 READY FOR NEXT PHASE: All templates completed!")
             print("\n✅ NEXT STEPS:")
-            print(
-                "   1. Run: python tools/validation/validate-architecture.py --strict"
-            )
+            print("   1. Run: python tools/validation/validate-architecture.py --strict")
             print("   2. Should progress to intermediate or strict mode")
             print("   3. Begin implementation when validation passes")
 
@@ -386,16 +356,10 @@ class ArchitectureValidator:
         print("   • You can write code AFTER completing all templates")
 
         print("\n🔄 VALIDATION COMMANDS:")
-        print(
-            "   python tools/validation/validate-architecture.py          # Check current progress"
-        )
-        print(
-            "   python tools/validation/validate-architecture.py --strict  # Force strict mode check"
-        )
+        print("   python tools/validation/validate-architecture.py          # Check current progress")
+        print("   python tools/validation/validate-architecture.py --strict  # Force strict mode check")
 
-        print(
-            "\n🎯 SUCCESS CRITERIA: All templates customized + 1 ADR created = Ready for development"
-        )
+        print("\n🎯 SUCCESS CRITERIA: All templates customized + 1 ADR created = Ready for development")
 
     def _validate_requirements_matrix(self, doc_path: Path) -> None:
         """Validate Requirements Traceability Matrix"""
@@ -451,9 +415,7 @@ class ArchitectureValidator:
             )
 
         if requirements and len(requirements) >= 3:
-            self.add_success(
-                "Requirements Matrix", f"Found {len(requirements)} requirements"
-            )
+            self.add_success("Requirements Matrix", f"Found {len(requirements)} requirements")
 
     def _validate_what_if_analysis(self, doc_path: Path) -> None:
         """Validate What-If Analysis"""
@@ -503,9 +465,7 @@ class ArchitectureValidator:
                 )
 
         if scenarios and len(scenarios) >= 5:
-            self.add_success(
-                "What-If Analysis", f"Found {len(scenarios)} scenarios analyzed"
-            )
+            self.add_success("What-If Analysis", f"Found {len(scenarios)} scenarios analyzed")
 
     def _validate_system_invariants(self, doc_path: Path) -> None:
         """Validate System Invariants"""
@@ -550,9 +510,7 @@ class ArchitectureValidator:
             )
 
         if invariants and len(invariants) >= 10:
-            self.add_success(
-                "System Invariants", f"Found {len(invariants)} invariants defined"
-            )
+            self.add_success("System Invariants", f"Found {len(invariants)} invariants defined")
 
     def _validate_integration_design(self, doc_path: Path) -> None:
         """Validate Integration Design"""
@@ -726,11 +684,7 @@ class ArchitectureValidator:
                 "has_warnings": self.has_warnings,
                 "results": [
                     {
-                        "status": (
-                            "pass"
-                            if icon == "✅"
-                            else "warn" if "⚠️" in icon else "fail"
-                        ),
+                        "status": ("pass" if icon == "✅" else "warn" if "⚠️" in icon else "fail"),
                         "component": component,
                         "message": message,
                         "fix": fix,
@@ -765,9 +719,7 @@ class ArchitectureValidator:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Validate architecture documents for Zero Technical Debt compliance"
-    )
+    parser = argparse.ArgumentParser(description="Validate architecture documents for Zero Technical Debt compliance")
     parser.add_argument(
         "--project-root",
         type=Path,

@@ -57,9 +57,7 @@ class StrictTemplateConverter:
             info["description"] = tagline_match.group(1).strip()
 
         # Extract from Agent Card section
-        agent_card_match = re.search(
-            r"## Agent Card\s*\n(.*?)(?=\n##|\Z)", content, re.DOTALL
-        )
+        agent_card_match = re.search(r"## Agent Card\s*\n(.*?)(?=\n##|\Z)", content, re.DOTALL)
         if agent_card_match:
             card_content = agent_card_match.group(1)
 
@@ -74,16 +72,12 @@ class StrictTemplateConverter:
                 info["expertise"] = expertise_match.group(1).strip()
 
         # Extract Core Purpose
-        purpose_match = re.search(
-            r"## Core Purpose\s*\n(.*?)(?=\n##|\Z)", content, re.DOTALL
-        )
+        purpose_match = re.search(r"## Core Purpose\s*\n(.*?)(?=\n##|\Z)", content, re.DOTALL)
         if purpose_match:
             info["purpose"] = purpose_match.group(1).strip()
 
         # Extract Capabilities
-        capabilities_match = re.search(
-            r"## Capabilities\s*\n(.*?)(?=\n##|\Z)", content, re.DOTALL
-        )
+        capabilities_match = re.search(r"## Capabilities\s*\n(.*?)(?=\n##|\Z)", content, re.DOTALL)
         if capabilities_match:
             cap_content = capabilities_match.group(1)
             # Extract main capability headings
@@ -96,9 +90,7 @@ class StrictTemplateConverter:
             info["capabilities"].extend(bullets[:10])
 
         # Extract Manifesto if present
-        manifesto_match = re.search(
-            r"##.*?Manifesto\s*\n(.*?)(?=\n##|\Z)", content, re.DOTALL
-        )
+        manifesto_match = re.search(r"##.*?Manifesto\s*\n(.*?)(?=\n##|\Z)", content, re.DOTALL)
         if manifesto_match:
             info["manifesto"] = manifesto_match.group(1).strip()
 
@@ -373,33 +365,23 @@ Your core competencies include:"""
             if success:
                 print(f"  ✅ {message}")
                 results["converted"] += 1
-                results["details"].append(
-                    {"file": file_path, "status": "converted", "message": message}
-                )
+                results["details"].append({"file": file_path, "status": "converted", "message": message})
             elif "Already has" in message:
                 print(f"  ⏭️  {message}")
                 results["skipped"] += 1
-                results["details"].append(
-                    {"file": file_path, "status": "skipped", "message": message}
-                )
+                results["details"].append({"file": file_path, "status": "skipped", "message": message})
             else:
                 print(f"  ❌ {message}")
                 results["failed"] += 1
-                results["details"].append(
-                    {"file": file_path, "status": "failed", "message": message}
-                )
+                results["details"].append({"file": file_path, "status": "failed", "message": message})
 
         return results
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Convert agent files to strict template format"
-    )
+    parser = argparse.ArgumentParser(description="Convert agent files to strict template format")
     parser.add_argument("--file", help="Convert single file")
-    parser.add_argument(
-        "--check", action="store_true", help="Check which files need conversion"
-    )
+    parser.add_argument("--check", action="store_true", help="Check which files need conversion")
 
     args = parser.parse_args()
 
@@ -435,9 +417,7 @@ def main():
     print(f"Failed: {results['failed']}")
 
     if results["converted"] > 0:
-        print(
-            f"\n✅ Successfully converted {results['converted']} files to strict template format"
-        )
+        print(f"\n✅ Successfully converted {results['converted']} files to strict template format")
         print(f"Backups saved to: {converter.backup_dir}")
 
 

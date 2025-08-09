@@ -154,9 +154,7 @@ class TeamDiscoveryEngine:
         self.responses = {}
         self.scores = {archetype: 0 for archetype in ARCHETYPES.keys()}
 
-    def ask_question(
-        self, question: str, options: List[Tuple[str, Dict[str, int]]]
-    ) -> str:
+    def ask_question(self, question: str, options: List[Tuple[str, Dict[str, int]]]) -> str:
         """Ask a question and return the selected option"""
         click.echo(f"\n{question}")
         for i, (option, _) in enumerate(options, 1):
@@ -181,9 +179,7 @@ class TeamDiscoveryEngine:
     def run_assessment(self) -> str:
         """Run the complete team discovery assessment"""
         click.echo("=== AI Team Discovery Assessment ===")
-        click.echo(
-            "Answer the following questions to discover your optimal team formation"
-        )
+        click.echo("Answer the following questions to discover your optimal team formation")
 
         # Question 1: Project Type
         self.responses["project_type"] = self.ask_question(
@@ -354,15 +350,9 @@ class TeamDiscoveryEngine:
 
         # Calculate installation phases
         core_agents = archetype.core_agents[:3]  # First 3 are always core
-        phase_2_agents = (
-            archetype.core_agents[3:6] if len(archetype.core_agents) > 3 else []
-        )
-        phase_3_agents = (
-            archetype.core_agents[6:9] if len(archetype.core_agents) > 6 else []
-        )
-        phase_4_agents = (
-            archetype.core_agents[9:] if len(archetype.core_agents) > 9 else []
-        )
+        phase_2_agents = archetype.core_agents[3:6] if len(archetype.core_agents) > 3 else []
+        phase_3_agents = archetype.core_agents[6:9] if len(archetype.core_agents) > 6 else []
+        phase_4_agents = archetype.core_agents[9:] if len(archetype.core_agents) > 9 else []
 
         return {
             "archetype": archetype.name,
@@ -515,9 +505,7 @@ def main(interactive: bool, output: str, format: str):
         if format == "json":
             output_content = json.dumps(recommendations, indent=2)
         else:
-            output_content = generate_markdown_report(
-                recommendations, engine.responses, engine.scores
-            )
+            output_content = generate_markdown_report(recommendations, engine.responses, engine.scores)
 
         if output:
             Path(output).write_text(output_content)
@@ -527,15 +515,13 @@ def main(interactive: bool, output: str, format: str):
             click.echo(output_content)
 
         # Show next steps
-        click.echo(f"\n🎯 Next Steps:")
+        click.echo("\n🎯 Next Steps:")
         click.echo(f"1. Review the {recommendations['archetype']} formation details")
         click.echo(
             f"2. Install Phase 1 agents: {', '.join(recommendations['installation_phases']['phase_1_foundation']['agents'])}"
         )
-        click.echo(
-            f"3. Run: python tools/automation/validate-team-readiness.py --formation {winning_archetype}"
-        )
-        click.echo(f"4. Begin chemistry development exercises")
+        click.echo(f"3. Run: python tools/automation/validate-team-readiness.py --formation {winning_archetype}")
+        click.echo("4. Begin chemistry development exercises")
 
     except click.Abort:
         click.echo("\nAssessment cancelled.")
@@ -543,12 +529,10 @@ def main(interactive: bool, output: str, format: str):
         click.echo(f"Error: {e}")
 
 
-def generate_markdown_report(
-    recommendations: Dict[str, Any], responses: Dict[str, str], scores: Dict[str, int]
-) -> str:
+def generate_markdown_report(recommendations: Dict[str, Any], responses: Dict[str, str], scores: Dict[str, int]) -> str:
     """Generate a markdown report of the team discovery results"""
 
-    report = f"""# AI Team Discovery Report
+    report = """# AI Team Discovery Report
 
 ## Recommended Formation: {recommendations['archetype']}
 
@@ -602,7 +586,7 @@ Your team will be ready when:
         archetype_name = ARCHETYPES[archetype].name
         report += f"- **{archetype_name}**: {score} points\n"
 
-    report += f"""
+    report += """
 ## Next Steps
 
 1. **Install Foundation Agents**: Start with the Phase 1 agents to establish your core team
