@@ -1,3 +1,30 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [🏟️ Billy Wright Team Coordination: Final Issues Resolution](#-billy-wright-team-coordination-final-issues-resolution)
+  - [Current Situation (3 Issues Remaining)](#current-situation-3-issues-remaining)
+  - [📊 Issue &#035;1: PR Template Compliance Permission Error](#-issue-1-pr-template-compliance-permission-error)
+    - [Team Analysis:](#team-analysis)
+  - [📊 Issue &#035;2: Framework Compliance Validation (validate-framework)](#-issue-2-framework-compliance-validation-validate-framework)
+    - [Team Analysis:](#team-analysis-1)
+  - [📊 Issue &#035;3: Agent Template Compliance Success Comment](#-issue-3-agent-template-compliance-success-comment)
+    - [Team Analysis:](#team-analysis-2)
+  - [🎯 Billy Wright Game Plan](#-billy-wright-game-plan)
+    - [Formation: 4-3-3 Attack Formation](#formation-4-3-3-attack-formation)
+    - [Play-by-Play Strategy:](#play-by-play-strategy)
+      - [First Half: Permission Issues (Issues &#035;1 & #3)](#first-half-permission-issues-issues-1--3)
+      - [Second Half: Code Quality (Issue &#035;2)](#second-half-code-quality-issue-2)
+    - [Team Assignments:](#team-assignments)
+  - [🏃 Execution Timeline](#-execution-timeline)
+    - [Minute 1-15: Permission Fix](#minute-1-15-permission-fix)
+    - [Minute 16-30: Code Quality](#minute-16-30-code-quality)
+    - [Minute 31-45: Integration Test](#minute-31-45-integration-test)
+  - [🎊 Victory Conditions](#-victory-conditions)
+  - [💬 Team Talk](#-team-talk)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # 🏟️ Billy Wright Team Coordination: Final Issues Resolution
 
 ## Current Situation (3 Issues Remaining)
