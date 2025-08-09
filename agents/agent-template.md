@@ -5,7 +5,7 @@ examples:
 - '<example>
   Context: Developer wants to create a new specialized agent
   user: "I need to create a new agent for database optimization"
-  assistant: "I'll help you create a properly formatted agent using this template. Copy this file, rename it to match your agent name, and fill in the specific details for your database optimization specialist."
+  assistant: "I will help you create a properly formatted agent using this template. Copy this file, rename it to match your agent name, and fill in the specific details for your database optimization specialist."
   <commentary>
   This template provides the structure for creating new agents
   </commentary>

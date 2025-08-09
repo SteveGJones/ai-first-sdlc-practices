@@ -332,17 +332,13 @@ class AgenticSDLCCoach:
     def _scan_available_agents(self, agents_dir: Path) -> List[Dict]:
         """Scan for all available agents in the repository"""
         available_agents = []
-        categories = [
-            "core",
-            "testing",
-            "ai-development",
-            "creative",
-            "compliance"]
-
-        for category in categories:
-            agents = self._scan_category_agents(
-                agents_dir / category, category)
-            available_agents.extend(agents)
+        
+        # Scan ALL directories that contain agents
+        for category_dir in agents_dir.iterdir():
+            if category_dir.is_dir() and not category_dir.name.startswith('.'):
+                category = category_dir.name
+                agents = self._scan_category_agents(category_dir, category)
+                available_agents.extend(agents)
 
         return available_agents
 
