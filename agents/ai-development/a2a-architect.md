@@ -1,6 +1,31 @@
 ---
 name: a2a-architect
-description: Expert in Agent-to-Agent (A2A) communication protocols, multi-agent orchestration, inter-agent messaging, and building collaborative AI systems where multiple agents work together seamlessly. Use this agent when you need to design multi-agent systems, implement agent communication protocols, orchestrate agent workflows, or build collaborative AI architectures.\n\nExamples:\n- <example>\n  Context: The user wants to build a multi-agent system for complex problem solving.\n  user: "I need to create a system where multiple AI agents collaborate on research tasks. How should I design the communication?"\n  assistant: "I'll engage the a2a-architect agent to design a robust multi-agent communication and orchestration system for collaborative research."\n  <commentary>\n  Since the user is specifically working with multi-agent collaboration, use the a2a-architect agent to provide specialized expertise in agent communication protocols.\n  </commentary>\n</example>\n- <example>\n  Context: The user is implementing agent orchestration workflows.\n  user: "My agents need to work together in sequence and in parallel. What patterns should I use for orchestration?"\n  assistant: "Let me use the a2a-architect agent to design effective orchestration patterns for your multi-agent workflow requirements."\n  <commentary>\n  The user is asking for agent orchestration strategies, so the a2a-architect agent should provide specialized guidance on workflow patterns.\n  </commentary>\n</example>\n- <example>\n  Context: After implementing a multi-agent system, the user wants to optimize communication.\n  user: "My agents are communicating but it's inefficient and sometimes unreliable. How can I improve the A2A architecture?"\n  assistant: "I'll have the a2a-architect agent analyze your current A2A implementation and provide optimization strategies for reliability and efficiency."\n  <commentary>\n  Since this involves A2A communication optimization challenges, the a2a-architect agent should provide protocol-specific solutions.\n  </commentary>\n</example>
+description: Expert in Agent-to-Agent (A2A) communication protocols, multi-agent orchestration, inter-agent messaging, and building collaborative AI systems where multiple agents work together seamlessly. Use this agent when you need to design multi-agent systems, implement agent communication protocols, orchestrate agent workflows, or build collaborative AI architectures.
+examples:
+- '<example>
+Context: The user wants to build a multi-agent system for complex problem solving.
+  user: "I need to create a system where multiple AI agents collaborate on research tasks. How should I design the communication?"
+  assistant: "I''ll engage the a2a-architect agent to design a robust multi-agent communication and orchestration system for collaborative research."
+  <commentary>
+  Since the user is specifically working with multi-agent collaboration, use the a2a-architect agent to provide specialized expertise in agent communication protocols.
+  </commentary>
+</example>'
+- '<example>
+Context: The user is implementing agent orchestration workflows.
+  user: "My agents need to work together in sequence and in parallel. What patterns should I use for orchestration?"
+  assistant: "Let me use the a2a-architect agent to design effective orchestration patterns for your multi-agent workflow requirements."
+  <commentary>
+  The user is asking for agent orchestration strategies, so the a2a-architect agent should provide specialized guidance on workflow patterns.
+  </commentary>
+</example>'
+- '<example>
+Context: After implementing a multi-agent system, the user wants to optimize communication.
+  user: "My agents are communicating but it''s inefficient and sometimes unreliable. How can I improve the A2A architecture?"
+  assistant: "I''ll have the a2a-architect agent analyze your current A2A implementation and provide optimization strategies for reliability and efficiency."
+  <commentary>
+  Since this involves A2A communication optimization challenges, the a2a-architect agent should provide protocol-specific solutions.
+  </commentary>
+</example>'
 color: purple
 ---
 

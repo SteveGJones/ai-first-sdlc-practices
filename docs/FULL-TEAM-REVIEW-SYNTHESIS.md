@@ -1,3 +1,33 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Full Team Review: AI-First SDLC Framework](#full-team-review-ai-first-sdlc-framework)
+  - [Executive Summary](#executive-summary)
+  - [Core Findings](#core-findings)
+    - [1. The Kick-Starter Insight is Correct](#1-the-kick-starter-insight-is-correct)
+    - [2. Strict SDLC vs. Solo Developer Enablement](#2-strict-sdlc-vs-solo-developer-enablement)
+    - [3. Agent Ecosystem: Impressive but Overwhelming](#3-agent-ecosystem-impressive-but-overwhelming)
+    - [4. Documentation: Hostile When It Should Help](#4-documentation-hostile-when-it-should-help)
+  - [Critical Gaps and Weaknesses](#critical-gaps-and-weaknesses)
+    - [Technical Hypocrisy](#technical-hypocrisy)
+    - [Implementation Chaos](#implementation-chaos)
+    - [User Experience Failures](#user-experience-failures)
+  - [The Path Forward: Choose Your Identity](#the-path-forward-choose-your-identity)
+    - [Option A: Lightweight Solo Developer Framework (Recommended)](#option-a-lightweight-solo-developer-framework-recommended)
+    - [Option B: Enterprise Team Framework](#option-b-enterprise-team-framework)
+  - [Immediate Actions Required](#immediate-actions-required)
+    - [Week 1: Fix the Foundations](#week-1-fix-the-foundations)
+    - [Week 2: Align Implementation](#week-2-align-implementation)
+    - [Week 3: User Experience](#week-3-user-experience)
+  - [Team Consensus](#team-consensus)
+    - [What Works (Keep)](#what-works-keep)
+    - [What Doesn't (Remove/Fix)](#what-doesnt-removefix)
+    - [What's Missing (Add)](#whats-missing-add)
+  - [Final Recommendation](#final-recommendation)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Full Team Review: AI-First SDLC Framework
 
 ## Executive Summary

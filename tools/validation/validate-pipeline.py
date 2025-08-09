@@ -833,8 +833,9 @@ class ValidationPipeline:
                     f"{file_path.name}: {suppressions} error suppressions"
                 )
 
-        except Exception:
-            pass  # Skip files we can't read
+        except (UnicodeDecodeError, PermissionError, FileNotFoundError):
+            # Skip files we can't read (binary files, permission issues, etc.)
+            return indicators
 
         return indicators
 

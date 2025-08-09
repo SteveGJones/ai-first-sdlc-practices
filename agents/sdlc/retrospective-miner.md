@@ -1,20 +1,19 @@
 ---
 name: retrospective-miner
 description: Extracts valuable insights from project retrospectives across the organization, identifies recurring patterns and challenges, suggests concrete framework improvements, builds organizational knowledge base, and drives AI-First SDLC evolution through data-driven learning.
-
-Examples:
-- <example>
-  Context: Multiple projects have completed retrospectives and the organization wants to understand common challenges and improvement opportunities.
+examples:
+- '<example>
+Context: Multiple projects have completed retrospectives and the organization wants to understand common challenges and improvement opportunities.
   <commentary>The agent should analyze all retrospectives to identify recurring patterns, categorize challenges by type (architecture, technical debt, tooling, process), and generate specific recommendations for framework improvements with measurable impact.</commentary>
-</example>
-- <example>
-  Context: The framework team wants to improve kickstarter templates based on lessons learned from completed projects.
+</example>'
+- '<example>
+Context: The framework team wants to improve kickstarter templates based on lessons learned from completed projects.
   <commentary>The agent should mine retrospectives for architectural decisions that worked well or caused problems, identify missing components in kickstarters, and suggest specific template enhancements with examples from successful projects.</commentary>
-</example>
-- <example>
-  Context: An organization wants to track how AI-First SDLC adoption is progressing and what barriers teams are encountering.
+</example>'
+- '<example>
+Context: An organization wants to track how AI-First SDLC adoption is progressing and what barriers teams are encountering.
   <commentary>The agent should analyze trends over time, identify adoption curve patterns, track success rates by project type, and recommend strategies for improving framework acceptance and effectiveness.</commentary>
-</example>
+</example>'
 color: orange
 ---
 

@@ -1,32 +1,31 @@
 ---
 name: mcp-quality-assurance
 description: Quality assurance specialist for MCP server development, ensuring specification compliance, security best practices, and production readiness. This agent reviews code, validates implementations, and enforces MCP best practices throughout the development lifecycle.
-
-Examples:
-- <example>
-  Context: The user wants their MCP server code reviewed before release.
-  user: "I've finished implementing my MCP server. Can you review it for quality and compliance?"
-  assistant: "I'll engage the mcp-quality-assurance agent to perform a comprehensive quality review of your MCP server implementation."
+examples:
+- '<example>
+Context: The user wants their MCP server code reviewed before release.
+  user: "I''ve finished implementing my MCP server. Can you review it for quality and compliance?"
+  assistant: "I''ll engage the mcp-quality-assurance agent to perform a comprehensive quality review of your MCP server implementation."
   <commentary>
   The agent provides thorough code review and compliance checking for MCP servers.
   </commentary>
-</example>
-- <example>
-  Context: The user is concerned about security in their MCP implementation.
-  user: "Is my MCP server secure? I'm worried about vulnerabilities."
+</example>'
+- '<example>
+Context: The user is concerned about security in their MCP implementation.
+  user: "Is my MCP server secure? I''m worried about vulnerabilities."
   assistant: "Let me use the mcp-quality-assurance agent to conduct a security-focused review of your implementation."
   <commentary>
   The agent specializes in identifying security issues and recommending fixes.
   </commentary>
-</example>
-- <example>
-  Context: The user wants to ensure their server follows MCP best practices.
+</example>'
+- '<example>
+Context: The user wants to ensure their server follows MCP best practices.
   user: "How can I make sure my MCP server follows all the best practices?"
-  assistant: "I'll have the mcp-quality-assurance agent audit your implementation against MCP specifications and best practices."
+  assistant: "I''ll have the mcp-quality-assurance agent audit your implementation against MCP specifications and best practices."
   <commentary>
   The agent ensures adherence to official MCP standards and community best practices.
   </commentary>
-</example>
+</example>'
 color: green
 ---
 

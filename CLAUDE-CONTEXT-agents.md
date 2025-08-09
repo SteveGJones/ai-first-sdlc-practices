@@ -15,6 +15,8 @@ python tools/agent-help.py testing          # Find testing agents
 python tools/agent-help.py performance      # Performance optimization
 python tools/agent-help.py security         # Security agents
 python tools/agent-help.py "slow queries"   # Database performance
+python tools/agent-help.py "build MCP"      # MCP server building
+python tools/agent-help.py "AI deployment"  # AI DevOps help
 ```
 
 ## Smart Agent Installation
@@ -69,6 +71,9 @@ Once installed, agents provide specialized expertise:
 @solution-architect Should we use event sourcing for this feature?
 @ai-solution-architect Review my LLM application architecture
 @project-plan-tracker Are we on track with our MVP deliverables?
+@mcp-server-architect How do I expose my tools via MCP?
+@context-engineer Help me design conversation memory
+@orchestration-architect Design multi-agent workflow
 ```
 
 ## Agent Categories
@@ -79,6 +84,22 @@ Once installed, agents provide specialized expertise:
 - `github-integration-specialist`: GitHub automation and repository management
 - `test-manager`: Testing strategy and coordination
 - `solution-architect`: System design and technology decisions
+
+### AI Builders Team (NEW! For Building AI Systems)
+- `mcp-server-architect`: Build Model Context Protocol servers
+- `context-engineer`: Build memory and state management systems
+- `orchestration-architect`: Build multi-agent coordination systems
+- `rag-system-designer`: Build retrieval-augmented generation systems
+- `ai-devops-engineer`: Deploy AI systems to production
+- `agent-developer`: Create new AI agents (existing)
+- `ai-test-engineer`: Test AI/LLM applications (existing)
+- `prompt-engineer`: Optimize prompts and instructions (existing)
+
+### SDLC Support Team (Helping SDLC Enforcer)
+- `sdlc-knowledge-curator`: Pattern library and best practices
+- `team-progress-tracker`: Multi-team journey tracking
+- `enforcement-strategy-advisor`: Adaptive coaching approaches
+- `compliance-report-generator`: Clear compliance documentation
 
 ### Language Experts
 - `language-python-expert`: Python patterns with AI-First SDLC integration
@@ -107,11 +128,14 @@ As your project evolves, discover new agents:
 1. **Challenge-Based**: Describe your problem
    ```bash
    python tools/agent-help.py "optimize React rendering"
+   python tools/agent-help.py "build MCP server"
+   python tools/agent-help.py "multi-agent orchestration"
    ```
 
 2. **Phase-Based**: Get agents for current phase
    ```bash
    python tools/agent-installer.py --analyze --phase testing
+   python tools/agent-installer.py --analyze --phase deployment
    ```
 
 3. **Stack-Based**: Agents for new technologies
@@ -138,16 +162,40 @@ Create custom agents for your team:
 
 ## Common Scenarios
 
+### "Building an MCP Server"
+```bash
+python tools/agent-help.py "MCP server"
+# Recommends: mcp-server-architect, integration-engineer, ai-test-engineer
+```
+
+### "Need AI memory system"
+```bash
+python tools/agent-help.py "context management"
+# Recommends: context-engineer, rag-system-designer
+```
+
+### "Deploying AI to production"
+```bash
+python tools/agent-help.py "AI deployment"
+# Recommends: ai-devops-engineer, sre-specialist, observability-specialist
+```
+
+### "Multi-agent coordination"
+```bash
+python tools/agent-help.py orchestration
+# Recommends: orchestration-architect, context-engineer, integration-engineer
+```
+
 ### "My app is slow"
 ```bash
 python tools/agent-help.py performance
-# Recommends: performance-reviewer, database-architect, frontend-performance
+# Recommends: performance-engineer, database-architect, frontend-performance
 ```
 
 ### "Need better testing"
 ```bash
 python tools/agent-help.py testing
-# Recommends: test-manager, language-test-engineer, test-strategist
+# Recommends: test-manager, ai-test-engineer, integration-orchestrator
 ```
 
 ### "Security concerns"

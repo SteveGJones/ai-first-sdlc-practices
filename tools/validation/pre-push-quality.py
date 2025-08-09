@@ -198,8 +198,8 @@ class CodeQLStyleAnalyzer:
                             }
                         )
 
-        except Exception:
-            pass  # Skip files that can't be analyzed
+        except (UnicodeDecodeError, PermissionError, FileNotFoundError):
+            # Skip files that can't be analyzed (binary, permissions, etc.)
 
         return issues
 
@@ -243,8 +243,8 @@ class CodeQLStyleAnalyzer:
                         }
                     )
 
-        except Exception:
-            pass  # Skip files that can't be analyzed
+        except (UnicodeDecodeError, PermissionError, FileNotFoundError):
+            # Skip files that can't be analyzed (binary, permissions, etc.)
 
         return issues
 

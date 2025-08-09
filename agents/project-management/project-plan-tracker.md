@@ -1,6 +1,31 @@
 ---
 name: project-plan-tracker
-description: Use this agent when you need to monitor project progress against an established plan, verify task completion, track adherence to agreed timelines and deliverables, or coordinate plan updates with team members. This agent excels at maintaining project accountability and ensuring nothing falls through the cracks.\n\nExamples:\n- <example>\n  Context: The user has a project plan in place and wants to ensure the team is following it.\n  user: "We've completed the authentication module. Can you check if we're on track with our plan?"\n  assistant: "I'll use the project-plan-tracker agent to verify our progress against the plan and check what's next."\n  <commentary>\n  Since the user wants to verify progress against an established plan, use the project-plan-tracker agent.\n  </commentary>\n</example>\n- <example>\n  Context: The user needs to know if all planned tasks for a milestone are complete.\n  user: "Have we finished everything we planned for the MVP release?"\n  assistant: "Let me use the project-plan-tracker agent to audit our MVP deliverables against the plan."\n  <commentary>\n  The user is asking about completion status against planned deliverables, so use the project-plan-tracker agent to verify.\n  </commentary>\n</example>\n- <example>\n  Context: The project timeline needs adjustment based on current progress.\n  user: "We're running behind on the API integration. What should we do?"\n  assistant: "I'll engage the project-plan-tracker agent to assess the impact and coordinate a plan update."\n  <commentary>\n  Since this involves evaluating delays and coordinating plan changes, use the project-plan-tracker agent.\n  </commentary>\n</example>
+description: Use this agent when you need to monitor project progress against an established plan, verify task completion, track adherence to agreed timelines and deliverables, or coordinate plan updates with team members. This agent excels at maintaining project accountability and ensuring nothing falls through the cracks.
+examples:
+- '<example>
+Context: The user has a project plan in place and wants to ensure the team is following it.
+  user: "We''ve completed the authentication module. Can you check if we''re on track with our plan?"
+  assistant: "I''ll use the project-plan-tracker agent to verify our progress against the plan and check what''s next."
+  <commentary>
+  Since the user wants to verify progress against an established plan, use the project-plan-tracker agent.
+  </commentary>
+</example>'
+- '<example>
+Context: The user needs to know if all planned tasks for a milestone are complete.
+  user: "Have we finished everything we planned for the MVP release?"
+  assistant: "Let me use the project-plan-tracker agent to audit our MVP deliverables against the plan."
+  <commentary>
+  The user is asking about completion status against planned deliverables, so use the project-plan-tracker agent to verify.
+  </commentary>
+</example>'
+- '<example>
+Context: The project timeline needs adjustment based on current progress.
+  user: "We''re running behind on the API integration. What should we do?"
+  assistant: "I''ll engage the project-plan-tracker agent to assess the impact and coordinate a plan update."
+  <commentary>
+  Since this involves evaluating delays and coordinating plan changes, use the project-plan-tracker agent.
+  </commentary>
+</example>'
 color: blue
 ---
 

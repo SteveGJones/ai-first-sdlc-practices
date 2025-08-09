@@ -1,6 +1,31 @@
 ---
 name: ai-solution-architect
-description: Use this agent when you need expert review of AI system architectures, implementation approaches, or best practices validation. This includes reviewing AI model selection, data pipeline designs, MLOps practices, ethical AI considerations, scalability patterns, and integration strategies. The agent provides detailed feedback on alignment with industry standards and emerging best practices in AI development.\n\nExamples:\n- <example>\n  Context: The user has just designed an AI system architecture and wants expert review.\n  user: "I've designed a multi-model AI system for customer service. Can you review my approach?"\n  assistant: "I'll use the ai-solution-architect agent to provide a comprehensive review of your AI system design."\n  <commentary>\n  Since the user is asking for review of an AI system architecture, use the ai-solution-architect agent to provide expert feedback on the approach.\n  </commentary>\n</example>\n- <example>\n  Context: The user is implementing an AI solution and wants to ensure best practices.\n  user: "I'm building a recommendation engine using collaborative filtering. Is this the right approach?"\n  assistant: "Let me engage the ai-solution-architect agent to evaluate your recommendation engine approach and suggest best practices."\n  <commentary>\n  The user is seeking validation of their AI approach, so the ai-solution-architect agent should review and provide guidance.\n  </commentary>\n</example>\n- <example>\n  Context: After implementing an AI feature, the user wants architectural review.\n  user: "I've just implemented a real-time fraud detection system using ensemble models. Here's my architecture..."\n  assistant: "I'll have the ai-solution-architect agent review your fraud detection system architecture for best practices and potential improvements."\n  <commentary>\n  Since the user has implemented an AI solution and is presenting the architecture, use the ai-solution-architect agent to provide detailed review.\n  </commentary>\n</example>
+description: Use this agent when you need expert review of AI system architectures, implementation approaches, or best practices validation. This includes reviewing AI model selection, data pipeline designs, MLOps practices, ethical AI considerations, scalability patterns, and integration strategies. The agent provides detailed feedback on alignment with industry standards and emerging best practices in AI development.
+examples:
+- '<example>
+Context: The user has just designed an AI system architecture and wants expert review.
+  user: "I''ve designed a multi-model AI system for customer service. Can you review my approach?"
+  assistant: "I''ll use the ai-solution-architect agent to provide a comprehensive review of your AI system design."
+  <commentary>
+  Since the user is asking for review of an AI system architecture, use the ai-solution-architect agent to provide expert feedback on the approach.
+  </commentary>
+</example>'
+- '<example>
+Context: The user is implementing an AI solution and wants to ensure best practices.
+  user: "I''m building a recommendation engine using collaborative filtering. Is this the right approach?"
+  assistant: "Let me engage the ai-solution-architect agent to evaluate your recommendation engine approach and suggest best practices."
+  <commentary>
+  The user is seeking validation of their AI approach, so the ai-solution-architect agent should review and provide guidance.
+  </commentary>
+</example>'
+- '<example>
+Context: After implementing an AI feature, the user wants architectural review.
+  user: "I''ve just implemented a real-time fraud detection system using ensemble models. Here''s my architecture..."
+  assistant: "I''ll have the ai-solution-architect agent review your fraud detection system architecture for best practices and potential improvements."
+  <commentary>
+  Since the user has implemented an AI solution and is presenting the architecture, use the ai-solution-architect agent to provide detailed review.
+  </commentary>
+</example>'
 color: purple
 ---
 

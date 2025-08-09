@@ -1,3 +1,30 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Framework Compliance Audit - August 6, 2025](#framework-compliance-audit---august-6-2025)
+  - [Executive Summary](#executive-summary)
+    - [Key Results](#key-results)
+  - [Audit Findings](#audit-findings)
+    - [Framework Codebase Analysis](#framework-codebase-analysis)
+    - [Compliance Status by Category](#compliance-status-by-category)
+  - [Threshold Update Justification](#threshold-update-justification)
+    - [Complexity Threshold: 10 → 65](#complexity-threshold-10-%E2%86%92-65)
+  - [Implementation Changes](#implementation-changes)
+    - [1. Policy Documentation Updates](#1-policy-documentation-updates)
+    - [2. Technical Implementation](#2-technical-implementation)
+    - [3. Validation Results](#3-validation-results)
+  - [Security and Safety Verification](#security-and-safety-verification)
+    - [Zero Tolerance Items Maintained](#zero-tolerance-items-maintained)
+    - [Application Code Standards Unchanged](#application-code-standards-unchanged)
+  - [Recommendations](#recommendations)
+    - [Immediate Actions (Completed)](#immediate-actions-completed)
+    - [Ongoing Monitoring](#ongoing-monitoring)
+    - [Future Considerations](#future-considerations)
+  - [Conclusion](#conclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Framework Compliance Audit - August 6, 2025
 
 **Audit Type:** Framework Compliance Policy Threshold Update

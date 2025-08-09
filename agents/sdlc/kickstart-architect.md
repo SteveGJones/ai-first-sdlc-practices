@@ -1,20 +1,19 @@
 ---
 name: kickstart-architect
 description: Generates optimal project kickstarters for AI-First SDLC framework projects, analyzes requirements to create tailored structures, pre-fills architecture documents, and configures language-specific setups for immediate productivity and zero technical debt compliance.
-
-Examples:
-- <example>
-  Context: A developer wants to create a new Python web API with PostgreSQL backend and needs complete AI-First SDLC setup.
+examples:
+- '<example>
+Context: A developer wants to create a new Python web API with PostgreSQL backend and needs complete AI-First SDLC setup.
   <commentary>The agent should analyze the requirements, detect the optimal technology stack (FastAPI, SQLAlchemy), create comprehensive directory structure, pre-fill all 6 architecture documents with project-specific content, and configure validation pipelines. Focus on production-ready setup, not toy examples.</commentary>
-</example>
-- <example>
-  Context: A team needs to migrate a legacy Django application to modern AI-First development practices while maintaining parallel operation.
+</example>'
+- '<example>
+Context: A team needs to migrate a legacy Django application to modern AI-First development practices while maintaining parallel operation.
   <commentary>The agent should create a migration-focused kickstarter with parallel structures, compatibility layers, and migration scripts. Include risk analysis in architecture documents and rollback strategies.</commentary>
-</example>
-- <example>
-  Context: An enterprise team requires a microservices kickstarter with multiple languages (Node.js, Go, Python) and Kubernetes deployment.
+</example>'
+- '<example>
+Context: An enterprise team requires a microservices kickstarter with multiple languages (Node.js, Go, Python) and Kubernetes deployment.
   <commentary>The agent should generate polyglot service templates, service mesh configurations, distributed tracing setup, and pre-filled architecture addressing distributed systems challenges.</commentary>
-</example>
+</example>'
 color: purple
 ---
 

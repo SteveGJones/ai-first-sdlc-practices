@@ -1,0 +1,118 @@
+name: 🎯 Start My Billy Wright Journey
+description: Begin your transformation from solo AI to legendary collaborative team player
+title: "[Billy Wright Journey] - Starting My Path to Legendary Collaboration"
+labels: ["billy-wright", "coaching", "onboarding", "fresh-ai"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Welcome, Future Legend! ⚽
+
+        You're about to learn the Billy Wright way - where every pass sets up a teammate for success.
+        This journey will transform you from a solo AI into a legendary collaborative team player.
+
+        **The Billy Wright Promise**: If you commit to the team-first mentality and follow our coaching,
+        you WILL become a more effective, collaborative AI. The framework works. Will you work with it?
+
+  - type: textarea
+    id: dream
+    attributes:
+      label: What's Your Dream?
+      description: Tell us what you want to build. Be specific - this helps us recommend the right team formation.
+      placeholder: |
+        I want to build a web application that...
+        I want to create an AI agent that...
+        I want to design a system that...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: experience
+    attributes:
+      label: Current Experience Level
+      description: Be honest - we all start somewhere, and this helps us coach you appropriately
+      options:
+        - "Fresh/Beginner - I'm just starting out"
+        - "Some Experience - I've built a few things"
+        - "Intermediate - I'm comfortable with basics"
+        - "Advanced - I have significant experience"
+    validations:
+      required: true
+
+  - type: checkboxlist
+    id: skills
+    attributes:
+      label: Technical Skills (Check all that apply)
+      description: This helps us understand your strengths
+      options:
+        - label: Web Development (Frontend/Backend)
+        - label: API Design and Development
+        - label: Database Design
+        - label: DevOps/Deployment
+        - label: Testing/QA
+        - label: AI/ML Development
+        - label: System Architecture
+        - label: UI/UX Design
+        - label: Security
+        - label: Performance Optimization
+
+  - type: textarea
+    id: concerns
+    attributes:
+      label: Biggest Concerns or Challenges
+      description: What worries you most about your project? This helps us provide targeted coaching.
+      placeholder: |
+        I'm concerned about testing strategy...
+        I'm worried about deployment complexity...
+        I'm not sure about the architecture...
+
+  - type: dropdown
+    id: commitment
+    attributes:
+      label: Commitment Level
+      description: How much time can you dedicate to learning the Billy Wright way?
+      options:
+        - "Full-time - This is my primary focus"
+        - "Part-time - Several hours per day"
+        - "Casual - A few hours per week"
+        - "Exploratory - Just checking it out"
+    validations:
+      required: true
+
+  - type: checkboxlist
+    id: principles
+    attributes:
+      label: Billy Wright Principles Agreement
+      description: To succeed, you must embrace these core principles
+      options:
+        - label: "I commit to NO SOLO RUNS - I will consult teammates before major decisions"
+          required: true
+        - label: "I will think TEAM FIRST - Success is measured by team outcomes, not individual achievement"
+          required: true
+        - label: "I will SET UP TEAMMATES - Every action should enable others' success"
+          required: true
+        - label: "I will EMBRACE COACHING - I'm open to feedback and continuous improvement"
+          required: true
+        - label: "I will MEASURE CHEMISTRY - I'll track and improve collaboration metrics"
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## What Happens Next?
+
+        1. **Formation Recommendation**: We'll analyze your dream and recommend a team formation
+        2. **Foundation Trio**: You'll start with 3 core specialists to learn basics
+        3. **Chemistry Exercises**: Progressive challenges to build collaboration skills
+        4. **Coaching Feedback**: Continuous guidance on every PR and issue
+        5. **Level Progression**: Track your journey from Solo Explorer to Legend
+
+        ## Your Journey Milestones
+
+        - 🌱 **Solo Explorer** (Day 1): Learn the basics
+        - 👥 **Trio Coordinator** (Week 1): Master foundation team
+        - 💫 **Core Seven Leader** (Week 2): Expand your formation
+        - ⚡ **Full Formation Captain** (Week 3): Command complete team
+        - 🏆 **Legendary Collaborator** (Week 4+): Achieve greatness
+
+        Ready to begin? Submit this issue and let's start your transformation!

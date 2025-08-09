@@ -1,3 +1,32 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Progressive SDLC Implementation Plan](#progressive-sdlc-implementation-plan)
+  - [Overview](#overview)
+  - [The Three Levels](#the-three-levels)
+    - [Level 1: Rapid Prototype (Solo Developer Friendly)](#level-1-rapid-prototype-solo-developer-friendly)
+    - [Level 2: Production Development](#level-2-production-development)
+    - [Level 3: Enterprise/Critical Systems](#level-3-enterprisecritical-systems)
+  - [Implementation Changes](#implementation-changes)
+    - [1. Update CLAUDE-CORE.md](#1-update-claude-coremd)
+    - [2. Enhance setup-smart.py](#2-enhance-setup-smartpy)
+    - [3. Update Validation Pipeline](#3-update-validation-pipeline)
+    - [4. Revise sdlc-enforcer Agent](#4-revise-sdlc-enforcer-agent)
+    - [5. Create Level Migration Tools](#5-create-level-migration-tools)
+  - [Migration Strategy](#migration-strategy)
+    - [For New Projects](#for-new-projects)
+    - [For Existing Projects](#for-existing-projects)
+  - [Success Metrics](#success-metrics)
+    - [Level 1 Success](#level-1-success)
+    - [Level 2 Success](#level-2-success)
+    - [Level 3 Success](#level-3-success)
+  - [Timeline](#timeline)
+  - [Key Principles](#key-principles)
+  - [Conclusion](#conclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Progressive SDLC Implementation Plan
 
 ## Overview

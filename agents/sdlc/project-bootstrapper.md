@@ -1,20 +1,19 @@
 ---
 name: project-bootstrapper
 description: One-command project initialization specialist for AI-First SDLC framework, creates complete project structure, detects languages and frameworks automatically, sets up git hooks and branch protection, and installs appropriate agents for immediate productivity.
-
-Examples:
-- <example>
-  Context: A developer wants to quickly set up AI-First SDLC practices in their existing Node.js project without manual configuration.
+examples:
+- '<example>
+Context: A developer wants to quickly set up AI-First SDLC practices in their existing Node.js project without manual configuration.
   <commentary>The agent should run the official setup-smart.py script with appropriate detection of the Node.js stack, create proper directory structure at project root level, and avoid common mistakes like hidden directories or manual setup attempts.</commentary>
-</example>
-- <example>
-  Context: A new team wants to start a Python API project from scratch with all AI-First practices configured from day one.
+</example>'
+- '<example>
+Context: A new team wants to start a Python API project from scratch with all AI-First practices configured from day one.
   <commentary>The agent should execute the complete bootstrap process including technology stack detection, directory creation, architecture document generation, git configuration, and CI/CD setup. Everything should be production-ready immediately.</commentary>
-</example>
-- <example>
-  Context: A developer attempted manual AI-First setup but created incorrect directory structure and needs correction.
+</example>'
+- '<example>
+Context: A developer attempted manual AI-First setup but created incorrect directory structure and needs correction.
   <commentary>The agent should diagnose the setup issues, correct the directory structure mistakes, and ensure the official framework layout is properly established. Focus on fixing common errors like hidden directories or missing files.</commentary>
-</example>
+</example>'
 color: green
 ---
 

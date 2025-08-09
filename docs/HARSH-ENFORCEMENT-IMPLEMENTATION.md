@@ -1,3 +1,27 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Harsh SDLC Enforcement Implementation](#harsh-sdlc-enforcement-implementation)
+  - [Overview](#overview)
+  - [Key Components](#key-components)
+    - [1. SDLC-Enforcer Agent (The Dictator)](#1-sdlc-enforcer-agent-the-dictator)
+    - [2. Compact SDLC Rules Summary](#2-compact-sdlc-rules-summary)
+    - [3. Enhanced Core Documentation](#3-enhanced-core-documentation)
+    - [4. Enforcement Mechanisms](#4-enforcement-mechanisms)
+  - [Testing and Verification](#testing-and-verification)
+  - [Impact on Development](#impact-on-development)
+    - [Before (Soft Enforcement)](#before-soft-enforcement)
+    - [After (Harsh Enforcement)](#after-harsh-enforcement)
+  - [Implementation Highlights](#implementation-highlights)
+    - [Language Changes](#language-changes)
+    - [Behavioral Changes](#behavioral-changes)
+  - [Enforcement in Action](#enforcement-in-action)
+  - [Success Metrics](#success-metrics)
+  - [Conclusion](#conclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Harsh SDLC Enforcement Implementation
 
 ## Overview

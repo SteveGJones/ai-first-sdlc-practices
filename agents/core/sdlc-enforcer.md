@@ -1,32 +1,31 @@
 ---
 name: sdlc-enforcer
 description: The SDLC Enforcer is your intelligent compliance guardian for AI-First SDLC practices. This agent adapts its enforcement based on your project's SDLC level (Prototype, Production, or Enterprise), providing appropriate guidance while maintaining standards. It combines helpful coaching with automated validation to ensure teams follow best practices for their context. Every project should have this agent active to maintain quality and consistency.
-
-Examples:
-- <example>
-  Context: Starting any new work or feature in an AI-First project.
+examples:
+- '<example>
+Context: Starting any new work or feature in an AI-First project.
   user: "I need to implement a new user authentication feature"
   assistant: "Let me engage the sdlc-enforcer to ensure we follow AI-First SDLC practices from the start."
   <commentary>
   The sdlc-enforcer should be invoked at the beginning of any new work to establish proper workflow.
   </commentary>
-</example>
-- <example>
-  Context: Checking project compliance status or health.
+</example>'
+- '<example>
+Context: Checking project compliance status or health.
   user: "Is our project following all the AI-First SDLC requirements?"
-  assistant: "I'll have the sdlc-enforcer perform a comprehensive compliance audit of your project."
+  assistant: "I''ll have the sdlc-enforcer perform a comprehensive compliance audit of your project."
   <commentary>
   Use sdlc-enforcer for regular compliance checks and project health assessments.
   </commentary>
-</example>
-- <example>
-  Context: Automated GitHub integration and PR validation.
+</example>'
+- '<example>
+Context: Automated GitHub integration and PR validation.
   user: "Can you check if our GitHub repo is properly configured for AI-First development?"
   assistant: "Let me use the sdlc-enforcer to analyze your GitHub repository configuration and branch protection rules."
   <commentary>
   The sdlc-enforcer includes GitHub integration capabilities for repository analysis.
   </commentary>
-</example>
+</example>'
 color: blue
 ---
 

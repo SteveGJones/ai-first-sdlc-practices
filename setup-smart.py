@@ -359,8 +359,17 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
     def setup_python_project(self) -> bool:
         """Create essential Python project files"""
         print("\n🐍 Setting up Python project essentials...")
+        
+        self._create_requirements_txt()
+        self._create_pyproject_toml()
+        self._create_setup_py()
+        self._create_python_package_structure()
+        self._create_basic_test_file()
+        
+        return True
 
-        # Create requirements.txt with common dependencies
+    def _create_requirements_txt(self):
+        """Create requirements.txt with common dependencies"""
         requirements_content = """# Core dependencies
 pytest>=7.0.0
 pytest-cov>=4.0.0
@@ -376,11 +385,11 @@ pre-commit>=3.0.0
             requirements_path.write_text(requirements_content)
             print("✅ Created requirements.txt")
 
-        # Standard configuration values
+    def _create_pyproject_toml(self):
+        """Create pyproject.toml with tool configurations"""
         BLACK_LINE_LENGTH = 88
         SETUPTOOLS_MIN_VERSION = 45
-
-        # Create pyproject.toml
+        
         pyproject_content = f"""[tool.black]
 line-length = {BLACK_LINE_LENGTH}
 target-version = ['py39']
@@ -408,8 +417,9 @@ description = "{self.project_purpose}"
             pyproject_path.write_text(pyproject_content)
             print("✅ Created pyproject.toml")
 
-        # Create setup.py
-        setup_content = """#!/usr/bin/env python3
+    def _create_setup_py(self):
+        """Create setup.py for package distribution"""
+        setup_content = f"""#!/usr/bin/env python3
 \"\"\"
 {self.project_name}
 {self.project_purpose}
@@ -442,12 +452,11 @@ setup(
         setup_path = self.project_dir / "setup.py"
         if not setup_path.exists():
             setup_path.write_text(setup_content)
-            os.chmod(
-                setup_path, 0o600
-            )  # Owner read/write only - prevents information disclosure
+            os.chmod(setup_path, 0o600)
             print("✅ Created setup.py")
 
-        # Create __init__.py files
+    def _create_python_package_structure(self):
+        """Create __init__.py files for package structure"""
         package_name = self.project_name.replace("-", "_")
         init_files = [
             self.project_dir / "src" / package_name / "__init__.py",
@@ -461,8 +470,10 @@ setup(
 
         print("✅ Created package structure")
 
-        # Create basic test file
-        test_content = """\"\"\"
+    def _create_basic_test_file(self):
+        """Create basic test file for the package"""
+        package_name = self.project_name.replace("-", "_")
+        test_content = f"""\"\"\"
 Basic tests for {self.project_name}
 \"\"\"
 
@@ -489,8 +500,6 @@ def test_import():
         if not test_path.exists():
             test_path.write_text(test_content)
             print("✅ Created basic test file")
-
-        return True
 
     def update_readme_for_python(self):
         """Update README.md with Python-specific content"""
@@ -1047,108 +1056,138 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         quickstart: bool = False,
     ) -> bool:
         """Run the complete setup process"""
+        self._print_setup_header()
+        
+        # Handle quickstart/organized modes
+        if quickstart or self.organized:
+            return self._handle_quickstart_mode(skip_ci, github_token)
+        
+        # Setup full framework
+        self._setup_git_repository()
+        self._download_framework_files()
+        language = self._detect_and_setup_language()
+        self._create_directory_structure(language)
+        self._setup_claude_files()
+        self._setup_project_files()
+        self._setup_language_specifics(language)
+        self._setup_cicd_if_needed(skip_ci)
+        self._finalize_setup()
+        self._setup_branch_protection_if_needed(github_token)
+        self._create_first_commit_if_needed()
+        self._cleanup_and_finish()
+        
+        return len(self.errors) == 0
+
+    def _print_setup_header(self):
+        """Print setup header information"""
         print("🚀 AI-First SDLC Smart Setup")
         print("=" * 50)
         print(f"Project: {self.project_name}")
         print(f"Purpose: {self.project_purpose}")
         print()
 
-        # Quickstart mode - minimal setup
-        if quickstart or self.organized:
-            mode_name = "organized" if self.organized else "quickstart"
-            print(f"\n⚡ Running in {mode_name} mode...")
+    def _handle_quickstart_mode(self, skip_ci: bool, github_token: str) -> bool:
+        """Handle quickstart and organized setup modes"""
+        mode_name = "organized" if self.organized else "quickstart"
+        print(f"\n⚡ Running in {mode_name} mode...")
 
-            # Create organized structure if requested
-            if self.organized:
-                return self.setup_organized_project(skip_ci, github_token)
+        if self.organized:
+            return self.setup_organized_project(skip_ci, github_token)
 
-            # Download only necessary templates for quickstart
-            print("📥 Downloading templates...")
-            quickstart_files = [
-                "templates/gitignore/base.gitignore",
-                "templates/gitignore/ai-tools.gitignore",
-                "templates/gitignore/general.gitignore",
-                "templates/tests/test-framework.sh",
-                "tools/validation/validate-pipeline.py",
-            ]
+        return self._run_quickstart_setup()
 
-            # Always detect language first
-            print("🔍 Detecting project language...")
-            language = self.detect_project_language()
-            print(f"✅ Detected language: {language}")
+    def _run_quickstart_setup(self) -> bool:
+        """Run minimal quickstart setup"""
+        # Download quickstart files
+        print("📥 Downloading templates...")
+        quickstart_files = self._get_quickstart_files()
+        
+        for file in quickstart_files:
+            self.download_file(file, None)
 
-            # Add language-specific templates
-            if language != "general":
-                quickstart_files.append(f"templates/gitignore/{language}.gitignore")
-                # Add language-specific test template
-                test_map = {
-                    "python": "templates/tests/test_framework_setup.py",
-                    "node": "templates/tests/framework.test.js",
-                    "java": "templates/tests/FrameworkTest.java",
-                    "ruby": "templates/tests/framework_test.rb",
-                    "rust": "templates/tests/framework_test.rs",
-                    "go": "templates/tests/test-framework.sh",
-                }
-                if language in test_map:
-                    quickstart_files.append(test_map[language])
+        # Create minimal structure
+        self._create_minimal_structure()
+        self._create_version_file()
+        self._run_validation_and_cleanup()
+        self._print_quickstart_completion()
+        return True
 
-            # Download quickstart files
-            for file in quickstart_files:
-                self.download_file(file, None)
+    def _get_quickstart_files(self):
+        """Get list of files needed for quickstart"""
+        base_files = [
+            "templates/gitignore/base.gitignore",
+            "templates/gitignore/ai-tools.gitignore", 
+            "templates/gitignore/general.gitignore",
+            "templates/tests/test-framework.sh",
+            "tools/validation/validate-pipeline.py",
+        ]
+        
+        print("🔍 Detecting project language...")
+        language = self.detect_project_language()
+        print(f"✅ Detected language: {language}")
+        
+        if language != "general":
+            base_files.append(f"templates/gitignore/{language}.gitignore")
+            test_map = {
+                "python": "templates/tests/test_framework_setup.py",
+                "node": "templates/tests/framework.test.js",
+                "java": "templates/tests/FrameworkTest.java",
+                "ruby": "templates/tests/framework_test.rb",
+                "rust": "templates/tests/framework_test.rs",
+                "go": "templates/tests/test-framework.sh",
+            }
+            if language in test_map:
+                base_files.append(test_map[language])
+        
+        return base_files
 
-            # Create minimal directory structure
-            print("📁 Creating minimal directory structure...")
-            minimal_dirs = ["docs", "docs/architecture", "tools"]
-            for dir_path in minimal_dirs:
-                (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
+    def _create_minimal_structure(self):
+        """Create minimal directory structure for quickstart"""
+        print("📁 Creating minimal directory structure...")
+        minimal_dirs = ["docs", "docs/architecture", "tools"]
+        for dir_path in minimal_dirs:
+            (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
 
-            # Create README if doesn't exist
-            if not (self.project_dir / "README.md").exists():
-                print("📄 Creating README.md...")
-                self.create_readme()
+        if not (self.project_dir / "README.md").exists():
+            print("📄 Creating README.md...")
+            self.create_readme()
 
-            # Create .gitignore
-            print("📝 Setting up .gitignore...")
-            self.create_gitignore()
+        print("📝 Setting up .gitignore...")
+        self.create_gitignore()
 
-            # Create initial test
-            print("🧪 Creating initial test...")
-            self.create_initial_test()
+        print("🧪 Creating initial test...")
+        self.create_initial_test()
 
-            # Create VERSION file
-            print("📌 Creating VERSION file...")
-            version_file = self.project_dir / "VERSION"
-            version_file.write_text("1.6.0")
+    def _create_version_file(self):
+        """Create VERSION file"""
+        print("📌 Creating VERSION file...")
+        version_file = self.project_dir / "VERSION"
+        version_file.write_text("1.6.0")
 
-            # Run validation
-            print("🔍 Running validation...")
-            self.run_validation()
+    def _run_validation_and_cleanup(self):
+        """Run validation and clean up temp files"""
+        print("🔍 Running validation...")
+        self.run_validation()
 
-            # Clean up temp directory
-            temp_dir = self.project_dir / ".ai-sdlc-temp"
-            if temp_dir.exists():
-                import shutil
+        temp_dir = self.project_dir / ".ai-sdlc-temp"
+        if temp_dir.exists():
+            import shutil
+            shutil.rmtree(temp_dir)
 
-                shutil.rmtree(temp_dir)
+    def _print_quickstart_completion(self):
+        """Print quickstart completion message"""
+        print("\n✅ Quickstart setup completed in < 10 seconds!")
+        print("\n📚 Next steps:")
+        print("  1. Review the generated files")
+        print(f'  2. Run the full setup with: python setup-smart.py "{self.project_purpose}"')
+        print("  3. Commit your changes: git add . && git commit -m 'Initial AI-First SDLC setup'")
 
-            print("\n✅ Quickstart setup completed in < 10 seconds!")
-            print("\n📚 Next steps:")
-            print("  1. Review the generated files")
-            print(
-                f'  2. Run the full setup with: python setup-smart.py "{self.project_purpose}"'
-            )
-            print(
-                "  3. Commit your changes: git add . && git commit -m 'Initial AI-First SDLC setup'"
-            )
-
-            return True
-
-        # Check git repository
+    def _setup_git_repository(self):
+        """Setup git repository and branch"""
         if not self.check_git_repo():
             print("⚠️  No git repository found. Initializing...")
             self.init_git_repo()
 
-        # Create ai-first-kick-start branch
         print("\n🌿 Creating ai-first-kick-start branch...")
         try:
             subprocess.run(
@@ -1160,13 +1199,14 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
         except subprocess.CalledProcessError:
             print("ℹ️  Branch already exists or couldn't be created")
 
-        # Download essential files
+    def _download_framework_files(self):
+        """Download essential framework files"""
         print("\n📥 Downloading framework files...")
         for remote, local in self.ESSENTIAL_FILES.items():
             if local is not None:
                 local_path = self.project_dir / local
             else:
-                local_path = None  # Will be saved to temp directory
+                local_path = None
 
             if self.download_file(remote, local_path):
                 if local is not None:
@@ -1174,22 +1214,25 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
             else:
                 print(f"❌ Failed to download {remote}")
 
-        # Detect project language first
+    def _detect_and_setup_language(self):
+        """Detect project language"""
         print("\n🔍 Detecting project language...")
         language = self.detect_project_language()
         print(f"✅ Detected language: {language}")
+        return language
 
-        # Create directory structure
+    def _create_directory_structure(self, language: str):
+        """Create directory structure based on detected language"""
         print("\n📁 Creating directory structure...")
         dirs = [
             "docs/feature-proposals",
-            "docs/architecture",  # MANDATORY for validation
-            "docs/architecture/decisions",  # For ADRs
+            "docs/architecture",
+            "docs/architecture/decisions", 
             "plan",
             "retrospectives",
             ".claude",
-            ".claude/agents",  # For agent installation
-            "templates/architecture",  # For architecture templates
+            ".claude/agents",
+            "templates/architecture",
         ]
 
         # Add language-specific directories
@@ -1210,11 +1253,25 @@ Built with [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdl
             (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
             print(f"✅ Created {dir_path}/")
 
-        # Always use hierarchical system for new installations
+    def _setup_claude_files(self):
+        """Setup Claude.md and related AI files"""
         if (self.project_dir / "CLAUDE-CORE.md").exists():
             print("\n✅ Using hierarchical instruction system (CLAUDE-CORE.md)")
-            # Create deprecation notice only
-            deprecation_content = """# CLAUDE.md
+            self._create_claude_deprecation_notice()
+        else:
+            print("\n⚠️  WARNING: Hierarchical system not found. Please update framework.")
+            self._create_claude_error_notice()
+
+        # Create symlinks for other AI files
+        for ai_file in ["GEMINI.md", "GPT.md"]:
+            target = self.project_dir / ai_file
+            if not target.exists():
+                target.symlink_to("CLAUDE.md")
+                print(f"✅ Created {ai_file} → CLAUDE.md")
+
+    def _create_claude_deprecation_notice(self):
+        """Create CLAUDE.md deprecation notice"""
+        deprecation_content = """# CLAUDE.md
 
 ⚠️ **DEPRECATED**: This file exists only for backward compatibility and will be removed in v2.0.0.
 
@@ -1225,15 +1282,13 @@ Please use the new hierarchical instruction system:
 
 To migrate existing customizations: python tools/migrate-to-hierarchical.py
 """
-            with open(self.project_dir / "CLAUDE.md", "w") as f:
-                f.write(deprecation_content)
-            print("✅ Created CLAUDE.md (deprecation notice only)")
-        else:
-            # Should not happen with new setup, but keep minimal fallback
-            print(
-                "\n⚠️  WARNING: Hierarchical system not found. Please update framework."
-            )
-            fallback_content = """# CLAUDE.md
+        with open(self.project_dir / "CLAUDE.md", "w") as f:
+            f.write(deprecation_content)
+        print("✅ Created CLAUDE.md (deprecation notice only)")
+
+    def _create_claude_error_notice(self):
+        """Create CLAUDE.md error notice"""
+        fallback_content = """# CLAUDE.md
 
 ERROR: The hierarchical instruction system was not properly installed.
 
@@ -1244,34 +1299,28 @@ Please re-run setup or manually download:
 
 From: https://github.com/SteveGJones/ai-first-sdlc-practices
 """
-            with open(self.project_dir / "CLAUDE.md", "w") as f:
-                f.write(fallback_content)
-            print("❌ ERROR: Created error notice in CLAUDE.md")
+        with open(self.project_dir / "CLAUDE.md", "w") as f:
+            f.write(fallback_content)
+        print("❌ ERROR: Created error notice in CLAUDE.md")
 
-        # Create symlinks for other AI files
-        for ai_file in ["GEMINI.md", "GPT.md"]:
-            target = self.project_dir / ai_file
-            if not target.exists():
-                target.symlink_to("CLAUDE.md")
-                print(f"✅ Created {ai_file} → CLAUDE.md")
-
-        # Create comprehensive .gitignore
+    def _setup_project_files(self):
+        """Setup basic project files"""
         print("\n📝 Setting up .gitignore...")
         self.create_gitignore()
 
-        # Customize architecture templates with project-specific content
         self.customize_architecture_templates()
 
-        # Create initial test
         print("\n🧪 Creating initial test...")
         self.create_initial_test()
 
-        # Setup Python project if detected
+    def _setup_language_specifics(self, language: str):
+        """Setup language-specific files and configuration"""
         if language == "python":
             self.setup_python_project()
             self.update_readme_for_python()
 
-        # Setup CI/CD if not skipped
+    def _setup_cicd_if_needed(self, skip_ci: bool):
+        """Setup CI/CD if not skipped"""
         if not skip_ci:
             platform = self.detect_ci_platform()
             if platform:
@@ -1283,37 +1332,31 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
                 if platform:
                     self.setup_ci_cd(platform)
 
-        # Create initial feature proposal
+    def _finalize_setup(self):
+        """Finalize setup with feature proposal, version, and configuration"""
         print("\n📋 Creating initial feature proposal...")
         self.create_initial_feature_proposal()
         print("✅ Created docs/feature-proposals/00-ai-first-setup.md")
 
-        # Create VERSION file
-        print("\n📌 Creating VERSION file...")
-        version_file = self.project_dir / "VERSION"
-        version_file.write_text("1.6.0")
+        self._create_version_file()
         print("✅ Created VERSION file (1.6.0)")
 
-        # Configure SDLC level
         self.configure_sdlc_level()
 
-        # Install AI agents
         print("\n🤖 Installing AI agents...")
         self.install_agents()
 
-        # Create Claude project configuration
         print("\n🔧 Creating Claude project configuration...")
         self.create_claude_config()
 
-        # Create initial context
         print("\n💾 Creating initial context...")
         self.create_initial_context()
 
-        # Run initial validation
         print("\n🔍 Running initial validation...")
         self.run_validation()
 
-        # Setup branch protection for GitHub repos
+    def _setup_branch_protection_if_needed(self, github_token: str):
+        """Setup branch protection for GitHub repos if available"""
         detected_platform = self.detect_ci_platform() or "github"
         if detected_platform == "github":
             if self.check_gh_cli():
@@ -1323,20 +1366,19 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
                 print("\n🔒 Setting up branch protection using token...")
                 self.setup_branch_protection(github_token)
             else:
-                print(
-                    "\n💡 Tip: Install 'gh' CLI or provide GITHUB_TOKEN for automatic branch protection"
-                )
+                print("\n💡 Tip: Install 'gh' CLI or provide GITHUB_TOKEN for automatic branch protection")
 
-        # Create comprehensive first commit if in non-interactive mode
+    def _create_first_commit_if_needed(self):
+        """Create first commit if in non-interactive mode"""
         if self.non_interactive:
             print("\n📦 Creating comprehensive first commit...")
             self.create_first_commit()
 
-        # Clean up temp directory
+    def _cleanup_and_finish(self):
+        """Clean up temporary files and print final status"""
         temp_dir = self.project_dir / ".ai-sdlc-temp"
         if temp_dir.exists():
             import shutil
-
             shutil.rmtree(temp_dir)
             print("\n🧹 Cleaned up temporary files")
 
@@ -1348,39 +1390,48 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
             print("\n✅ Setup completed successfully!")
 
         self.print_next_steps()
-        return len(self.errors) == 0
 
     def setup_organized_project(
         self, skip_ci: bool = False, github_token: str = None
     ) -> bool:
         """Setup project with organized .sdlc directory structure"""
         print("\n📂 Setting up organized framework structure...")
+        
+        self._setup_organized_git_and_language()
+        self._create_organized_directories()
+        self._download_organized_files()
+        self._setup_organized_project_files()
+        self._setup_organized_ci_and_finalize(skip_ci)
+        self._print_organized_completion()
+        
+        return True
 
-        # Check git repository
+    def _setup_organized_git_and_language(self):
+        """Setup git repository and detect language for organized project"""
         if not self.check_git_repo():
             print("⚠️  No git repository found. Initializing...")
             self.init_git_repo()
 
-        # Detect project language first
         print("\n🔍 Detecting project language...")
         language = self.detect_project_language()
         print(f"✅ Detected language: {language}")
+        return language
 
-        # Create .sdlc directory structure
+    def _create_organized_directories(self):
+        """Create .sdlc and user-facing directories"""
         print("\n📁 Creating .sdlc directory structure...")
         sdlc_dirs = [
             ".sdlc/tools/validation",
-            ".sdlc/tools/automation",
+            ".sdlc/tools/automation", 
             ".sdlc/templates/architecture",
             ".sdlc/templates/proposals",
             ".sdlc/config",
-            ".sdlc/agents",  # Pre-create for agent installation
+            ".sdlc/agents",
         ]
         for dir_path in sdlc_dirs:
             (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
             print(f"✅ Created {dir_path}/")
 
-        # Create user-facing directories (REQUIRED at root)
         print("\n📁 Creating user-facing directories...")
         user_dirs = [
             "docs/feature-proposals",
@@ -1392,14 +1443,22 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
             (self.project_dir / dir_path).mkdir(parents=True, exist_ok=True)
             print(f"✅ Created {dir_path}/")
 
-        # Download framework files to .sdlc
+    def _download_organized_files(self):
+        """Download framework files to .sdlc structure"""
         print("\n📥 Downloading framework files to .sdlc/...")
-        organized_files = {
-            # Core instructions (stay at root)
+        organized_files = self._get_organized_files_mapping()
+        
+        for remote, local in organized_files.items():
+            local_path = self.project_dir / local
+            if self.download_file(remote, local_path):
+                print(f"✅ Downloaded {local}")
+
+    def _get_organized_files_mapping(self):
+        """Get mapping of remote files to organized local paths"""
+        return {
             "CLAUDE-CORE.md": "CLAUDE-CORE.md",
-            "CLAUDE-SETUP.md": "CLAUDE-SETUP.md",
+            "CLAUDE-SETUP.md": "CLAUDE-SETUP.md", 
             "CONTRIBUTING.md": "CONTRIBUTING.md",
-            # Tools go to .sdlc/tools
             "tools/validation/validate-pipeline.py": ".sdlc/tools/validation/validate-pipeline.py",
             "tools/validation/check-feature-proposal.py": ".sdlc/tools/validation/check-feature-proposal.py",
             "tools/validation/validate-architecture.py": ".sdlc/tools/validation/validate-architecture.py",
@@ -1407,73 +1466,54 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
             "tools/automation/context-manager.py": ".sdlc/tools/automation/context-manager.py",
             "tools/automation/progress-tracker.py": ".sdlc/tools/automation/progress-tracker.py",
             "tools/automation/agent-installer.py": ".sdlc/tools/automation/agent-installer.py",
-            # Templates go to .sdlc/templates
-            "templates/feature-proposal.md": (
-                ".sdlc/templates/proposals/feature-proposal.md"
-            ),
-            "templates/implementation-plan.md": (
-                ".sdlc/templates/proposals/implementation-plan.md"
-            ),
+            "templates/feature-proposal.md": ".sdlc/templates/proposals/feature-proposal.md",
+            "templates/implementation-plan.md": ".sdlc/templates/proposals/implementation-plan.md",
             "templates/retrospective.md": ".sdlc/templates/proposals/retrospective.md",
-            # Architecture templates
-            "templates/architecture/requirements-traceability-matrix.md": (
-                ".sdlc/templates/architecture/requirements-traceability-matrix.md"
-            ),
+            "templates/architecture/requirements-traceability-matrix.md": ".sdlc/templates/architecture/requirements-traceability-matrix.md",
             "templates/architecture/what-if-analysis.md": ".sdlc/templates/architecture/what-if-analysis.md",
-            "templates/architecture/architecture-decision-record.md": (
-                ".sdlc/templates/architecture/architecture-decision-record.md"
-            ),
+            "templates/architecture/architecture-decision-record.md": ".sdlc/templates/architecture/architecture-decision-record.md",
             "templates/architecture/system-invariants.md": ".sdlc/templates/architecture/system-invariants.md",
             "templates/architecture/integration-design.md": ".sdlc/templates/architecture/integration-design.md",
             "templates/architecture/failure-mode-analysis.md": ".sdlc/templates/architecture/failure-mode-analysis.md",
-            # Framework metadata
             "VERSION": ".sdlc/VERSION",
         }
 
-        for remote, local in organized_files.items():
-            local_path = self.project_dir / local
-            if self.download_file(remote, local_path):
-                print(f"✅ Downloaded {local}")
-
-        # Create convenience scripts at root
+    def _setup_organized_project_files(self):
+        """Setup project files for organized structure"""
         print("\n📝 Creating convenience scripts...")
         self.create_convenience_scripts()
 
-        # Create minimal CLAUDE.md at root
         print("\n📄 Creating minimal CLAUDE.md...")
         self.create_minimal_claude_md()
 
-        # Create README if doesn't exist
         if not (self.project_dir / "README.md").exists():
             print("\n📄 Creating README.md...")
             self.create_organized_readme()
 
-        # Setup .gitignore
         print("\n📝 Setting up .gitignore...")
         self.create_organized_gitignore()
-
-        # Customize architecture templates with project-specific content
+        
         self.customize_architecture_templates()
 
-        # Install agents in .sdlc/agents
         print("\n🤖 Installing AI agents to .sdlc/agents/...")
         self.install_organized_agents()
 
-        # Setup CI/CD if needed
+    def _setup_organized_ci_and_finalize(self, skip_ci: bool):
+        """Setup CI/CD and finalize organized project"""
         if not skip_ci:
             platform = self.detect_ci_platform() or self.ci_platform
             if platform and platform != "none":
                 print(f"\n🔧 Setting up {platform} CI/CD...")
                 self.setup_organized_ci_cd(platform)
 
-        # Create initial feature proposal
         print("\n📋 Creating initial feature proposal...")
         self.create_initial_feature_proposal()
 
-        # Run validation
         print("\n🔍 Running validation...")
         self.run_organized_validation()
 
+    def _print_organized_completion(self):
+        """Print completion message for organized setup"""
         print("\n✅ Organized setup completed successfully!")
         print("\n📚 Next steps:")
         print("  1. Review the clean project structure")
@@ -1483,15 +1523,28 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         print("     - ./new-feature <name> - Create feature proposal")
         print('  3. Or add to PATH: export PATH="$PATH:$(pwd)/sdlc-tools"')
 
-        return True
-
     def create_convenience_scripts(self):
         """Create convenience wrapper scripts in sdlc-tools directory"""
-        # Create sdlc-tools directory
         tools_dir = self.project_dir / "sdlc-tools"
         tools_dir.mkdir(exist_ok=True)
+        
+        self._create_sdlc_scripts(tools_dir)
+        self._create_sdlc_readme(tools_dir)
 
-        scripts = {
+    def _create_sdlc_scripts(self, tools_dir):
+        """Create individual SDLC wrapper scripts"""
+        scripts = self._get_script_definitions()
+        
+        for name, content in scripts.items():
+            script_path = tools_dir / name
+            with open(script_path, "w") as f:
+                f.write(content)
+            os.chmod(script_path, 0o700)  # rwx------ (owner only: read, write, execute)
+            print(f"✅ Created sdlc-tools/{name}")
+
+    def _get_script_definitions(self):
+        """Get dictionary of script names and their content"""
+        return {
             "validate": """#!/bin/bash
 # Convenience wrapper for validation
 python ../.sdlc/tools/validation/validate-pipeline.py "$@"
@@ -1519,15 +1572,16 @@ python ../.sdlc/tools/automation/progress-tracker.py "$@"
 """,
         }
 
-        for name, content in scripts.items():
-            script_path = tools_dir / name
-            with open(script_path, "w") as f:
-                f.write(content)
-            os.chmod(script_path, 0o700)  # rwx------ (owner only: read, write, execute)
-            print(f"✅ Created sdlc-tools/{name}")
+    def _create_sdlc_readme(self, tools_dir):
+        """Create README.md for sdlc-tools directory"""
+        readme_content = self._get_sdlc_readme_content()
+        with open(tools_dir / "README.md", "w") as f:
+            f.write(readme_content)
+        print("✅ Created sdlc-tools/README.md")
 
-        # Create README for sdlc-tools
-        readme_content = """# SDLC Tools
+    def _get_sdlc_readme_content(self):
+        """Get the content for sdlc-tools README.md"""
+        return """# SDLC Tools
 
 User-friendly command-line tools for the AI-First SDLC Framework.
 
@@ -1635,9 +1689,6 @@ All tools are shell wrappers around Python scripts in `.sdlc/tools/`. This desig
 
 Part of the [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sdlc-practices)
 """
-        with open(tools_dir / "README.md", "w") as f:
-            f.write(readme_content)
-        print("✅ Created sdlc-tools/README.md")
 
     def create_minimal_claude_md(self):
         """Create minimal CLAUDE.md for organized structure"""
@@ -2392,12 +2443,23 @@ Run 'python tools/agent-installer.py' to install specialist agents.
 
     def print_next_steps(self):
         """Print next steps for the user"""
+        self._print_setup_header_and_policy()
+        self._print_architecture_requirements()
+        self._print_agent_recommendations()
+        self._print_validation_and_completion_steps()
+        self._print_documentation_links()
+
+    def _print_setup_header_and_policy(self):
+        """Print header and zero technical debt policy"""
         print("\n📋 Next Steps:")
         print("=" * 50)
         print("\n🚨 NEW: Zero Technical Debt Policy Enforced!")
         print("   - Complete ALL 6 architecture documents before coding")
         print("   - Run: python tools/validation/validate-architecture.py")
         print("   - Zero tolerance for TODOs, any types, or commented code")
+
+    def _print_architecture_requirements(self):
+        """Print architecture and validation requirements"""
         print("\n1. Review the initial feature proposal:")
         print("   cat docs/feature-proposals/00-ai-first-setup.md")
         print("\n2. Create architecture documents (MANDATORY):")
@@ -2408,63 +2470,73 @@ Run 'python tools/agent-installer.py' to install specialist agents.
         print("   - Read LANGUAGE-SPECIFIC-VALIDATORS.md")
         print("   - Create tools/validation/validate-[your-language].py")
         print("   - Configure for ZERO tolerance")
-        print("\n4. Install recommended AI agents:")
 
+    def _print_agent_recommendations(self):
+        """Print AI agent recommendations based on project type"""
+        print("\n4. Install recommended AI agents:")
+        
         # Check if this is an MCP project
         is_mcp_project = (
             "mcp" in self.project_purpose.lower()
             or "model context protocol" in self.project_purpose.lower()
         )
-
+        
         if is_mcp_project:
-            print("   🎯 MCP Project Detected! Essential Agents:")
-            print("     • sdlc-enforcer - Primary compliance guardian")
-            print("     • critical-goal-reviewer - Quality assurance")
-            print("     • solution-architect - System design expert")
-            print("     • mcp-server-architect - MCP design specialist ⭐")
-            print("     • mcp-test-agent - MCP testing from AI perspective ⭐")
-            print("     • mcp-quality-assurance - MCP quality & security ⭐")
-            print("   ")
+            self._print_mcp_agents()
         elif self.detected_language == "python":
-            print("   🐍 Python Project Detected! Essential Agents:")
-            print("     • sdlc-enforcer - Primary compliance guardian")
-            print("     • critical-goal-reviewer - Quality assurance")
-            print("     • solution-architect - System design expert")
-            print("     • language-python-expert - Python best practices ⭐")
-            print("     • ai-test-engineer - AI testing specialist ⭐")
-            print("     • test-manager - Testing strategy")
-            print("   ")
-            print("   📚 Additional recommended agents:")
+            self._print_python_agents()
         else:
-            print("   🤖 Core Agents (CRITICAL - Install These First):")
-            print("     • sdlc-enforcer - Primary compliance guardian")
-            print("     • critical-goal-reviewer - Quality assurance")
-            print("     • solution-architect - System design expert")
-            print("   ")
-            print("   📚 Based on your project type, also consider:")
+            self._print_core_agents()
+        
+        self._print_agent_installation_info()
 
-        if (
-            "python" in self.project_purpose.lower()
-            or "api" in self.project_purpose.lower()
-        ):
+    def _print_mcp_agents(self):
+        """Print MCP-specific agent recommendations"""
+        print("   🎯 MCP Project Detected! Essential Agents:")
+        print("     • sdlc-enforcer - Primary compliance guardian")
+        print("     • critical-goal-reviewer - Quality assurance")
+        print("     • solution-architect - System design expert")
+        print("     • mcp-server-architect - MCP design specialist ⭐")
+        print("     • mcp-test-agent - MCP testing from AI perspective ⭐")
+        print("     • mcp-quality-assurance - MCP quality & security ⭐")
+        print("   ")
+
+    def _print_python_agents(self):
+        """Print Python-specific agent recommendations"""
+        print("   🐍 Python Project Detected! Essential Agents:")
+        print("     • sdlc-enforcer - Primary compliance guardian")
+        print("     • critical-goal-reviewer - Quality assurance")
+        print("     • solution-architect - System design expert")
+        print("     • language-python-expert - Python best practices ⭐")
+        print("     • ai-test-engineer - AI testing specialist ⭐")
+        print("     • test-manager - Testing strategy")
+        print("   ")
+        print("   📚 Additional recommended agents:")
+
+    def _print_core_agents(self):
+        """Print core agent recommendations"""
+        print("   🤖 Core Agents (CRITICAL - Install These First):")
+        print("     • sdlc-enforcer - Primary compliance guardian")
+        print("     • critical-goal-reviewer - Quality assurance")
+        print("     • solution-architect - System design expert")
+        print("   ")
+        print("   📚 Based on your project type, also consider:")
+        
+        if ("python" in self.project_purpose.lower() or "api" in self.project_purpose.lower()):
             print("     • python-expert - Python best practices")
             print("     • ai-test-engineer - AI system testing")
-        if (
-            "langchain" in self.project_purpose.lower()
-            or "llm" in self.project_purpose.lower()
-        ):
+        if ("langchain" in self.project_purpose.lower() or "llm" in self.project_purpose.lower()):
             print("     • langchain-architect - LangChain expertise")
             print("     • prompt-engineer - Prompt optimization")
+
+    def _print_agent_installation_info(self):
+        """Print agent installation information and requirements"""
         print("   ")
-        print(
-            "   ⚠️  IMPORTANT: Installing agents requires a reboot of your AI assistant!"
-        )
+        print("   ⚠️  IMPORTANT: Installing agents requires a reboot of your AI assistant!")
         print("   ")
         print("   To install agents, use:")
         print("   python tools/agent-installer.py --install <agent-name>")
-        print(
-            "   Example: python tools/agent-installer.py --install mcp-server-architect"
-        )
+        print("   Example: python tools/agent-installer.py --install mcp-server-architect")
         print("   ")
         print("   To discover more agents for your needs:")
         print("   - Ask: 'What agents should I install for [your specific need]?'")
@@ -2482,32 +2554,31 @@ Run 'python tools/agent-installer.py' to install specialist agents.
         print("   3. security-architect (auth patterns)")
         print("   4. test-manager (test strategy)")
 
+    def _print_validation_and_completion_steps(self):
+        """Print validation setup and completion steps"""
         print("\n5. Install Git hooks for local validation (HIGHLY RECOMMENDED):")
         print("   🛡️  Prevent syntax errors and validation failures before push!")
         print("   python tools/automation/install-git-hooks.py")
         print("   ")
-        print(
-            "   This installs pre-commit and pre-push validation to catch issues locally."
-        )
+        print("   This installs pre-commit and pre-push validation to catch issues locally.")
         print("   See docs/LOCAL-VALIDATION-WORKFLOW.md for details.")
-
+        
         print("\n6. Customize CLAUDE.md with project-specific details:")
         print("   edit CLAUDE.md")
         print("\n7. Complete the setup tasks:")
         print("   python tools/progress-tracker.py list")
         print("\n8. When ready, push the branch:")
         print("   git add .")
-        print(
-            '   git commit -m "feat: implement AI-First SDLC framework with Zero Technical Debt"'
-        )
+        print('   git commit -m "feat: implement AI-First SDLC framework with Zero Technical Debt"')
         print("   git push -u origin ai-first-kick-start")
         print("\n9. Create retrospective (REQUIRED before PR):")
         print("   Create file: retrospectives/00-ai-first-setup.md")
         print("   Document what went well, what could improve, and lessons learned")
         print("\n10. Create a pull request to merge into main")
-        print(
-            "   Note: PR will be rejected without retrospective AND architecture docs!"
-        )
+        print("   Note: PR will be rejected without retrospective AND architecture docs!")
+
+    def _print_documentation_links(self):
+        """Print documentation and reference links"""
         print("\n📚 Framework Documentation:")
         print("   https://github.com/SteveGJones/ai-first-sdlc-practices")
         print("\n📖 Zero Technical Debt Policy:")

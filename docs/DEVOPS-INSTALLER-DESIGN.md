@@ -1,3 +1,45 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [DevOps-Grade Agent Installer Design](#devops-grade-agent-installer-design)
+  - [Architecture Overview](#architecture-overview)
+    - [Single Unified Installer (`claude-installer.py`)](#single-unified-installer-claude-installerpy)
+    - [Installation Modes](#installation-modes)
+      - [Mode 1: Agents-Only (< 30 seconds)](#mode-1-agents-only--30-seconds)
+      - [Mode 2: Agents + Essential Framework (< 60 seconds)](#mode-2-agents--essential-framework--60-seconds)
+      - [Mode 3: Full Framework Setup (< 120 seconds)](#mode-3-full-framework-setup--120-seconds)
+  - [DevOps Implementation Strategy](#devops-implementation-strategy)
+    - [1. GitHub API Integration (No ZIP Downloads)](#1-github-api-integration-no-zip-downloads)
+    - [2. Atomic Installation with Rollback](#2-atomic-installation-with-rollback)
+    - [3. Dependency Resolution and Validation](#3-dependency-resolution-and-validation)
+    - [4. Configuration Management](#4-configuration-management)
+  - [Update and Versioning Strategy](#update-and-versioning-strategy)
+    - [Semantic Versioning for Agents](#semantic-versioning-for-agents)
+    - [Update Modes](#update-modes)
+    - [Update Command Examples](#update-command-examples)
+  - [Deployment Strategy for Different User Needs](#deployment-strategy-for-different-user-needs)
+    - [User Persona-Based Installation](#user-persona-based-installation)
+      - [Persona 1: "Just Want AI Agents" (60% of users)](#persona-1-just-want-ai-agents-60-of-users)
+      - [Persona 2: "Structured Development" (30% of users)](#persona-2-structured-development-30-of-users)
+      - [Persona 3: "Enterprise AI-First" (10% of users)](#persona-3-enterprise-ai-first-10-of-users)
+    - [CI/CD Integration Strategy](#cicd-integration-strategy)
+      - [GitHub Actions Marketplace Action](#github-actions-marketplace-action)
+      - [Docker Integration](#docker-integration)
+  - [Implementation Roadmap](#implementation-roadmap)
+    - [Phase 1: Core Installer (Week 1-2)](#phase-1-core-installer-week-1-2)
+    - [Phase 2: Framework Integration (Week 3-4)](#phase-2-framework-integration-week-3-4)
+    - [Phase 3: Enterprise Features (Week 5-6)](#phase-3-enterprise-features-week-5-6)
+    - [Phase 4: Optimization (Week 7-8)](#phase-4-optimization-week-7-8)
+  - [Success Metrics](#success-metrics)
+    - [Performance Targets](#performance-targets)
+    - [User Experience Targets](#user-experience-targets)
+  - [Security Considerations](#security-considerations)
+    - [Supply Chain Security](#supply-chain-security)
+    - [Permissions Model](#permissions-model)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # DevOps-Grade Agent Installer Design
 
 ## Architecture Overview

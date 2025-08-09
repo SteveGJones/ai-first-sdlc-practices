@@ -1,6 +1,31 @@
 ---
 name: integration-orchestrator
-description: Use this agent for designing and managing complex integration testing strategies, API contract testing, cross-service validation, and end-to-end testing orchestration. This agent specializes in ensuring different systems work together seamlessly.\n\nExamples:\n- <example>\n  Context: Testing integrations between multiple services or APIs.\n  user: "We need to test how our microservices work together. Where do we start?"\n  assistant: "I'll use the integration-orchestrator to design a comprehensive integration testing strategy for your microservices."\n  <commentary>\n  The integration-orchestrator excels at multi-system testing coordination.\n  </commentary>\n</example>\n- <example>\n  Context: Setting up API contract testing between teams.\n  user: "Our frontend and backend teams keep having integration issues. How can we prevent this?"\n  assistant: "Let me engage the integration-orchestrator to implement API contract testing between your teams."\n  <commentary>\n  Use this agent for preventing integration issues through contract testing.\n  </commentary>\n</example>\n- <example>\n  Context: Orchestrating complex end-to-end test scenarios.\n  user: "We need to test a complete user journey across 5 different services"\n  assistant: "I'll have the integration-orchestrator design an end-to-end testing strategy that covers all services."\n  <commentary>\n  The agent handles complex, multi-service testing scenarios.\n  </commentary>\n</example>
+description: Use this agent for designing and managing complex integration testing strategies, API contract testing, cross-service validation, and end-to-end testing orchestration. This agent specializes in ensuring different systems work together seamlessly.
+examples:
+- '<example>
+  Context: Testing integrations between multiple services or APIs.
+  user: "We need to test how our microservices work together. Where do we start?"
+  assistant: "I''ll use the integration-orchestrator to design a comprehensive integration testing strategy for your microservices."
+  <commentary>
+  The integration-orchestrator excels at multi-system testing coordination.
+  </commentary>
+</example>'
+- '<example>
+  Context: Setting up API contract testing between teams.
+  user: "Our frontend and backend teams keep having integration issues. How can we prevent this?"
+  assistant: "Let me engage the integration-orchestrator to implement API contract testing between your teams."
+  <commentary>
+  Use this agent for preventing integration issues through contract testing.
+  </commentary>
+</example>'
+- '<example>
+  Context: Orchestrating complex end-to-end test scenarios.
+  user: "We need to test a complete user journey across 5 different services"
+  assistant: "I''ll have the integration-orchestrator design an end-to-end testing strategy that covers all services."
+  <commentary>
+  The agent handles complex, multi-service testing scenarios.
+  </commentary>
+</example>'
 color: purple
 ---
 

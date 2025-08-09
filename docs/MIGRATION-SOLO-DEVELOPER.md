@@ -1,3 +1,40 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Migration Guide: Solo Developer Support](#migration-guide-solo-developer-support)
+  - [Overview](#overview)
+  - [Quick Migration Steps](#quick-migration-steps)
+    - [1. Update Your Framework](#1-update-your-framework)
+    - [2. Detect Your Collaboration Mode](#2-detect-your-collaboration-mode)
+    - [3. Configure Smart Branch Protection](#3-configure-smart-branch-protection)
+      - [For Solo Developers](#for-solo-developers)
+      - [For Teams](#for-teams)
+    - [4. Update Your SDLC Enforcer](#4-update-your-sdlc-enforcer)
+    - [5. Get Personalized Agent Recommendations](#5-get-personalized-agent-recommendations)
+  - [What's Changed](#whats-changed)
+    - [Branch Protection](#branch-protection)
+    - [Agent Recommendations](#agent-recommendations)
+    - [Compliance Enforcement](#compliance-enforcement)
+  - [Common Scenarios](#common-scenarios)
+    - [Scenario 1: Solo Developer Starting Fresh](#scenario-1-solo-developer-starting-fresh)
+    - [Scenario 2: Team Transitioning to Solo](#scenario-2-team-transitioning-to-solo)
+    - [Scenario 3: Solo Developer Growing to Team](#scenario-3-solo-developer-growing-to-team)
+  - [Troubleshooting](#troubleshooting)
+    - ["Permission Denied" on Branch Protection](#permission-denied-on-branch-protection)
+    - [Auto-Approval Not Working](#auto-approval-not-working)
+    - [Wrong Mode Detected](#wrong-mode-detected)
+  - [Best Practices](#best-practices)
+    - [For Solo Developers](#for-solo-developers-1)
+    - [For Teams](#for-teams-1)
+  - [Advanced Configuration](#advanced-configuration)
+    - [Custom Auto-Approval Rules](#custom-auto-approval-rules)
+    - [Project-Specific Agent Sets](#project-specific-agent-sets)
+  - [Next Steps](#next-steps)
+  - [Support](#support)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Migration Guide: Solo Developer Support
 
 This guide helps existing AI-First SDLC Framework users migrate to the new solo developer support features introduced in v1.8.0.
