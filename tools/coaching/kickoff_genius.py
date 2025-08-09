@@ -30,6 +30,13 @@ from sdlc_coach import AgenticSDLCCoach
 class KickoffGenius:
     """The 5-Minute Miracle System - From chaos to coordinated excellence"""
     
+    # Constants to avoid magic numbers
+    TARGET_MINUTES = 5
+    TARGET_SECONDS = 300
+    INITIAL_USERS = 100
+    SCALE_THRESHOLD = 1000
+    LARGE_SCALE_THRESHOLD = 10000
+    
     def __init__(self):
         self.enforcer = AgenticSDLCCoach()
         self.kickoff_start = None
@@ -42,59 +49,82 @@ class KickoffGenius:
         This is the Stan Cullis kickoff system
         """
         self.kickoff_start = time.time()
+        self._print_kickoff_header(vague_idea)
         
+        # Run the 5 phases
+        phases = self._run_five_phases(vague_idea)
+        
+        # Calculate and print results
+        elapsed = time.time() - self.kickoff_start
+        success = self._print_verdict(elapsed)
+        
+        return self._build_miracle_response(success, elapsed, phases)
+    
+    def _print_kickoff_header(self, vague_idea: str):
+        """Print the kickoff header"""
         print("=" * 80)
         print("⚡ KICKOFF GENIUS - THE 5-MINUTE MIRACLE")
         print("=" * 80)
         print(f"\n📝 Starting idea: '{vague_idea}'")
         print("\nYou have 5 MINUTES to transform this into excellence.\n")
-        
-        # MINUTE 1: Rapid Discovery
+    
+    def _run_five_phases(self, vague_idea: str) -> Dict:
+        """Run all 5 phases of the miracle"""
+        # MINUTE 1
         print("⏱️  MINUTE 1: RAPID DISCOVERY")
         print("-" * 40)
         clarity = self._rapid_discovery(vague_idea)
         
-        # MINUTE 2: Instant Team Assembly
+        # MINUTE 2
         print("\n⏱️  MINUTE 2: INSTANT TEAM ASSEMBLY")
         print("-" * 40)
         team = self._instant_team_assembly(clarity)
         
-        # MINUTE 3: Architecture Blueprint
+        # MINUTE 3
         print("\n⏱️  MINUTE 3: ARCHITECTURE BLUEPRINT")
         print("-" * 40)
         architecture = self._architecture_blitz(clarity, team)
         
-        # MINUTE 4: Task Breakdown
+        # MINUTE 4
         print("\n⏱️  MINUTE 4: TASK BREAKDOWN")
         print("-" * 40)
         tasks = self._task_explosion(clarity, team, architecture)
         
-        # MINUTE 5: Kickoff Execution
+        # MINUTE 5
         print("\n⏱️  MINUTE 5: KICKOFF EXECUTION")
         print("-" * 40)
         execution = self._kickoff_execution(tasks, team)
         
-        elapsed = time.time() - self.kickoff_start
-        
-        # The Verdict
-        print("\n" + "=" * 80)
-        if elapsed <= 300:  # 5 minutes
-            print(f"✅ MIRACLE ACHIEVED in {elapsed:.1f} seconds!")
-            print("=" * 80)
-            success = True
-        else:
-            print(f"⚠️  Took {elapsed:.1f} seconds (target was 300)")
-            print("=" * 80)
-            success = False
-        
         return {
-            "success": success,
-            "time_taken": elapsed,
             "clarity": clarity,
             "team": team,
             "architecture": architecture,
             "tasks": tasks,
-            "execution": execution,
+            "execution": execution
+        }
+    
+    def _print_verdict(self, elapsed: float) -> bool:
+        """Print the verdict and return success status"""
+        print("\n" + "=" * 80)
+        if elapsed <= self.TARGET_SECONDS:
+            print(f"✅ MIRACLE ACHIEVED in {elapsed:.1f} seconds!")
+            print("=" * 80)
+            return True
+        else:
+            print(f"⚠️  Took {elapsed:.1f} seconds (target was {self.TARGET_SECONDS})")
+            print("=" * 80)
+            return False
+    
+    def _build_miracle_response(self, success: bool, elapsed: float, phases: Dict) -> Dict:
+        """Build the miracle response"""
+        return {
+            "success": success,
+            "time_taken": elapsed,
+            "clarity": phases["clarity"],
+            "team": phases["team"],
+            "architecture": phases["architecture"],
+            "tasks": phases["tasks"],
+            "execution": phases["execution"],
             "ready_to_build": self.team_ready
         }
     
@@ -152,7 +182,7 @@ class KickoffGenius:
             clarity["WHO"] = "Professional teams"
             clarity["CORE"] = "Automated workflows"
         
-        clarity["SCALE"] = "100 users initially"
+        clarity["SCALE"] = f"{self.INITIAL_USERS} users initially"
         clarity["SUCCESS"] = "50% time savings"
         
         return clarity
@@ -215,7 +245,7 @@ class KickoffGenius:
         specialists = {}
         
         scale = clarity.get("SCALE", "").lower()
-        if "1000" in scale or "10000" in scale:
+        if str(self.SCALE_THRESHOLD) in scale or str(self.LARGE_SCALE_THRESHOLD) in scale:
             specialists["performance"] = "performance-engineer"
         
         who = clarity.get("WHO", "").lower()
@@ -261,7 +291,7 @@ class KickoffGenius:
             return "React + TypeScript"
         
         elif component == "backend":
-            if "10000" in scale:
+            if str(self.LARGE_SCALE_THRESHOLD) in scale:
                 return "Go + Microservices"
             elif "ai" in clarity.get("CORE", "").lower():
                 return "Python + FastAPI"
@@ -275,7 +305,7 @@ class KickoffGenius:
             return "PostgreSQL"
         
         elif component == "deployment":
-            if "10000" in scale:
+            if str(self.LARGE_SCALE_THRESHOLD) in scale:
                 return "Kubernetes on AWS"
             return "Docker on AWS ECS"
         
@@ -371,13 +401,25 @@ Generated by Kickoff Genius in under 3 minutes.
         Combine genius kickoff with enforcement
         This is the complete Stan Cullis system
         """
+        self._print_complete_system_header()
+        
+        # Run kickoff and enforcement
+        kickoff = self._run_kickoff_phase(project)
+        enforcement = self._run_enforcement_phase(kickoff)
+        
+        # Handle results
+        return self._handle_integration_results(kickoff, enforcement)
+    
+    def _print_complete_system_header(self):
+        """Print the complete system header"""
         print("=" * 80)
         print("COMPLETE AGENTIC SDLC SYSTEM")
         print("Kickoff Genius + Enforcement = Excellence")
         print("=" * 80)
         print()
-        
-        # PHASE 1: 5-Minute Miracle
+    
+    def _run_kickoff_phase(self, project: str) -> Dict:
+        """Run the kickoff phase"""
         print("PHASE 1: KICKOFF GENIUS")
         print("-" * 40)
         kickoff = self.five_minute_miracle(project)
@@ -385,27 +427,23 @@ Generated by Kickoff Genius in under 3 minutes.
         if not kickoff["success"]:
             print("\n⚠️  Kickoff took too long. Practicing speed is key!")
         
-        # PHASE 2: Enforcement
+        return kickoff
+    
+    def _run_enforcement_phase(self, kickoff: Dict) -> Dict:
+        """Run the enforcement phase"""
         print("\nPHASE 2: SDLC ENFORCEMENT")
         print("-" * 40)
         
-        # Use the clarified description for enforcement
         clear_project = kickoff["clarity"]["specific_description"]
-        enforcement = self.enforcer.start_project(clear_project)
-        
-        # PHASE 3: Integration
+        return self.enforcer.start_project(clear_project)
+    
+    def _handle_integration_results(self, kickoff: Dict, enforcement: Dict) -> Dict:
+        """Handle the integration results"""
         print("\nPHASE 3: INTEGRATED EXECUTION")
         print("-" * 40)
         
         if enforcement["status"] == "AUTHORIZED":
-            print("✅ Kickoff + Enforcement = READY TO BUILD")
-            print("\n📋 Your Integrated Plan:")
-            print("1. Team assembled and ready")
-            print("2. Architecture decided and documented")
-            print("3. Tasks broken down and assigned")
-            print("4. Compliance verified and enforced")
-            print("5. GO FOR LAUNCH!")
-            
+            self._print_success_plan()
             return {
                 "status": "READY",
                 "kickoff": kickoff,
@@ -413,15 +451,28 @@ Generated by Kickoff Genius in under 3 minutes.
                 "message": "Professional excellence achieved"
             }
         else:
-            print("❌ Kickoff complete but compliance blocked")
-            print("Fix compliance issues then proceed")
-            
+            self._print_blocked_message()
             return {
                 "status": "BLOCKED",
                 "kickoff": kickoff,
                 "enforcement": enforcement,
                 "message": "Complete compliance requirements"
             }
+    
+    def _print_success_plan(self):
+        """Print the success plan"""
+        print("✅ Kickoff + Enforcement = READY TO BUILD")
+        print("\n📋 Your Integrated Plan:")
+        print("1. Team assembled and ready")
+        print("2. Architecture decided and documented")
+        print("3. Tasks broken down and assigned")
+        print("4. Compliance verified and enforced")
+        print("5. GO FOR LAUNCH!")
+    
+    def _print_blocked_message(self):
+        """Print the blocked message"""
+        print("❌ Kickoff complete but compliance blocked")
+        print("Fix compliance issues then proceed")
 
 def main():
     """The Stan Cullis kickoff system"""

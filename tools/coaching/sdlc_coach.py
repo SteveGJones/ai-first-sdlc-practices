@@ -71,68 +71,114 @@ class AgenticSDLCCoach:
         Start project WITH FULL SDLC ENFORCEMENT
         This is where Stan Cullis discipline begins
         """
+        self._print_header()
+        
+        # Run all validation steps
+        validation_result = self._run_validation_steps(description)
+        
+        if validation_result["status"] != "AUTHORIZED":
+            return validation_result
+        
+        # Development authorized
+        self._print_authorization_success()
+        
+        return self._build_success_response(
+            validation_result["proposal"],
+            validation_result["architecture"],
+            validation_result["team"],
+            validation_result["gates"],
+            validation_result["tracking"],
+            validation_result["retrospective"],
+            description
+        )
+    
+    def _print_header(self):
+        """Print the enforcement header"""
         print("=" * 80)
         print("AGENTIC SDLC COACH - ZERO TOLERANCE ENFORCEMENT")
         print("=" * 80)
         print()
-        
-        # Step 1: FORCE Feature Proposal
+    
+    def _print_authorization_success(self):
+        """Print authorization success message"""
+        print("\n" + "=" * 80)
+        print("✅ SDLC COMPLIANCE VERIFIED - DEVELOPMENT AUTHORIZED")
+        print("=" * 80)
+    
+    def _run_validation_steps(self, description: str) -> Dict:
+        """Run all validation steps"""
+        # Step 1: Feature Proposal
         print("📋 STEP 1: Feature Proposal (MANDATORY)")
         print("-" * 40)
         proposal_path = self._enforce_feature_proposal(description)
         if not proposal_path:
             return self._block_development("No feature proposal = NO DEVELOPMENT")
         
-        # Step 2: FORCE Architecture Documents
+        # Step 2: Architecture
         print("\n📐 STEP 2: Architecture Documents (ALL 6 REQUIRED)")
         print("-" * 40)
         arch_status = self._enforce_architecture_documents()
         if not arch_status["complete"]:
             return self._block_development(f"Missing architecture docs: {arch_status['missing']}")
         
-        # Step 3: VALIDATE Zero Technical Debt
+        # Step 3: Technical Debt
         print("\n🚫 STEP 3: Zero Technical Debt Check")
         print("-" * 40)
         debt_status = self._check_technical_debt()
         if debt_status["violations"] > 0:
             return self._block_development(f"Technical debt found: {debt_status['details']}")
         
-        # Step 4: DISCOVER and VALIDATE Agents
+        # Step 4: Agents
         print("\n🤖 STEP 4: Agent Discovery and Validation")
         print("-" * 40)
         team = self._discover_and_validate_agents(description)
         if not team["valid"]:
             return self._block_development(f"Invalid team composition: {team['issues']}")
         
-        # Step 5: SET UP Enforcement Gates
-        print("\n🚧 STEP 5: Quality Gates Setup")
-        print("-" * 40)
-        gates = self._setup_quality_gates()
-        
-        # Step 6: INITIALIZE Progress Tracking
-        print("\n📊 STEP 6: Progress Tracking Initialization")
-        print("-" * 40)
-        tracking = self._initialize_progress_tracking(description)
-        
-        # Step 7: CREATE Retrospective Template
-        print("\n📝 STEP 7: Retrospective Template")
-        print("-" * 40)
-        retro_path = self._create_retrospective_template()
-        
-        # NOW you can start development
-        print("\n" + "=" * 80)
-        print("✅ SDLC COMPLIANCE VERIFIED - DEVELOPMENT AUTHORIZED")
-        print("=" * 80)
+        # Step 5-7: Setup steps
+        gates = self._run_setup_steps(description)
         
         return {
             "status": "AUTHORIZED",
             "proposal": proposal_path,
             "architecture": arch_status,
             "team": team,
+            "gates": gates["gates"],
+            "tracking": gates["tracking"],
+            "retrospective": gates["retrospective"]
+        }
+    
+    def _run_setup_steps(self, description: str) -> Dict:
+        """Run setup steps (gates, tracking, retrospective)"""
+        print("\n🚧 STEP 5: Quality Gates Setup")
+        print("-" * 40)
+        gates = self._setup_quality_gates()
+        
+        print("\n📊 STEP 6: Progress Tracking Initialization")
+        print("-" * 40)
+        tracking = self._initialize_progress_tracking(description)
+        
+        print("\n📝 STEP 7: Retrospective Template")
+        print("-" * 40)
+        retro_path = self._create_retrospective_template()
+        
+        return {
             "gates": gates,
             "tracking": tracking,
-            "retrospective": retro_path,
-            "next_steps": self._generate_coaching_plan(team, description)
+            "retrospective": retro_path
+        }
+    
+    def _build_success_response(self, proposal, arch, team, gates, tracking, retro, desc) -> Dict:
+        """Build the success response"""
+        return {
+            "status": "AUTHORIZED",
+            "proposal": proposal,
+            "architecture": arch,
+            "team": team,
+            "gates": gates,
+            "tracking": tracking,
+            "retrospective": retro,
+            "next_steps": self._generate_coaching_plan(team, desc)
         }
     
     def _enforce_feature_proposal(self, description: str) -> Optional[Path]:
@@ -247,17 +293,7 @@ class AgenticSDLCCoach:
             return {"valid": False, "issues": "No agents directory found"}
         
         # Scan for available agents
-        available_agents = []
-        for category in ["core", "testing", "ai-development", "creative", "compliance"]:
-            cat_dir = agents_dir / category
-            if cat_dir.exists():
-                for agent_file in cat_dir.glob("*.md"):
-                    agent_name = agent_file.stem
-                    available_agents.append({
-                        "name": agent_name,
-                        "category": category,
-                        "path": agent_file
-                    })
+        available_agents = self._scan_available_agents(agents_dir)
         
         print(f"📊 Found {len(available_agents)} agents across categories")
         
@@ -275,6 +311,31 @@ class AgenticSDLCCoach:
         
         print(f"✅ Team validated with {len(team)} specialists")
         return {"valid": True, "team": team, "available": len(available_agents)}
+    
+    def _scan_available_agents(self, agents_dir: Path) -> List[Dict]:
+        """Scan for all available agents in the repository"""
+        available_agents = []
+        categories = ["core", "testing", "ai-development", "creative", "compliance"]
+        
+        for category in categories:
+            agents = self._scan_category_agents(agents_dir / category, category)
+            available_agents.extend(agents)
+        
+        return available_agents
+    
+    def _scan_category_agents(self, cat_dir: Path, category: str) -> List[Dict]:
+        """Scan agents in a specific category"""
+        if not cat_dir.exists():
+            return []
+        
+        agents = []
+        for agent_file in cat_dir.glob("*.md"):
+            agents.append({
+                "name": agent_file.stem,
+                "category": category,
+                "path": agent_file
+            })
+        return agents
     
     def _select_optimal_team(self, description: str, available_agents: List) -> Dict:
         """Select team WITH SDLC ENFORCEMENT ROLES"""
