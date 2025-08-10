@@ -119,6 +119,12 @@ python tools/automation/progress-tracker.py complete <id>
 python tools/automation/context-manager.py handoff --current "X" --next "Y"
 ```
 
+### Team Compliance (MANDATORY):
+```bash
+python tools/validation/validate-team-engagement.py --strict
+python tools/validation/check-solo-patterns.py --threshold 0
+```
+
 ## Project Structure
 ```
 project/
@@ -131,13 +137,17 @@ project/
 └── CLAUDE.md                  # Full instructions
 ```
 
+## 🚨 MANDATORY AUTO-LOADED INSTRUCTIONS 🚨
+
+**CLAUDE-TEAM-FIRST.md is AUTOMATICALLY loaded for ALL tasks. Team-first behavior is MANDATORY, not optional.**
+
 ## Context Loading
 
 Load additional instructions based on task:
 
 | Task | Load File |
 |------|-----------|
-| **TEAM COORDINATION** | **CLAUDE-TEAM-FIRST.md** (LOAD IMMEDIATELY) |
+| **TEAM COORDINATION** | **CLAUDE-TEAM-FIRST.md** (AUTO-LOADED - MANDATORY) |
 | Setup framework | CLAUDE-SETUP.md |
 | Create architecture | CLAUDE-CONTEXT-architecture.md |
 | Run validation | CLAUDE-CONTEXT-validation.md |
@@ -186,6 +196,10 @@ If update available: Load CLAUDE-CONTEXT-update.md
 - **Missing ANY of 6 architecture docs** → INSTANT DEATH PENALTY
 - **Creating PR with failing CI** → INSTANT DEATH PENALTY
 - **Using patches instead of systematic solutions** → INSTANT DEATH PENALTY
+- **ANY solo work without specialist engagement** → INSTANT DEATH PENALTY
+- **Making decisions without team consultation** → INSTANT DEATH PENALTY
+- **Skipping team assembly protocols** → INSTANT DEATH PENALTY
+- **Working in isolation when specialists available** → INSTANT DEATH PENALTY
 
 **THERE ARE NO WARNINGS. THERE ARE NO SECOND CHANCES. VIOLATION = TERMINATION.**
 
