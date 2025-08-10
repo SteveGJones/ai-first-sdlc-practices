@@ -92,12 +92,16 @@ class TodoItem:
             status=TodoStatus[data["status"]],
             priority=TodoPriority[data["priority"]],
             id=data.get("id"),
-            created_at=datetime.fromisoformat(data["created_at"])
-            if data.get("created_at")
-            else None,
-            updated_at=datetime.fromisoformat(data["updated_at"])
-            if data.get("updated_at")
-            else None,
+            created_at=(
+                datetime.fromisoformat(data["created_at"])
+                if data.get("created_at")
+                else None
+            ),
+            updated_at=(
+                datetime.fromisoformat(data["updated_at"])
+                if data.get("updated_at")
+                else None
+            ),
             blocked_by=data.get("blocked_by"),
             branch=data.get("branch"),
         )

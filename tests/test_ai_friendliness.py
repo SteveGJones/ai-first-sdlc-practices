@@ -200,7 +200,8 @@ class TestGeneratedFileAIFriendliness(unittest.TestCase):
     def test_generated_readme_structure(self) -> None:
         """Test that generated README guides AI agents properly"""
         # This would test actual generated README
-        # Key points: Links to CLAUDE.md, mentions AI-First SDLC, clear structure
+        # Key points: Links to CLAUDE.md, mentions AI-First SDLC, clear
+        # structure
 
     def test_generated_gitignore_completeness(self) -> None:
         """Test that generated .gitignore is comprehensive"""

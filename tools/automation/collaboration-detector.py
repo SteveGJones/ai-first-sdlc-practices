@@ -82,7 +82,8 @@ class CollaborationDetector:
 
     def _count_external_prs(self, days: int) -> int:
         """Count PRs from external contributors (simplified check)."""
-        # For simplicity, we'll check if there are multiple authors on recent branches
+        # For simplicity, we'll check if there are multiple authors on recent
+        # branches
         try:
             since_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
             # Get branches merged in the timeframe
@@ -93,7 +94,8 @@ class CollaborationDetector:
                 text=True,
                 check=True,
             )
-            # Simple heuristic: count merge commits that mention "pull request" or "PR"
+            # Simple heuristic: count merge commits that mention "pull request"
+            # or "PR"
             merge_messages = result.stdout.lower()
             pr_count = merge_messages.count("pull request") + merge_messages.count("#")
             return pr_count

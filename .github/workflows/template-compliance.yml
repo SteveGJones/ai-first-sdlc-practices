@@ -1,0 +1,294 @@
+name: Agent Template Compliance Check
+description: Ensures all agent files follow strict template format
+
+on:
+  push:
+    paths:
+      - 'agents/**/*.md'
+  pull_request:
+    paths:
+      - 'agents/**/*.md'
+
+jobs:
+  validate-templates:
+    name: Validate Agent Templates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install pyyaml
+
+      - name: Check Template Compliance
+        id: compliance
+        run: |
+          python << 'EOF'
+          import os
+          import re
+          import yaml
+          import sys
+          from pathlib import Path
+
+          def validate_agent_file(file_path):
+              """Validate a single agent file for template compliance"""
+
+              violations = []
+
+              with open(file_path, 'r') as f:
+                  content = f.read()
+
+              # Check for YAML frontmatter
+              if not content.startswith('---'):
+                  violations.append("Missing YAML frontmatter")
+                  return violations
+
+              # Extract YAML
+              yaml_match = re.search(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+              if not yaml_match:
+                  violations.append("Invalid YAML frontmatter format")
+                  return violations
+
+              try:
+                  yaml_content = yaml.safe_load(yaml_match.group(1))
+              except:
+                  violations.append("YAML parsing error")
+                  return violations
+
+              # Check required fields
+              required_fields = ['name', 'description', 'examples', 'color']
+              for field in required_fields:
+                  if field not in yaml_content:
+                      violations.append(f"Missing required field: {field}")
+
+              # Validate examples format (must be a list)
+              if 'examples' in yaml_content:
+                  if not isinstance(yaml_content['examples'], list):
+                      violations.append("Examples must be a list")
+                  elif len(yaml_content['examples']) == 0:
+                      violations.append("Examples list cannot be empty")
+
+              # Optional: Check for minimal content after YAML
+              content_after_yaml = content.split('---', 2)[-1].strip()
+              if len(content_after_yaml) < 50:
+                  violations.append("Agent description after YAML is too short (less than 50 characters)")
+
+              # NOTE: We NO LONGER check for:
+              # - Forbidden sections (Team Chemistry, Success Metrics, etc.) - these add value
+              # - Required "core competencies" phrase - agents can structure content as needed
+              # - Specific heading restrictions - more documentation is better
+
+              return violations
+
+          # Find all agent files
+          agent_files = []
+          for root, dirs, files in os.walk('agents'):
+              for file in files:
+                  if file.endswith('.md'):
+                      agent_files.append(os.path.join(root, file))
+
+          # Validate all files
+          all_violations = {}
+          for file_path in agent_files:
+              violations = validate_agent_file(file_path)
+              if violations:
+                  all_violations[file_path] = violations
+
+          # Report results
+          if all_violations:
+              print("❌ Template compliance check FAILED")
+              print(f"\nFound violations in {len(all_violations)} files:\n")
+
+              for file_path, violations in all_violations.items():
+                  print(f"📁 {file_path}:")
+                  for violation in violations:
+                      print(f"   ❌ {violation}")
+                  print()
+
+              print("=" * 60)
+              print("TEMPLATE REQUIREMENTS FOR CLAUDE INTEGRATION:")
+              print("=" * 60)
+              print("Required YAML frontmatter fields:")
+              print("  - name: agent_name")
+              print("  - description: One-line description")
+              print("  - examples: List of usage examples (non-empty)")
+              print("  - color: Agent color")
+              print("\nFormat requirements:")
+              print("  - YAML must be at the start of the file")
+              print("  - YAML must be valid and parseable")
+              print("  - Examples must be a list format")
+              print("  - Agent description after YAML (minimum 50 characters)")
+              print("\nNote: Agents may include additional sections as needed.")
+              print("Team Chemistry, Success Metrics, and other contextual")
+              print("sections are now ALLOWED to provide richer documentation.")
+
+              sys.exit(1)
+          else:
+              print("✅ All agent templates are compliant!")
+              print(f"\nValidated {len(agent_files)} agent files")
+              print("All files follow the strict template format")
+          EOF
+
+      - name: Check for Template Consistency
+        if: success()
+        run: |
+          echo "🎯 Checking template consistency..."
+          python << 'EOF'
+          import os
+          import re
+          import yaml
+          from collections import Counter
+
+          # Collect all agent metadata
+          agents = []
+          for root, dirs, files in os.walk('agents'):
+              for file in files:
+                  if file.endswith('.md'):
+                      file_path = os.path.join(root, file)
+                      with open(file_path, 'r') as f:
+                          content = f.read()
+
+                      yaml_match = re.search(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+                      if yaml_match:
+                          try:
+                              yaml_content = yaml.safe_load(yaml_match.group(1))
+                              agents.append({
+                                  'file': file_path,
+                                  'name': yaml_content.get('name'),
+                                  'color': yaml_content.get('color')
+                              })
+                          except:
+                              pass
+
+          # Check for duplicate names
+          names = [a['name'] for a in agents if a['name']]
+          name_counts = Counter(names)
+          duplicates = [name for name, count in name_counts.items() if count > 1]
+
+          if duplicates:
+              print(f"⚠️  Warning: Duplicate agent names found:")
+              for name in duplicates:
+                  print(f"  - {name} (appears {name_counts[name]} times)")
+
+          # Report color distribution
+          colors = []
+          for a in agents:
+              color = a.get('color')
+              if color:
+                  # Ensure color is a string, not a list or other type
+                  if isinstance(color, str):
+                      colors.append(color)
+                  elif isinstance(color, list) and len(color) > 0:
+                      colors.append(color[0])  # Take first color if it's a list
+          color_counts = Counter(colors)
+
+          print(f"\n📊 Agent Statistics:")
+          print(f"  Total agents: {len(agents)}")
+          print(f"  Unique names: {len(set(names))}")
+          print(f"  Color distribution:")
+          for color, count in sorted(color_counts.items(), key=lambda x: -x[1]):
+              print(f"    - {color}: {count} agents")
+          EOF
+
+      - name: Generate Compliance Report
+        if: always()
+        run: |
+          echo "📋 Generating compliance report..."
+          python << 'EOF'
+          import os
+          import json
+          from datetime import datetime
+
+          report = {
+              'timestamp': datetime.now().isoformat(),
+              'status': 'passed' if os.environ.get('GITHUB_JOB_STATUS') != 'failure' else 'failed',
+              'files_checked': len([f for r, d, files in os.walk('agents') for f in files if f.endswith('.md')]),
+              'workflow_run': os.environ.get('GITHUB_RUN_NUMBER', 'local'),
+              'triggered_by': os.environ.get('GITHUB_ACTOR', 'unknown')
+          }
+
+          with open('template-compliance-report.json', 'w') as f:
+              json.dump(report, f, indent=2)
+
+          print(f"Report saved to template-compliance-report.json")
+          EOF
+
+      - name: Upload Compliance Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-compliance-report
+          path: template-compliance-report.json
+
+  enforce-pr-compliance:
+    name: Enforce PR Template Compliance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: validate-templates
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Comment on PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## ❌ Agent Template Compliance Check Failed
+
+              Your PR modifies agent files that don't meet Claude integration requirements.
+
+              **Required YAML Structure:**
+              \`\`\`yaml
+              ---
+              name: agent_name
+              description: One-line description
+              examples:
+              - '<example>
+                Context: When to use
+                user: "User message"
+                assistant: "Response"
+                <commentary>Why use this agent</commentary>
+              </example>'
+              color: color_name
+              ---
+              \`\`\`
+
+              **Key Requirements:**
+              - YAML frontmatter must be at the start of the file
+              - All four fields (name, description, examples, color) are required
+              - Examples must be a non-empty list
+              - Include meaningful content after the YAML (50+ characters)
+
+              **Note:** Additional sections like Team Chemistry, Success Metrics, etc.
+              are now ALLOWED. Focus on fixing missing YAML fields and format issues.`
+            });
+
+      - name: Success Comment
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## ✅ Agent Template Compliance Check Passed
+
+              All agent files meet Claude integration requirements. Excellent work!
+
+              **Billy Wright says:** "Perfect team coordination - agents are ready for Claude integration!"`
+            });

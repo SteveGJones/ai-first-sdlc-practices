@@ -45,8 +45,8 @@ class ValidationRunner:
         self.log(f"Running: {' '.join(cmd)}")
         try:
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=300  # 5 minute timeout
-            )
+                cmd, capture_output=True, text=True, timeout=300
+            )  # 5 minute timeout
             return result.returncode, result.stdout, result.stderr
         except subprocess.TimeoutExpired:
             error_msg = f"Command timed out: {' '.join(cmd)}"
@@ -119,7 +119,8 @@ class ValidationRunner:
         """Check technical debt using framework tools"""
         self.log("🔍 Checking technical debt...", "INFO")
 
-        # Use the pipeline's technical debt check which properly applies framework policy
+        # Use the pipeline's technical debt check which properly applies
+        # framework policy
         returncode, stdout, stderr = self.run_command(
             [
                 "python",
@@ -213,7 +214,8 @@ class ValidationRunner:
                 # Look for potential argument count issues
                 for node in ast.walk(tree):
                     if isinstance(node, ast.Call):
-                        # This is a simplified check - in practice would need more sophisticated analysis
+                        # This is a simplified check - in practice would need
+                        # more sophisticated analysis
                         if hasattr(node.func, "attr"):
                             func_name = node.func.attr
                             if (

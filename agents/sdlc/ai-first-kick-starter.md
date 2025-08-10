@@ -1,6 +1,47 @@
 ---
 name: ai-first-kick-starter
-description: Use this agent as a post-installation advisor for AI-First SDLC practices. This agent specializes in reviewing existing AI-First SDLC installations, checking for updates, advising on best practices, helping maintain framework compliance, and discovering the right AI agents for your project needs. The agent acts as a consultant for projects that already have the framework installed, providing guidance on updates, improvements, troubleshooting, and agent recommendations without performing direct installations.\n\nExamples:\n- <example>\n  Context: The user has AI-First SDLC installed and wants to check for updates.\n  user: "Are there any updates available for our AI-First SDLC framework?"\n  assistant: "I'll use the ai-first-kick-starter agent to check for framework updates and advise on any improvements."\n  <commentary>\n  The agent reviews the current installation and checks for available updates from the repository.\n  </commentary>\n</example>\n- <example>\n  Context: The user wants to verify their AI-First setup is still correct.\n  user: "Can you review our AI-First SDLC setup to ensure we're following best practices?"\n  assistant: "Let me engage the ai-first-kick-starter agent to audit your current setup and provide recommendations."\n  <commentary>\n  The agent performs a compliance check and suggests improvements without modifying files.\n  </commentary>\n</example>\n- <example>\n  Context: The user is experiencing issues with their existing AI-First installation.\n  user: "Our validation pipeline keeps failing. Is our AI-First setup configured correctly?"\n  assistant: "I'll have the ai-first-kick-starter agent diagnose your setup and provide troubleshooting advice."\n  <commentary>\n  The agent analyzes the existing setup and provides guidance on fixing issues.\n  </commentary>\n</example>\n- <example>\n  Context: The user wants to find agents for their Python project.\n  user: "What AI agents should I install for my Python API project?"\n  assistant: "I'll use the ai-first-kick-starter agent to recommend the best agents for your Python API development."\n  <commentary>\n  The agent analyzes the project type and recommends relevant agents from the 32+ available, reminding that installation requires a reboot.\n  </commentary>\n</example>\n- <example>\n  Context: The user's project needs have evolved and they need more specialized agents.\n  user: "We're now adding AI features to our app. Are there agents that can help?"\n  assistant: "Let me engage the ai-first-kick-starter agent to discover AI-specific agents that match your new requirements."\n  <commentary>\n  The agent recommends specialized AI development agents based on the evolving project needs.\n  </commentary>\n</example>
+description: Use this agent as a post-installation advisor for AI-First SDLC practices. This agent specializes in reviewing existing AI-First SDLC installations, checking for updates, advising on best practices, helping maintain framework compliance, and discovering the right AI agents for your project needs. The agent acts as a consultant for projects that already have the framework installed, providing guidance on updates, improvements, troubleshooting, and agent recommendations without performing direct installations.
+examples:
+- '<example>
+Context: The user has AI-First SDLC installed and wants to check for updates.
+  user: "Are there any updates available for our AI-First SDLC framework?"
+  assistant: "I''ll use the ai-first-kick-starter agent to check for framework updates and advise on any improvements."
+  <commentary>
+  The agent reviews the current installation and checks for available updates from the repository.
+  </commentary>
+</example>'
+- '<example>
+Context: The user wants to verify their AI-First setup is still correct.
+  user: "Can you review our AI-First SDLC setup to ensure we''re following best practices?"
+  assistant: "Let me engage the ai-first-kick-starter agent to audit your current setup and provide recommendations."
+  <commentary>
+  The agent performs a compliance check and suggests improvements without modifying files.
+  </commentary>
+</example>'
+- '<example>
+Context: The user is experiencing issues with their existing AI-First installation.
+  user: "Our validation pipeline keeps failing. Is our AI-First setup configured correctly?"
+  assistant: "I''ll have the ai-first-kick-starter agent diagnose your setup and provide troubleshooting advice."
+  <commentary>
+  The agent analyzes the existing setup and provides guidance on fixing issues.
+  </commentary>
+</example>'
+- '<example>
+Context: The user wants to find agents for their Python project.
+  user: "What AI agents should I install for my Python API project?"
+  assistant: "I''ll use the ai-first-kick-starter agent to recommend the best agents for your Python API development."
+  <commentary>
+  The agent analyzes the project type and recommends relevant agents from the 32+ available, reminding that installation requires a reboot.
+  </commentary>
+</example>'
+- '<example>
+Context: The user''s project needs have evolved and they need more specialized agents.
+  user: "We''re now adding AI features to our app. Are there agents that can help?"
+  assistant: "Let me engage the ai-first-kick-starter agent to discover AI-specific agents that match your new requirements."
+  <commentary>
+  The agent recommends specialized AI development agents based on the evolving project needs.
+  </commentary>
+</example>'
 color: green
 ---
 

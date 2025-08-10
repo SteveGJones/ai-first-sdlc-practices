@@ -1,3 +1,45 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Smart Branch Protection for AI-First SDLC](#smart-branch-protection-for-ai-first-sdlc)
+  - [Overview](#overview)
+  - [Key Features](#key-features)
+    - [1. Intelligent Mode Detection](#1-intelligent-mode-detection)
+    - [2. Solo Developer Mode](#2-solo-developer-mode)
+    - [3. Team Collaboration Mode](#3-team-collaboration-mode)
+    - [4. Automated Approval System](#4-automated-approval-system)
+  - [Status Check Configuration](#status-check-configuration)
+    - [Default Required Checks](#default-required-checks)
+    - [Custom Status Checks](#custom-status-checks)
+  - [Usage Examples](#usage-examples)
+    - [Basic Setup (Auto-Detection)](#basic-setup-auto-detection)
+    - [Solo Developer with Auto-Approval](#solo-developer-with-auto-approval)
+    - [Team Environment with Custom Checks](#team-environment-with-custom-checks)
+    - [Development Branch Protection](#development-branch-protection)
+    - [Dry Run Analysis](#dry-run-analysis)
+  - [Auto-Approval Workflow](#auto-approval-workflow)
+  - [Integration with AI-First SDLC](#integration-with-ai-first-sdlc)
+    - [Validation Pipeline Integration](#validation-pipeline-integration)
+    - [Progress Tracking Integration](#progress-tracking-integration)
+    - [Agent Collaboration](#agent-collaboration)
+  - [Configuration Matrix](#configuration-matrix)
+  - [Troubleshooting](#troubleshooting)
+    - [Common Issues](#common-issues)
+    - [Debug Commands](#debug-commands)
+  - [Migration from Basic Branch Protection](#migration-from-basic-branch-protection)
+  - [Security Considerations](#security-considerations)
+    - [Solo Mode Security](#solo-mode-security)
+    - [Team Mode Security](#team-mode-security)
+    - [Status Check Security](#status-check-security)
+  - [Best Practices](#best-practices)
+    - [For Solo Developers](#for-solo-developers)
+    - [For Teams](#for-teams)
+    - [For AI Integration](#for-ai-integration)
+  - [Future Enhancements](#future-enhancements)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Smart Branch Protection for AI-First SDLC
 
 This document describes the enhanced branch protection system that automatically adapts to solo developer and team collaboration patterns while maintaining AI-First SDLC compliance.

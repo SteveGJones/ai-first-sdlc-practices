@@ -1,6 +1,7 @@
+---
 name: AI-First SDLC Pipeline - Production Level
 
-on:
+"on":
   push:
     branches: [ main, 'release/**' ]
   pull_request:

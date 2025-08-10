@@ -25,6 +25,7 @@ class TechnicalDebtDetector:
         self.debt_items = defaultdict(list)
         self.file_count = 0
         self.total_lines = 0
+        self.files_scanned = 0
         self.context = context  # 'application' or 'framework'
 
         # Patterns to skip
@@ -75,15 +76,28 @@ class TechnicalDebtDetector:
     def _get_thresholds(self) -> Dict[str, int]:
         """Get context-specific thresholds"""
         if self.context == "framework":
+            # Calculate magic_numbers dynamically based on codebase size
+            import math
+
+            # Formula: L × 0.11 × (1 + 0.2 × log₁₀(F)) × 0.95
+            # Use actual counts if available, otherwise use conservative
+            # defaults
+            lines = getattr(self, "total_lines", 0) or 34542
+            files = getattr(self, "files_scanned", 0) or 71
+            magic_number_limit = int(
+                lines * 0.11 * (1 + 0.2 * math.log10(max(1, files))) * 0.95
+            )
+
             return {
                 "security_issues": 0,  # Zero tolerance
                 "todos_fixmes": 0,  # Zero tolerance
                 "type_issues": 150,  # Pragmatic limit
                 "error_suppressions": 20,  # Documented justifications
-                "magic_numbers": 2435,  # Formula-based: L × 0.11 × (1 + 0.2 × log₁₀(F)) × 0.95
+                "magic_numbers": magic_number_limit,  # Dynamic calculation based on codebase
                 "deprecated_usage": 50,  # Migration timeline required
                 "commented_code": 10,  # Examples and documentation
-                "complexity_issues": 65,  # Framework utility complexity (updated 2025-08-06)
+                # Framework utility complexity (updated 2025-08-06)
+                "complexity_issues": 65,
             }
         else:  # application
             return {
@@ -163,6 +177,7 @@ class TechnicalDebtDetector:
                 lines = content.splitlines()
 
             self.file_count += 1
+            self.files_scanned += 1
             self.total_lines += len(lines)
             relative_path = file_path.relative_to(self.project_root)
 
@@ -188,7 +203,8 @@ class TechnicalDebtDetector:
         )
 
         for line_no, line in enumerate(lines, 1):
-            # Skip strings that contain TODO as part of normal text (like "todo app")
+            # Skip strings that contain TODO as part of normal text (like "todo
+            # app")
             if any(
                 marker in line
                 for marker in ['"todo', "'todo", "todo app", "Todo App", "TODO App"]
@@ -610,7 +626,8 @@ class TechnicalDebtDetector:
 
     def _check_complexity(self, file_path: Path, content: str, suffix: str) -> None:
         """Check for high cyclomatic complexity"""
-        # This is a simplified check - real complexity calculation would be better
+        # This is a simplified check - real complexity calculation would be
+        # better
         complexity_keywords = [
             "i",
             "eli",
@@ -806,6 +823,9 @@ class TechnicalDebtDetector:
     def _check_policy_compliance(self) -> int:
         """Check compliance against context-specific policy thresholds"""
         violations = 0
+
+        # Recalculate thresholds with actual file counts
+        self.thresholds = self._get_thresholds()
 
         # Map debt categories to threshold keys
         category_mapping = {

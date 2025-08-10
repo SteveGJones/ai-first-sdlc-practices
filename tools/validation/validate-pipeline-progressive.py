@@ -28,7 +28,7 @@ else:
     raise ImportError("Could not load validate-pipeline.py")
 
 
-class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,valid-type]
+class ProgressiveValidationPipeline(ValidationPipeline):
     """Level-aware validation pipeline"""
 
     # Define checks for each level
@@ -89,7 +89,8 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
                     config = json.load(f)
                     level = config.get("level", "production")
                     return str(level)
-            except Exception:
+            except (FileNotFoundError, json.JSONDecodeError, PermissionError):
+                # File doesn't exist or can't be parsed - use default
                 pass
 
         # Otherwise default to production
@@ -106,7 +107,8 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
         if not checks:
             checks = self.level_config["required"]
             if not strict:
-                checks.extend(self.level_config["optional"])  # type: ignore[union-attr]
+                if self.level_config:
+                    checks.extend(self.level_config.get("optional", []))
 
         # Filter out checks that should be skipped at this level
         checks = self.level_config["required"]
@@ -124,7 +126,7 @@ class ProgressiveValidationPipeline(ValidationPipeline):  # type: ignore[misc,va
         validation_passed = super().run_validation(checks)
 
         # Both gate and validation must pass
-        return gate_passed and validation_passed  # type: ignore[no-any-return]
+        return bool(gate_passed and validation_passed)
 
     def _check_sdlc_gates(self) -> bool:
         """Check SDLC gate requirements."""

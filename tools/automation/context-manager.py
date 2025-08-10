@@ -414,7 +414,8 @@ def main() -> None:
         elif args.file:
             with open(args.file, "r") as f:
                 data = json.load(f)
-        # Call save_context with 2 args + self: context_type, data (session_id is optional)
+        # Call save_context with 2 args + self: context_type, data (session_id
+        # is optional)
         session_id: str = cm.save_context("manual", data)
         print(f"Session ID: {session_id}")
 

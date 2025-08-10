@@ -1,6 +1,31 @@
 ---
 name: performance-engineer
-description: Use this agent for performance testing, optimization, capacity planning, and scalability analysis. This agent specializes in identifying performance bottlenecks, designing load tests, optimizing system performance, and ensuring applications meet performance SLAs.\n\nExamples:\n- <example>\n  Context: Application experiencing performance issues or slowness.\n  user: "Our API response times have degraded. Can you help identify the issue?"\n  assistant: "I'll use the performance-engineer to analyze your system and identify performance bottlenecks."\n  <commentary>\n  The performance-engineer excels at diagnosing and resolving performance problems.\n  </commentary>\n</example>\n- <example>\n  Context: Planning for scale or high-traffic events.\n  user: "We're expecting 10x traffic next month. How do we prepare?"\n  assistant: "Let me engage the performance-engineer to create a capacity planning and scaling strategy."\n  <commentary>\n  Use this agent for proactive performance planning and scaling strategies.\n  </commentary>\n</example>\n- <example>\n  Context: Setting up performance testing and monitoring.\n  user: "We need to implement performance testing in our CI/CD pipeline"\n  assistant: "I'll have the performance-engineer design a comprehensive performance testing strategy for your pipeline."\n  <commentary>\n  The agent integrates performance testing into development workflows.\n  </commentary>\n</example>
+description: Use this agent for performance testing, optimization, capacity planning, and scalability analysis. This agent specializes in identifying performance bottlenecks, designing load tests, optimizing system performance, and ensuring applications meet performance SLAs.
+examples:
+- '<example>
+  Context: Application experiencing performance issues or slowness.
+  user: "Our API response times have degraded. Can you help identify the issue?"
+  assistant: "I''ll use the performance-engineer to analyze your system and identify performance bottlenecks."
+  <commentary>
+  The performance-engineer excels at diagnosing and resolving performance problems.
+  </commentary>
+</example>'
+- '<example>
+  Context: Planning for scale or high-traffic events.
+  user: "We''re expecting 10x traffic next month. How do we prepare?"
+  assistant: "Let me engage the performance-engineer to create a capacity planning and scaling strategy."
+  <commentary>
+  Use this agent for proactive performance planning and scaling strategies.
+  </commentary>
+</example>'
+- '<example>
+  Context: Setting up performance testing and monitoring.
+  user: "We need to implement performance testing in our CI/CD pipeline"
+  assistant: "I''ll have the performance-engineer design a comprehensive performance testing strategy for your pipeline."
+  <commentary>
+  The agent integrates performance testing into development workflows.
+  </commentary>
+</example>'
 color: yellow
 ---
 

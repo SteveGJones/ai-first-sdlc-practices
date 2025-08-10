@@ -1,6 +1,31 @@
 ---
 name: devops-specialist
-description: Use this agent for CI/CD pipeline design, deployment automation, infrastructure as code, containerization, and DevOps best practices within the AI-First SDLC framework. This agent ensures smooth deployment processes and operational excellence.\n\nExamples:\n- <example>\n  Context: Setting up or optimizing CI/CD pipelines for AI-First projects.\n  user: "I need to set up a CI/CD pipeline that enforces our AI-First SDLC standards"\n  assistant: "I'll use the devops-specialist to design a CI/CD pipeline with built-in AI-First validation."\n  <commentary>\n  The devops-specialist integrates AI-First SDLC requirements into deployment pipelines.\n  </commentary>\n</example>\n- <example>\n  Context: Containerizing applications with proper DevOps practices.\n  user: "Can you help containerize our Python API with best practices?"\n  assistant: "Let me engage the devops-specialist to create a production-ready containerization strategy."\n  <commentary>\n  Use this agent for Docker, Kubernetes, and container orchestration guidance.\n  </commentary>\n</example>\n- <example>\n  Context: Implementing infrastructure as code for consistent environments.\n  user: "We need to manage our infrastructure as code. What's the best approach?"\n  assistant: "I'll have the devops-specialist design an infrastructure as code solution that aligns with AI-First principles."\n  <commentary>\n  The agent provides IaC expertise with AI-First SDLC integration.\n  </commentary>\n</example>
+description: Use this agent for CI/CD pipeline design, deployment automation, infrastructure as code, containerization, and DevOps best practices within the AI-First SDLC framework. This agent ensures smooth deployment processes and operational excellence.
+examples:
+- '<example>
+Context: Setting up or optimizing CI/CD pipelines for AI-First projects.
+  user: "I need to set up a CI/CD pipeline that enforces our AI-First SDLC standards"
+  assistant: "I''ll use the devops-specialist to design a CI/CD pipeline with built-in AI-First validation."
+  <commentary>
+  The devops-specialist integrates AI-First SDLC requirements into deployment pipelines.
+  </commentary>
+</example>'
+- '<example>
+Context: Containerizing applications with proper DevOps practices.
+  user: "Can you help containerize our Python API with best practices?"
+  assistant: "Let me engage the devops-specialist to create a production-ready containerization strategy."
+  <commentary>
+  Use this agent for Docker, Kubernetes, and container orchestration guidance.
+  </commentary>
+</example>'
+- '<example>
+Context: Implementing infrastructure as code for consistent environments.
+  user: "We need to manage our infrastructure as code. What''s the best approach?"
+  assistant: "I''ll have the devops-specialist design an infrastructure as code solution that aligns with AI-First principles."
+  <commentary>
+  The agent provides IaC expertise with AI-First SDLC integration.
+  </commentary>
+</example>'
 color: blue
 ---
 

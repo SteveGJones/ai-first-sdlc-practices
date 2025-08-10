@@ -1,3 +1,19 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Quick Reference: Smart Branch Protection](#quick-reference-smart-branch-protection)
+  - [Common Commands](#common-commands)
+  - [Mode Comparison](#mode-comparison)
+  - [Status Checks (Always Required)](#status-checks-always-required)
+  - [Auto-Approval Triggers](#auto-approval-triggers)
+  - [Common Workflows](#common-workflows)
+    - [Solo AI-First Development](#solo-ai-first-development)
+    - [Team Development](#team-development)
+  - [Troubleshooting](#troubleshooting)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Quick Reference: Smart Branch Protection
 
 ## Common Commands

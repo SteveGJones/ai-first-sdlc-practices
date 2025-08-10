@@ -601,7 +601,8 @@ class ValidationPipeline:
                     try:
                         with open(file, "r") as f:
                             content = f.read()
-                            # Check if retrospective mentions the branch or feature
+                            # Check if retrospective mentions the branch or
+                            # feature
                             branch_name = branch.replace("feature/", "").replace(
                                 "fix/", ""
                             )
@@ -734,7 +735,8 @@ class ValidationPipeline:
 
                 for pattern, description in impl_patterns:
                     if re.search(pattern, content, re.IGNORECASE):
-                        # Check if it's in a code block (which we already warned about)
+                        # Check if it's in a code block (which we already
+                        # warned about)
                         if not any(
                             re.search(pattern, block, re.IGNORECASE)
                             for block in code_blocks
@@ -833,8 +835,9 @@ class ValidationPipeline:
                     f"{file_path.name}: {suppressions} error suppressions"
                 )
 
-        except Exception:
-            pass  # Skip files we can't read
+        except (UnicodeDecodeError, PermissionError, FileNotFoundError):
+            # Skip files we can't read (binary files, permission issues, etc.)
+            return indicators
 
         return indicators
 
@@ -875,7 +878,8 @@ class ValidationPipeline:
         if debt_indicators:
             # Apply Framework Compliance Policy thresholds for framework repo
             if self.is_framework_repo:
-                # Count error suppressions separately as they have a specific threshold
+                # Count error suppressions separately as they have a specific
+                # threshold
                 suppression_count = sum(
                     1 for ind in debt_indicators if "error suppressions" in ind
                 )

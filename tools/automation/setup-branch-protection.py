@@ -303,7 +303,8 @@ def main() -> None:
             print(f"Please provide --token or set {env_var} environment variable")
             sys.exit(1)
 
-    # Configure branch protection - instantiate with 3 args: platform, token, repo
+    # Configure branch protection - instantiate with 3 args: platform, token,
+    # repo
     configurator: BranchProtectionConfigurator = BranchProtectionConfigurator(
         platform, token, repo
     )

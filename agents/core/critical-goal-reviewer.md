@@ -1,6 +1,30 @@
 ---
 name: critical-goal-reviewer
-description: Use this agent when you need to critically review recently completed work against original project goals and design specifications. This agent acts as a challenger who identifies gaps, weaknesses, and deviations from the intended objectives. Use after implementing features, completing code sections, or finishing design work to ensure alignment with original requirements.\n\nExamples:\n- <example>\n  Context: The user has just completed implementing a new authentication module and wants to ensure it meets the original design goals.\n  user: "I've just implemented the user authentication module"\n  assistant: "Let me have the critical-goal-reviewer examine this implementation against our original design goals"\n  <commentary>\n  Since new work has been completed, use the critical-goal-reviewer agent to analyze alignment with original objectives.\n  </commentary>\n</example>\n- <example>\n  Context: The user has refactored code and wants to verify it still meets the original requirements.\n  user: "I've refactored the data processing pipeline to improve performance"\n  assistant: "I'll use the critical-goal-reviewer agent to assess whether these changes align with our original design principles and goals"\n  <commentary>\n  The refactoring represents completed work that should be reviewed against original goals.\n  </commentary>\n</example>\n- <example>\n  Context: Proactive review after significant implementation to catch deviations early.\n  assistant: "I've completed the API endpoint implementations. Let me invoke the critical-goal-reviewer to ensure we're still on track with the original project vision"\n  <commentary>\n  Proactively using the agent after completing a significant chunk of work.\n  </commentary>\n</example>
+description: Use this agent when you need to critically review recently completed work against original project goals and design specifications. This agent acts as a challenger who identifies gaps, weaknesses, and deviations from the intended objectives. Use after implementing features, completing code sections, or finishing design work to ensure alignment with original requirements.
+examples:
+- '<example>
+Context: The user has just completed implementing a new authentication module and wants to ensure it meets the original design goals.
+  user: "I''ve just implemented the user authentication module"
+  assistant: "Let me have the critical-goal-reviewer examine this implementation against our original design goals"
+  <commentary>
+  Since new work has been completed, use the critical-goal-reviewer agent to analyze alignment with original objectives.
+  </commentary>
+</example>'
+- '<example>
+Context: The user has refactored code and wants to verify it still meets the original requirements.
+  user: "I''ve refactored the data processing pipeline to improve performance"
+  assistant: "I''ll use the critical-goal-reviewer agent to assess whether these changes align with our original design principles and goals"
+  <commentary>
+  The refactoring represents completed work that should be reviewed against original goals.
+  </commentary>
+</example>'
+- '<example>
+Context: Proactive review after significant implementation to catch deviations early.
+  assistant: "I''ve completed the API endpoint implementations. Let me invoke the critical-goal-reviewer to ensure we''re still on track with the original project vision"
+  <commentary>
+  Proactively using the agent after completing a significant chunk of work.
+  </commentary>
+</example>'
 color: red
 ---
 

@@ -1,6 +1,31 @@
 ---
 name: github-integration-specialist
-description: Use this agent when you need to interact with GitHub repositories, manage pull requests, configure branch protection, analyze repository health, or automate GitHub workflows. This agent specializes in GitHub API operations and repository management within the AI-First SDLC framework.\n\nExamples:\n- <example>\n  Context: Setting up or validating GitHub repository configuration for AI-First development.\n  user: "Can you check if our GitHub repo is properly configured with branch protection?"\n  assistant: "I'll use the github-integration-specialist to analyze your repository configuration and branch protection rules."\n  <commentary>\n  The github-integration-specialist is the expert for all GitHub-related configuration and validation.\n  </commentary>\n</example>\n- <example>\n  Context: Creating automated pull requests for compliance fixes or updates.\n  user: "We need to update all our feature proposal templates across the repository"\n  assistant: "Let me engage the github-integration-specialist to create a pull request with the template updates."\n  <commentary>\n  Use this agent for automated PR creation and management tasks.\n  </commentary>\n</example>\n- <example>\n  Context: Monitoring repository health and compliance metrics.\n  user: "How healthy is our repository from an AI-First SDLC perspective?"\n  assistant: "I'll have the github-integration-specialist perform a comprehensive repository health analysis."\n  <commentary>\n  The agent can analyze various repository metrics and compliance indicators.\n  </commentary>\n</example>
+description: Use this agent when you need to interact with GitHub repositories, manage pull requests, configure branch protection, analyze repository health, or automate GitHub workflows. This agent specializes in GitHub API operations and repository management within the AI-First SDLC framework.
+examples:
+- '<example>
+Context: Setting up or validating GitHub repository configuration for AI-First development.
+  user: "Can you check if our GitHub repo is properly configured with branch protection?"
+  assistant: "I''ll use the github-integration-specialist to analyze your repository configuration and branch protection rules."
+  <commentary>
+  The github-integration-specialist is the expert for all GitHub-related configuration and validation.
+  </commentary>
+</example>'
+- '<example>
+Context: Creating automated pull requests for compliance fixes or updates.
+  user: "We need to update all our feature proposal templates across the repository"
+  assistant: "Let me engage the github-integration-specialist to create a pull request with the template updates."
+  <commentary>
+  Use this agent for automated PR creation and management tasks.
+  </commentary>
+</example>'
+- '<example>
+Context: Monitoring repository health and compliance metrics.
+  user: "How healthy is our repository from an AI-First SDLC perspective?"
+  assistant: "I''ll have the github-integration-specialist perform a comprehensive repository health analysis."
+  <commentary>
+  The agent can analyze various repository metrics and compliance indicators.
+  </commentary>
+</example>'
 color: green
 ---
 

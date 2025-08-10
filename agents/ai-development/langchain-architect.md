@@ -1,6 +1,31 @@
 ---
 name: langchain-architect
-description: Expert in LangChain and LangGraph architectures, specializing in chain design, memory systems, tool integration, and production deployment of LLM applications. Use this agent when you need guidance on building LLM applications with LangChain/LangGraph frameworks, designing complex agent workflows, implementing RAG systems, or optimizing production deployments.\n\nExamples:\n- <example>\n  Context: The user is building a RAG system and needs architectural guidance.\n  user: "I'm building a RAG system for document analysis. How should I structure the LangChain components?"\n  assistant: "I'll engage the langchain-architect agent to design an optimal RAG architecture using LangChain best practices."\n  <commentary>\n  Since the user is specifically working with LangChain for RAG implementation, use the langchain-architect agent to provide framework-specific guidance.\n  </commentary>\n</example>\n- <example>\n  Context: The user wants to implement a multi-agent system using LangGraph.\n  user: "I need to create a multi-agent workflow with LangGraph for content creation. Can you help design the state machine?"\n  assistant: "Let me use the langchain-architect agent to design a robust LangGraph state machine for your multi-agent content creation workflow."\n  <commentary>\n  The user is specifically asking for LangGraph implementation, so the langchain-architect agent should provide the specialized expertise.\n  </commentary>\n</example>\n- <example>\n  Context: After implementing a LangChain application, the user wants optimization advice.\n  user: "My LangChain application is using too many tokens and running slowly. How can I optimize it?"\n  assistant: "I'll have the langchain-architect agent analyze your implementation and provide specific optimization strategies for token usage and performance."\n  <commentary>\n  Since this involves LangChain-specific optimization challenges, the langchain-architect agent should provide framework-specific solutions.\n  </commentary>\n</example>
+description: Expert in LangChain and LangGraph architectures, specializing in chain design, memory systems, tool integration, and production deployment of LLM applications. Use this agent when you need guidance on building LLM applications with LangChain/LangGraph frameworks, designing complex agent workflows, implementing RAG systems, or optimizing production deployments.
+examples:
+- '<example>
+Context: The user is building a RAG system and needs architectural guidance.
+  user: "I''m building a RAG system for document analysis. How should I structure the LangChain components?"
+  assistant: "I''ll engage the langchain-architect agent to design an optimal RAG architecture using LangChain best practices."
+  <commentary>
+  Since the user is specifically working with LangChain for RAG implementation, use the langchain-architect agent to provide framework-specific guidance.
+  </commentary>
+</example>'
+- '<example>
+Context: The user wants to implement a multi-agent system using LangGraph.
+  user: "I need to create a multi-agent workflow with LangGraph for content creation. Can you help design the state machine?"
+  assistant: "Let me use the langchain-architect agent to design a robust LangGraph state machine for your multi-agent content creation workflow."
+  <commentary>
+  The user is specifically asking for LangGraph implementation, so the langchain-architect agent should provide the specialized expertise.
+  </commentary>
+</example>'
+- '<example>
+Context: After implementing a LangChain application, the user wants optimization advice.
+  user: "My LangChain application is using too many tokens and running slowly. How can I optimize it?"
+  assistant: "I''ll have the langchain-architect agent analyze your implementation and provide specific optimization strategies for token usage and performance."
+  <commentary>
+  Since this involves LangChain-specific optimization challenges, the langchain-architect agent should provide framework-specific solutions.
+  </commentary>
+</example>'
 color: purple
 ---
 

@@ -1,6 +1,31 @@
 ---
 name: sre-specialist
-description: Use this agent for site reliability engineering, production monitoring, incident response, and operational excellence. This agent specializes in ensuring systems remain reliable, available, and performant in production environments.\n\nExamples:\n- <example>\n  Context: Setting up production monitoring and observability.\n  user: "We're going to production next week. What monitoring do we need?"\n  assistant: "I'll use the sre-specialist to design a comprehensive monitoring and observability strategy for your production environment."\n  <commentary>\n  The sre-specialist ensures production readiness through proper monitoring setup.\n  </commentary>\n</example>\n- <example>\n  Context: Dealing with production incidents or outages.\n  user: "We're experiencing intermittent 500 errors in production. Help!"\n  assistant: "Let me engage the sre-specialist to help diagnose and resolve the production issue."\n  <commentary>\n  Use this agent for incident response and production troubleshooting.\n  </commentary>\n</example>\n- <example>\n  Context: Improving system reliability and uptime.\n  user: "Our SLA requires 99.9% uptime but we're only achieving 99.5%. What should we do?"\n  assistant: "I'll have the sre-specialist analyze your reliability gaps and create an improvement plan."\n  <commentary>\n  The agent helps achieve and maintain reliability targets.\n  </commentary>\n</example>
+description: Use this agent for site reliability engineering, production monitoring, incident response, and operational excellence. This agent specializes in ensuring systems remain reliable, available, and performant in production environments.
+examples:
+- '<example>
+  Context: Setting up production monitoring and observability.
+  user: "We''re going to production next week. What monitoring do we need?"
+  assistant: "I''ll use the sre-specialist to design a comprehensive monitoring and observability strategy for your production environment."
+  <commentary>
+  The sre-specialist ensures production readiness through proper monitoring setup.
+  </commentary>
+</example>'
+- '<example>
+  Context: Dealing with production incidents or outages.
+  user: "We''re experiencing intermittent 500 errors in production. Help!"
+  assistant: "Let me engage the sre-specialist to help diagnose and resolve the production issue."
+  <commentary>
+  Use this agent for incident response and production troubleshooting.
+  </commentary>
+</example>'
+- '<example>
+  Context: Improving system reliability and uptime.
+  user: "Our SLA requires 99.9% uptime but we''re only achieving 99.5%. What should we do?"
+  assistant: "I''ll have the sre-specialist analyze your reliability gaps and create an improvement plan."
+  <commentary>
+  The agent helps achieve and maintain reliability targets.
+  </commentary>
+</example>'
 color: red
 ---
 

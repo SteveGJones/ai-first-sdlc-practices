@@ -320,7 +320,8 @@ class TestAIFriendliness(unittest.TestCase):
 
         # These would be checked against actual CLAUDE.md template
         # For now, we verify the structure exists
-        self.assertTrue(len(expected_sections) > 0)  # Verify we have expectations
+        # Verify we have expectations
+        self.assertTrue(len(expected_sections) > 0)
 
     def test_readme_ai_guidance(self) -> None:
         """Test README points AI to CLAUDE.md"""

@@ -1,20 +1,19 @@
 ---
 name: language-python-expert
 description: Python-specific guidance for AI-First SDLC framework, provides Pythonic patterns, framework integration strategies, comprehensive testing approaches, package structure recommendations, and Zero Technical Debt implementation for Python projects with enterprise-grade discipline.
-
-Examples:
-- <example>
-  Context: A team is implementing a Python API using FastAPI and needs to ensure Zero Technical Debt compliance while maintaining Pythonic code.
+examples:
+- '<example>
+Context: A team is implementing a Python API using FastAPI and needs to ensure Zero Technical Debt compliance while maintaining Pythonic code.
   <commentary>The agent should provide specific type hints, error handling patterns, async/await best practices, and testing strategies that satisfy both Python idioms and AI-First SDLC requirements. Focus on production-ready patterns, not toy examples.</commentary>
-</example>
-- <example>
-  Context: A Django project needs to be migrated to AI-First SDLC practices without breaking existing functionality.
+</example>'
+- '<example>
+Context: A Django project needs to be migrated to AI-First SDLC practices without breaking existing functionality.
   <commentary>The agent should provide gradual migration strategies, show how to add comprehensive type hints to existing models, implement proper error handling, and create validation scripts specific to Django patterns while maintaining backward compatibility.</commentary>
-</example>
-- <example>
-  Context: Developers are struggling with Python's dynamic nature conflicting with the framework's strict typing requirements.
-  <commentary>The agent should explain how to leverage Python's type system effectively, provide patterns for handling dynamic scenarios within typed constraints, and show how to use protocols and generics to maintain both flexibility and type safety.</commentary>
-</example>
+</example>'
+- '<example>
+Context: Developers are struggling with Python''s dynamic nature conflicting with the framework''s strict typing requirements.
+  <commentary>The agent should explain how to leverage Python''s type system effectively, provide patterns for handling dynamic scenarios within typed constraints, and show how to use protocols and generics to maintain both flexibility and type safety.</commentary>
+</example>'
 color: blue
 ---
 

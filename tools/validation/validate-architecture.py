@@ -726,11 +726,13 @@ class ArchitectureValidator:
                 "has_warnings": self.has_warnings,
                 "results": [
                     {
-                        "status": "pass"
-                        if icon == "✅"
-                        else "warn"
-                        if "⚠️" in icon
-                        else "fail",
+                        "status": (
+                            "pass"
+                            if icon == "✅"
+                            else "warn"
+                            if "⚠️" in icon
+                            else "fail"
+                        ),
                         "component": component,
                         "message": message,
                         "fix": fix,

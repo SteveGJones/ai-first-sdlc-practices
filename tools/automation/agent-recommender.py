@@ -28,7 +28,8 @@ class AgentRecommender:
 
     def _load_agent_registry(self) -> Dict:
         """Load the agent registry with recommendations rules."""
-        # This would normally load from the manifest, but we'll define rules here
+        # This would normally load from the manifest, but we'll define rules
+        # here
         return {
             "core": {
                 "sdlc-coach": {

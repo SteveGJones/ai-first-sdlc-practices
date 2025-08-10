@@ -136,9 +136,9 @@ def detect_collaboration_pattern() -> Dict[str, Any]:
         is_solo = (
             total_contributors <= 2
             and active_contributors <= 1  # Allow for occasional contributor
-            and (  # Only one active contributor
+            and (
                 total_prs == 0 or (self_merges / total_prs) > 0.8
-            )  # Mostly self-merged PRs
+            )  # Only one active contributor  # Mostly self-merged PRs
         )
 
         return {
@@ -187,7 +187,8 @@ def check_approval_bot_installed() -> Optional[str]:
             "dependabot",
         ]
 
-        # Check for webhook configurations that might indicate approval automation
+        # Check for webhook configurations that might indicate approval
+        # automation
         result = subprocess.run(
             ["gh", "api", "repos/:owner/:repo/hooks"],
             capture_output=True,
@@ -327,7 +328,9 @@ def setup_branch_protection(
             # review requirements
             protection_json = {
                 "required_status_checks": {"strict": True, "contexts": required_checks},
-                "enforce_admins": False,  # Allow admin bypass for solo (SECURITY: acceptable for single-developer repos)
+                # Allow admin bypass for solo (SECURITY: acceptable for
+                # single-developer repos)
+                "enforce_admins": False,
                 "required_pull_request_reviews": {
                     "required_approving_review_count": (
                         0 if enable_auto_approval else 1

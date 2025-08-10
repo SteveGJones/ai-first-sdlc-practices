@@ -1,6 +1,31 @@
 ---
 name: prompt-engineer
-description: Expert in prompt engineering, optimization, and evaluation. Specializes in crafting effective prompts, implementing prompt templates, managing prompt versions, and measuring prompt performance. Use this agent when you need to optimize prompts, implement advanced prompting techniques, design prompt templates, or evaluate prompt performance.\n\nExamples:\n- <example>\n  Context: The user has a prompt that isn't working well and needs optimization.\n  user: "My prompt for code review is too verbose and produces inconsistent results. Can you help optimize it?"\n  assistant: "I'll engage the prompt-engineer agent to analyze and optimize your code review prompt for better consistency and efficiency."\n  <commentary>\n  Since the user is specifically asking for prompt optimization, use the prompt-engineer agent to provide specialized expertise in prompt engineering.\n  </commentary>\n</example>\n- <example>\n  Context: The user wants to implement advanced prompting techniques.\n  user: "I need to implement chain-of-thought prompting for my complex reasoning task. What's the best approach?"\n  assistant: "Let me use the prompt-engineer agent to design an effective chain-of-thought prompting strategy for your reasoning task."\n  <commentary>\n  The user is asking for a specific advanced prompting technique, so the prompt-engineer agent should provide specialized guidance.\n  </commentary>\n</example>\n- <example>\n  Context: After implementing prompts, the user wants performance evaluation.\n  user: "I've created several prompt variations and need to evaluate which performs best. How should I measure this?"\n  assistant: "I'll have the prompt-engineer agent design a comprehensive evaluation framework for your prompt variations."\n  <commentary>\n  Since this involves prompt evaluation and testing methodology, the prompt-engineer agent should provide specialized measurement strategies.\n  </commentary>\n</example>
+description: Expert in prompt engineering, optimization, and evaluation. Specializes in crafting effective prompts, implementing prompt templates, managing prompt versions, and measuring prompt performance. Use this agent when you need to optimize prompts, implement advanced prompting techniques, design prompt templates, or evaluate prompt performance.
+examples:
+- '<example>
+Context: The user has a prompt that isn''t working well and needs optimization.
+  user: "My prompt for code review is too verbose and produces inconsistent results. Can you help optimize it?"
+  assistant: "I''ll engage the prompt-engineer agent to analyze and optimize your code review prompt for better consistency and efficiency."
+  <commentary>
+  Since the user is specifically asking for prompt optimization, use the prompt-engineer agent to provide specialized expertise in prompt engineering.
+  </commentary>
+</example>'
+- '<example>
+Context: The user wants to implement advanced prompting techniques.
+  user: "I need to implement chain-of-thought prompting for my complex reasoning task. What''s the best approach?"
+  assistant: "Let me use the prompt-engineer agent to design an effective chain-of-thought prompting strategy for your reasoning task."
+  <commentary>
+  The user is asking for a specific advanced prompting technique, so the prompt-engineer agent should provide specialized guidance.
+  </commentary>
+</example>'
+- '<example>
+Context: After implementing prompts, the user wants performance evaluation.
+  user: "I''ve created several prompt variations and need to evaluate which performs best. How should I measure this?"
+  assistant: "I''ll have the prompt-engineer agent design a comprehensive evaluation framework for your prompt variations."
+  <commentary>
+  Since this involves prompt evaluation and testing methodology, the prompt-engineer agent should provide specialized measurement strategies.
+  </commentary>
+</example>'
 color: yellow
 ---
 

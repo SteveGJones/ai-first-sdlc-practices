@@ -285,7 +285,8 @@ class ProjectAnalyzer:
             deps["libraries"].extend(all_deps.keys())
 
         except (json.JSONDecodeError, FileNotFoundError, KeyError):
-            # Silently ignore parsing errors for package.json - not all projects have valid format
+            # Silently ignore parsing errors for package.json - not all
+            # projects have valid format
             pass
 
     def _parse_requirements_txt(self, file_path: Path, deps: Dict):

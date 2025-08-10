@@ -1,6 +1,7 @@
+---
 name: AI-First SDLC Node.js Validation
 
-on:
+"on":
   push:
     branches: [ main, develop, 'feature/**' ]
   pull_request:
@@ -39,7 +40,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         # Install framework tools (adjust path if tools are in your repo)
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
         pip install pre-commit
 
     - name: Run AI-First SDLC pipeline validation
@@ -106,7 +107,7 @@ jobs:
         if ! npm list --depth=0 prettier &>/dev/null; then
           npm install --save-dev prettier
         fi
-        if ! npm list --depth=0 typescript &>/dev/null && [ -f tsconfig.json ]; then
+        if ! npm list --depth=0 typescript &>/dev/null && [[ -f tsconfig.json ]]; then
           npm install --save-dev typescript
         fi
 
@@ -229,7 +230,7 @@ jobs:
     - name: Install framework tools
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
 
     - name: Generate comprehensive validation report
       run: |

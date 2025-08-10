@@ -1,0 +1,39 @@
+{
+  "date": "2025-08-08T20:02:41.450924",
+  "level": "collaborators",
+  "metrics": {
+    "collaboration_score": 100,
+    "process_adherence": 100,
+    "knowledge_sharing": 100,
+    "innovation_rate": 90,
+    "delivery_consistency": 0,
+    "self_improvement": 100,
+    "user_impact": 85,
+    "technical_excellence": 100
+  },
+  "team_data": {
+    "team_size": 4,
+    "contributors": [
+      "github-actions[bot]",
+      "dependabot[bot]",
+      "Steve Jones",
+      "SteveGJones"
+    ],
+    "commit_frequency": 8.1,
+    "feature_proposals": 22,
+    "retrospectives": 24,
+    "architecture_docs": 7,
+    "technical_debt": 0,
+    "code_reviews": 49,
+    "pair_programming": 14,
+    "knowledge_sharing": 100,
+    "cross_functional": 60,
+    "innovation_rate": 90,
+    "external_contributions": 2,
+    "community_impact": 100,
+    "delivery_consistency": 0,
+    "user_feedback": 85,
+    "system_reliability": 100
+  },
+  "framework_version": "1.7.0"
+}

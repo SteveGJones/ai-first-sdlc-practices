@@ -266,7 +266,6 @@ class SDLCGateEnforcer:
 @click.group()
 def cli():
     """SDLC Gate Enforcer - Mandatory checkpoints for AI-First development"""
-    pass
 
 
 @cli.command()

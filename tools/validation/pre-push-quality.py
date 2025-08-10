@@ -47,7 +47,8 @@ class CodeQLStyleAnalyzer:
 
             for node in ast.walk(tree):
                 if isinstance(node, ast.FunctionDef):
-                    # Count required arguments (excluding self, *args, **kwargs)
+                    # Count required arguments (excluding self, *args,
+                    # **kwargs)
                     required_args = 0
                     for arg in node.args.args:
                         if arg.arg != "self":
@@ -98,9 +99,11 @@ class CodeQLStyleAnalyzer:
                                 "column": node.col_offset,
                                 "message": f"save_context() expects 2-3 arguments but got {len(node.args)}",
                                 "severity": "error",
-                                "code_snippet": lines[node.lineno - 1].strip()
-                                if node.lineno <= len(lines)
-                                else "",
+                                "code_snippet": (
+                                    lines[node.lineno - 1].strip()
+                                    if node.lineno <= len(lines)
+                                    else ""
+                                ),
                                 "suggestion": 'Add context_type parameter: save_context("manual", data)',
                             }
                         )
@@ -118,9 +121,11 @@ class CodeQLStyleAnalyzer:
                                     "column": node.col_offset,
                                     "message": f"{func_name} constructor arguments may be in wrong order",
                                     "severity": "error",
-                                    "code_snippet": lines[node.lineno - 1].strip()
-                                    if node.lineno <= len(lines)
-                                    else "",
+                                    "code_snippet": (
+                                        lines[node.lineno - 1].strip()
+                                        if node.lineno <= len(lines)
+                                        else ""
+                                    ),
                                     "suggestion": "Check constructor signature: __init__(platform, token, repo)",
                                 }
                             )
@@ -134,9 +139,11 @@ class CodeQLStyleAnalyzer:
                                 "column": node.col_offset,
                                 "message": f"{func_name}() expects {expected_args} arguments but got {len(node.args)}",
                                 "severity": "warning",
-                                "code_snippet": lines[node.lineno - 1].strip()
-                                if node.lineno <= len(lines)
-                                else "",
+                                "code_snippet": (
+                                    lines[node.lineno - 1].strip()
+                                    if node.lineno <= len(lines)
+                                    else ""
+                                ),
                                 "suggestion": f"Check function signature and provide {expected_args} arguments",
                             }
                         )
@@ -198,8 +205,9 @@ class CodeQLStyleAnalyzer:
                             }
                         )
 
-        except Exception:
-            pass  # Skip files that can't be analyzed
+        except (UnicodeDecodeError, PermissionError, FileNotFoundError):
+            # Skip files that can't be analyzed (binary, permissions, etc.)
+            pass
 
         return issues
 
@@ -243,8 +251,9 @@ class CodeQLStyleAnalyzer:
                         }
                     )
 
-        except Exception:
-            pass  # Skip files that can't be analyzed
+        except (UnicodeDecodeError, PermissionError, FileNotFoundError):
+            # Skip files that can't be analyzed (binary, permissions, etc.)
+            pass
 
         return issues
 

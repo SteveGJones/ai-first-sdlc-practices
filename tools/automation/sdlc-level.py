@@ -304,7 +304,6 @@ class SDLCLevelManager:
 @click.group()
 def cli():
     """SDLC Level Management for AI-First Framework"""
-    pass
 
 
 @cli.command()

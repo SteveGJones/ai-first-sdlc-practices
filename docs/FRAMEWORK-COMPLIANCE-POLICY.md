@@ -1,3 +1,43 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Framework Compliance Policy](#framework-compliance-policy)
+  - [🎯 Executive Summary](#-executive-summary)
+  - [🏗️ Architecture Principle: Layered Standards](#-architecture-principle-layered-standards)
+  - [📊 Current Framework State Analysis](#-current-framework-state-analysis)
+    - [Debt Category Analysis:](#debt-category-analysis)
+  - [🚫 Zero Tolerance Items (Framework & Applications)](#-zero-tolerance-items-framework--applications)
+    - [Security Issues](#security-issues)
+    - [Active Technical Debt](#active-technical-debt)
+    - [Data Integrity Violations](#data-integrity-violations)
+  - [📋 Framework-Acceptable Standards](#-framework-acceptable-standards)
+    - [1. Type Annotations (84 current issues)](#1-type-annotations-84-current-issues)
+    - [2. Magic Numbers (1,553 current issues)](#2-magic-numbers-1553-current-issues)
+    - [3. Error Suppressions (13 current issues)](#3-error-suppressions-13-current-issues)
+    - [4. Function Length and Complexity (65 current issues)](#4-function-length-and-complexity-65-current-issues)
+  - [🔧 Implementation Strategy](#-implementation-strategy)
+    - [Phase 1: Immediate Actions (Week 1)](#phase-1-immediate-actions-week-1)
+    - [Phase 2: Selective Remediation (Weeks 2-4)](#phase-2-selective-remediation-weeks-2-4)
+    - [Phase 3: Continuous Improvement (Ongoing)](#phase-3-continuous-improvement-ongoing)
+  - [📏 Validation Framework Updates](#-validation-framework-updates)
+    - [Policy Update History](#policy-update-history)
+      - [August 6, 2025: Complexity Threshold Adjustment (10 → 65)](#august-6-2025-complexity-threshold-adjustment-10-%E2%86%92-65)
+    - [Modified Technical Debt Thresholds](#modified-technical-debt-thresholds)
+    - [Detection Logic Enhancement](#detection-logic-enhancement)
+  - [🎯 Success Metrics](#-success-metrics)
+    - [Framework Infrastructure Code](#framework-infrastructure-code)
+    - [Application Code (Zero Technical Debt Policy)](#application-code-zero-technical-debt-policy)
+  - [🔄 Policy Review and Evolution](#-policy-review-and-evolution)
+    - [Quarterly Reviews](#quarterly-reviews)
+    - [Annual Policy Updates](#annual-policy-updates)
+  - [📋 Implementation Checklist](#-implementation-checklist)
+    - [Immediate Actions Required:](#immediate-actions-required)
+    - [Documentation Updates:](#documentation-updates)
+  - [🚀 Conclusion](#-conclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Framework Compliance Policy
 
 **Status:** OFFICIAL POLICY
