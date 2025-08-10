@@ -435,7 +435,8 @@ class AgentContextCoordinator:
                 consensus_set = set(d["consensus"] for d in related_decisions)
                 if len(consensus_set) > 1:
                     conflicts.append(
-                        f"Potential conflict in decisions about '{word}': {len(related_decisions)} decisions with different outcomes"
+                        f"Potential conflict in decisions about '{word}': "
+                        f"{len(related_decisions)} decisions with different outcomes"
                     )
 
         return conflicts
