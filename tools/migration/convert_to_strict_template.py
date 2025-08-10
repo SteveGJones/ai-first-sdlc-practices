@@ -221,8 +221,9 @@ Your core competencies include:"""
         elif "database" in info["name"]:
             examples.append({"context": "Database design for new feature",
                              "user": "We need to store user preferences and activity data",
-                             "assistant": ("I'll design an efficient schema for this. Let me collaborate with the privacy officer on "
-                                           "data retention, the API team on access patterns, and the performance engineer on optimization strategies."),
+                             "assistant": ("I'll design an efficient schema for this. Let me collaborate with the "
+                                           "privacy officer on data retention, the API team on access patterns, "
+                                           "and the performance engineer on optimization strategies."),
                              "commentary": "The agent considers multiple perspectives for database design",
                              })
         elif "api" in info["name"]:

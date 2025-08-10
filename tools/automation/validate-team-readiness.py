@@ -793,7 +793,8 @@ def main(formation: str, output: str, format: str, quick: bool, verbose: bool):
                 "not_ready": "❌",
             }
             click.echo(
-                f"\n🎯 Team Readiness: {readiness_emoji[report.overall_readiness.value]} {report.overall_readiness.value.replace('_', ' ').title()}"
+                f"\n🎯 Team Readiness: {readiness_emoji[report.overall_readiness.value]} "
+                f"{report.overall_readiness.value.replace('_', ' ').title()}"
             )
             click.echo(f"📊 Overall Score: {report.overall_score:.1%}")
 

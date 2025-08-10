@@ -97,7 +97,8 @@ class LeadershipMetricsTracker:
         LeadershipType.BILLY_WRIGHT: {
             "name": "Billy Wright - On-Pitch Leader",
             "title": "⚽ Execution Champion",
-            "description": "Masters the art of leading while doing - making critical decisions, rallying teams, and demonstrating excellence under pressure",
+            "description": ("Masters the art of leading while doing - making critical decisions, "
+                           "rallying teams, and demonstrating excellence under pressure"),
             "key_traits": [
                 "Crisis Response",
                 "Real-time Decision Making",
@@ -112,7 +113,8 @@ class LeadershipMetricsTracker:
         LeadershipType.STAN_CULLIS: {
             "name": "Stan Cullis - Strategic Mastermind",
             "title": "🧠 Vision Architect",
-            "description": "Masters long-term thinking - developing talent, designing systems, and building sustainable excellence",
+            "description": ("Masters long-term thinking - developing talent, "
+                           "designing systems, and building sustainable excellence"),
             "key_traits": [
                 "Strategic Vision",
                 "Talent Development",

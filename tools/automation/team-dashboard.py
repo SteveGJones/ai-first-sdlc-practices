@@ -302,7 +302,8 @@ class TeamDashboard:
         config = formation_configs.get(metrics.formation_type, {"min_agents": 6, "optimal": 8})
         if metrics.agent_count < config["min_agents"]:
             alerts.append(
-                f"⚠️ WARNING: Only {metrics.agent_count} agents active, {config['min_agents']} minimum for {metrics.formation_type}"
+                f"⚠️ WARNING: Only {metrics.agent_count} agents active, "
+                f"{config['min_agents']} minimum for {metrics.formation_type}"
             )
 
         # Trend alerts
