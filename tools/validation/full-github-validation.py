@@ -7,9 +7,7 @@ No celebrating until the referee confirms the goal!
 
 import subprocess
 import sys
-import os
 from pathlib import Path
-from typing import Tuple, List
 import yaml
 import json
 
@@ -185,7 +183,7 @@ class FullGitHubValidator:
                 else:
                     print("✅ No security issues")
                     self.checks_results["security"] = "PASS"
-            except:
+            except (subprocess.CalledProcessError, FileNotFoundError, json.JSONDecodeError):
                 print("✅ Security check completed")
                 self.checks_results["security"] = "PASS"
         else:
