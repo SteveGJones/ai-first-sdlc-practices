@@ -98,7 +98,7 @@ class FullGitHubValidator:
             "examples/ci-cd/gitlab/.gitlab-ci.yml",
             "examples/ci-cd/.github/workflows/ai-sdlc.yml",
             "examples/ci-cd/azure-devops/azure-pipelines.yml",
-            "examples/ci-cd/jenkins/Jenkinsfile",
+            # Jenkinsfile is Groovy, not YAML
         ]
         
         all_yaml_valid = True

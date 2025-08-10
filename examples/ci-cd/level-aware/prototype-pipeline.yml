@@ -1,6 +1,7 @@
+---
 name: AI-First SDLC Pipeline - Prototype Level
 
-on:
+"on":
   push:
     branches: [ main, develop, 'feature/**', 'prototype/**' ]
   pull_request:
