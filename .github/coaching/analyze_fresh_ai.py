@@ -155,7 +155,9 @@ class FreshAIAnalyzer:
 
         return "beginner"  # Default to beginner if unclear
 
-    def prioritize_specialist(self, specialists: List[Tuple[str, str]], priority: str) -> List[Tuple[str, str]]:
+    def prioritize_specialist(
+        self, specialists: List[Tuple[str, str]], priority: str
+    ) -> List[Tuple[str, str]]:
         """Move a specialist to the front of the list"""
 
         # Find the specialist
@@ -184,7 +186,9 @@ class FreshAIAnalyzer:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze fresh AI and recommend formation")
+    parser = argparse.ArgumentParser(
+        description="Analyze fresh AI and recommend formation"
+    )
     parser.add_argument("--issue-body", required=True, help="Issue body content")
     parser.add_argument(
         "--output",

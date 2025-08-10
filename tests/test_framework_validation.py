@@ -21,7 +21,9 @@ validate_pipeline_path = os.path.join(
     "validate-pipeline.py",
 )
 
-spec = importlib.util.spec_from_file_location("validate_pipeline", validate_pipeline_path)
+spec = importlib.util.spec_from_file_location(
+    "validate_pipeline", validate_pipeline_path
+)
 validate_pipeline = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(validate_pipeline)
 ValidationPipeline = validate_pipeline.ValidationPipeline

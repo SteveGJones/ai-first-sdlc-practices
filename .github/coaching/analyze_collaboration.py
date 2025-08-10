@@ -34,7 +34,9 @@ def analyze_collaboration_patterns(pr_data: Dict) -> Dict:
     commits = pr_data.get("commits", [])
     if len(commits) > 1:
         # Look for iterative improvement
-        if any("fix" in c.lower() for c in commits) and any("test" in c.lower() for c in commits):
+        if any("fix" in c.lower() for c in commits) and any(
+            "test" in c.lower() for c in commits
+        ):
             collaboration_score += 15
             patterns.append("Iterative improvement with testing")
 
