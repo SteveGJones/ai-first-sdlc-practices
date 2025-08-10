@@ -286,7 +286,9 @@ class ChemistryCalculator:
             else (
                 "advanced"
                 if score >= 70
-                else "developing" if score >= 50 else "learning"
+                else "developing"
+                if score >= 50
+                else "learning"
             )
         )
 
@@ -299,7 +301,9 @@ class ChemistryCalculator:
                 else (
                     "green"
                     if level == "advanced"
-                    else "yellow" if level == "developing" else "orange"
+                    else "yellow"
+                    if level == "developing"
+                    else "orange"
                 )
             ),
             "next_milestone": self.get_next_milestone(score),
@@ -365,7 +369,9 @@ def main():
             else (
                 "advanced"
                 if score >= 70
-                else "developing" if score >= 50 else "learning"
+                else "developing"
+                if score >= 50
+                else "learning"
             )
         )
         print(f"::set-output name=level::{level}")

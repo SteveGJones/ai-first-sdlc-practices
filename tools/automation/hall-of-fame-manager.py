@@ -637,9 +637,7 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
         )
         certificate.append("")
         certificate.append("=" * 80)
-        certificate.append(
-            "🌟 CONGRATULATIONS ON REACHING THE SUMMIT OF EXCELLENCE! 🌟"
-        )
+        certificate.append("🌟 CONGRATULATIONS ON REACHING THE SUMMIT OF EXCELLENCE! 🌟")
         certificate.append("=" * 80)
 
         # Save certificate
@@ -705,9 +703,7 @@ The Hall of Fame is ready to celebrate the first team to achieve legendary statu
 
         if metrics.get("collaboration_score", 0) >= 95:
             readiness["requirements_met"] += 1
-            readiness["achievements_earned"].append(
-                "✅ Collaboration excellence (95%+)"
-            )
+            readiness["achievements_earned"].append("✅ Collaboration excellence (95%+)")
         else:
             gap = 95 - metrics.get("collaboration_score", 0)
             readiness["gaps"].append(

@@ -228,9 +228,9 @@ class LeadershipMetricsTracker:
         # Git analysis for execution leadership (Billy Wright style)
         data["crisis_commits"] = self._analyze_crisis_commits()
         data["code_review_leadership"] = self._analyze_code_review_leadership()
-        data["pair_programming_leadership"] = (
-            self._analyze_pair_programming_leadership()
-        )
+        data[
+            "pair_programming_leadership"
+        ] = self._analyze_pair_programming_leadership()
         data["technical_decisions"] = self._analyze_technical_decisions()
 
         # Documentation analysis for strategic leadership (Stan Cullis style)
@@ -241,9 +241,9 @@ class LeadershipMetricsTracker:
 
         # Cross-cutting leadership indicators
         data["retrospective_leadership"] = self._analyze_retrospective_leadership()
-        data["feature_proposal_leadership"] = (
-            self._analyze_feature_proposal_leadership()
-        )
+        data[
+            "feature_proposal_leadership"
+        ] = self._analyze_feature_proposal_leadership()
         data["team_coordination"] = self._analyze_team_coordination()
 
         return data

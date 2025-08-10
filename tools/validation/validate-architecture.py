@@ -729,7 +729,9 @@ class ArchitectureValidator:
                         "status": (
                             "pass"
                             if icon == "✅"
-                            else "warn" if "⚠️" in icon else "fail"
+                            else "warn"
+                            if "⚠️" in icon
+                            else "fail"
                         ),
                         "component": component,
                         "message": message,
@@ -752,7 +754,9 @@ class ArchitectureValidator:
 
             md += "\n## Summary\n"
             if self.has_errors:
-                md += "❌ **FAILED** - Complete all architecture documents before coding\n"
+                md += (
+                    "❌ **FAILED** - Complete all architecture documents before coding\n"
+                )
             elif self.has_warnings:
                 md += "⚠️  **PASSED** with warnings - Consider addressing issues\n"
             else:

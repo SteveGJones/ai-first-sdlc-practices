@@ -507,9 +507,7 @@ class TeamMaturityTracker:
 
         # Add specific achievements
         if team_data["team_size"] >= 5:
-            strengths.append(
-                "🤝 **Team Scale**: Successfully coordinating larger team!"
-            )
+            strengths.append("🤝 **Team Scale**: Successfully coordinating larger team!")
         if team_data["technical_debt"] < 3:
             strengths.append(
                 "💎 **Code Quality**: Maintaining excellent technical standards!"
@@ -692,9 +690,7 @@ class TeamMaturityTracker:
 
         # Recent activity
         if team_data.get("commit_frequency", 0) > 1:
-            spotlight.append(
-                "🔥 **High Velocity**: Consistently shipping improvements!"
-            )
+            spotlight.append("🔥 **High Velocity**: Consistently shipping improvements!")
         elif team_data.get("commit_frequency", 0) > 0.5:
             spotlight.append(
                 "📈 **Steady Progress**: Maintaining good development rhythm!"
@@ -710,9 +706,7 @@ class TeamMaturityTracker:
                 "🌍 **Community Contributors**: Sharing value with the broader ecosystem!"
             )
         if team_data.get("retrospectives", 0) >= 5:
-            spotlight.append(
-                "🔄 **Continuous Learners**: Strong retrospective culture!"
-            )
+            spotlight.append("🔄 **Continuous Learners**: Strong retrospective culture!")
 
         return spotlight
 

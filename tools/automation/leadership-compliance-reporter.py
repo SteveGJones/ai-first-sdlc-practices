@@ -342,9 +342,9 @@ class LeadershipComplianceReporter:
             )
 
         if "strategic_impact" in template["focus"]:
-            report_content["strategic_impact"] = (
-                self._generate_strategic_impact_analysis(metrics)
-            )
+            report_content[
+                "strategic_impact"
+            ] = self._generate_strategic_impact_analysis(metrics)
 
         if "succession_planning" in template["focus"]:
             report_content["succession_planning"] = self._generate_succession_planning(
@@ -607,7 +607,9 @@ class LeadershipComplianceReporter:
                     status_icon = (
                         "✅"
                         if status == "good"
-                        else "⚠️" if status == "warning" else "❌"
+                        else "⚠️"
+                        if status == "warning"
+                        else "❌"
                     )
 
                     md_lines.append(f"**{metric_name}**: {status_icon} {score:.1f}%")
@@ -930,7 +932,9 @@ def dashboard():
             level_icon = (
                 "🚨"
                 if alert["level"] == "critical"
-                else "⚠️" if alert["level"] == "warning" else "ℹ️"
+                else "⚠️"
+                if alert["level"] == "warning"
+                else "ℹ️"
             )
             click.echo(f"  {level_icon} {alert['message']}")
         click.echo("")
@@ -943,7 +947,9 @@ def dashboard():
             priority_icon = (
                 "🔴"
                 if action["priority"] == "high"
-                else "🟡" if action["priority"] == "medium" else "🟢"
+                else "🟡"
+                if action["priority"] == "medium"
+                else "🟢"
             )
             click.echo(f"  {priority_icon} {action['title']}: {action['description']}")
 
@@ -971,9 +977,7 @@ def trends(days):
         # Simulate trend data - in real implementation, this would come from
         # historical analysis
         trend_direction = (
-            "📈"
-            if hash(category) % 3 == 0
-            else "📉" if hash(category) % 3 == 1 else "➡️"
+            "📈" if hash(category) % 3 == 0 else "📉" if hash(category) % 3 == 1 else "➡️"
         )
         percentage_change = abs(hash(category) % 20) + 5
 
