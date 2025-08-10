@@ -137,6 +137,7 @@ Load additional instructions based on task:
 
 | Task | Load File |
 |------|-----------|
+| **TEAM COORDINATION** | **CLAUDE-TEAM-FIRST.md** (LOAD IMMEDIATELY) |
 | Setup framework | CLAUDE-SETUP.md |
 | Create architecture | CLAUDE-CONTEXT-architecture.md |
 | Run validation | CLAUDE-CONTEXT-validation.md |
