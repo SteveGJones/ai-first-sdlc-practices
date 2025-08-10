@@ -52,13 +52,17 @@ def check_pr_comment_permissions(workflow: Dict, workflow_name: str) -> List[str
         permissions = workflow.get("permissions", {})
 
         if not permissions:
-            issues.append(f"❌ {workflow_name}: Uses PR comments but has no permissions block")
+            issues.append(
+                f"❌ {workflow_name}: Uses PR comments but has no permissions block"
+            )
         else:
             required_perms = {"issues": "write", "pull-requests": "write"}
 
             for perm, level in required_perms.items():
                 if permissions.get(perm) != level:
-                    issues.append(f"❌ {workflow_name}: Missing '{perm}: {level}' permission for PR comments")
+                    issues.append(
+                        f"❌ {workflow_name}: Missing '{perm}: {level}' permission for PR comments"
+                    )
 
     return issues
 
@@ -80,7 +84,9 @@ def check_workflow_security(workflow: Dict, workflow_name: str) -> List[str]:
         if permissions.get(perm) == level:
             # Only warn if it's not an obvious release workflow
             if "release" not in workflow_name.lower() and perm != "contents":
-                issues.append(f"⚠️  {workflow_name}: Consider if '{perm}: {level}' permission is necessary")
+                issues.append(
+                    f"⚠️  {workflow_name}: Consider if '{perm}: {level}' permission is necessary"
+                )
 
     return issues
 

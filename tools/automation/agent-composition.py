@@ -22,7 +22,11 @@ class AgentCompositionManager:
     def __init__(self, compositions_file: Path = None):
         if compositions_file is None:
             # Default to the compositions file in the agents directory
-            compositions_file = Path(__file__).parent.parent.parent / "agents" / "agent-compositions.yaml"
+            compositions_file = (
+                Path(__file__).parent.parent.parent
+                / "agents"
+                / "agent-compositions.yaml"
+            )
 
         self.compositions_file = compositions_file
         self.compositions = self._load_compositions()
@@ -30,7 +34,9 @@ class AgentCompositionManager:
     def _load_compositions(self) -> Dict:
         """Load agent compositions from YAML file."""
         if not self.compositions_file.exists():
-            console.print(f"[yellow]Warning: Compositions file not found: {self.compositions_file}[/yellow]")
+            console.print(
+                f"[yellow]Warning: Compositions file not found: {self.compositions_file}[/yellow]"
+            )
             return {"compositions": {}, "rules": {}}
 
         with open(self.compositions_file) as f:
@@ -48,7 +54,9 @@ class AgentCompositionManager:
         """Create a composite agent markdown file from a composition."""
         composition = self.get_composition(composition_name)
         if not composition:
-            console.print(f"[red]Error: Composition '{composition_name}' not found[/red]")
+            console.print(
+                f"[red]Error: Composition '{composition_name}' not found[/red]"
+            )
             return False
 
         # Generate the composite agent content
@@ -161,7 +169,9 @@ Use cases:
             if self._evaluate_condition(condition, project_context):
                 # Find compositions that include the recommended agents
                 for agent in rule.get("include", []):
-                    for comp_name, comp_data in self.compositions.get("compositions", {}).items():
+                    for comp_name, comp_data in self.compositions.get(
+                        "compositions", {}
+                    ).items():
                         if agent in comp_data.get("includes", []):
                             if comp_name not in recommendations:
                                 recommendations.append(comp_name)
@@ -282,7 +292,9 @@ def recommend(has_api: bool, production: bool, compliance: bool):
         for rec in recommendations:
             console.print(f"  • [cyan]{rec}[/cyan]")
     else:
-        console.print("[yellow]No specific compositions recommended for this context[/yellow]")
+        console.print(
+            "[yellow]No specific compositions recommended for this context[/yellow]"
+        )
 
 
 if __name__ == "__main__":

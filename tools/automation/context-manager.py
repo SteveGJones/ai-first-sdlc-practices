@@ -38,7 +38,9 @@ class ContextManager:
                 with open(gitignore, "a") as f:
                     f.write("\n# AI Context Preservation\n.ai-context/\n")
 
-    def save_context(self, context_type: str, data: Dict[str, Any], session_id: Optional[str] = None) -> str:
+    def save_context(
+        self, context_type: str, data: Dict[str, Any], session_id: Optional[str] = None
+    ) -> str:
         """Save context with type and optional session ID"""
         # Generate session ID if not provided
         if not session_id:
@@ -66,7 +68,9 @@ class ContextManager:
         print(f"✅ Context saved: {session_id}")
         return session_id
 
-    def load_context(self, session_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def load_context(
+        self, session_id: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
         """Load context by session ID or current"""
         if session_id:
             # Look for specific session in history
@@ -127,7 +131,9 @@ class ContextManager:
         print(f"📋 Handoff document created: {handoff_file}")
         return str(handoff_file)
 
-    def _generate_handoff_markdown(self, handoff: Dict[str, Any], session_id: str) -> str:
+    def _generate_handoff_markdown(
+        self, handoff: Dict[str, Any], session_id: str
+    ) -> str:
         """Generate markdown from handoff data"""
         md = "# AI Agent Handoff Document\n\n"
         md += f"**Session ID:** {session_id}\n"
@@ -183,7 +189,9 @@ class ContextManager:
 
         return md
 
-    def create_implementation_snapshot(self, feature_name: str, phase: str, implementation_details: Dict[str, Any]) -> str:
+    def create_implementation_snapshot(
+        self, feature_name: str, phase: str, implementation_details: Dict[str, Any]
+    ) -> str:
         """Create a snapshot of current implementation state"""
 
         snapshot = {
@@ -213,7 +221,9 @@ class ContextManager:
         print(f"📸 Implementation snapshot saved: {session_id}")
         return session_id
 
-    def list_contexts(self, context_type: Optional[str] = None, limit: int = 10) -> List[Dict[str, Any]]:
+    def list_contexts(
+        self, context_type: Optional[str] = None, limit: int = 10
+    ) -> List[Dict[str, Any]]:
         """List available contexts"""
         contexts = []
 
@@ -297,7 +307,9 @@ class ContextManager:
         # This would be customized per project
         if Path("Makefile").exists():
             try:
-                result = subprocess.run(["make", "test"], capture_output=True, text=True, timeout=30)
+                result = subprocess.run(
+                    ["make", "test"], capture_output=True, text=True, timeout=30
+                )
                 if result.returncode == 0:
                     return "✅ All tests passing"
                 else:
@@ -332,13 +344,17 @@ class ContextManager:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="AI Context Manager - Preserve context across sessions")
+    parser = argparse.ArgumentParser(
+        description="AI Context Manager - Preserve context across sessions"
+    )
 
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # Save context
     save_parser = subparsers.add_parser("save", help="Save current context")
-    save_parser.add_argument("type", choices=["work", "handoff", "debug", "custom"], help="Context type")
+    save_parser.add_argument(
+        "type", choices=["work", "handoff", "debug", "custom"], help="Context type"
+    )
     save_parser.add_argument("--data", help="JSON data to save")
     save_parser.add_argument("--file", help="File containing JSON data")
 
@@ -348,9 +364,13 @@ def main() -> None:
 
     # Create handoff
     handoff_parser = subparsers.add_parser("handoff", help="Create handoff document")
-    handoff_parser.add_argument("--completed", nargs="+", default=[], help="Completed tasks")
+    handoff_parser.add_argument(
+        "--completed", nargs="+", default=[], help="Completed tasks"
+    )
     handoff_parser.add_argument("--current", help="Current task in progress")
-    handoff_parser.add_argument("--next", dest="next_tasks", nargs="+", default=[], help="Next tasks to do")
+    handoff_parser.add_argument(
+        "--next", dest="next_tasks", nargs="+", default=[], help="Next tasks to do"
+    )
     handoff_parser.add_argument(
         "--blocker",
         action="append",
@@ -366,7 +386,9 @@ def main() -> None:
     handoff_parser.add_argument("--notes", help="Additional notes")
 
     # Create snapshot
-    snapshot_parser = subparsers.add_parser("snapshot", help="Create implementation snapshot")
+    snapshot_parser = subparsers.add_parser(
+        "snapshot", help="Create implementation snapshot"
+    )
     snapshot_parser.add_argument("feature", help="Feature name")
     snapshot_parser.add_argument("phase", help="Implementation phase")
     snapshot_parser.add_argument("--files", nargs="+", help="Key files to snapshot")
@@ -410,7 +432,9 @@ def main() -> None:
         for blocker in args.blocker:
             parts = blocker.split(":", 2)
             if len(parts) == 3:
-                blockers.append({"issue": parts[0], "impact": parts[1], "resolution": parts[2]})
+                blockers.append(
+                    {"issue": parts[0], "impact": parts[1], "resolution": parts[2]}
+                )
 
         # Parse decisions
         decisions = []
@@ -444,8 +468,13 @@ def main() -> None:
             print(f"{'Session ID':<10} {'Type':<20} {'Branch':<20} {'Timestamp'}")
             print("-" * 70)
             for ctx in contexts:
-                timestamp = datetime.fromisoformat(ctx["timestamp"]).strftime("%Y-%m-%d %H:%M")
-                print(f"{ctx['session_id']:<10} {ctx['type']:<20} " f"{ctx['branch']:<20} {timestamp}")
+                timestamp = datetime.fromisoformat(ctx["timestamp"]).strftime(
+                    "%Y-%m-%d %H:%M"
+                )
+                print(
+                    f"{ctx['session_id']:<10} {ctx['type']:<20} "
+                    f"{ctx['branch']:<20} {timestamp}"
+                )
 
 
 if __name__ == "__main__":

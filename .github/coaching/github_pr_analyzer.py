@@ -64,9 +64,13 @@ class GitHubPRAnalyzer:
         comments_data = comments_response.json() if comments_response.ok else []
 
         # Get issue comments (different from review comments)
-        issue_comments_url = f"{self.base_url}/repos/{self.repo}/issues/{pr_number}/comments"
+        issue_comments_url = (
+            f"{self.base_url}/repos/{self.repo}/issues/{pr_number}/comments"
+        )
         issue_comments_response = requests.get(issue_comments_url, headers=self.headers)
-        issue_comments_data = issue_comments_response.json() if issue_comments_response.ok else []
+        issue_comments_data = (
+            issue_comments_response.json() if issue_comments_response.ok else []
+        )
 
         # Get reviews
         reviews_url = f"{pr_url}/reviews"
@@ -139,15 +143,21 @@ class GitHubPRAnalyzer:
             files_changed=pr_data.get("changed_files", 0),
             additions=pr_data.get("additions", 0),
             deletions=pr_data.get("deletions", 0),
-            created_at=datetime.fromisoformat(pr_data.get("created_at", "").replace("Z", "+00:00")),
+            created_at=datetime.fromisoformat(
+                pr_data.get("created_at", "").replace("Z", "+00:00")
+            ),
             merged_at=(
-                datetime.fromisoformat(pr_data.get("merged_at", "").replace("Z", "+00:00"))
+                datetime.fromisoformat(
+                    pr_data.get("merged_at", "").replace("Z", "+00:00")
+                )
                 if pr_data.get("merged_at")
                 else None
             ),
         )
 
-    def analyze_collaboration_patterns(self, pr_data: PRCollaborationData) -> Dict[str, Any]:
+    def analyze_collaboration_patterns(
+        self, pr_data: PRCollaborationData
+    ) -> Dict[str, Any]:
         """Analyze collaboration patterns in the PR"""
 
         analysis = {
@@ -172,7 +182,9 @@ class GitHubPRAnalyzer:
         analysis["billy_wright_indicators"] = billy_wright
 
         # Calculate chemistry factors
-        chemistry = self._calculate_chemistry_factors(pr_data, comment_analysis, commit_analysis)
+        chemistry = self._calculate_chemistry_factors(
+            pr_data, comment_analysis, commit_analysis
+        )
         analysis["chemistry_factors"] = chemistry
 
         # Detect solo runs
@@ -207,7 +219,12 @@ class GitHubPRAnalyzer:
             "need input",
         ]
         consultation_mentions = sum(
-            1 for c in comments if any(keyword in c.get("body", "").lower() for keyword in consultation_keywords)
+            1
+            for c in comments
+            if any(
+                keyword in c.get("body", "").lower()
+                for keyword in consultation_keywords
+            )
         )
 
         # Look for positive collaborative language
@@ -223,7 +240,11 @@ class GitHubPRAnalyzer:
             "love it",
         ]
         positive_language = sum(
-            1 for c in comments if any(keyword in c.get("body", "").lower() for keyword in positive_keywords)
+            1
+            for c in comments
+            if any(
+                keyword in c.get("body", "").lower() for keyword in positive_keywords
+            )
         )
 
         # Count questions (collaboration indicator)
@@ -234,15 +255,25 @@ class GitHubPRAnalyzer:
             response_times = []
             sorted_comments = sorted(comments, key=lambda x: x.get("created_at", ""))
             for i in range(1, len(sorted_comments)):
-                if sorted_comments[i].get("author") != sorted_comments[i - 1].get("author"):
+                if sorted_comments[i].get("author") != sorted_comments[i - 1].get(
+                    "author"
+                ):
                     try:
-                        time1 = datetime.fromisoformat(sorted_comments[i - 1]["created_at"].replace("Z", "+00:00"))
-                        time2 = datetime.fromisoformat(sorted_comments[i]["created_at"].replace("Z", "+00:00"))
-                        response_times.append((time2 - time1).total_seconds() / 3600)  # hours
+                        time1 = datetime.fromisoformat(
+                            sorted_comments[i - 1]["created_at"].replace("Z", "+00:00")
+                        )
+                        time2 = datetime.fromisoformat(
+                            sorted_comments[i]["created_at"].replace("Z", "+00:00")
+                        )
+                        response_times.append(
+                            (time2 - time1).total_seconds() / 3600
+                        )  # hours
                     except (ValueError, KeyError, AttributeError):
                         pass
 
-            avg_response_time = sum(response_times) / len(response_times) if response_times else None
+            avg_response_time = (
+                sum(response_times) / len(response_times) if response_times else None
+            )
         else:
             avg_response_time = None
 
@@ -253,7 +284,8 @@ class GitHubPRAnalyzer:
             "consultation_mentions": consultation_mentions,
             "positive_language": positive_language,
             "questions_asked": questions_asked,
-            "collaboration_ratio": (consultation_mentions + questions_asked) / max(len(comments), 1),
+            "collaboration_ratio": (consultation_mentions + questions_asked)
+            / max(len(comments), 1),
         }
 
     def _analyze_commits(self, commits: List[Dict]) -> Dict[str, Any]:
@@ -270,7 +302,9 @@ class GitHubPRAnalyzer:
         unique_authors = len(set(c["author"] for c in commits if c.get("author")))
 
         # Check for co-authorship
-        co_authored = sum(1 for c in commits if "co-authored-by" in c.get("message", "").lower())
+        co_authored = sum(
+            1 for c in commits if "co-authored-by" in c.get("message", "").lower()
+        )
 
         # Check for teammate references
         teammate_keywords = [
@@ -283,7 +317,11 @@ class GitHubPRAnalyzer:
             "with",
         ]
         references_teammates = sum(
-            1 for c in commits if any(keyword in c.get("message", "").lower() for keyword in teammate_keywords)
+            1
+            for c in commits
+            if any(
+                keyword in c.get("message", "").lower() for keyword in teammate_keywords
+            )
         )
 
         return {
@@ -291,10 +329,13 @@ class GitHubPRAnalyzer:
             "unique_authors": unique_authors,
             "co_authored": co_authored,
             "references_teammates": references_teammates,
-            "coordination_score": (co_authored + references_teammates) / max(len(commits), 1),
+            "coordination_score": (co_authored + references_teammates)
+            / max(len(commits), 1),
         }
 
-    def _check_billy_wright_principles(self, pr_data: PRCollaborationData) -> Dict[str, bool]:
+    def _check_billy_wright_principles(
+        self, pr_data: PRCollaborationData
+    ) -> Dict[str, bool]:
         """Check for Billy Wright collaborative principles"""
 
         principles = {
@@ -329,8 +370,12 @@ class GitHubPRAnalyzer:
         team_phrases = ["our", "we", "team", "together", "us"]
         individual_phrases = ["i", "my", "me"]
 
-        team_count = sum(1 for phrase in team_phrases if phrase in all_text_lower.split())
-        individual_count = sum(1 for phrase in individual_phrases if phrase in all_text_lower.split())
+        team_count = sum(
+            1 for phrase in team_phrases if phrase in all_text_lower.split()
+        )
+        individual_count = sum(
+            1 for phrase in individual_phrases if phrase in all_text_lower.split()
+        )
 
         if team_count > individual_count:
             principles["team_first_language"] = True
@@ -435,14 +480,23 @@ class GitHubPRAnalyzer:
 
         # Large change with no discussion
         if pr_data.files_changed > 10 and len(pr_data.comments) < 3:
-            violations.append(f"Large change ({pr_data.files_changed} files) with minimal discussion")
+            violations.append(
+                f"Large change ({pr_data.files_changed} files) with minimal discussion"
+            )
 
         # No reviews on significant changes
-        if pr_data.additions > 500 and len([r for r in pr_data.reviews if r.get("state") == "APPROVED"]) == 0:
-            violations.append(f"Significant additions ({pr_data.additions} lines) without approval")
+        if (
+            pr_data.additions > 500
+            and len([r for r in pr_data.reviews if r.get("state") == "APPROVED"]) == 0
+        ):
+            violations.append(
+                f"Significant additions ({pr_data.additions} lines) without approval"
+            )
 
         # Single author, no collaboration
-        unique_commenters = len(set(c["author"] for c in pr_data.comments if c.get("author")))
+        unique_commenters = len(
+            set(c["author"] for c in pr_data.comments if c.get("author"))
+        )
         if unique_commenters <= 1 and pr_data.files_changed > 3:
             violations.append("No team collaboration detected")
 
@@ -466,16 +520,22 @@ class GitHubPRAnalyzer:
             "responsiveness": 0.15,
         }
 
-        weighted_score = sum(factors.get(factor, 0) * weight for factor, weight in weights.items())
+        weighted_score = sum(
+            factors.get(factor, 0) * weight for factor, weight in weights.items()
+        )
 
         # Apply Billy Wright bonus/penalty
         billy_wright = analysis["billy_wright_indicators"]
-        billy_wright_score = sum(1 for v in billy_wright.values() if v) / len(billy_wright) * 100
+        billy_wright_score = (
+            sum(1 for v in billy_wright.values() if v) / len(billy_wright) * 100
+        )
 
         # Solo run penalty
         solo_run_penalty = len(analysis["solo_runs_detected"]) * 10
 
-        final_score = max(0, min(100, weighted_score + (billy_wright_score * 0.2) - solo_run_penalty))
+        final_score = max(
+            0, min(100, weighted_score + (billy_wright_score * 0.2) - solo_run_penalty)
+        )
 
         return {
             "pr_number": pr_number,
@@ -498,12 +558,17 @@ class GitHubPRAnalyzer:
             recommendations.append("Use @mentions to involve relevant specialists")
 
         if analysis["billy_wright_indicators"].get("team_first_language") is False:
-            recommendations.append("Use more team-oriented language ('we', 'our') instead of 'I'")
+            recommendations.append(
+                "Use more team-oriented language ('we', 'our') instead of 'I'"
+            )
 
         if analysis["solo_runs_detected"]:
             recommendations.append("Avoid solo runs - consult team on major changes")
 
-        if analysis["collaboration_metrics"]["comment_patterns"]["questions_asked"] == 0:
+        if (
+            analysis["collaboration_metrics"]["comment_patterns"]["questions_asked"]
+            == 0
+        ):
             recommendations.append("Ask questions to engage teammates in discussion")
 
         if score >= 85:
@@ -513,7 +578,9 @@ class GitHubPRAnalyzer:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze GitHub PR for chemistry score")
+    parser = argparse.ArgumentParser(
+        description="Analyze GitHub PR for chemistry score"
+    )
     parser.add_argument("--repo", required=True, help="Repository (owner/repo)")
     parser.add_argument("--pr", type=int, required=True, help="PR number")
     parser.add_argument("--token", help="GitHub token (or use GITHUB_TOKEN env)")
@@ -529,7 +596,9 @@ def main():
         if args.output == "json":
             print(json.dumps(result, indent=2, default=str))
         else:
-            print(f"Chemistry Score for PR #{result['pr_number']}: {result['chemistry_score']:.1f}%")
+            print(
+                f"Chemistry Score for PR #{result['pr_number']}: {result['chemistry_score']:.1f}%"
+            )
             print("\nFactors:")
             for factor, score in result["factors"].items():
                 print(f"  {factor.capitalize()}: {score:.1f}%")

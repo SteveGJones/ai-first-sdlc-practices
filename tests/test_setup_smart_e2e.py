@@ -16,7 +16,9 @@ import importlib.util
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-setup_smart_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "setup-smart.py")
+setup_smart_path = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "setup-smart.py"
+)
 spec = importlib.util.spec_from_file_location("setup_smart", setup_smart_path)
 setup_smart = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(setup_smart)
@@ -34,7 +36,9 @@ class TestSetupSmartE2E(unittest.TestCase):
 
         # Initialize git repo
         subprocess.run(["git", "init"], capture_output=True)
-        subprocess.run(["git", "config", "user.email", "test@example.com"], capture_output=True)
+        subprocess.run(
+            ["git", "config", "user.email", "test@example.com"], capture_output=True
+        )
         subprocess.run(["git", "config", "user.name", "Test User"], capture_output=True)
 
     def tearDown(self):
@@ -170,7 +174,9 @@ class TestSetupSmartE2E(unittest.TestCase):
 
     def test_readme_creation(self) -> None:
         """Test README.md creation with project info"""
-        setup = SmartFrameworkSetup(Path(self.test_dir), "Building an AI chat application")
+        setup = SmartFrameworkSetup(
+            Path(self.test_dir), "Building an AI chat application"
+        )
         setup.project_name = "test-project"
 
         # Create README
@@ -213,7 +219,9 @@ class TestSetupSmartE2E(unittest.TestCase):
         self.assertTrue((Path(self.test_dir) / ".gitignore").exists())
         # Quickstart mode is minimal - it doesn't include CLAUDE.md
         self.assertFalse((Path(self.test_dir) / "CLAUDE.md").exists())
-        self.assertFalse((Path(self.test_dir) / ".ai-sdlc-temp").exists())  # Should be cleaned up
+        self.assertFalse(
+            (Path(self.test_dir) / ".ai-sdlc-temp").exists()
+        )  # Should be cleaned up
 
     def test_ai_friendly_gitignore_patterns(self) -> None:
         """Test that AI-specific patterns are comprehensive"""
@@ -332,7 +340,12 @@ class TestAIFriendliness(unittest.TestCase):
     def test_test_files_have_clear_purpose(self) -> None:
         """Test that framework verification tests explain their purpose"""
         # Check Python test template
-        test_content = Path(__file__).parent.parent / "templates" / "tests" / "test_framework_setup.py"
+        test_content = (
+            Path(__file__).parent.parent
+            / "templates"
+            / "tests"
+            / "test_framework_setup.py"
+        )
         if test_content.exists():
             content = test_content.read_text()
             self.assertIn("framework verification", content.lower())
@@ -353,7 +366,9 @@ def run_integration_test():
 
     for scenario_name, files in test_scenarios:
         print(f"\n📋 Testing: {scenario_name}")
-        test_dir = tempfile.mkdtemp(prefix=f"ai-test-{scenario_name.replace(' ', '-')}-")
+        test_dir = tempfile.mkdtemp(
+            prefix=f"ai-test-{scenario_name.replace(' ', '-')}-"
+        )
 
         try:
             # Setup test environment
@@ -391,7 +406,10 @@ def run_integration_test():
 
             if has_gitignore:
                 gitignore_content = Path(".gitignore").read_text()
-                has_ai_patterns = any(pattern in gitignore_content for pattern in [".claude/", ".cursor/", ".aider"])
+                has_ai_patterns = any(
+                    pattern in gitignore_content
+                    for pattern in [".claude/", ".cursor/", ".aider"]
+                )
                 print(f"  ✅ AI patterns: {'Found' if has_ai_patterns else 'Missing'}")
 
         finally:

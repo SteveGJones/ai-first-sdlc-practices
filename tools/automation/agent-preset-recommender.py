@@ -198,7 +198,10 @@ class ProjectAnalyzer:
             for root, dirs, files in os.walk(self.project_path):
                 # Skip hidden and build directories
                 dirs[:] = [
-                    d for d in dirs if not d.startswith(".") and d not in ["node_modules", "__pycache__", "dist", "build"]
+                    d
+                    for d in dirs
+                    if not d.startswith(".")
+                    and d not in ["node_modules", "__pycache__", "dist", "build"]
                 ]
 
                 for file in files:
@@ -220,7 +223,9 @@ class ProjectAnalyzer:
 
                     # Count by extension
                     if ext:
-                        file_stats["file_types"][ext] = file_stats["file_types"].get(ext, 0) + 1
+                        file_stats["file_types"][ext] = (
+                            file_stats["file_types"].get(ext, 0) + 1
+                        )
 
         except Exception as e:
             print(f"Warning: Error analyzing files: {e}")
@@ -297,7 +302,13 @@ class ProjectAnalyzer:
                     continue
 
                 # Extract package name
-                pkg = line.split("==")[0].split(">=")[0].split("<=")[0].split(">")[0].split("<")[0]
+                pkg = (
+                    line.split("==")[0]
+                    .split(">=")[0]
+                    .split("<=")[0]
+                    .split(">")[0]
+                    .split("<")[0]
+                )
                 deps["libraries"].append(pkg)
 
                 # Check for frameworks
@@ -351,7 +362,9 @@ class ProjectAnalyzer:
                 structure["has_ci"] = True
                 break
 
-        if (self.project_path / "Dockerfile").exists() or (self.project_path / "docker-compose.yml").exists():
+        if (self.project_path / "Dockerfile").exists() or (
+            self.project_path / "docker-compose.yml"
+        ).exists():
             structure["has_docker"] = True
 
         k8s_dirs = ["k8s", "kubernetes", "helm"]
@@ -360,11 +373,15 @@ class ProjectAnalyzer:
                 structure["has_k8s"] = True
                 break
 
-        if (self.project_path / "terraform").exists() or list(self.project_path.glob("*.t")):
+        if (self.project_path / "terraform").exists() or list(
+            self.project_path.glob("*.t")
+        ):
             structure["has_terraform"] = True
 
         # Check for monorepo patterns
-        if (self.project_path / "packages").exists() or (self.project_path / "apps").exists():
+        if (self.project_path / "packages").exists() or (
+            self.project_path / "apps"
+        ).exists():
             structure["is_monorepo"] = True
 
         return structure
@@ -406,7 +423,11 @@ class ProjectAnalyzer:
                 text=True,
                 check=True,
             )
-            unique_emails = set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+            unique_emails = (
+                set(result.stdout.strip().split("\n"))
+                if result.stdout.strip()
+                else set()
+            )
             git_info["contributor_count"] = len(unique_emails)
 
             # Count commits
@@ -522,7 +543,9 @@ class ProjectAnalyzer:
                             pass
 
         # Check for library
-        if (self.project_path / "setup.py").exists() or (self.project_path / "pyproject.toml").exists():
+        if (self.project_path / "setup.py").exists() or (
+            self.project_path / "pyproject.toml"
+        ).exists():
             return "library"
 
         # Check for data pipeline
@@ -673,7 +696,9 @@ def format_recommendations(recommendations: Dict, analysis: Dict) -> str:
     output.append("📊 Project Analysis:")
     output.append(f"   Type: {project_type}")
     output.append(f"   Technologies: {', '.join(analysis.get('technologies', []))}")
-    output.append(f"   Size: {analysis.get('characteristics', {}).get('project_size', 'unknown')}")
+    output.append(
+        f"   Size: {analysis.get('characteristics', {}).get('project_size', 'unknown')}"
+    )
     output.append("")
 
     # Core agents
@@ -721,7 +746,9 @@ def format_recommendations(recommendations: Dict, analysis: Dict) -> str:
 
     if all_agents:
         output.append("💻 Quick Install Command:")
-        output.append(f"   python .sdlc/tools/automation/claude-installer.py install {' '.join(all_agents[:5])}")
+        output.append(
+            f"   python .sdlc/tools/automation/claude-installer.py install {' '.join(all_agents[:5])}"
+        )
         if len(all_agents) > 5:
             output.append(f"   # Plus {len(all_agents) - 5} more agents...")
         output.append("")
@@ -735,7 +762,9 @@ def format_recommendations(recommendations: Dict, analysis: Dict) -> str:
 
 
 @click.command()
-@click.option("--project-path", type=click.Path(exists=True), help="Project path to analyze")
+@click.option(
+    "--project-path", type=click.Path(exists=True), help="Project path to analyze"
+)
 @click.option(
     "--type",
     "project_type",

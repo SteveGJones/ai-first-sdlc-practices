@@ -190,7 +190,9 @@ exit 0
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Install enhanced git hooks for quality gate")
+    parser = argparse.ArgumentParser(
+        description="Install enhanced git hooks for quality gate"
+    )
     parser.add_argument("--force", action="store_true", help="Override existing hooks")
 
     args = parser.parse_args()

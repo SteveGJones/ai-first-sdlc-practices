@@ -321,7 +321,10 @@ def show_quick_help():
             + "\n".join(
                 f"  {icon} {name:<15} → {cmd}"
                 for (name, cmd), (icon, _) in zip(
-                    [(s[0].replace(s[0].split()[0], s[0].split()[0][2:]), s[1]) for s in scenarios],
+                    [
+                        (s[0].replace(s[0].split()[0], s[0].split()[0][2:]), s[1])
+                        for s in scenarios
+                    ],
                     scenarios,
                 )
             ),
@@ -329,7 +332,9 @@ def show_quick_help():
         )
     )
 
-    console.print('\n[dim]Or describe your challenge: agent-help "optimize database queries"[/dim]')
+    console.print(
+        '\n[dim]Or describe your challenge: agent-help "optimize database queries"[/dim]'
+    )
 
 
 def check_installed(agent_name: str) -> bool:
@@ -371,7 +376,11 @@ def main(query, install):
     table.add_column("Status", width=12)
 
     for match in matches:
-        status = "[green]Installed[/green]" if check_installed(match["name"]) else "[dim]Available[/dim]"
+        status = (
+            "[green]Installed[/green]"
+            if check_installed(match["name"])
+            else "[dim]Available[/dim]"
+        )
         table.add_row(match["name"], match["helps_with"], status)
 
     console.print(table)
@@ -384,7 +393,9 @@ def main(query, install):
     # Installation instructions
     if not check_installed(best_match["name"]):
         console.print("\n[bold]To install:[/bold]")
-        console.print(f"  python tools/automation/agent-installer.py --install {best_match['name']}")
+        console.print(
+            f"  python tools/automation/agent-installer.py --install {best_match['name']}"
+        )
 
         if install:
             console.print("\n[dim]Installing agent...[/dim]")
@@ -405,7 +416,9 @@ def main(query, install):
                 console.print(f"[green]✓ Installed {best_match['name']}[/green]")
             else:
                 console.print("[red]Failed to install. Run manually:[/red]")
-                console.print(f"  python tools/automation/agent-installer.py --install {best_match['name']}")
+                console.print(
+                    f"  python tools/automation/agent-installer.py --install {best_match['name']}"
+                )
     else:
         console.print(f"\n[green]✓ {best_match['name']} is already installed![/green]")
         console.print(f"[dim]Use with: @{best_match['name']}[/dim]")

@@ -188,11 +188,17 @@ def detect_git_platform() -> Optional[str]:
         remote_url = result.stdout.strip()
 
         # Use proper URL parsing to avoid security issues
-        if remote_url.startswith("git@github.com:") or remote_url.startswith("https://github.com/"):
+        if remote_url.startswith("git@github.com:") or remote_url.startswith(
+            "https://github.com/"
+        ):
             return "github"
-        elif remote_url.startswith("git@gitlab.com:") or remote_url.startswith("https://gitlab.com/"):
+        elif remote_url.startswith("git@gitlab.com:") or remote_url.startswith(
+            "https://gitlab.com/"
+        ):
             return "gitlab"
-        elif remote_url.startswith("git@bitbucket.org:") or remote_url.startswith("https://bitbucket.org/"):
+        elif remote_url.startswith("git@bitbucket.org:") or remote_url.startswith(
+            "https://bitbucket.org/"
+        ):
             return "bitbucket"
         else:
             return None
@@ -221,7 +227,9 @@ def extract_repo_from_url(url: str) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Setup branch protection rules for git repository")
+    parser = argparse.ArgumentParser(
+        description="Setup branch protection rules for git repository"
+    )
     parser.add_argument(
         "--platform",
         choices=["github", "gitlab", "bitbucket", "auto"],
@@ -232,12 +240,16 @@ def main() -> None:
         "--repo",
         help="Repository path (e.g., owner/repo). Default: auto-detect from git remote",
     )
-    parser.add_argument("--branch", default="main", help="Branch to protect (default: main)")
+    parser.add_argument(
+        "--branch", default="main", help="Branch to protect (default: main)"
+    )
     parser.add_argument(
         "--token",
         help="API token for authentication (or set GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_TOKEN)",
     )
-    parser.add_argument("--dry-run", action="store_true", help="Export format for validation report")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Export format for validation report"
+    )
 
     args = parser.parse_args()
 
@@ -293,7 +305,9 @@ def main() -> None:
 
     # Configure branch protection - instantiate with 3 args: platform, token,
     # repo
-    configurator: BranchProtectionConfigurator = BranchProtectionConfigurator(platform, token, repo)
+    configurator: BranchProtectionConfigurator = BranchProtectionConfigurator(
+        platform, token, repo
+    )
     success: bool = configurator.configure(args.branch)
     if success:
         print("\n✅ Branch protection successfully configured!")

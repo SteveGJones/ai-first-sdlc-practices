@@ -59,7 +59,11 @@ class AgentMemoryBlock:
             md += "\n"
 
         if self.expertise_tags:
-            md += "**Expertise Tags**: " + ", ".join([f"#{tag}" for tag in self.expertise_tags]) + "\n\n"
+            md += (
+                "**Expertise Tags**: "
+                + ", ".join([f"#{tag}" for tag in self.expertise_tags])
+                + "\n\n"
+            )
 
         if self.cross_agent_dependencies:
             md += "**Cross-Agent Dependencies**:\n"
@@ -311,7 +315,10 @@ class AgentContextCoordinator:
         agent_status = {}
         for memory in memories:
             agent = memory["agent_type"]
-            if agent not in agent_status or memory["timestamp"] > agent_status[agent]["timestamp"]:
+            if (
+                agent not in agent_status
+                or memory["timestamp"] > agent_status[agent]["timestamp"]
+            ):
                 agent_status[agent] = memory
 
         # Generate markdown table
@@ -323,7 +330,9 @@ class AgentContextCoordinator:
             current_task = status["current_focus"]
             agent_status_str = status["status"].upper()
             next_action = status.get("handoff_notes", "Continue current work")
-            last_update = datetime.fromisoformat(status["timestamp"]).strftime("%Y-%m-%d %H:%M")
+            last_update = datetime.fromisoformat(status["timestamp"]).strftime(
+                "%Y-%m-%d %H:%M"
+            )
 
             markdown += f"| {agent} | {current_task} | {agent_status_str} | {next_action} | {last_update} |\n"
 
@@ -364,11 +373,15 @@ class AgentContextCoordinator:
 
         # Calculate health score
         total_agents = len(set(m["agent_type"] for m in memories))
-        recent_update_coverage = len(set(agents_with_recent_updates)) / max(total_agents, 1)
+        recent_update_coverage = len(set(agents_with_recent_updates)) / max(
+            total_agents, 1
+        )
         handoff_health = 1 - (len(unacknowledged_handoffs) / max(len(transitions), 1))
         decision_health = 1 - (len(decision_conflicts) / max(len(decisions), 1))
 
-        health_score = recent_update_coverage * 0.4 + handoff_health * 0.3 + decision_health * 0.3
+        health_score = (
+            recent_update_coverage * 0.4 + handoff_health * 0.3 + decision_health * 0.3
+        )
 
         return {
             "health_score": health_score,
@@ -486,7 +499,9 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # Create memory block
-    create_parser = subparsers.add_parser("create_memory", help="Create agent memory block")
+    create_parser = subparsers.add_parser(
+        "create_memory", help="Create agent memory block"
+    )
     create_parser.add_argument("agent_type", help="Type of agent")
     create_parser.add_argument("session_context", help="Current session context")
     create_parser.add_argument("current_focus", help="Current focus area")
@@ -494,19 +509,27 @@ def main():
     # Update memory
     update_parser = subparsers.add_parser("update_memory", help="Update agent memory")
     update_parser.add_argument("agent_type", help="Type of agent")
-    update_parser.add_argument("--decision", help="Decision in format 'decision:rationale'")
+    update_parser.add_argument(
+        "--decision", help="Decision in format 'decision:rationale'"
+    )
     update_parser.add_argument("--tag", help="Expertise tag")
     update_parser.add_argument("--dependency", help="Cross-agent dependency")
     update_parser.add_argument("--handof", help="Handoff notes")
-    update_parser.add_argument("--status", choices=["active", "waiting", "complete", "blocked", "handed_of"])
+    update_parser.add_argument(
+        "--status", choices=["active", "waiting", "complete", "blocked", "handed_of"]
+    )
     update_parser.add_argument("--focus", help="Current focus")
 
     # Create transition
-    transition_parser = subparsers.add_parser("create_transition", help="Create agent transition")
+    transition_parser = subparsers.add_parser(
+        "create_transition", help="Create agent transition"
+    )
     transition_parser.add_argument("from_agent", help="Source agent")
     transition_parser.add_argument("to_agent", help="Destination agent")
     transition_parser.add_argument("context", help="Context transfer description")
-    transition_parser.add_argument("--requirements", nargs="+", default=[], help="Requirements for next agent")
+    transition_parser.add_argument(
+        "--requirements", nargs="+", default=[], help="Requirements for next agent"
+    )
 
     # Acknowledge handoff
     ack_parser = subparsers.add_parser("acknowledge", help="Acknowledge handof")
@@ -514,9 +537,13 @@ def main():
     ack_parser.add_argument("to_agent", help="Destination agent")
 
     # Create collaborative decision
-    decision_parser = subparsers.add_parser("create_decision", help="Create collaborative decision")
+    decision_parser = subparsers.add_parser(
+        "create_decision", help="Create collaborative decision"
+    )
     decision_parser.add_argument("title", help="Decision title")
-    decision_parser.add_argument("--participants", nargs="+", required=True, help="Participating agents")
+    decision_parser.add_argument(
+        "--participants", nargs="+", required=True, help="Participating agents"
+    )
     decision_parser.add_argument("--context", required=True, help="Decision context")
     decision_parser.add_argument("--consensus", required=True, help="Agreed consensus")
     decision_parser.add_argument("--owner", required=True, help="Implementation owner")
@@ -537,7 +564,9 @@ def main():
     coordinator = AgentContextCoordinator()
 
     if args.command == "create_memory":
-        coordinator.create_agent_memory_block(args.agent_type, args.session_context, args.current_focus)
+        coordinator.create_agent_memory_block(
+            args.agent_type, args.session_context, args.current_focus
+        )
 
     elif args.command == "update_memory":
         updates = {}
@@ -559,7 +588,9 @@ def main():
         coordinator.update_agent_memory(args.agent_type, **updates)
 
     elif args.command == "create_transition":
-        coordinator.create_agent_transition(args.from_agent, args.to_agent, args.context, args.requirements)
+        coordinator.create_agent_transition(
+            args.from_agent, args.to_agent, args.context, args.requirements
+        )
 
     elif args.command == "acknowledge":
         coordinator.acknowledge_handoff(args.from_agent, args.to_agent)

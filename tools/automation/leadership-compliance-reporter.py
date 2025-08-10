@@ -119,19 +119,29 @@ class LeadershipComplianceReporter:
 
         # Gather all leadership data
         leadership_analysis = self.leadership_tracker.analyze_current_leadership()
-        compliance_metrics = self._calculate_leadership_compliance_metrics(leadership_analysis)
-        leadership_gaps = self._identify_leadership_gaps(compliance_metrics, leadership_analysis)
+        compliance_metrics = self._calculate_leadership_compliance_metrics(
+            leadership_analysis
+        )
+        leadership_gaps = self._identify_leadership_gaps(
+            compliance_metrics, leadership_analysis
+        )
 
         # Generate audience-specific report
-        report_content = self._generate_audience_report(audience, compliance_metrics, leadership_analysis, leadership_gaps)
+        report_content = self._generate_audience_report(
+            audience, compliance_metrics, leadership_analysis, leadership_gaps
+        )
 
         # Add visualizations if requested
         if include_visualizations:
-            charts = self._generate_leadership_visualizations(compliance_metrics, leadership_analysis, audience)
+            charts = self._generate_leadership_visualizations(
+                compliance_metrics, leadership_analysis, audience
+            )
             report_content["visualizations"] = charts
 
         # Generate actionable recommendations
-        recommendations = self._generate_leadership_recommendations(compliance_metrics, leadership_gaps, audience)
+        recommendations = self._generate_leadership_recommendations(
+            compliance_metrics, leadership_gaps, audience
+        )
         report_content["recommendations"] = recommendations
 
         # Export in requested format
@@ -152,7 +162,9 @@ class LeadershipComplianceReporter:
             "recommendations": recommendations,
         }
 
-    def _calculate_leadership_compliance_metrics(self, leadership_analysis: Dict) -> LeadershipComplianceMetrics:
+    def _calculate_leadership_compliance_metrics(
+        self, leadership_analysis: Dict
+    ) -> LeadershipComplianceMetrics:
         """Calculate comprehensive leadership compliance metrics"""
 
         team_data = leadership_analysis["leadership_data"]
@@ -170,17 +182,25 @@ class LeadershipComplianceReporter:
 
         # Billy Wright Metrics
         crisis_readiness = self._calculate_crisis_readiness(team_data)
-        execution_depth = self._calculate_execution_leadership_depth(leadership_analysis)
+        execution_depth = self._calculate_execution_leadership_depth(
+            leadership_analysis
+        )
         decision_quality = self._calculate_decision_quality(team_data)
 
         # Stan Cullis Metrics
         vision_alignment = self._calculate_vision_alignment(team_data)
         talent_pipeline = self._calculate_talent_pipeline_strength(leadership_analysis)
-        architectural_maturity = self._calculate_architectural_leadership_maturity(team_data)
+        architectural_maturity = self._calculate_architectural_leadership_maturity(
+            team_data
+        )
 
         # Dual Leadership Development
-        cross_style_mentoring = self._calculate_cross_style_mentoring_rate(leadership_analysis)
-        legendary_progression = self._calculate_legendary_progression(leadership_analysis)
+        cross_style_mentoring = self._calculate_cross_style_mentoring_rate(
+            leadership_analysis
+        )
+        legendary_progression = self._calculate_legendary_progression(
+            leadership_analysis
+        )
         knowledge_transfer = self._calculate_leadership_knowledge_transfer(team_data)
 
         return LeadershipComplianceMetrics(
@@ -213,8 +233,20 @@ class LeadershipComplianceReporter:
         coverage_ratio = min(1.0, actual_leader_count / ideal_leader_count)
 
         # Bonus for having both Billy Wright and Stan Cullis style leaders
-        billy_wright_leaders = len([leader for leader in potential_leaders if leader.get("potential_style") == "billy_wright"])
-        stan_cullis_leaders = len([leader for leader in potential_leaders if leader.get("potential_style") == "stan_cullis"])
+        billy_wright_leaders = len(
+            [
+                leader
+                for leader in potential_leaders
+                if leader.get("potential_style") == "billy_wright"
+            ]
+        )
+        stan_cullis_leaders = len(
+            [
+                leader
+                for leader in potential_leaders
+                if leader.get("potential_style") == "stan_cullis"
+            ]
+        )
 
         style_diversity_bonus = 0
         if billy_wright_leaders > 0 and stan_cullis_leaders > 0:
@@ -224,7 +256,9 @@ class LeadershipComplianceReporter:
 
         return min(100, (coverage_ratio * 80) + style_diversity_bonus)
 
-    def _identify_leadership_gaps(self, metrics: LeadershipComplianceMetrics, analysis: Dict) -> List[LeadershipGap]:
+    def _identify_leadership_gaps(
+        self, metrics: LeadershipComplianceMetrics, analysis: Dict
+    ) -> List[LeadershipGap]:
         """Identify specific gaps in leadership development"""
         gaps = []
 
@@ -255,8 +289,12 @@ class LeadershipComplianceReporter:
                 current_state=current_value,
                 target_state=values["target"],
                 affected_areas=self._identify_affected_areas(metric_name, analysis),
-                recommended_actions=self._recommend_actions_for_gap(metric_name, severity),
-                timeline=self._estimate_improvement_timeline(metric_name, severity, current_value),
+                recommended_actions=self._recommend_actions_for_gap(
+                    metric_name, severity
+                ),
+                timeline=self._estimate_improvement_timeline(
+                    metric_name, severity, current_value
+                ),
             )
             gaps.append(gap)
 
@@ -271,12 +309,16 @@ class LeadershipComplianceReporter:
     ) -> Dict[str, Any]:
         """Generate report content tailored to specific audience"""
 
-        template = self.audience_templates.get(audience, self.audience_templates["team"])
+        template = self.audience_templates.get(
+            audience, self.audience_templates["team"]
+        )
 
         report_content = {
             "audience": audience,
             "generated_at": datetime.now().isoformat(),
-            "executive_summary": self._generate_executive_summary(metrics, analysis, audience),
+            "executive_summary": self._generate_executive_summary(
+                metrics, analysis, audience
+            ),
             "key_metrics": self._format_key_metrics(metrics, template["detail_level"]),
             "leadership_landscape": self._describe_leadership_landscape(analysis),
             "critical_gaps": [gap for gap in gaps if gap.severity == "critical"],
@@ -285,19 +327,29 @@ class LeadershipComplianceReporter:
 
         # Add audience-specific sections
         if "detailed_metrics" in template["focus"]:
-            report_content["detailed_metrics"] = self._generate_detailed_metrics(metrics, analysis)
+            report_content["detailed_metrics"] = self._generate_detailed_metrics(
+                metrics, analysis
+            )
 
         if "individual_growth" in template["focus"]:
-            report_content["individual_profiles"] = self._generate_individual_summaries(analysis)
+            report_content["individual_profiles"] = self._generate_individual_summaries(
+                analysis
+            )
 
         if "risk_assessment" in template["focus"]:
-            report_content["risk_assessment"] = self._generate_risk_assessment(gaps, metrics)
+            report_content["risk_assessment"] = self._generate_risk_assessment(
+                gaps, metrics
+            )
 
         if "strategic_impact" in template["focus"]:
-            report_content["strategic_impact"] = self._generate_strategic_impact_analysis(metrics)
+            report_content["strategic_impact"] = (
+                self._generate_strategic_impact_analysis(metrics)
+            )
 
         if "succession_planning" in template["focus"]:
-            report_content["succession_planning"] = self._generate_succession_planning(analysis)
+            report_content["succession_planning"] = self._generate_succession_planning(
+                analysis
+            )
 
         return report_content
 
@@ -307,7 +359,9 @@ class LeadershipComplianceReporter:
         """Generate leadership-specific visualizations"""
 
         charts = {}
-        template = self.audience_templates.get(audience, self.audience_templates["team"])
+        template = self.audience_templates.get(
+            audience, self.audience_templates["team"]
+        )
 
         # Set up matplotlib style
         plt.style.use("seaborn-v0_8" if hasattr(plt, "style") else "default")
@@ -318,15 +372,21 @@ class LeadershipComplianceReporter:
 
         # Leadership Coverage Matrix
         if "leadership_coverage" in template["charts"]:
-            charts["leadership_coverage"] = self._create_leadership_coverage_chart(analysis)
+            charts["leadership_coverage"] = self._create_leadership_coverage_chart(
+                analysis
+            )
 
         # Development Pipeline Chart
         if "development_pipeline" in template["charts"]:
-            charts["development_pipeline"] = self._create_development_pipeline_chart(analysis)
+            charts["development_pipeline"] = self._create_development_pipeline_chart(
+                analysis
+            )
 
         # Leadership Maturity Progression
         if "leadership_maturity" in template["charts"]:
-            charts["leadership_maturity"] = self._create_maturity_progression_chart(metrics)
+            charts["leadership_maturity"] = self._create_maturity_progression_chart(
+                metrics
+            )
 
         # Growth Trends Chart
         if "growth_trends" in template["charts"]:
@@ -334,7 +394,9 @@ class LeadershipComplianceReporter:
 
         return charts
 
-    def _create_leadership_radar_chart(self, metrics: LeadershipComplianceMetrics) -> str:
+    def _create_leadership_radar_chart(
+        self, metrics: LeadershipComplianceMetrics
+    ) -> str:
         """Create radar chart showing leadership strengths across dimensions"""
 
         # Define the leadership dimensions
@@ -369,7 +431,9 @@ class LeadershipComplianceReporter:
         ax.fill(angles, values, alpha=0.25)
 
         # Add target performance line
-        target_values = [85] * len(dimensions) + [85]  # Target: 85% across all dimensions
+        target_values = [85] * len(dimensions) + [
+            85
+        ]  # Target: 85% across all dimensions
         ax.plot(angles, target_values, "r--", linewidth=1, label="Target Performance")
 
         # Customize the chart
@@ -401,9 +465,27 @@ class LeadershipComplianceReporter:
         potential_leaders = analysis.get("potential_leaders", [])
 
         # Count leaders by style
-        billy_wright_count = len([leader for leader in potential_leaders if leader.get("potential_style") == "billy_wright"])
-        stan_cullis_count = len([leader for leader in potential_leaders if leader.get("potential_style") == "stan_cullis"])
-        dual_legends_count = len([leader for leader in potential_leaders if leader.get("potential_style") == "dual_legend"])
+        billy_wright_count = len(
+            [
+                leader
+                for leader in potential_leaders
+                if leader.get("potential_style") == "billy_wright"
+            ]
+        )
+        stan_cullis_count = len(
+            [
+                leader
+                for leader in potential_leaders
+                if leader.get("potential_style") == "stan_cullis"
+            ]
+        )
+        dual_legends_count = len(
+            [
+                leader
+                for leader in potential_leaders
+                if leader.get("potential_style") == "dual_legend"
+            ]
+        )
 
         # Create coverage visualization
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
@@ -430,7 +512,9 @@ class LeadershipComplianceReporter:
                 autopct="%1.0f%%",
                 startangle=90,
             )
-            ax1.set_title("Leadership Style Distribution", fontsize=14, fontweight="bold")
+            ax1.set_title(
+                "Leadership Style Distribution", fontsize=14, fontweight="bold"
+            )
         else:
             ax1.text(
                 0.5,
@@ -441,7 +525,9 @@ class LeadershipComplianceReporter:
                 fontsize=16,
                 transform=ax1.transAxes,
             )
-            ax1.set_title("Leadership Style Distribution", fontsize=14, fontweight="bold")
+            ax1.set_title(
+                "Leadership Style Distribution", fontsize=14, fontweight="bold"
+            )
 
         # Leadership Development Pipeline (Bar Chart)
         team_size = len(analysis["leadership_data"].get("contributors", []))
@@ -503,7 +589,9 @@ class LeadershipComplianceReporter:
         )
 
         # Executive Summary
-        md_lines.extend(["## 📊 Executive Summary", "", content["executive_summary"], ""])
+        md_lines.extend(
+            ["## 📊 Executive Summary", "", content["executive_summary"], ""]
+        )
 
         # Key Metrics Dashboard
         if "key_metrics" in content:
@@ -516,7 +604,11 @@ class LeadershipComplianceReporter:
                 for metric_name, metric_data in metrics.items():
                     score = metric_data["score"]
                     status = metric_data["status"]
-                    status_icon = "✅" if status == "good" else "⚠️" if status == "warning" else "❌"
+                    status_icon = (
+                        "✅"
+                        if status == "good"
+                        else "⚠️" if status == "warning" else "❌"
+                    )
 
                     md_lines.append(f"**{metric_name}**: {status_icon} {score:.1f}%")
 
@@ -617,7 +709,11 @@ class LeadershipComplianceReporter:
                     + metrics.strategic_vision_alignment
                 )
                 / 3,
-                "status": ("healthy" if metrics.leadership_coverage_score > 70 else "needs_attention"),
+                "status": (
+                    "healthy"
+                    if metrics.leadership_coverage_score > 70
+                    else "needs_attention"
+                ),
                 "trend": "improving",  # This would come from historical data
             },
             "billy_wright_metrics": {
@@ -641,7 +737,9 @@ class LeadershipComplianceReporter:
 
         return dashboard_data
 
-    def _generate_leadership_alerts(self, metrics: LeadershipComplianceMetrics, analysis: Dict) -> List[Dict[str, str]]:
+    def _generate_leadership_alerts(
+        self, metrics: LeadershipComplianceMetrics, analysis: Dict
+    ) -> List[Dict[str, str]]:
         """Generate alerts for leadership issues requiring attention"""
         alerts = []
 
@@ -691,7 +789,9 @@ class LeadershipComplianceReporter:
 
         return alerts
 
-    def _generate_quick_actions(self, metrics: LeadershipComplianceMetrics, analysis: Dict) -> List[Dict[str, str]]:
+    def _generate_quick_actions(
+        self, metrics: LeadershipComplianceMetrics, analysis: Dict
+    ) -> List[Dict[str, str]]:
         """Generate quick actions for immediate leadership development"""
         actions = []
 
@@ -761,7 +861,9 @@ def cli():
     help="Export format",
 )
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
-@click.option("--include-charts/--no-charts", default=True, help="Include visualizations")
+@click.option(
+    "--include-charts/--no-charts", default=True, help="Include visualizations"
+)
 def generate(audience, export_format, output, include_charts):
     """Generate comprehensive leadership compliance report"""
 
@@ -814,7 +916,9 @@ def dashboard():
     click.echo("")
 
     pipeline = dashboard_data["leadership_pipeline"]
-    click.echo(f"👥 Leadership Pipeline: {pipeline['total_potential_leaders']} potential leaders")
+    click.echo(
+        f"👥 Leadership Pipeline: {pipeline['total_potential_leaders']} potential leaders"
+    )
     click.echo(f"👑 Legendary Progression: {pipeline['legendary_progression']:.1f}%")
     click.echo("")
 
@@ -823,7 +927,11 @@ def dashboard():
     if alerts:
         click.echo("🚨 Leadership Alerts:")
         for alert in alerts:
-            level_icon = "🚨" if alert["level"] == "critical" else "⚠️" if alert["level"] == "warning" else "ℹ️"
+            level_icon = (
+                "🚨"
+                if alert["level"] == "critical"
+                else "⚠️" if alert["level"] == "warning" else "ℹ️"
+            )
             click.echo(f"  {level_icon} {alert['message']}")
         click.echo("")
 
@@ -832,7 +940,11 @@ def dashboard():
     if actions:
         click.echo("⚡ Quick Actions:")
         for action in actions[:3]:  # Show top 3 actions
-            priority_icon = "🔴" if action["priority"] == "high" else "🟡" if action["priority"] == "medium" else "🟢"
+            priority_icon = (
+                "🔴"
+                if action["priority"] == "high"
+                else "🟡" if action["priority"] == "medium" else "🟢"
+            )
             click.echo(f"  {priority_icon} {action['title']}: {action['description']}")
 
 
@@ -858,7 +970,11 @@ def trends(days):
     for category in trend_categories:
         # Simulate trend data - in real implementation, this would come from
         # historical analysis
-        trend_direction = "📈" if hash(category) % 3 == 0 else "📉" if hash(category) % 3 == 1 else "➡️"
+        trend_direction = (
+            "📈"
+            if hash(category) % 3 == 0
+            else "📉" if hash(category) % 3 == 1 else "➡️"
+        )
         percentage_change = abs(hash(category) % 20) + 5
 
         click.echo(f"{trend_direction} {category}: {percentage_change}% change")

@@ -212,7 +212,8 @@ class AgentMigrator:
         full_description = " ".join(full_description_parts).strip()
         if not full_description:
             full_description = (
-                f"I am {agent.name.replace('_', ' ')}, " "a specialist agent focused on delivering excellence in my domain."
+                f"I am {agent.name.replace('_', ' ')}, "
+                "a specialist agent focused on delivering excellence in my domain."
             )
 
         # Build core competencies
@@ -232,7 +233,9 @@ class AgentMigrator:
             ]
 
         # Generate examples
-        examples = agent.existing_yaml.get("examples", []) if agent.existing_yaml else []
+        examples = (
+            agent.existing_yaml.get("examples", []) if agent.existing_yaml else []
+        )
         if not examples:
             # Generate a basic example
             examples = [
@@ -245,7 +248,9 @@ class AgentMigrator:
             ]
 
         # Determine color
-        color = agent.existing_yaml.get("color", "blue") if agent.existing_yaml else "blue"
+        color = (
+            agent.existing_yaml.get("color", "blue") if agent.existing_yaml else "blue"
+        )
 
         # Build the strict format template
         template = f"""---
@@ -379,7 +384,11 @@ Your core competencies include:"""
         for file_path in self.non_compliant_files:
             full_path = Path(file_path)
             if not full_path.exists():
-                results.append(MigrationResult(file_path=file_path, success=False, error="File not found"))
+                results.append(
+                    MigrationResult(
+                        file_path=file_path, success=False, error="File not found"
+                    )
+                )
                 continue
 
             print(f"Migrating {file_path}...")
@@ -401,7 +410,9 @@ Your core competencies include:"""
             "failed": len(failed),
             "success_rate": f"{(len(successful) / len(results) * 100):.1f}%",
             "backups_created": len([r for r in results if r.backup_path]),
-            "violations_fixed": sum(len(r.violations_fixed) for r in successful if r.violations_fixed),
+            "violations_fixed": sum(
+                len(r.violations_fixed) for r in successful if r.violations_fixed
+            ),
             "failed_files": [r.file_path for r in failed],
         }
 
@@ -409,7 +420,9 @@ Your core competencies include:"""
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Migrate agent files to strict template format")
+    parser = argparse.ArgumentParser(
+        description="Migrate agent files to strict template format"
+    )
     parser.add_argument(
         "--backup-dir",
         default="backups/agent-migration",

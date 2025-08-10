@@ -58,9 +58,16 @@ class FullGitHubValidator:
 
         # Critical errors check
         result = subprocess.run(
-            ["flake8", ".", "--count", "--select=E9,F63,F7,F82", "--show-source", "--statistics"],
+            [
+                "flake8",
+                ".",
+                "--count",
+                "--select=E9,F63,F7,F82",
+                "--show-source",
+                "--statistics",
+            ],
             capture_output=True,
-            text=True
+            text=True,
         )
 
         if result.returncode != 0:
@@ -74,14 +81,21 @@ class FullGitHubValidator:
 
         # Full check (informational)
         result = subprocess.run(
-            ["flake8", ".", "--count", "--exit-zero", "--max-complexity=10",
-             "--max-line-length=127", "--statistics"],
+            [
+                "flake8",
+                ".",
+                "--count",
+                "--exit-zero",
+                "--max-complexity=10",
+                "--max-line-length=127",
+                "--statistics",
+            ],
             capture_output=True,
-            text=True
+            text=True,
         )
 
         if result.stdout.strip():
-            lines = result.stdout.strip().split('\n')
+            lines = result.stdout.strip().split("\n")
             if lines[-1].isdigit():
                 count = int(lines[-1])
                 print(f"ℹ️  {count} code quality issues (informational only)")
@@ -107,9 +121,7 @@ class FullGitHubValidator:
 
             # yamllint check
             result = subprocess.run(
-                ["yamllint", "-d", "relaxed", yaml_file],
-                capture_output=True,
-                text=True
+                ["yamllint", "-d", "relaxed", yaml_file], capture_output=True, text=True
             )
 
             if result.returncode != 0:
@@ -121,8 +133,8 @@ class FullGitHubValidator:
                     try:
                         with open(yaml_file) as f:
                             config = yaml.safe_load(f)
-                        assert 'stages' in config, "Missing stages"
-                        assert 'validate:ai-sdlc' in config, "Missing validation job"
+                        assert "stages" in config, "Missing stages"
+                        assert "validate:ai-sdlc" in config, "Missing validation job"
                         print(f"✅ {yaml_file}: Valid")
                     except Exception as e:
                         print(f"❌ {yaml_file}: {e}")
@@ -150,7 +162,7 @@ class FullGitHubValidator:
         result = subprocess.run(
             ["python", "-m", "pytest", "tests/", "-v", "--tb=short"],
             capture_output=True,
-            text=True
+            text=True,
         )
 
         if result.returncode != 0:
@@ -169,9 +181,7 @@ class FullGitHubValidator:
 
         # Bandit for Python security
         result = subprocess.run(
-            ["bandit", "-r", ".", "-f", "json", "-ll"],
-            capture_output=True,
-            text=True
+            ["bandit", "-r", ".", "-f", "json", "-ll"], capture_output=True, text=True
         )
 
         if result.returncode != 0:
@@ -183,7 +193,11 @@ class FullGitHubValidator:
                 else:
                     print("✅ No security issues")
                     self.checks_results["security"] = "PASS"
-            except (subprocess.CalledProcessError, FileNotFoundError, json.JSONDecodeError):
+            except (
+                subprocess.CalledProcessError,
+                FileNotFoundError,
+                json.JSONDecodeError,
+            ):
                 print("✅ Security check completed")
                 self.checks_results["security"] = "PASS"
         else:
@@ -197,11 +211,7 @@ class FullGitHubValidator:
         print("-" * 40)
 
         # Check for known vulnerabilities
-        result = subprocess.run(
-            ["pip", "check"],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["pip", "check"], capture_output=True, text=True)
 
         if "No broken requirements found" in result.stdout or result.returncode == 0:
             print("✅ Dependencies OK")
@@ -223,9 +233,16 @@ class FullGitHubValidator:
             return
 
         result = subprocess.run(
-            ["python", str(validator), "--checks", "branch", "proposal", "retrospective"],
+            [
+                "python",
+                str(validator),
+                "--checks",
+                "branch",
+                "proposal",
+                "retrospective",
+            ],
             capture_output=True,
-            text=True
+            text=True,
         )
 
         if "VALIDATION PASSED" in result.stdout or result.returncode == 0:

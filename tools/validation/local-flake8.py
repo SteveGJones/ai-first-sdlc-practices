@@ -46,7 +46,14 @@ class LocalFlake8Validator:
         print("\n1️⃣ Critical Errors Check (E9,F63,F7,F82):")
         print("-" * 40)
         result1 = self._run_flake8_command(
-            ["flake8", ".", "--count", "--select=E9,F63,F7,F82", "--show-source", "--statistics"]
+            [
+                "flake8",
+                ".",
+                "--count",
+                "--select=E9,F63,F7,F82",
+                "--show-source",
+                "--statistics",
+            ]
         )
         if result1[0] != 0:
             all_passed = False
@@ -60,7 +67,15 @@ class LocalFlake8Validator:
         print("\n2️⃣ Full Check (max-complexity=10, max-line-length=127):")
         print("-" * 40)
         result2 = self._run_flake8_command(
-            ["flake8", ".", "--count", "--exit-zero", "--max-complexity=10", "--max-line-length=127", "--statistics"]
+            [
+                "flake8",
+                ".",
+                "--count",
+                "--exit-zero",
+                "--max-complexity=10",
+                "--max-line-length=127",
+                "--statistics",
+            ]
         )
 
         # Parse and categorize violations
@@ -78,7 +93,15 @@ class LocalFlake8Validator:
         print("\n3️⃣ Comprehensive Check (max-complexity=15):")
         print("-" * 40)
         result3 = self._run_flake8_command(
-            ["flake8", ".", "--count", "--exit-zero", "--max-complexity=15", "--max-line-length=127", "--statistics"]
+            [
+                "flake8",
+                ".",
+                "--count",
+                "--exit-zero",
+                "--max-complexity=15",
+                "--max-line-length=127",
+                "--statistics",
+            ]
         )
 
         if result3[1].strip():
@@ -86,7 +109,9 @@ class LocalFlake8Validator:
             comprehensive_count = self._count_violations(result3[1])
             standard_count = self._count_violations(result2[1])
             if comprehensive_count < standard_count:
-                print(f"ℹ️  Less strict check found {comprehensive_count} issues (vs {standard_count})")
+                print(
+                    f"ℹ️  Less strict check found {comprehensive_count} issues (vs {standard_count})"
+                )
         else:
             print("✅ No issues in comprehensive check")
 
@@ -95,7 +120,9 @@ class LocalFlake8Validator:
     def _run_flake8_command(self, cmd: List[str]) -> Tuple[int, str]:
         """Run a flake8 command and return exit code and output"""
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.project_root)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=self.project_root
+            )
             return result.returncode, result.stdout + result.stderr
         except FileNotFoundError:
             return 1, "Error: flake8 not installed. Run: pip install flake8"
@@ -170,7 +197,13 @@ class LocalFlake8Validator:
         if self.violations["F401"]:
             print("\n📦 Fixing F401 (unused imports)...")
             result = subprocess.run(
-                ["autoflake", "--in-place", "--remove-all-unused-imports", "--recursive", "."],
+                [
+                    "autoflake",
+                    "--in-place",
+                    "--remove-all-unused-imports",
+                    "--recursive",
+                    ".",
+                ],
                 capture_output=True,
                 text=True,
                 cwd=self.project_root,
@@ -193,7 +226,11 @@ class LocalFlake8Validator:
 
         # Apply black and autopep8 for other issues
         print("\n🎨 Applying black and autopep8...")
-        subprocess.run(["black", ".", "--line-length", "127"], capture_output=True, cwd=self.project_root)
+        subprocess.run(
+            ["black", ".", "--line-length", "127"],
+            capture_output=True,
+            cwd=self.project_root,
+        )
         subprocess.run(
             ["autopep8", "--in-place", "--recursive", "--max-line-length", "127", "."],
             capture_output=True,
@@ -220,8 +257,16 @@ class LocalFlake8Validator:
             import re
 
             # Simple pattern - may need refinement
-            content = re.sub(r'"([^"]*)"', lambda m: f'"{m.group(1)}"' if "{" not in m.group(1) else m.group(0), content)
-            content = re.sub(r"'([^']*)'", lambda m: f"'{m.group(1)}'" if "{" not in m.group(1) else m.group(0), content)
+            content = re.sub(
+                r'"([^"]*)"',
+                lambda m: f'"{m.group(1)}"' if "{" not in m.group(1) else m.group(0),
+                content,
+            )
+            content = re.sub(
+                r"'([^']*)'",
+                lambda m: f"'{m.group(1)}'" if "{" not in m.group(1) else m.group(0),
+                content,
+            )
 
             with open(file_path, "w") as f:
                 f.write(content)

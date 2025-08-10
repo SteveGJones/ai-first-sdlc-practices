@@ -18,7 +18,9 @@ from collections import defaultdict
 class TechnicalDebtDetector:
     """Detects all forms of technical debt in a codebase"""
 
-    def __init__(self, project_root: Optional[Path] = None, context: str = "application"):
+    def __init__(
+        self, project_root: Optional[Path] = None, context: str = "application"
+    ):
         self.project_root = project_root or Path.cwd()
         self.debt_items = defaultdict(list)
         self.file_count = 0
@@ -82,7 +84,9 @@ class TechnicalDebtDetector:
             # defaults
             lines = getattr(self, "total_lines", 0) or 34542
             files = getattr(self, "files_scanned", 0) or 71
-            magic_number_limit = int(lines * 0.11 * (1 + 0.2 * math.log10(max(1, files))) * 0.95)
+            magic_number_limit = int(
+                lines * 0.11 * (1 + 0.2 * math.log10(max(1, files))) * 0.95
+            )
 
             return {
                 "security_issues": 0,  # Zero tolerance
@@ -157,7 +161,9 @@ class TechnicalDebtDetector:
 
         # Auto-adjust context based on file distribution
         if self.context == "application" and framework_files > application_files * 0.5:
-            print(f"🏗️  Auto-detected Framework Context ({framework_files} framework files)")
+            print(
+                f"🏗️  Auto-detected Framework Context ({framework_files} framework files)"
+            )
             self.context = "framework"
             self.thresholds = self._get_thresholds()
 
@@ -199,7 +205,10 @@ class TechnicalDebtDetector:
         for line_no, line in enumerate(lines, 1):
             # Skip strings that contain TODO as part of normal text (like "todo
             # app")
-            if any(marker in line for marker in ['"todo', "'todo", "todo app", "Todo App", "TODO App"]):
+            if any(
+                marker in line
+                for marker in ['"todo', "'todo", "todo app", "Todo App", "TODO App"]
+            ):
                 continue
 
             match = todo_pattern.search(line)
@@ -210,11 +219,17 @@ class TechnicalDebtDetector:
                         "line": line_no,
                         "type": match.group(1).upper(),
                         "message": match.group(2).strip(),
-                        "severity": ("high" if match.group(1).upper() in ["BUG", "FIXME"] else "medium"),
+                        "severity": (
+                            "high"
+                            if match.group(1).upper() in ["BUG", "FIXME"]
+                            else "medium"
+                        ),
                     }
                 )
 
-    def _check_commented_code(self, file_path: Path, lines: List[str], suffix: str) -> None:
+    def _check_commented_code(
+        self, file_path: Path, lines: List[str], suffix: str
+    ) -> None:
         """Check for commented-out code"""
         comment_patterns = {
             ".py": (
@@ -332,7 +347,9 @@ class TechnicalDebtDetector:
         elif suffix == ".py":
             # Check for functions without return type hints
             func_pattern = re.compile(r"^\s*def\s+(\w+)\s*\([^)]*\)\s*:", re.MULTILINE)
-            typed_func_pattern = re.compile(r"^\s*def\s+(\w+)\s*\([^)]*\)\s*->\s*[^:]+:", re.MULTILINE)
+            typed_func_pattern = re.compile(
+                r"^\s*def\s+(\w+)\s*\([^)]*\)\s*->\s*[^:]+:", re.MULTILINE
+            )
 
             all_funcs = func_pattern.findall(content)
             typed_funcs = typed_func_pattern.findall(content)
@@ -669,7 +686,9 @@ class TechnicalDebtDetector:
             if policy_violations == 0:
                 print(f"✅ {self.context.title()} Policy: COMPLIANT")
             else:
-                print(f"❌ {self.context.title()} Policy: {policy_violations} violations")
+                print(
+                    f"❌ {self.context.title()} Policy: {policy_violations} violations"
+                )
             print()
 
             if total_issues == 0:
@@ -787,7 +806,9 @@ class TechnicalDebtDetector:
         elif "code" in item:
             return f"Commented: {item['code'][:50]}..."
         elif "function" in item:
-            return f"Function '{item['function']}': {item.get('issue', 'issue detected')}"
+            return (
+                f"Function '{item['function']}': {item.get('issue', 'issue detected')}"
+            )
         else:
             return "Issue detected"
 
@@ -825,7 +846,9 @@ class TechnicalDebtDetector:
             if count > threshold:
                 violations += count - threshold
                 if self.context == "framework":
-                    print(f"  ⚠️  {category}: {count}/{threshold} (over by {count - threshold})")
+                    print(
+                        f"  ⚠️  {category}: {count}/{threshold} (over by {count - threshold})"
+                    )
                 else:
                     print(f"  ❌ {category}: {count} (Zero Tolerance Policy)")
 
@@ -833,8 +856,12 @@ class TechnicalDebtDetector:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Detect technical debt in your codebase")
-    parser.add_argument("path", nargs="?", default=".", help="Path to scan (default: current directory)")
+    parser = argparse.ArgumentParser(
+        description="Detect technical debt in your codebase"
+    )
+    parser.add_argument(
+        "path", nargs="?", default=".", help="Path to scan (default: current directory)"
+    )
     parser.add_argument(
         "--format",
         choices=["console", "json", "markdown"],

@@ -17,7 +17,9 @@ import importlib.util
 script_dir = Path(__file__).parent
 sys.path.insert(0, str(script_dir))
 
-spec = importlib.util.spec_from_file_location("validate_pipeline", script_dir / "validate-pipeline.py")
+spec = importlib.util.spec_from_file_location(
+    "validate_pipeline", script_dir / "validate-pipeline.py"
+)
 if spec and spec.loader:
     validate_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(validate_module)
@@ -73,7 +75,9 @@ class ProgressiveValidationPipeline(ValidationPipeline):
     def __init__(self, project_root: Optional[Path] = None, level: str = "production"):
         super().__init__(project_root)
         self.level = level
-        self.level_config = self.LEVEL_CHECKS.get(level, self.LEVEL_CHECKS["production"])
+        self.level_config = self.LEVEL_CHECKS.get(
+            level, self.LEVEL_CHECKS["production"]
+        )
 
     def detect_project_level(self) -> str:
         """Detect project level from configuration or analysis"""
@@ -92,7 +96,9 @@ class ProgressiveValidationPipeline(ValidationPipeline):
         # Otherwise default to production
         return "production"
 
-    def run_validation(self, checks: Optional[List[str]] = None, strict: bool = False) -> bool:
+    def run_validation(
+        self, checks: Optional[List[str]] = None, strict: bool = False
+    ) -> bool:
         """Run level-appropriate validation checks"""
         # Check SDLC gate requirements first
         gate_passed = self._check_sdlc_gates()
@@ -166,7 +172,9 @@ class ProgressiveValidationPipeline(ValidationPipeline):
         arch_dir = self.project_root / "docs" / "architecture"
         if arch_dir.exists() and any(arch_dir.iterdir()):
             recent_arch = any(
-                f.stat().st_mtime > (datetime.now().timestamp() - 3600) for f in arch_dir.iterdir() if f.is_file()
+                f.stat().st_mtime > (datetime.now().timestamp() - 3600)
+                for f in arch_dir.iterdir()
+                if f.is_file()
             )
             if recent_arch:
                 return "design"
@@ -247,7 +255,9 @@ class ProgressiveValidationPipeline(ValidationPipeline):
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Progressive AI-First SDLC Validation Pipeline")
+    parser = argparse.ArgumentParser(
+        description="Progressive AI-First SDLC Validation Pipeline"
+    )
     parser.add_argument(
         "--level",
         choices=["prototype", "production", "enterprise"],
@@ -258,10 +268,16 @@ def main() -> None:
         nargs="+",
         help="Specific checks to run (default: level-appropriate)",
     )
-    parser.add_argument("--strict", action="store_true", help="Run only required checks for the level")
-    parser.add_argument("--export", choices=["json", "markdown"], help="Export results to format")
+    parser.add_argument(
+        "--strict", action="store_true", help="Run only required checks for the level"
+    )
+    parser.add_argument(
+        "--export", choices=["json", "markdown"], help="Export results to format"
+    )
     parser.add_argument("--output", help="Output file for export (default: stdout)")
-    parser.add_argument("--ci", action="store_true", help="CI mode - exit with error code on failures")
+    parser.add_argument(
+        "--ci", action="store_true", help="CI mode - exit with error code on failures"
+    )
 
     args = parser.parse_args()
 
@@ -275,13 +291,19 @@ def main() -> None:
         pipeline.level = pipeline.detect_project_level()
 
     # Update level config
-    pipeline.level_config = pipeline.LEVEL_CHECKS.get(pipeline.level, pipeline.LEVEL_CHECKS["production"])
+    pipeline.level_config = pipeline.LEVEL_CHECKS.get(
+        pipeline.level, pipeline.LEVEL_CHECKS["production"]
+    )
 
     # Run validation
     success = pipeline.run_validation()
     # Export if requested
     if args.export:
-        output = pipeline.export_results(args.export) if hasattr(pipeline, "export_results") else ""
+        output = (
+            pipeline.export_results(args.export)
+            if hasattr(pipeline, "export_results")
+            else ""
+        )
 
         if args.output:
             with open(args.output, "w") as f:

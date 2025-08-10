@@ -61,7 +61,8 @@ class AgenticSDLCCoach:
         if not all(available.values()):
             missing = [k for k, v in available.items() if not v]
             raise RuntimeError(
-                f"BLOCKED: Missing framework tools: {missing}\n" "Run: python tools/setup.py to install framework"
+                f"BLOCKED: Missing framework tools: {missing}\n"
+                "Run: python tools/setup.py to install framework"
             )
 
         return required_tools
@@ -119,21 +120,27 @@ class AgenticSDLCCoach:
         print("-" * 40)
         arch_status = self._enforce_architecture_documents()
         if not arch_status["complete"]:
-            return self._block_development(f"Missing architecture docs: {arch_status['missing']}")
+            return self._block_development(
+                f"Missing architecture docs: {arch_status['missing']}"
+            )
 
         # Step 3: Technical Debt
         print("\n🚫 STEP 3: Zero Technical Debt Check")
         print("-" * 40)
         debt_status = self._check_technical_debt()
         if debt_status["violations"] > 0:
-            return self._block_development(f"Technical debt found: {debt_status['details']}")
+            return self._block_development(
+                f"Technical debt found: {debt_status['details']}"
+            )
 
         # Step 4: Agents
         print("\n🤖 STEP 4: Agent Discovery and Validation")
         print("-" * 40)
         team = self._discover_and_validate_agents(description)
         if not team["valid"]:
-            return self._block_development(f"Invalid team composition: {team['issues']}")
+            return self._block_development(
+                f"Invalid team composition: {team['issues']}"
+            )
 
         # Step 5-7: Setup steps
         gates = self._run_setup_steps(description)
@@ -164,7 +171,9 @@ class AgenticSDLCCoach:
 
         return {"gates": gates, "tracking": tracking, "retrospective": retro_path}
 
-    def _build_success_response(self, proposal, arch, team, gates, tracking, retro, desc) -> Dict:
+    def _build_success_response(
+        self, proposal, arch, team, gates, tracking, retro, desc
+    ) -> Dict:
         """Build the success response"""
         return {
             "status": "AUTHORIZED",
@@ -246,11 +255,15 @@ class AgenticSDLCCoach:
 
         if missing:
             print(f"❌ Missing architecture documents: {missing}")
-            print(f"   Run: python {self.framework_tools['architecture_validator']} --strict")
+            print(
+                f"   Run: python {self.framework_tools['architecture_validator']} --strict"
+            )
             return {"complete": False, "missing": missing}
 
         # Validate architecture
-        result = self._run_validation_tool(self.framework_tools["architecture_validator"], "--strict")
+        result = self._run_validation_tool(
+            self.framework_tools["architecture_validator"], "--strict"
+        )
 
         if not result["success"]:
             print("❌ Architecture validation failed")
@@ -262,7 +275,9 @@ class AgenticSDLCCoach:
 
     def _check_technical_debt(self) -> Dict:
         """Zero tolerance for technical debt"""
-        result = self._run_validation_tool(self.framework_tools["debt_checker"], "--threshold", "0")
+        result = self._run_validation_tool(
+            self.framework_tools["debt_checker"], "--threshold", "0"
+        )
 
         if not result["success"]:
             violations = self._parse_debt_violations(result["output"])
@@ -321,7 +336,9 @@ class AgenticSDLCCoach:
 
         agents = []
         for agent_file in cat_dir.glob("*.md"):
-            agents.append({"name": agent_file.stem, "category": category, "path": agent_file})
+            agents.append(
+                {"name": agent_file.stem, "category": category, "path": agent_file}
+            )
         return agents
 
     def _select_optimal_team(self, description: str, available_agents: List) -> Dict:

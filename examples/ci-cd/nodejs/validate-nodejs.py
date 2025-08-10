@@ -15,7 +15,9 @@ def run_command(name: str, cmd: list, working_dir: str = None) -> bool:
     """Run a command and return success status"""
     print(f"\n🔍 Running {name}...")
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, cwd=working_dir, check=False)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, cwd=working_dir, check=False
+        )
 
         if result.returncode != 0:
             print(f"❌ {name} FAILED")
@@ -121,7 +123,9 @@ def main() -> None:
     if Path("package-lock.json").exists() or Path("yarn.lock").exists():
         print("\n📦 Installing dependencies...")
         if Path("yarn.lock").exists():
-            if not run_command("Yarn Install", ["yarn", "install", "--frozen-lockfile"]):
+            if not run_command(
+                "Yarn Install", ["yarn", "install", "--frozen-lockfile"]
+            ):
                 errors += 1
         else:
             if not run_command("NPM Install", ["npm", "ci"]):

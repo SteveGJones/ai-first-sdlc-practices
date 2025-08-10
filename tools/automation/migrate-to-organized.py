@@ -145,8 +145,12 @@ class FrameworkMigrator:
             else:
                 # Move file or entire directory
                 shutil.move(str(src), str(dst))
-                self.moved_files.append(f"{src.relative_to(self.project_root)} → {dst.relative_to(self.project_root)}")
-                print(f"✅ Moved: {src.relative_to(self.project_root)} → {dst.relative_to(self.project_root)}")
+                self.moved_files.append(
+                    f"{src.relative_to(self.project_root)} → {dst.relative_to(self.project_root)}"
+                )
+                print(
+                    f"✅ Moved: {src.relative_to(self.project_root)} → {dst.relative_to(self.project_root)}"
+                )
         except Exception as e:
             error_msg = f"Failed to move {src}: {e}"
             self.errors.append(error_msg)
@@ -178,7 +182,9 @@ echo "Created: docs/feature-proposals/$(date +%y)-$1.md"
             if not script_path.exists():
                 with open(script_path, "w") as f:
                     f.write(content)
-                os.chmod(script_path, 0o700)  # rwx------ (owner only: read, write, execute)
+                os.chmod(
+                    script_path, 0o700
+                )  # rwx------ (owner only: read, write, execute)
                 print(f"✅ Created sdlc-tools/{name}")
 
         # Remove old scripts from root if they exist
@@ -360,14 +366,18 @@ Part of the [AI-First SDLC Framework](https://github.com/SteveGJones/ai-first-sd
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Migrate existing AI-First SDLC installation to organized structure")
+    parser = argparse.ArgumentParser(
+        description="Migrate existing AI-First SDLC installation to organized structure"
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Show what would be moved without making changes",
     )
     parser.add_argument("--execute", action="store_true", help="Perform the migration")
-    parser.add_argument("--project-root", type=Path, default=Path.cwd(), help="Project root directory")
+    parser.add_argument(
+        "--project-root", type=Path, default=Path.cwd(), help="Project root directory"
+    )
 
     args = parser.parse_args()
 

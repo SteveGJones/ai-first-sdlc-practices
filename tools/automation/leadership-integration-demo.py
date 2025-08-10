@@ -89,35 +89,48 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         # Simulate crisis leadership moments
-        crisis_moments = [{"situation": "Production database failure during peak traffic",
-                           "action": ("Immediately coordinated emergency response, delegated tasks, "
-                                     "and implemented hotfix within 30 minutes"),
-                           "impact": 95,
-                           "team_response": "Team rallied around Alex's calm leadership and clear direction",
-                           "lessons": ["Emergency protocols worked",
-                                        "Team coordination improved",
-                                        "Need better monitoring",
-                                       ],
-                           },
-                          {"situation": "Critical security vulnerability discovered in production",
-                           "action": ("Led rapid response team, communicated with stakeholders, "
-                                     "and deployed patch within 2 hours"),
-                           "impact": 90,
-                           "team_response": "Stakeholders praised clear communication and quick resolution",
-                           "lessons": ["Security scanning automation needed",
-                                       "Communication protocols effective",
-                                       ],
-                           },
-                          {"situation": "New team member struggling with complex legacy code",
-                           "action": ("Pair programmed while under pressure, taught debugging techniques, "
-                                     "and delivered on time"),
-                           "impact": 85,
-                           "team_response": "New team member gained confidence and skills",
-                           "lessons": ["Mentoring under pressure is effective",
-                                       "Documentation needs improvement",
-                                       ],
-                           },
-                          ]
+        crisis_moments = [
+            {
+                "situation": "Production database failure during peak traffic",
+                "action": (
+                    "Immediately coordinated emergency response, delegated tasks, "
+                    "and implemented hotfix within 30 minutes"
+                ),
+                "impact": 95,
+                "team_response": "Team rallied around Alex's calm leadership and clear direction",
+                "lessons": [
+                    "Emergency protocols worked",
+                    "Team coordination improved",
+                    "Need better monitoring",
+                ],
+            },
+            {
+                "situation": "Critical security vulnerability discovered in production",
+                "action": (
+                    "Led rapid response team, communicated with stakeholders, "
+                    "and deployed patch within 2 hours"
+                ),
+                "impact": 90,
+                "team_response": "Stakeholders praised clear communication and quick resolution",
+                "lessons": [
+                    "Security scanning automation needed",
+                    "Communication protocols effective",
+                ],
+            },
+            {
+                "situation": "New team member struggling with complex legacy code",
+                "action": (
+                    "Pair programmed while under pressure, taught debugging techniques, "
+                    "and delivered on time"
+                ),
+                "impact": 85,
+                "team_response": "New team member gained confidence and skills",
+                "lessons": [
+                    "Mentoring under pressure is effective",
+                    "Documentation needs improvement",
+                ],
+            },
+        ]
 
         click.echo("📋 Recent Leadership Moments:")
         click.echo("")
@@ -143,12 +156,16 @@ class LeadershipDemoScenarios:
             )
 
         # Calculate Billy Wright metrics
-        billy_wright_score = sum(m["impact"] for m in crisis_moments) / len(crisis_moments)
+        billy_wright_score = sum(m["impact"] for m in crisis_moments) / len(
+            crisis_moments
+        )
 
         click.echo("⚽ Billy Wright Leadership Assessment:")
         click.echo(f"   Crisis Response Score: {billy_wright_score:.1f}/100")
         click.echo("   Leadership Style: Execution-Focused")
-        click.echo("   Key Strengths: Real-time decision making, team rallying, technical expertise")
+        click.echo(
+            "   Key Strengths: Real-time decision making, team rallying, technical expertise"
+        )
         click.echo("   Development Area: Strategic long-term planning")
         click.echo("")
 
@@ -180,38 +197,53 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         # Simulate strategic leadership moments
-        strategic_moments = [{"situation": "Team struggling with technical debt and delivery velocity",
-                              "action": ("Developed 6-month architecture modernization roadmap, "
-                                        "identified key talent development needs"),
-                              "impact": 90,
-                              "team_response": "Team excited about clear vision and growth opportunities",
-                              "lessons": ["Architecture decisions impact velocity",
-                                           "Team needs growth paths",
-                                           "Process improvements needed",
-                                          ],
-                              },
-                             {"situation": "Junior developers lacking advanced skills",
-                              "action": ("Created mentorship program, paired experienced developers with juniors, "
-                                        "established learning goals"),
-                              "impact": 88,
-                              "team_response": "Junior developers showed rapid skill improvement and increased confidence",
-                              "lessons": ["Structured mentoring works",
-                                          "Growth tracking important",
-                                          "Knowledge sharing improves team",
-                                          ],
-                              },
-                             {"situation": "Cross-team coordination challenges affecting delivery",
-                              "action": ("Designed new integration patterns, established team communication protocols, "
-                                        "created shared standards"),
-                              "impact": 85,
-                              "team_response": ("Other teams adopted the coordination model, "
-                                               "delivery improved across organization"),
-                              "lessons": ["System thinking prevents problems",
-                                          "Standards enable scale",
-                                          "Communication is critical",
-                                          ],
-                              },
-                             ]
+        strategic_moments = [
+            {
+                "situation": "Team struggling with technical debt and delivery velocity",
+                "action": (
+                    "Developed 6-month architecture modernization roadmap, "
+                    "identified key talent development needs"
+                ),
+                "impact": 90,
+                "team_response": "Team excited about clear vision and growth opportunities",
+                "lessons": [
+                    "Architecture decisions impact velocity",
+                    "Team needs growth paths",
+                    "Process improvements needed",
+                ],
+            },
+            {
+                "situation": "Junior developers lacking advanced skills",
+                "action": (
+                    "Created mentorship program, paired experienced developers with juniors, "
+                    "established learning goals"
+                ),
+                "impact": 88,
+                "team_response": "Junior developers showed rapid skill improvement and increased confidence",
+                "lessons": [
+                    "Structured mentoring works",
+                    "Growth tracking important",
+                    "Knowledge sharing improves team",
+                ],
+            },
+            {
+                "situation": "Cross-team coordination challenges affecting delivery",
+                "action": (
+                    "Designed new integration patterns, established team communication protocols, "
+                    "created shared standards"
+                ),
+                "impact": 85,
+                "team_response": (
+                    "Other teams adopted the coordination model, "
+                    "delivery improved across organization"
+                ),
+                "lessons": [
+                    "System thinking prevents problems",
+                    "Standards enable scale",
+                    "Communication is critical",
+                ],
+            },
+        ]
 
         click.echo("📋 Recent Leadership Moments:")
         click.echo("")
@@ -237,12 +269,16 @@ class LeadershipDemoScenarios:
             )
 
         # Calculate Stan Cullis metrics
-        stan_cullis_score = sum(m["impact"] for m in strategic_moments) / len(strategic_moments)
+        stan_cullis_score = sum(m["impact"] for m in strategic_moments) / len(
+            strategic_moments
+        )
 
         click.echo("🧠 Stan Cullis Leadership Assessment:")
         click.echo(f"   Strategic Vision Score: {stan_cullis_score:.1f}/100")
         click.echo("   Leadership Style: Vision-Focused")
-        click.echo("   Key Strengths: Long-term planning, talent development, system design")
+        click.echo(
+            "   Key Strengths: Long-term planning, talent development, system design"
+        )
         click.echo("   Development Area: Crisis response and real-time decisions")
         click.echo("")
 
@@ -335,7 +371,9 @@ class LeadershipDemoScenarios:
             click.echo("")
             click.echo("🏆 Marcus Johnson Hall of Fame Entry:")
             click.echo("   • First team member to achieve dual legend status")
-            click.echo("   • Demonstrates both execution excellence and strategic vision")
+            click.echo(
+                "   • Demonstrates both execution excellence and strategic vision"
+            )
             click.echo("   • Mentors others in developing balanced leadership")
             click.echo("   • Sets the standard for complete AI-First SDLC leadership")
             click.echo("")
@@ -372,14 +410,22 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         total_billy_wright = (
-            alex_result["score"] + sarah_result.get("billy_wright_score", 70) + marcus_result["billy_wright_score"]
+            alex_result["score"]
+            + sarah_result.get("billy_wright_score", 70)
+            + marcus_result["billy_wright_score"]
         ) / 3
         total_stan_cullis = (
-            alex_result.get("stan_cullis_score", 60) + sarah_result["score"] + marcus_result["stan_cullis_score"]
+            alex_result.get("stan_cullis_score", 60)
+            + sarah_result["score"]
+            + marcus_result["stan_cullis_score"]
         ) / 3
 
-        click.echo(f"⚽ Team Billy Wright (Execution) Average: {total_billy_wright:.1f}/100")
-        click.echo(f"🧠 Team Stan Cullis (Strategic) Average: {total_stan_cullis:.1f}/100")
+        click.echo(
+            f"⚽ Team Billy Wright (Execution) Average: {total_billy_wright:.1f}/100"
+        )
+        click.echo(
+            f"🧠 Team Stan Cullis (Strategic) Average: {total_stan_cullis:.1f}/100"
+        )
         click.echo("")
 
         # Leadership distribution
@@ -423,7 +469,9 @@ class LeadershipDemoScenarios:
             maturity_level = "Emerging Leadership"
             maturity_icon = "🌱"
 
-        click.echo(f"{maturity_icon} Team Leadership Maturity: {maturity_level} ({overall_maturity:.1f}/100)")
+        click.echo(
+            f"{maturity_icon} Team Leadership Maturity: {maturity_level} ({overall_maturity:.1f}/100)"
+        )
         click.echo("")
 
         return {
@@ -454,7 +502,9 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         click.echo("⚠️  SIMULATED CRISIS SCENARIO")
-        click.echo("Critical production system failure during Black Friday peak traffic")
+        click.echo(
+            "Critical production system failure during Black Friday peak traffic"
+        )
         click.echo("Multiple systems affected, customer transactions failing")
         click.echo("Revenue impact: $10,000/minute")
         click.echo("")
@@ -518,27 +568,41 @@ class LeadershipDemoScenarios:
         click.echo("📈 Crisis Leadership Analysis:")
         click.echo("")
 
-        total_leadership_score = sum(e["leadership_score"] for e in crisis_timeline) / len(crisis_timeline)
+        total_leadership_score = sum(
+            e["leadership_score"] for e in crisis_timeline
+        ) / len(crisis_timeline)
 
         click.echo(f"Overall Crisis Response Score: {total_leadership_score:.1f}/100")
         click.echo("")
         click.echo("🏆 Leadership Highlights:")
-        click.echo("   • Billy Wright leader excelled in immediate response and team coordination")
-        click.echo("   • Stan Cullis leader managed stakeholder communication and strategic response")
-        click.echo("   • Dual Legend leader bridged tactical and strategic responses effectively")
-        click.echo("   • Team demonstrated complementary leadership styles under pressure")
+        click.echo(
+            "   • Billy Wright leader excelled in immediate response and team coordination"
+        )
+        click.echo(
+            "   • Stan Cullis leader managed stakeholder communication and strategic response"
+        )
+        click.echo(
+            "   • Dual Legend leader bridged tactical and strategic responses effectively"
+        )
+        click.echo(
+            "   • Team demonstrated complementary leadership styles under pressure"
+        )
         click.echo("")
 
         click.echo("📚 Leadership Lessons Learned:")
         click.echo("   • Crisis reveals true leadership capabilities")
-        click.echo("   • Different leadership styles are needed at different crisis stages")
+        click.echo(
+            "   • Different leadership styles are needed at different crisis stages"
+        )
         click.echo("   • Dual legend leaders can switch between styles as needed")
         click.echo("   • Team leadership distribution provides resilience")
         click.echo("")
 
         if total_leadership_score >= 90:
             click.echo("🎉 TEAM ACHIEVEMENT: Legendary Crisis Response!")
-            click.echo("   Your team demonstrates world-class leadership under pressure")
+            click.echo(
+                "   Your team demonstrates world-class leadership under pressure"
+            )
             click.echo("")
 
         return {

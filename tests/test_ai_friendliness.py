@@ -172,7 +172,9 @@ class TestAIFriendlyTemplates(unittest.TestCase):
             self.assertIn(element, content, f"Missing structure element: {element}")
 
         # Should have placeholders that are clear
-        self.assertGreater(content.count("["), 20, "Template should have clear placeholders")
+        self.assertGreater(
+            content.count("["), 20, "Template should have clear placeholders"
+        )
 
     def test_implementation_plan_template(self) -> None:
         """Test implementation plan template provides clear task structure"""

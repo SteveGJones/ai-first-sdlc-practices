@@ -20,7 +20,9 @@ class SDLCGateEnforcer:
 
     def __init__(self, project_path: Path = None):
         self.project_path = project_path or Path.cwd()
-        self.gates_config_file = self.project_path / ".sdlc" / "config" / "sdlc-gates.yaml"
+        self.gates_config_file = (
+            self.project_path / ".sdlc" / "config" / "sdlc-gates.yaml"
+        )
         self.gate_status_file = self.project_path / ".sdlc" / "gate-status.json"
         self.level_file = self.project_path / ".sdlc" / "level.json"
         self.gates_config = self._load_gates_config()
@@ -86,7 +88,9 @@ class SDLCGateEnforcer:
         gate_config = self.gates_config.get("gates", {}).get(gate_name, {}).copy()
 
         # Apply level-specific overrides
-        level_overrides = self.gates_config.get("level_overrides", {}).get(self.current_level, {})
+        level_overrides = self.gates_config.get("level_overrides", {}).get(
+            self.current_level, {}
+        )
         for key, value in level_overrides.items():
             gate_config[key] = value
 
@@ -157,7 +161,9 @@ class SDLCGateEnforcer:
             return True  # Unknown checks pass by default
 
         try:
-            result = subprocess.run(cmd.split(), capture_output=True, cwd=self.project_path)
+            result = subprocess.run(
+                cmd.split(), capture_output=True, cwd=self.project_path
+            )
             return result.returncode == 0
         except Exception:
             return False
@@ -188,16 +194,24 @@ class SDLCGateEnforcer:
         consensus_type = gate_config.get("consensus_type", "all")
 
         if consensus_type == "all":
-            if all(agent in status[gate_name]["approvals"] for agent in required_agents):
+            if all(
+                agent in status[gate_name]["approvals"] for agent in required_agents
+            ):
                 status[gate_name]["status"] = "approved"
         elif consensus_type == "majority":
-            approved_count = sum(1 for agent in required_agents if agent in status[gate_name]["approvals"])
+            approved_count = sum(
+                1
+                for agent in required_agents
+                if agent in status[gate_name]["approvals"]
+            )
             if approved_count > len(required_agents) / 2:
                 status[gate_name]["status"] = "approved"
 
         self._save_gate_status(status)
 
-    def can_proceed_to_next_phase(self, current_phase: str, next_phase: str) -> Tuple[bool, List[str]]:
+    def can_proceed_to_next_phase(
+        self, current_phase: str, next_phase: str
+    ) -> Tuple[bool, List[str]]:
         """Check if progression to next phase is allowed."""
         # Define phase progression order
         phase_order = [
@@ -235,7 +249,11 @@ class SDLCGateEnforcer:
         conflict_rules = self.gates_config.get("conflict_resolution", {})
 
         # Check for single veto power
-        veto_agents = conflict_rules.get("resolution_strategies", {}).get("single_veto", {}).get("agents", [])
+        veto_agents = (
+            conflict_rules.get("resolution_strategies", {})
+            .get("single_veto", {})
+            .get("agents", [])
+        )
         for agent in conflicting_agents:
             if agent in veto_agents:
                 return f"{agent} has veto power - their decision stands"

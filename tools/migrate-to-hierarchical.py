@@ -9,7 +9,9 @@ import shutil
 from datetime import datetime
 from typing import Tuple, List
 
-GITHUB_RAW_BASE = "https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main"
+GITHUB_RAW_BASE = (
+    "https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main"
+)
 
 HIERARCHICAL_FILES = [
     "CLAUDE-CORE.md",

@@ -39,7 +39,9 @@ class ValidationPipeline:
         ]
 
         # Count how many framework markers exist
-        marker_count = sum(1 for marker in framework_markers if (self.project_root / marker).exists())
+        marker_count = sum(
+            1 for marker in framework_markers if (self.project_root / marker).exists()
+        )
 
         # If we have most framework markers, this is the framework repo
         return marker_count >= 3
@@ -213,7 +215,10 @@ class ValidationPipeline:
                                 "migration",
                                 "refactor",
                             ]
-                            if any(indicator in content for indicator in complexity_indicators):
+                            if any(
+                                indicator in content
+                                for indicator in complexity_indicators
+                            ):
                                 requires_plan = True
                                 proposal_content = file.name
                                 break
@@ -293,7 +298,9 @@ class ValidationPipeline:
                         continue
 
                     try:
-                        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                        result = subprocess.run(
+                            cmd, capture_output=True, text=True, timeout=30
+                        )
                         if result.returncode == 0:
                             self.add_success(
                                 "Test Coverage",
@@ -334,7 +341,10 @@ class ValidationPipeline:
                 subprocess.run(check_cmd, capture_output=True, check=True)
 
                 # For framework repository, check if tests directory exists
-                if test_cmd[0] == "pytest" and not (self.project_root / "tests").exists():
+                if (
+                    test_cmd[0] == "pytest"
+                    and not (self.project_root / "tests").exists()
+                ):
                     self.add_warning(
                         "Test Coverage",
                         "No tests directory found",
@@ -343,14 +353,18 @@ class ValidationPipeline:
                     return
 
                 # Run tests
-                result = subprocess.run(test_cmd, capture_output=True, text=True, timeout=60)
+                result = subprocess.run(
+                    test_cmd, capture_output=True, text=True, timeout=60
+                )
 
                 if result.returncode == 0:
                     self.add_success("Test Coverage", "Tests passing")
                 else:
                     # In CI environment, provide more context about failure
                     if os.environ.get("CI") == "true":
-                        stderr_msg = result.stderr[:200] if result.stderr else "No error output"
+                        stderr_msg = (
+                            result.stderr[:200] if result.stderr else "No error output"
+                        )
                         self.add_error(
                             "Test Coverage",
                             f"Tests failing: {stderr_msg}",
@@ -442,7 +456,9 @@ class ValidationPipeline:
                 subprocess.run(check_cmd, capture_output=True, check=True)
 
                 # Run linter
-                result = subprocess.run(lint_cmd, capture_output=True, text=True, timeout=30)
+                result = subprocess.run(
+                    lint_cmd, capture_output=True, text=True, timeout=30
+                )
 
                 if result.returncode == 0:
                     self.add_success("Code Quality", f"{lint_cmd[0]} passed")
@@ -587,12 +603,16 @@ class ValidationPipeline:
                             content = f.read()
                             # Check if retrospective mentions the branch or
                             # feature
-                            branch_name = branch.replace("feature/", "").replace("fix/", "")
+                            branch_name = branch.replace("feature/", "").replace(
+                                "fix/", ""
+                            )
                             if branch_name in content or branch in content:
                                 found = True
                                 # Check retrospective freshness
                                 try:
-                                    file_mtime = datetime.fromtimestamp(file.stat().st_mtime)
+                                    file_mtime = datetime.fromtimestamp(
+                                        file.stat().st_mtime
+                                    )
                                     now = datetime.now()
                                     days_old = (now - file_mtime).days
 
@@ -608,7 +628,9 @@ class ValidationPipeline:
                                             f"Found in {file}",
                                         )
                                 except Exception:
-                                    self.add_success("Retrospective", f"Found in {file}")
+                                    self.add_success(
+                                        "Retrospective", f"Found in {file}"
+                                    )
                                 break
                     except Exception:
                         continue
@@ -617,7 +639,10 @@ class ValidationPipeline:
 
         if not found:
             # Check if this is a PR validation (CI environment)
-            is_pr = os.environ.get("GITHUB_EVENT_NAME") == "pull_request" or os.environ.get("CI") == "true"
+            is_pr = (
+                os.environ.get("GITHUB_EVENT_NAME") == "pull_request"
+                or os.environ.get("CI") == "true"
+            )
 
             if is_pr:
                 self.add_error(
@@ -712,8 +737,13 @@ class ValidationPipeline:
                     if re.search(pattern, content, re.IGNORECASE):
                         # Check if it's in a code block (which we already
                         # warned about)
-                        if not any(re.search(pattern, block, re.IGNORECASE) for block in code_blocks):
-                            relative_path = os.path.relpath(file_path, self.project_root)
+                        if not any(
+                            re.search(pattern, block, re.IGNORECASE)
+                            for block in code_blocks
+                        ):
+                            relative_path = os.path.relpath(
+                                file_path, self.project_root
+                            )
                             self.add_warning(
                                 "Design Documentation",
                                 f"{relative_path} contains {description}",
@@ -788,7 +818,9 @@ class ValidationPipeline:
             # Check for commented-out code
             commented_lines = self._count_commented_code(content, file_path.suffix)
             if commented_lines > 0:
-                indicators.append(f"{file_path.name}: {commented_lines} lines of commented code")
+                indicators.append(
+                    f"{file_path.name}: {commented_lines} lines of commented code"
+                )
 
             # Check for any types (TypeScript)
             if file_path.suffix in [".ts", ".tsx"]:
@@ -799,7 +831,9 @@ class ValidationPipeline:
             # Check for error suppressions
             suppressions = self._count_error_suppressions(content)
             if suppressions > 0:
-                indicators.append(f"{file_path.name}: {suppressions} error suppressions")
+                indicators.append(
+                    f"{file_path.name}: {suppressions} error suppressions"
+                )
 
         except (UnicodeDecodeError, PermissionError, FileNotFoundError):
             # Skip files we can't read (binary files, permission issues, etc.)
@@ -837,15 +871,21 @@ class ValidationPipeline:
                 return suppressions
         return 0
 
-    def _report_debt_results(self, debt_indicators: List[str], files_checked: int) -> None:
+    def _report_debt_results(
+        self, debt_indicators: List[str], files_checked: int
+    ) -> None:
         """Report technical debt scan results"""
         if debt_indicators:
             # Apply Framework Compliance Policy thresholds for framework repo
             if self.is_framework_repo:
                 # Count error suppressions separately as they have a specific
                 # threshold
-                suppression_count = sum(1 for ind in debt_indicators if "error suppressions" in ind)
-                todo_count = sum(1 for ind in debt_indicators if "TODO" in ind or "FIXME" in ind)
+                suppression_count = sum(
+                    1 for ind in debt_indicators if "error suppressions" in ind
+                )
+                todo_count = sum(
+                    1 for ind in debt_indicators if "TODO" in ind or "FIXME" in ind
+                )
 
                 # Framework allows up to 13 error suppressions
                 if suppression_count <= 13 and todo_count == 0:
@@ -978,8 +1018,10 @@ class ValidationPipeline:
                             mypy_config_found = True
                         # Or check individual strict settings in main section
                         elif (
-                            mypy_section.get("disallow_untyped_defs", "").lower() == "true"
-                            or mypy_section.get("check_untyped_defs", "").lower() == "true"
+                            mypy_section.get("disallow_untyped_defs", "").lower()
+                            == "true"
+                            or mypy_section.get("check_untyped_defs", "").lower()
+                            == "true"
                         ):
                             mypy_config_found = True
                         else:
@@ -1014,7 +1056,9 @@ class ValidationPipeline:
         """Check Python code for type annotations"""
         issues: List[str] = []
         py_files = list(Path(self.project_root).glob("**/*.py"))
-        py_files = [f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)]
+        py_files = [
+            f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)
+        ]
 
         if not py_files:
             return issues
@@ -1024,7 +1068,9 @@ class ValidationPipeline:
             try:
                 content = py_file.read_text()
                 functions = re.findall(r"def\s+\w+\s*\([^)]*\)\s*:", content)
-                typed_functions = re.findall(r"def\s+\w+\s*\([^)]*\)\s*->\s*\w+\s*:", content)
+                typed_functions = re.findall(
+                    r"def\s+\w+\s*\([^)]*\)\s*->\s*\w+\s*:", content
+                )
 
                 if functions and len(typed_functions) < len(functions) * 0.8:
                     missing_annotations += 1
@@ -1104,7 +1150,9 @@ class ValidationPipeline:
             return
 
         # Check if logging validator exists
-        validator_path = self.project_root / "tools" / "validation" / "check-logging-compliance.py"
+        validator_path = (
+            self.project_root / "tools" / "validation" / "check-logging-compliance.py"
+        )
         if not validator_path.exists():
             self.add_warning(
                 "Logging Compliance",
@@ -1158,16 +1206,25 @@ class ValidationPipeline:
     def check_github_actions_permissions(self) -> None:
         """Check GitHub Actions workflows have proper permissions"""
         if self.is_empty_repo:
-            self.add_skip("GitHub Actions Permissions", "Empty repository - no workflows to check")
+            self.add_skip(
+                "GitHub Actions Permissions", "Empty repository - no workflows to check"
+            )
             return
 
         workflows_dir = self.project_root / ".github" / "workflows"
         if not workflows_dir.exists():
-            self.add_skip("GitHub Actions Permissions", "No GitHub Actions workflows found")
+            self.add_skip(
+                "GitHub Actions Permissions", "No GitHub Actions workflows found"
+            )
             return
 
         # Check if permissions validator exists
-        validator_path = self.project_root / "tools" / "validation" / "check-github-actions-permissions.py"
+        validator_path = (
+            self.project_root
+            / "tools"
+            / "validation"
+            / "check-github-actions-permissions.py"
+        )
         if not validator_path.exists():
             self.add_warning(
                 "GitHub Actions Permissions",
@@ -1193,7 +1250,11 @@ class ValidationPipeline:
             else:
                 # Parse the output to extract specific issues
                 output_lines = result.stdout.split("\n")
-                issues = [line for line in output_lines if line.startswith("❌") or line.startswith("⚠️")]
+                issues = [
+                    line
+                    for line in output_lines
+                    if line.startswith("❌") or line.startswith("⚠️")
+                ]
 
                 if issues:
                     self.add_error(
@@ -1270,32 +1331,44 @@ class ValidationPipeline:
         for pattern in code_patterns:
             files = glob.glob(f"**/{pattern}", recursive=True)
             # Exclude framework tools directory
-            code_files = [f for f in files if not f.startswith(("tools/", ".ai-sdlc-temp/"))]
+            code_files = [
+                f for f in files if not f.startswith(("tools/", ".ai-sdlc-temp/"))
+            ]
             code_file_count += len(code_files)
 
         # Check if we only have framework files
         framework_files = ["CLAUDE.md", "README.md", ".gitignore"]
-        has_framework = all((self.project_root / f).exists() for f in framework_files[:2])  # At least CLAUDE.md and README
+        has_framework = all(
+            (self.project_root / f).exists() for f in framework_files[:2]
+        )  # At least CLAUDE.md and README
 
         self.is_empty_repo = code_file_count == 0 and has_framework
 
     def add_success(self, check: str, message: str) -> None:
         """Add success result"""
-        self.results.append({"icon": "✅", "check": check, "message": message, "fix": None})
+        self.results.append(
+            {"icon": "✅", "check": check, "message": message, "fix": None}
+        )
 
     def add_error(self, check: str, message: str, fix: str) -> None:
         """Add error result"""
         self.has_errors = True
-        self.results.append({"icon": "❌", "check": check, "message": message, "fix": fix})
+        self.results.append(
+            {"icon": "❌", "check": check, "message": message, "fix": fix}
+        )
 
     def add_warning(self, check: str, message: str, fix: str) -> None:
         """Add warning result"""
         self.has_warnings = True
-        self.results.append({"icon": "⚠️ ", "check": check, "message": message, "fix": fix})
+        self.results.append(
+            {"icon": "⚠️ ", "check": check, "message": message, "fix": fix}
+        )
 
     def add_skip(self, check: str, reason: str) -> None:
         """Add skipped check"""
-        self.results.append({"icon": "⏭️ ", "check": check, "message": reason, "fix": None})
+        self.results.append(
+            {"icon": "⏭️ ", "check": check, "message": reason, "fix": None}
+        )
 
     def print_summary(self) -> None:
         """Print validation summary"""

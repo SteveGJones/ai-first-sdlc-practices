@@ -89,7 +89,10 @@ class ChemistryCalculator:
             text = comment.get("body", "").lower()
 
             # Quality: Look for specific consultations
-            if any(mention in text for mention in ["@solution-architect", "@ai-test-engineer", "@devops"]):
+            if any(
+                mention in text
+                for mention in ["@solution-architect", "@ai-test-engineer", "@devops"]
+            ):
                 scores["comment_quality"] += 10
 
             # Clarity: Questions and clear handoffs
@@ -97,7 +100,10 @@ class ChemistryCalculator:
                 scores["clarity"] += 10
 
             # Encouragement: Positive team language
-            if any(word in text for word in ["great", "excellent", "thanks", "good work", "nice"]):
+            if any(
+                word in text
+                for word in ["great", "excellent", "thanks", "good work", "nice"]
+            ):
                 scores["encouragement"] += 10
 
         # Response time (simplified - checks if responses exist)
@@ -106,7 +112,9 @@ class ChemistryCalculator:
 
         # Calculate weighted average
         metrics_config = self.chemistry_factors["communication"]["metrics"]
-        total = sum(scores[metric] * weight for metric, weight in metrics_config.items())
+        total = sum(
+            scores[metric] * weight for metric, weight in metrics_config.items()
+        )
 
         return min(100, total)
 
@@ -132,14 +140,19 @@ class ChemistryCalculator:
         # Check for clear handoffs in commit messages
         for commit in commits:
             message = commit.get("message", "").lower()
-            if any(pattern in message for pattern in ["continues", "builds on", "after", "following"]):
+            if any(
+                pattern in message
+                for pattern in ["continues", "builds on", "after", "following"]
+            ):
                 scores["clear_handoffs"] += 20
 
         scores["clear_handoffs"] = min(100, scores["clear_handoffs"])
 
         # Calculate weighted average
         metrics_config = self.chemistry_factors["coordination"]["metrics"]
-        total = sum(scores[metric] * weight for metric, weight in metrics_config.items())
+        total = sum(
+            scores[metric] * weight for metric, weight in metrics_config.items()
+        )
 
         return min(100, total)
 
@@ -196,7 +209,9 @@ class ChemistryCalculator:
 
         # Calculate weighted average
         metrics_config = self.chemistry_factors["collaboration"]["metrics"]
-        total = sum(scores[metric] * weight for metric, weight in metrics_config.items())
+        total = sum(
+            scores[metric] * weight for metric, weight in metrics_config.items()
+        )
 
         return min(100, total)
 
@@ -246,7 +261,9 @@ class ChemistryCalculator:
         for comment in comments:
             text = comment.get("body", "").lower()
             team_count += sum(1 for phrase in team_first_phrases if phrase in text)
-            individual_count += sum(1 for phrase in individual_phrases if phrase in text)
+            individual_count += sum(
+                1 for phrase in individual_phrases if phrase in text
+            )
 
         if team_count + individual_count > 0:
             team_ratio = team_count / (team_count + individual_count)
@@ -254,14 +271,24 @@ class ChemistryCalculator:
 
         # Calculate weighted average
         metrics_config = self.chemistry_factors["billy_wright_principles"]["metrics"]
-        total = sum(scores[metric] * weight for metric, weight in metrics_config.items())
+        total = sum(
+            scores[metric] * weight for metric, weight in metrics_config.items()
+        )
 
         return min(100, total)
 
     def generate_chemistry_report(self, score: float) -> Dict[str, Any]:
         """Generate detailed chemistry report"""
 
-        level = "legendary" if score >= 85 else "advanced" if score >= 70 else "developing" if score >= 50 else "learning"
+        level = (
+            "legendary"
+            if score >= 85
+            else (
+                "advanced"
+                if score >= 70
+                else "developing" if score >= 50 else "learning"
+            )
+        )
 
         report = {
             "score": score,
@@ -269,7 +296,11 @@ class ChemistryCalculator:
             "badge_color": (
                 "gold"
                 if level == "legendary"
-                else "green" if level == "advanced" else "yellow" if level == "developing" else "orange"
+                else (
+                    "green"
+                    if level == "advanced"
+                    else "yellow" if level == "developing" else "orange"
+                )
             ),
             "next_milestone": self.get_next_milestone(score),
             "coaching_tip": self.get_coaching_tip(score, level),
@@ -305,7 +336,9 @@ class ChemistryCalculator:
 def main():
     parser = argparse.ArgumentParser(description="Calculate team chemistry score")
     parser.add_argument("--pr-data", required=True, help="PR data as JSON")
-    parser.add_argument("--output", choices=["score", "json"], default="score", help="Output format")
+    parser.add_argument(
+        "--output", choices=["score", "json"], default="score", help="Output format"
+    )
 
     args = parser.parse_args()
 
@@ -326,7 +359,15 @@ def main():
         print(f"::set-output name=score::{score:.1f}")
 
         # Also output level for badge
-        level = "legendary" if score >= 85 else "advanced" if score >= 70 else "developing" if score >= 50 else "learning"
+        level = (
+            "legendary"
+            if score >= 85
+            else (
+                "advanced"
+                if score >= 70
+                else "developing" if score >= 50 else "learning"
+            )
+        )
         print(f"::set-output name=level::{level}")
 
 

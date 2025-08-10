@@ -296,7 +296,9 @@ class TeamMaturityTracker:
             technical_excellence=excellence,
         )
 
-    def _determine_maturity_level(self, team_data: Dict, metrics: TeamMetrics) -> MaturityLevel:
+    def _determine_maturity_level(
+        self, team_data: Dict, metrics: TeamMetrics
+    ) -> MaturityLevel:
         """Determine current maturity level based on data and metrics"""
 
         team_size = team_data["team_size"]
@@ -312,11 +314,19 @@ class TeamMaturityTracker:
         ) / 8
 
         # Legendary (95+ score, 10+ team, industry impact)
-        if avg_score >= 95 and team_size >= 10 and team_data.get("community_impact", 0) >= 90:
+        if (
+            avg_score >= 95
+            and team_size >= 10
+            and team_data.get("community_impact", 0) >= 90
+        ):
             return MaturityLevel.LEGENDARY
 
         # Innovators (85+ score, 8+ team, external contributions)
-        if avg_score >= 85 and team_size >= 8 and team_data.get("external_contributions", 0) >= 5:
+        if (
+            avg_score >= 85
+            and team_size >= 8
+            and team_data.get("external_contributions", 0) >= 5
+        ):
             return MaturityLevel.INNOVATORS
 
         # Orchestrators (75+ score, 5+ team, system thinking)
@@ -324,7 +334,12 @@ class TeamMaturityTracker:
             return MaturityLevel.ORCHESTRATORS
 
         # Collaborators (65+ score, 3+ team, true collaboration)
-        if avg_score >= 65 and team_size >= 3 and metrics.collaboration_score >= 70 and metrics.knowledge_sharing >= 70:
+        if (
+            avg_score >= 65
+            and team_size >= 3
+            and metrics.collaboration_score >= 70
+            and metrics.knowledge_sharing >= 70
+        ):
             return MaturityLevel.COLLABORATORS
 
         # Builders (50+ score, 2+ team, building together)
@@ -334,7 +349,9 @@ class TeamMaturityTracker:
         # Solo (any solo developer with basic practices)
         return MaturityLevel.SOLO
 
-    def generate_maturity_report(self, level: MaturityLevel, metrics: TeamMetrics, team_data: Dict) -> str:
+    def generate_maturity_report(
+        self, level: MaturityLevel, metrics: TeamMetrics, team_data: Dict
+    ) -> str:
         """Generate an inspiring maturity report"""
 
         config = self.MATURITY_LEVELS[level]
@@ -363,7 +380,9 @@ class TeamMaturityTracker:
         # Overall Assessment
         avg_score = sum(metrics_dict.values()) / len(metrics_dict)
         overall_grade = self._score_to_grade(avg_score)
-        report.append(f"🎯 **Overall Team Maturity**: {avg_score:.1f}% ({overall_grade})")
+        report.append(
+            f"🎯 **Overall Team Maturity**: {avg_score:.1f}% ({overall_grade})"
+        )
         report.append("")
 
         # What's Working Well
@@ -407,8 +426,12 @@ class TeamMaturityTracker:
                 report.append("")
         else:
             report.append("## 👑 Legendary Status Achieved!")
-            report.append("You've reached the pinnacle! Your team sets the standard others aspire to.")
-            report.append("Focus on mentoring the next generation and leaving a lasting legacy.")
+            report.append(
+                "You've reached the pinnacle! Your team sets the standard others aspire to."
+            )
+            report.append(
+                "Focus on mentoring the next generation and leaving a lasting legacy."
+            )
             report.append("")
 
         # Team Spotlight
@@ -426,7 +449,9 @@ class TeamMaturityTracker:
 
         return "\n".join(report)
 
-    def _create_progress_bar(self, value: float, max_value: float, width: int = 20) -> str:
+    def _create_progress_bar(
+        self, value: float, max_value: float, width: int = 20
+    ) -> str:
         """Create a visual progress bar"""
         filled = int((value / max_value) * width)
         return f"{'█' * filled}{'░' * (width - filled)}"
@@ -453,7 +478,9 @@ class TeamMaturityTracker:
             return "C-"
         return "D"
 
-    def _identify_strengths(self, metrics: Dict[str, float], team_data: Dict) -> List[str]:
+    def _identify_strengths(
+        self, metrics: Dict[str, float], team_data: Dict
+    ) -> List[str]:
         """Identify team strengths based on high-scoring metrics"""
         strengths = []
 
@@ -464,25 +491,41 @@ class TeamMaturityTracker:
             if score >= 70:  # Only celebrate good scores
                 metric_name = metric.replace("_", " ").title()
                 if score >= 95:
-                    strengths.append(f"🏆 **Exceptional {metric_name}**: World-class performance!")
+                    strengths.append(
+                        f"🏆 **Exceptional {metric_name}**: World-class performance!"
+                    )
                 elif score >= 85:
-                    strengths.append(f"⭐ **Outstanding {metric_name}**: Industry-leading results!")
+                    strengths.append(
+                        f"⭐ **Outstanding {metric_name}**: Industry-leading results!"
+                    )
                 elif score >= 75:
-                    strengths.append(f"✨ **Strong {metric_name}**: Impressive consistency!")
+                    strengths.append(
+                        f"✨ **Strong {metric_name}**: Impressive consistency!"
+                    )
                 else:
                     strengths.append(f"👍 **Good {metric_name}**: Solid foundation!")
 
         # Add specific achievements
         if team_data["team_size"] >= 5:
-            strengths.append("🤝 **Team Scale**: Successfully coordinating larger team!")
+            strengths.append(
+                "🤝 **Team Scale**: Successfully coordinating larger team!"
+            )
         if team_data["technical_debt"] < 3:
-            strengths.append("💎 **Code Quality**: Maintaining excellent technical standards!")
+            strengths.append(
+                "💎 **Code Quality**: Maintaining excellent technical standards!"
+            )
         if team_data.get("external_contributions", 0) > 0:
-            strengths.append("🌍 **Community Impact**: Contributing beyond your own projects!")
+            strengths.append(
+                "🌍 **Community Impact**: Contributing beyond your own projects!"
+            )
 
-        return strengths or ["🌱 **Getting Started**: Building foundation for future excellence!"]
+        return strengths or [
+            "🌱 **Getting Started**: Building foundation for future excellence!"
+        ]
 
-    def _identify_opportunities(self, metrics: Dict[str, float], team_data: Dict, level: MaturityLevel) -> List[str]:
+    def _identify_opportunities(
+        self, metrics: Dict[str, float], team_data: Dict, level: MaturityLevel
+    ) -> List[str]:
         """Identify growth opportunities based on lower-scoring metrics"""
         opportunities = []
 
@@ -493,24 +536,38 @@ class TeamMaturityTracker:
             if score < 80:  # Focus on metrics that need improvement
                 metric_name = metric.replace("_", " ").title()
                 if score < 40:
-                    opportunities.append(f"🎯 **{metric_name}**: Prime opportunity for breakthrough improvement!")
+                    opportunities.append(
+                        f"🎯 **{metric_name}**: Prime opportunity for breakthrough improvement!"
+                    )
                 elif score < 60:
-                    opportunities.append(f"📈 **{metric_name}**: Ready for the next level of excellence!")
+                    opportunities.append(
+                        f"📈 **{metric_name}**: Ready for the next level of excellence!"
+                    )
                 else:
-                    opportunities.append(f"⚡ **{metric_name}**: Good foundation, let's make it great!")
+                    opportunities.append(
+                        f"⚡ **{metric_name}**: Good foundation, let's make it great!"
+                    )
 
         # Add level-specific opportunities
         config = self.MATURITY_LEVELS[level]
         if team_data["team_size"] < config.min_team_size + 2:
-            opportunities.append("👥 **Team Growth**: Consider expanding to unlock new collaboration patterns!")
+            opportunities.append(
+                "👥 **Team Growth**: Consider expanding to unlock new collaboration patterns!"
+            )
 
         if level in [MaturityLevel.SOLO, MaturityLevel.BUILDERS]:
-            opportunities.append("📚 **Knowledge Sharing**: Document and share learnings more actively!")
+            opportunities.append(
+                "📚 **Knowledge Sharing**: Document and share learnings more actively!"
+            )
 
         if level in [MaturityLevel.COLLABORATORS, MaturityLevel.ORCHESTRATORS]:
-            opportunities.append("🔬 **Innovation**: Experiment with cutting-edge practices!")
+            opportunities.append(
+                "🔬 **Innovation**: Experiment with cutting-edge practices!"
+            )
 
-        return opportunities or ["🚀 **Keep Improving**: Continue building on your strong foundation!"]
+        return opportunities or [
+            "🚀 **Keep Improving**: Continue building on your strong foundation!"
+        ]
 
     def _get_next_level(self, current_level: MaturityLevel) -> MaturityLevel:
         """Get the next maturity level"""
@@ -520,7 +577,9 @@ class TeamMaturityTracker:
             return levels[current_index + 1]
         return current_level
 
-    def _assess_next_level_readiness(self, current_level: MaturityLevel, metrics: TeamMetrics, team_data: Dict) -> Dict:
+    def _assess_next_level_readiness(
+        self, current_level: MaturityLevel, metrics: TeamMetrics, team_data: Dict
+    ) -> Dict:
         """Assess readiness for the next maturity level"""
         next_level = self._get_next_level(current_level)
         next_config = self.MATURITY_LEVELS[next_level]
@@ -537,7 +596,9 @@ class TeamMaturityTracker:
             passed_checks += 1
         else:
             needed = next_config.min_team_size - team_data["team_size"]
-            todo_items.append(f"Grow team by {needed} more member{'s' if needed > 1 else ''}")
+            todo_items.append(
+                f"Grow team by {needed} more member{'s' if needed > 1 else ''}"
+            )
 
         # Check metric thresholds based on level
         metric_thresholds = self._get_level_thresholds(next_level)
@@ -546,13 +607,19 @@ class TeamMaturityTracker:
         for metric, threshold in metric_thresholds.items():
             total_checks += 1
             if metrics_dict[metric] >= threshold:
-                ready_items.append(f"{metric.replace('_', ' ').title()} ({metrics_dict[metric]:.1f}%)")
+                ready_items.append(
+                    f"{metric.replace('_', ' ').title()} ({metrics_dict[metric]:.1f}%)"
+                )
                 passed_checks += 1
             else:
                 gap = threshold - metrics_dict[metric]
-                todo_items.append(f"Improve {metric.replace('_', ' ').title()} by {gap:.1f} points")
+                todo_items.append(
+                    f"Improve {metric.replace('_', ' ').title()} by {gap:.1f} points"
+                )
 
-        readiness_score = (passed_checks / total_checks * 100) if total_checks > 0 else 0
+        readiness_score = (
+            (passed_checks / total_checks * 100) if total_checks > 0 else 0
+        )
 
         return {
             "score": readiness_score,
@@ -607,27 +674,45 @@ class TeamMaturityTracker:
 
         # Team composition
         if team_data["team_size"] == 1:
-            spotlight.append("🦸 **Solo Hero**: Mastering the craft with dedication and focus!")
+            spotlight.append(
+                "🦸 **Solo Hero**: Mastering the craft with dedication and focus!"
+            )
         elif team_data["team_size"] <= 3:
-            spotlight.append(f"🔧 **Tight Crew**: {team_data['team_size']} focused builders creating amazing things!")
+            spotlight.append(
+                f"🔧 **Tight Crew**: {team_data['team_size']} focused builders creating amazing things!"
+            )
         elif team_data["team_size"] <= 7:
-            spotlight.append(f"⚡ **Power Squad**: {team_data['team_size']} collaborators firing on all cylinders!")
+            spotlight.append(
+                f"⚡ **Power Squad**: {team_data['team_size']} collaborators firing on all cylinders!"
+            )
         else:
-            spotlight.append(f"🎼 **Orchestra**: {team_data['team_size']} talented individuals creating symphonies!")
+            spotlight.append(
+                f"🎼 **Orchestra**: {team_data['team_size']} talented individuals creating symphonies!"
+            )
 
         # Recent activity
         if team_data.get("commit_frequency", 0) > 1:
-            spotlight.append("🔥 **High Velocity**: Consistently shipping improvements!")
+            spotlight.append(
+                "🔥 **High Velocity**: Consistently shipping improvements!"
+            )
         elif team_data.get("commit_frequency", 0) > 0.5:
-            spotlight.append("📈 **Steady Progress**: Maintaining good development rhythm!")
+            spotlight.append(
+                "📈 **Steady Progress**: Maintaining good development rhythm!"
+            )
 
         # Special achievements
         if team_data.get("technical_debt", 10) < 3:
-            spotlight.append("💎 **Quality Masters**: Maintaining exceptional code quality!")
+            spotlight.append(
+                "💎 **Quality Masters**: Maintaining exceptional code quality!"
+            )
         if team_data.get("external_contributions", 0) > 0:
-            spotlight.append("🌍 **Community Contributors**: Sharing value with the broader ecosystem!")
+            spotlight.append(
+                "🌍 **Community Contributors**: Sharing value with the broader ecosystem!"
+            )
         if team_data.get("retrospectives", 0) >= 5:
-            spotlight.append("🔄 **Continuous Learners**: Strong retrospective culture!")
+            spotlight.append(
+                "🔄 **Continuous Learners**: Strong retrospective culture!"
+            )
 
         return spotlight
 
@@ -648,7 +733,9 @@ class TeamMaturityTracker:
                 return True
 
             # Celebrate milestone achievements
-            last_date = datetime.fromisoformat(last_assessment.get("date", "1900-01-01"))
+            last_date = datetime.fromisoformat(
+                last_assessment.get("date", "1900-01-01")
+            )
             if datetime.now() - last_date > timedelta(days=30):  # Monthly celebrations
                 return True
 
@@ -719,7 +806,9 @@ class TeamMaturityTracker:
 
         return celebration
 
-    def save_assessment(self, level: MaturityLevel, metrics: TeamMetrics, team_data: Dict):
+    def save_assessment(
+        self, level: MaturityLevel, metrics: TeamMetrics, team_data: Dict
+    ):
         """Save current assessment for tracking progress"""
         assessment_data = {
             "date": datetime.now().isoformat(),
@@ -749,7 +838,9 @@ class TeamMaturityTracker:
         with open(history_file, "w") as f:
             json.dump(history, f, indent=2)
 
-    def generate_hall_of_fame_entry(self, level: MaturityLevel, metrics: TeamMetrics, team_data: Dict) -> Dict:
+    def generate_hall_of_fame_entry(
+        self, level: MaturityLevel, metrics: TeamMetrics, team_data: Dict
+    ) -> Dict:
         """Generate hall of fame entry for legendary teams"""
         if level != MaturityLevel.LEGENDARY:
             return {}
@@ -807,7 +898,11 @@ class TeamMaturityTracker:
                 text=True,
             )
             if result.returncode == 0:
-                emails = set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+                emails = (
+                    set(result.stdout.strip().split("\n"))
+                    if result.stdout.strip()
+                    else set()
+                )
                 return len(emails)
         except Exception:
             pass
@@ -823,7 +918,9 @@ class TeamMaturityTracker:
                 text=True,
             )
             if result.returncode == 0:
-                names = result.stdout.strip().split("\n") if result.stdout.strip() else []
+                names = (
+                    result.stdout.strip().split("\n") if result.stdout.strip() else []
+                )
                 return list(set(names))  # Unique names
         except Exception:
             pass
@@ -839,7 +936,11 @@ class TeamMaturityTracker:
                 text=True,
             )
             if result.returncode == 0:
-                commit_count = len(result.stdout.strip().split("\n")) if result.stdout.strip() else 0
+                commit_count = (
+                    len(result.stdout.strip().split("\n"))
+                    if result.stdout.strip()
+                    else 0
+                )
                 return commit_count / 30.0
         except Exception:
             pass
@@ -893,7 +994,11 @@ class TeamMaturityTracker:
                 text=True,
             )
             if result.returncode == 0:
-                return len(result.stdout.strip().split("\n")) if result.stdout.strip() else 0
+                return (
+                    len(result.stdout.strip().split("\n"))
+                    if result.stdout.strip()
+                    else 0
+                )
         except Exception:
             pass
         return 0
@@ -914,7 +1019,11 @@ class TeamMaturityTracker:
                 text=True,
             )
             if result.returncode == 0:
-                return len(result.stdout.strip().split("\n")) if result.stdout.strip() else 0
+                return (
+                    len(result.stdout.strip().split("\n"))
+                    if result.stdout.strip()
+                    else 0
+                )
         except Exception:
             pass
         return 0
@@ -940,7 +1049,11 @@ class TeamMaturityTracker:
                 text=True,
             )
             if result.returncode == 0:
-                commented_files = len(result.stdout.strip().split("\n")) if result.stdout.strip() else 0
+                commented_files = (
+                    len(result.stdout.strip().split("\n"))
+                    if result.stdout.strip()
+                    else 0
+                )
                 if commented_files > 0:
                     score += min(30, commented_files * 3)
         except Exception:
@@ -1043,7 +1156,10 @@ class TeamMaturityTracker:
                     return 50  # Default for low activity
 
                 # Calculate coefficient of variation for commit timing
-                intervals = [timestamps[i] - timestamps[i + 1] for i in range(len(timestamps) - 1)]
+                intervals = [
+                    timestamps[i] - timestamps[i + 1]
+                    for i in range(len(timestamps) - 1)
+                ]
                 if not intervals:
                     return 50
 
@@ -1051,7 +1167,9 @@ class TeamMaturityTracker:
                 if avg_interval == 0:
                     return 100  # All commits at same time - unusual but consistent
 
-                variance = sum((interval - avg_interval) ** 2 for interval in intervals) / len(intervals)
+                variance = sum(
+                    (interval - avg_interval) ** 2 for interval in intervals
+                ) / len(intervals)
                 std_dev = math.sqrt(variance)
                 coef_var = std_dev / avg_interval if avg_interval > 0 else 1
 

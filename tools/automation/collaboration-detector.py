@@ -52,7 +52,11 @@ class CollaborationDetector:
                 text=True,
                 check=True,
             )
-            unique_emails = set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+            unique_emails = (
+                set(result.stdout.strip().split("\n"))
+                if result.stdout.strip()
+                else set()
+            )
             return len(unique_emails)
         except subprocess.CalledProcessError:
             return 0
@@ -67,7 +71,11 @@ class CollaborationDetector:
                 text=True,
                 check=True,
             )
-            unique_emails = set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+            unique_emails = (
+                set(result.stdout.strip().split("\n"))
+                if result.stdout.strip()
+                else set()
+            )
             return len(unique_emails)
         except subprocess.CalledProcessError:
             return 0
@@ -132,10 +140,17 @@ class CollaborationDetector:
                 text=True,
                 check=True,
             )
-            branches = result.stdout.strip().split("\n") if result.stdout.strip() else []
+            branches = (
+                result.stdout.strip().split("\n") if result.stdout.strip() else []
+            )
 
             pr_branches = [
-                b for b in branches if any(pattern in b.lower() for pattern in ["feature/", "fix/", "pr/", "pull/"])
+                b
+                for b in branches
+                if any(
+                    pattern in b.lower()
+                    for pattern in ["feature/", "fix/", "pr/", "pull/"]
+                )
             ]
 
             return {
@@ -167,7 +182,9 @@ class CollaborationDetector:
 
 
 @click.command()
-@click.option("--repo-path", type=click.Path(exists=True), help="Repository path to analyze")
+@click.option(
+    "--repo-path", type=click.Path(exists=True), help="Repository path to analyze"
+)
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 def main(repo_path, output_json):
     """Detect collaboration patterns in a git repository."""
@@ -188,7 +205,9 @@ def main(repo_path, output_json):
         click.echo(f"  Active contributors (90d): {metrics['active_contributors_90d']}")
         click.echo(f"  External PRs (90d): {metrics['external_prs_90d']}")
         click.echo(f"  Total contributors: {metrics['total_contributors']}")
-        click.echo(f"  GitHub remote: {'Yes' if metrics['has_github_remote'] else 'No'}")
+        click.echo(
+            f"  GitHub remote: {'Yes' if metrics['has_github_remote'] else 'No'}"
+        )
 
         if mode == "solo":
             click.echo("\n✅ Solo Developer Mode")

@@ -127,7 +127,9 @@ class AgentReleaseBuilder:
                 }
 
                 # Track core agents
-                if category == "core" or metadata.get("category", "").startswith("core/"):
+                if category == "core" or metadata.get("category", "").startswith(
+                    "core/"
+                ):
                     manifest["core_agents"].append(agent_name)
                     manifest["statistics"]["core_agents"] += 1
                 else:
@@ -151,7 +153,9 @@ class AgentReleaseBuilder:
         with open(manifest_path, "w") as f:
             json.dump(manifest, f, indent=2)
 
-        console.print(f"[green]✓ Generated manifest with {manifest['statistics']['total_agents']} agents[/green]")
+        console.print(
+            f"[green]✓ Generated manifest with {manifest['statistics']['total_agents']} agents[/green]"
+        )
 
         # Display statistics
         console.print("\n[bold]Release Statistics:[/bold]")
@@ -203,7 +207,9 @@ Domain-specific agents for various use cases:
         # Add other categories
         for category_dir in sorted(self.release_agents_dir.iterdir()):
             if category_dir.is_dir() and category_dir.name not in ["core", "languages"]:
-                index_content += f"\n#### {category_dir.name.replace('-', ' ').title()}\n"
+                index_content += (
+                    f"\n#### {category_dir.name.replace('-', ' ').title()}\n"
+                )
                 for agent_file in sorted(category_dir.rglob("*.md")):
                     agent_name = agent_file.stem
                     relative_path = agent_file.relative_to(category_dir)

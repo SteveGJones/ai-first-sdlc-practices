@@ -38,11 +38,15 @@ class ValidationRunner:
             prefix = {"INFO": "ℹ️", "WARNING": "⚠️", "ERROR": "❌", "SUCCESS": "✅"}
             print(f"[{timestamp}] {prefix.get(level, '')} {message}")
 
-    def run_command(self, cmd: List[str], description: str = "") -> Tuple[int, str, str]:
+    def run_command(
+        self, cmd: List[str], description: str = ""
+    ) -> Tuple[int, str, str]:
         """Run shell command and capture output"""
         self.log(f"Running: {' '.join(cmd)}")
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)  # 5 minute timeout
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=300
+            )  # 5 minute timeout
             return result.returncode, result.stdout, result.stderr
         except subprocess.TimeoutExpired:
             error_msg = f"Command timed out: {' '.join(cmd)}"
@@ -73,7 +77,9 @@ class ValidationRunner:
                 ast.parse(source, filename=file_path)
                 self.log(f"✓ {file_path}")
             except SyntaxError as e:
-                error_msg = f"SYNTAX ERROR in {file_path}:{e.lineno}:{e.offset}: {e.msg}"
+                error_msg = (
+                    f"SYNTAX ERROR in {file_path}:{e.lineno}:{e.offset}: {e.msg}"
+                )
                 syntax_errors.append(error_msg)
                 self.log(error_msg, "ERROR")
             except Exception as e:
@@ -86,14 +92,18 @@ class ValidationRunner:
             self.log(f"Found {len(syntax_errors)} syntax errors", "ERROR")
             return False
         else:
-            self.log(f"All {len(python_files)} Python files have valid syntax", "SUCCESS")
+            self.log(
+                f"All {len(python_files)} Python files have valid syntax", "SUCCESS"
+            )
             return True
 
     def check_pre_commit_hooks(self) -> bool:
         """Run pre-commit hooks"""
         self.log("🪝 Running pre-commit hooks...", "INFO")
 
-        returncode, stdout, stderr = self.run_command(["pre-commit", "run", "--all-files"])
+        returncode, stdout, stderr = self.run_command(
+            ["pre-commit", "run", "--all-files"]
+        )
 
         if returncode != 0:
             self.errors.append("Pre-commit hooks failed")
@@ -134,7 +144,9 @@ class ValidationRunner:
         """Check architecture documentation compliance"""
         self.log("🏗️ Checking architecture compliance...", "INFO")
 
-        returncode, stdout, stderr = self.run_command(["python", "tools/validation/validate-architecture.py"])
+        returncode, stdout, stderr = self.run_command(
+            ["python", "tools/validation/validate-architecture.py"]
+        )
 
         if returncode not in [0, 2]:  # 0=success, 2=bootstrap mode ok
             self.errors.append("Architecture validation failed")
@@ -206,7 +218,10 @@ class ValidationRunner:
                         # more sophisticated analysis
                         if hasattr(node.func, "attr"):
                             func_name = node.func.attr
-                            if func_name in ["save_context", "setup"] and len(node.args) == 1:
+                            if (
+                                func_name in ["save_context", "setup"]
+                                and len(node.args) == 1
+                            ):
                                 issues_found.append(
                                     f"{file_path}:{node.lineno}: Potential argument count issue in {func_name} call"
                                 )
@@ -214,9 +229,14 @@ class ValidationRunner:
                     elif isinstance(node, ast.ClassDef):
                         # Check for class instantiation issues
                         for child in ast.walk(node):
-                            if isinstance(child, ast.Call) and hasattr(child.func, "id"):
+                            if isinstance(child, ast.Call) and hasattr(
+                                child.func, "id"
+                            ):
                                 class_name = child.func.id
-                                if class_name.endswith("Configurator") and len(child.args) > 4:
+                                if (
+                                    class_name.endswith("Configurator")
+                                    and len(child.args) > 4
+                                ):
                                     msg = (
                                         f"{file_path}:{child.lineno}: "
                                         f"Potential argument order issue in {class_name} instantiation"
@@ -228,7 +248,9 @@ class ValidationRunner:
 
         if issues_found:
             self.warnings.extend(issues_found[:5])  # Limit output
-            self.log(f"Static analysis found {len(issues_found)} potential issues", "WARNING")
+            self.log(
+                f"Static analysis found {len(issues_found)} potential issues", "WARNING"
+            )
             for issue in issues_found[:3]:  # Show first 3 issues
                 self.log(issue, "WARNING")
             return True  # Don't fail build on warnings, just report
@@ -327,9 +349,15 @@ Examples:
         """,
     )
 
-    parser.add_argument("--syntax", action="store_true", help="Check Python syntax only")
-    parser.add_argument("--quick", action="store_true", help="Run quick validation only")
-    parser.add_argument("--pre-push", action="store_true", help="Run pre-push validation")
+    parser.add_argument(
+        "--syntax", action="store_true", help="Check Python syntax only"
+    )
+    parser.add_argument(
+        "--quick", action="store_true", help="Run quick validation only"
+    )
+    parser.add_argument(
+        "--pre-push", action="store_true", help="Run pre-push validation"
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     args = parser.parse_args()

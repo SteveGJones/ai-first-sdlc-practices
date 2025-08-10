@@ -84,7 +84,9 @@ def detect_collaboration_pattern() -> Dict[str, Any]:
             check=True,
         )
 
-        recent_authors = [line.strip() for line in result.stdout.split("\n") if line.strip()]
+        recent_authors = [
+            line.strip() for line in result.stdout.split("\n") if line.strip()
+        ]
         unique_recent_authors = set(recent_authors)
 
         # Get PR statistics
@@ -120,7 +122,10 @@ def detect_collaboration_pattern() -> Dict[str, Any]:
             author = pr.get("author", {}).get("login", "")
             reviews = pr.get("reviews", [])
 
-            has_external_review = any(review.get("author", {}).get("login", "") != author for review in reviews)
+            has_external_review = any(
+                review.get("author", {}).get("login", "") != author
+                for review in reviews
+            )
 
             if has_external_review:
                 external_reviews += 1
@@ -131,7 +136,9 @@ def detect_collaboration_pattern() -> Dict[str, Any]:
         is_solo = (
             total_contributors <= 2
             and active_contributors <= 1  # Allow for occasional contributor
-            and (total_prs == 0 or (self_merges / total_prs) > 0.8)  # Only one active contributor  # Mostly self-merged PRs
+            and (
+                total_prs == 0 or (self_merges / total_prs) > 0.8
+            )  # Only one active contributor  # Mostly self-merged PRs
         )
 
         return {
@@ -141,7 +148,9 @@ def detect_collaboration_pattern() -> Dict[str, Any]:
             "total_prs": total_prs,
             "external_reviews": external_reviews,
             "self_merges": self_merges,
-            "confidence": ("high" if total_prs > 5 else "medium" if total_prs > 0 else "low"),
+            "confidence": (
+                "high" if total_prs > 5 else "medium" if total_prs > 0 else "low"
+            ),
         }
 
     except (subprocess.CalledProcessError, json.JSONDecodeError, KeyError) as e:
@@ -323,7 +332,9 @@ def setup_branch_protection(
                 # single-developer repos)
                 "enforce_admins": False,
                 "required_pull_request_reviews": {
-                    "required_approving_review_count": (0 if enable_auto_approval else 1),
+                    "required_approving_review_count": (
+                        0 if enable_auto_approval else 1
+                    ),
                     "dismiss_stale_reviews": True,
                     "require_code_owner_reviews": False,
                 },
@@ -430,7 +441,9 @@ Examples:
   python setup-branch-protection-gh.py --dry-run
 """,
     )
-    parser.add_argument("--branch", default="main", help="Branch to protect (default: main)")
+    parser.add_argument(
+        "--branch", default="main", help="Branch to protect (default: main)"
+    )
     parser.add_argument(
         "--checks",
         nargs="+",
@@ -582,7 +595,9 @@ Examples:
 
     # Setup protection
     print("\n🔧 Configuring branch protection...")
-    if setup_branch_protection(args.branch, args.checks, solo_mode, enable_auto_approval):
+    if setup_branch_protection(
+        args.branch, args.checks, solo_mode, enable_auto_approval
+    ):
         print("\n🎉 Branch protection successfully configured!")
 
         print("\n📋 Next steps:")
@@ -605,7 +620,9 @@ Examples:
         if args.create_bot_workflow or (enable_auto_approval and not approval_bot):
             print("\n⚠️  Don't forget to commit and push the auto-approval workflow:")
             print("   git add .github/workflows/auto-approve.yml")
-            print("   git commit -m 'feat: add auto-approval workflow for AI-First SDLC'")
+            print(
+                "   git commit -m 'feat: add auto-approval workflow for AI-First SDLC'"
+            )
             print("   git push")
     else:
         sys.exit(1)
