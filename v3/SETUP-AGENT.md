@@ -31,7 +31,7 @@ def analyze_project():
     tech_stack = detect_technologies(scan_files)
     complexity = assess_complexity(scan_files)
     team_size = infer_team_size()
-    
+
     return {
         'type': determine_project_type(tech_stack),
         'complexity': complexity,
@@ -81,14 +81,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Agent Validation
         run: |
           echo "Activating VALIDATION-AGENT..."
           echo "Checking architecture documents..."
           echo "Verifying team-first compliance..."
           echo "Validating zero technical debt..."
-          
+
       - name: Report
         run: echo "✅ v3 Compliance Check Complete"
 ```
@@ -99,7 +99,7 @@ jobs:
 
 All 6 architecture documents required BEFORE code:
 1. requirements-traceability-matrix.md
-2. what-if-analysis.md  
+2. what-if-analysis.md
 3. architecture-decision-record.md
 4. system-invariants.md
 5. integration-design.md

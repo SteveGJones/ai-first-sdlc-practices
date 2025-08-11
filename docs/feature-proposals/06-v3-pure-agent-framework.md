@@ -251,7 +251,7 @@ python-dotenv==1.0.1
 
 ### Features Becoming Agent-Based
 - Setup → SETUP-ORCHESTRATOR
-- Validation → VALIDATION-INSPECTOR  
+- Validation → VALIDATION-INSPECTOR
 - Progress Tracking → PROGRESS-AGENT
 - Context Management → CONTEXT-AGENT
 - Branch Protection → GITHUB-AGENT

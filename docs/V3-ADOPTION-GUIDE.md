@@ -57,7 +57,7 @@ I want to set up AI-First SDLC v3 for my project. Please:
 
 ### What Happens Next
 
-1. **Discovery Interview** 
+1. **Discovery Interview**
    - The orchestrator will ask about your project's purpose
    - It learns your tech stack, team size, and pain points
    - This takes 2-3 minutes of conversation

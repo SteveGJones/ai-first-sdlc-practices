@@ -1,7 +1,7 @@
 # Retrospective: AI-Orchestrated Setup Feature
 
 ## Feature Overview
-- **Feature**: AI-Orchestrated Project Setup  
+- **Feature**: AI-Orchestrated Project Setup
 - **Branch**: feature/ai-orchestrated-setup
 - **Start Date**: 2025-08-10
 - **Status**: In Design Phase
@@ -62,7 +62,7 @@ Transform from Python script-centric setup to AI-First approach with:
 
 ### Phased Approach
 1. **Foundation First**: Build state management and protocols
-2. **Core Agents**: Develop orchestrators incrementally  
+2. **Core Agents**: Develop orchestrators incrementally
 3. **Validation Layer**: Ensure reliability before full deployment
 4. **Learning System**: Add intelligence gathering last
 

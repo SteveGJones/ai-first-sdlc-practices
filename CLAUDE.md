@@ -33,7 +33,7 @@ I want to set up AI-First SDLC v3 for my project. Please:
 4. After restart, I'll say: "Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project"
 ```
 
-**WHY V3 IS BETTER**: 
+**WHY V3 IS BETTER**:
 - No Python or dependencies required
 - Intelligent discovery of your project's needs
 - Downloads only what you actually need from GitHub
