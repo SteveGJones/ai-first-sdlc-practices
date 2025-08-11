@@ -81,6 +81,10 @@ These violations result in **IMMEDIATE PROJECT TERMINATION**:
 5. **Skipping retrospectives**
 6. **Bypassing validation checks**
 7. **Attempting to disable sdlc-enforcer**
+8. **Solo work without engaging specialist agents**
+9. **Making architectural decisions without solution-architect consultation**
+10. **Skipping mandatory team assembly protocols**
+11. **Working in isolation when team expertise is available**
 
 ---
 

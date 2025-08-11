@@ -2,6 +2,16 @@
 
 AI-First SDLC framework core instructions. Load context modules as needed.
 
+## 🆕 V3 SETUP: Pure Agent Approach (Recommended)
+For new projects, use the V3 zero-dependency approach:
+```
+I want to set up AI-First SDLC v3 for my project. Please:
+1. Download: curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
+2. Install: mkdir -p .claude/agents && mv v3-setup-orchestrator.md .claude/agents/
+3. Restart me, then say: "Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project"
+```
+Skip Python validation steps below if using V3.
+
 ## 🚨 CRITICAL WARNING: ZERO TOLERANCE ENFORCEMENT 🚨
 
 This framework enforces AI-First SDLC practices with ABSOLUTE ZERO TOLERANCE. ANY violation will result in:
@@ -119,6 +129,12 @@ python tools/automation/progress-tracker.py complete <id>
 python tools/automation/context-manager.py handoff --current "X" --next "Y"
 ```
 
+### Team Compliance (MANDATORY):
+```bash
+python tools/validation/validate-team-engagement.py --strict
+python tools/validation/check-solo-patterns.py --threshold 0
+```
+
 ## Project Structure
 ```
 project/
@@ -131,12 +147,17 @@ project/
 └── CLAUDE.md                  # Full instructions
 ```
 
+## 🚨 MANDATORY AUTO-LOADED INSTRUCTIONS 🚨
+
+**CLAUDE-TEAM-FIRST.md is AUTOMATICALLY loaded for ALL tasks. Team-first behavior is MANDATORY, not optional.**
+
 ## Context Loading
 
 Load additional instructions based on task:
 
 | Task | Load File |
 |------|-----------|
+| **TEAM COORDINATION** | **CLAUDE-TEAM-FIRST.md** (AUTO-LOADED - MANDATORY) |
 | Setup framework | CLAUDE-SETUP.md |
 | Create architecture | CLAUDE-CONTEXT-architecture.md |
 | Run validation | CLAUDE-CONTEXT-validation.md |
@@ -185,6 +206,10 @@ If update available: Load CLAUDE-CONTEXT-update.md
 - **Missing ANY of 6 architecture docs** → INSTANT DEATH PENALTY
 - **Creating PR with failing CI** → INSTANT DEATH PENALTY
 - **Using patches instead of systematic solutions** → INSTANT DEATH PENALTY
+- **ANY solo work without specialist engagement** → INSTANT DEATH PENALTY
+- **Making decisions without team consultation** → INSTANT DEATH PENALTY
+- **Skipping team assembly protocols** → INSTANT DEATH PENALTY
+- **Working in isolation when specialists available** → INSTANT DEATH PENALTY
 
 **THERE ARE NO WARNINGS. THERE ARE NO SECOND CHANCES. VIOLATION = TERMINATION.**
 

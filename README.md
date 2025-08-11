@@ -3,8 +3,11 @@
 **Table of Contents**
 
 - [AI-First SDLC Practices](#ai-first-sdlc-practices)
+  - [🎯 Quick Setup for Your Project (V3 - Zero Dependencies!)](#-quick-setup-for-your-project-v3---zero-dependencies)
   - [🚀 Quick Start](#-quick-start)
-    - [For AI Agents (Claude)](#for-ai-agents-claude)
+    - [🆕 V3: Pure Agent-Based Setup (Recommended)](#-v3-pure-agent-based-setup-recommended)
+      - [Step-by-Step V3 Setup](#step-by-step-v3-setup)
+    - [V2: Script-Based Setup (Legacy)](#v2-script-based-setup-legacy)
     - [For Humans (One-liner Setup)](#for-humans-one-liner-setup)
     - [Alternative: Direct Python Setup](#alternative-direct-python-setup)
     - [🚀 Quickstart Mode (NEW!)](#-quickstart-mode-new)
@@ -41,12 +44,59 @@
 
 A comprehensive framework for integrating AI agents as primary developers while maintaining quality and process compliance.
 
-**⚠️ IMPORTANT**: This framework is designed to be ADDED TO your existing project, not cloned separately. Run the setup commands in YOUR project directory.
+## 🎯 Quick Setup for Your Project (V3 - Zero Dependencies!)
+
+**Tell your AI assistant (Claude):**
+```
+I want to set up AI-First SDLC v3 for my project. Please:
+1. Download the V3 orchestrator: curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
+2. Install it: mkdir -p .claude/agents && mv v3-setup-orchestrator.md .claude/agents/
+3. Tell me to restart you so the agent loads
+4. After restart, I'll say: "Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project"
+```
+
+The V3 orchestrator will interview you about your project and set up a customized AI-First SDLC in < 2 minutes.
+
+**⚠️ IMPORTANT**: This framework is designed to be ADDED TO your existing project, not cloned separately.
 
 ## 🚀 Quick Start
 
-### For AI Agents (Claude)
-To have Claude set up the AI-First SDLC framework in your EXISTING project, use this prompt:
+### 🆕 V3: Pure Agent-Based Setup (Recommended)
+The new V3 approach uses AI agents exclusively - no Python scripts or dependencies required!
+
+#### Step-by-Step V3 Setup
+
+**Step 1: Install the V3 Orchestrator Agent**
+```bash
+# Download and install the orchestrator
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
+mkdir -p .claude/agents
+mv v3-setup-orchestrator.md .claude/agents/
+```
+
+**Step 2: Restart your AI assistant** (Required for agent to load)
+
+**Step 3: Invoke the V3 Orchestrator**
+```
+Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project
+```
+
+The V3 Setup Orchestrator will:
+1. **Discover** - Interview you about your project's purpose and challenges
+2. **Decide** - Select the right SDLC variant and agent team
+3. **Download** - Fetch only needed components from GitHub repository
+4. **Delegate** - Hand off to specialists for GitHub and local setup
+5. **Deploy** - Activate your customized AI team for daily work
+
+**✨ V3 Benefits**:
+- Zero dependencies (no Python required)
+- Intelligent agent orchestration
+- Downloads only what you need from GitHub
+- Customized to your project's reality
+- < 2 minute setup
+
+### V2: Script-Based Setup (Legacy)
+For projects requiring the traditional Python-based setup:
 
 ```
 I want to add AI-First SDLC practices to this project. Please:
@@ -57,14 +107,11 @@ I want to add AI-First SDLC practices to this project. Please:
 Do NOT clone the repository - we're adding the framework to THIS project.
 ```
 
-**⚠️ CRITICAL**:
-- Claude MUST read the instructions FIRST before running anything
-- Claude MUST use the official setup-smart.py script from the MAIN branch
-- Claude MUST NOT create custom directory structures like `.claud/` or `.claude/`
-- All framework directories (docs/, retrospectives/, plan/, tools/) go at PROJECT ROOT
-- The setup script handles everything - Claude should not manually recreate the structure
-
-Claude will ask you for your project's purpose and then proceed with the setup automatically using the official script.
+**⚠️ V2 Requirements**:
+- Python 3.8+ required
+- Multiple dependencies
+- Downloads entire framework
+- Generic setup for all projects
 
 ### For Humans (One-liner Setup)
 ```bash
