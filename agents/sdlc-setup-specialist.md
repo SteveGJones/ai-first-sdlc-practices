@@ -1,6 +1,13 @@
 ---
 name: sdlc-setup-specialist
-description: Specialist agent that handles GitHub configuration, local setup, and ensures alignment between local and remote SDLC environments. This agent is delegated to by the V3 Setup Orchestrator after discovery and decision phases.
+description: Handles GitHub configuration, local setup, and alignment between local and remote SDLC environments
+examples:
+  - context: Delegated by V3 orchestrator to set up GitHub
+    user: "Set up branch protection and CI/CD for this project"
+    assistant: "I'll configure GitHub branch protection rules and set up the AI-First SDLC validation workflow."
+  - context: Ensuring local and remote alignment
+    user: "Make sure my local setup matches GitHub configuration"
+    assistant: "Let me verify your local directories, hooks, and GitHub settings are properly aligned."
 color: blue
 ---
 

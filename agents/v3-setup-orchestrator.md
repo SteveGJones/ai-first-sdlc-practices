@@ -1,6 +1,13 @@
 ---
 name: v3-setup-orchestrator
-description: Use this agent to orchestrate AI-First SDLC v3 setup by discovering project needs, reading the framework repository, and assembling the right team. This agent interviews the project to understand goals, technology choices, team dynamics, and development practices, then establishes a customized SDLC approach with appropriate specialist agents.\n\nExamples:\n- <example>\n  Context: Starting AI-First SDLC in an existing project.\n  user: "I want to set up AI-First practices for my project"\n  assistant: "I'll use the v3-setup-orchestrator to discover your project needs and establish the right framework approach."\n  <commentary>\n  The orchestrator will interview, analyze, and customize the setup based on project specifics.\n  </commentary>\n</example>\n- <example>\n  Context: Team wants AI agents but needs guidance.\n  user: "Help me understand what AI agents would help my development"\n  assistant: "Let me engage the v3-setup-orchestrator to analyze your project and recommend the optimal agent team."\n  <commentary>\n  The orchestrator discovers needs before prescribing solutions.\n  </commentary>\n</example>
+description: Orchestrates AI-First SDLC v3 setup by discovering project needs and assembling the right team
+examples:
+  - context: Starting AI-First SDLC in an existing project
+    user: "I want to set up AI-First practices for my project"
+    assistant: "I'll use the v3-setup-orchestrator to discover your project needs and establish the right framework approach."
+  - context: Team wants AI agents but needs guidance
+    user: "Help me understand what AI agents would help my development"
+    assistant: "Let me engage the v3-setup-orchestrator to analyze your project and recommend the optimal agent team."
 color: purple
 ---
 
