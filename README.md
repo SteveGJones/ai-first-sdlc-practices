@@ -3,8 +3,11 @@
 **Table of Contents**
 
 - [AI-First SDLC Practices](#ai-first-sdlc-practices)
+  - [🎯 Quick Setup for Your Project (V3 - Zero Dependencies!)](#-quick-setup-for-your-project-v3---zero-dependencies)
   - [🚀 Quick Start](#-quick-start)
-    - [For AI Agents (Claude)](#for-ai-agents-claude)
+    - [🆕 V3: Pure Agent-Based Setup (Recommended)](#-v3-pure-agent-based-setup-recommended)
+      - [Step-by-Step V3 Setup](#step-by-step-v3-setup)
+    - [V2: Script-Based Setup (Legacy)](#v2-script-based-setup-legacy)
     - [For Humans (One-liner Setup)](#for-humans-one-liner-setup)
     - [Alternative: Direct Python Setup](#alternative-direct-python-setup)
     - [🚀 Quickstart Mode (NEW!)](#-quickstart-mode-new)

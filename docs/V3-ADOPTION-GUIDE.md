@@ -1,3 +1,39 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [V3 AI-First SDLC - Pure Agent Adoption Guide](#v3-ai-first-sdlc---pure-agent-adoption-guide)
+  - [🚀 The V3 Revolution: From Scripts to Agents](#-the-v3-revolution-from-scripts-to-agents)
+  - [For Projects Adopting AI-First SDLC](#for-projects-adopting-ai-first-sdlc)
+    - [The Complete Setup Prompt](#the-complete-setup-prompt)
+    - [What Happens Next](#what-happens-next)
+    - [Example Scenarios](#example-scenarios)
+      - [Scenario 1: Node.js API Startup](#scenario-1-nodejs-api-startup)
+      - [Scenario 2: Enterprise Microservices](#scenario-2-enterprise-microservices)
+  - [For V2 Users Migrating to V3](#for-v2-users-migrating-to-v3)
+    - [Migration is Simple](#migration-is-simple)
+    - [What Changes](#what-changes)
+  - [Key V3 Principles](#key-v3-principles)
+    - [1. Discovery Over Prescription](#1-discovery-over-prescription)
+    - [2. Minimal Footprint](#2-minimal-footprint)
+    - [3. Agent Orchestration](#3-agent-orchestration)
+    - [4. Zero Dependencies](#4-zero-dependencies)
+  - [Your V3 Agent Team](#your-v3-agent-team)
+    - [Core Agents (Always Included)](#core-agents-always-included)
+    - [Specialist Agents (Based on Needs)](#specialist-agents-based-on-needs)
+  - [Using Your V3 Team](#using-your-v3-team)
+  - [Frequently Asked Questions](#frequently-asked-questions)
+    - [Q: Do I need Python for V3?](#q-do-i-need-python-for-v3)
+    - [Q: How long does setup take?](#q-how-long-does-setup-take)
+    - [Q: Can I customize which agents I get?](#q-can-i-customize-which-agents-i-get)
+    - [Q: What if I'm already using V2?](#q-what-if-im-already-using-v2)
+    - [Q: Do I need to clone the repository?](#q-do-i-need-to-clone-the-repository)
+    - [Q: Can I add more agents later?](#q-can-i-add-more-agents-later)
+  - [Getting Help](#getting-help)
+  - [The Future is Agent-Based](#the-future-is-agent-based)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # V3 AI-First SDLC - Pure Agent Adoption Guide
 
 ## 🚀 The V3 Revolution: From Scripts to Agents
