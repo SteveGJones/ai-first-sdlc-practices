@@ -2,6 +2,16 @@
 
 AI-First SDLC framework core instructions. Load context modules as needed.
 
+## 🆕 V3 SETUP: Pure Agent Approach (Recommended)
+For new projects, use the V3 zero-dependency approach:
+```
+I want to set up AI-First SDLC v3 for my project. Please:
+1. Download: curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
+2. Install: mkdir -p .claude/agents && mv v3-setup-orchestrator.md .claude/agents/
+3. Restart me, then say: "Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project"
+```
+Skip Python validation steps below if using V3.
+
 ## 🚨 CRITICAL WARNING: ZERO TOLERANCE ENFORCEMENT 🚨
 
 This framework enforces AI-First SDLC practices with ABSOLUTE ZERO TOLERANCE. ANY violation will result in:

@@ -6,15 +6,18 @@ V3 represents the ultimate evolution of AI-First SDLC - a pure knowledge-based s
 
 ## For Projects Adopting AI-First SDLC
 
-### The Magic Prompt
-Simply tell your AI assistant (Claude):
+### The Complete Setup Prompt
+Tell your AI assistant (Claude):
 
 ```
-I want to set up AI-First SDLC v3 for my project.
-Use the v3-setup-orchestrator agent to discover my project needs and establish the right framework.
+I want to set up AI-First SDLC v3 for my project. Please:
+1. Download the V3 orchestrator: curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
+2. Install it: mkdir -p .claude/agents && mv v3-setup-orchestrator.md .claude/agents/
+3. Tell me to restart you so the agent loads
+4. After restart, I'll say: "Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project"
 ```
 
-That's it! The V3 Setup Orchestrator will handle everything.
+**Important**: The restart in step 3 is required for the agent to become available.
 
 ### What Happens Next
 

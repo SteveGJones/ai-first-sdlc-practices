@@ -84,8 +84,13 @@ download_decision_tree:
     - "[selected specialist agents].md"  # Based on pain points
 ```
 
-Use WebFetch to get files from:
-`https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/[path]`
+Use WebFetch or curl to download files from GitHub:
+```bash
+# Examples:
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/ai-sdlc-validation.yml > ai-sdlc-validation.yml
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/sdlc-setup-specialist.md > sdlc-setup-specialist.md
+# Or use WebFetch for reading content directly
+```
 
 ### Phase 3: Intelligent Matching
 Based on discovery, determine:
@@ -322,12 +327,17 @@ Based on our discussion, here's your customized approach:
 1. **Download Required Components**
 ```bash
 # Example for Node.js API project discovered
-WebFetch: https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/sdlc-variants/lean-sdlc.yml
-WebFetch: https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/ai-sdlc-validation.yml
-WebFetch: https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.claude/agents/sdlc-setup-specialist.md
-WebFetch: https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.claude/agents/js-sdlc-coach.md
-WebFetch: https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.claude/agents/api-designer.md
-WebFetch: https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.claude/agents/test-automator.md
+# Download GitHub workflow
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/ai-sdlc-validation.yml > ai-sdlc-validation.yml
+
+# Download SDLC setup specialist agent
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/sdlc-setup-specialist.md > sdlc-setup-specialist.md
+
+# Download team agents based on discovery
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/sdlc-enforcer.md > sdlc-enforcer.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/sdlc/ai-first-kick-starter.md > ai-first-kick-starter.md
+
+# Note: Check agent availability first, as not all agents may exist yet
 ```
 
 2. **Install Components Locally**

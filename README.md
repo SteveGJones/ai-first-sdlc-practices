@@ -41,32 +41,54 @@
 
 A comprehensive framework for integrating AI agents as primary developers while maintaining quality and process compliance.
 
-**⚠️ IMPORTANT**: This framework is designed to be ADDED TO your existing project, not cloned separately. Run the setup commands in YOUR project directory.
+## 🎯 Quick Setup for Your Project (V3 - Zero Dependencies!)
+
+**Tell your AI assistant (Claude):**
+```
+I want to set up AI-First SDLC v3 for my project. Please:
+1. Download the V3 orchestrator: curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
+2. Install it: mkdir -p .claude/agents && mv v3-setup-orchestrator.md .claude/agents/
+3. Tell me to restart you so the agent loads
+4. After restart, I'll say: "Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project"
+```
+
+The V3 orchestrator will interview you about your project and set up a customized AI-First SDLC in < 2 minutes.
+
+**⚠️ IMPORTANT**: This framework is designed to be ADDED TO your existing project, not cloned separately.
 
 ## 🚀 Quick Start
 
 ### 🆕 V3: Pure Agent-Based Setup (Recommended)
 The new V3 approach uses AI agents exclusively - no Python scripts or dependencies required!
 
-#### For AI Agents (Claude)
-To set up AI-First SDLC v3 using pure agent orchestration, use this prompt:
+#### Step-by-Step V3 Setup
 
+**Step 1: Install the V3 Orchestrator Agent**
+```bash
+# Download and install the orchestrator
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
+mkdir -p .claude/agents
+mv v3-setup-orchestrator.md .claude/agents/
 ```
-I want to set up AI-First SDLC v3 for my project. 
-Use the v3-setup-orchestrator agent to discover my project needs and establish the right framework.
+
+**Step 2: Restart your AI assistant** (Required for agent to load)
+
+**Step 3: Invoke the V3 Orchestrator**
+```
+Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project
 ```
 
 The V3 Setup Orchestrator will:
 1. **Discover** - Interview you about your project's purpose and challenges
 2. **Decide** - Select the right SDLC variant and agent team
-3. **Download** - Fetch only needed components from the repository  
+3. **Download** - Fetch only needed components from GitHub repository
 4. **Delegate** - Hand off to specialists for GitHub and local setup
 5. **Deploy** - Activate your customized AI team for daily work
 
 **✨ V3 Benefits**:
 - Zero dependencies (no Python required)
 - Intelligent agent orchestration
-- Downloads only what you need
+- Downloads only what you need from GitHub
 - Customized to your project's reality
 - < 2 minute setup
 

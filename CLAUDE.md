@@ -24,7 +24,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🎯 Recommended User Prompt
 
-To have Claude set up this framework in your EXISTING project, use:
+### 🆕 V3: Pure Agent Approach (Recommended - Zero Dependencies)
+```
+I want to set up AI-First SDLC v3 for my project. Please:
+1. Download the V3 orchestrator: curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
+2. Install it: mkdir -p .claude/agents && mv v3-setup-orchestrator.md .claude/agents/
+3. Tell me to restart you so the agent loads
+4. After restart, I'll say: "Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project"
+```
+
+**WHY V3 IS BETTER**: 
+- No Python or dependencies required
+- Intelligent discovery of your project's needs
+- Downloads only what you actually need from GitHub
+- Customized agent team for your specific challenges
+- Setup in < 2 minutes
+
+### V2: Legacy Script Approach (If V3 Not Available)
 ```
 I want to add AI-First SDLC practices to this project. Please:
 1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md
@@ -34,13 +50,7 @@ I want to add AI-First SDLC practices to this project. Please:
 Do NOT clone the repository - we're adding the framework to THIS project.
 ```
 
-**WHY THIS WORKS**: By reading the instructions FIRST, Claude will understand:
-- This is about enhancing an existing project, not cloning
-- The exact directory structure to expect
-- Common mistakes to avoid
-- The proper workflow to follow
-
-Claude will ask you for your project's purpose and then proceed with setup using the official script.
+**V2 LIMITATIONS**: Requires Python 3.8+, downloads entire framework, generic setup for all projects.
 
 ## Project Overview
 
