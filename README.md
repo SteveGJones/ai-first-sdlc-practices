@@ -45,8 +45,33 @@ A comprehensive framework for integrating AI agents as primary developers while 
 
 ## 🚀 Quick Start
 
-### For AI Agents (Claude)
-To have Claude set up the AI-First SDLC framework in your EXISTING project, use this prompt:
+### 🆕 V3: Pure Agent-Based Setup (Recommended)
+The new V3 approach uses AI agents exclusively - no Python scripts or dependencies required!
+
+#### For AI Agents (Claude)
+To set up AI-First SDLC v3 using pure agent orchestration, use this prompt:
+
+```
+I want to set up AI-First SDLC v3 for my project. 
+Use the v3-setup-orchestrator agent to discover my project needs and establish the right framework.
+```
+
+The V3 Setup Orchestrator will:
+1. **Discover** - Interview you about your project's purpose and challenges
+2. **Decide** - Select the right SDLC variant and agent team
+3. **Download** - Fetch only needed components from the repository  
+4. **Delegate** - Hand off to specialists for GitHub and local setup
+5. **Deploy** - Activate your customized AI team for daily work
+
+**✨ V3 Benefits**:
+- Zero dependencies (no Python required)
+- Intelligent agent orchestration
+- Downloads only what you need
+- Customized to your project's reality
+- < 2 minute setup
+
+### V2: Script-Based Setup (Legacy)
+For projects requiring the traditional Python-based setup:
 
 ```
 I want to add AI-First SDLC practices to this project. Please:
@@ -57,14 +82,11 @@ I want to add AI-First SDLC practices to this project. Please:
 Do NOT clone the repository - we're adding the framework to THIS project.
 ```
 
-**⚠️ CRITICAL**:
-- Claude MUST read the instructions FIRST before running anything
-- Claude MUST use the official setup-smart.py script from the MAIN branch
-- Claude MUST NOT create custom directory structures like `.claud/` or `.claude/`
-- All framework directories (docs/, retrospectives/, plan/, tools/) go at PROJECT ROOT
-- The setup script handles everything - Claude should not manually recreate the structure
-
-Claude will ask you for your project's purpose and then proceed with the setup automatically using the official script.
+**⚠️ V2 Requirements**:
+- Python 3.8+ required
+- Multiple dependencies
+- Downloads entire framework
+- Generic setup for all projects
 
 ### For Humans (One-liner Setup)
 ```bash
