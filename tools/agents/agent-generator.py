@@ -10,14 +10,14 @@ import yaml
 import json
 import click
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional, Tuple
 import sys
 
 
 class AgentValidator:
     """Validate agent files for correct YAML frontmatter format"""
 
-    def extract_frontmatter(self, content: str) -> tuple[str, str]:
+    def extract_frontmatter(self, content: str) -> Tuple[str, str]:
         """Extract YAML frontmatter and body from agent file"""
         if not content.startswith("---"):
             raise ValueError("File must start with '---' delimiter")
