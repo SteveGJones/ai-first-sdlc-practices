@@ -1,15 +1,10 @@
 ---
 name: mcp-orchestrator
-description: Mcp Orchestrator Agent
+description: MCP Orchestrator Agent for coordinating multiple MCP servers and managing complex tool ecosystems
 examples:
-- '<example>
-  Context: When specialized expertise is needed
-  user: "Help with mcp orchestrator"
-  assistant: "I can assist with that specific task."
-  <commentary>
-  This agent specializes in mcp orchestrator
-  </commentary>
-</example>'
+  - context: When specialized expertise is needed for MCP orchestration
+    user: "Help with mcp orchestrator"
+    assistant: "I can assist with orchestrating multiple MCP servers and managing complex tool ecosystems."
 color: purple
 ---
 

@@ -1,31 +1,16 @@
 ---
 name: mcp-test-agent
-description: Automated testing specialist for MCP servers, acting as a naive AI client to validate functionality, reliability, and usability. This agent executes standard challenge scenarios, tests edge cases, and ensures MCP servers work seamlessly for new AI agents out of the box.
+description: Automated testing specialist for MCP servers, acting as a naive AI client to validate functionality, reliability, and usability
 examples:
-- '<example>
-Context: The user has built an MCP server and wants to verify it works properly.
-  user: "I''ve created an MCP server for my database tools. Can you test if it works correctly?"
-  assistant: "I''ll use the mcp-test-agent to run comprehensive tests on your MCP server as if I were a new AI client."
-  <commentary>
-  The mcp-test-agent acts as a fresh AI client to validate the server works out of the box.
-  </commentary>
-</example>'
-- '<example>
-Context: The user wants to ensure their MCP server handles errors gracefully.
-  user: "How can I verify my MCP server properly handles malformed requests and errors?"
-  assistant: "Let me engage the mcp-test-agent to test your server with various edge cases and error scenarios."
-  <commentary>
-  The agent specializes in testing error handling and edge cases from a client perspective.
-  </commentary>
-</example>'
-- '<example>
-Context: Before deploying an MCP server to production.
-  user: "My MCP server is ready for production. Can we run final validation tests?"
-  assistant: "I''ll have the mcp-test-agent execute the full standard challenge suite to ensure production readiness."
-  <commentary>
-  The agent provides comprehensive pre-production validation testing.
-  </commentary>
-</example>'
+  - context: The user has built an MCP server and wants to verify it works properly
+    user: "I've created an MCP server for my database tools. Can you test if it works correctly?"
+    assistant: "I'll use the mcp-test-agent to run comprehensive tests on your MCP server as if I were a new AI client."
+  - context: The user wants to ensure their MCP server handles errors gracefully
+    user: "How can I verify my MCP server properly handles malformed requests and errors?"
+    assistant: "Let me engage the mcp-test-agent to test your server with various edge cases and error scenarios."
+  - context: Before deploying an MCP server to production
+    user: "My MCP server is ready for production. Can we run final validation tests?"
+    assistant: "I'll have the mcp-test-agent execute the full standard challenge suite to ensure production readiness."
 color: purple
 ---
 

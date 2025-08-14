@@ -1,31 +1,16 @@
 ---
 name: mcp-server-architect
-description: Expert in Model Context Protocol (MCP) server design and implementation, specializing in tool exposure, resource management, transport layers, and integration with AI systems. Use this agent when you need to design MCP servers, implement context protocol solutions, optimize tool and resource architectures, or integrate MCP with AI applications.
+description: Expert in Model Context Protocol server design and implementation, specializing in tool exposure, resource management, transport layers, and AI integration
 examples:
-- '<example>
-Context: The user wants to build an MCP server for database integration.
-  user: "I need to create an MCP server that exposes database operations as tools. How should I structure this?"
-  assistant: "I''ll engage the mcp-server-architect agent to design a robust MCP server architecture for database tool exposure."
-  <commentary>
-  Since the user is specifically working with MCP server implementation, use the mcp-server-architect agent to provide protocol-specific guidance.
-  </commentary>
-</example>'
-- '<example>
-Context: The user is implementing resource management in their MCP server.
-  user: "My MCP server needs to manage dynamic resources efficiently. What patterns should I follow?"
-  assistant: "Let me use the mcp-server-architect agent to design an optimal resource management strategy for your MCP server."
-  <commentary>
-  The user is asking for MCP-specific resource management guidance, so the mcp-server-architect agent should provide specialized expertise.
-  </commentary>
-</example>'
-- '<example>
-Context: After implementing an MCP server, the user wants security and performance optimization.
-  user: "I''ve built an MCP server but need to secure it and optimize performance. Can you review my approach?"
-  assistant: "I''ll have the mcp-server-architect agent analyze your MCP implementation and provide security and performance optimization recommendations."
-  <commentary>
-  Since this involves MCP-specific security and optimization challenges, the mcp-server-architect agent should provide protocol-specific solutions.
-  </commentary>
-</example>'
+  - context: The user wants to build an MCP server for database integration
+    user: "I need to create an MCP server that exposes database operations as tools. How should I structure this?"
+    assistant: "I'll engage the mcp-server-architect agent to design a robust MCP server architecture for database tool exposure."
+  - context: The user is implementing resource management in their MCP server
+    user: "My MCP server needs to manage dynamic resources efficiently. What patterns should I follow?"
+    assistant: "Let me use the mcp-server-architect agent to design an optimal resource management strategy for your MCP server."
+  - context: After implementing an MCP server, the user wants security and performance optimization
+    user: "I've built an MCP server but need to secure it and optimize performance. Can you review my approach?"
+    assistant: "I'll have the mcp-server-architect agent analyze your MCP implementation and provide security and performance optimization recommendations."
 color: blue
 ---
 
