@@ -187,10 +187,20 @@ python setup-smart.py --quickstart
 
 ## 📚 Documentation
 
+### Essential Guides
+- [Documentation Index](docs/README.md) - Complete documentation directory
 - [HOWTO Guide](docs/HOWTO.md) - Comprehensive usage guide
 - [Quick Reference](docs/QUICK-REFERENCE.md) - Command cheat sheet
 - [Workflow Diagrams](docs/workflow-diagram.md) - Visual process flows
+
+### Agent Development
+- **[Agent Creation Guide](docs/AGENT-CREATION-GUIDE.md)** - How to write effective agents
+- **[Agent Format Specification](docs/AGENT-FORMAT-SPEC.md)** - Technical specification
+- [Agent Generator Tool](tools/agents/README.md) - Validate and generate agents
+
+### Core Policies
 - [Zero Technical Debt Policy](ZERO-TECHNICAL-DEBT.md) - Architecture-first development guide
+- [AI Autonomy Guidelines](AI-AUTONOMY.md) - Autonomous AI operation
 
 ## 🚫 Zero Technical Debt Policy
 
