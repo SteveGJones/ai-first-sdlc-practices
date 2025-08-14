@@ -245,7 +245,7 @@ def template(name: str, output: Optional[Path]):
     try:
         template_path = generator.create_template(name, output)
         click.echo(f"✓ Created template: {template_path}")
-        click.echo(f"\nNext steps:")
+        click.echo("\nNext steps:")
         click.echo(f"1. Edit {template_path} to fill in the agent details")
         click.echo(f"2. Run: python {__file__} generate {template_path}")
 
