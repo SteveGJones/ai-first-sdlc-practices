@@ -1,3 +1,43 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Documentation Index](#documentation-index)
+  - [📚 Core Documentation](#-core-documentation)
+    - [Getting Started](#getting-started)
+    - [Framework Principles](#framework-principles)
+  - [🤖 Agent Development](#-agent-development)
+    - [Creating Agents](#creating-agents)
+    - [Agent Tools](#agent-tools)
+    - [Agent System](#agent-system)
+  - [🏗️ Architecture](#-architecture)
+    - [Design Documents](#design-documents)
+    - [Implementation Patterns](#implementation-patterns)
+  - [🚀 Setup and Configuration](#-setup-and-configuration)
+    - [V3 Setup (Recommended)](#v3-setup-recommended)
+    - [Legacy Setup](#legacy-setup)
+  - [👥 Team Dynamics](#-team-dynamics)
+    - [Coaching Systems](#coaching-systems)
+    - [AI Teams](#ai-teams)
+  - [🔄 Updates and Releases](#-updates-and-releases)
+    - [Version Management](#version-management)
+    - [Migration Guides](#migration-guides)
+  - [📊 Compliance and Validation](#-compliance-and-validation)
+    - [Validation Tools](#validation-tools)
+    - [Standards](#standards)
+  - [🛠️ Advanced Topics](#-advanced-topics)
+    - [Performance](#performance)
+    - [Security](#security)
+    - [Integration](#integration)
+  - [📖 Reference](#-reference)
+    - [Commands](#commands)
+    - [Templates](#templates)
+  - [🆘 Help](#-help)
+    - [Troubleshooting](#troubleshooting)
+    - [Support](#support)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Documentation Index
 
 Complete documentation for the AI-First SDLC Practices framework.

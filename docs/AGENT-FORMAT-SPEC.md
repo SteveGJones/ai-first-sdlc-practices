@@ -1,3 +1,29 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Agent Format Specification](#agent-format-specification)
+  - [File Structure](#file-structure)
+  - [YAML Frontmatter Schema](#yaml-frontmatter-schema)
+    - [Required Fields](#required-fields)
+    - [Optional Fields](#optional-fields)
+    - [Examples Structure](#examples-structure)
+  - [Complete Schema](#complete-schema)
+  - [Content Section](#content-section)
+    - [Minimum Required Sections](#minimum-required-sections)
+    - [Recommended Sections](#recommended-sections)
+  - [Validation Rules](#validation-rules)
+    - [YAML Frontmatter](#yaml-frontmatter)
+    - [Content Section](#content-section-1)
+  - [File Naming Convention](#file-naming-convention)
+  - [Directory Structure](#directory-structure)
+  - [Example: Valid Agent File](#example-valid-agent-file)
+  - [JSON Representation](#json-representation)
+  - [Version History](#version-history)
+  - [Compliance](#compliance)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Agent Format Specification
 
 Technical specification for AI agent file format used in the AI-First SDLC framework.
