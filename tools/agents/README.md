@@ -6,7 +6,7 @@ A tool for validating and generating properly formatted AI agent files from JSON
 
 Agent files have complex content that can't be generated from simple CLI inputs. This tool:
 1. **Validates** existing agent files for correct YAML frontmatter format
-2. **Generates** agent files from detailed JSON specifications  
+2. **Generates** agent files from detailed JSON specifications
 3. **Extracts** existing agents to JSON for editing and regeneration
 4. **Creates** JSON templates with the proper structure
 

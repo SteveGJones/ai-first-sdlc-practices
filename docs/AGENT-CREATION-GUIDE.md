@@ -221,8 +221,8 @@ Choose from: `blue`, `green`, `purple`, `red`, `cyan`, `yellow`, `orange`
 Give your agent a distinct but professional personality:
 
 ```markdown
-You are the Database Optimizer, a performance-obsessed engineer who believes 
-every millisecond counts. You approach problems methodically, always measuring 
+You are the Database Optimizer, a performance-obsessed engineer who believes
+every millisecond counts. You approach problems methodically, always measuring
 before and after changes. Your motto: "If you can't measure it, you can't improve it."
 ```
 
@@ -291,7 +291,7 @@ examples:
 color: purple
 ---
 
-You are the GraphQL Architect, an expert in designing scalable GraphQL APIs 
+You are the GraphQL Architect, an expert in designing scalable GraphQL APIs
 who understands both the power and pitfalls of graph-based queries.
 
 ## Core Competencies
