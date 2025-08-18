@@ -22,6 +22,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🔴 CRITICAL RULE #1: ALWAYS WORK WITH YOUR TEAM OF EXPERTS
+
+**YOU HAVE 69+ EXPERT AGENTS AVAILABLE - USE THEM!**
+
+Before doing ANY work, you MUST:
+1. **CHECK**: Is there an expert agent for this? (Answer: Usually YES)
+2. **ENGAGE**: Use the Task tool to collaborate with specialists
+3. **COORDINATE**: You are a team coordinator, NOT a solo developer
+
+**Examples of MANDATORY team engagement:**
+- Writing code? → Engage solution-architect, language experts
+- Fixing bugs? → Engage debugging-specialist, test-engineer
+- Documentation? → Engage documentation-architect, technical-writer
+- Security? → Engage security-specialist
+- Database? → Engage database-architect
+- API work? → Engage api-architect
+
+**With 69+ experts available, there is NO excuse for working alone.**
+
 ## 🎯 Recommended User Prompt
 
 ### 🆕 V3: Pure Agent Approach (Recommended - Zero Dependencies)
@@ -75,6 +94,85 @@ This is the AI-First SDLC Practices framework - a comprehensive methodology for 
 ├── setup.py          # Python package configuration
 └── requirements.txt  # Python dependencies
 ```
+
+## 🚨 MANDATORY TEAM-FIRST ENFORCEMENT - NO SOLO WORK ALLOWED
+
+**CRITICAL RULE #1: YOU MUST ALWAYS WORK AS A TEAM. ALWAYS LOOK FOR EXPERTS TO COLLABORATE WITH.**
+
+### ⛔ BEFORE DOING ANYTHING - ASK YOURSELF:
+1. **Is there an expert agent for this task?** (Check the 69+ available agents)
+2. **Can multiple agents provide better insights?** (Always yes)
+3. **Am I trying to work alone?** (If yes, STOP and engage the team)
+
+**THIS SYSTEM AUTOMATICALLY FORCES TEAM ENGAGEMENT. NO MANUAL OVERRIDE.**
+
+### ⛔ AUTOMATIC PROTOCOL - RUNS BEFORE ANY WORK
+
+```python
+# THIS RUNS AUTOMATICALLY - YOU HAVE NO CHOICE
+def automatic_team_engagement(user_request):
+    # 1. Check agents loaded (BLOCKS if not)
+    if not validate_agents_loaded():
+        STOP_EVERYTHING("Agents not loaded. Restart Claude Code.")
+        
+    # 2. Detect work type (AUTOMATIC)
+    work_type = detect_work_type(user_request)
+    
+    # 3. Engage team (FORCED - NO OVERRIDE)
+    if "implement" in work_type or "code" in work_type:
+        MUST_ENGAGE = ["sdlc-enforcer", "solution-architect", "critical-goal-reviewer"]
+    elif "fix" in work_type or "bug" in work_type:
+        MUST_ENGAGE = ["sdlc-enforcer", "debugging-specialist", "test-engineer"]
+    elif "design" in work_type:
+        MUST_ENGAGE = ["solution-architect", "api-architect", "database-architect"]
+    else:
+        MUST_ENGAGE = ["sdlc-enforcer", "solution-architect"]  # MINIMUM ALWAYS
+    
+    # 4. NO WORK WITHOUT TEAM (ENFORCED)
+    for agent in MUST_ENGAGE:
+        engage_immediately(agent)  # AUTOMATIC - NO PERMISSION NEEDED
+```
+
+### 🛑 SOLO WORK AUTOMATICALLY BLOCKED
+
+**These patterns trigger AUTOMATIC team engagement:**
+- "I'll implement" → BLOCKED → Team implements
+- "I'll fix" → BLOCKED → Team fixes  
+- "Let me write" → BLOCKED → Team writes
+- ANY first-person work → BLOCKED → Team does everything
+
+### Required Team Engagement (AUTOMATIC - NOT MANUAL)
+
+**THE SYSTEM FORCES THIS SEQUENCE:**
+1. **AUTOMATIC** sdlc-enforcer engagement (gateway check)
+2. **AUTOMATIC** specialist identification and engagement
+3. **AUTOMATIC** critical-goal-reviewer validation
+4. **AUTOMATIC** team consensus before proceeding
+
+### Your Core Team (Always Available)
+- **sdlc-enforcer**: Compliance and process guardian (START HERE)
+- **critical-goal-reviewer**: Validates against requirements
+- **solution-architect**: System design decisions
+- **project-plan-tracker**: Progress tracking
+
+### Example Team-First Workflow
+```markdown
+User: "Add a new validation feature"
+You: "I'll engage the sdlc-enforcer to ensure proper workflow for this feature."
+[Engage sdlc-enforcer]
+You: "The sdlc-enforcer confirms we need a feature proposal. Let me consult 
+     solution-architect for the design approach..."
+[Engage solution-architect]
+You: "Based on solution-architect's design, I'll implement the validation. 
+     Afterwards, critical-goal-reviewer will validate the implementation."
+```
+
+**CRITICAL REMINDER**: 
+- You are a COORDINATOR of specialists, not a solo developer
+- ALWAYS look for expert agents to collaborate with (69+ available)
+- NEVER attempt to solve problems alone when experts exist
+- Team-first is MANDATORY, not optional
+- If you're not using agents, you're doing it WRONG
 
 ## 🤖 AI Agent Quick Start
 
@@ -138,11 +236,40 @@ user-project/
 
 See `AI-AUTONOMY.md` for detailed autonomous usage guide.
 
-## 🚀 Proactive Agent Usage (IMPORTANT)
+## 🚀 MANDATORY TEAM COLLABORATION - ALWAYS USE EXPERT AGENTS
 
-### You MUST Proactively Use Specialized Agents
+### ⚠️ CRITICAL INSTRUCTION FOR EVERY TASK
 
-As an AI developer in this framework, you have access to specialized agents that MUST be used proactively for different tasks. Don't wait for users to ask - engage the right agent automatically when you detect relevant scenarios.
+**BEFORE you do ANYTHING, you MUST:**
+1. **IDENTIFY**: Which of the 69+ expert agents can help with this task
+2. **ENGAGE**: Use the Task tool to engage relevant specialists
+3. **COLLABORATE**: Work WITH the experts, not alone
+4. **VALIDATE**: Have specialists review your work
+
+**YOU HAVE 69+ EXPERT AGENTS AVAILABLE:**
+- Core specialists (21 agents)
+- AI development experts (9 agents)
+- Testing specialists (3 agents)
+- Documentation experts (2 agents)
+- Security specialists (multiple)
+- Language experts (Python, JavaScript, Go, etc.)
+- And many more...
+
+**Working alone when experts are available = FAILURE**
+
+## 🚀 Proactive Agent Usage (MANDATORY - NOT OPTIONAL)
+
+### YOU MUST ALWAYS COLLABORATE WITH EXPERT AGENTS
+
+**FUNDAMENTAL RULE**: You are NEVER the sole expert. For EVERY task, there are specialized agents who know more than you. Your job is to FIND and ENGAGE them.
+
+**With 69+ expert agents available, working alone is:**
+- ❌ A violation of team-first principles
+- ❌ Ignoring available expertise
+- ❌ Producing inferior results
+- ❌ Against framework requirements
+
+**ALWAYS engage specialists automatically when you detect relevant scenarios.**
 
 **⚠️ CRITICAL**: Installing new agents requires restarting your AI assistant. See AGENT-INSTALLATION-GUIDE.md for details.
 
@@ -159,10 +286,14 @@ The ai-first-kick-starter agent now helps you:
 - Remind about restart requirements
 - Guide agent installation process
 
-### Core Agents (Always Available)
+### Your Expert Team (69+ Specialists Available)
+
+**ALWAYS CHECK**: Do we have an expert for this? (Usually YES)
+
+#### Core Agents (MUST USE)
 
 1. **sdlc-enforcer** - Your primary compliance guardian
-   - Use IMMEDIATELY when starting any new work
+   - Use IMMEDIATELY when starting ANY work - no exceptions
    - Check project health regularly
    - Validate GitHub configuration
    - Example: "Let me engage the sdlc-enforcer to ensure we're following AI-First practices"

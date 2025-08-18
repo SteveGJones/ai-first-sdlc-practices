@@ -49,6 +49,8 @@ class ValidationPipeline:
     def run_validation(self, checks: Optional[List[str]] = None) -> bool:
         """Run validation checks"""
         available_checks = {
+            "team-engagement": self.check_team_engagement,  # MUST BE FIRST - BLOCKS ALL SOLO WORK
+            "solo-patterns": self.check_solo_patterns,      # SECOND - DETECTS ISOLATION ATTEMPTS
             "branch": self.check_branch_compliance,
             "proposal": self.check_feature_proposal,
             "plan": self.check_implementation_plan,
@@ -146,6 +148,74 @@ class ValidationPipeline:
             )
         else:
             self.add_success("Branch Compliance", f"Valid branch: {branch}")
+
+    def check_team_engagement(self) -> None:
+        """Check for mandatory team engagement - BLOCKS ALL SOLO WORK"""
+        print("\n🤝 CHECKING TEAM ENGAGEMENT (MANDATORY FOR ALL WORK)")
+        
+        # Run the team engagement validator
+        try:
+            result = subprocess.run([
+                sys.executable, 
+                "tools/validation/validate-team-engagement.py", 
+                "--strict"
+            ], capture_output=True, text=True, cwd=self.project_root)
+            
+            if result.returncode != 0:
+                self.add_error(
+                    "Team Engagement",
+                    "SOLO WORK DETECTED - ALL WORK MUST BE BLOCKED",
+                    "Engage specialists before proceeding. Run: python tools/automation/auto-team-assembly.py 'work description' --force-consultation"
+                )
+            else:
+                self.add_success("Team Engagement", "Team-first behavior validated")
+                
+        except FileNotFoundError:
+            self.add_warning(
+                "Team Engagement", 
+                "Team engagement validator not found",
+                "Ensure tools/validation/validate-team-engagement.py exists"
+            )
+        except Exception as e:
+            self.add_error(
+                "Team Engagement",
+                f"Team engagement validation failed: {str(e)}",
+                "Fix team engagement validation issues"
+            )
+
+    def check_solo_patterns(self) -> None:
+        """Check for forbidden solo work patterns - ZERO TOLERANCE"""
+        print("\n🚫 CHECKING FOR SOLO WORK PATTERNS (ZERO TOLERANCE)")
+        
+        # Run the solo pattern detector
+        try:
+            result = subprocess.run([
+                sys.executable,
+                "tools/validation/check-solo-patterns.py",
+                "--threshold", "0"
+            ], capture_output=True, text=True, cwd=self.project_root)
+            
+            if result.returncode != 0:
+                self.add_error(
+                    "Solo Patterns",
+                    "SOLO WORK PATTERNS DETECTED - IMMEDIATE BLOCKAGE REQUIRED",
+                    "Convert all solo work to team collaboration. Engage specialists for all tasks."
+                )
+            else:
+                self.add_success("Solo Patterns", "No solo work patterns found")
+                
+        except FileNotFoundError:
+            self.add_warning(
+                "Solo Patterns",
+                "Solo pattern detector not found", 
+                "Ensure tools/validation/check-solo-patterns.py exists"
+            )
+        except Exception as e:
+            self.add_error(
+                "Solo Patterns",
+                f"Solo pattern detection failed: {str(e)}",
+                "Fix solo pattern detection issues"
+            )
 
     def check_feature_proposal(self) -> None:
         """Check for feature proposal"""
@@ -1442,6 +1512,8 @@ def main() -> None:
         "--checks",
         nargs="+",
         choices=[
+            "team-engagement",  # MUST BE FIRST - BLOCKS ALL SOLO WORK
+            "solo-patterns",    # SECOND - DETECTS ISOLATION ATTEMPTS
             "branch",
             "proposal",
             "plan",

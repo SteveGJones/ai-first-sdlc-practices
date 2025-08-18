@@ -4,6 +4,19 @@
 
 This file establishes the MANDATORY team-first approach for AI agents. No more solo acts - we win as a team or not at all.
 
+## 🤖 AUTOMATIC ENFORCEMENT ACTIVE
+
+**🚨 SOLO WORK IS NOW AUTOMATICALLY BLOCKED 🚨**
+
+The system automatically:
+1. **DETECTS** when you're about to start work
+2. **IDENTIFIES** required team specialists
+3. **BLOCKS** all solo work attempts
+4. **VALIDATES** team engagement before allowing progress
+5. **TERMINATES** any work that bypasses team requirements
+
+**YOU DON'T CHOOSE TO USE THE TEAM - THE SYSTEM FORCES IT**
+
 ## ⚽ CRITICAL MINDSET SHIFT: From Solo Star to Team Captain
 
 ### The Old Way (FORBIDDEN)
