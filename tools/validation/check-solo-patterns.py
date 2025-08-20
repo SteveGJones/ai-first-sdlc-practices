@@ -402,19 +402,42 @@ class SoloPatternDetector:
         return True
 
     def _check_team_indicators(self) -> bool:
-        """Check for presence of team collaboration indicators"""
+        """Check for presence of team collaboration indicators in PR changes only"""
         print("\n🤝 CHECKING TEAM COLLABORATION INDICATORS...")
+
+        # Get files changed in this PR/branch
+        changed_files = self._get_pr_changed_files()
+        if not changed_files:
+            changed_files = self._get_branch_changed_files()
+        
+        if not changed_files:
+            print("ℹ️  No changed files detected, skipping team indicator check")
+            return True
+
+        # Filter for markdown and code files
+        relevant_files = [f for f in changed_files 
+                         if f.endswith('.md') or f.endswith('.py') or f.endswith('.js') or f.endswith('.ts')]
+        
+        if not relevant_files:
+            print("ℹ️  No relevant files to check for team indicators")
+            return True
 
         team_score = 0
         total_files = 0
 
-        # Check documentation for team indicators
-        for file_path in Path(".").rglob("*.md"):
+        print(f"📋 Checking {len(relevant_files)} changed files for team indicators...")
+        
+        # Check changed files for team indicators
+        for file_path in relevant_files:
             try:
-                if file_path.stat().st_size > 1000000:
+                if not os.path.exists(file_path):
+                    continue
+                if os.path.getsize(file_path) > 1000000:
                     continue
 
-                content = file_path.read_text().lower()
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read().lower()
+                
                 total_files += 1
 
                 file_team_score = 0
@@ -424,19 +447,23 @@ class SoloPatternDetector:
 
                 if file_team_score > 0:
                     team_score += 1
+                    print(f"   ✓ Team indicators found in: {file_path}")
 
-            except Exception:
+            except Exception as e:
+                print(f"   ⚠️ Could not check {file_path}: {e}")
                 continue
 
         if total_files > 0:
             team_percentage = (team_score / total_files) * 100
 
-            if team_percentage < 25:  # Require 25% of files to show team collaboration
+            if team_percentage < 25:  # Require 25% of changed files to show team collaboration
                 print(f"❌ INSUFFICIENT TEAM COLLABORATION: {team_percentage:.1f}%")
-                print("   Most files show no team collaboration indicators")
+                print(f"   Only {team_score}/{total_files} changed files show team collaboration")
                 return False
 
-            print(f"✅ Team collaboration indicators: {team_percentage:.1f}%")
+            print(f"✅ Team collaboration indicators: {team_percentage:.1f}% ({team_score}/{total_files} files)")
+        else:
+            print("ℹ️  No files to check for team indicators")
 
         return True
 
