@@ -42,7 +42,7 @@ class RuntimeAgentValidator:
             
         # Verify installation ID matches
         if state.get('installation_id') != installation_id:
-            print(f"❌ Installation ID mismatch")
+            print("❌ Installation ID mismatch")
             print(f"   Expected: {installation_id}")
             print(f"   Found: {state.get('installation_id')}")
             return False
@@ -57,7 +57,7 @@ class RuntimeAgentValidator:
         state['phase'] = 'post_reboot'
         self._save_state(state)
         
-        print(f"🔍 Validating agent runtime accessibility")
+        print("🔍 Validating agent runtime accessibility")
         print(f"📅 Installation: {installation_id}")
         print(f"🤖 Agents to validate: {len(state.get('agents_pending', []))}")
         print("=" * 60)
@@ -145,21 +145,21 @@ class RuntimeAgentValidator:
                 
             if not content.strip():
                 if verbose:
-                    print(f"   ❌ File is empty")
+                    print("   ❌ File is empty")
                 return False
                 
             # Step 3: Has required frontmatter?
             if "name:" not in content:
                 if verbose:
-                    print(f"   ❌ Missing name in frontmatter")
+                    print("   ❌ Missing name in frontmatter")
                 return False
                 
             if agent['name'] not in content:
                 if verbose:
-                    print(f"   ⚠️  Agent name mismatch in file")
+                    print("   ⚠️  Agent name mismatch in file")
                     
             if verbose:
-                print(f"   ✅ File validation passed")
+                print("   ✅ File validation passed")
                 print(f"   📍 Location: {agent_path}")
                 
             # Step 4: Runtime check (simulated)
@@ -233,7 +233,7 @@ class RuntimeAgentValidator:
                 try:
                     with open(self.validation_log, 'r') as f:
                         logs = json.load(f)
-                except:
+                except (FileNotFoundError, json.JSONDecodeError):
                     logs = []
                     
             logs.append(log_entry)

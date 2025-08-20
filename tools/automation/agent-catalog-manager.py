@@ -12,7 +12,7 @@ import sys
 import yaml
 import click
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict
 import subprocess
 
@@ -116,7 +116,7 @@ class AgentCatalog:
                 
                 self.catalog[agent.name] = agent
                 
-        except Exception as e:
+        except Exception:
             # Debug: print error for troubleshooting
             # print(f"Error adding agent {agent_file}: {e}", file=sys.stderr)
             pass
@@ -372,7 +372,7 @@ def info(agent_name: str):
     print(f"Color: {agent.color}")
     if agent.tags:
         print(f"Tags: {', '.join(agent.tags)}")
-    print(f"\nDescription:")
+    print("\nDescription:")
     print(f"  {agent.description}")
     
 

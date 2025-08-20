@@ -165,7 +165,8 @@ class ValidationPipeline:
                 self.add_error(
                     "Team Engagement",
                     "SOLO WORK DETECTED - ALL WORK MUST BE BLOCKED",
-                    "Engage specialists before proceeding. Run: python tools/automation/auto-team-assembly.py 'work description' --force-consultation"
+                    "Engage specialists before proceeding. Run: python tools/automation/auto-team-assembly.py "
+                    "'work description' --force-consultation"
                 )
             else:
                 self.add_success("Team Engagement", "Team-first behavior validated")

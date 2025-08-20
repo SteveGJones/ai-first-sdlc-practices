@@ -13,7 +13,7 @@ import sys
 import re
 import os
 from pathlib import Path
-from typing import List, Dict, Tuple, Set
+# from typing import List  # Not used
 
 
 class TeamEngagementValidator:
@@ -92,7 +92,7 @@ class TeamEngagementValidator:
                     matches = re.findall(pattern, commits, re.IGNORECASE)
                     if matches:
                         violations_found.extend(matches)
-        except:
+        except (OSError, PermissionError):
             pass
             
         # Check recent files for solo patterns
@@ -104,7 +104,7 @@ class TeamEngagementValidator:
                         matches = re.findall(pattern, content, re.IGNORECASE)
                         if matches:
                             violations_found.extend([(str(file_path), match) for match in matches])
-                except:
+                except (OSError, PermissionError):
                     continue
         
         if violations_found:
@@ -148,7 +148,7 @@ class TeamEngagementValidator:
                         for consultation in required_consultations:
                             if consultation.lower() in content:
                                 found_consultations.append(consultation)
-                    except:
+                    except (OSError, PermissionError):
                         continue
         
         consultation_score = len(set(found_consultations)) / len(required_consultations)
@@ -191,7 +191,7 @@ class TeamEngagementValidator:
                 
                 print(f"✅ Team engagement indicators found: {team_mentions}")
                 return True
-        except:
+        except (OSError, PermissionError):
             print("⚠️  Could not check commit history")
             
         return True  # Don't fail if we can't check git
@@ -258,7 +258,7 @@ class TeamEngagementValidator:
                         for pattern in handoff_patterns:
                             matches = re.findall(pattern, content, re.IGNORECASE)
                             handoffs_found.extend(matches)
-                    except:
+                    except (OSError, PermissionError):
                         continue
         
         if len(handoffs_found) < 2:  # Require at least 2 handoff instances

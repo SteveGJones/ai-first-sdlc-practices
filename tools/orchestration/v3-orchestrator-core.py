@@ -5,14 +5,11 @@ Connects state management, validation, team enforcement, and parallel downloads.
 """
 
 import json
-import os
 import sys
-import time
 import importlib.util
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict
-from enum import Enum
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
 from datetime import datetime
 
 import click
@@ -340,7 +337,7 @@ Setup BLOCKED until team requirements are met.
                     timestamp = datetime.fromisoformat(data.get("timestamp", ""))
                     age = (datetime.now() - timestamp).seconds
                     return age < 3600
-            except:
+            except (ValueError, KeyError, TypeError):
                 pass
         return False
     
@@ -425,7 +422,7 @@ Setup BLOCKED until team requirements are met.
             discovery.ci_platform = "gitlab"
         
         # Display discovery results
-        click.echo(f"\n📊 Discovery Results:")
+        click.echo("\n📊 Discovery Results:")
         click.echo(f"  Project Type: {discovery.project_type}")
         click.echo(f"  Languages: {', '.join(discovery.languages) or 'none detected'}")
         click.echo(f"  Frameworks: {', '.join(discovery.frameworks) or 'none detected'}")
@@ -615,17 +612,17 @@ Setup BLOCKED until team requirements are met.
                 
                 # Suggest fallbacks for failed agents
                 if "language-" in result.agent_name:
-                    click.echo(f"     💡 Fallback: Use 'solution-architect' for general guidance")
+                    click.echo("     💡 Fallback: Use 'solution-architect' for general guidance")
                 elif result.agent_name in ["frontend-security-specialist"]:
-                    click.echo(f"     💡 Fallback: Use 'security-specialist' for security guidance")
+                    click.echo("     💡 Fallback: Use 'security-specialist' for security guidance")
             
             # Don't fail if only optional agents failed
             critical_failed = [r for r in failed if r.agent_name in self.GATEWAY_AGENTS]
             if critical_failed:
-                click.echo(f"\n❌ Critical agents failed - setup cannot continue")
+                click.echo("\n❌ Critical agents failed - setup cannot continue")
                 return failed
             else:
-                click.echo(f"\n✅ Non-critical agents failed - setup can continue with fallbacks")
+                click.echo("\n✅ Non-critical agents failed - setup can continue with fallbacks")
         
         self.download_results = results
         return results
@@ -1007,7 +1004,7 @@ def validate_mappings(agent, verbose):
             dir_display = directory if directory else "root"
             click.echo(f"✅ Agent found in mapping: {dir_display}/")
         else:
-            click.echo(f"⚠️ Agent not in mapping, using fallback mechanism")
+            click.echo("⚠️ Agent not in mapping, using fallback mechanism")
         
     else:
         # Validate all mappings
@@ -1017,7 +1014,7 @@ def validate_mappings(agent, verbose):
         report = orchestrator.validate_agent_mappings()
         
         click.echo(f"📈 Total mapped agents: {report['total_mapped']}")
-        click.echo(f"\n📁 Agents by directory:")
+        click.echo("\n📁 Agents by directory:")
         for directory, agents in sorted(report['by_directory'].items()):
             click.echo(f"  {directory}: {len(agents)} agents")
             if verbose:
@@ -1025,17 +1022,17 @@ def validate_mappings(agent, verbose):
                     click.echo(f"    • {agent}")
         
         if report['duplicate_agents']:
-            click.echo(f"\n🔄 Duplicate agents (exist in multiple directories):")
+            click.echo("\n🔄 Duplicate agents (exist in multiple directories):")
             for agent, locations in report['duplicate_agents'].items():
                 click.echo(f"  • {agent}: {', '.join(locations)}")
         
         if report['potential_issues']:
-            click.echo(f"\n⚠️ Potential issues:")
+            click.echo("\n⚠️ Potential issues:")
             for issue in report['potential_issues']:
                 click.echo(f"  • {issue}")
         
         # Test sample URLs
-        click.echo(f"\n🧪 Testing sample URL generation:")
+        click.echo("\n🧪 Testing sample URL generation:")
         test_agents = [
             "sdlc-enforcer",  # core
             "language-python-expert",  # sdlc
@@ -1051,7 +1048,8 @@ def validate_mappings(agent, verbose):
             if verbose:
                 click.echo(f"     -> {url}")
         
-        click.echo(f"\n✅ Validation complete. {report['total_mapped']} agents mapped across {len(report['by_directory'])} directories.")
+        click.echo(f"\n✅ Validation complete. {report['total_mapped']} agents mapped "
+                   f"across {len(report['by_directory'])} directories.")
 
 
 @cli.command('list-agents')
@@ -1085,7 +1083,7 @@ def list_agents(category):
                 click.echo(f"  • {agent}")
         
         click.echo(f"\nTotal: {report['total_mapped']} agents across {len(report['by_directory'])} categories")
-        click.echo(f"Use --category <name> to see URLs for specific category")
+        click.echo("Use --category <name> to see URLs for specific category")
 
 
 if __name__ == "__main__":

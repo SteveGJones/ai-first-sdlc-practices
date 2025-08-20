@@ -11,7 +11,7 @@ from typing import List, Optional
 from datetime import datetime
 
 import click
-import yaml
+# import yaml  # Not used in this file
 
 
 AGENT_TEMPLATE = """---
@@ -97,13 +97,13 @@ class TemplateAgentCreator:
         ]
         
         if any(existing in name.lower() for existing in existing_agents):
-            click.echo(f"❌ ERROR: Similar agent already exists", err=True)
-            click.echo(f"Check existing agents before creating new ones", err=True)
+            click.echo("❌ ERROR: Similar agent already exists", err=True)
+            click.echo("Check existing agents before creating new ones", err=True)
             return False
         
         if len(reason) < 50:
-            click.echo(f"❌ ERROR: Justification too short", err=True)
-            click.echo(f"Provide detailed reason why existing agents can't meet this need", err=True)
+            click.echo("❌ ERROR: Justification too short", err=True)
+            click.echo("Provide detailed reason why existing agents can't meet this need", err=True)
             return False
         
         return True
@@ -159,7 +159,8 @@ class TemplateAgentCreator:
         
         # Default values
         if not approach:
-            approach = f"As the {name}, I focus on delivering high-quality results through systematic analysis and careful consideration of requirements."
+            approach = (f"As the {name}, I focus on delivering high-quality results through "
+                       "systematic analysis and careful consideration of requirements.")
         
         if not responsibilities:
             responsibilities = [
@@ -196,7 +197,7 @@ class TemplateAgentCreator:
         # Expand description for body
         expanded_description = description
         if len(expanded_description) < 100:
-            expanded_description += f" specializing in delivering high-quality solutions"
+            expanded_description += " specializing in delivering high-quality solutions"
         
         # Generate agent content
         agent_content = AGENT_TEMPLATE.format(
@@ -379,7 +380,7 @@ def create_agent(name, description, competencies, reason, color, examples, outpu
         is_valid, errors = creator.validate_agent(content)
         
         if not is_valid:
-            click.echo(f"\n❌ Validation failed:", err=True)
+            click.echo("\n❌ Validation failed:", err=True)
             for error in errors:
                 click.echo(f"  - {error}", err=True)
             sys.exit(1)
@@ -392,13 +393,13 @@ def create_agent(name, description, competencies, reason, color, examples, outpu
         creator.log_creation(name, reason, agent_path)
         
         click.echo(f"\n✅ Agent created successfully: {agent_path}")
-        click.echo(f"\n⚠️ REMEMBER: This was a last resort. Document why existing agents couldn't meet this need.")
+        click.echo("\n⚠️ REMEMBER: This was a last resort. Document why existing agents couldn't meet this need.")
         
         # Show next steps
         click.echo("\n📋 Next steps:")
         click.echo("1. Restart Claude for the agent to become active")
         click.echo("2. Run post-reboot validation:")
-        click.echo(f"   python .sdlc/tools/validation/validate-agent-runtime.py")
+        click.echo("   python .sdlc/tools/validation/validate-agent-runtime.py")
         click.echo("3. Document in retrospective why this agent was necessary")
         
     except Exception as e:

@@ -121,7 +121,7 @@ class AgentValidator:
         # Check required fields
         for field in self.REQUIRED_FIELDS:
             if field not in frontmatter:
-                self.errors.append(ValidationError(field, f"Required field missing"))
+                self.errors.append(ValidationError(field, "Required field missing"))
                 
         # Validate name
         if 'name' in frontmatter:
@@ -196,7 +196,7 @@ class AgentValidator:
                             if field not in example:
                                 self.errors.append(ValidationError(
                                     f"examples[{i}].{field}",
-                                    f"Required field missing in example"
+                                    "Required field missing in example"
                                 ))
                             elif not isinstance(example[field], str):
                                 self.errors.append(ValidationError(

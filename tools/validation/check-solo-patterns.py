@@ -13,9 +13,7 @@ import sys
 import re
 import os
 from pathlib import Path
-from typing import List, Dict, Tuple
-import json
-from datetime import datetime
+from typing import List
 
 
 class SoloPatternDetector:
@@ -167,7 +165,7 @@ class SoloPatternDetector:
                             for violation in violations[:2]:  # Show first 2 per file
                                 print(f"   • {violation}")
                                 
-                    except Exception as e:
+                    except Exception:
                         continue
         
         if total_violations > 0:
@@ -199,7 +197,7 @@ class SoloPatternDetector:
                         violations = self._find_patterns_in_text(comment, f"{file_path} (comment)")
                         total_violations += len(violations)
                         
-                except Exception as e:
+                except Exception:
                     continue
         
         if total_violations > 0:
@@ -228,7 +226,7 @@ class SoloPatternDetector:
                 if violations:
                     print(f"❌ SOLO PATTERNS IN {file_path}: {len(violations)}")
                     
-            except Exception as e:
+            except Exception:
                 continue
         
         if total_violations > 0:
@@ -262,7 +260,7 @@ class SoloPatternDetector:
                 if file_team_score > 0:
                     team_score += 1
                     
-            except Exception as e:
+            except Exception:
                 continue
         
         if total_files > 0:

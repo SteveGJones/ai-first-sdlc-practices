@@ -1,0 +1,1284 @@
+tools/agents/agent-generator.py:129:89: E501 line too long (92 > 88 characters)
+tools/agents/agent-generator.py:134:89: E501 line too long (110 > 88 characters)
+tools/agents/agent-generator.py:143:89: E501 line too long (92 > 88 characters)
+tools/automation/a2a-orchestrator.py:253:89: E501 line too long (90 > 88 characters)
+tools/automation/agent-catalog-manager.py:15:1: F401 'typing.Any' imported but unused
+tools/automation/agent-catalog-manager.py:15:1: F401 'typing.Tuple' imported but unused
+tools/automation/agent-catalog-manager.py:29:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:33:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:41:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:56:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:58:89: E501 line too long (97 > 88 characters)
+tools/automation/agent-catalog-manager.py:59:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:63:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:70:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:75:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:80:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:85:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:89:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:92:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:99:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:107:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:116:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:118:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:119:9: F841 local variable 'e' is assigned to but never used
+tools/automation/agent-catalog-manager.py:123:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:128:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:135:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:139:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:143:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:146:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:157:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:161:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:163:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:164:89: E501 line too long (101 > 88 characters)
+tools/automation/agent-catalog-manager.py:167:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:172:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:177:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:182:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:186:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:190:62: W291 trailing whitespace
+tools/automation/agent-catalog-manager.py:191:21: E129 visually indented line with same indent as next logical line
+tools/automation/agent-catalog-manager.py:193:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:195:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:197:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:201:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:202:89: E501 line too long (102 > 88 characters)
+tools/automation/agent-catalog-manager.py:205:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:209:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:214:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:220:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:225:89: E501 line too long (97 > 88 characters)
+tools/automation/agent-catalog-manager.py:230:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:237:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:247:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:255:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:258:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:262:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:266:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:272:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:274:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:278:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:287:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:291:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:294:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:296:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:319:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:321:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:332:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:335:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:342:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:353:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:355:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:363:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:367:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:375:11: F541 f-string is missing placeholders
+tools/automation/agent-catalog-manager.py:377:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:386:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:388:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:402:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:405:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:413:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:416:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:418:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:424:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:429:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:437:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:452:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:455:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:462:1: W293 blank line contains whitespace
+tools/automation/agent-catalog-manager.py:467:10: W292 no newline at end of file
+tools/automation/agent-composition.py:38:89: E501 line too long (98 > 88 characters)
+tools/automation/agent-composition.py:85:89: E501 line too long (113 > 88 characters)
+tools/automation/agent-composition.py:96:89: E501 line too long (95 > 88 characters)
+tools/automation/agent-composition.py:106:89: E501 line too long (90 > 88 characters)
+tools/automation/agent-composition.py:108:89: E501 line too long (127 > 88 characters)
+tools/automation/agent-composition.py:150:89: E501 line too long (99 > 88 characters)
+tools/automation/agent-context-coordinator.py:58:89: E501 line too long (102 > 88 characters)
+tools/automation/agent-context-coordinator.py:337:89: E501 line too long (110 > 88 characters)
+tools/automation/agent-context-coordinator.py:399:89: E501 line too long (90 > 88 characters)
+tools/automation/agent-context-coordinator.py:408:89: E501 line too long (116 > 88 characters)
+tools/automation/agent-help.py:34:89: E501 line too long (109 > 88 characters)
+tools/automation/agent-help.py:35:89: E501 line too long (92 > 88 characters)
+tools/automation/agent-help.py:39:89: E501 line too long (93 > 88 characters)
+tools/automation/agent-help.py:51:89: E501 line too long (97 > 88 characters)
+tools/automation/agent-help.py:63:89: E501 line too long (97 > 88 characters)
+tools/automation/agent-help.py:77:89: E501 line too long (112 > 88 characters)
+tools/automation/agent-help.py:78:89: E501 line too long (108 > 88 characters)
+tools/automation/agent-help.py:108:89: E501 line too long (89 > 88 characters)
+tools/automation/agent-help.py:146:89: E501 line too long (97 > 88 characters)
+tools/automation/agent-help.py:160:89: E501 line too long (91 > 88 characters)
+tools/automation/agent-help.py:172:89: E501 line too long (91 > 88 characters)
+tools/automation/agent-help.py:208:89: E501 line too long (90 > 88 characters)
+tools/automation/agent-help.py:209:89: E501 line too long (91 > 88 characters)
+tools/automation/agent-help.py:220:89: E501 line too long (99 > 88 characters)
+tools/automation/agent-help.py:221:89: E501 line too long (89 > 88 characters)
+tools/automation/agent-help.py:233:89: E501 line too long (103 > 88 characters)
+tools/automation/agent-help.py:246:89: E501 line too long (92 > 88 characters)
+tools/automation/agent-help.py:258:89: E501 line too long (90 > 88 characters)
+tools/automation/agent-help.py:336:89: E501 line too long (89 > 88 characters)
+tools/automation/agent-help.py:397:89: E501 line too long (90 > 88 characters)
+tools/automation/agent-help.py:420:89: E501 line too long (98 > 88 characters)
+tools/automation/agent-preset-recommender.py:750:89: E501 line too long (102 > 88 characters)
+tools/automation/agent-recommender.py:488:89: E501 line too long (96 > 88 characters)
+tools/automation/auto-team-assembly.py:14:1: F401 'json' imported but unused
+tools/automation/auto-team-assembly.py:16:1: F401 'typing.Tuple' imported but unused
+tools/automation/auto-team-assembly.py:23:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:27:89: E501 line too long (95 > 88 characters)
+tools/automation/auto-team-assembly.py:32:89: E501 line too long (89 > 88 characters)
+tools/automation/auto-team-assembly.py:37:89: E501 line too long (93 > 88 characters)
+tools/automation/auto-team-assembly.py:46:89: E501 line too long (100 > 88 characters)
+tools/automation/auto-team-assembly.py:51:89: E501 line too long (93 > 88 characters)
+tools/automation/auto-team-assembly.py:55:89: E501 line too long (94 > 88 characters)
+tools/automation/auto-team-assembly.py:58:89: E501 line too long (89 > 88 characters)
+tools/automation/auto-team-assembly.py:59:89: E501 line too long (93 > 88 characters)
+tools/automation/auto-team-assembly.py:65:89: E501 line too long (91 > 88 characters)
+tools/automation/auto-team-assembly.py:73:89: E501 line too long (97 > 88 characters)
+tools/automation/auto-team-assembly.py:74:89: E501 line too long (89 > 88 characters)
+tools/automation/auto-team-assembly.py:75:89: E501 line too long (95 > 88 characters)
+tools/automation/auto-team-assembly.py:79:89: E501 line too long (93 > 88 characters)
+tools/automation/auto-team-assembly.py:81:89: E501 line too long (99 > 88 characters)
+tools/automation/auto-team-assembly.py:82:89: E501 line too long (93 > 88 characters)
+tools/automation/auto-team-assembly.py:83:89: E501 line too long (99 > 88 characters)
+tools/automation/auto-team-assembly.py:87:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:118:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:122:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:127:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:130:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:131:89: E501 line too long (96 > 88 characters)
+tools/automation/auto-team-assembly.py:135:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:137:89: E501 line too long (99 > 88 characters)
+tools/automation/auto-team-assembly.py:139:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:141:89: E501 line too long (102 > 88 characters)
+tools/automation/auto-team-assembly.py:143:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:145:89: E501 line too long (105 > 88 characters)
+tools/automation/auto-team-assembly.py:147:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:149:89: E501 line too long (112 > 88 characters)
+tools/automation/auto-team-assembly.py:151:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:153:89: E501 line too long (109 > 88 characters)
+tools/automation/auto-team-assembly.py:155:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:161:89: E501 line too long (90 > 88 characters)
+tools/automation/auto-team-assembly.py:165:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:167:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:168:89: E501 line too long (91 > 88 characters)
+tools/automation/auto-team-assembly.py:172:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:179:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:186:9: E722 do not use bare 'except'
+tools/automation/auto-team-assembly.py:188:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:191:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:195:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:199:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:201:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:205:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:220:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:226:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:236:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:237:19: F541 f-string is missing placeholders
+tools/automation/auto-team-assembly.py:260:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:262:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:267:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:273:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:276:19: F541 f-string is missing placeholders
+tools/automation/auto-team-assembly.py:277:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:282:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:288:89: E501 line too long (107 > 88 characters)
+tools/automation/auto-team-assembly.py:289:34: E128 continuation line under-indented for visual indent
+tools/automation/auto-team-assembly.py:291:9: E722 do not use bare 'except'
+tools/automation/auto-team-assembly.py:294:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:301:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:304:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:308:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:311:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:316:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:332:24: E128 continuation line under-indented for visual indent
+tools/automation/auto-team-assembly.py:334:24: E128 continuation line under-indented for visual indent
+tools/automation/auto-team-assembly.py:336:24: E128 continuation line under-indented for visual indent
+tools/automation/auto-team-assembly.py:337:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:339:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:341:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:350:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:354:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:362:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:366:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:373:1: W293 blank line contains whitespace
+tools/automation/auto-team-assembly.py:381:11: W292 no newline at end of file
+tools/automation/build-agent-release.py:157:89: E501 line too long (103 > 88 characters)
+tools/automation/create-agent-from-template.py:14:1: F401 'yaml' imported but unused
+tools/automation/create-agent-from-template.py:62:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:66:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:69:89: E501 line too long (97 > 88 characters)
+tools/automation/create-agent-from-template.py:72:89: E501 line too long (92 > 88 characters)
+tools/automation/create-agent-from-template.py:77:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:81:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:85:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:98:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:100:24: F541 f-string is missing placeholders
+tools/automation/create-agent-from-template.py:101:24: F541 f-string is missing placeholders
+tools/automation/create-agent-from-template.py:103:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:105:24: F541 f-string is missing placeholders
+tools/automation/create-agent-from-template.py:106:24: F541 f-string is missing placeholders
+tools/automation/create-agent-from-template.py:106:89: E501 line too long (101 > 88 characters)
+tools/automation/create-agent-from-template.py:108:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:110:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:111:27: W291 trailing whitespace
+tools/automation/create-agent-from-template.py:112:21: E128 continuation line under-indented for visual indent
+tools/automation/create-agent-from-template.py:113:21: E128 continuation line under-indented for visual indent
+tools/automation/create-agent-from-template.py:114:21: E128 continuation line under-indented for visual indent
+tools/automation/create-agent-from-template.py:115:21: E128 continuation line under-indented for visual indent
+tools/automation/create-agent-from-template.py:116:21: E128 continuation line under-indented for visual indent
+tools/automation/create-agent-from-template.py:117:21: E128 continuation line under-indented for visual indent
+tools/automation/create-agent-from-template.py:118:21: E128 continuation line under-indented for visual indent
+tools/automation/create-agent-from-template.py:119:21: E128 continuation line under-indented for visual indent
+tools/automation/create-agent-from-template.py:120:21: E128 continuation line under-indented for visual indent
+tools/automation/create-agent-from-template.py:123:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:134:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:141:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:143:89: E501 line too long (89 > 88 characters)
+tools/automation/create-agent-from-template.py:144:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:147:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:156:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:159:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:162:89: E501 line too long (154 > 88 characters)
+tools/automation/create-agent-from-template.py:163:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:172:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:179:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:187:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:192:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:195:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:199:37: F541 f-string is missing placeholders
+tools/automation/create-agent-from-template.py:199:89: E501 line too long (89 > 88 characters)
+tools/automation/create-agent-from-template.py:200:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:215:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:217:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:221:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:224:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:231:89: E501 line too long (90 > 88 characters)
+tools/automation/create-agent-from-template.py:234:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:240:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:243:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:247:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:253:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:255:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:259:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:264:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:270:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:273:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:277:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:281:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:283:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:287:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:295:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:297:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:305:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:316:89: E501 line too long (93 > 88 characters)
+tools/automation/create-agent-from-template.py:319:89: E501 line too long (99 > 88 characters)
+tools/automation/create-agent-from-template.py:321:89: E501 line too long (107 > 88 characters)
+tools/automation/create-agent-from-template.py:324:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:329:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:335:89: E501 line too long (98 > 88 characters)
+tools/automation/create-agent-from-template.py:338:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:341:89: E501 line too long (96 > 88 characters)
+tools/automation/create-agent-from-template.py:343:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:346:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:365:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:376:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:380:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:382:24: F541 f-string is missing placeholders
+tools/automation/create-agent-from-template.py:386:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:390:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:393:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:395:20: F541 f-string is missing placeholders
+tools/automation/create-agent-from-template.py:395:89: E501 line too long (115 > 88 characters)
+tools/automation/create-agent-from-template.py:396:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:401:20: F541 f-string is missing placeholders
+tools/automation/create-agent-from-template.py:403:1: W293 blank line contains whitespace
+tools/automation/create-agent-from-template.py:410:19: W292 no newline at end of file
+tools/automation/dashboard-generator.py:62:89: E501 line too long (91 > 88 characters)
+tools/automation/dashboard-generator.py:184:89: E501 line too long (96 > 88 characters)
+tools/automation/dashboard-generator.py:433:89: E501 line too long (100 > 88 characters)
+tools/automation/dashboard-generator.py:544:89: E501 line too long (97 > 88 characters)
+tools/automation/dashboard-generator.py:545:89: E501 line too long (113 > 88 characters)
+tools/automation/dashboard-generator.py:564:89: E501 line too long (101 > 88 characters)
+tools/automation/dashboard-generator.py:568:89: E501 line too long (102 > 88 characters)
+tools/automation/demo-a2a-communication.py:46:89: E501 line too long (100 > 88 characters)
+tools/automation/demo-a2a-communication.py:57:89: E501 line too long (98 > 88 characters)
+tools/automation/demo-a2a-communication.py:72:89: E501 line too long (106 > 88 characters)
+tools/automation/demo-a2a-communication.py:73:89: E501 line too long (109 > 88 characters)
+tools/automation/demo-a2a-communication.py:87:89: E501 line too long (108 > 88 characters)
+tools/automation/demo-a2a-communication.py:102:89: E501 line too long (112 > 88 characters)
+tools/automation/demo-a2a-communication.py:111:89: E501 line too long (118 > 88 characters)
+tools/automation/demo-a2a-communication.py:129:89: E501 line too long (111 > 88 characters)
+tools/automation/demo-a2a-communication.py:141:89: E501 line too long (91 > 88 characters)
+tools/automation/demo-a2a-communication.py:152:89: E501 line too long (97 > 88 characters)
+tools/automation/demo-a2a-communication.py:167:89: E501 line too long (114 > 88 characters)
+tools/automation/demo-a2a-communication.py:176:89: E501 line too long (114 > 88 characters)
+tools/automation/demo-a2a-communication.py:240:89: E501 line too long (89 > 88 characters)
+tools/automation/demo-a2a-communication.py:244:89: E501 line too long (89 > 88 characters)
+tools/automation/hall-of-fame-manager.py:234:89: E501 line too long (110 > 88 characters)
+tools/automation/hall-of-fame-manager.py:257:89: E501 line too long (92 > 88 characters)
+tools/automation/hall-of-fame-manager.py:297:89: E501 line too long (93 > 88 characters)
+tools/automation/hall-of-fame-manager.py:318:89: E501 line too long (103 > 88 characters)
+tools/automation/hall-of-fame-manager.py:319:89: E501 line too long (91 > 88 characters)
+tools/automation/hall-of-fame-manager.py:331:89: E501 line too long (109 > 88 characters)
+tools/automation/hall-of-fame-manager.py:334:89: E501 line too long (93 > 88 characters)
+tools/automation/hall-of-fame-manager.py:338:89: E501 line too long (95 > 88 characters)
+tools/automation/hall-of-fame-manager.py:399:89: E501 line too long (116 > 88 characters)
+tools/automation/hall-of-fame-manager.py:419:89: E501 line too long (123 > 88 characters)
+tools/automation/hall-of-fame-manager.py:454:89: E501 line too long (95 > 88 characters)
+tools/automation/hall-of-fame-manager.py:625:89: E501 line too long (98 > 88 characters)
+tools/automation/hall-of-fame-manager.py:785:89: E501 line too long (93 > 88 characters)
+tools/automation/hall-of-fame-manager.py:817:89: E501 line too long (93 > 88 characters)
+tools/automation/hall-of-fame-manager.py:865:89: E501 line too long (112 > 88 characters)
+tools/automation/install-enhanced-git-hooks.py:10:89: E501 line too long (94 > 88 characters)
+tools/automation/install-enhanced-git-hooks.py:31:89: E501 line too long (97 > 88 characters)
+tools/automation/install-enhanced-git-hooks.py:145:89: E501 line too long (123 > 88 characters)
+tools/automation/installation-state-manager.py:8:1: F401 'os' imported but unused
+tools/automation/installation-state-manager.py:9:1: F401 'sys' imported but unused
+tools/automation/installation-state-manager.py:65:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:69:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:77:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:84:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:85:89: E501 line too long (93 > 88 characters)
+tools/automation/installation-state-manager.py:88:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:94:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:105:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:147:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:157:89: E501 line too long (109 > 88 characters)
+tools/automation/installation-state-manager.py:158:89: E501 line too long (120 > 88 characters)
+tools/automation/installation-state-manager.py:159:89: E501 line too long (95 > 88 characters)
+tools/automation/installation-state-manager.py:162:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:165:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:166:62: W291 trailing whitespace
+tools/automation/installation-state-manager.py:172:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:181:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:184:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:185:75: W291 trailing whitespace
+tools/automation/installation-state-manager.py:186:29: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:191:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:197:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:201:69: W291 trailing whitespace
+tools/automation/installation-state-manager.py:202:28: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:203:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:206:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:212:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:215:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:217:65: W291 trailing whitespace
+tools/automation/installation-state-manager.py:218:25: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:219:67: W291 trailing whitespace
+tools/automation/installation-state-manager.py:220:25: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:221:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:224:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:230:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:233:89: E501 line too long (92 > 88 characters)
+tools/automation/installation-state-manager.py:234:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:236:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:239:67: W291 trailing whitespace
+tools/automation/installation-state-manager.py:240:25: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:241:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:244:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:245:76: W291 trailing whitespace
+tools/automation/installation-state-manager.py:246:31: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:251:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:257:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:262:40: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:265:40: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:265:89: E501 line too long (90 > 88 characters)
+tools/automation/installation-state-manager.py:267:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:273:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:276:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:282:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:285:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:287:65: W291 trailing whitespace
+tools/automation/installation-state-manager.py:288:25: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:290:25: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:291:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:294:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:298:89: E501 line too long (107 > 88 characters)
+tools/automation/installation-state-manager.py:301:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:307:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:310:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:312:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:319:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:323:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:331:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:336:23: F541 f-string is missing placeholders
+tools/automation/installation-state-manager.py:337:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:339:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:349:89: E501 line too long (96 > 88 characters)
+tools/automation/installation-state-manager.py:350:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:355:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:359:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:364:70: W291 trailing whitespace
+tools/automation/installation-state-manager.py:365:42: E128 continuation line under-indented for visual indent
+tools/automation/installation-state-manager.py:366:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:368:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:372:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:378:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:381:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:384:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:397:89: E501 line too long (92 > 88 characters)
+tools/automation/installation-state-manager.py:403:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:409:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:411:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:415:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:423:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:428:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:435:89: E501 line too long (96 > 88 characters)
+tools/automation/installation-state-manager.py:440:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:445:15: F541 f-string is missing placeholders
+tools/automation/installation-state-manager.py:453:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:467:1: W293 blank line contains whitespace
+tools/automation/installation-state-manager.py:477:10: W292 no newline at end of file
+tools/automation/leadership-compliance-reporter.py:6:89: E501 line too long (89 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:586:89: E501 line too long (105 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:663:89: E501 line too long (92 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:680:89: E501 line too long (93 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:691:89: E501 line too long (105 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:754:89: E501 line too long (102 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:807:89: E501 line too long (91 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:808:89: E501 line too long (95 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:818:89: E501 line too long (96 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:827:89: E501 line too long (90 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:828:89: E501 line too long (90 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:837:89: E501 line too long (97 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:848:89: E501 line too long (98 > 88 characters)
+tools/automation/leadership-compliance-reporter.py:922:89: E501 line too long (89 > 88 characters)
+tools/automation/leadership-integration-demo.py:100:89: E501 line too long (98 > 88 characters)
+tools/automation/leadership-integration-demo.py:114:89: E501 line too long (97 > 88 characters)
+tools/automation/leadership-integration-demo.py:123:89: E501 line too long (89 > 88 characters)
+tools/automation/leadership-integration-demo.py:167:89: E501 line too long (93 > 88 characters)
+tools/automation/leadership-integration-demo.py:202:89: E501 line too long (89 > 88 characters)
+tools/automation/leadership-integration-demo.py:208:89: E501 line too long (92 > 88 characters)
+tools/automation/leadership-integration-demo.py:218:89: E501 line too long (94 > 88 characters)
+tools/automation/leadership-integration-demo.py:222:89: E501 line too long (109 > 88 characters)
+tools/automation/leadership-integration-demo.py:232:89: E501 line too long (99 > 88 characters)
+tools/automation/leadership-integration-demo.py:335:89: E501 line too long (115 > 88 characters)
+tools/automation/leadership-integration-demo.py:336:89: E501 line too long (112 > 88 characters)
+tools/automation/leadership-integration-demo.py:337:89: E501 line too long (124 > 88 characters)
+tools/automation/leadership-integration-demo.py:342:89: E501 line too long (107 > 88 characters)
+tools/automation/leadership-integration-demo.py:343:89: E501 line too long (111 > 88 characters)
+tools/automation/leadership-integration-demo.py:344:89: E501 line too long (122 > 88 characters)
+tools/automation/leadership-integration-demo.py:473:89: E501 line too long (102 > 88 characters)
+tools/automation/leadership-integration-demo.py:520:89: E501 line too long (91 > 88 characters)
+tools/automation/leadership-integration-demo.py:527:89: E501 line too long (108 > 88 characters)
+tools/automation/leadership-integration-demo.py:534:89: E501 line too long (100 > 88 characters)
+tools/automation/leadership-integration-demo.py:555:89: E501 line too long (90 > 88 characters)
+tools/automation/leadership-integration-demo.py:579:89: E501 line too long (91 > 88 characters)
+tools/automation/leadership-integration-demo.py:582:89: E501 line too long (94 > 88 characters)
+tools/automation/leadership-integration-demo.py:585:89: E501 line too long (90 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:5:89: E501 line too long (89 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:94:89: E501 line too long (96 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:136:89: E501 line too long (121 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:701:89: E501 line too long (107 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:726:89: E501 line too long (91 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:750:89: E501 line too long (97 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:788:89: E501 line too long (92 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:808:89: E501 line too long (95 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:811:89: E501 line too long (94 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:814:89: E501 line too long (97 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:893:89: E501 line too long (89 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:1032:89: E501 line too long (113 > 88 characters)
+tools/automation/leadership-metrics-tracker.py:1036:89: E501 line too long (107 > 88 characters)
+tools/automation/migrate-to-organized.py:149:89: E501 line too long (98 > 88 characters)
+tools/automation/migrate-to-organized.py:152:89: E501 line too long (107 > 88 characters)
+tools/automation/migrate-to-organized.py:166:89: E501 line too long (100 > 88 characters)
+tools/automation/migrate-to-organized.py:172:89: E501 line too long (97 > 88 characters)
+tools/automation/migrate-to-organized.py:175:89: E501 line too long (104 > 88 characters)
+tools/automation/migrate-to-organized.py:176:89: E501 line too long (105 > 88 characters)
+tools/automation/migrate-to-organized.py:177:89: E501 line too long (105 > 88 characters)
+tools/automation/migrate-to-organized.py:261:89: E501 line too long (98 > 88 characters)
+tools/automation/migrate-to-organized.py:349:89: E501 line too long (95 > 88 characters)
+tools/automation/migrate-to-organized.py:360:89: E501 line too long (93 > 88 characters)
+tools/automation/setup-branch-protection-gh.py:251:89: E501 line too long (92 > 88 characters)
+tools/automation/setup-branch-protection-gh.py:254:89: E501 line too long (90 > 88 characters)
+tools/automation/setup-branch-protection-gh.py:269:89: E501 line too long (104 > 88 characters)
+tools/automation/setup-branch-protection.py:46:89: E501 line too long (94 > 88 characters)
+tools/automation/setup-branch-protection.py:108:89: E501 line too long (103 > 88 characters)
+tools/automation/setup-branch-protection.py:248:89: E501 line too long (97 > 88 characters)
+tools/automation/setup-sdlc-git-hooks.py:19:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:23:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:30:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:34:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:55:89: E501 line too long (96 > 88 characters)
+tools/automation/setup-sdlc-git-hooks.py:67:89: E501 line too long (116 > 88 characters)
+tools/automation/setup-sdlc-git-hooks.py:102:89: E501 line too long (101 > 88 characters)
+tools/automation/setup-sdlc-git-hooks.py:133:79: W605 invalid escape sequence '\('
+tools/automation/setup-sdlc-git-hooks.py:133:83: W605 invalid escape sequence '\)'
+tools/automation/setup-sdlc-git-hooks.py:133:89: E501 line too long (98 > 88 characters)
+tools/automation/setup-sdlc-git-hooks.py:156:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:160:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:166:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:168:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:174:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:177:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:181:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:183:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:187:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:196:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:201:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:203:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:207:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:213:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:218:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:228:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:233:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:240:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:246:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:251:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:258:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:263:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:265:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:269:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:271:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:279:1: W293 blank line contains whitespace
+tools/automation/setup-sdlc-git-hooks.py:294:11: W292 no newline at end of file
+tools/automation/team-chemistry.py:325:89: E501 line too long (89 > 88 characters)
+tools/automation/team-chemistry.py:783:89: E501 line too long (90 > 88 characters)
+tools/automation/team-dashboard.py:227:89: E501 line too long (104 > 88 characters)
+tools/automation/team-dashboard.py:255:89: E501 line too long (92 > 88 characters)
+tools/automation/team-dashboard.py:383:89: E501 line too long (98 > 88 characters)
+tools/automation/team-dashboard.py:602:89: E501 line too long (111 > 88 characters)
+tools/automation/team-discovery.py:402:89: E501 line too long (109 > 88 characters)
+tools/automation/team-discovery.py:442:89: E501 line too long (94 > 88 characters)
+tools/automation/team-discovery.py:444:89: E501 line too long (98 > 88 characters)
+tools/automation/team-discovery.py:452:89: E501 line too long (100 > 88 characters)
+tools/automation/team-discovery.py:454:89: E501 line too long (89 > 88 characters)
+tools/automation/team-discovery.py:461:89: E501 line too long (90 > 88 characters)
+tools/automation/team-discovery.py:462:89: E501 line too long (91 > 88 characters)
+tools/automation/team-discovery.py:469:89: E501 line too long (89 > 88 characters)
+tools/automation/team-discovery.py:470:89: E501 line too long (110 > 88 characters)
+tools/automation/team-discovery.py:476:89: E501 line too long (101 > 88 characters)
+tools/automation/team-discovery.py:477:89: E501 line too long (92 > 88 characters)
+tools/automation/team-discovery.py:478:89: E501 line too long (104 > 88 characters)
+tools/automation/team-discovery.py:484:89: E501 line too long (95 > 88 characters)
+tools/automation/team-discovery.py:486:89: E501 line too long (98 > 88 characters)
+tools/automation/team-discovery.py:533:89: E501 line too long (125 > 88 characters)
+tools/automation/team-discovery.py:536:89: E501 line too long (105 > 88 characters)
+tools/automation/team-discovery.py:563:89: E501 line too long (100 > 88 characters)
+tools/automation/team-discovery.py:564:89: E501 line too long (95 > 88 characters)
+tools/automation/team-discovery.py:567:89: E501 line too long (108 > 88 characters)
+tools/automation/team-discovery.py:568:89: E501 line too long (99 > 88 characters)
+tools/automation/team-discovery.py:569:89: E501 line too long (92 > 88 characters)
+tools/automation/team-discovery.py:571:89: E501 line too long (107 > 88 characters)
+tools/automation/team-discovery.py:572:89: E501 line too long (92 > 88 characters)
+tools/automation/team-discovery.py:575:89: E501 line too long (106 > 88 characters)
+tools/automation/team-discovery.py:576:89: E501 line too long (97 > 88 characters)
+tools/automation/team-discovery.py:577:89: E501 line too long (90 > 88 characters)
+tools/automation/team-discovery.py:608:89: E501 line too long (91 > 88 characters)
+tools/automation/team-discovery.py:610:89: E501 line too long (89 > 88 characters)
+tools/automation/team-maturity-tracker.py:139:89: E501 line too long (94 > 88 characters)
+tools/automation/team-maturity-tracker.py:140:89: E501 line too long (91 > 88 characters)
+tools/automation/team-maturity-tracker.py:173:89: E501 line too long (89 > 88 characters)
+tools/automation/team-maturity-tracker.py:174:89: E501 line too long (89 > 88 characters)
+tools/automation/team-maturity-tracker.py:430:89: E501 line too long (92 > 88 characters)
+tools/automation/team-maturity-tracker.py:538:89: E501 line too long (95 > 88 characters)
+tools/automation/team-maturity-tracker.py:553:89: E501 line too long (93 > 88 characters)
+tools/automation/team-maturity-tracker.py:680:89: E501 line too long (103 > 88 characters)
+tools/automation/team-maturity-tracker.py:684:89: E501 line too long (101 > 88 characters)
+tools/automation/team-maturity-tracker.py:688:89: E501 line too long (102 > 88 characters)
+tools/automation/team-maturity-tracker.py:706:89: E501 line too long (89 > 88 characters)
+tools/automation/team-maturity-tracker.py:848:89: E501 line too long (90 > 88 characters)
+tools/automation/validate-team-readiness.py:193:89: E501 line too long (116 > 88 characters)
+tools/automation/validate-team-readiness.py:260:89: E501 line too long (105 > 88 characters)
+tools/automation/validate-team-readiness.py:324:89: E501 line too long (108 > 88 characters)
+tools/automation/validate-team-readiness.py:339:89: E501 line too long (107 > 88 characters)
+tools/automation/validate-team-readiness.py:354:89: E501 line too long (110 > 88 characters)
+tools/automation/validate-team-readiness.py:369:89: E501 line too long (105 > 88 characters)
+tools/automation/validate-team-readiness.py:498:89: E501 line too long (93 > 88 characters)
+tools/automation/validate-team-readiness.py:616:89: E501 line too long (104 > 88 characters)
+tools/automation/validate-team-readiness.py:862:89: E501 line too long (91 > 88 characters)
+tools/automation/validate-team-readiness.py:878:89: E501 line too long (89 > 88 characters)
+tools/automation/validate-team-readiness.py:964:89: E501 line too long (94 > 88 characters)
+tools/coaching/kickoff_genius.py:389:89: E501 line too long (91 > 88 characters)
+tools/coaching/sdlc_coach.py:259:89: E501 line too long (91 > 88 characters)
+tools/migrate-to-hierarchical.py:131:89: E501 line too long (98 > 88 characters)
+tools/migration/clean_agent_templates.py:175:89: E501 line too long (97 > 88 characters)
+tools/migration/convert_to_strict_template.py:140:89: E501 line too long (103 > 88 characters)
+tools/migration/convert_to_strict_template.py:222:89: E501 line too long (112 > 88 characters)
+tools/migration/convert_to_strict_template.py:223:89: E501 line too long (121 > 88 characters)
+tools/migration/convert_to_strict_template.py:226:89: E501 line too long (108 > 88 characters)
+tools/migration/convert_to_strict_template.py:235:89: E501 line too long (96 > 88 characters)
+tools/migration/convert_to_strict_template.py:236:89: E501 line too long (94 > 88 characters)
+tools/migration/convert_to_strict_template.py:239:89: E501 line too long (98 > 88 characters)
+tools/migration/convert_to_strict_template.py:248:89: E501 line too long (123 > 88 characters)
+tools/migration/convert_to_strict_template.py:252:89: E501 line too long (92 > 88 characters)
+tools/migration/convert_to_strict_template.py:262:89: E501 line too long (92 > 88 characters)
+tools/migration/convert_to_strict_template.py:263:89: E501 line too long (113 > 88 characters)
+tools/migration/convert_to_strict_template.py:265:89: E501 line too long (91 > 88 characters)
+tools/migration/convert_to_strict_template.py:293:89: E501 line too long (89 > 88 characters)
+tools/migration/convert_to_strict_template.py:440:89: E501 line too long (96 > 88 characters)
+tools/migration/migrate_agents_to_template.py:243:89: E501 line too long (89 > 88 characters)
+tools/migration/migrate_agents_to_template.py:245:89: E501 line too long (110 > 88 characters)
+tools/migration/migrate_agents_to_template.py:246:89: E501 line too long (100 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:8:1: F401 'os' imported but unused
+tools/orchestration/v3-orchestrator-core.py:10:1: F401 'time' imported but unused
+tools/orchestration/v3-orchestrator-core.py:13:1: F401 'typing.Tuple' imported but unused
+tools/orchestration/v3-orchestrator-core.py:14:1: F401 'dataclasses.asdict' imported but unused
+tools/orchestration/v3-orchestrator-core.py:15:1: F401 'enum.Enum' imported but unused
+tools/orchestration/v3-orchestrator-core.py:28:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:31:38: W291 trailing whitespace
+tools/orchestration/v3-orchestrator-core.py:38:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:39:24: W291 trailing whitespace
+tools/orchestration/v3-orchestrator-core.py:47:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:56:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:95:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:98:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:102:89: E501 line too long (90 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:110:84: W291 trailing whitespace
+tools/orchestration/v3-orchestrator-core.py:111:25: E128 continuation line under-indented for visual indent
+tools/orchestration/v3-orchestrator-core.py:123:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:130:42: W291 trailing whitespace
+tools/orchestration/v3-orchestrator-core.py:132:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:142:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:146:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:151:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:155:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:158:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:161:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:164:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:169:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:173:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:176:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:181:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:191:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:202:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:210:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:213:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:219:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:223:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:226:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:236:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:240:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:246:26: E261 at least two spaces before inline comment
+tools/orchestration/v3-orchestrator-core.py:250:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:251:89: E501 line too long (90 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:254:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:263:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:268:32: W291 trailing whitespace
+tools/orchestration/v3-orchestrator-core.py:271:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:274:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:280:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:284:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:287:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:293:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:297:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:305:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:312:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:327:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:330:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:343:13: E722 do not use bare 'except'
+tools/orchestration/v3-orchestrator-core.py:346:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:352:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:357:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:363:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:367:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:370:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:377:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:386:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:398:89: E501 line too long (111 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:399:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:400:89: E501 line too long (102 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:407:89: E501 line too long (121 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:410:89: E501 line too long (122 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:411:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:414:89: E501 line too long (109 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:415:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:420:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:426:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:428:20: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:431:89: E501 line too long (89 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:434:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:437:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:441:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:444:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:449:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:452:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:457:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:461:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:471:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:479:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:482:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:487:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:490:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:494:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:497:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:503:89: E501 line too long (103 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:508:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:510:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:521:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:524:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:527:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:531:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:534:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:541:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:543:89: E501 line too long (102 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:544:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:558:89: E501 line too long (104 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:559:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:568:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:572:35: W291 trailing whitespace
+tools/orchestration/v3-orchestrator-core.py:574:89: E501 line too long (97 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:576:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:580:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:586:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:593:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:597:89: E501 line too long (91 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:598:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:602:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:608:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:615:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:618:32: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:618:89: E501 line too long (97 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:620:32: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:620:89: E501 line too long (99 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:621:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:625:28: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:628:28: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:628:89: E501 line too long (97 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:629:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:632:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:636:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:639:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:643:89: E501 line too long (102 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:644:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:652:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:659:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:664:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:671:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:674:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:678:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:689:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:696:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:703:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:707:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:709:89: E501 line too long (102 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:712:89: E501 line too long (100 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:713:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:715:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:719:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:726:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:728:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:732:38: W291 trailing whitespace
+tools/orchestration/v3-orchestrator-core.py:737:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:740:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:742:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:761:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:777:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:778:89: E501 line too long (91 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:781:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:787:89: E501 line too long (101 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:788:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:790:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:794:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:799:89: E501 line too long (96 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:800:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:803:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:827:89: E501 line too long (94 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:832:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:836:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:839:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:848:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:852:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:856:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:858:89: E501 line too long (95 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:860:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:864:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:868:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:872:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:876:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:879:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:885:89: E501 line too long (95 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:898:89: E501 line too long (102 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:899:89: E501 line too long (95 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:903:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:906:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:910:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:920:89: E501 line too long (89 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:924:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:928:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:932:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:934:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:938:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:940:89: E501 line too long (99 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:941:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:944:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:946:89: E501 line too long (97 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:948:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:953:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:963:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:969:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:974:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:978:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:984:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:997:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1003:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1010:24: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:1011:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1016:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1018:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1020:20: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:1026:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1028:24: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:1031:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1033:24: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:1036:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1038:20: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:1046:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1053:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1054:89: E501 line too long (136 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:1062:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1065:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1067:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1079:89: E501 line too long (99 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:1086:1: W293 blank line contains whitespace
+tools/orchestration/v3-orchestrator-core.py:1087:89: E501 line too long (111 > 88 characters)
+tools/orchestration/v3-orchestrator-core.py:1088:20: F541 f-string is missing placeholders
+tools/orchestration/v3-orchestrator-core.py:1092:10: W292 no newline at end of file
+tools/validation/check-github-actions-permissions.py:64:89: E501 line too long (98 > 88 characters)
+tools/validation/check-github-actions-permissions.py:88:89: E501 line too long (97 > 88 characters)
+tools/validation/check-logging-compliance.py:385:89: E501 line too long (89 > 88 characters)
+tools/validation/check-logging-compliance.py:522:89: E501 line too long (107 > 88 characters)
+tools/validation/check-solo-patterns.py:16:1: F401 'typing.Dict' imported but unused
+tools/validation/check-solo-patterns.py:16:1: F401 'typing.Tuple' imported but unused
+tools/validation/check-solo-patterns.py:17:1: F401 'json' imported but unused
+tools/validation/check-solo-patterns.py:18:1: F401 'datetime.datetime' imported but unused
+tools/validation/check-solo-patterns.py:23:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:28:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:32:89: E501 line too long (91 > 88 characters)
+tools/validation/check-solo-patterns.py:36:89: E501 line too long (96 > 88 characters)
+tools/validation/check-solo-patterns.py:48:89: E501 line too long (94 > 88 characters)
+tools/validation/check-solo-patterns.py:53:89: E501 line too long (97 > 88 characters)
+tools/validation/check-solo-patterns.py:54:89: E501 line too long (94 > 88 characters)
+tools/validation/check-solo-patterns.py:55:89: E501 line too long (91 > 88 characters)
+tools/validation/check-solo-patterns.py:56:89: E501 line too long (96 > 88 characters)
+tools/validation/check-solo-patterns.py:57:89: E501 line too long (94 > 88 characters)
+tools/validation/check-solo-patterns.py:74:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:78:89: E501 line too long (94 > 88 characters)
+tools/validation/check-solo-patterns.py:86:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:91:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:93:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:97:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:101:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:105:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:109:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:113:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:116:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:120:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:123:72: W291 trailing whitespace
+tools/validation/check-solo-patterns.py:124:34: E128 continuation line under-indented for visual indent
+tools/validation/check-solo-patterns.py:137:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:139:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:143:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:151:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:153:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:160:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:162:89: E501 line too long (89 > 88 characters)
+tools/validation/check-solo-patterns.py:164:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:169:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:170:21: F841 local variable 'e' is assigned to but never used
+tools/validation/check-solo-patterns.py:172:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:176:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:179:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:183:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:186:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:192:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:194:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:197:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:199:89: E501 line too long (99 > 88 characters)
+tools/validation/check-solo-patterns.py:201:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:202:17: F841 local variable 'e' is assigned to but never used
+tools/validation/check-solo-patterns.py:204:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:208:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:211:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:215:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:219:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:221:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:227:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:230:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:231:13: F841 local variable 'e' is assigned to but never used
+tools/validation/check-solo-patterns.py:233:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:237:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:240:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:244:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:247:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:253:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:256:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:261:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:264:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:265:13: F841 local variable 'e' is assigned to but never used
+tools/validation/check-solo-patterns.py:267:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:270:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:275:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:277:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:279:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:283:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:291:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:293:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:297:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:314:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:316:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:322:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:334:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:339:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:346:24: E128 continuation line under-indented for visual indent
+tools/validation/check-solo-patterns.py:348:24: E128 continuation line under-indented for visual indent
+tools/validation/check-solo-patterns.py:349:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:351:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:354:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:359:1: W293 blank line contains whitespace
+tools/validation/check-solo-patterns.py:365:11: W292 no newline at end of file
+tools/validation/check-technical-debt.py:96:89: E501 line too long (93 > 88 characters)
+tools/validation/check-technical-debt.py:165:89: E501 line too long (90 > 88 characters)
+tools/validation/check-technical-debt.py:201:89: E501 line too long (89 > 88 characters)
+tools/validation/check-technical-debt.py:525:89: E501 line too long (99 > 88 characters)
+tools/validation/check-technical-debt.py:850:89: E501 line too long (94 > 88 characters)
+tools/validation/check-technical-debt.py:887:89: E501 line too long (97 > 88 characters)
+tools/validation/integrated-download-validator.py:11:1: F401 'hashlib' imported but unused
+tools/validation/integrated-download-validator.py:15:1: F401 'typing.Tuple' imported but unused
+tools/validation/integrated-download-validator.py:21:1: F401 'yaml' imported but unused
+tools/validation/integrated-download-validator.py:51:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:52:89: E501 line too long (98 > 88 characters)
+tools/validation/integrated-download-validator.py:55:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:63:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:68:89: E501 line too long (92 > 88 characters)
+tools/validation/integrated-download-validator.py:73:89: E501 line too long (98 > 88 characters)
+tools/validation/integrated-download-validator.py:75:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:77:30: E128 continuation line under-indented for visual indent
+tools/validation/integrated-download-validator.py:80:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:85:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:97:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:103:89: E501 line too long (105 > 88 characters)
+tools/validation/integrated-download-validator.py:104:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:110:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:116:89: E501 line too long (97 > 88 characters)
+tools/validation/integrated-download-validator.py:118:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:120:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:123:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:127:89: E501 line too long (94 > 88 characters)
+tools/validation/integrated-download-validator.py:130:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:132:89: E501 line too long (90 > 88 characters)
+tools/validation/integrated-download-validator.py:133:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:136:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:142:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:145:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:152:89: E501 line too long (96 > 88 characters)
+tools/validation/integrated-download-validator.py:153:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:155:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:157:89: E501 line too long (91 > 88 characters)
+tools/validation/integrated-download-validator.py:161:89: E501 line too long (89 > 88 characters)
+tools/validation/integrated-download-validator.py:164:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:167:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:172:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:175:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:179:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:181:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:182:59: W291 trailing whitespace
+tools/validation/integrated-download-validator.py:183:23: E128 continuation line under-indented for visual indent
+tools/validation/integrated-download-validator.py:184:23: E128 continuation line under-indented for visual indent
+tools/validation/integrated-download-validator.py:187:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:192:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:200:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:201:89: E501 line too long (95 > 88 characters)
+tools/validation/integrated-download-validator.py:205:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:210:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:215:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:217:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:218:69: W291 trailing whitespace
+tools/validation/integrated-download-validator.py:219:33: E128 continuation line under-indented for visual indent
+tools/validation/integrated-download-validator.py:224:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:225:89: E501 line too long (101 > 88 characters)
+tools/validation/integrated-download-validator.py:226:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:230:89: E501 line too long (95 > 88 characters)
+tools/validation/integrated-download-validator.py:233:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:238:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:242:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:245:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:249:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:251:89: E501 line too long (89 > 88 characters)
+tools/validation/integrated-download-validator.py:258:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:260:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:265:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:268:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:286:89: E501 line too long (99 > 88 characters)
+tools/validation/integrated-download-validator.py:295:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:314:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:316:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:344:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:346:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:347:89: E501 line too long (90 > 88 characters)
+tools/validation/integrated-download-validator.py:348:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:351:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:358:15: E128 continuation line under-indented for visual indent
+tools/validation/integrated-download-validator.py:361:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:368:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:374:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:385:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:389:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:391:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:393:89: E501 line too long (94 > 88 characters)
+tools/validation/integrated-download-validator.py:394:1: W293 blank line contains whitespace
+tools/validation/integrated-download-validator.py:412:10: W292 no newline at end of file
+tools/validation/local-flake8.py:92:89: E501 line too long (92 > 88 characters)
+tools/validation/local-flake8.py:113:89: E501 line too long (101 > 88 characters)
+tools/validation/local-validation.py:226:89: E501 line too long (116 > 88 characters)
+tools/validation/local-validation.py:242:89: E501 line too long (103 > 88 characters)
+tools/validation/pre-push-quality.py:5:89: E501 line too long (89 > 88 characters)
+tools/validation/pre-push-quality.py:10:89: E501 line too long (92 > 88 characters)
+tools/validation/pre-push-quality.py:11:89: E501 line too long (89 > 88 characters)
+tools/validation/pre-push-quality.py:100:89: E501 line too long (108 > 88 characters)
+tools/validation/pre-push-quality.py:107:89: E501 line too long (105 > 88 characters)
+tools/validation/pre-push-quality.py:122:89: E501 line too long (106 > 88 characters)
+tools/validation/pre-push-quality.py:129:89: E501 line too long (113 > 88 characters)
+tools/validation/pre-push-quality.py:140:89: E501 line too long (119 > 88 characters)
+tools/validation/pre-push-quality.py:147:89: E501 line too long (112 > 88 characters)
+tools/validation/validate-agent-format.py:24:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:26:89: E501 line too long (96 > 88 characters)
+tools/validation/validate-agent-format.py:32:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:35:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:38:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:44:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:50:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:54:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:60:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:64:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:67:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:72:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:76:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:80:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:82:89: E501 line too long (95 > 88 characters)
+tools/validation/validate-agent-format.py:84:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:87:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:90:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:94:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:98:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:101:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:106:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:109:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:117:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:120:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:124:59: F541 f-string is missing placeholders
+tools/validation/validate-agent-format.py:125:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:133:28: W291 trailing whitespace
+tools/validation/validate-agent-format.py:136:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:145:89: E501 line too long (103 > 88 characters)
+tools/validation/validate-agent-format.py:153:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:162:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:180:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:186:89: E501 line too long (111 > 88 characters)
+tools/validation/validate-agent-format.py:189:89: E501 line too long (104 > 88 characters)
+tools/validation/validate-agent-format.py:199:37: F541 f-string is missing placeholders
+tools/validation/validate-agent-format.py:211:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:214:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:218:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:226:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:234:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:247:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:251:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:256:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:261:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:274:89: E501 line too long (90 > 88 characters)
+tools/validation/validate-agent-format.py:279:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:288:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:305:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:310:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:315:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:320:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:325:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:330:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:336:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:339:1: W293 blank line contains whitespace
+tools/validation/validate-agent-format.py:344:11: W292 no newline at end of file
+tools/validation/validate-agent-runtime.py:17:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:23:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:24:89: E501 line too long (89 > 88 characters)
+tools/validation/validate-agent-runtime.py:29:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:35:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:42:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:45:19: F541 f-string is missing placeholders
+tools/validation/validate-agent-runtime.py:49:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:55:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:59:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:60:15: F541 f-string is missing placeholders
+tools/validation/validate-agent-runtime.py:64:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:68:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:80:89: E501 line too long (94 > 88 characters)
+tools/validation/validate-agent-runtime.py:83:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:85:89: E501 line too long (91 > 88 characters)
+tools/validation/validate-agent-runtime.py:89:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:93:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:99:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:108:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:120:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:122:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:125:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:127:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:134:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:140:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:145:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:148:27: F541 f-string is missing placeholders
+tools/validation/validate-agent-runtime.py:150:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:154:27: F541 f-string is missing placeholders
+tools/validation/validate-agent-runtime.py:156:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:159:27: F541 f-string is missing placeholders
+tools/validation/validate-agent-runtime.py:160:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:162:23: F541 f-string is missing placeholders
+tools/validation/validate-agent-runtime.py:164:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:168:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:170:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:175:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:178:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:181:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:188:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:190:89: E501 line too long (91 > 88 characters)
+tools/validation/validate-agent-runtime.py:195:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:201:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:204:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:208:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:216:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:221:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:226:89: E501 line too long (91 > 88 characters)
+tools/validation/validate-agent-runtime.py:227:89: E501 line too long (91 > 88 characters)
+tools/validation/validate-agent-runtime.py:229:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:236:17: E722 do not use bare 'except'
+tools/validation/validate-agent-runtime.py:238:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:240:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:243:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:255:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:258:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:262:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:264:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:270:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:273:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:276:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:283:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:285:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:292:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:294:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:298:1: W293 blank line contains whitespace
+tools/validation/validate-agent-runtime.py:304:11: W292 no newline at end of file
+tools/validation/validate-agents.py:259:89: E501 line too long (94 > 88 characters)
+tools/validation/validate-architecture.py:124:89: E501 line too long (96 > 88 characters)
+tools/validation/validate-architecture.py:127:89: E501 line too long (124 > 88 characters)
+tools/validation/validate-architecture.py:227:89: E501 line too long (117 > 88 characters)
+tools/validation/validate-architecture.py:239:89: E501 line too long (96 > 88 characters)
+tools/validation/validate-architecture.py:271:89: E501 line too long (112 > 88 characters)
+tools/validation/validate-architecture.py:304:89: E501 line too long (124 > 88 characters)
+tools/validation/validate-architecture.py:310:89: E501 line too long (97 > 88 characters)
+tools/validation/validate-architecture.py:313:89: E501 line too long (109 > 88 characters)
+tools/validation/validate-architecture.py:316:89: E501 line too long (114 > 88 characters)
+tools/validation/validate-architecture.py:339:89: E501 line too long (97 > 88 characters)
+tools/validation/validate-architecture.py:344:89: E501 line too long (90 > 88 characters)
+tools/validation/validate-architecture.py:390:89: E501 line too long (99 > 88 characters)
+tools/validation/validate-architecture.py:393:89: E501 line too long (101 > 88 characters)
+tools/validation/validate-architecture.py:397:89: E501 line too long (100 > 88 characters)
+tools/validation/validate-architecture.py:428:89: E501 line too long (90 > 88 characters)
+tools/validation/validate-architecture.py:429:89: E501 line too long (95 > 88 characters)
+tools/validation/validate-architecture.py:471:89: E501 line too long (90 > 88 characters)
+tools/validation/validate-architecture.py:763:89: E501 line too long (94 > 88 characters)
+tools/validation/validate-pipeline-progressive.py:121:89: E501 line too long (90 > 88 characters)
+tools/validation/validate-pipeline.py:52:89: E501 line too long (98 > 88 characters)
+tools/validation/validate-pipeline.py:53:89: E501 line too long (97 > 88 characters)
+tools/validation/validate-pipeline.py:155:1: W293 blank line contains whitespace
+tools/validation/validate-pipeline.py:159:32: W291 trailing whitespace
+tools/validation/validate-pipeline.py:160:64: W291 trailing whitespace
+tools/validation/validate-pipeline.py:163:1: W293 blank line contains whitespace
+tools/validation/validate-pipeline.py:168:89: E501 line too long (150 > 88 characters)
+tools/validation/validate-pipeline.py:172:1: W293 blank line contains whitespace
+tools/validation/validate-pipeline.py:175:35: W291 trailing whitespace
+tools/validation/validate-pipeline.py:189:1: W293 blank line contains whitespace
+tools/validation/validate-pipeline.py:197:1: W293 blank line contains whitespace
+tools/validation/validate-pipeline.py:202:89: E501 line too long (100 > 88 characters)
+tools/validation/validate-pipeline.py:206:1: W293 blank line contains whitespace
+tools/validation/validate-pipeline.py:210:51: W291 trailing whitespace
+tools/validation/validate-pipeline.py:692:89: E501 line too long (92 > 88 characters)
+tools/validation/validate-pipeline.py:774:89: E501 line too long (115 > 88 characters)
+tools/validation/validate-pipeline.py:792:89: E501 line too long (100 > 88 characters)
+tools/validation/validate-pipeline.py:964:89: E501 line too long (98 > 88 characters)
+tools/validation/validate-pipeline.py:976:89: E501 line too long (99 > 88 characters)
+tools/validation/validate-pipeline.py:977:89: E501 line too long (125 > 88 characters)
+tools/validation/validate-pipeline.py:1099:89: E501 line too long (92 > 88 characters)
+tools/validation/validate-pipeline.py:1100:89: E501 line too long (92 > 88 characters)
+tools/validation/validate-pipeline.py:1302:89: E501 line too long (94 > 88 characters)
+tools/validation/validate-pipeline.py:1333:89: E501 line too long (95 > 88 characters)
+tools/validation/validate-team-engagement.py:16:1: F401 'typing.List' imported but unused
+tools/validation/validate-team-engagement.py:16:1: F401 'typing.Dict' imported but unused
+tools/validation/validate-team-engagement.py:16:1: F401 'typing.Tuple' imported but unused
+tools/validation/validate-team-engagement.py:16:1: F401 'typing.Set' imported but unused
+tools/validation/validate-team-engagement.py:21:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:27:89: E501 line too long (94 > 88 characters)
+tools/validation/validate-team-engagement.py:28:89: E501 line too long (90 > 88 characters)
+tools/validation/validate-team-engagement.py:29:89: E501 line too long (101 > 88 characters)
+tools/validation/validate-team-engagement.py:30:89: E501 line too long (98 > 88 characters)
+tools/validation/validate-team-engagement.py:31:89: E501 line too long (102 > 88 characters)
+tools/validation/validate-team-engagement.py:32:89: E501 line too long (91 > 88 characters)
+tools/validation/validate-team-engagement.py:34:89: E501 line too long (91 > 88 characters)
+tools/validation/validate-team-engagement.py:35:89: E501 line too long (101 > 88 characters)
+tools/validation/validate-team-engagement.py:36:89: E501 line too long (91 > 88 characters)
+tools/validation/validate-team-engagement.py:38:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:43:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:45:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:49:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:53:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:57:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:61:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:65:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:68:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:72:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:75:89: E501 line too long (94 > 88 characters)
+tools/validation/validate-team-engagement.py:76:89: E501 line too long (94 > 88 characters)
+tools/validation/validate-team-engagement.py:81:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:83:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:87:72: W291 trailing whitespace
+tools/validation/validate-team-engagement.py:88:34: E128 continuation line under-indented for visual indent
+tools/validation/validate-team-engagement.py:95:9: E722 do not use bare 'except'
+tools/validation/validate-team-engagement.py:97:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:100:89: E501 line too long (94 > 88 characters)
+tools/validation/validate-team-engagement.py:106:89: E501 line too long (99 > 88 characters)
+tools/validation/validate-team-engagement.py:107:17: E722 do not use bare 'except'
+tools/validation/validate-team-engagement.py:109:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:117:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:120:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:124:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:132:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:134:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:142:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:151:21: E722 do not use bare 'except'
+tools/validation/validate-team-engagement.py:153:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:155:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:164:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:167:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:171:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:177:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:180:71: W291 trailing whitespace
+tools/validation/validate-team-engagement.py:181:34: E128 continuation line under-indented for visual indent
+tools/validation/validate-team-engagement.py:184:89: E501 line too long (95 > 88 characters)
+tools/validation/validate-team-engagement.py:185:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:191:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:194:9: E722 do not use bare 'except'
+tools/validation/validate-team-engagement.py:196:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:198:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:202:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:207:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:212:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:215:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:219:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:223:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:232:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:235:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:239:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:248:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:250:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:261:21: E722 do not use bare 'except'
+tools/validation/validate-team-engagement.py:263:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:269:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:272:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:278:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:292:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:298:57: W291 trailing whitespace
+tools/validation/validate-team-engagement.py:299:24: E128 continuation line under-indented for visual indent
+tools/validation/validate-team-engagement.py:301:24: E128 continuation line under-indented for visual indent
+tools/validation/validate-team-engagement.py:302:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:304:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:307:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:312:1: W293 blank line contains whitespace
+tools/validation/validate-team-engagement.py:318:11: W292 no newline at end of file

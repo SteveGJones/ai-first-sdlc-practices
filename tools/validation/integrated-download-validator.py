@@ -8,17 +8,15 @@ import json
 import os
 import sys
 import time
-import hashlib
 import tempfile
 import concurrent.futures
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 
 import click
 import requests
-import yaml
 
 
 class ValidationResult(Enum):

@@ -5,8 +5,8 @@ Tracks agent installation state across reboot cycles with persistent TODO tracki
 """
 
 import json
-import os
-import sys
+# import os  # Not used
+# import sys  # Not used
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -333,7 +333,7 @@ class InstallationStateManager:
             if todo.notes:
                 print(f"   📝 {todo.notes}")
             if todo.status == "in_progress":
-                print(f"   ⚠️  ACTION REQUIRED")
+                print("   ⚠️  ACTION REQUIRED")
         
         print("=" * 60)
         
@@ -442,7 +442,7 @@ def update_todo(installation_id: str, todo_id: str, status: str, notes: str):
         print(f"✅ Updated {todo_id} to {status}")
         manager.display_todo_status()
     else:
-        print(f"❌ Failed to update TODO")
+        print("❌ Failed to update TODO")
 
 
 @cli.command()

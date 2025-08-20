@@ -11,9 +11,8 @@ ZERO SOLO WORK: Every action must involve the appropriate team of specialists.
 import argparse
 import sys
 import os
-import json
 from pathlib import Path
-from typing import List, Dict, Set, Tuple
+from typing import List, Dict, Set
 from datetime import datetime
 import re
 
@@ -183,7 +182,7 @@ class AutoTeamAssembly:
             for file_path in Path('.').rglob('*'):
                 if file_path.is_file() and not str(file_path).startswith('.git'):
                     project_files.append(str(file_path))
-        except:
+        except (OSError, PermissionError):
             pass
         
         # Detect conditions and add conditional specialists
@@ -234,7 +233,7 @@ echo "⭐ RECOMMENDING SPECIALIST: {agent}"
 echo "   → {agent}: Recommended based on work context"
 """
         
-        script += f"""
+        script += """
 echo ""
 echo "🔒 WORK BLOCKED UNTIL TEAM ENGAGEMENT CONFIRMED"
 echo "🔒 USE: python tools/validation/validate-team-engagement.py --strict"
@@ -273,7 +272,7 @@ echo "✅ REMEMBER: ALL DECISIONS MUST INVOLVE THE TEAM"
             
             print(f"🔒 TEAM ENGAGEMENT BLOCKER CREATED: {blocker_path}")
             print("🔒 RUN THIS SCRIPT BEFORE ANY WORK:")
-            print(f"🔒 ./team-engagement-blocker.sh")
+            print("🔒 ./team-engagement-blocker.sh")
             
             return True
         except Exception as e:
@@ -288,7 +287,7 @@ echo "✅ REMEMBER: ALL DECISIONS MUST INVOLVE THE TEAM"
             result = subprocess.run(['python', 'tools/validation/validate-team-engagement.py', '--strict'],
                                  capture_output=True, text=True)
             return result.returncode == 0
-        except:
+        except (OSError, subprocess.SubprocessError):
             print("⚠️  Could not validate team engagement")
             return False
     
