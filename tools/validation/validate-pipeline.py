@@ -152,15 +152,15 @@ class ValidationPipeline:
     def check_team_engagement(self) -> None:
         """Check for mandatory team engagement - BLOCKS ALL SOLO WORK"""
         print("\n🤝 CHECKING TEAM ENGAGEMENT (MANDATORY FOR ALL WORK)")
-        
+
         # Run the team engagement validator
         try:
             result = subprocess.run([
-                sys.executable, 
-                "tools/validation/validate-team-engagement.py", 
+                sys.executable,
+                "tools/validation/validate-team-engagement.py",
                 "--strict"
             ], capture_output=True, text=True, cwd=self.project_root)
-            
+
             if result.returncode != 0:
                 self.add_error(
                     "Team Engagement",
@@ -170,10 +170,10 @@ class ValidationPipeline:
                 )
             else:
                 self.add_success("Team Engagement", "Team-first behavior validated")
-                
+
         except FileNotFoundError:
             self.add_warning(
-                "Team Engagement", 
+                "Team Engagement",
                 "Team engagement validator not found",
                 "Ensure tools/validation/validate-team-engagement.py exists"
             )
@@ -187,7 +187,7 @@ class ValidationPipeline:
     def check_solo_patterns(self) -> None:
         """Check for forbidden solo work patterns - ZERO TOLERANCE"""
         print("\n🚫 CHECKING FOR SOLO WORK PATTERNS (ZERO TOLERANCE)")
-        
+
         # Run the solo pattern detector
         try:
             result = subprocess.run([
@@ -195,7 +195,7 @@ class ValidationPipeline:
                 "tools/validation/check-solo-patterns.py",
                 "--threshold", "0"
             ], capture_output=True, text=True, cwd=self.project_root)
-            
+
             if result.returncode != 0:
                 self.add_error(
                     "Solo Patterns",
@@ -204,11 +204,11 @@ class ValidationPipeline:
                 )
             else:
                 self.add_success("Solo Patterns", "No solo work patterns found")
-                
+
         except FileNotFoundError:
             self.add_warning(
                 "Solo Patterns",
-                "Solo pattern detector not found", 
+                "Solo pattern detector not found",
                 "Ensure tools/validation/check-solo-patterns.py exists"
             )
         except Exception as e:

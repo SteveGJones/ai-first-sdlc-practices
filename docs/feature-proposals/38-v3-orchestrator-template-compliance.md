@@ -20,12 +20,12 @@ agent_acquisition_strategy:
     - Check if requested agent exists in repository
     - Download from GitHub using exact path
     - Validate format before installation
-    
+
   priority_2_category_match:
     - Search agent categories for best fit
     - Download multiple related agents
     - Let user choose specific agents
-    
+
   priority_3_template_creation:
     - LAST RESORT ONLY when no alternative exists
     - Use create-agent-from-template.py tool
@@ -42,22 +42,22 @@ def validate_agent_format(agent_content):
     """
     # 1. Parse YAML frontmatter
     frontmatter = extract_yaml_frontmatter(agent_content)
-    
+
     # 2. Validate required fields
     required_fields = ['name', 'description', 'examples', 'color']
     for field in required_fields:
         if field not in frontmatter:
             raise ValidationError(f"Missing required field: {field}")
-    
+
     # 3. Validate field constraints
     validate_name_format(frontmatter['name'])  # lowercase, alphanumeric + hyphens
     validate_description_length(frontmatter['description'])  # max 150 chars
     validate_examples_structure(frontmatter['examples'])  # proper format
     validate_color_enum(frontmatter['color'])  # allowed colors only
-    
+
     # 4. Validate content structure
     validate_content_sections(agent_content)
-    
+
     return True
 ```
 
@@ -74,25 +74,25 @@ agent_repository_map:
     - agents/core/database-architect.md
     - agents/core/devops-specialist.md
     - agents/core/sre-specialist.md
-    
+
   testing_agents:
     - agents/testing/ai-test-engineer.md
     - agents/testing/performance-engineer.md
     - agents/testing/integration-orchestrator.md
-    
+
   security_agents:
     - agents/security/security-specialist.md
     - agents/security/frontend-security-specialist.md
-    
+
   documentation_agents:
     - agents/documentation/documentation-architect.md
     - agents/documentation/technical-writer.md
-    
+
   ai_builders:
     - agents/ai-builders/rag-system-designer.md
     - agents/ai-builders/context-engineer.md
     - agents/ai-builders/orchestration-architect.md
-    
+
   sdlc_coaches:
     - agents/sdlc/language-python-expert.md
     - agents/sdlc/language-javascript-expert.md
@@ -113,7 +113,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 EOF
-    
+
     # 2. Install pre-push hooks
     cat > .git/hooks/pre-push << 'EOF'
 #!/bin/bash
@@ -124,10 +124,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 EOF
-    
+
     # 3. Set up branch protection
     python tools/automation/setup-branch-protection-gh.py
-    
+
     # 4. Configure GitHub Actions
     mkdir -p .github/workflows
     curl -s $REPO_URL/.github/workflows/ai-sdlc-validation.yml > .github/workflows/ai-sdlc-validation.yml
@@ -195,10 +195,10 @@ class V3SetupOrchestrator:
         """Enhanced discovery with validation"""
         # 1. Initial scan remains the same
         project_type = self.detect_project_type()
-        
+
         # 2. Map to EXISTING agents only
         agent_recommendations = self.map_to_repository_agents(project_type)
-        
+
         # 3. Download and validate
         for agent_path in agent_recommendations:
             agent_content = self.download_from_github(agent_path)
@@ -206,7 +206,7 @@ class V3SetupOrchestrator:
                 self.install_agent(agent_content)
             else:
                 self.log_validation_failure(agent_path)
-        
+
         # 4. Set up SDLC integration
         self.setup_git_hooks()
         self.configure_github_actions()
@@ -250,10 +250,10 @@ class V3SetupOrchestrator:
 ## Risk Mitigation
 - **Risk**: Breaking existing V3 installations
   - **Mitigation**: Version the orchestrator, maintain backward compatibility
-  
+
 - **Risk**: Network failures during agent download
   - **Mitigation**: Implement retry logic and offline fallback
-  
+
 - **Risk**: User confusion with stricter validation
   - **Mitigation**: Clear error messages and fix suggestions
 

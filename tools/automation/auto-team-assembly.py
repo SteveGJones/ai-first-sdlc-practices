@@ -19,7 +19,7 @@ import re
 
 class AutoTeamAssembly:
     """Automatically assembles teams for different types of work"""
-    
+
     def __init__(self):
         self.team_configurations = {
             'feature_development': {
@@ -83,7 +83,7 @@ class AutoTeamAssembly:
                 }
             }
         }
-        
+
         self.work_type_patterns = {
             'feature_development': [
                 r'implement.*feature', r'add.*functionality', r'create.*component',
@@ -114,44 +114,44 @@ class AutoTeamAssembly:
                 r'optimize.*code', r'restructure.*', r'code.*improvement'
             ]
         }
-    
+
     def detect_work_type(self, description: str) -> str:
         """Detect the type of work from description"""
         description_lower = description.lower()
-        
+
         for work_type, patterns in self.work_type_patterns.items():
             for pattern in patterns:
                 if re.search(pattern, description_lower):
                     return work_type
-        
+
         # Default to feature development if no specific type detected
         return 'feature_development'
-    
+
     def detect_context_conditions(self, description: str, project_files: List[str]) -> Set[str]:
         """Detect context conditions that require additional specialists"""
         conditions = set()
         description_lower = description.lower()
-        
+
         # API-related conditions
         if any(keyword in description_lower for keyword in ['api', 'endpoint', 'rest', 'graphql']):
             conditions.add('has_api')
-        
+
         # Database conditions
         if any(keyword in description_lower for keyword in ['database', 'sql', 'query', 'migration']):
             conditions.add('has_database')
-        
+
         # UI conditions
         if any(keyword in description_lower for keyword in ['ui', 'frontend', 'component', 'interface']):
             conditions.add('has_ui')
-        
+
         # Performance conditions
         if any(keyword in description_lower for keyword in ['performance', 'optimization', 'speed', 'latency']):
             conditions.add('has_performance')
-        
+
         # Security conditions
         if any(keyword in description_lower for keyword in ['security', 'auth', 'permission', 'encryption']):
             conditions.add('has_security')
-        
+
         # Check project files for additional context
         for file_path in project_files:
             file_lower = file_path.lower()
@@ -161,21 +161,21 @@ class AutoTeamAssembly:
                 conditions.add('has_ui')
             if 'test' in file_lower:
                 conditions.add('performance_testing')
-        
+
         return conditions
-    
+
     def assemble_team(self, work_type: str, description: str = "") -> Dict[str, List[str]]:
         """Assemble the required team for the work type"""
         if work_type not in self.team_configurations:
             work_type = 'feature_development'  # Default fallback
-        
+
         config = self.team_configurations[work_type]
         team = {
             'mandatory': config['mandatory'].copy(),
             'recommended': [],
             'optional': []
         }
-        
+
         # Get project files for context
         project_files = []
         try:
@@ -184,24 +184,24 @@ class AutoTeamAssembly:
                     project_files.append(str(file_path))
         except (OSError, PermissionError):
             pass
-        
+
         # Detect conditions and add conditional specialists
         conditions = self.detect_context_conditions(description, project_files)
-        
+
         for condition in conditions:
             if condition in config.get('conditional', {}):
                 team['recommended'].extend(config['conditional'][condition])
-        
+
         # Remove duplicates
         team['mandatory'] = list(set(team['mandatory']))
         team['recommended'] = list(set(team['recommended']))
-        
+
         return team
-    
+
     def generate_team_assembly_script(self, work_type: str, description: str) -> str:
         """Generate a script that forces team engagement"""
         team = self.assemble_team(work_type, description)
-        
+
         script = f"""
 # AUTOMATIC TEAM ASSEMBLY FOR: {work_type.upper()}
 # Description: {description}
@@ -216,13 +216,13 @@ echo ""
 
 # MANDATORY TEAM MEMBERS (MUST BE ENGAGED):
 """
-        
+
         for agent in team['mandatory']:
             script += f"""
 echo "✅ ENGAGING MANDATORY SPECIALIST: {agent}"
 echo "   → {agent}: Required for {work_type}"
 """
-        
+
         if team['recommended']:
             script += """
 # RECOMMENDED TEAM MEMBERS (HIGHLY SUGGESTED):
@@ -232,7 +232,7 @@ echo "   → {agent}: Required for {work_type}"
 echo "⭐ RECOMMENDING SPECIALIST: {agent}"
 echo "   → {agent}: Recommended based on work context"
 """
-        
+
         script += """
 echo ""
 echo "🔒 WORK BLOCKED UNTIL TEAM ENGAGEMENT CONFIRMED"
@@ -256,29 +256,29 @@ echo ""
 echo "✅ TEAM ENGAGEMENT VALIDATED - WORK MAY PROCEED"
 echo "✅ REMEMBER: ALL DECISIONS MUST INVOLVE THE TEAM"
 """
-        
+
         return script
-    
+
     def create_team_engagement_blocker(self, description: str) -> bool:
         """Create a script that blocks solo work and forces team engagement"""
         work_type = self.detect_work_type(description)
         script = self.generate_team_assembly_script(work_type, description)
-        
+
         # Create the blocker script
         blocker_path = Path('.') / 'team-engagement-blocker.sh'
         try:
             blocker_path.write_text(script)
             os.chmod(blocker_path, 0o755)  # Make executable
-            
+
             print(f"🔒 TEAM ENGAGEMENT BLOCKER CREATED: {blocker_path}")
             print("🔒 RUN THIS SCRIPT BEFORE ANY WORK:")
             print("🔒 ./team-engagement-blocker.sh")
-            
+
             return True
         except Exception as e:
             print(f"❌ Failed to create team engagement blocker: {e}")
             return False
-    
+
     def check_current_engagement(self) -> bool:
         """Check if team is currently properly engaged"""
         # Run the team engagement validator
@@ -290,29 +290,29 @@ echo "✅ REMEMBER: ALL DECISIONS MUST INVOLVE THE TEAM"
         except (OSError, subprocess.SubprocessError):
             print("⚠️  Could not validate team engagement")
             return False
-    
+
     def force_team_consultation(self, work_description: str) -> None:
         """Force team consultation before any work can proceed"""
         print("🚨 AUTOMATIC TEAM CONSULTATION REQUIRED")
         print("=" * 50)
         print(f"Work Description: {work_description}")
         print("")
-        
+
         work_type = self.detect_work_type(work_description)
         team = self.assemble_team(work_type, work_description)
-        
+
         print(f"Detected Work Type: {work_type}")
         print("")
         print("MANDATORY TEAM CONSULTATION REQUIRED:")
-        
+
         for agent in team['mandatory']:
             print(f"  🔴 {agent} - MUST BE CONSULTED")
-        
+
         if team['recommended']:
             print("\nRECOMMENDED ADDITIONAL CONSULTATION:")
             for agent in team['recommended']:
                 print(f"  🟡 {agent} - SHOULD BE CONSULTED")
-        
+
         print("")
         print("🚫 NO WORK CAN PROCEED WITHOUT PROPER TEAM ENGAGEMENT")
         print("🚫 SOLO WORK IS ABSOLUTELY FORBIDDEN")
@@ -333,11 +333,11 @@ def main():
                        help='Check current team engagement status')
     parser.add_argument('--force-consultation', action='store_true',
                        help='Force team consultation display')
-    
+
     args = parser.parse_args()
-    
+
     assembler = AutoTeamAssembly()
-    
+
     if args.check_engagement:
         if assembler.check_current_engagement():
             print("✅ TEAM PROPERLY ENGAGED")
@@ -346,11 +346,11 @@ def main():
             print("❌ TEAM ENGAGEMENT INSUFFICIENT")
             print("❌ WORK MUST BE BLOCKED")
             sys.exit(1)
-    
+
     if args.force_consultation:
         assembler.force_team_consultation(args.description)
         sys.exit(1)  # Block work until team is engaged
-    
+
     if args.create_blocker:
         if assembler.create_team_engagement_blocker(args.description):
             print("✅ Team engagement blocker created successfully")
@@ -358,18 +358,18 @@ def main():
         else:
             print("❌ Failed to create team engagement blocker")
             sys.exit(1)
-    
+
     # Default: show team assembly requirements
     work_type = assembler.detect_work_type(args.description)
     team = assembler.assemble_team(work_type, args.description)
-    
+
     print(f"WORK TYPE: {work_type}")
     print(f"DESCRIPTION: {args.description}")
     print("")
     print("REQUIRED TEAM:")
     for agent in team['mandatory']:
         print(f"  🔴 {agent}")
-    
+
     if team['recommended']:
         print("\nRECOMMENDED:")
         for agent in team['recommended']:

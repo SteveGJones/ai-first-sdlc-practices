@@ -55,26 +55,26 @@ agent_catalog:
     - agents/core/database-architect.md
     - agents/core/devops-specialist.md
     - agents/core/sre-specialist.md
-    
+
   testing_agents:
     - agents/testing/ai-test-engineer.md
     - agents/testing/performance-engineer.md
     - agents/testing/integration-orchestrator.md
-    
+
   security_agents:
     - agents/security/security-specialist.md
     - agents/security/frontend-security-specialist.md
-    
+
   documentation_agents:
     - agents/documentation/documentation-architect.md
     - agents/documentation/technical-writer.md
-    
+
   ai_builders:
     - agents/ai-builders/rag-system-designer.md
     - agents/ai-builders/context-engineer.md
     - agents/ai-builders/orchestration-architect.md
     - agents/ai-builders/mcp-server-architect.md
-    
+
   sdlc_coaches:
     - agents/sdlc/language-python-expert.md
     - agents/sdlc/language-javascript-expert.md

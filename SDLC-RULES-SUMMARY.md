@@ -138,7 +138,7 @@ python tools/automation/auto-team-assembly.py "work description" --force-consult
 # VALIDATE TEAM ENGAGEMENT (MUST PASS)
 python tools/validation/validate-team-engagement.py --strict
 
-# CHECK SOLO PATTERNS (ZERO TOLERANCE) 
+# CHECK SOLO PATTERNS (ZERO TOLERANCE)
 python tools/validation/check-solo-patterns.py --threshold 0
 
 # FULL TEAM VALIDATION (COMPREHENSIVE)

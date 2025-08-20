@@ -21,7 +21,7 @@ class ValidationError:
     field: str
     message: str
     severity: str = "error"  # error, warning, info
-    
+
     def __str__(self):
         icon = "❌" if self.severity == "error" else "⚠️" if self.severity == "warning" else "ℹ️"
         return f"{icon} {self.field}: {self.message}"
@@ -29,84 +29,84 @@ class ValidationError:
 
 class AgentValidator:
     """Validates agent files against the format specification"""
-    
+
     # Required fields in YAML frontmatter
     REQUIRED_FIELDS = ['name', 'description', 'examples', 'color']
-    
+
     # Valid color values
     VALID_COLORS = ['blue', 'green', 'purple', 'red', 'cyan', 'yellow', 'orange']
-    
+
     # Field constraints
     NAME_PATTERN = re.compile(r'^[a-z0-9-]{1,50}$')
     MAX_DESCRIPTION_LENGTH = 500  # Increased to accommodate existing agents
     MIN_EXAMPLES = 1
     MAX_EXAMPLES = 5
-    
+
     # Content section patterns
     CONTENT_SECTIONS = [
         r'You are .+',  # Role statement
         r'Your core competencies include:',  # Competencies list
     ]
-    
+
     def __init__(self, strict: bool = True):
         """
         Initialize validator
-        
+
         Args:
             strict: If True, warnings are treated as errors
         """
         self.strict = strict
         self.errors: List[ValidationError] = []
-        
+
     def validate_file(self, file_path: Path) -> Tuple[bool, List[ValidationError]]:
         """
         Validate an agent file
-        
+
         Args:
             file_path: Path to the agent file
-            
+
         Returns:
             Tuple of (is_valid, errors)
         """
         self.errors = []
-        
+
         if not file_path.exists():
             self.errors.append(ValidationError("file", f"File not found: {file_path}"))
             return False, self.errors
-            
+
         try:
             content = file_path.read_text()
             frontmatter, body = self._extract_frontmatter(content)
-            
+
             if frontmatter is None:
                 self.errors.append(ValidationError("frontmatter", "No YAML frontmatter found"))
                 return False, self.errors
-                
+
             # Validate frontmatter
             self._validate_frontmatter(frontmatter)
-            
+
             # Validate content
             self._validate_content(body)
-            
+
         except Exception as e:
             self.errors.append(ValidationError("file", f"Error reading file: {e}"))
             return False, self.errors
-            
+
         # Check if valid based on errors and strict mode
         has_errors = any(e.severity == "error" for e in self.errors)
         has_warnings = any(e.severity == "warning" for e in self.errors)
-        
+
         is_valid = not has_errors and (not self.strict or not has_warnings)
         return is_valid, self.errors
-        
+
     def _extract_frontmatter(self, content: str) -> Tuple[Optional[Dict], str]:
         """Extract YAML frontmatter and body from content"""
         pattern = re.compile(r'^---\s*\n(.*?)\n---\s*\n(.*)$', re.DOTALL)
         match = pattern.match(content)
-        
+
         if not match:
             return None, content
-            
+
         try:
             frontmatter = yaml.safe_load(match.group(1))
             body = match.group(2)
@@ -114,15 +114,15 @@ class AgentValidator:
         except yaml.YAMLError as e:
             self.errors.append(ValidationError("frontmatter", f"Invalid YAML: {e}"))
             return None, ""
-            
+
     def _validate_frontmatter(self, frontmatter: Dict[str, Any]):
         """Validate YAML frontmatter fields"""
-        
+
         # Check required fields
         for field in self.REQUIRED_FIELDS:
             if field not in frontmatter:
                 self.errors.append(ValidationError(field, "Required field missing"))
-                
+
         # Validate name
         if 'name' in frontmatter:
             name = frontmatter['name']
@@ -130,10 +130,10 @@ class AgentValidator:
                 self.errors.append(ValidationError("name", "Must be a string"))
             elif not self.NAME_PATTERN.match(name):
                 self.errors.append(ValidationError(
-                    "name", 
+                    "name",
                     "Must be lowercase alphanumeric with hyphens, 1-50 chars"
                 ))
-                
+
         # Validate description
         if 'description' in frontmatter:
             desc = frontmatter['description']
@@ -150,7 +150,7 @@ class AgentValidator:
                     "Description too short (minimum 10 characters)",
                     severity="warning"
                 ))
-                
+
         # Validate color
         if 'color' in frontmatter:
             color = frontmatter['color']
@@ -159,7 +159,7 @@ class AgentValidator:
                     "color",
                     f"Must be one of: {', '.join(self.VALID_COLORS)}"
                 ))
-                
+
         # Validate examples
         if 'examples' in frontmatter:
             examples = frontmatter['examples']
@@ -177,7 +177,7 @@ class AgentValidator:
                         f"Maximum {self.MAX_EXAMPLES} examples allowed",
                         severity="warning"
                     ))
-                    
+
                 # Validate each example structure
                 for i, example in enumerate(examples):
                     # Handle both string format (with XML-like tags) and dict format
@@ -208,14 +208,14 @@ class AgentValidator:
                             f"examples[{i}]",
                             "Example must be either a string or dictionary"
                         ))
-                                
+
     def _validate_content(self, body: str):
         """Validate content structure"""
-        
+
         if not body.strip():
             self.errors.append(ValidationError("content", "Content section is empty"))
             return
-            
+
         # Check for role statement
         if not re.search(r'^You are .+', body, re.MULTILINE):
             self.errors.append(ValidationError(
@@ -223,7 +223,7 @@ class AgentValidator:
                 "Missing role statement (should start with 'You are...')",
                 severity="warning"
             ))
-            
+
         # Check for core competencies section
         if 'Your core competencies include:' not in body:
             self.errors.append(ValidationError(
@@ -231,7 +231,7 @@ class AgentValidator:
                 "Missing 'Your core competencies include:' section",
                 severity="warning"
             ))
-            
+
         # Check minimum content length
         if len(body.strip()) < 100:
             self.errors.append(ValidationError(
@@ -244,21 +244,21 @@ class AgentValidator:
 def validate_agent_content(content: str, strict: bool = True) -> Tuple[bool, List[str]]:
     """
     Validate agent content string
-    
+
     Args:
         content: Agent file content as string
         strict: If True, warnings are treated as errors
-        
+
     Returns:
         Tuple of (is_valid, error_messages)
     """
     import tempfile
-    
+
     # Write to temp file and validate
     with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
         f.write(content)
         temp_path = Path(f.name)
-        
+
     try:
         validator = AgentValidator(strict=strict)
         is_valid, errors = validator.validate_file(temp_path)
@@ -276,7 +276,7 @@ def validate_agent_content(content: str, strict: bool = True) -> Tuple[bool, Lis
 def main(agent_file: str, strict: bool, quiet: bool, output_json: bool):
     """
     Validate an AI agent file against the format specification
-    
+
     Examples:
         python validate-agent-format.py agents/core/sdlc-enforcer.md
         python validate-agent-format.py my-agent.md --no-strict
@@ -285,7 +285,7 @@ def main(agent_file: str, strict: bool, quiet: bool, output_json: bool):
     file_path = Path(agent_file)
     validator = AgentValidator(strict=strict)
     is_valid, errors = validator.validate_file(file_path)
-    
+
     if output_json:
         import json
         result = {
@@ -302,41 +302,41 @@ def main(agent_file: str, strict: bool, quiet: bool, output_json: bool):
         }
         print(json.dumps(result, indent=2))
         sys.exit(0 if is_valid else 1)
-    
+
     # Console output
     if errors:
         print(f"\n🔍 Validation Report for {file_path.name}")
         print("=" * 50)
-        
+
         # Group by severity
         errors_list = [e for e in errors if e.severity == "error"]
         warnings_list = [e for e in errors if e.severity == "warning"]
         info_list = [e for e in errors if e.severity == "info"]
-        
+
         if errors_list:
             print("\n❌ ERRORS:")
             for error in errors_list:
                 print(f"  {error}")
-                
+
         if warnings_list:
             print("\n⚠️  WARNINGS:")
             for warning in warnings_list:
                 print(f"  {warning}")
-                
+
         if info_list:
             print("\nℹ️  INFO:")
             for info in info_list:
                 print(f"  {info}")
-                
+
         print("\n" + "=" * 50)
         if is_valid:
             print("✅ Validation PASSED (with warnings)")
         else:
             print("❌ Validation FAILED")
-            
+
     elif not quiet:
         print(f"✅ {file_path.name} is valid!")
-        
+
     sys.exit(0 if is_valid else 1)
 
 

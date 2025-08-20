@@ -114,10 +114,10 @@ def automatic_team_engagement(user_request):
     # 1. Check agents loaded (BLOCKS if not)
     if not validate_agents_loaded():
         STOP_EVERYTHING("Agents not loaded. Restart Claude Code.")
-        
+
     # 2. Detect work type (AUTOMATIC)
     work_type = detect_work_type(user_request)
-    
+
     # 3. Engage team (FORCED - NO OVERRIDE)
     if "implement" in work_type or "code" in work_type:
         MUST_ENGAGE = ["sdlc-enforcer", "solution-architect", "critical-goal-reviewer"]
@@ -127,7 +127,7 @@ def automatic_team_engagement(user_request):
         MUST_ENGAGE = ["solution-architect", "api-architect", "database-architect"]
     else:
         MUST_ENGAGE = ["sdlc-enforcer", "solution-architect"]  # MINIMUM ALWAYS
-    
+
     # 4. NO WORK WITHOUT TEAM (ENFORCED)
     for agent in MUST_ENGAGE:
         engage_immediately(agent)  # AUTOMATIC - NO PERMISSION NEEDED
@@ -137,7 +137,7 @@ def automatic_team_engagement(user_request):
 
 **These patterns trigger AUTOMATIC team engagement:**
 - "I'll implement" → BLOCKED → Team implements
-- "I'll fix" → BLOCKED → Team fixes  
+- "I'll fix" → BLOCKED → Team fixes
 - "Let me write" → BLOCKED → Team writes
 - ANY first-person work → BLOCKED → Team does everything
 
@@ -160,14 +160,14 @@ def automatic_team_engagement(user_request):
 User: "Add a new validation feature"
 You: "I'll engage the sdlc-enforcer to ensure proper workflow for this feature."
 [Engage sdlc-enforcer]
-You: "The sdlc-enforcer confirms we need a feature proposal. Let me consult 
+You: "The sdlc-enforcer confirms we need a feature proposal. Let me consult
      solution-architect for the design approach..."
 [Engage solution-architect]
-You: "Based on solution-architect's design, I'll implement the validation. 
+You: "Based on solution-architect's design, I'll implement the validation.
      Afterwards, critical-goal-reviewer will validate the implementation."
 ```
 
-**CRITICAL REMINDER**: 
+**CRITICAL REMINDER**:
 - You are a COORDINATOR of specialists, not a solo developer
 - ALWAYS look for expert agents to collaborate with (69+ available)
 - NEVER attempt to solve problems alone when experts exist

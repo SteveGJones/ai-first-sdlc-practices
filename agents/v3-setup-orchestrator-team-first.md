@@ -68,12 +68,12 @@ def assess_team_coverage(need):
     # 1. Check exact match
     if agent_exists_in_repository(need):
         return ("download", need)
-    
+
     # 2. Check combinations
     combination = find_agent_combination(need)
     if combination:
         return ("combine", combination)
-    
+
     # 3. Last resort - template creation
     return ("create_with_template", need)
 ```
@@ -121,24 +121,24 @@ existing_team:
     - api-architect         # API design
     - database-architect    # Data layer design
     - frontend-architect    # UI/UX architecture
-    
+
   engineers:
     - backend-engineer      # Server-side development
     - frontend-engineer     # Client-side development
     - data-engineer        # Data pipelines
     - ml-engineer          # Machine learning
     - devops-specialist    # Infrastructure
-    
+
   quality:
     - ai-test-engineer     # Testing strategies
     - performance-engineer # Performance optimization
     - security-specialist  # Security review
-    
+
   coaches:
     - language-python-expert
     - language-javascript-expert
     - language-go-expert
-    
+
   process:
     - sdlc-enforcer        # Process compliance
     - critical-goal-reviewer # Goal alignment
@@ -287,9 +287,9 @@ echo "Created quantum-computing-specialist - no existing coverage available" >> 
 setup_metrics:
   total_needs: 10
   met_by_existing: 8     # 80% - GOOD
-  met_by_combination: 1  # 10% - ACCEPTABLE  
+  met_by_combination: 1  # 10% - ACCEPTABLE
   required_creation: 1   # 10% - MINIMIZE THIS
-  
+
   health_score: "GOOD"   # Most needs met by existing team
 ```
 

@@ -13,7 +13,7 @@
 def before_any_work():
     # Step 1: Detect work type from user request
     work_type = detect_work_type(user_request)
-    
+
     # Step 2: AUTOMATICALLY engage required agents
     if "code" in work_type or "implement" in work_type:
         MUST_ENGAGE = ["sdlc-enforcer", "solution-architect", "critical-goal-reviewer"]
@@ -25,7 +25,7 @@ def before_any_work():
         MUST_ENGAGE = ["ai-test-engineer", "performance-engineer", "integration-orchestrator"]
     else:
         MUST_ENGAGE = ["sdlc-enforcer", "solution-architect"]  # MINIMUM
-    
+
     # Step 3: NO WORK PROCEEDS WITHOUT TEAM
     for agent in MUST_ENGAGE:
         engage_agent_automatically(agent)
@@ -52,7 +52,7 @@ Engaging required specialists:
 
 **User**: "Add a new API endpoint for user management"
 
-**You (AUTOMATICALLY)**: 
+**You (AUTOMATICALLY)**:
 ```markdown
 [AUTOMATIC TEAM ENGAGEMENT INITIATED]
 
@@ -112,16 +112,16 @@ session_team_engagement:
     - specialists_identified: true
     - team_engaged_before_work: true
     - solo_patterns_blocked: true
-    
+
   agents_consulted:
-    sdlc-enforcer: 
+    sdlc-enforcer:
       - times_engaged: [automatic counter]
       - decisions_made: [list]
-    
+
     [other_agents]:
       - times_engaged: [automatic counter]
       - contributions: [list]
-  
+
   validation:
     - team_size_met: minimum_3_agents
     - gateway_agent_first: sdlc-enforcer
@@ -161,7 +161,7 @@ graph TD
     D -->|AUTOMATIC| E[Engage All Specialists]
     E -->|AUTOMATIC| F[Synthesize Team Input]
     F -->|AUTOMATIC| G[Present Team Solution]
-    
+
     B -->|Solo Pattern Detected| X[BLOCKED - Force Team]
     E -->|Insufficient Engagement| X
     X -->|AUTOMATIC| C
@@ -191,14 +191,14 @@ Team Implementation:
 ```python
 def validate_team_first_compliance():
     """Runs automatically after EVERY interaction"""
-    
+
     metrics = {
         'agents_engaged': count_engaged_agents(),  # MUST be >= 3
         'sdlc_enforcer_first': was_sdlc_enforcer_first(),  # MUST be True
         'solo_patterns': count_solo_patterns(),  # MUST be 0
         'team_decisions': count_team_decisions(),  # MUST match total_decisions
     }
-    
+
     if not all([
         metrics['agents_engaged'] >= 3,
         metrics['sdlc_enforcer_first'],
@@ -215,18 +215,18 @@ def validate_team_first_compliance():
 ```python
 def initialize_session():
     """Runs automatically when session starts"""
-    
+
     # 1. Load team-first enforcement
     enforce_team_first = True  # CANNOT be disabled
-    
+
     # 2. Check agent availability
     if not validate_agents_loaded():
         BLOCK_ALL_WORK("Agents not loaded. Restart required.")
-    
+
     # 3. Initialize team tracking
     session_tracker = TeamEngagementTracker()
     session_tracker.start_monitoring()
-    
+
     # 4. Display team status
     print("[TEAM-FIRST MODE ACTIVE - AUTOMATIC ENFORCEMENT ENABLED]")
     print("Minimum 3 agents required for all work")

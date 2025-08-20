@@ -77,11 +77,11 @@ describe('Feature Tests', () => {
   test('should handle happy path', () => {
     // Unit test implementation
   });
-  
+
   test('should handle error cases', () => {
     // Error handling validation
   });
-  
+
   test('should maintain type safety', () => {
     // TypeScript compile-time checks
   });

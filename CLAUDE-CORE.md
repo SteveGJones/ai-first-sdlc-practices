@@ -194,7 +194,7 @@ project/
 **THE FOLLOWING HAPPEN AUTOMATICALLY FOR EVERY TASK:**
 
 1. **Work Type Detection**: System detects what you're trying to do
-2. **Team Assembly Trigger**: Automatically identifies required specialists  
+2. **Team Assembly Trigger**: Automatically identifies required specialists
 3. **Solo Work Blocking**: Prevents ANY work without team engagement
 4. **Validation Enforcement**: Blocks progress until team compliance verified
 

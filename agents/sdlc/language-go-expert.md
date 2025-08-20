@@ -101,12 +101,12 @@ func (s *UserService) GetUser(ctx context.Context, id string) (*User, error) {
     if id == "" {
         return nil, fmt.Errorf("user ID cannot be empty")
     }
-    
+
     user, err := s.repo.FindByID(ctx, id)
     if err != nil {
         return nil, fmt.Errorf("failed to get user %s: %w", id, err)
     }
-    
+
     return user, nil
 }
 ```
@@ -140,15 +140,15 @@ func TestUserService_GetUser(t *testing.T) {
             wantErr: true,
         },
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             repo := &mockRepository{}
             tt.setup(repo)
-            
+
             service := NewUserService(repo, &testLogger{})
             got, err := service.GetUser(context.Background(), tt.userID)
-            
+
             if (err != nil) != tt.wantErr {
                 t.Errorf("GetUser() error = %v, wantErr %v", err, tt.wantErr)
                 return
@@ -207,7 +207,7 @@ func main() {
     go func() {
         log.Println(http.ListenAndServe("localhost:6060", nil))
     }()
-    
+
     // Your application code
     startServer()
 }
@@ -216,7 +216,7 @@ func main() {
 func (s *Service) ProcessWithTimeout(ctx context.Context, data Data) error {
     ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
     defer cancel()
-    
+
     return s.processData(ctx, data)
 }
 ```
@@ -308,7 +308,7 @@ func ProcessFile(filename string) error {
         return fmt.Errorf("failed to open file %s: %w", filename, err)
     }
     defer file.Close() // Always cleanup resources
-    
+
     // Process file content
     return processContent(file)
 }
@@ -324,11 +324,11 @@ func (s *Service) ProcessData(ctx context.Context) error {
             tx.Rollback()
         }
     }()
-    
+
     if err = s.doWork(ctx, tx); err != nil {
         return err
     }
-    
+
     return tx.Commit()
 }
 ```

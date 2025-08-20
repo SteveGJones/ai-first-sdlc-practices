@@ -16,22 +16,22 @@ from typing import List, Tuple
 
 class GitHooksInstaller:
     """Manages installation of SDLC-compliant git hooks"""
-    
+
     def __init__(self, project_dir: Path = None):
         """
         Initialize the installer
-        
+
         Args:
             project_dir: Project directory (defaults to current directory)
         """
         self.project_dir = project_dir or Path.cwd()
         self.git_dir = self.project_dir / '.git'
         self.hooks_dir = self.git_dir / 'hooks'
-        
+
     def is_git_repo(self) -> bool:
         """Check if the current directory is a git repository"""
         return self.git_dir.exists() and self.git_dir.is_dir()
-        
+
     def create_pre_commit_hook(self) -> str:
         """Generate pre-commit hook content"""
         return '''#!/bin/bash
@@ -153,38 +153,38 @@ exit 0
     def install_hook(self, hook_name: str, content: str) -> bool:
         """
         Install a git hook
-        
+
         Args:
             hook_name: Name of the hook (e.g., 'pre-commit')
             content: Hook script content
-            
+
         Returns:
             True if successful
         """
         if not self.is_git_repo():
             return False
-            
+
         hook_path = self.hooks_dir / hook_name
-        
+
         # Back up existing hook if present
         if hook_path.exists():
             backup_path = hook_path.with_suffix('.backup')
             hook_path.rename(backup_path)
             print(f"  Backed up existing {hook_name} to {hook_name}.backup")
-            
+
         # Write new hook
         hook_path.write_text(content)
-        
+
         # Make executable
         st = os.stat(hook_path)
         os.chmod(hook_path, st.st_mode | stat.S_IEXEC)
-        
+
         return True
-        
+
     def install_all_hooks(self) -> List[Tuple[str, bool]]:
         """
         Install all SDLC git hooks
-        
+
         Returns:
             List of (hook_name, success) tuples
         """
@@ -193,29 +193,29 @@ exit 0
             ('pre-push', self.create_pre_push_hook()),
             ('commit-msg', self.create_commit_msg_hook()),
         ]
-        
+
         results = []
         for hook_name, content in hooks:
             success = self.install_hook(hook_name, content)
             results.append((hook_name, success))
-            
+
         return results
-        
+
     def verify_hooks(self) -> List[Tuple[str, bool]]:
         """
         Verify that hooks are installed and executable
-        
+
         Returns:
             List of (hook_name, is_valid) tuples
         """
         hooks_to_check = ['pre-commit', 'pre-push', 'commit-msg']
         results = []
-        
+
         for hook_name in hooks_to_check:
             hook_path = self.hooks_dir / hook_name
             is_valid = hook_path.exists() and os.access(hook_path, os.X_OK)
             results.append((hook_name, is_valid))
-            
+
         return results
 
 
@@ -225,50 +225,50 @@ exit 0
 def main(verify: bool, force: bool):
     """
     Install AI-First SDLC git hooks for automated validation
-    
+
     This tool installs git hooks that enforce SDLC compliance:
     - pre-commit: Syntax validation and technical debt checking
     - pre-push: Comprehensive validation and branch protection
     - commit-msg: Conventional commit format enforcement
-    
+
     Examples:
         python setup-sdlc-git-hooks.py
         python setup-sdlc-git-hooks.py --verify
         python setup-sdlc-git-hooks.py --force
     """
     installer = GitHooksInstaller()
-    
+
     # Check if we're in a git repository
     if not installer.is_git_repo():
         print("❌ Not a git repository!")
         print("Initialize with 'git init' first")
         sys.exit(1)
-        
+
     if verify:
         # Verify mode
         print("🔍 Verifying git hooks...")
         results = installer.verify_hooks()
-        
+
         all_valid = True
         for hook_name, is_valid in results:
             status = "✅ Installed" if is_valid else "❌ Missing"
             print(f"  {hook_name}: {status}")
             if not is_valid:
                 all_valid = False
-                
+
         if all_valid:
             print("\n✅ All hooks are properly installed!")
         else:
             print("\n⚠️  Some hooks are missing. Run without --verify to install.")
-            
+
         sys.exit(0 if all_valid else 1)
-        
+
     # Installation mode
     print("🔧 Installing AI-First SDLC git hooks...")
     print(f"📁 Git directory: {installer.git_dir}")
-    
+
     results = installer.install_all_hooks()
-    
+
     success_count = 0
     for hook_name, success in results:
         if success:
@@ -276,7 +276,7 @@ def main(verify: bool, force: bool):
             success_count += 1
         else:
             print(f"  ❌ Failed to install {hook_name}")
-            
+
     if success_count == len(results):
         print(f"\n✅ Successfully installed {success_count} git hooks!")
         print("\nHooks will run automatically:")
