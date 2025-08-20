@@ -130,7 +130,7 @@ exit 0
 # AI-First SDLC Commit Message Hook
 # Enforces conventional commit format
 
-commit_regex='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,100}$'
+commit_regex='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\\(.+\\))?: .{1,100}$'
 commit_msg=$(cat $1)
 
 if ! echo "$commit_msg" | grep -qE "$commit_regex"; then
