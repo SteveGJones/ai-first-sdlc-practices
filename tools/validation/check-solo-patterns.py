@@ -50,7 +50,7 @@ class SoloPatternDetector:
             ],
             "missing_collaboration": [
                 r"\bI\s+implemented\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
-                r"\bI\s+deployed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)", 
+                r"\bI\s+deployed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
                 r"\bI\s+fixed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
                 r"\bI\s+refactored\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
                 r"\bI\s+optimized\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
@@ -89,7 +89,9 @@ class SoloPatternDetector:
             # First, find the git repository root
             git_root_result = subprocess.run(
                 ["git", "rev-parse", "--show-toplevel"],
-                capture_output=True, text=True, check=False
+                capture_output=True,
+                text=True,
+                check=False,
             )
             if git_root_result.returncode == 0:
                 git_root = git_root_result.stdout.strip()
@@ -98,37 +100,45 @@ class SoloPatternDetector:
                 os.chdir(git_root)
             else:
                 original_cwd = None
-            
+
             # Check if we're in GitHub Actions CI
             if os.environ.get("GITHUB_ACTIONS") == "true":
                 # In CI - use proper base ref
                 base_ref = os.environ.get("GITHUB_BASE_REF", "main")
-                print(f"ℹ️ CI environment detected - comparing with base branch: {base_ref}")
+                print(
+                    f"ℹ️ CI environment detected - comparing with base branch: {base_ref}"
+                )
                 # Need to fetch the base branch first in CI
-                fetch_result = subprocess.run(["git", "fetch", "origin", base_ref], 
-                             capture_output=True, text=True, check=False)
+                fetch_result = subprocess.run(
+                    ["git", "fetch", "origin", base_ref],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
                 if fetch_result.returncode != 0:
                     print(f"⚠️ Could not fetch base branch: {fetch_result.stderr}")
-                
+
                 result = subprocess.run(
                     ["git", "diff", "--name-only", f"origin/{base_ref}...HEAD"],
-                    capture_output=True, text=True
+                    capture_output=True,
+                    text=True,
                 )
                 if result.returncode != 0:
                     print(f"⚠️ Git diff failed: {result.stderr}")
             else:
                 # Local development - compare with main
                 result = subprocess.run(
-                    ["git", "diff", "--name-only", "main...HEAD"], 
-                    capture_output=True, text=True
+                    ["git", "diff", "--name-only", "main...HEAD"],
+                    capture_output=True,
+                    text=True,
                 )
-            
+
             # Restore original directory if changed
             if original_cwd:
                 os.chdir(original_cwd)
-            
+
             if result.returncode == 0 and result.stdout.strip():
-                files = result.stdout.strip().split('\n')
+                files = result.stdout.strip().split("\n")
                 print(f"ℹ️ Detected {len(files)} changed files in PR/branch")
                 # Make paths relative to current directory if needed
                 if original_cwd:
@@ -149,7 +159,9 @@ class SoloPatternDetector:
             # First, find the git repository root
             git_root_result = subprocess.run(
                 ["git", "rev-parse", "--show-toplevel"],
-                capture_output=True, text=True, check=False
+                capture_output=True,
+                text=True,
+                check=False,
             )
             if git_root_result.returncode == 0:
                 git_root = git_root_result.stdout.strip()
@@ -157,18 +169,19 @@ class SoloPatternDetector:
                 os.chdir(git_root)
             else:
                 original_cwd = None
-            
+
             result = subprocess.run(
-                ["git", "diff", "--name-only", "main..HEAD"], 
-                capture_output=True, text=True
+                ["git", "diff", "--name-only", "main..HEAD"],
+                capture_output=True,
+                text=True,
             )
-            
+
             # Restore original directory if changed
             if original_cwd:
                 os.chdir(original_cwd)
-            
+
             if result.returncode == 0 and result.stdout.strip():
-                files = result.stdout.strip().split('\n')
+                files = result.stdout.strip().split("\n")
                 # Make paths relative to current directory if needed
                 if original_cwd:
                     rel_files = []
@@ -246,18 +259,18 @@ class SoloPatternDetector:
         if not changed_files:
             print("⚠️  Could not detect PR changes, scanning current branch changes")
             changed_files = self._get_branch_changed_files()
-        
+
         if not changed_files:
             print("ℹ️  No changed files detected, skipping documentation scan")
             return True
 
         # Filter for markdown files only
-        md_files = [f for f in changed_files if f.endswith('.md')]
-        
+        md_files = [f for f in changed_files if f.endswith(".md")]
+
         # Exclude template and backup files
         filtered_files = []
         for f in md_files:
-            if any(exclude in f for exclude in ['templates/', 'backups/', 'examples/']):
+            if any(exclude in f for exclude in ["templates/", "backups/", "examples/"]):
                 print(f"ℹ️  Skipping template/backup/example file: {f}")
                 continue
             if os.path.exists(f):
@@ -268,7 +281,7 @@ class SoloPatternDetector:
             return True
 
         print(f"📋 Scanning {len(filtered_files)} changed markdown files...")
-        
+
         total_violations = 0
 
         for file_path in filtered_files:
@@ -276,9 +289,9 @@ class SoloPatternDetector:
                 if os.path.getsize(file_path) > 1000000:  # Skip files > 1MB
                     continue
 
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
-                
+
                 violations = self._find_patterns_in_text(content, file_path)
                 total_violations += len(violations)
 
@@ -306,16 +319,19 @@ class SoloPatternDetector:
         changed_files = self._get_pr_changed_files()
         if not changed_files:
             changed_files = self._get_branch_changed_files()
-        
+
         code_extensions = [".py", ".js", ".ts", ".java", ".go", ".rs", ".cpp", ".c"]
         total_violations = 0
-        
+
         # If we have changed files, only scan those
         if changed_files:
-            code_files = [f for f in changed_files 
-                         if any(f.endswith(ext) for ext in code_extensions)]
+            code_files = [
+                f
+                for f in changed_files
+                if any(f.endswith(ext) for ext in code_extensions)
+            ]
             print(f"📋 Scanning {len(code_files)} changed code files...")
-            
+
             for file_path in code_files:
                 try:
                     if not os.path.exists(file_path):
@@ -323,7 +339,7 @@ class SoloPatternDetector:
                     if os.path.getsize(file_path) > 500000:  # Skip large files
                         continue
 
-                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                         content = f.read()
 
                     # Extract comments based on file type
@@ -358,11 +374,14 @@ class SoloPatternDetector:
         changed_files = self._get_pr_changed_files()
         if not changed_files:
             changed_files = self._get_branch_changed_files()
-        
+
         if changed_files:
             # Only scan changed retrospective files
-            retro_files = [f for f in changed_files 
-                          if f.startswith("retrospectives/") and f.endswith(".md")]
+            retro_files = [
+                f
+                for f in changed_files
+                if f.startswith("retrospectives/") and f.endswith(".md")
+            ]
             if not retro_files:
                 print("ℹ️ No retrospective files changed in this PR")
                 return True
@@ -382,9 +401,9 @@ class SoloPatternDetector:
                 if isinstance(file_path, Path):
                     content = file_path.read_text()
                 else:
-                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                         content = f.read()
-                
+
                 violations = self._find_patterns_in_text(content, str(file_path))
                 total_violations += len(violations)
 
@@ -402,19 +421,48 @@ class SoloPatternDetector:
         return True
 
     def _check_team_indicators(self) -> bool:
-        """Check for presence of team collaboration indicators"""
+        """Check for presence of team collaboration indicators in PR changes only"""
         print("\n🤝 CHECKING TEAM COLLABORATION INDICATORS...")
+
+        # Get files changed in this PR/branch
+        changed_files = self._get_pr_changed_files()
+        if not changed_files:
+            changed_files = self._get_branch_changed_files()
+
+        if not changed_files:
+            print("ℹ️  No changed files detected, skipping team indicator check")
+            return True
+
+        # Filter for markdown and code files
+        relevant_files = [
+            f
+            for f in changed_files
+            if f.endswith(".md")
+            or f.endswith(".py")
+            or f.endswith(".js")
+            or f.endswith(".ts")
+        ]
+
+        if not relevant_files:
+            print("ℹ️  No relevant files to check for team indicators")
+            return True
 
         team_score = 0
         total_files = 0
 
-        # Check documentation for team indicators
-        for file_path in Path(".").rglob("*.md"):
+        print(f"📋 Checking {len(relevant_files)} changed files for team indicators...")
+
+        # Check changed files for team indicators
+        for file_path in relevant_files:
             try:
-                if file_path.stat().st_size > 1000000:
+                if not os.path.exists(file_path):
+                    continue
+                if os.path.getsize(file_path) > 1000000:
                     continue
 
-                content = file_path.read_text().lower()
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read().lower()
+
                 total_files += 1
 
                 file_team_score = 0
@@ -424,19 +472,29 @@ class SoloPatternDetector:
 
                 if file_team_score > 0:
                     team_score += 1
+                    print(f"   ✓ Team indicators found in: {file_path}")
 
-            except Exception:
+            except Exception as e:
+                print(f"   ⚠️ Could not check {file_path}: {e}")
                 continue
 
         if total_files > 0:
             team_percentage = (team_score / total_files) * 100
 
-            if team_percentage < 25:  # Require 25% of files to show team collaboration
+            if (
+                team_percentage < 25
+            ):  # Require 25% of changed files to show team collaboration
                 print(f"❌ INSUFFICIENT TEAM COLLABORATION: {team_percentage:.1f}%")
-                print("   Most files show no team collaboration indicators")
+                print(
+                    f"   Only {team_score}/{total_files} changed files show team collaboration"
+                )
                 return False
 
-            print(f"✅ Team collaboration indicators: {team_percentage:.1f}%")
+            print(
+                f"✅ Team collaboration indicators: {team_percentage:.1f}% ({team_score}/{total_files} files)"
+            )
+        else:
+            print("ℹ️  No files to check for team indicators")
 
         return True
 
@@ -447,18 +505,18 @@ class SoloPatternDetector:
         # Context exclusions - ignore patterns in these contexts
         exclusion_contexts = [
             r"stop\s+solo\s+work",  # "we must stop solo work"
-            r"avoid\s+solo\s+work", # "avoid solo work"  
-            r"prevent\s+solo\s+work", # "prevent solo work"
-            r"block\s+solo\s+work", # "block solo work"
-            r"no\s+solo\s+work", # "no solo work allowed"
-            r"against\s+solo\s+work", # "against solo work"
-            r"solo\s+work\s+(patterns|detection|blocker)", # validation tool descriptions
-            r"detecting\s+solo\s+work", # "detecting solo work"
-            r"SOLO\s+WORK.*BLOCKED", # enforcement messages
-            r"skipping\s+validation.*penalty", # enforcement rules
-            r"architecture\s+decision.*records?", # ADR discussions
-            r"system\s+design.*architecture", # architecture discussions
-            r"death\s+penal(ty|ties)", # enforcement discussions
+            r"avoid\s+solo\s+work",  # "avoid solo work"
+            r"prevent\s+solo\s+work",  # "prevent solo work"
+            r"block\s+solo\s+work",  # "block solo work"
+            r"no\s+solo\s+work",  # "no solo work allowed"
+            r"against\s+solo\s+work",  # "against solo work"
+            r"solo\s+work\s+(patterns|detection|blocker)",  # validation tool descriptions
+            r"detecting\s+solo\s+work",  # "detecting solo work"
+            r"SOLO\s+WORK.*BLOCKED",  # enforcement messages
+            r"skipping\s+validation.*penalty",  # enforcement rules
+            r"architecture\s+decision.*records?",  # ADR discussions
+            r"system\s+design.*architecture",  # architecture discussions
+            r"death\s+penal(ty|ties)",  # enforcement discussions
         ]
 
         # Check if this text is discussing individual work enforcement (meta-discussion)
@@ -473,19 +531,39 @@ class SoloPatternDetector:
                 matches = re.finditer(pattern, text, re.IGNORECASE | re.MULTILINE)
                 for match in matches:
                     # Additional context check around the match
-                    match_context = text[max(0, match.start()-50):match.end()+50].lower()
-                    
+                    match_context = text[
+                        max(0, match.start() - 50) : match.end() + 50
+                    ].lower()
+
                     # Skip if this appears to be enforcement/discussion about individual work
                     skip_contexts = [
-                        "enforce", "block", "prevent", "stop", "avoid", "detect", "violation",
-                        "pattern", "must not", "should not", "forbidden", "prohibited",
-                        "penalty", "instant death", "blocking", "against", "never", "no solo",
-                        "architecture decision", "system design", "framework", "validation"
+                        "enforce",
+                        "block",
+                        "prevent",
+                        "stop",
+                        "avoid",
+                        "detect",
+                        "violation",
+                        "pattern",
+                        "must not",
+                        "should not",
+                        "forbidden",
+                        "prohibited",
+                        "penalty",
+                        "instant death",
+                        "blocking",
+                        "against",
+                        "never",
+                        "no solo",
+                        "architecture decision",
+                        "system design",
+                        "framework",
+                        "validation",
                     ]
-                    
+
                     if any(skip_word in match_context for skip_word in skip_contexts):
                         continue
-                    
+
                     violation = f"{category}: '{match.group()}' in {source}"
                     violations.append(violation)
                     self.violations.append(violation)
@@ -500,14 +578,14 @@ class SoloPatternDetector:
             # Python comments
             for line in content.split("\n"):
                 if "#" in line:
-                    comment = line[line.index("#"):].strip()
+                    comment = line[line.index("#") :].strip()
                     comments.append(comment)
         elif ext in [".js", ".ts", ".java", ".go", ".rs", ".cpp", ".c"]:
             # C-style comments
             # Single line
             for line in content.split("\n"):
                 if "//" in line:
-                    comment = line[line.index("//"):].strip()
+                    comment = line[line.index("//") :].strip()
                     comments.append(comment)
             # Multi-line (basic extraction)
             multiline_matches = re.findall(r"/\*.*?\*/", content, re.DOTALL)
@@ -542,7 +620,9 @@ class SoloPatternDetector:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Detect and block individual work patterns")
+    parser = argparse.ArgumentParser(
+        description="Detect and block individual work patterns"
+    )
     parser.add_argument(
         "--threshold",
         type=int,

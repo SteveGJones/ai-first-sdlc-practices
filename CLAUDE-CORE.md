@@ -2,6 +2,18 @@
 
 AI-First SDLC framework core instructions. Load context modules as needed.
 
+## 🚀 QUICK START: One Command to Launch Claude
+
+After AI-First SDLC setup, just run:
+```bash
+./bin/claude
+```
+This launcher (created by setup-smart.py) handles EVERYTHING:
+✅ Activates Python virtual environment
+✅ Installs dependencies
+✅ Launches Claude Code in project context
+No manual setup needed!
+
 ## 🔴 FUNDAMENTAL RULE: ALWAYS COLLABORATE WITH EXPERT AGENTS
 
 **YOU HAVE 69+ SPECIALIST AGENTS - ALWAYS CHECK IF AN EXPERT EXISTS FOR YOUR TASK**
@@ -51,21 +63,21 @@ This framework enforces AI-First SDLC practices with ABSOLUTE ZERO TOLERANCE. AN
 **NO EXCEPTIONS: Always look for and engage expert agents**
 
 ## Framework Overview
-Uncompromising methodology for AI agents as mandatory developers with ruthless quality enforcement.
+Uncompromising methodology for AI agents working in collaborative teams with specialist agents as mandatory developers with ruthless quality enforcement through sdlc-enforcer and team-first validation.
 
 ## Zero Technical Debt (MANDATORY)
 
-Before ANY code: `python tools/validation/validate-architecture.py --strict` (MUST PASS)
+Before ANY code: Engage solution-architect and run `python tools/validation/validate-architecture.py --strict` with team review (MUST PASS)
 
 **🚧 If you see "BOOTSTRAP MODE" - this is NORMAL for fresh installs. Load CLAUDE-CONTEXT-architecture.md for complete guidance.**
 
-### Required Architecture Documents (ALL 6):
-1. requirements-traceability-matrix.md
-2. what-if-analysis.md
-3. architecture-decision-record.md
-4. system-invariants.md
-5. integration-design.md
-6. failure-mode-analysis.md
+### Required Architecture Documents (ALL 6) - Created with Specialist Team:
+1. requirements-traceability-matrix.md (with solution-architect)
+2. what-if-analysis.md (with test-engineer consultation)
+3. architecture-decision-record.md (solution-architect approval required)
+4. system-invariants.md (sdlc-enforcer validation)
+5. integration-design.md (integration specialists review)
+6. failure-mode-analysis.md (reliability engineers input)
 
 ### FORBIDDEN:
 - TODO, FIXME, HACK comments
@@ -75,10 +87,13 @@ Before ANY code: `python tools/validation/validate-architecture.py --strict` (MU
 - Ignoring warnings
 - Temporary solutions
 
-### After EVERY change:
+### After EVERY change (with team validation):
 ```bash
+# Test-engineer validates technical debt
 python tools/validation/check-technical-debt.py --threshold 0
+# Sdlc-enforcer reviews type safety
 python tools/validation/validate-pipeline.py --checks type-safety
+# Team consensus required before proceeding
 ```
 
 ## Logging (MANDATORY)
@@ -99,6 +114,51 @@ python tools/validation/validate-pipeline.py --checks type-safety
 
 Details: Load CLAUDE-CONTEXT-logging.md
 
+## 🐍 Python Virtual Environment (MANDATORY FOR PYTHON PROJECTS)
+
+### PREFERRED: Use venv-run Scripts (Created by setup-smart.py)
+```bash
+# These scripts auto-activate venv - NO manual activation needed!
+
+# Run any Python command (Unix/Mac)
+./venv-run.sh python script.py
+./venv-run.sh pip install requests
+./venv-run.sh pytest
+./venv-run.sh mypy src/
+
+# Run any Python command (Windows)
+venv-run.bat python script.py
+venv-run.bat pip install requests
+venv-run.bat pytest
+
+# Start interactive shell with venv activated
+./venv-run.sh  # Unix/Mac
+venv-run.bat   # Windows
+```
+
+### FALLBACK: Manual Virtual Environment Management
+```bash
+# Only if venv-run scripts don't exist
+# Check for existing venv
+ls venv/ .venv/ 2>/dev/null || echo "No venv found"
+
+# Create if missing (REQUIRED before ANY Python work)
+python -m venv venv
+
+# Activate (MANDATORY before pip or python commands)
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+# Install dependencies in venv (NEVER globally)
+pip install -r requirements.txt
+```
+
+### FORBIDDEN Python Practices:
+- Installing packages globally without venv
+- Running Python code without venv-run script or activated venv
+- Committing virtual environment directories
+- Ignoring venv-run scripts when they exist
+
 ## 🛑 MANDATORY WORKFLOW (VIOLATION = IMMEDIATE TERMINATION)
 
 ### ABSOLUTELY FORBIDDEN (INSTANT PROJECT DEATH):
@@ -108,16 +168,16 @@ Details: Load CLAUDE-CONTEXT-logging.md
 - ANY code without ALL 6 architecture documents
 - ANY technical debt (TODOs, FIXMEs, any types)
 
-### MANDATORY SEQUENCE (NO DEVIATIONS ALLOWED):
-1. **HALT**: Stop ALL work if not on feature branch
-2. **CREATE**: Feature branch: `git checkout -b feature/name`
-3. **DOCUMENT**: Proposal: `docs/feature-proposals/XX-name.md`
-4. **ARCHITECTURE**: ALL 6 documents BEFORE any code
-5. **VALIDATE**: `python tools/validation/validate-architecture.py --strict` MUST PASS
-6. **RETROSPECTIVE**: Create `retrospectives/XX-name.md` IMMEDIATELY
-7. **DEVELOP**: Update retrospective after EVERY change
-8. **PUSH**: `git push -u origin feature/name`
-9. **PR**: Only with COMPLETE retrospective or REJECTION
+### MANDATORY SEQUENCE (NO DEVIATIONS ALLOWED - TEAM ENFORCED):
+1. **HALT**: Stop ALL work if not on feature branch (sdlc-enforcer validates)
+2. **CREATE**: Feature branch with team: `git checkout -b feature/name`
+3. **DOCUMENT**: Proposal with solution-architect: `docs/feature-proposals/XX-name.md`
+4. **ARCHITECTURE**: ALL 6 documents with specialist team BEFORE any code
+5. **VALIDATE**: Team validates: `python tools/validation/validate-architecture.py --strict` MUST PASS
+6. **RETROSPECTIVE**: Create with team input: `retrospectives/XX-name.md` IMMEDIATELY
+7. **DEVELOP**: Update retrospective with team after EVERY change
+8. **PUSH**: After team review: `git push -u origin feature/name`
+9. **PR**: Only with COMPLETE retrospective validated by critical-goal-reviewer or REJECTION
 
 ## 📋 RETROSPECTIVES (MANDATORY OR PROJECT TERMINATION)
 
@@ -222,13 +282,13 @@ Check version: `cat VERSION`
 Check latest: `curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/VERSION`
 If update available: Load CLAUDE-CONTEXT-update.md
 
-## Development Workflow
+## Development Workflow (Team-First Approach)
 
-1. **Plan**: Create proposal & retrospective
-2. **Architecture**: Create 6 documents, validate
-3. **Implement**: Zero debt, continuous validation
-4. **Review**: Update retrospective
-5. **Submit**: PR with complete retrospective
+1. **Plan**: Create proposal with solution-architect & retrospective with team
+2. **Architecture**: Create 6 documents with specialist team, validate with sdlc-enforcer
+3. **Implement**: Zero debt with test-engineer, continuous validation with team
+4. **Review**: Update retrospective with critical-goal-reviewer input
+5. **Submit**: PR with complete retrospective validated by team
 
 ## 🏆 TEAM QUALITY STANDARDS 🏆
 

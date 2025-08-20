@@ -156,8 +156,7 @@ class InstallationStateManager:
         state = InstallationState(
             installation_id=installation_id,
             phase=InstallationPhase.PRE_REBOOT.value,
-            started_at=datetime.now(
-                timezone.utc).isoformat(),
+            started_at=datetime.now(timezone.utc).isoformat(),
             project_context=project_context,
             todos=todos,
             agents_pending=agent_records,

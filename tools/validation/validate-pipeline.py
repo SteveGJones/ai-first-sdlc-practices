@@ -1110,7 +1110,8 @@ class ValidationPipeline:
                         else:
                             issues.append(
                                 "mypy main section not configured for strict type checking "
-                                "(Framework allows relaxed rules in tool-specific sections)")
+                                "(Framework allows relaxed rules in tool-specific sections)"
+                            )
                     else:
                         issues.append("mypy configuration missing [mypy] section")
                 except configparser.Error:
