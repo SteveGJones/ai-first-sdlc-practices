@@ -99,6 +99,30 @@ python tools/validation/validate-pipeline.py --checks type-safety
 
 Details: Load CLAUDE-CONTEXT-logging.md
 
+## 🐍 Python Virtual Environment (MANDATORY FOR PYTHON PROJECTS)
+
+### ALWAYS Check and Create Virtual Environment:
+```bash
+# Check for existing venv
+ls venv/ .venv/ 2>/dev/null || echo "No venv found"
+
+# Create if missing (REQUIRED before ANY Python work)
+python -m venv venv
+
+# Activate (MANDATORY before pip or python commands)
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+# Install dependencies in venv (NEVER globally)
+pip install -r requirements.txt
+```
+
+### FORBIDDEN Python Practices:
+- Installing packages globally without venv
+- Running Python code without activated venv
+- Committing virtual environment directories
+- Ignoring venv in .gitignore
+
 ## 🛑 MANDATORY WORKFLOW (VIOLATION = IMMEDIATE TERMINATION)
 
 ### ABSOLUTELY FORBIDDEN (INSTANT PROJECT DEATH):

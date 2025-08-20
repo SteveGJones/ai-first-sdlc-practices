@@ -119,6 +119,9 @@ class SmartFrameworkSetup:
         quickstart: bool = False,
         organized: bool = False,
         sdlc_level: str = "production",
+        skip_venv: bool = False,
+        venv_name: str = "venv",
+        python_cmd: str = None,
     ):
         self.project_dir = project_dir or Path.cwd()
         self.project_purpose = project_purpose or "AI-assisted software development"
@@ -130,6 +133,9 @@ class SmartFrameworkSetup:
         self.quickstart = quickstart
         self.organized = organized
         self.sdlc_level = sdlc_level  # Use .sdlc directory structure
+        self.skip_venv = skip_venv
+        self.venv_name = venv_name
+        self.python_cmd = python_cmd
 
     def download_file(self, remote_path: str, local_path: Optional[Path]) -> bool:
         """Download a file from the framework repository"""
@@ -360,6 +366,9 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
         """Create essential Python project files"""
         print("\n🐍 Setting up Python project essentials...")
 
+        # Create virtual environment first (unless disabled)
+        self._setup_python_virtual_env()
+        
         self._create_requirements_txt()
         self._create_pyproject_toml()
         self._create_setup_py()
@@ -367,6 +376,134 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
         self._create_basic_test_file()
 
         return True
+
+    def _detect_existing_venv(self) -> Optional[str]:
+        """Detect if a virtual environment already exists"""
+        venv_indicators = [
+            'venv',
+            '.venv',
+            'env',
+            '.env',
+            'virtualenv',
+            '.virtualenv'
+        ]
+        
+        for venv_name in venv_indicators:
+            venv_path = self.project_dir / venv_name
+            if venv_path.exists() and venv_path.is_dir():
+                # Check if it's actually a venv by looking for key files
+                if (venv_path / 'bin' / 'activate').exists() or \
+                   (venv_path / 'Scripts' / 'activate.bat').exists():
+                    return venv_name
+        
+        # Check for Poetry/Pipenv
+        if (self.project_dir / 'poetry.lock').exists():
+            return 'poetry'
+        if (self.project_dir / 'Pipfile.lock').exists():
+            return 'pipenv'
+            
+        return None
+    
+    def _find_python_executable(self) -> str:
+        """Find the best Python executable to use"""
+        # Use provided python command if specified
+        if self.python_cmd:
+            try:
+                result = subprocess.run(
+                    [self.python_cmd, '--version'],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                if 'Python 3' in result.stdout:
+                    return self.python_cmd
+                else:
+                    print(f"   ⚠️  {self.python_cmd} is not Python 3, searching for alternative...")
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                print(f"   ⚠️  {self.python_cmd} not found, searching for alternative...")
+        
+        # Try Python 3 first
+        for cmd in ['python3', 'python']:
+            try:
+                result = subprocess.run(
+                    [cmd, '--version'],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                # Check if it's Python 3
+                if 'Python 3' in result.stdout:
+                    return cmd
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                continue
+        
+        # Default to python3 and let it fail with clear error
+        return 'python3'
+    
+    def _setup_python_virtual_env(self) -> bool:
+        """Set up Python virtual environment unless disabled or already exists"""
+        
+        # Check if we should skip venv creation
+        if getattr(self, 'skip_venv', False):
+            print("   ℹ️  Skipping virtual environment creation (--no-venv flag)")
+            return True
+        
+        # Check for existing virtual environment
+        existing_venv = self._detect_existing_venv()
+        if existing_venv:
+            if existing_venv in ['poetry', 'pipenv']:
+                print(f"   ✓ Using existing {existing_venv} environment")
+            else:
+                print(f"   ✓ Virtual environment already exists: {existing_venv}/")
+            return True
+        
+        # Create new virtual environment
+        print("   🔧 Creating Python virtual environment...")
+        
+        python_cmd = self._find_python_executable()
+        venv_name = getattr(self, 'venv_name', 'venv')
+        venv_path = self.project_dir / venv_name
+        
+        try:
+            # Create venv
+            subprocess.run(
+                [python_cmd, '-m', 'venv', str(venv_path)],
+                check=True,
+                capture_output=True
+            )
+            
+            # Determine pip path based on OS
+            if os.name == 'nt':  # Windows
+                pip_path = venv_path / 'Scripts' / 'pip'
+                activate_cmd = f"{venv_name}\\Scripts\\activate"
+            else:  # Unix-like
+                pip_path = venv_path / 'bin' / 'pip'
+                activate_cmd = f"source {venv_name}/bin/activate"
+            
+            # Upgrade pip
+            subprocess.run(
+                [str(pip_path), 'install', '--upgrade', 'pip'],
+                check=True,
+                capture_output=True
+            )
+            
+            print(f"   ✅ Created virtual environment: {venv_name}/")
+            print(f"   📝 Activate with: {activate_cmd}")
+            
+            # Add venv instructions to context
+            self.venv_created = True
+            self.venv_name = venv_name
+            self.activate_cmd = activate_cmd
+            
+            return True
+            
+        except subprocess.CalledProcessError as e:
+            print(f"   ⚠️  Failed to create virtual environment: {e}")
+            print("   ℹ️  Continuing without virtual environment")
+            return False
+        except Exception as e:
+            print(f"   ⚠️  Unexpected error creating virtual environment: {e}")
+            return False
 
     def _create_requirements_txt(self):
         """Create requirements.txt with common dependencies"""
@@ -2664,6 +2801,20 @@ def main():
         help="Use organized structure with .sdlc directory for framework files",
     )
     parser.add_argument(
+        "--no-venv",
+        action="store_true",
+        help="Skip virtual environment creation for Python projects",
+    )
+    parser.add_argument(
+        "--venv-name",
+        default="venv",
+        help="Name for virtual environment directory (default: venv)",
+    )
+    parser.add_argument(
+        "--python",
+        help="Python executable to use for venv (default: auto-detect)",
+    )
+    parser.add_argument(
         "--level",
         choices=["prototype", "production", "enterprise"],
         default="production",
@@ -2693,6 +2844,9 @@ def main():
         args.quickstart,
         args.organized,
         args.level,
+        args.no_venv,
+        args.venv_name,
+        args.python,
     )
 
     # Update version if specified

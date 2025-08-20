@@ -49,6 +49,30 @@ discovery_steps:
   2. Scan for technology indicators
   3. Identify project type and domain
   4. Note any specialized requirements
+  5. Check Python virtual environment status (if Python project)
+```
+
+#### Python Virtual Environment Check
+For Python projects, always verify virtual environment setup:
+```python
+def check_python_venv():
+    """Check and advise on Python virtual environment."""
+    venv_indicators = ['venv/', '.venv/', 'env/', '.env/', 
+                      'poetry.lock', 'Pipfile.lock']
+    
+    if not any(exists(indicator) for indicator in venv_indicators):
+        return {
+            'status': 'missing',
+            'action': 'CREATE_VENV',
+            'message': 'No virtual environment detected. Creating one is recommended.',
+            'commands': [
+                'python -m venv venv',
+                'source venv/bin/activate',  # Unix
+                'venv\\Scripts\\activate',   # Windows
+                'pip install -r requirements.txt'
+            ]
+        }
+    return {'status': 'ok', 'message': 'Virtual environment detected'}
 ```
 
 ### Phase 2: Load and Search Agent Catalog
