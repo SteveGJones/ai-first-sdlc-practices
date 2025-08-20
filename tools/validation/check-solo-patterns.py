@@ -86,17 +86,36 @@ class SoloPatternDetector:
     def _get_pr_changed_files(self) -> List[str]:
         """Get files changed in current PR"""
         try:
+            # First, find the git repository root
+            git_root_result = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                capture_output=True, text=True, check=False
+            )
+            if git_root_result.returncode == 0:
+                git_root = git_root_result.stdout.strip()
+                # Change to git root for consistent paths
+                original_cwd = os.getcwd()
+                os.chdir(git_root)
+            else:
+                original_cwd = None
+            
             # Check if we're in GitHub Actions CI
             if os.environ.get("GITHUB_ACTIONS") == "true":
                 # In CI - use proper base ref
                 base_ref = os.environ.get("GITHUB_BASE_REF", "main")
+                print(f"ℹ️ CI environment detected - comparing with base branch: {base_ref}")
                 # Need to fetch the base branch first in CI
-                subprocess.run(["git", "fetch", "origin", base_ref], 
-                             capture_output=True, check=False)
+                fetch_result = subprocess.run(["git", "fetch", "origin", base_ref], 
+                             capture_output=True, text=True, check=False)
+                if fetch_result.returncode != 0:
+                    print(f"⚠️ Could not fetch base branch: {fetch_result.stderr}")
+                
                 result = subprocess.run(
                     ["git", "diff", "--name-only", f"origin/{base_ref}...HEAD"],
                     capture_output=True, text=True
                 )
+                if result.returncode != 0:
+                    print(f"⚠️ Git diff failed: {result.stderr}")
             else:
                 # Local development - compare with main
                 result = subprocess.run(
@@ -104,9 +123,21 @@ class SoloPatternDetector:
                     capture_output=True, text=True
                 )
             
+            # Restore original directory if changed
+            if original_cwd:
+                os.chdir(original_cwd)
+            
             if result.returncode == 0 and result.stdout.strip():
                 files = result.stdout.strip().split('\n')
                 print(f"ℹ️ Detected {len(files)} changed files in PR/branch")
+                # Make paths relative to current directory if needed
+                if original_cwd:
+                    rel_files = []
+                    for f in files:
+                        full_path = os.path.join(git_root, f)
+                        if os.path.exists(full_path):
+                            rel_files.append(os.path.relpath(full_path, original_cwd))
+                    return rel_files
                 return files
         except Exception as e:
             print(f"⚠️ Error getting PR files: {e}")
@@ -115,14 +146,38 @@ class SoloPatternDetector:
     def _get_branch_changed_files(self) -> List[str]:
         """Get files changed in current branch vs main"""
         try:
-            import subprocess
+            # First, find the git repository root
+            git_root_result = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                capture_output=True, text=True, check=False
+            )
+            if git_root_result.returncode == 0:
+                git_root = git_root_result.stdout.strip()
+                original_cwd = os.getcwd()
+                os.chdir(git_root)
+            else:
+                original_cwd = None
             
             result = subprocess.run(
                 ["git", "diff", "--name-only", "main..HEAD"], 
                 capture_output=True, text=True
             )
+            
+            # Restore original directory if changed
+            if original_cwd:
+                os.chdir(original_cwd)
+            
             if result.returncode == 0 and result.stdout.strip():
-                return result.stdout.strip().split('\n')
+                files = result.stdout.strip().split('\n')
+                # Make paths relative to current directory if needed
+                if original_cwd:
+                    rel_files = []
+                    for f in files:
+                        full_path = os.path.join(git_root, f)
+                        if os.path.exists(full_path):
+                            rel_files.append(os.path.relpath(full_path, original_cwd))
+                    return rel_files
+                return files
         except Exception:
             pass
         return []
