@@ -25,8 +25,8 @@ class GitHooksInstaller:
             project_dir: Project directory (defaults to current directory)
         """
         self.project_dir = project_dir or Path.cwd()
-        self.git_dir = self.project_dir / '.git'
-        self.hooks_dir = self.git_dir / 'hooks'
+        self.git_dir = self.project_dir / ".git"
+        self.hooks_dir = self.git_dir / "hooks"
 
     def is_git_repo(self) -> bool:
         """Check if the current directory is a git repository"""
@@ -34,7 +34,7 @@ class GitHooksInstaller:
 
     def create_pre_commit_hook(self) -> str:
         """Generate pre-commit hook content"""
-        return '''#!/bin/bash
+        return """#!/bin/bash
 # AI-First SDLC Pre-commit Hook
 # Runs syntax validation before allowing commits
 
@@ -73,11 +73,11 @@ fi
 
 echo "✅ Pre-commit checks complete"
 exit 0
-'''
+"""
 
     def create_pre_push_hook(self) -> str:
         """Generate pre-push hook content"""
-        return '''#!/bin/bash
+        return """#!/bin/bash
 # AI-First SDLC Pre-push Hook
 # Runs comprehensive validation before allowing pushes
 
@@ -122,11 +122,11 @@ fi
 echo "✅ Pre-push validation complete"
 echo "📝 Remember to create a retrospective before opening a Pull Request!"
 exit 0
-'''
+"""
 
     def create_commit_msg_hook(self) -> str:
         """Generate commit-msg hook content"""
-        return '''#!/bin/bash
+        return """#!/bin/bash
 # AI-First SDLC Commit Message Hook
 # Enforces conventional commit format
 
@@ -148,7 +148,7 @@ fi
 
 echo "✅ Commit message format is valid"
 exit 0
-'''
+"""
 
     def install_hook(self, hook_name: str, content: str) -> bool:
         """
@@ -168,7 +168,7 @@ exit 0
 
         # Back up existing hook if present
         if hook_path.exists():
-            backup_path = hook_path.with_suffix('.backup')
+            backup_path = hook_path.with_suffix(".backup")
             hook_path.rename(backup_path)
             print(f"  Backed up existing {hook_name} to {hook_name}.backup")
 
@@ -189,9 +189,9 @@ exit 0
             List of (hook_name, success) tuples
         """
         hooks = [
-            ('pre-commit', self.create_pre_commit_hook()),
-            ('pre-push', self.create_pre_push_hook()),
-            ('commit-msg', self.create_commit_msg_hook()),
+            ("pre-commit", self.create_pre_commit_hook()),
+            ("pre-push", self.create_pre_push_hook()),
+            ("commit-msg", self.create_commit_msg_hook()),
         ]
 
         results = []
@@ -208,7 +208,7 @@ exit 0
         Returns:
             List of (hook_name, is_valid) tuples
         """
-        hooks_to_check = ['pre-commit', 'pre-push', 'commit-msg']
+        hooks_to_check = ["pre-commit", "pre-push", "commit-msg"]
         results = []
 
         for hook_name in hooks_to_check:
@@ -220,8 +220,8 @@ exit 0
 
 
 @click.command()
-@click.option('--verify', is_flag=True, help='Verify hooks are installed')
-@click.option('--force', is_flag=True, help='Overwrite existing hooks without backup')
+@click.option("--verify", is_flag=True, help="Verify hooks are installed")
+@click.option("--force", is_flag=True, help="Overwrite existing hooks without backup")
 def main(verify: bool, force: bool):
     """
     Install AI-First SDLC git hooks for automated validation
@@ -290,5 +290,5 @@ def main(verify: bool, force: bool):
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

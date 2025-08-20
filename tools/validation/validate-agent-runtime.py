@@ -21,7 +21,9 @@ class RuntimeAgentValidator:
         self.state_file = self.state_dir / "installation-state.json"
         self.validation_log = self.state_dir / "validation.log"
 
-    def validate_installation(self, installation_id: str, verbose: bool = False) -> bool:
+    def validate_installation(
+        self, installation_id: str, verbose: bool = False
+    ) -> bool:
         """
         Validate all agents in an installation are accessible
         THIS ONLY WORKS AFTER REBOOT
@@ -34,27 +36,27 @@ class RuntimeAgentValidator:
             return False
 
         try:
-            with open(self.state_file, 'r') as f:
+            with open(self.state_file, "r") as f:
                 state = json.load(f)
         except Exception as e:
             print(f"❌ Error loading state: {e}")
             return False
 
         # Verify installation ID matches
-        if state.get('installation_id') != installation_id:
+        if state.get("installation_id") != installation_id:
             print("❌ Installation ID mismatch")
             print(f"   Expected: {installation_id}")
             print(f"   Found: {state.get('installation_id')}")
             return False
 
         # Check phase - should be awaiting_reboot or post_reboot
-        phase = state.get('phase')
-        if phase not in ['awaiting_reboot', 'post_reboot']:
+        phase = state.get("phase")
+        if phase not in ["awaiting_reboot", "post_reboot"]:
             print(f"⚠️  Unexpected phase: {phase}")
             print("   This validation should only run after reboot")
 
         # Update phase to post_reboot
-        state['phase'] = 'post_reboot'
+        state["phase"] = "post_reboot"
         self._save_state(state)
 
         print("🔍 Validating agent runtime accessibility")
@@ -64,25 +66,29 @@ class RuntimeAgentValidator:
 
         # CRITICAL: Validate gateway agent (sdlc-enforcer) FIRST
         gateway_validated = False
-        agents = state.get('agents_pending', [])
+        agents = state.get("agents_pending", [])
 
         for agent in agents:
-            if agent.get('gateway'):
+            if agent.get("gateway"):
                 print(f"\n🚨 VALIDATING GATEWAY AGENT: {agent['name']}")
                 if self._validate_agent_access(agent, verbose):
                     print(f"✅ Gateway agent {agent['name']} is FUNCTIONAL")
                     gateway_validated = True
-                    agent['runtime_validated'] = True
+                    agent["runtime_validated"] = True
                 else:
                     print(f"❌ CRITICAL: Gateway agent {agent['name']} NOT ACCESSIBLE")
                     print("⛔ ALL WORK IS BLOCKED until gateway agent is functional")
                     print("\n🔧 REQUIRED ACTION:")
-                    print("   1. Ensure agent file exists at .claude/agents/sdlc-enforcer.md")
+                    print(
+                        "   1. Ensure agent file exists at .claude/agents/sdlc-enforcer.md"
+                    )
                     print("   2. Restart Claude Code again")
                     print("   3. Re-run this validation")
 
-                    agent['runtime_validated'] = False
-                    agent['validation_error'] = "Gateway agent not accessible after reboot"
+                    agent["runtime_validated"] = False
+                    agent[
+                        "validation_error"
+                    ] = "Gateway agent not accessible after reboot"
                     self._save_state(state)
                     return False
                 break
@@ -94,22 +100,22 @@ class RuntimeAgentValidator:
         # Validate all other agents
         all_valid = True
         for agent in agents:
-            if agent.get('gateway'):
+            if agent.get("gateway"):
                 continue  # Already validated
 
             print(f"\n🤖 Validating: {agent['name']}")
             if self._validate_agent_access(agent, verbose):
                 print(f"✅ {agent['name']} is accessible")
-                agent['runtime_validated'] = True
+                agent["runtime_validated"] = True
             else:
                 print(f"⚠️  {agent['name']} not accessible")
-                agent['runtime_validated'] = False
+                agent["runtime_validated"] = False
                 all_valid = False
 
         # Update state with validation results
         if all_valid:
-            state['phase'] = 'completed'
-            state['validated_at'] = datetime.utcnow().isoformat()
+            state["phase"] = "completed"
+            state["validated_at"] = datetime.utcnow().isoformat()
             print("\n" + "=" * 60)
             print("✅ ALL AGENTS VALIDATED SUCCESSFULLY")
             self._display_team_ready(agents)
@@ -130,7 +136,7 @@ class RuntimeAgentValidator:
         Validate a single agent is accessible
         In real Claude environment, this would test actual agent invocation
         """
-        agent_path = Path(agent['path'])
+        agent_path = Path(agent["path"])
 
         # Step 1: File exists?
         if not agent_path.exists():
@@ -140,7 +146,7 @@ class RuntimeAgentValidator:
 
         # Step 2: File has content?
         try:
-            with open(agent_path, 'r') as f:
+            with open(agent_path, "r") as f:
                 content = f.read()
 
             if not content.strip():
@@ -154,7 +160,7 @@ class RuntimeAgentValidator:
                     print("   ❌ Missing name in frontmatter")
                 return False
 
-            if agent['name'] not in content:
+            if agent["name"] not in content:
                 if verbose:
                     print("   ⚠️  Agent name mismatch in file")
 
@@ -180,14 +186,16 @@ class RuntimeAgentValidator:
         print("=" * 60)
 
         # Show gateway agent
-        gateway = [a for a in agents if a.get('gateway')]
+        gateway = [a for a in agents if a.get("gateway")]
         if gateway:
             print("\n🚨 GATEWAY AGENT (ALWAYS START HERE):")
             for agent in gateway:
                 print(f"   • {agent['name']}")
 
         # Show other agents
-        others = [a for a in agents if not a.get('gateway') and a.get('runtime_validated')]
+        others = [
+            a for a in agents if not a.get("gateway") and a.get("runtime_validated")
+        ]
         if others:
             print("\n🤖 SPECIALIST AGENTS:")
             for agent in others:
@@ -209,7 +217,7 @@ class RuntimeAgentValidator:
     def _save_state(self, state: dict):
         """Save updated state back to file"""
         try:
-            with open(self.state_file, 'w') as f:
+            with open(self.state_file, "w") as f:
                 json.dump(state, f, indent=2)
         except Exception as e:
             print(f"⚠️  Error saving state: {e}")
@@ -220,25 +228,29 @@ class RuntimeAgentValidator:
             self.state_dir.mkdir(parents=True, exist_ok=True)
 
             log_entry = {
-                'timestamp': datetime.utcnow().isoformat(),
-                'installation_id': installation_id,
-                'success': success,
-                'agents_validated': len([a for a in agents if a.get('runtime_validated')]),
-                'agents_failed': len([a for a in agents if not a.get('runtime_validated')])
+                "timestamp": datetime.utcnow().isoformat(),
+                "installation_id": installation_id,
+                "success": success,
+                "agents_validated": len(
+                    [a for a in agents if a.get("runtime_validated")]
+                ),
+                "agents_failed": len(
+                    [a for a in agents if not a.get("runtime_validated")]
+                ),
             }
 
             # Append to log file
             logs = []
             if self.validation_log.exists():
                 try:
-                    with open(self.validation_log, 'r') as f:
+                    with open(self.validation_log, "r") as f:
                         logs = json.load(f)
                 except (FileNotFoundError, json.JSONDecodeError):
                     logs = []
 
             logs.append(log_entry)
 
-            with open(self.validation_log, 'w') as f:
+            with open(self.validation_log, "w") as f:
                 json.dump(logs, f, indent=2)
 
         except Exception as e:
@@ -246,9 +258,9 @@ class RuntimeAgentValidator:
 
 
 @click.command()
-@click.argument('installation_id')
-@click.option('--verbose', '-v', is_flag=True, help='Verbose output')
-@click.option('--check-only', is_flag=True, help='Check status without validating')
+@click.argument("installation_id")
+@click.option("--verbose", "-v", is_flag=True, help="Verbose output")
+@click.option("--check-only", is_flag=True, help="Check status without validating")
 def main(installation_id: str, verbose: bool, check_only: bool):
     """
     Validate agent runtime accessibility AFTER REBOOT
@@ -268,15 +280,15 @@ def main(installation_id: str, verbose: bool, check_only: bool):
             print("❌ No installation found")
             sys.exit(1)
 
-        with open(validator.state_file, 'r') as f:
+        with open(validator.state_file, "r") as f:
             state = json.load(f)
 
         print(f"Installation: {state.get('installation_id')}")
         print(f"Phase: {state.get('phase')}")
 
-        if state.get('phase') == 'completed':
+        if state.get("phase") == "completed":
             print("✅ Agents validated and ready")
-        elif state.get('phase') == 'awaiting_reboot':
+        elif state.get("phase") == "awaiting_reboot":
             print("⏳ Awaiting reboot - restart Claude Code")
         else:
             print("🔍 Validation needed")
@@ -300,5 +312,5 @@ def main(installation_id: str, verbose: bool, check_only: bool):
     sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

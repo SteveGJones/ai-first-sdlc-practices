@@ -11,6 +11,7 @@ from typing import List, Optional
 from datetime import datetime
 
 import click
+
 # import yaml  # Not used in this file
 
 
@@ -66,10 +67,15 @@ class TemplateAgentCreator:
 
     def _load_validator(self):
         """Load the agent format validator if available"""
-        validator_path = Path(__file__).parent.parent / "validation" / "validate-agent-format.py"
+        validator_path = (
+            Path(__file__).parent.parent / "validation" / "validate-agent-format.py"
+        )
         if validator_path.exists():
             import importlib.spec
-            spec = importlib.spec.spec_from_file_location("agent_validator", validator_path)
+
+            spec = importlib.spec.spec_from_file_location(
+                "agent_validator", validator_path
+            )
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             return module.AgentValidator(strict=self.validate_strict)
@@ -88,12 +94,24 @@ class TemplateAgentCreator:
         """
         # Check if agent already exists
         existing_agents = [
-            "sdlc-enforcer", "critical-goal-reviewer", "solution-architect",
-            "api-architect", "backend-engineer", "frontend-engineer",
-            "database-architect", "devops-specialist", "sre-specialist",
-            "ai-test-engineer", "performance-engineer", "integration-orchestrator",
-            "security-specialist", "documentation-architect", "technical-writer",
-            "language-python-expert", "language-javascript-expert", "language-go-expert"
+            "sdlc-enforcer",
+            "critical-goal-reviewer",
+            "solution-architect",
+            "api-architect",
+            "backend-engineer",
+            "frontend-engineer",
+            "database-architect",
+            "devops-specialist",
+            "sre-specialist",
+            "ai-test-engineer",
+            "performance-engineer",
+            "integration-orchestrator",
+            "security-specialist",
+            "documentation-architect",
+            "technical-writer",
+            "language-python-expert",
+            "language-javascript-expert",
+            "language-go-expert",
         ]
 
         if any(existing in name.lower() for existing in existing_agents):
@@ -103,21 +121,26 @@ class TemplateAgentCreator:
 
         if len(reason) < 50:
             click.echo("❌ ERROR: Justification too short", err=True)
-            click.echo("Provide detailed reason why existing agents can't meet this need", err=True)
+            click.echo(
+                "Provide detailed reason why existing agents can't meet this need",
+                err=True,
+            )
             return False
 
         return True
 
-    def create_agent(self,
-                    name: str,
-                    description: str,
-                    competencies: List[str],
-                    examples: List[dict],
-                    color: str = "blue",
-                    approach: Optional[str] = None,
-                    responsibilities: Optional[List[str]] = None,
-                    team_integration: Optional[List[str]] = None,
-                    success_metrics: Optional[List[str]] = None) -> str:
+    def create_agent(
+        self,
+        name: str,
+        description: str,
+        competencies: List[str],
+        examples: List[dict],
+        color: str = "blue",
+        approach: Optional[str] = None,
+        responsibilities: Optional[List[str]] = None,
+        team_integration: Optional[List[str]] = None,
+        success_metrics: Optional[List[str]] = None,
+    ) -> str:
         """
         Create an agent following the strict template.
 
@@ -140,7 +163,9 @@ class TemplateAgentCreator:
             raise ValueError("Name must be alphanumeric with hyphens only")
 
         if len(description) > 150:
-            raise ValueError(f"Description too long: {len(description)} chars (max 150)")
+            raise ValueError(
+                f"Description too long: {len(description)} chars (max 150)"
+            )
 
         if color not in VALID_COLORS:
             raise ValueError(f"Invalid color: {color}. Must be one of {VALID_COLORS}")
@@ -151,7 +176,7 @@ class TemplateAgentCreator:
             examples_str += EXAMPLE_TEMPLATE.format(
                 context=ex.get("context", "When to use this agent"),
                 user=ex.get("user", "Example request"),
-                assistant=ex.get("assistant", f"I'll use the {name} to help")
+                assistant=ex.get("assistant", f"I'll use the {name} to help"),
             )
 
         # Format competencies
@@ -159,8 +184,10 @@ class TemplateAgentCreator:
 
         # Default values
         if not approach:
-            approach = (f"As the {name}, I focus on delivering high-quality results through "
-                       "systematic analysis and careful consideration of requirements.")
+            approach = (
+                f"As the {name}, I focus on delivering high-quality results through "
+                "systematic analysis and careful consideration of requirements."
+            )
 
         if not responsibilities:
             responsibilities = [
@@ -168,14 +195,14 @@ class TemplateAgentCreator:
                 "Provide expert guidance in my domain",
                 "Collaborate with other specialists",
                 "Ensure quality and compliance",
-                "Document decisions and rationale"
+                "Document decisions and rationale",
             ]
 
         if not team_integration:
             team_integration = [
                 "sdlc-enforcer for process compliance",
                 "solution-architect for system design",
-                "critical-goal-reviewer for alignment"
+                "critical-goal-reviewer for alignment",
             ]
 
         if not success_metrics:
@@ -183,7 +210,7 @@ class TemplateAgentCreator:
                 "Quality of deliverables",
                 "Alignment with requirements",
                 "Team collaboration effectiveness",
-                "Compliance with standards"
+                "Compliance with standards",
             ]
 
         # Format lists
@@ -211,7 +238,7 @@ class TemplateAgentCreator:
             approach=approach,
             responsibilities=responsibilities_str,
             team_integration=team_integration_str,
-            success_metrics=success_metrics_str
+            success_metrics=success_metrics_str,
         )
 
         return agent_content
@@ -229,7 +256,10 @@ class TemplateAgentCreator:
         if self.validator:
             # Write to temp file for validation
             import tempfile
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as tmp:
+
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".md", delete=False
+            ) as tmp:
                 tmp.write(content)
                 tmp_path = tmp.name
 
@@ -301,7 +331,7 @@ class TemplateAgentCreator:
             "agent_name": name,
             "justification": reason,
             "path": str(path),
-            "created_by": "create-agent-from-template.py"
+            "created_by": "create-agent-from-template.py",
         }
 
         # Append to log
@@ -310,16 +340,30 @@ class TemplateAgentCreator:
 
 
 @click.command()
-@click.option('--name', required=True, help='Agent name (lowercase-hyphenated)')
-@click.option('--description', required=True, help='Short description (max 150 chars)')
-@click.option('--competencies', required=True, help='Comma-separated core competencies')
-@click.option('--reason', required=True, help='Justification for creating this agent')
-@click.option('--color', default='blue', type=click.Choice(VALID_COLORS), help='Agent color')
-@click.option('--examples', help='JSON file with examples')
-@click.option('--output', default='.claude/agents', help='Output directory')
-@click.option('--validate-strict/--no-validate-strict', default=True, help='Use strict validation')
-@click.option('--force', is_flag=True, help='Skip justification check')
-def create_agent(name, description, competencies, reason, color, examples, output, validate_strict, force):
+@click.option("--name", required=True, help="Agent name (lowercase-hyphenated)")
+@click.option("--description", required=True, help="Short description (max 150 chars)")
+@click.option("--competencies", required=True, help="Comma-separated core competencies")
+@click.option("--reason", required=True, help="Justification for creating this agent")
+@click.option(
+    "--color", default="blue", type=click.Choice(VALID_COLORS), help="Agent color"
+)
+@click.option("--examples", help="JSON file with examples")
+@click.option("--output", default=".claude/agents", help="Output directory")
+@click.option(
+    "--validate-strict/--no-validate-strict", default=True, help="Use strict validation"
+)
+@click.option("--force", is_flag=True, help="Skip justification check")
+def create_agent(
+    name,
+    description,
+    competencies,
+    reason,
+    color,
+    examples,
+    output,
+    validate_strict,
+    force,
+):
     """
     Create a new agent from template (LAST RESORT ONLY).
 
@@ -339,7 +383,9 @@ def create_agent(name, description, competencies, reason, color, examples, outpu
 
     # Check justification
     if not force and not creator.justify_creation(name, reason):
-        click.echo("\n❌ Creation not justified. Use existing agents or combinations.", err=True)
+        click.echo(
+            "\n❌ Creation not justified. Use existing agents or combinations.", err=True
+        )
         sys.exit(1)
 
     # Parse competencies
@@ -355,13 +401,13 @@ def create_agent(name, description, competencies, reason, color, examples, outpu
             {
                 "context": f"When {name.replace('-', ' ')} expertise is needed",
                 "user": f"I need help with {competencies_list[0]}",
-                "assistant": f"I'll engage the {name} to provide expert guidance"
+                "assistant": f"I'll engage the {name} to provide expert guidance",
             },
             {
                 "context": f"For specialized {name.replace('-', ' ')} tasks",
                 "user": f"Can you review this {competencies_list[0]} implementation?",
-                "assistant": f"Let me have the {name} analyze this for you"
-            }
+                "assistant": f"Let me have the {name} analyze this for you",
+            },
         ]
 
     try:
@@ -372,7 +418,7 @@ def create_agent(name, description, competencies, reason, color, examples, outpu
             description=description,
             competencies=competencies_list,
             examples=examples_list,
-            color=color
+            color=color,
         )
 
         # Validate
@@ -393,7 +439,9 @@ def create_agent(name, description, competencies, reason, color, examples, outpu
         creator.log_creation(name, reason, agent_path)
 
         click.echo(f"\n✅ Agent created successfully: {agent_path}")
-        click.echo("\n⚠️ REMEMBER: This was a last resort. Document why existing agents couldn't meet this need.")
+        click.echo(
+            "\n⚠️ REMEMBER: This was a last resort. Document why existing agents couldn't meet this need."
+        )
 
         # Show next steps
         click.echo("\n📋 Next steps:")

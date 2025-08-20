@@ -20,6 +20,7 @@ import subprocess
 @dataclass
 class Agent:
     """Represents an AI agent with metadata"""
+
     name: str
     path: str
     category: str
@@ -41,21 +42,23 @@ class AgentCatalog:
 
     # Repository structure mapping
     AGENT_CATEGORIES = {
-        'core': 'Core functionality agents',
-        'testing': 'Testing and quality assurance',
-        'security': 'Security and compliance',
-        'documentation': 'Documentation and technical writing',
-        'ai-builders': 'AI system builders and architects',
-        'sdlc': 'SDLC coaches and methodology experts',
-        'languages': 'Language-specific experts',
-        'project-management': 'Project and team management',
-        'creative': 'Creative and design specialists',
-        'ai-development': 'AI development specialists',
-        'future': 'Experimental and future agents'
+        "core": "Core functionality agents",
+        "testing": "Testing and quality assurance",
+        "security": "Security and compliance",
+        "documentation": "Documentation and technical writing",
+        "ai-builders": "AI system builders and architects",
+        "sdlc": "SDLC coaches and methodology experts",
+        "languages": "Language-specific experts",
+        "project-management": "Project and team management",
+        "creative": "Creative and design specialists",
+        "ai-development": "AI development specialists",
+        "future": "Experimental and future agents",
     }
 
     # GitHub repository base URL
-    GITHUB_RAW_URL = "https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main"
+    GITHUB_RAW_URL = (
+        "https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main"
+    )
 
     def __init__(self, agents_dir: Path = None):
         """
@@ -64,7 +67,7 @@ class AgentCatalog:
         Args:
             agents_dir: Path to agents directory (defaults to ./agents)
         """
-        self.agents_dir = agents_dir or Path('agents')
+        self.agents_dir = agents_dir or Path("agents")
         self.catalog: Dict[str, Agent] = {}
         self._build_catalog()
 
@@ -79,15 +82,15 @@ class AgentCatalog:
                 self._scan_category(category_dir)
 
         # Also scan root level agents
-        for agent_file in self.agents_dir.glob('*.md'):
-            if agent_file.name not in ['agent-template.md']:
-                self._add_agent(agent_file, 'root')
+        for agent_file in self.agents_dir.glob("*.md"):
+            if agent_file.name not in ["agent-template.md"]:
+                self._add_agent(agent_file, "root")
 
     def _scan_category(self, category_dir: Path):
         """Scan a category directory for agents"""
         category = category_dir.name
 
-        for agent_file in category_dir.glob('*.md'):
+        for agent_file in category_dir.glob("*.md"):
             self._add_agent(agent_file, category)
 
     def _add_agent(self, agent_file: Path, category: str):
@@ -97,7 +100,7 @@ class AgentCatalog:
             content = agent_file.read_text()
             frontmatter = self._extract_frontmatter(content)
 
-            if frontmatter and 'name' in frontmatter:
+            if frontmatter and "name" in frontmatter:
                 # Create path relative to repository root
                 try:
                     rel_path = agent_file.relative_to(Path.cwd())
@@ -106,12 +109,12 @@ class AgentCatalog:
                     rel_path = agent_file
 
                 agent = Agent(
-                    name=frontmatter['name'],
+                    name=frontmatter["name"],
                     path=str(rel_path),
                     category=category,
-                    description=frontmatter.get('description', ''),
-                    color=frontmatter.get('color', 'blue'),
-                    tags=self._extract_tags(frontmatter, content)
+                    description=frontmatter.get("description", ""),
+                    color=frontmatter.get("color", "blue"),
+                    tags=self._extract_tags(frontmatter, content),
                 )
 
                 self.catalog[agent.name] = agent
@@ -123,7 +126,7 @@ class AgentCatalog:
 
     def _extract_frontmatter(self, content: str) -> Optional[Dict]:
         """Extract YAML frontmatter from content"""
-        pattern = re.compile(r'^---\s*\n(.*?)\n---\s*\n', re.DOTALL)
+        pattern = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
         match = pattern.match(content)
 
         if match:
@@ -138,21 +141,21 @@ class AgentCatalog:
         tags = []
 
         # Get explicit tags from frontmatter
-        if 'tags' in frontmatter and isinstance(frontmatter['tags'], list):
-            tags.extend(frontmatter['tags'])
+        if "tags" in frontmatter and isinstance(frontmatter["tags"], list):
+            tags.extend(frontmatter["tags"])
 
         # Extract implicit tags from content (be more selective to avoid over-tagging)
         content_lower = content.lower()
 
         # Only add tags if they appear in meaningful contexts
         tag_patterns = {
-            'api': r'\bapi\s+(design|architect|endpoint|gateway|rest)',
-            'database': r'\b(database|sql|nosql|mongodb|postgres)',
-            'frontend': r'\b(frontend|react|vue|angular|ui\s+component)',
-            'backend': r'\b(backend|server|microservice)',
-            'devops': r'\b(devops|deployment|kubernetes|docker|ci/cd)',
-            'security': r'\b(security|authentication|authorization|encryption)',
-            'testing': r'\b(test|testing|qa|quality\s+assurance)'
+            "api": r"\bapi\s+(design|architect|endpoint|gateway|rest)",
+            "database": r"\b(database|sql|nosql|mongodb|postgres)",
+            "frontend": r"\b(frontend|react|vue|angular|ui\s+component)",
+            "backend": r"\b(backend|server|microservice)",
+            "devops": r"\b(devops|deployment|kubernetes|docker|ci/cd)",
+            "security": r"\b(security|authentication|authorization|encryption)",
+            "testing": r"\b(test|testing|qa|quality\s+assurance)",
         }
 
         for tag, pattern in tag_patterns.items():
@@ -161,7 +164,9 @@ class AgentCatalog:
 
         return list(set(tags))  # Remove duplicates
 
-    def search(self, query: str = None, category: str = None, tags: List[str] = None) -> List[Agent]:
+    def search(
+        self, query: str = None, category: str = None, tags: List[str] = None
+    ) -> List[Agent]:
         """
         Search for agents matching criteria
 
@@ -187,8 +192,10 @@ class AgentCatalog:
             # Text search
             if query:
                 query_lower = query.lower()
-                if (query_lower not in agent.name.lower() and
-                    query_lower not in agent.description.lower()):
+                if (
+                    query_lower not in agent.name.lower()
+                    and query_lower not in agent.description.lower()
+                ):
                     continue
 
             results.append(agent)
@@ -199,7 +206,9 @@ class AgentCatalog:
         """Get a specific agent by name"""
         return self.catalog.get(name)
 
-    def get_agents_for_project(self, project_type: str, pain_points: List[str] = None) -> List[Agent]:
+    def get_agents_for_project(
+        self, project_type: str, pain_points: List[str] = None
+    ) -> List[Agent]:
         """
         Get recommended agents for a project type
 
@@ -213,19 +222,23 @@ class AgentCatalog:
         recommendations = []
 
         # Core agents always recommended
-        core_agents = ['sdlc-enforcer', 'critical-goal-reviewer']
+        core_agents = ["sdlc-enforcer", "critical-goal-reviewer"]
         for name in core_agents:
             if name in self.catalog:
                 recommendations.append(self.catalog[name])
 
         # Project-specific recommendations
         project_map = {
-            'api': ['api-architect', 'backend-engineer', 'integration-orchestrator'],
-            'web': ['frontend-engineer', 'ux-ui-architect', 'api-architect'],
-            'microservices': ['devops-specialist', 'integration-orchestrator', 'sre-specialist'],
-            'python': ['language-python-expert', 'ai-test-engineer'],
-            'javascript': ['language-javascript-expert', 'frontend-engineer'],
-            'nodejs': ['backend-engineer', 'api-architect'],
+            "api": ["api-architect", "backend-engineer", "integration-orchestrator"],
+            "web": ["frontend-engineer", "ux-ui-architect", "api-architect"],
+            "microservices": [
+                "devops-specialist",
+                "integration-orchestrator",
+                "sre-specialist",
+            ],
+            "python": ["language-python-expert", "ai-test-engineer"],
+            "javascript": ["language-javascript-expert", "frontend-engineer"],
+            "nodejs": ["backend-engineer", "api-architect"],
         }
 
         for key, agents in project_map.items():
@@ -238,11 +251,11 @@ class AgentCatalog:
         # Pain point specific
         if pain_points:
             pain_map = {
-                'test': ['ai-test-engineer', 'performance-engineer'],
-                'slow': ['performance-engineer'],
-                'security': ['security-specialist'],
-                'documentation': ['documentation-architect', 'technical-writer'],
-                'deploy': ['devops-specialist', 'sre-specialist'],
+                "test": ["ai-test-engineer", "performance-engineer"],
+                "slow": ["performance-engineer"],
+                "security": ["security-specialist"],
+                "documentation": ["documentation-architect", "technical-writer"],
+                "deploy": ["devops-specialist", "sre-specialist"],
             }
 
             for pain_point in pain_points:
@@ -268,7 +281,7 @@ class AgentCatalog:
             True if successful
         """
         if target_dir is None:
-            target_dir = Path('.claude/agents')
+            target_dir = Path(".claude/agents")
 
         target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -279,10 +292,7 @@ class AgentCatalog:
         try:
             # Download using curl
             result = subprocess.run(
-                ['curl', '-s', url],
-                capture_output=True,
-                text=True,
-                check=True
+                ["curl", "-s", url], capture_output=True, text=True, check=True
             )
 
             if result.returncode == 0:
@@ -297,9 +307,9 @@ class AgentCatalog:
     def export_catalog(self) -> Dict:
         """Export catalog as dictionary"""
         return {
-            'agents': [agent.to_dict() for agent in self.catalog.values()],
-            'categories': self.AGENT_CATEGORIES,
-            'total': len(self.catalog)
+            "agents": [agent.to_dict() for agent in self.catalog.values()],
+            "categories": self.AGENT_CATEGORIES,
+            "total": len(self.catalog),
         }
 
 
@@ -310,9 +320,9 @@ def cli():
 
 
 @cli.command()
-@click.option('--category', '-c', help='Filter by category')
-@click.option('--query', '-q', help='Search query')
-@click.option('--json', 'output_json', is_flag=True, help='Output as JSON')
+@click.option("--category", "-c", help="Filter by category")
+@click.option("--query", "-q", help="Search query")
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 def list(category: str, query: str, output_json: bool):
     """List available agents"""
     catalog = AgentCatalog()
@@ -320,10 +330,7 @@ def list(category: str, query: str, output_json: bool):
     agents = catalog.search(query=query, category=category)
 
     if output_json:
-        result = {
-            'agents': [agent.to_dict() for agent in agents],
-            'count': len(agents)
-        }
+        result = {"agents": [agent.to_dict() for agent in agents], "count": len(agents)}
         print(json.dumps(result, indent=2))
     else:
         if not agents:
@@ -342,20 +349,20 @@ def list(category: str, query: str, output_json: bool):
 
             # Color emoji based on agent color
             color_emoji = {
-                'blue': '🔵',
-                'green': '🟢',
-                'purple': '🟣',
-                'red': '🔴',
-                'cyan': '🔷',
-                'yellow': '🟡',
-                'orange': '🟠'
-            }.get(agent.color, '⚪')
+                "blue": "🔵",
+                "green": "🟢",
+                "purple": "🟣",
+                "red": "🔴",
+                "cyan": "🔷",
+                "yellow": "🟡",
+                "orange": "🟠",
+            }.get(agent.color, "⚪")
 
             print(f"{color_emoji} {agent.name:30} {agent.description[:50]}...")
 
 
 @cli.command()
-@click.argument('agent_name')
+@click.argument("agent_name")
 def info(agent_name: str):
     """Show detailed information about an agent"""
     catalog = AgentCatalog()
@@ -377,9 +384,9 @@ def info(agent_name: str):
 
 
 @cli.command()
-@click.argument('project_type')
-@click.option('--pain-points', '-p', multiple=True, help='Pain points to address')
-@click.option('--json', 'output_json', is_flag=True, help='Output as JSON')
+@click.argument("project_type")
+@click.option("--pain-points", "-p", multiple=True, help="Pain points to address")
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 def recommend(project_type: str, pain_points: tuple, output_json: bool):
     """Get agent recommendations for a project type"""
     catalog = AgentCatalog()
@@ -388,10 +395,10 @@ def recommend(project_type: str, pain_points: tuple, output_json: bool):
 
     if output_json:
         result = {
-            'project_type': project_type,
-            'pain_points': list(pain_points),
-            'recommendations': [agent.to_dict() for agent in agents],
-            'count': len(agents)
+            "project_type": project_type,
+            "pain_points": list(pain_points),
+            "recommendations": [agent.to_dict() for agent in agents],
+            "count": len(agents),
         }
         print(json.dumps(result, indent=2))
     else:
@@ -405,13 +412,13 @@ def recommend(project_type: str, pain_points: tuple, output_json: bool):
 
 
 @cli.command()
-@click.argument('agent_names', nargs=-1, required=True)
-@click.option('--target-dir', '-t', type=click.Path(), help='Target directory')
+@click.argument("agent_names", nargs=-1, required=True)
+@click.option("--target-dir", "-t", type=click.Path(), help="Target directory")
 def download(agent_names: tuple, target_dir: str):
     """Download agents from GitHub"""
     catalog = AgentCatalog()
 
-    target = Path(target_dir) if target_dir else Path('.claude/agents')
+    target = Path(target_dir) if target_dir else Path(".claude/agents")
     target.mkdir(parents=True, exist_ok=True)
 
     print(f"📥 Downloading agents to {target}")
@@ -429,7 +436,7 @@ def download(agent_names: tuple, target_dir: str):
 
 
 @cli.command()
-@click.option('--output', '-o', type=click.Path(), help='Output file')
+@click.option("--output", "-o", type=click.Path(), help="Output file")
 def export(output: str):
     """Export catalog to JSON"""
     catalog = AgentCatalog()
@@ -443,7 +450,7 @@ def export(output: str):
 
 
 @cli.command()
-@click.argument('agent_file', type=click.Path(exists=True))
+@click.argument("agent_file", type=click.Path(exists=True))
 def validate(agent_file: str):
     """Validate an agent file format"""
     # Import the validator
@@ -463,5 +470,5 @@ def validate(agent_file: str):
     sys.exit(0 if is_valid else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

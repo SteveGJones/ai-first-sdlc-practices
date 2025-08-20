@@ -26,60 +26,60 @@ class SoloPatternDetector:
 
         # Comprehensive solo work patterns
         self.forbidden_solo_patterns = {
-            'first_person_solo': [
-                r'\bI\s+(will|am|have)\s+(implement|creat|build|fix|deploy|write|develop)',
-                r'\bI\'ll\s+(implement|creat|build|fix|deploy|write|develop)',
-                r'\bI\s+(think|believe|decide)\s+(?!.*team|.*specialist)',
-                r'\bI\s+(chose|selected|picked)\s+(?!.*team|.*specialist)',
-                r'\bLet me\s+(implement|creat|build|fix|deploy|write)\s+(?!.*team|.*specialist)'
+            "first_person_solo": [
+                r"\bI\s+(will|am|have)\s+(implement|creat|build|fix|deploy|write|develop)",
+                r"\bI\'ll\s+(implement|creat|build|fix|deploy|write|develop)",
+                r"\bI\s+(think|believe|decide)\s+(?!.*team|.*specialist)",
+                r"\bI\s+(chose|selected|picked)\s+(?!.*team|.*specialist)",
+                r"\bLet me\s+(implement|creat|build|fix|deploy|write)\s+(?!.*team|.*specialist)",
             ],
-            'solo_decision_making': [
-                r'\bDecided\s+to\s+(?!.*team|.*specialist|.*consultation)',
-                r'\bChose\s+to\s+(?!.*team|.*specialist|.*consultation)',
-                r'\bImplemented\s+(?!.*team|.*specialist|.*consultation)',
-                r'\bBuilt\s+(?!.*team|.*specialist|.*consultation)',
-                r'\bCreated\s+(?!.*team|.*specialist|.*consultation)'
+            "solo_decision_making": [
+                r"\bDecided\s+to\s+(?!.*team|.*specialist|.*consultation)",
+                r"\bChose\s+to\s+(?!.*team|.*specialist|.*consultation)",
+                r"\bImplemented\s+(?!.*team|.*specialist|.*consultation)",
+                r"\bBuilt\s+(?!.*team|.*specialist|.*consultation)",
+                r"\bCreated\s+(?!.*team|.*specialist|.*consultation)",
             ],
-            'isolation_indicators': [
-                r'\bWorking\s+alone\s+on',
-                r'\bSolo\s+(development|work|implementation|effort)',
-                r'\bWithout\s+(team|specialist|agent|consultation)\s+(input|review|approval)',
-                r'\bIndependent\s+(development|implementation|decision)',
-                r'\bUnilateral\s+(decision|change|implementation)'
+            "isolation_indicators": [
+                r"\bWorking\s+alone\s+on",
+                r"\bSolo\s+(development|work|implementation|effort)",
+                r"\bWithout\s+(team|specialist|agent|consultation)\s+(input|review|approval)",
+                r"\bIndependent\s+(development|implementation|decision)",
+                r"\bUnilateral\s+(decision|change|implementation)",
             ],
-            'missing_collaboration': [
-                r'\bImplemented\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)',
-                r'\bDeployed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)',
-                r'\bFixed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)',
-                r'\bRefactored\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)',
-                r'\bOptimized\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)'
+            "missing_collaboration": [
+                r"\bImplemented\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
+                r"\bDeployed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
+                r"\bFixed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
+                r"\bRefactored\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
+                r"\bOptimized\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
             ],
-            'architect_bypass': [
-                r'\bArchitecture\s+decision\s+(?!.*solution-architect)',
-                r'\bDesign\s+choice\s+(?!.*solution-architect)',
-                r'\bSystem\s+design\s+(?!.*solution-architect)',
-                r'\bTechnical\s+decision\s+(?!.*solution-architect)',
-                r'\bFramework\s+selection\s+(?!.*solution-architect)'
+            "architect_bypass": [
+                r"\bArchitecture\s+decision\s+(?!.*solution-architect)",
+                r"\bDesign\s+choice\s+(?!.*solution-architect)",
+                r"\bSystem\s+design\s+(?!.*solution-architect)",
+                r"\bTechnical\s+decision\s+(?!.*solution-architect)",
+                r"\bFramework\s+selection\s+(?!.*solution-architect)",
             ],
-            'compliance_bypass': [
-                r'\bSkipping\s+(validation|compliance|review)',
-                r'\bBypassing\s+(sdlc-enforcer|compliance|validation)',
-                r'\bIgnoring\s+(standards|requirements|protocols)',
-                r'\bWorkaround\s+for\s+(compliance|validation|enforcement)',
-                r'\bQuick\s+fix\s+(?!.*specialist|.*team|.*review)'
-            ]
+            "compliance_bypass": [
+                r"\bSkipping\s+(validation|compliance|review)",
+                r"\bBypassing\s+(sdlc-enforcer|compliance|validation)",
+                r"\bIgnoring\s+(standards|requirements|protocols)",
+                r"\bWorkaround\s+for\s+(compliance|validation|enforcement)",
+                r"\bQuick\s+fix\s+(?!.*specialist|.*team|.*review)",
+            ],
         }
 
         # Team collaboration indicators (positive patterns)
         self.team_indicators = [
-            r'with\s+(team|specialist|agent)',
-            r'(solution-architect|test-engineer|sdlc-enforcer)\s+(consultation|review|input)',
-            r'team\s+(assembly|review|consultation|decision)',
-            r'specialist\s+(input|consultation|review|approval)',
-            r'collaborative\s+(approach|development|decision)',
-            r'engaging\s+(specialist|agent|team)',
-            r'handoff\s+to\s+(specialist|agent)',
-            r'team-first\s+(approach|behavior|mentality)'
+            r"with\s+(team|specialist|agent)",
+            r"(solution-architect|test-engineer|sdlc-enforcer)\s+(consultation|review|input)",
+            r"team\s+(assembly|review|consultation|decision)",
+            r"specialist\s+(input|consultation|review|approval)",
+            r"collaborative\s+(approach|development|decision)",
+            r"engaging\s+(specialist|agent|team)",
+            r"handoff\s+to\s+(specialist|agent)",
+            r"team-first\s+(approach|behavior|mentality)",
         ]
 
     def scan_all(self) -> bool:
@@ -118,8 +118,10 @@ class SoloPatternDetector:
 
         try:
             import subprocess
-            result = subprocess.run(['git', 'log', '--oneline', '-20'],
-                                 capture_output=True, text=True)
+
+            result = subprocess.run(
+                ["git", "log", "--oneline", "-20"], capture_output=True, text=True
+            )
             if result.returncode == 0:
                 commits = result.stdout
                 violations = self._find_patterns_in_text(commits, "commit messages")
@@ -140,24 +142,26 @@ class SoloPatternDetector:
         print("\n📚 SCANNING DOCUMENTATION...")
 
         doc_paths = [
-            'docs/feature-proposals',
-            'retrospectives',
-            'plan',
-            'docs',
-            '.'  # Root directory .md files
+            "docs/feature-proposals",
+            "retrospectives",
+            "plan",
+            "docs",
+            ".",  # Root directory .md files
         ]
 
         total_violations = 0
 
         for doc_path in doc_paths:
             if os.path.exists(doc_path):
-                for file_path in Path(doc_path).rglob('*.md'):
+                for file_path in Path(doc_path).rglob("*.md"):
                     try:
                         if file_path.stat().st_size > 1000000:  # Skip files > 1MB
                             continue
 
                         content = file_path.read_text()
-                        violations = self._find_patterns_in_text(content, str(file_path))
+                        violations = self._find_patterns_in_text(
+                            content, str(file_path)
+                        )
                         total_violations += len(violations)
 
                         if violations:
@@ -179,11 +183,11 @@ class SoloPatternDetector:
         """Scan code comments for solo patterns"""
         print("\n💻 SCANNING CODE COMMENTS...")
 
-        code_extensions = ['.py', '.js', '.ts', '.java', '.go', '.rs', '.cpp', '.c']
+        code_extensions = [".py", ".js", ".ts", ".java", ".go", ".rs", ".cpp", ".c"]
         total_violations = 0
 
         for ext in code_extensions:
-            for file_path in Path('.').rglob(f'*{ext}'):
+            for file_path in Path(".").rglob(f"*{ext}"):
                 try:
                     if file_path.stat().st_size > 500000:  # Skip large files
                         continue
@@ -194,7 +198,9 @@ class SoloPatternDetector:
                     comments = self._extract_comments(content, ext)
 
                     for comment in comments:
-                        violations = self._find_patterns_in_text(comment, f"{file_path} (comment)")
+                        violations = self._find_patterns_in_text(
+                            comment, f"{file_path} (comment)"
+                        )
                         total_violations += len(violations)
 
                 except Exception:
@@ -211,13 +217,13 @@ class SoloPatternDetector:
         """Scan retrospectives for solo work admissions"""
         print("\n📊 SCANNING RETROSPECTIVES...")
 
-        if not os.path.exists('retrospectives'):
+        if not os.path.exists("retrospectives"):
             print("⚠️  No retrospectives directory found")
             return True
 
         total_violations = 0
 
-        for file_path in Path('retrospectives').rglob('*.md'):
+        for file_path in Path("retrospectives").rglob("*.md"):
             try:
                 content = file_path.read_text()
                 violations = self._find_patterns_in_text(content, str(file_path))
@@ -244,7 +250,7 @@ class SoloPatternDetector:
         total_files = 0
 
         # Check documentation for team indicators
-        for file_path in Path('.').rglob('*.md'):
+        for file_path in Path(".").rglob("*.md"):
             try:
                 if file_path.stat().st_size > 1000000:
                     continue
@@ -293,21 +299,21 @@ class SoloPatternDetector:
         """Extract comments from code based on file extension"""
         comments = []
 
-        if ext == '.py':
+        if ext == ".py":
             # Python comments
-            for line in content.split('\n'):
-                if '#' in line:
-                    comment = line[line.index('#'):].strip()
+            for line in content.split("\n"):
+                if "#" in line:
+                    comment = line[line.index("#"):].strip()
                     comments.append(comment)
-        elif ext in ['.js', '.ts', '.java', '.go', '.rs', '.cpp', '.c']:
+        elif ext in [".js", ".ts", ".java", ".go", ".rs", ".cpp", ".c"]:
             # C-style comments
             # Single line
-            for line in content.split('\n'):
-                if '//' in line:
-                    comment = line[line.index('//'):].strip()
+            for line in content.split("\n"):
+                if "//" in line:
+                    comment = line[line.index("//"):].strip()
                     comments.append(comment)
             # Multi-line (basic extraction)
-            multiline_matches = re.findall(r'/\*.*?\*/', content, re.DOTALL)
+            multiline_matches = re.findall(r"/\*.*?\*/", content, re.DOTALL)
             comments.extend(multiline_matches)
 
         return comments
@@ -339,11 +345,16 @@ class SoloPatternDetector:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Detect and block solo work patterns')
-    parser.add_argument('--threshold', type=int, default=0,
-                       help='Maximum violations allowed (default: 0)')
-    parser.add_argument('--strict', action='store_true',
-                       help='Enable strict mode (zero tolerance)')
+    parser = argparse.ArgumentParser(description="Detect and block solo work patterns")
+    parser.add_argument(
+        "--threshold",
+        type=int,
+        default=0,
+        help="Maximum violations allowed (default: 0)",
+    )
+    parser.add_argument(
+        "--strict", action="store_true", help="Enable strict mode (zero tolerance)"
+    )
 
     args = parser.parse_args()
 
@@ -359,5 +370,5 @@ def main():
     sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -13,6 +13,7 @@ import sys
 import re
 import os
 from pathlib import Path
+
 # from typing import List  # Not used
 
 
@@ -24,16 +25,52 @@ class TeamEngagementValidator:
         self.violations = []
         self.team_engagement_score = 0
         self.required_agents = {
-            'code_writing': ['solution-architect', 'test-engineer', 'critical-goal-reviewer'],
-            'bug_fixing': ['debugging-specialist', 'test-engineer', 'regression-analyst'],
-            'performance': ['performance-engineer', 'profiling-specialist', 'monitoring-specialist'],
-            'api_design': ['api-designer', 'integration-orchestrator', 'documentation-architect'],
-            'documentation': ['documentation-architect', 'technical-writer', 'information-architect'],
-            'deployment': ['devops-specialist', 'sre-specialist', 'monitoring-specialist'],
-            'security': ['security-specialist', 'compliance-auditor', 'threat-modeler'],
-            'refactoring': ['solution-architect', 'test-engineer', 'code-quality-analyst'],
-            'architecture': ['solution-architect', 'database-architect', 'integration-orchestrator'],
-            'compliance': ['sdlc-enforcer', 'compliance-auditor', 'critical-goal-reviewer']
+            "code_writing": [
+                "solution-architect",
+                "test-engineer",
+                "critical-goal-reviewer",
+            ],
+            "bug_fixing": [
+                "debugging-specialist",
+                "test-engineer",
+                "regression-analyst",
+            ],
+            "performance": [
+                "performance-engineer",
+                "profiling-specialist",
+                "monitoring-specialist",
+            ],
+            "api_design": [
+                "api-designer",
+                "integration-orchestrator",
+                "documentation-architect",
+            ],
+            "documentation": [
+                "documentation-architect",
+                "technical-writer",
+                "information-architect",
+            ],
+            "deployment": [
+                "devops-specialist",
+                "sre-specialist",
+                "monitoring-specialist",
+            ],
+            "security": ["security-specialist", "compliance-auditor", "threat-modeler"],
+            "refactoring": [
+                "solution-architect",
+                "test-engineer",
+                "code-quality-analyst",
+            ],
+            "architecture": [
+                "solution-architect",
+                "database-architect",
+                "integration-orchestrator",
+            ],
+            "compliance": [
+                "sdlc-enforcer",
+                "compliance-auditor",
+                "critical-goal-reviewer",
+            ],
         }
 
     def validate_all(self) -> bool:
@@ -76,7 +113,7 @@ class TeamEngagementValidator:
             r"(Working on|Implementing|Creating|Fixing)\s+(?!.*with team|.*specialist input)",
             r"Solo\s+(development|work|implementation)",
             r"Working\s+alone\s+on",
-            r"Without\s+(team|specialist|agent)\s+(input|consultation|review)"
+            r"Without\s+(team|specialist|agent)\s+(input|consultation|review)",
         ]
 
         violations_found = []
@@ -84,8 +121,10 @@ class TeamEngagementValidator:
         # Check commit messages for solo patterns
         try:
             import subprocess
-            result = subprocess.run(['git', 'log', '--oneline', '-10'],
-                                 capture_output=True, text=True)
+
+            result = subprocess.run(
+                ["git", "log", "--oneline", "-10"], capture_output=True, text=True
+            )
             if result.returncode == 0:
                 commits = result.stdout
                 for pattern in solo_patterns:
@@ -96,14 +135,18 @@ class TeamEngagementValidator:
             pass
 
         # Check recent files for solo patterns
-        for file_path in Path('.').rglob('*.py'):
-            if file_path.is_file() and file_path.stat().st_size < 1000000:  # Skip large files
+        for file_path in Path(".").rglob("*.py"):
+            if (
+                file_path.is_file() and file_path.stat().st_size < 1000000
+            ):  # Skip large files
                 try:
                     content = file_path.read_text()
                     for pattern in solo_patterns:
                         matches = re.findall(pattern, content, re.IGNORECASE)
                         if matches:
-                            violations_found.extend([(str(file_path), match) for match in matches])
+                            violations_found.extend(
+                                [(str(file_path), match) for match in matches]
+                            )
                 except (OSError, PermissionError):
                     continue
 
@@ -127,22 +170,17 @@ class TeamEngagementValidator:
             "sdlc-enforcer compliance check",
             "critical-goal-reviewer validation",
             "test-engineer input",
-            "specialist engagement"
+            "specialist engagement",
         ]
 
         found_consultations = []
 
         # Check documentation for team consultations
-        docs_paths = [
-            'docs/feature-proposals',
-            'retrospectives',
-            'plan',
-            'docs'
-        ]
+        docs_paths = ["docs/feature-proposals", "retrospectives", "plan", "docs"]
 
         for docs_path in docs_paths:
             if os.path.exists(docs_path):
-                for file_path in Path(docs_path).rglob('*.md'):
+                for file_path in Path(docs_path).rglob("*.md"):
                     try:
                         content = file_path.read_text().lower()
                         for consultation in required_consultations:
@@ -170,18 +208,28 @@ class TeamEngagementValidator:
         print("\n📝 CHECKING COMMIT TEAM ENGAGEMENT...")
 
         team_indicators = [
-            'with team', 'specialist input', 'agent consultation',
-            'solution-architect', 'test-engineer', 'sdlc-enforcer',
-            'team review', 'collaborative', 'peer review'
+            "with team",
+            "specialist input",
+            "agent consultation",
+            "solution-architect",
+            "test-engineer",
+            "sdlc-enforcer",
+            "team review",
+            "collaborative",
+            "peer review",
         ]
 
         try:
             import subprocess
-            result = subprocess.run(['git', 'log', '--oneline', '-5'],
-                                 capture_output=True, text=True)
+
+            result = subprocess.run(
+                ["git", "log", "--oneline", "-5"], capture_output=True, text=True
+            )
             if result.returncode == 0:
                 commits = result.stdout.lower()
-                team_mentions = sum(1 for indicator in team_indicators if indicator in commits)
+                team_mentions = sum(
+                    1 for indicator in team_indicators if indicator in commits
+                )
 
                 if team_mentions == 0:
                     print("❌ NO TEAM ENGAGEMENT IN RECENT COMMITS")
@@ -201,14 +249,11 @@ class TeamEngagementValidator:
         print("\n🏗️  VALIDATING TEAM STRUCTURE...")
 
         required_team_files = [
-            'CLAUDE-TEAM-FIRST.md',
-            'AGENTIC-SDLC-TEAM-PRINCIPLES.md'
+            "CLAUDE-TEAM-FIRST.md",
+            "AGENTIC-SDLC-TEAM-PRINCIPLES.md",
         ]
 
-        required_dirs = [
-            'docs/feature-proposals',
-            'retrospectives'
-        ]
+        required_dirs = ["docs/feature-proposals", "retrospectives"]
 
         missing_files = []
         missing_dirs = []
@@ -243,16 +288,16 @@ class TeamEngagementValidator:
             r"Team assembly for",
             r"Specialist consult needed",
             r"Engaging\s+(\w+-\w+)",
-            r"Consulting\s+(\w+-\w+)"
+            r"Consulting\s+(\w+-\w+)",
         ]
 
         handoffs_found = []
 
         # Check recent documentation for handoff patterns
-        docs_paths = ['docs', 'retrospectives', 'plan']
+        docs_paths = ["docs", "retrospectives", "plan"]
         for docs_path in docs_paths:
             if os.path.exists(docs_path):
-                for file_path in Path(docs_path).rglob('*.md'):
+                for file_path in Path(docs_path).rglob("*.md"):
                     try:
                         content = file_path.read_text()
                         for pattern in handoff_patterns:
@@ -294,11 +339,16 @@ class TeamEngagementValidator:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Validate team engagement compliance')
-    parser.add_argument('--strict', action='store_true',
-                       help='Enable strict mode (zero tolerance)')
-    parser.add_argument('--threshold', type=int, default=0,
-                       help='Maximum violations allowed (default: 0)')
+    parser = argparse.ArgumentParser(description="Validate team engagement compliance")
+    parser.add_argument(
+        "--strict", action="store_true", help="Enable strict mode (zero tolerance)"
+    )
+    parser.add_argument(
+        "--threshold",
+        type=int,
+        default=0,
+        help="Maximum violations allowed (default: 0)",
+    )
 
     args = parser.parse_args()
 
@@ -314,5 +364,5 @@ def main():
     sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

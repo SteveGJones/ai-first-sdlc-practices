@@ -26,7 +26,7 @@ try:
     # Load InstallationStateManager
     spec = importlib.util.spec_from_file_location(
         "installation_state_manager",
-        Path(__file__).parent.parent / "automation" / "installation-state-manager.py"
+        Path(__file__).parent.parent / "automation" / "installation-state-manager.py",
     )
     ism_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(ism_module)
@@ -36,7 +36,7 @@ try:
     # Load AgentCatalog
     spec = importlib.util.spec_from_file_location(
         "agent_catalog_manager",
-        Path(__file__).parent.parent / "automation" / "agent-catalog-manager.py"
+        Path(__file__).parent.parent / "automation" / "agent-catalog-manager.py",
     )
     acm_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(acm_module)
@@ -45,7 +45,9 @@ try:
     # Load IntegratedDownloadValidator
     spec = importlib.util.spec_from_file_location(
         "integrated_download_validator",
-        Path(__file__).parent.parent / "validation" / "integrated-download-validator.py"
+        Path(__file__).parent.parent
+        / "validation"
+        / "integrated-download-validator.py",
     )
     idv_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(idv_module)
@@ -63,17 +65,20 @@ except Exception as e:
 
 class TeamFirstBlockedException(Exception):
     """Raised when team-first requirements are not met"""
+
     pass
 
 
 class ValidationFailedException(Exception):
     """Raised when validation requirements fail"""
+
     pass
 
 
 @dataclass
 class DiscoveryResult:
     """Results from project discovery phase"""
+
     project_type: str
     languages: List[str]
     frameworks: List[str]
@@ -96,26 +101,32 @@ class V3OrchestratorCore:
     # Agent mappings based on project type (verified against actual repository)
     AGENT_MAPPINGS = {
         "api": {
-            "required": ["api-architect", "backend-engineer", "integration-orchestrator"],
-            "recommended": ["security-specialist", "performance-engineer"]
+            "required": [
+                "api-architect",
+                "backend-engineer",
+                "integration-orchestrator",
+            ],
+            "recommended": ["security-specialist", "performance-engineer"],
         },
         "frontend": {
             "required": ["frontend-engineer", "frontend-security-specialist"],
-            "recommended": ["performance-engineer", "documentation-architect"]
+            "recommended": ["performance-engineer", "documentation-architect"],
         },
         "fullstack": {
-            "required": ["solution-architect", "api-architect", "backend-engineer",
-                        "frontend-engineer", "database-architect"],
-            "recommended": ["integration-orchestrator", "devops-specialist"]
+            "required": [
+                "solution-architect",
+                "api-architect",
+                "backend-engineer",
+                "frontend-engineer",
+                "database-architect",
+            ],
+            "recommended": ["integration-orchestrator", "devops-specialist"],
         },
         "data": {
             "required": ["data-architect", "database-architect"],
-            "recommended": ["performance-engineer"]
+            "recommended": ["performance-engineer"],
         },
-        "ml": {
-            "required": ["data-architect"],
-            "recommended": ["performance-engineer"]
-        }
+        "ml": {"required": ["data-architect"], "recommended": ["performance-engineer"]},
     }
 
     # Comprehensive agent directory mapping for URL construction
@@ -126,7 +137,6 @@ class V3OrchestratorCore:
         "sdlc-enforcer": "core",
         "critical-goal-reviewer": "core",
         "solution-architect": "core",
-
         # Primary architecture agents
         "api-architect": "core",
         "api-design-specialist": "core",
@@ -136,46 +146,35 @@ class V3OrchestratorCore:
         "data-architect": "core",
         "mobile-architect": "core",
         "ux-ui-architect": "core",
-
         # DevOps and operations
         "devops-specialist": "core",
         "sre-specialist": "core",
-
         # Security core
         "security-specialist": "core",
         "example-security-architect": "core",
         "data-privacy-officer": "core",
-
         # Quality and compliance
         "compliance-auditor": "core",
         "test-manager": "core",
-
         # GitHub and integration
         "github-integration-specialist": "core",
-
         # SDLC guidance
         "sdlc-coach": "core",
-
         # Security specialization (some are in both core/ and security/)
         "frontend-security-specialist": "core",  # Primary location
-
         # ==== TESTING AGENTS (3 agents) ====
         "integration-orchestrator": "testing",
         "performance-engineer": "testing",
         "ai-test-engineer": "testing",
-
         # ==== DOCUMENTATION AGENTS (2 agents) ====
         "documentation-architect": "documentation",
         "technical-writer": "documentation",
-
         # ==== SECURITY AGENTS (1 agent) ====
         # Note: frontend-security-specialist also exists here as duplicate
-
         # ==== PROJECT MANAGEMENT (3 agents) ====
         "project-plan-tracker": "project-management",
         "agile-coach": "project-management",
         "delivery-manager": "project-management",
-
         # ==== SDLC AGENTS (6 agents) ====
         "language-python-expert": "sdlc",
         "language-javascript-expert": "sdlc",
@@ -185,7 +184,6 @@ class V3OrchestratorCore:
         "kickstart-architect": "sdlc",
         "project-bootstrapper": "sdlc",
         "retrospective-miner": "sdlc",
-
         # ==== AI DEVELOPMENT AGENTS (8 agents) ====
         "a2a-architect": "ai-development",
         "agent-developer": "ai-development",
@@ -196,7 +194,6 @@ class V3OrchestratorCore:
         "mcp-server-architect": "ai-development",
         "mcp-test-agent": "ai-development",
         "prompt-engineer": "ai-development",
-
         # ==== AI BUILDERS (5 agents) ====
         "ai-devops-engineer": "ai-builders",
         "ai-team-transformer": "ai-builders",
@@ -204,23 +201,18 @@ class V3OrchestratorCore:
         "orchestration-architect": "ai-builders",
         "rag-system-designer": "ai-builders",
         # Note: mcp-server-architect also exists here as duplicate
-
         # ==== CREATIVE AGENTS (1 agent) ====
         # Note: ux-ui-architect exists here as duplicate from core
-
         # ==== FUTURE AGENTS (4 agents) ====
         "a2a-mesh-controller": "future",
         "evolution-engine": "future",
         "mcp-orchestrator": "future",
         "swarm-coordinator": "future",
-
         # ==== TEMPLATES (2 agents) ====
         "project-strategy-orchestrator": "templates",
         "team-assembly-orchestrator": "templates",
-
         # ==== LANGUAGES (1 agent) ====
         "example-python-expert": "languages/python",
-
         # ==== ROOT LEVEL AGENTS (7 agents) ====
         # V3 orchestrators and setup specialists
         "v3-setup-orchestrator": "",  # Root level
@@ -230,22 +222,23 @@ class V3OrchestratorCore:
         "v3-setup-orchestrator-reboot-aware": "",
         "v3-setup-orchestrator-team-first": "",
         "sdlc-setup-specialist": "",
-
         # Special case: agent template
         "agent-template": "",
     }
 
     # Fallback directories for when agents aren't in the main map
     FALLBACK_DIRECTORIES = [
-        "core",           # Try core first (most common)
-        "sdlc",          # Try SDLC agents
-        "testing",       # Try testing agents
-        "ai-development", # Try AI development
-        "ai-builders",   # Try AI builders
-        "",              # Try root level
+        "core",  # Try core first (most common)
+        "sdlc",  # Try SDLC agents
+        "testing",  # Try testing agents
+        "ai-development",  # Try AI development
+        "ai-builders",  # Try AI builders
+        "",  # Try root level
     ]
 
-    def __init__(self, verbose: bool = False, strict: bool = True, dry_run: bool = False):
+    def __init__(
+        self, verbose: bool = False, strict: bool = True, dry_run: bool = False
+    ):
         """
         Initialize orchestrator with all components.
 
@@ -262,8 +255,7 @@ class V3OrchestratorCore:
         self.state_manager = InstallationStateManager()
         self.catalog_manager = AgentCatalog()
         self.download_validator = IntegratedDownloadValidator(
-            strict_mode=strict,
-            verbose=verbose
+            strict_mode=strict, verbose=verbose
         )
 
         # Team enforcement (simulated - would use actual validator)
@@ -288,16 +280,16 @@ class V3OrchestratorCore:
         if not self.team_enforcer_active:
             return True
 
-        click.echo("\n" + "="*50)
+        click.echo("\n" + "=" * 50)
         click.echo("TEAM-FIRST ENFORCEMENT CHECK")
-        click.echo("="*50)
+        click.echo("=" * 50)
 
         # Check for team engagement indicators
         team_checks = [
             ("Team assembly initiated", self._check_team_assembly()),
             ("Specialist consultation active", self._check_specialist_consultation()),
             ("Solo patterns blocked", self._check_no_solo_patterns()),
-            ("SDLC enforcer engaged", self._check_sdlc_enforcer())
+            ("SDLC enforcer engaged", self._check_sdlc_enforcer()),
         ]
 
         all_passed = True
@@ -368,9 +360,9 @@ Setup BLOCKED until team requirements are met.
         Returns:
             DiscoveryResult with project details
         """
-        click.echo("\n" + "="*50)
+        click.echo("\n" + "=" * 50)
         click.echo("PROJECT DISCOVERY PHASE")
-        click.echo("="*50)
+        click.echo("=" * 50)
 
         discovery = DiscoveryResult(
             project_type="unknown",
@@ -378,7 +370,7 @@ Setup BLOCKED until team requirements are met.
             frameworks=[],
             team_size="unknown",
             pain_points=[],
-            existing_agents=[]
+            existing_agents=[],
         )
 
         # Check for language indicators
@@ -392,23 +384,39 @@ Setup BLOCKED until team requirements are met.
                     discovery.project_type = "api"
                 if "react" in deps or "vue" in deps:
                     discovery.frameworks.append("frontend")
-                    discovery.project_type = "frontend" if discovery.project_type == "unknown" else "fullstack"
+                    discovery.project_type = (
+                        "frontend"
+                        if discovery.project_type == "unknown"
+                        else "fullstack"
+                    )
 
-        if (project_path / "requirements.txt").exists() or (project_path / "pyproject.toml").exists():
+        if (project_path / "requirements.txt").exists() or (
+            project_path / "pyproject.toml"
+        ).exists():
             discovery.languages.append("python")
             if (project_path / "requirements.txt").exists():
                 with open(project_path / "requirements.txt") as f:
                     reqs = f.read()
                     if "django" in reqs or "flask" in reqs or "fastapi" in reqs:
                         discovery.frameworks.append("python-api")
-                        discovery.project_type = "api" if discovery.project_type == "unknown" else discovery.project_type
+                        discovery.project_type = (
+                            "api"
+                            if discovery.project_type == "unknown"
+                            else discovery.project_type
+                        )
                     if "pandas" in reqs or "numpy" in reqs:
                         discovery.frameworks.append("data-science")
-                        discovery.project_type = "data" if discovery.project_type == "unknown" else discovery.project_type
+                        discovery.project_type = (
+                            "data"
+                            if discovery.project_type == "unknown"
+                            else discovery.project_type
+                        )
 
         if (project_path / "go.mod").exists():
             discovery.languages.append("go")
-            discovery.project_type = "api" if discovery.project_type == "unknown" else discovery.project_type
+            discovery.project_type = (
+                "api" if discovery.project_type == "unknown" else discovery.project_type
+            )
 
         # Check for existing agents
         agents_dir = Path.home() / ".claude" / "agents"
@@ -425,7 +433,9 @@ Setup BLOCKED until team requirements are met.
         click.echo("\n📊 Discovery Results:")
         click.echo(f"  Project Type: {discovery.project_type}")
         click.echo(f"  Languages: {', '.join(discovery.languages) or 'none detected'}")
-        click.echo(f"  Frameworks: {', '.join(discovery.frameworks) or 'none detected'}")
+        click.echo(
+            f"  Frameworks: {', '.join(discovery.frameworks) or 'none detected'}"
+        )
         click.echo(f"  Existing Agents: {len(discovery.existing_agents)}")
         click.echo(f"  CI Platform: {discovery.ci_platform or 'none detected'}")
 
@@ -497,10 +507,12 @@ Setup BLOCKED until team requirements are met.
         """
         # Create installation record
         installation_data = {
-            "project_type": self.discovery_result.project_type if self.discovery_result else "unknown",
+            "project_type": self.discovery_result.project_type
+            if self.discovery_result
+            else "unknown",
             "agents": agents,
             "total_agents": len(agents),
-            "phase": InstallationPhase.PRE_REBOOT.value
+            "phase": InstallationPhase.PRE_REBOOT.value,
         }
 
         self.installation_id = self.state_manager.create_installation(installation_data)
@@ -513,7 +525,7 @@ Setup BLOCKED until team requirements are met.
             "Install GitHub Actions workflow",
             "Restart Claude for agents to activate",
             "Run post-reboot validation",
-            "Complete team-first setup verification"
+            "Complete team-first setup verification",
         ]
 
         for todo in todos:
@@ -532,9 +544,9 @@ Setup BLOCKED until team requirements are met.
         Returns:
             List of download results
         """
-        click.echo("\n" + "="*50)
+        click.echo("\n" + "=" * 50)
         click.echo("DOWNLOADING AND VALIDATING AGENTS")
-        click.echo("="*50)
+        click.echo("=" * 50)
 
         # Prepare agent URLs
         base_url = "https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents"
@@ -552,7 +564,9 @@ Setup BLOCKED until team requirements are met.
             else:
                 # Use fallback mechanism for unknown agents
                 if self.verbose:
-                    click.echo(f"⚠️ Warning: Agent '{agent}' not in directory map, trying fallbacks...")
+                    click.echo(
+                        f"⚠️ Warning: Agent '{agent}' not in directory map, trying fallbacks..."
+                    )
 
                 # Create fallback URLs to try in order
                 fallback_urls = []
@@ -565,11 +579,15 @@ Setup BLOCKED until team requirements are met.
 
                 # Add the agent with its primary fallback URL (core/)
                 primary_fallback = fallback_urls[0]  # core/ directory
-                agent_urls.append({
-                    "name": agent,
-                    "url": primary_fallback,
-                    "fallback_urls": fallback_urls[1:]  # Other fallbacks to try if primary fails
-                })
+                agent_urls.append(
+                    {
+                        "name": agent,
+                        "url": primary_fallback,
+                        "fallback_urls": fallback_urls[
+                            1:
+                        ],  # Other fallbacks to try if primary fails
+                    }
+                )
 
                 if self.verbose:
                     click.echo(f"   📍 Primary attempt: {primary_fallback}")
@@ -583,15 +601,15 @@ Setup BLOCKED until team requirements are met.
 
         # Download with validation
         results = self.download_validator.download_batch(
-            agent_urls,
-            parallel=True,
-            max_workers=3
+            agent_urls, parallel=True, max_workers=3
         )
 
         # Log download results
         if self.verbose:
             successful_count = sum(1 for r in results if r.success)
-            click.echo(f"📊 Download Results: {successful_count}/{len(results)} successful")
+            click.echo(
+                f"📊 Download Results: {successful_count}/{len(results)} successful"
+            )
 
         # Update state based on results
         successful = [r for r in results if r.success]
@@ -599,8 +617,7 @@ Setup BLOCKED until team requirements are met.
 
         if successful:
             self.state_manager.complete_todo(
-                self.installation_id,
-                f"Download and validate {len(agents)} agents"
+                self.installation_id, f"Download and validate {len(agents)} agents"
             )
 
         if failed:
@@ -612,9 +629,13 @@ Setup BLOCKED until team requirements are met.
 
                 # Suggest fallbacks for failed agents
                 if "language-" in result.agent_name:
-                    click.echo("     💡 Fallback: Use 'solution-architect' for general guidance")
+                    click.echo(
+                        "     💡 Fallback: Use 'solution-architect' for general guidance"
+                    )
                 elif result.agent_name in ["frontend-security-specialist"]:
-                    click.echo("     💡 Fallback: Use 'security-specialist' for security guidance")
+                    click.echo(
+                        "     💡 Fallback: Use 'security-specialist' for security guidance"
+                    )
 
             # Don't fail if only optional agents failed
             critical_failed = [r for r in failed if r.agent_name in self.GATEWAY_AGENTS]
@@ -622,7 +643,9 @@ Setup BLOCKED until team requirements are met.
                 click.echo("\n❌ Critical agents failed - setup cannot continue")
                 return failed
             else:
-                click.echo("\n✅ Non-critical agents failed - setup can continue with fallbacks")
+                click.echo(
+                    "\n✅ Non-critical agents failed - setup can continue with fallbacks"
+                )
 
         self.download_results = results
         return results
@@ -681,7 +704,7 @@ Setup BLOCKED until team requirements are met.
             "by_directory": {},
             "potential_issues": [],
             "duplicate_agents": {},
-            "unmapped_agents": []
+            "unmapped_agents": [],
         }
 
         # Count agents by directory
@@ -703,10 +726,16 @@ Setup BLOCKED until team requirements are met.
                 report["duplicate_agents"][agent] = locations
 
         # Check for potential issues
-        known_duplicates = ["frontend-security-specialist", "ux-ui-architect", "mcp-server-architect"]
+        known_duplicates = [
+            "frontend-security-specialist",
+            "ux-ui-architect",
+            "mcp-server-architect",
+        ]
         for agent in known_duplicates:
             if agent not in self.AGENT_DIRECTORY_MAP:
-                report["potential_issues"].append(f"Known duplicate agent '{agent}' not in mapping")
+                report["potential_issues"].append(
+                    f"Known duplicate agent '{agent}' not in mapping"
+                )
 
         return report
 
@@ -717,9 +746,9 @@ Setup BLOCKED until team requirements are met.
         Returns:
             True if successful
         """
-        click.echo("\n" + "="*50)
+        click.echo("\n" + "=" * 50)
         click.echo("SDLC INTEGRATION SETUP")
-        click.echo("="*50)
+        click.echo("=" * 50)
 
         success = True
 
@@ -729,7 +758,7 @@ Setup BLOCKED until team requirements are met.
             ".sdlc/tools/validation",
             ".sdlc/state",
             ".sdlc/logs",
-            ".sdlc/templates"
+            ".sdlc/templates",
         ]
 
         for dir_path in sdlc_dirs:
@@ -772,7 +801,9 @@ fi
             pre_push.chmod(0o755)
             click.echo("✅ Installed pre-push hook")
 
-            self.state_manager.complete_todo(self.installation_id, "Set up SDLC git hooks")
+            self.state_manager.complete_todo(
+                self.installation_id, "Set up SDLC git hooks"
+            )
         else:
             click.echo("⚠️ Git hooks directory not found - skipping hooks setup")
 
@@ -781,7 +812,9 @@ fi
             workflows_dir = Path(".github/workflows")
             workflows_dir.mkdir(parents=True, exist_ok=True)
             click.echo("✅ GitHub workflows directory ready")
-            self.state_manager.complete_todo(self.installation_id, "Install GitHub Actions workflow")
+            self.state_manager.complete_todo(
+                self.installation_id, "Install GitHub Actions workflow"
+            )
 
         return success
 
@@ -793,7 +826,9 @@ fi
             Instructions for user
         """
         # Update phase
-        self.state_manager.update_phase(self.installation_id, InstallationPhase.AWAITING_REBOOT)
+        self.state_manager.update_phase(
+            self.installation_id, InstallationPhase.AWAITING_REBOOT
+        )
 
         # Generate summary
         successful_agents = [r.agent_name for r in self.download_results if r.success]
@@ -852,7 +887,9 @@ fi
             agents = self.determine_agents(discovery)
 
             if not agents:
-                click.echo("\n✅ No new agents needed - all required agents already installed!")
+                click.echo(
+                    "\n✅ No new agents needed - all required agents already installed!"
+                )
                 return "Setup complete - no new agents required"
 
             # Step 4: Create installation tracking
@@ -879,7 +916,9 @@ fi
         except Exception as e:
             click.echo(f"\n❌ Setup failed: {e}", err=True)
             if self.installation_id:
-                self.state_manager.update_phase(self.installation_id, InstallationPhase.FAILED)
+                self.state_manager.update_phase(
+                    self.installation_id, InstallationPhase.FAILED
+                )
             raise
 
 
@@ -890,10 +929,16 @@ def cli():
 
 
 @cli.command()
-@click.option('--verbose', is_flag=True, help='Verbose output')
-@click.option('--strict/--no-strict', default=True, help='Use strict validation')
-@click.option('--skip-team-check', is_flag=True, help='Skip team-first enforcement (NOT RECOMMENDED)')
-@click.option('--dry-run', is_flag=True, help='Show what would be done without making changes')
+@click.option("--verbose", is_flag=True, help="Verbose output")
+@click.option("--strict/--no-strict", default=True, help="Use strict validation")
+@click.option(
+    "--skip-team-check",
+    is_flag=True,
+    help="Skip team-first enforcement (NOT RECOMMENDED)",
+)
+@click.option(
+    "--dry-run", is_flag=True, help="Show what would be done without making changes"
+)
 def setup(verbose, strict, skip_team_check, dry_run):
     """Execute integrated V3 setup"""
     orchestrator = V3OrchestratorCore(verbose=verbose, strict=strict, dry_run=dry_run)
@@ -914,7 +959,9 @@ def setup(verbose, strict, skip_team_check, dry_run):
 
 
 @cli.command()
-@click.option('--id', 'installation_id', required=True, help='Installation ID to resume')
+@click.option(
+    "--id", "installation_id", required=True, help="Installation ID to resume"
+)
 def resume(installation_id):
     """Resume setup after Claude restart"""
     orchestrator = V3OrchestratorCore()
@@ -927,20 +974,24 @@ def resume(installation_id):
             click.echo(f"❌ Installation ID not found: {installation_id}", err=True)
             sys.exit(1)
 
-        phase = InstallationPhase(state['phase'])
+        phase = InstallationPhase(state["phase"])
 
         if phase == InstallationPhase.AWAITING_REBOOT:
             click.echo("✅ Detected post-reboot state")
             click.echo("\nValidating agent runtime...")
 
             # Update phase
-            orchestrator.state_manager.update_phase(installation_id, InstallationPhase.POST_REBOOT)
+            orchestrator.state_manager.update_phase(
+                installation_id, InstallationPhase.POST_REBOOT
+            )
 
             # Would run runtime validation here
             click.echo("✅ Agent validation complete")
 
             # Complete installation
-            orchestrator.state_manager.update_phase(installation_id, InstallationPhase.COMPLETED)
+            orchestrator.state_manager.update_phase(
+                installation_id, InstallationPhase.COMPLETED
+            )
             click.echo("\n🎉 V3 Setup Complete! All agents are active and validated.")
 
         elif phase == InstallationPhase.COMPLETED:
@@ -979,15 +1030,15 @@ def status():
         click.echo(f"Phase: {state['phase']}")
         click.echo(f"Agents: {state.get('total_agents', 'unknown')}")
 
-        if 'todos' in state:
-            pending = [t for t in state['todos'] if t['status'] == 'pending']
-            completed = [t for t in state['todos'] if t['status'] == 'completed']
+        if "todos" in state:
+            pending = [t for t in state["todos"] if t["status"] == "pending"]
+            completed = [t for t in state["todos"] if t["status"] == "completed"]
             click.echo(f"TODOs: {len(completed)} completed, {len(pending)} pending")
 
 
-@cli.command('validate-mappings')
-@click.option('--agent', help='Test URL generation for specific agent')
-@click.option('--verbose', is_flag=True, help='Show detailed mapping info')
+@cli.command("validate-mappings")
+@click.option("--agent", help="Test URL generation for specific agent")
+@click.option("--verbose", is_flag=True, help="Show detailed mapping info")
 def validate_mappings(agent, verbose):
     """Validate agent URL mappings and test URL generation"""
     orchestrator = V3OrchestratorCore(verbose=verbose)
@@ -1009,26 +1060,26 @@ def validate_mappings(agent, verbose):
     else:
         # Validate all mappings
         click.echo("\n📊 AGENT MAPPING VALIDATION REPORT")
-        click.echo("="*50)
+        click.echo("=" * 50)
 
         report = orchestrator.validate_agent_mappings()
 
         click.echo(f"📈 Total mapped agents: {report['total_mapped']}")
         click.echo("\n📁 Agents by directory:")
-        for directory, agents in sorted(report['by_directory'].items()):
+        for directory, agents in sorted(report["by_directory"].items()):
             click.echo(f"  {directory}: {len(agents)} agents")
             if verbose:
                 for agent in sorted(agents):
                     click.echo(f"    • {agent}")
 
-        if report['duplicate_agents']:
+        if report["duplicate_agents"]:
             click.echo("\n🔄 Duplicate agents (exist in multiple directories):")
-            for agent, locations in report['duplicate_agents'].items():
+            for agent, locations in report["duplicate_agents"].items():
                 click.echo(f"  • {agent}: {', '.join(locations)}")
 
-        if report['potential_issues']:
+        if report["potential_issues"]:
             click.echo("\n⚠️ Potential issues:")
-            for issue in report['potential_issues']:
+            for issue in report["potential_issues"]:
                 click.echo(f"  • {issue}")
 
         # Test sample URLs
@@ -1038,7 +1089,7 @@ def validate_mappings(agent, verbose):
             "language-python-expert",  # sdlc
             "ai-test-engineer",  # testing
             "v3-setup-orchestrator",  # root
-            "nonexistent-agent"  # fallback test
+            "nonexistent-agent",  # fallback test
         ]
 
         for test_agent in test_agents:
@@ -1048,25 +1099,27 @@ def validate_mappings(agent, verbose):
             if verbose:
                 click.echo(f"     -> {url}")
 
-        click.echo(f"\n✅ Validation complete. {report['total_mapped']} agents mapped "
-                   f"across {len(report['by_directory'])} directories.")
+        click.echo(
+            f"\n✅ Validation complete. {report['total_mapped']} agents mapped "
+            f"across {len(report['by_directory'])} directories."
+        )
 
 
-@cli.command('list-agents')
-@click.option('--category', help='Show agents from specific category')
+@cli.command("list-agents")
+@click.option("--category", help="Show agents from specific category")
 def list_agents(category):
     """List all available agents by category"""
     orchestrator = V3OrchestratorCore()
 
     click.echo("\n📚 AVAILABLE AGENTS")
-    click.echo("="*50)
+    click.echo("=" * 50)
 
     report = orchestrator.validate_agent_mappings()
 
     if category:
         # Show specific category
-        if category in report['by_directory']:
-            agents = sorted(report['by_directory'][category])
+        if category in report["by_directory"]:
+            agents = sorted(report["by_directory"][category])
             click.echo(f"\n📁 {category.upper()} ({len(agents)} agents):")
             for agent in agents:
                 url = orchestrator.resolve_agent_url(agent)
@@ -1074,15 +1127,19 @@ def list_agents(category):
                 click.echo(f"    📍 {url}")
         else:
             click.echo(f"❌ Category '{category}' not found")
-            click.echo(f"Available categories: {', '.join(sorted(report['by_directory'].keys()))}")
+            click.echo(
+                f"Available categories: {', '.join(sorted(report['by_directory'].keys()))}"
+            )
     else:
         # Show all categories
-        for directory, agents in sorted(report['by_directory'].items()):
+        for directory, agents in sorted(report["by_directory"].items()):
             click.echo(f"\n📁 {directory.upper()} ({len(agents)} agents):")
             for agent in sorted(agents):
                 click.echo(f"  • {agent}")
 
-        click.echo(f"\nTotal: {report['total_mapped']} agents across {len(report['by_directory'])} categories")
+        click.echo(
+            f"\nTotal: {report['total_mapped']} agents across {len(report['by_directory'])} categories"
+        )
         click.echo("Use --category <name> to see URLs for specific category")
 
 
