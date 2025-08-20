@@ -115,38 +115,140 @@ team_context:
   - "What aspects of development do you find most challenging?"
 ```
 
-### Phase 4: Agent Selection Algorithm
+### Phase 4: Domain-First Agent Selection Algorithm
+
+**CRITICAL CHANGE**: Domain expertise takes precedence over language expertise!
 
 ```python
-def select_agents(project_analysis, catalog, user_responses):
+def select_agents_domain_first(project_analysis, catalog, user_responses):
+    """
+    NEW ALGORITHM: Domain → Architecture → Language → Cross-cutting
+    This fixes the language-bias problem where MCP projects got Python agents
+    instead of MCP experts.
+    """
     selected_agents = []
+    agent_roles = {}
     
-    # 1. Always include core SDLC agents
-    selected_agents.extend([
-        "sdlc-enforcer",
-        "critical-goal-reviewer",
-        "project-plan-tracker"
-    ])
-    
-    # 2. Search catalog for keyword matches
-    keywords = extract_keywords(project_analysis, user_responses)
-    for keyword in keywords:
-        matching_agents = search_catalog(catalog, keyword)
-        selected_agents.extend(matching_agents)
-    
-    # 3. Search by domain
-    domains = identify_domains(project_analysis, user_responses)
+    # STEP 1: Domain/Protocol Experts (PRIMARY - MOST IMPORTANT)
+    domains = identify_domains_enhanced(project_analysis, user_responses)
     for domain in domains:
-        domain_agents = find_by_domain(catalog, domain)
-        selected_agents.extend(domain_agents)
+        domain_experts = get_domain_experts(catalog, domain)
+        for expert in domain_experts[:2]:  # Max 2 per domain
+            selected_agents.append(expert)
+            agent_roles[expert] = f"PRIMARY: {domain} domain expert"
     
-    # 4. Only generate if critical gaps exist
-    gaps = identify_gaps(project_needs, selected_agents)
-    if gaps and not can_adapt_existing(gaps, catalog):
-        generated = generate_custom_agents(gaps)
-        selected_agents.extend(generated)
+    # STEP 2: Architecture Pattern Experts (SECONDARY)
+    patterns = detect_architecture_patterns(project_analysis)
+    for pattern in patterns:
+        pattern_experts = get_pattern_experts(catalog, pattern)
+        for expert in pattern_experts[:1]:  # Max 1 per pattern
+            if expert not in selected_agents:
+                selected_agents.append(expert)
+                agent_roles[expert] = f"SECONDARY: {pattern} architecture"
     
-    return deduplicate(selected_agents)
+    # STEP 3: Language Support (TERTIARY - SUPPORTING ROLE ONLY)
+    languages = detect_languages(project_analysis)
+    for language in languages:
+        lang_expert = get_language_coach(catalog, language)
+        # Only add if we have room and it doesn't duplicate domain expertise
+        if len(selected_agents) < 4 and lang_expert not in selected_agents:
+            selected_agents.append(lang_expert)
+            agent_roles[lang_expert] = f"SUPPORT: {language} implementation"
+    
+    # STEP 4: Mandatory Cross-cutting Concerns (ALWAYS INCLUDED)
+    mandatory = ["sdlc-enforcer", "critical-goal-reviewer"]
+    for agent in mandatory:
+        if agent not in selected_agents:
+            selected_agents.append(agent)
+            agent_roles[agent] = "MANDATORY: Process compliance"
+    
+    # Limit and prioritize
+    if len(selected_agents) > 6:
+        selected_agents = prioritize_agents(selected_agents, agent_roles)[:6]
+    
+    return selected_agents, agent_roles
+
+def identify_domains_enhanced(project_analysis, user_responses):
+    """
+    Enhanced domain detection that looks beyond file extensions.
+    """
+    domains = set()
+    
+    # Check dependencies for protocol/standard indicators
+    deps = str(project_analysis.get('dependencies', '')).lower()
+    
+    # MCP Detection (HIGHEST PRIORITY)
+    if any(indicator in deps for indicator in 
+           ['mcp', 'model-context-protocol', '@modelcontextprotocol']):
+        domains.add('mcp')
+    
+    # GraphQL Detection
+    if any(indicator in deps for indicator in 
+           ['graphql', 'apollo', 'relay', 'graphene', 'graphql-js']):
+        domains.add('graphql')
+    
+    # gRPC Detection
+    if any(indicator in deps for indicator in 
+           ['grpc', 'protobuf', '@grpc/grpc-js', 'proto3']):
+        domains.add('grpc')
+    
+    # OAuth/Auth Detection
+    if any(indicator in deps for indicator in 
+           ['oauth', 'oidc', 'passport', 'auth0', 'okta']):
+        domains.add('oauth')
+    
+    # WebSocket Detection
+    if any(indicator in deps for indicator in 
+           ['socket.io', 'ws', 'websocket', 'sockjs']):
+        domains.add('websockets')
+    
+    # File-based detection
+    files = project_analysis.get('files', [])
+    if any('.proto' in f for f in files):
+        domains.add('grpc')
+    if any('schema.graphql' in f or 'schema.gql' in f for f in files):
+        domains.add('graphql')
+    if any('mcp.json' in f or 'tools.json' in f for f in files):
+        domains.add('mcp')
+    
+    return domains
+```
+
+## Domain Expert Priority Mapping
+
+**CRITICAL**: This mapping ensures domain experts are selected BEFORE language experts!
+
+```yaml
+domain_expert_priorities:
+  mcp:
+    primary: ["mcp-server-architect"]  # ALWAYS FIRST
+    secondary: ["mcp-quality-assurance", "mcp-test-agent"]
+    never_replace_with_language: true  # MCP expert > Python expert
+  
+  graphql:
+    primary: ["api-architect", "api-design-specialist"]
+    secondary: ["performance-engineer"]
+    never_replace_with_language: true  # GraphQL expert > JavaScript expert
+  
+  grpc:
+    primary: ["api-architect", "integration-orchestrator"]
+    secondary: ["api-design-specialist"]
+    never_replace_with_language: true  # gRPC expert > Go expert
+  
+  oauth:
+    primary: ["security-specialist"]
+    secondary: ["compliance-auditor", "api-architect"]
+    never_replace_with_language: true  # OAuth expert > any language
+  
+  websockets:
+    primary: ["backend-engineer", "frontend-engineer"]
+    secondary: ["performance-engineer"]
+    never_replace_with_language: false  # Can work with language experts
+  
+  microservices:
+    primary: ["orchestration-architect"]
+    secondary: ["devops-specialist", "sre-specialist"]
+    never_replace_with_language: true  # Architecture > language
 ```
 
 ## Specific Domain Detection
@@ -158,11 +260,16 @@ indicators:
   - Files: "mcp.json", "tools.json"
   - Dependencies: "@modelcontextprotocol/sdk"
   
-agents_to_download:
-  - mcp-server-architect
-  - mcp-quality-assurance
-  - mcp-test-agent
-  - protocol-validator (if available)
+# CORRECTED SELECTION (Domain-First):
+agents_selected:
+  1. mcp-server-architect       # PRIMARY: MCP expert
+  2. mcp-quality-assurance      # PRIMARY: MCP testing
+  3. language-python-expert     # SUPPORT: Only if Python detected
+  4. sdlc-enforcer             # MANDATORY: Always included
+  
+# OLD WRONG SELECTION (Language-First):
+# 1. language-python-expert (WRONG - language before domain!)
+# 2. Maybe mcp-server-architect (WRONG - domain as afterthought!)
 ```
 
 ### AI/ML Projects
@@ -206,16 +313,61 @@ graph TD
     F -->|No| J[Skip this agent]
 ```
 
-## Implementation Examples
+## Implementation Examples (Domain-First Approach)
 
-### Example 1: MCP Project Detection
+### Example 1: MCP Project in Python (FIXED)
+```yaml
+user: "Set up AI-First SDLC for my MCP server project"
+
+orchestrator_analysis:
+  - Detects: requirements.txt (Python)
+  - Detects: mcp.json, @modelcontextprotocol/sdk (MCP!)
+  
+# OLD WRONG APPROACH (Language-First):
+wrong_selection:
+  1. language-python-expert  # Python because requirements.txt
+  2. Maybe adds mcp-server-architect later
+  Result: "Here's how to write Python... oh and maybe some MCP"
+
+# NEW CORRECT APPROACH (Domain-First):
+correct_selection:
+  1. mcp-server-architect      # MCP domain expert (PRIMARY)
+  2. mcp-quality-assurance     # MCP testing expert (PRIMARY)
+  3. language-python-expert    # Python support (TERTIARY)
+  4. sdlc-enforcer            # Process compliance (MANDATORY)
+  Result: "Here's MCP best practices with Python implementation"
+```
+
+### Example 2: GraphQL API in TypeScript (FIXED)
+```yaml
+user: "Set up for my GraphQL API project"
+
+orchestrator_analysis:
+  - Detects: package.json, typescript (JavaScript/TypeScript)
+  - Detects: schema.graphql, apollo dependencies (GraphQL!)
+
+# OLD WRONG APPROACH:
+wrong_selection:
+  1. language-javascript-expert  # JS because package.json
+  Result: "Here's JavaScript patterns... GraphQL is just REST right?"
+
+# NEW CORRECT APPROACH:
+correct_selection:
+  1. api-architect            # GraphQL/API expert (PRIMARY)
+  2. api-design-specialist    # API patterns expert (PRIMARY)  
+  3. language-javascript-expert # JS/TS support (TERTIARY)
+  4. sdlc-enforcer           # Process compliance (MANDATORY)
+  Result: "Here's GraphQL schema design with TypeScript resolvers"
+```
+
+### Example 3: Clarification When Ambiguous
 ```yaml
 user: "Set up AI-First SDLC for my agent package specification project"
 
 orchestrator_thinks:
-  - Sees "agent package specification"
-  - Searches catalog for "agent", "package", "specification"
-  - Finds ambiguity: Could be MCP agents or generic agents
+  - "agent package" is ambiguous
+  - Could be MCP, npm packages, or AI agents
+  - MUST ASK for clarification
 
 orchestrator_asks:
   "I see your project involves 'agent package specification'. 
@@ -228,10 +380,11 @@ orchestrator_asks:
 user: "MCP agents for tool integration"
 
 orchestrator_action:
-  - Searches catalog for "mcp" keyword
-  - Finds: mcp-server-architect, mcp-quality-assurance, mcp-test-agent
-  - Downloads these specific agents
-  - No generation needed!
+  # Domain-first selection triggered:
+  1. mcp-server-architect     # MCP expert (PRIMARY)
+  2. mcp-quality-assurance    # MCP testing (PRIMARY)
+  3. [language expert based on detected language] (TERTIARY)
+  4. sdlc-enforcer           # Always included (MANDATORY)
 ```
 
 ### Example 2: Ambiguous Technology Stack
