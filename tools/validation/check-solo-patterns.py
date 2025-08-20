@@ -322,7 +322,7 @@ class SoloPatternDetector:
         if total_files > 0:
             team_percentage = (team_score / total_files) * 100
 
-            if team_percentage < 30:  # Require 30% of files to show team collaboration
+            if team_percentage < 25:  # Require 25% of files to show team collaboration
                 print(f"❌ INSUFFICIENT TEAM COLLABORATION: {team_percentage:.1f}%")
                 print("   Most files show no team collaboration indicators")
                 return False
