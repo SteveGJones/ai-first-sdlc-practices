@@ -5,6 +5,14 @@
 **Priority**: Critical
 **Impact**: High - Unblocks multiple PRs
 
+## Branch
+`fix/validation-pr-context`
+
+## Target Branch: main
+
+## Motivation
+The validation tool is blocking all PRs including its own fix, creating a chicken-and-egg problem that requires this targeted fix.
+
 ## Problem Statement
 
 The solo pattern validation tool (`check-solo-patterns.py`) is scanning the entire repository (1600+ files) instead of just the files changed in PRs. This causes false positives from historical content that predates team-first enforcement, blocking valid PRs from being merged.
