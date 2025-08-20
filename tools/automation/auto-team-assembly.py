@@ -370,7 +370,7 @@ echo "✅ REMEMBER: ALL DECISIONS MUST INVOLVE THE TEAM"
         blocker_path = Path(".") / "team-engagement-blocker.sh"
         try:
             blocker_path.write_text(script)
-            os.chmod(blocker_path, 0o755)  # Make executable
+            os.chmod(blocker_path, 0o700)  # Make executable only by owner
 
             print(f"🔒 TEAM ENGAGEMENT BLOCKER CREATED: {blocker_path}")
             print("🔒 RUN THIS SCRIPT BEFORE ANY WORK:")

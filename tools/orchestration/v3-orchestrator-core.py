@@ -782,7 +782,7 @@ if [ -f .sdlc/tools/validation/local-validation.py ]; then
 fi
 """
             pre_commit.write_text(pre_commit_content)
-            pre_commit.chmod(0o755)
+            pre_commit.chmod(0o700)  # Executable only by owner
             click.echo("✅ Installed pre-commit hook")
 
             # Pre-push hook
@@ -798,7 +798,7 @@ if [ -f .sdlc/tools/validation/validate-team-engagement.py ]; then
 fi
 """
             pre_push.write_text(pre_push_content)
-            pre_push.chmod(0o755)
+            pre_push.chmod(0o700)  # Executable only by owner
             click.echo("✅ Installed pre-push hook")
 
             self.state_manager.complete_todo(
