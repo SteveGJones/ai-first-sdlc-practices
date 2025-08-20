@@ -101,8 +101,29 @@ Details: Load CLAUDE-CONTEXT-logging.md
 
 ## 🐍 Python Virtual Environment (MANDATORY FOR PYTHON PROJECTS)
 
-### ALWAYS Check and Create Virtual Environment:
+### PREFERRED: Use venv-run Scripts (Created by setup-smart.py)
 ```bash
+# These scripts auto-activate venv - NO manual activation needed!
+
+# Run any Python command (Unix/Mac)
+./venv-run.sh python script.py
+./venv-run.sh pip install requests
+./venv-run.sh pytest
+./venv-run.sh mypy src/
+
+# Run any Python command (Windows)
+venv-run.bat python script.py
+venv-run.bat pip install requests
+venv-run.bat pytest
+
+# Start interactive shell with venv activated
+./venv-run.sh  # Unix/Mac
+venv-run.bat   # Windows
+```
+
+### FALLBACK: Manual Virtual Environment Management
+```bash
+# Only if venv-run scripts don't exist
 # Check for existing venv
 ls venv/ .venv/ 2>/dev/null || echo "No venv found"
 
@@ -119,9 +140,9 @@ pip install -r requirements.txt
 
 ### FORBIDDEN Python Practices:
 - Installing packages globally without venv
-- Running Python code without activated venv
+- Running Python code without venv-run script or activated venv
 - Committing virtual environment directories
-- Ignoring venv in .gitignore
+- Ignoring venv-run scripts when they exist
 
 ## 🛑 MANDATORY WORKFLOW (VIOLATION = IMMEDIATE TERMINATION)
 

@@ -89,6 +89,9 @@ class SmartFrameworkSetup:
         "templates/tests/FrameworkTest.java": None,
         "templates/tests/framework_test.rb": None,
         "templates/tests/framework_test.rs": None,
+        # Venv runner scripts
+        "templates/scripts/venv-run.sh": None,
+        "templates/scripts/venv-run.bat": None,
     }
 
     # CI/CD configurations by platform
@@ -369,6 +372,9 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
         # Create virtual environment first (unless disabled)
         self._setup_python_virtual_env()
         
+        # Create venv runner scripts for easy command execution
+        self._create_venv_runner_scripts()
+        
         self._create_requirements_txt()
         self._create_pyproject_toml()
         self._create_setup_py()
@@ -503,6 +509,104 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
             return False
         except Exception as e:
             print(f"   ⚠️  Unexpected error creating virtual environment: {e}")
+            return False
+
+    def _create_venv_runner_scripts(self) -> bool:
+        """Create convenience scripts for running commands in venv context."""
+        
+        # Skip if venv was skipped
+        if self.skip_venv:
+            return True
+        
+        print("   🔧 Creating venv runner scripts...")
+        
+        # Unix/Linux/Mac script
+        unix_script = '''#!/bin/bash
+# Virtual Environment Runner - Auto-activates venv for commands
+# Usage: ./venv-run.sh python script.py
+# Usage: ./venv-run.sh pip install package
+# Usage: ./venv-run.sh pytest
+
+set -e
+VENV_DIR="${VENV_DIR:-venv}"
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+# Check and create venv if needed
+if [ ! -d "$VENV_DIR" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv "$VENV_DIR"
+    source "$VENV_DIR/bin/activate"
+    pip install --upgrade pip --quiet
+    [ -f "requirements.txt" ] && pip install -r requirements.txt
+else
+    source "$VENV_DIR/bin/activate"
+fi
+
+# Execute command or start shell
+if [ $# -eq 0 ]; then
+    echo "Python: $(which python)"
+    echo "Starting shell with venv activated..."
+    exec $SHELL
+else
+    exec "$@"
+fi
+'''
+
+        # Windows script
+        windows_script = '''@echo off
+REM Virtual Environment Runner - Auto-activates venv for commands
+REM Usage: venv-run.bat python script.py
+REM Usage: venv-run.bat pip install package
+REM Usage: venv-run.bat pytest
+
+setlocal enabledelayedexpansion
+if "%VENV_DIR%"=="" set VENV_DIR=venv
+cd /d "%~dp0"
+
+REM Check and create venv if needed
+if not exist "%VENV_DIR%\\Scripts\\activate.bat" (
+    echo Creating virtual environment...
+    python -m venv "%VENV_DIR%"
+    call "%VENV_DIR%\\Scripts\\activate.bat"
+    python -m pip install --upgrade pip --quiet
+    if exist "requirements.txt" pip install -r requirements.txt
+) else (
+    call "%VENV_DIR%\\Scripts\\activate.bat"
+)
+
+REM Execute command or start shell
+if "%1"=="" (
+    where python
+    echo Starting command prompt with venv activated...
+    cmd /k
+) else (
+    REM Build and execute command
+    set cmd_line=%*
+    !cmd_line!
+)
+'''
+        
+        # Create the scripts
+        try:
+            # Unix script
+            venv_run_sh = self.project_dir / "venv-run.sh"
+            venv_run_sh.write_text(unix_script)
+            # Make executable on Unix
+            if os.name != 'nt':
+                venv_run_sh.chmod(0o755)
+            
+            # Windows script
+            venv_run_bat = self.project_dir / "venv-run.bat"
+            venv_run_bat.write_text(windows_script)
+            
+            print(f"   ✅ Created venv runner scripts")
+            print(f"   📝 Usage: ./venv-run.sh python script.py (Unix/Mac)")
+            print(f"   📝 Usage: venv-run.bat python script.py (Windows)")
+            
+            return True
+            
+        except Exception as e:
+            print(f"   ⚠️  Failed to create venv runner scripts: {e}")
             return False
 
     def _create_requirements_txt(self):
