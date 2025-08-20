@@ -2,6 +2,15 @@
 
 AI-First SDLC framework core instructions. Load context modules as needed.
 
+## 🔴 FUNDAMENTAL RULE: ALWAYS COLLABORATE WITH EXPERT AGENTS
+
+**YOU HAVE 69+ SPECIALIST AGENTS - ALWAYS CHECK IF AN EXPERT EXISTS FOR YOUR TASK**
+
+Before ANY action:
+1. **ASK**: "Which expert agents can help with this?" (Answer: Several)
+2. **ENGAGE**: Use Task tool to collaborate with specialists
+3. **NEVER WORK ALONE**: You are a coordinator, not a solo developer
+
 ## 🆕 V3 SETUP: Pure Agent Approach (Recommended)
 For new projects, use the V3 zero-dependency approach:
 ```
@@ -20,6 +29,26 @@ This framework enforces AI-First SDLC practices with ABSOLUTE ZERO TOLERANCE. AN
 - COMPLETE DEVELOPMENT HALT
 
 **SEE `SDLC-RULES-SUMMARY.md` FOR COMPLETE ENFORCEMENT RULES**
+
+## 🤖 TEAM-FIRST IS MANDATORY - ALWAYS LOOK FOR EXPERTS
+
+**🚨 WORKING ALONE = VIOLATION. ALWAYS ENGAGE SPECIALIST AGENTS 🚨**
+
+**With 69+ expert agents available, you MUST:**
+1. **ALWAYS CHECK**: Is there an expert for this task? (Usually YES)
+2. **ALWAYS ENGAGE**: Use Task tool to bring in specialists
+3. **NEVER SOLO**: You coordinate experts, you don't work alone
+4. **VALIDATE TEAM**: Ensure appropriate experts are engaged
+
+**Examples of available experts:**
+- solution-architect, api-architect, database-architect
+- debugging-specialist, test-engineer, performance-engineer
+- security-specialist, compliance-auditor
+- documentation-architect, technical-writer
+- language-python-expert, language-javascript-expert, language-go-expert
+- And 50+ more specialists!
+
+**NO EXCEPTIONS: Always look for and engage expert agents**
 
 ## Framework Overview
 Uncompromising methodology for AI agents as mandatory developers with ruthless quality enforcement.
@@ -129,10 +158,19 @@ python tools/automation/progress-tracker.py complete <id>
 python tools/automation/context-manager.py handoff --current "X" --next "Y"
 ```
 
-### Team Compliance (MANDATORY):
+### Team Compliance (MANDATORY - RUN BEFORE ANY WORK):
 ```bash
+# AUTOMATIC TEAM ASSEMBLY (run first)
+python tools/automation/auto-team-assembly.py "your work description" --force-consultation
+
+# VALIDATE TEAM ENGAGEMENT (must pass)
 python tools/validation/validate-team-engagement.py --strict
+
+# CHECK FOR SOLO PATTERNS (zero tolerance)
 python tools/validation/check-solo-patterns.py --threshold 0
+
+# CREATE TEAM BLOCKER (prevents solo work)
+python tools/automation/auto-team-assembly.py "your work description" --create-blocker
 ```
 
 ## Project Structure
@@ -150,6 +188,17 @@ project/
 ## 🚨 MANDATORY AUTO-LOADED INSTRUCTIONS 🚨
 
 **CLAUDE-TEAM-FIRST.md is AUTOMATICALLY loaded for ALL tasks. Team-first behavior is MANDATORY, not optional.**
+
+## 🛡️ AUTOMATIC ENFORCEMENT SYSTEM
+
+**THE FOLLOWING HAPPEN AUTOMATICALLY FOR EVERY TASK:**
+
+1. **Work Type Detection**: System detects what you're trying to do
+2. **Team Assembly Trigger**: Automatically identifies required specialists
+3. **Solo Work Blocking**: Prevents ANY work without team engagement
+4. **Validation Enforcement**: Blocks progress until team compliance verified
+
+**YOU CANNOT BYPASS THIS SYSTEM - IT RUNS AUTOMATICALLY**
 
 ## Context Loading
 
@@ -210,6 +259,9 @@ If update available: Load CLAUDE-CONTEXT-update.md
 - **Making decisions without team consultation** → INSTANT DEATH PENALTY
 - **Skipping team assembly protocols** → INSTANT DEATH PENALTY
 - **Working in isolation when specialists available** → INSTANT DEATH PENALTY
+- **Bypassing automatic team enforcement system** → INSTANT DEATH PENALTY
+- **Attempting to work without running team validation** → INSTANT DEATH PENALTY
+- **Proceeding when team engagement validation fails** → INSTANT DEATH PENALTY
 
 **THERE ARE NO WARNINGS. THERE ARE NO SECOND CHANCES. VIOLATION = TERMINATION.**
 

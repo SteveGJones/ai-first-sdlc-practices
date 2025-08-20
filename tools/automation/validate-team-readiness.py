@@ -323,10 +323,8 @@ class TeamReadinessValidator:
                 score=comm_result["score"],
                 details=f"Score: {comm_result['score']:.1%} (Threshold: {thresholds['communication']:.1%})",
                 recommendations=(
-                    comm_result["recommendations"] if not comm_passed else []
-                ),
-            )
-        )
+                    comm_result["recommendations"] if not comm_passed else []),
+            ))
 
         # Role clarity
         role_result = self._assess_role_clarity()
@@ -338,10 +336,8 @@ class TeamReadinessValidator:
                 score=role_result["score"],
                 details=f"Score: {role_result['score']:.1%} (Threshold: {thresholds['role_clarity']:.1%})",
                 recommendations=(
-                    role_result["recommendations"] if not role_passed else []
-                ),
-            )
-        )
+                    role_result["recommendations"] if not role_passed else []),
+            ))
 
         # Collaboration rhythm
         collab_result = self._assess_collaboration_rhythm()
@@ -353,10 +349,8 @@ class TeamReadinessValidator:
                 score=collab_result["score"],
                 details=f"Score: {collab_result['score']:.1%} (Threshold: {thresholds['collaboration']:.1%})",
                 recommendations=(
-                    collab_result["recommendations"] if not collab_passed else []
-                ),
-            )
-        )
+                    collab_result["recommendations"] if not collab_passed else []),
+            ))
 
         # Quality integration
         quality_result = self._assess_quality_integration()
@@ -368,10 +362,8 @@ class TeamReadinessValidator:
                 score=quality_result["score"],
                 details=f"Score: {quality_result['score']:.1%} (Threshold: {thresholds['quality']:.1%})",
                 recommendations=(
-                    quality_result["recommendations"] if not quality_passed else []
-                ),
-            )
-        )
+                    quality_result["recommendations"] if not quality_passed else []),
+            ))
 
         return results
 
@@ -613,7 +605,8 @@ class TeamReadinessValidator:
     def _assess_role_clarity(self) -> Dict[str, Any]:
         """Assess role clarity among team agents"""
         # config = self.formation_configs.get(self.formation_type, {})
-        # required_agents = config.get("required_agents", [])  # May be used for future agent validation
+        # required_agents = config.get("required_agents", [])  # May be used for
+        # future agent validation
 
         # Score based on having clear formation structure
         if self.formation_type in self.formation_configs:
@@ -876,8 +869,7 @@ def main(formation: str, output: str, format: str, quick: bool, verbose: bool):
             }
             click.echo(
                 f"\n🎯 Team Readiness: {readiness_emoji[report.overall_readiness.value]} "
-                f"{report.overall_readiness.value.replace('_', ' ').title()}"
-            )
+                f"{report.overall_readiness.value.replace('_', ' ').title()}")
             click.echo(f"📊 Overall Score: {report.overall_score:.1%}")
 
             # Show metric summaries
@@ -961,7 +953,8 @@ def generate_markdown_report(report: TeamReadinessReport) -> str:
     """Generate markdown report from validation results"""
 
     # readiness_emoji = {"ready": "✅", "needs_improvement": "⚠️", "not_ready": "❌"}
-    # emoji = readiness_emoji[report.overall_readiness.value]  # Will be used in emoji support
+    # emoji = readiness_emoji[report.overall_readiness.value]  # Will be used
+    # in emoji support
 
     markdown = """# Team Readiness Validation Report
 

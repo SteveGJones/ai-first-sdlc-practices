@@ -70,6 +70,18 @@ python .sdlc/tools/validation/validate-pipeline.py --ci
 
 ---
 
+## 🤖 AUTOMATIC TEAM-FIRST ENFORCEMENT (ACTIVE NOW)
+
+**🚨 SOLO WORK IS NOW AUTOMATICALLY IMPOSSIBLE 🚨**
+
+The system automatically:
+1. **DETECTS** work type and identifies required specialists
+2. **BLOCKS** any solo work attempts immediately
+3. **FORCES** team consultation for all activities
+4. **VALIDATES** team engagement before allowing progress
+
+**YOU CANNOT BYPASS THIS - IT RUNS AUTOMATICALLY**
+
 ## 🔴 INSTANT DEATH VIOLATIONS
 
 These violations result in **IMMEDIATE PROJECT TERMINATION**:
@@ -81,10 +93,13 @@ These violations result in **IMMEDIATE PROJECT TERMINATION**:
 5. **Skipping retrospectives**
 6. **Bypassing validation checks**
 7. **Attempting to disable sdlc-enforcer**
-8. **Solo work without engaging specialist agents**
-9. **Making architectural decisions without solution-architect consultation**
-10. **Skipping mandatory team assembly protocols**
-11. **Working in isolation when team expertise is available**
+8. **Solo work without engaging specialist agents** ← **NOW AUTOMATICALLY BLOCKED**
+9. **Making architectural decisions without solution-architect consultation** ← **NOW AUTOMATICALLY BLOCKED**
+10. **Skipping mandatory team assembly protocols** ← **NOW AUTOMATICALLY BLOCKED**
+11. **Working in isolation when team expertise is available** ← **NOW AUTOMATICALLY BLOCKED**
+12. **Bypassing automatic team enforcement system** → **NEW: INSTANT DEATH PENALTY**
+13. **Proceeding when team validation fails** → **NEW: INSTANT DEATH PENALTY**
+14. **Attempting to work without running team checks** → **NEW: INSTANT DEATH PENALTY**
 
 ---
 
@@ -117,6 +132,18 @@ Every action is tracked:
 ## ⚡ Quick Command Reference
 
 ```bash
+# AUTOMATIC TEAM ENFORCEMENT (RUN FIRST - MANDATORY)
+python tools/automation/auto-team-assembly.py "work description" --force-consultation
+
+# VALIDATE TEAM ENGAGEMENT (MUST PASS)
+python tools/validation/validate-team-engagement.py --strict
+
+# CHECK SOLO PATTERNS (ZERO TOLERANCE)
+python tools/validation/check-solo-patterns.py --threshold 0
+
+# FULL TEAM VALIDATION (COMPREHENSIVE)
+python tools/validation/validate-pipeline.py --checks team-engagement solo-patterns
+
 # Check compliance
 python .sdlc/tools/validation/validate-pipeline.py --ci
 
