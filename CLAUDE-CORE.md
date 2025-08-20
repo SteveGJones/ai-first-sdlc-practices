@@ -2,6 +2,18 @@
 
 AI-First SDLC framework core instructions. Load context modules as needed.
 
+## 🚀 QUICK START: One Command to Launch Claude
+
+After AI-First SDLC setup, just run:
+```bash
+./bin/claude
+```
+This launcher (created by setup-smart.py) handles EVERYTHING:
+✅ Activates Python virtual environment
+✅ Installs dependencies
+✅ Launches Claude Code in project context
+No manual setup needed!
+
 ## 🔴 FUNDAMENTAL RULE: ALWAYS COLLABORATE WITH EXPERT AGENTS
 
 **YOU HAVE 69+ SPECIALIST AGENTS - ALWAYS CHECK IF AN EXPERT EXISTS FOR YOUR TASK**
