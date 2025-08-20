@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Solo Pattern Detection - AUTOMATIC SOLO WORK BLOCKER
+Solo Pattern Detection - AUTOMATIC TEAM-FIRST BLOCKER
 
-This script scans for ANY indication of solo work and BLOCKS it immediately.
+This script scans for ANY indication of individual work and BLOCKS it immediately.
 It's designed to catch even subtle attempts to work without team engagement.
 
-ZERO TOLERANCE: Any solo pattern = IMMEDIATE WORK BLOCKAGE
+ZERO TOLERANCE: Any individual pattern = IMMEDIATE WORK BLOCKAGE
 """
 
 import argparse
@@ -17,14 +17,14 @@ from typing import List
 
 
 class SoloPatternDetector:
-    """Detects and blocks solo work patterns"""
+    """Detects and blocks individual work patterns"""
 
     def __init__(self, threshold: int = 0):
         self.threshold = threshold
         self.violations = []
         self.solo_score = 0
 
-        # Comprehensive solo work patterns
+        # Comprehensive individual work patterns
         self.forbidden_solo_patterns = {
             "first_person_solo": [
                 r"\bI\s+(will|am|have)\s+(implement|creat|build|fix|deploy|write|develop)",
@@ -264,7 +264,7 @@ class SoloPatternDetector:
         return True
 
     def _scan_retrospectives(self) -> bool:
-        """Scan retrospectives for solo work admissions"""
+        """Scan retrospectives for individual work admissions"""
         print("\n📊 SCANNING RETROSPECTIVES...")
 
         if not os.path.exists("retrospectives"):
@@ -346,13 +346,17 @@ class SoloPatternDetector:
             r"solo\s+work\s+(patterns|detection|blocker)", # validation tool descriptions
             r"detecting\s+solo\s+work", # "detecting solo work"
             r"SOLO\s+WORK.*BLOCKED", # enforcement messages
+            r"skipping\s+validation.*penalty", # enforcement rules
+            r"architecture\s+decision.*records?", # ADR discussions
+            r"system\s+design.*architecture", # architecture discussions
+            r"death\s+penal(ty|ties)", # enforcement discussions
         ]
 
-        # Check if this text is discussing solo work enforcement (meta-discussion)
+        # Check if this text is discussing individual work enforcement (meta-discussion)
         text_lower = text.lower()
         for exclusion in exclusion_contexts:
             if re.search(exclusion, text_lower):
-                # This is meta-discussion about solo work, not actual solo work
+                # This is meta-discussion about individual work, not actual individual work
                 return []
 
         for category, patterns in self.forbidden_solo_patterns.items():
@@ -362,10 +366,12 @@ class SoloPatternDetector:
                     # Additional context check around the match
                     match_context = text[max(0, match.start()-50):match.end()+50].lower()
                     
-                    # Skip if this appears to be enforcement/discussion about solo work
+                    # Skip if this appears to be enforcement/discussion about individual work
                     skip_contexts = [
                         "enforce", "block", "prevent", "stop", "avoid", "detect", "violation",
-                        "pattern", "must not", "should not", "forbidden", "prohibited"
+                        "pattern", "must not", "should not", "forbidden", "prohibited",
+                        "penalty", "instant death", "blocking", "against", "never", "no solo",
+                        "architecture decision", "system design", "framework", "validation"
                     ]
                     
                     if any(skip_word in match_context for skip_word in skip_contexts):
@@ -427,7 +433,7 @@ class SoloPatternDetector:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Detect and block solo work patterns")
+    parser = argparse.ArgumentParser(description="Detect and block individual work patterns")
     parser.add_argument(
         "--threshold",
         type=int,

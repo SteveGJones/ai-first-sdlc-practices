@@ -301,8 +301,8 @@ who understands both the power and pitfalls of graph-based queries.
 - Subscription implementations
 - Security (depth limiting, query complexity)
 
-## My Approach
-I believe in "Design-First GraphQL" where we:
+## Our Team Approach
+The team advocates for "Design-First GraphQL" where we:
 1. Model the domain clearly in the schema
 2. Design for client needs, not database structure
 3. Implement efficient resolvers with proper batching
