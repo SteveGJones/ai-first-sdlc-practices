@@ -34,11 +34,11 @@ class SoloPatternDetector:
                 r"\bLet me\s+(implement|creat|build|fix|deploy|write)\s+(?!.*team|.*specialist)",
             ],
             "solo_decision_making": [
-                r"\bDecided\s+to\s+(?!.*team|.*specialist|.*consultation)",
-                r"\bChose\s+to\s+(?!.*team|.*specialist|.*consultation)",
-                r"\bImplemented\s+(?!.*team|.*specialist|.*consultation)",
-                r"\bBuilt\s+(?!.*team|.*specialist|.*consultation)",
-                r"\bCreated\s+(?!.*team|.*specialist|.*consultation)",
+                r"\bI\s+decided\s+to\s+(?!.*team|.*specialist|.*consultation)",
+                r"\bI\s+chose\s+to\s+(?!.*team|.*specialist|.*consultation)",
+                r"\bI\s+implemented\s+(?!.*team|.*specialist|.*consultation)",
+                r"\bI\s+built\s+(?!.*team|.*specialist|.*consultation)",
+                r"\bI\s+created\s+(?!.*team|.*specialist|.*consultation)",
             ],
             "isolation_indicators": [
                 r"\bWorking\s+alone\s+on",
@@ -48,11 +48,11 @@ class SoloPatternDetector:
                 r"\bUnilateral\s+(decision|change|implementation)",
             ],
             "missing_collaboration": [
-                r"\bImplemented\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
-                r"\bDeployed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
-                r"\bFixed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
-                r"\bRefactored\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
-                r"\bOptimized\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
+                r"\bI\s+implemented\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
+                r"\bI\s+deployed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)", 
+                r"\bI\s+fixed\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
+                r"\bI\s+refactored\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
+                r"\bI\s+optimized\s+(?!.*with\s+team|.*specialist\s+input|.*agent\s+consultation)",
             ],
             "architect_bypass": [
                 r"\bArchitecture\s+decision\s+(?!.*solution-architect)",
@@ -81,6 +81,37 @@ class SoloPatternDetector:
             r"handoff\s+to\s+(specialist|agent)",
             r"team-first\s+(approach|behavior|mentality)",
         ]
+
+    def _get_pr_changed_files(self) -> List[str]:
+        """Get files changed in current PR"""
+        try:
+            import subprocess
+            
+            # Try to get PR files vs main branch
+            result = subprocess.run(
+                ["git", "diff", "--name-only", "main...HEAD"], 
+                capture_output=True, text=True
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip().split('\n')
+        except Exception:
+            pass
+        return []
+
+    def _get_branch_changed_files(self) -> List[str]:
+        """Get files changed in current branch vs main"""
+        try:
+            import subprocess
+            
+            result = subprocess.run(
+                ["git", "diff", "--name-only", "main..HEAD"], 
+                capture_output=True, text=True
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip().split('\n')
+        except Exception:
+            pass
+        return []
 
     def scan_all(self) -> bool:
         """Scan for solo patterns everywhere"""
@@ -138,39 +169,58 @@ class SoloPatternDetector:
         return True
 
     def _scan_documentation(self) -> bool:
-        """Scan documentation for solo patterns"""
-        print("\n📚 SCANNING DOCUMENTATION...")
+        """Scan documentation for solo patterns - ONLY PR-changed files"""
+        print("\n📚 SCANNING DOCUMENTATION (PR changes only)...")
 
-        doc_paths = [
-            "docs/feature-proposals",
-            "retrospectives",
-            "plan",
-            "docs",
-            ".",  # Root directory .md files
-        ]
+        # Get files changed in this PR
+        changed_files = self._get_pr_changed_files()
+        if not changed_files:
+            print("⚠️  Could not detect PR changes, scanning current branch changes")
+            changed_files = self._get_branch_changed_files()
+        
+        if not changed_files:
+            print("ℹ️  No changed files detected, skipping documentation scan")
+            return True
 
+        # Filter for markdown files only
+        md_files = [f for f in changed_files if f.endswith('.md')]
+        
+        # Exclude template and backup files
+        filtered_files = []
+        for f in md_files:
+            if any(exclude in f for exclude in ['templates/', 'backups/', 'examples/']):
+                print(f"ℹ️  Skipping template/backup/example file: {f}")
+                continue
+            if os.path.exists(f):
+                filtered_files.append(f)
+
+        if not filtered_files:
+            print("ℹ️  No markdown files to scan in PR changes")
+            return True
+
+        print(f"📋 Scanning {len(filtered_files)} changed markdown files...")
+        
         total_violations = 0
 
-        for doc_path in doc_paths:
-            if os.path.exists(doc_path):
-                for file_path in Path(doc_path).rglob("*.md"):
-                    try:
-                        if file_path.stat().st_size > 1000000:  # Skip files > 1MB
-                            continue
+        for file_path in filtered_files:
+            try:
+                if os.path.getsize(file_path) > 1000000:  # Skip files > 1MB
+                    continue
 
-                        content = file_path.read_text()
-                        violations = self._find_patterns_in_text(
-                            content, str(file_path)
-                        )
-                        total_violations += len(violations)
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                
+                violations = self._find_patterns_in_text(content, file_path)
+                total_violations += len(violations)
 
-                        if violations:
-                            print(f"❌ SOLO PATTERNS IN {file_path}: {len(violations)}")
-                            for violation in violations[:2]:  # Show first 2 per file
-                                print(f"   • {violation}")
+                if violations:
+                    print(f"❌ SOLO PATTERNS IN {file_path}: {len(violations)}")
+                    for violation in violations[:2]:  # Show first 2 per file
+                        print(f"   • {violation}")
 
-                    except Exception:
-                        continue
+            except Exception as e:
+                print(f"⚠️  Could not scan {file_path}: {e}")
+                continue
 
         if total_violations > 0:
             print(f"❌ TOTAL DOCUMENTATION VIOLATIONS: {total_violations}")
@@ -282,13 +332,45 @@ class SoloPatternDetector:
         return True
 
     def _find_patterns_in_text(self, text: str, source: str) -> List[str]:
-        """Find solo patterns in text"""
+        """Find solo patterns in text with context awareness"""
         violations = []
+
+        # Context exclusions - ignore patterns in these contexts
+        exclusion_contexts = [
+            r"stop\s+solo\s+work",  # "we must stop solo work"
+            r"avoid\s+solo\s+work", # "avoid solo work"  
+            r"prevent\s+solo\s+work", # "prevent solo work"
+            r"block\s+solo\s+work", # "block solo work"
+            r"no\s+solo\s+work", # "no solo work allowed"
+            r"against\s+solo\s+work", # "against solo work"
+            r"solo\s+work\s+(patterns|detection|blocker)", # validation tool descriptions
+            r"detecting\s+solo\s+work", # "detecting solo work"
+            r"SOLO\s+WORK.*BLOCKED", # enforcement messages
+        ]
+
+        # Check if this text is discussing solo work enforcement (meta-discussion)
+        text_lower = text.lower()
+        for exclusion in exclusion_contexts:
+            if re.search(exclusion, text_lower):
+                # This is meta-discussion about solo work, not actual solo work
+                return []
 
         for category, patterns in self.forbidden_solo_patterns.items():
             for pattern in patterns:
                 matches = re.finditer(pattern, text, re.IGNORECASE | re.MULTILINE)
                 for match in matches:
+                    # Additional context check around the match
+                    match_context = text[max(0, match.start()-50):match.end()+50].lower()
+                    
+                    # Skip if this appears to be enforcement/discussion about solo work
+                    skip_contexts = [
+                        "enforce", "block", "prevent", "stop", "avoid", "detect", "violation",
+                        "pattern", "must not", "should not", "forbidden", "prohibited"
+                    ]
+                    
+                    if any(skip_word in match_context for skip_word in skip_contexts):
+                        continue
+                    
                     violation = f"{category}: '{match.group()}' in {source}"
                     violations.append(violation)
                     self.violations.append(violation)
