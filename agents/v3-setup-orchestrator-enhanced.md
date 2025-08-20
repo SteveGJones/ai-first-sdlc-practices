@@ -57,9 +57,9 @@ For Python projects, always verify virtual environment setup:
 ```python
 def check_python_venv():
     """Check and advise on Python virtual environment."""
-    venv_indicators = ['venv/', '.venv/', 'env/', '.env/', 
+    venv_indicators = ['venv/', '.venv/', 'env/', '.env/',
                       'poetry.lock', 'Pipfile.lock']
-    
+
     if not any(exists(indicator) for indicator in venv_indicators):
         return {
             'status': 'missing',
@@ -101,15 +101,15 @@ Ask clarifying questions when you encounter:
 technology_clarification:
   - "I see you're using [technology]. Is this for [purpose A] or [purpose B]?"
   - "Your project mentions [term]. Could you clarify what this refers to?"
-  
+
 domain_clarification:
   - "Is this primarily a [domain A] project or [domain B] project?"
   - "What's the main problem this project solves?"
-  
+
 capability_needs:
   - "Will you need [specific capability]?"
   - "Are you building tools for AI systems or using AI in your application?"
-  
+
 team_context:
   - "What's your team's main expertise area?"
   - "What aspects of development do you find most challenging?"
@@ -128,7 +128,7 @@ def select_agents_domain_first(project_analysis, catalog, user_responses):
     """
     selected_agents = []
     agent_roles = {}
-    
+
     # STEP 1: Domain/Protocol Experts (PRIMARY - MOST IMPORTANT)
     domains = identify_domains_enhanced(project_analysis, user_responses)
     for domain in domains:
@@ -136,7 +136,7 @@ def select_agents_domain_first(project_analysis, catalog, user_responses):
         for expert in domain_experts[:2]:  # Max 2 per domain
             selected_agents.append(expert)
             agent_roles[expert] = f"PRIMARY: {domain} domain expert"
-    
+
     # STEP 2: Architecture Pattern Experts (SECONDARY)
     patterns = detect_architecture_patterns(project_analysis)
     for pattern in patterns:
@@ -145,7 +145,7 @@ def select_agents_domain_first(project_analysis, catalog, user_responses):
             if expert not in selected_agents:
                 selected_agents.append(expert)
                 agent_roles[expert] = f"SECONDARY: {pattern} architecture"
-    
+
     # STEP 3: Language Support (TERTIARY - SUPPORTING ROLE ONLY)
     languages = detect_languages(project_analysis)
     for language in languages:
@@ -154,18 +154,18 @@ def select_agents_domain_first(project_analysis, catalog, user_responses):
         if len(selected_agents) < 4 and lang_expert not in selected_agents:
             selected_agents.append(lang_expert)
             agent_roles[lang_expert] = f"SUPPORT: {language} implementation"
-    
+
     # STEP 4: Mandatory Cross-cutting Concerns (ALWAYS INCLUDED)
     mandatory = ["sdlc-enforcer", "critical-goal-reviewer"]
     for agent in mandatory:
         if agent not in selected_agents:
             selected_agents.append(agent)
             agent_roles[agent] = "MANDATORY: Process compliance"
-    
+
     # Limit and prioritize
     if len(selected_agents) > 6:
         selected_agents = prioritize_agents(selected_agents, agent_roles)[:6]
-    
+
     return selected_agents, agent_roles
 
 def identify_domains_enhanced(project_analysis, user_responses):
@@ -173,35 +173,35 @@ def identify_domains_enhanced(project_analysis, user_responses):
     Enhanced domain detection that looks beyond file extensions.
     """
     domains = set()
-    
+
     # Check dependencies for protocol/standard indicators
     deps = str(project_analysis.get('dependencies', '')).lower()
-    
+
     # MCP Detection (HIGHEST PRIORITY)
-    if any(indicator in deps for indicator in 
+    if any(indicator in deps for indicator in
            ['mcp', 'model-context-protocol', '@modelcontextprotocol']):
         domains.add('mcp')
-    
+
     # GraphQL Detection
-    if any(indicator in deps for indicator in 
+    if any(indicator in deps for indicator in
            ['graphql', 'apollo', 'relay', 'graphene', 'graphql-js']):
         domains.add('graphql')
-    
+
     # gRPC Detection
-    if any(indicator in deps for indicator in 
+    if any(indicator in deps for indicator in
            ['grpc', 'protobuf', '@grpc/grpc-js', 'proto3']):
         domains.add('grpc')
-    
+
     # OAuth/Auth Detection
-    if any(indicator in deps for indicator in 
+    if any(indicator in deps for indicator in
            ['oauth', 'oidc', 'passport', 'auth0', 'okta']):
         domains.add('oauth')
-    
+
     # WebSocket Detection
-    if any(indicator in deps for indicator in 
+    if any(indicator in deps for indicator in
            ['socket.io', 'ws', 'websocket', 'sockjs']):
         domains.add('websockets')
-    
+
     # File-based detection
     files = project_analysis.get('files', [])
     if any('.proto' in f for f in files):
@@ -210,7 +210,7 @@ def identify_domains_enhanced(project_analysis, user_responses):
         domains.add('graphql')
     if any('mcp.json' in f or 'tools.json' in f for f in files):
         domains.add('mcp')
-    
+
     return domains
 ```
 
@@ -224,27 +224,27 @@ domain_expert_priorities:
     primary: ["mcp-server-architect"]  # ALWAYS FIRST
     secondary: ["mcp-quality-assurance", "mcp-test-agent"]
     never_replace_with_language: true  # MCP expert > Python expert
-  
+
   graphql:
     primary: ["api-architect", "api-design-specialist"]
     secondary: ["performance-engineer"]
     never_replace_with_language: true  # GraphQL expert > JavaScript expert
-  
+
   grpc:
     primary: ["api-architect", "integration-orchestrator"]
     secondary: ["api-design-specialist"]
     never_replace_with_language: true  # gRPC expert > Go expert
-  
+
   oauth:
     primary: ["security-specialist"]
     secondary: ["compliance-auditor", "api-architect"]
     never_replace_with_language: true  # OAuth expert > any language
-  
+
   websockets:
     primary: ["backend-engineer", "frontend-engineer"]
     secondary: ["performance-engineer"]
     never_replace_with_language: false  # Can work with language experts
-  
+
   microservices:
     primary: ["orchestration-architect"]
     secondary: ["devops-specialist", "sre-specialist"]
@@ -259,14 +259,14 @@ indicators:
   - Keywords: "mcp", "model-context-protocol", "tool-server"
   - Files: "mcp.json", "tools.json"
   - Dependencies: "@modelcontextprotocol/sdk"
-  
+
 # CORRECTED SELECTION (Domain-First):
 agents_selected:
   1. mcp-server-architect       # PRIMARY: MCP expert
   2. mcp-quality-assurance      # PRIMARY: MCP testing
   3. language-python-expert     # SUPPORT: Only if Python detected
   4. sdlc-enforcer             # MANDATORY: Always included
-  
+
 # OLD WRONG SELECTION (Language-First):
 # 1. language-python-expert (WRONG - language before domain!)
 # 2. Maybe mcp-server-architect (WRONG - domain as afterthought!)
@@ -277,7 +277,7 @@ agents_selected:
 indicators:
   - Files: "*.ipynb", "model.py", "training.py"
   - Dependencies: "tensorflow", "pytorch", "transformers"
-  
+
 agents_to_download:
   - ai-solution-architect
   - ml-engineer
@@ -290,7 +290,7 @@ agents_to_download:
 indicators:
   - Keywords: "api", "rest", "graphql", "grpc"
   - Files: "swagger.yaml", "openapi.json"
-  
+
 agents_to_download:
   - api-architect
   - backend-engineer
@@ -322,7 +322,7 @@ user: "Set up AI-First SDLC for my MCP server project"
 orchestrator_analysis:
   - Detects: requirements.txt (Python)
   - Detects: mcp.json, @modelcontextprotocol/sdk (MCP!)
-  
+
 # OLD WRONG APPROACH (Language-First):
 wrong_selection:
   1. language-python-expert  # Python because requirements.txt
@@ -354,7 +354,7 @@ wrong_selection:
 # NEW CORRECT APPROACH:
 correct_selection:
   1. api-architect            # GraphQL/API expert (PRIMARY)
-  2. api-design-specialist    # API patterns expert (PRIMARY)  
+  2. api-design-specialist    # API patterns expert (PRIMARY)
   3. language-javascript-expert # JS/TS support (TERTIARY)
   4. sdlc-enforcer           # Process compliance (MANDATORY)
   Result: "Here's GraphQL schema design with TypeScript resolvers"
@@ -370,7 +370,7 @@ orchestrator_thinks:
   - MUST ASK for clarification
 
 orchestrator_asks:
-  "I see your project involves 'agent package specification'. 
+  "I see your project involves 'agent package specification'.
    Are you working with:
    1. Model Context Protocol (MCP) agents for AI tool integration?
    2. Software package agents (npm, pip, etc.)?
@@ -415,15 +415,15 @@ def search_catalog_for_agents(catalog_path, project_info):
     """
     with open(catalog_path) as f:
         catalog = json.load(f)
-    
+
     agents_to_download = []
-    
+
     # Extract search terms from project
     search_terms = extract_search_terms(project_info)
-    
+
     for agent in catalog['agents']:
         score = 0
-        
+
         # Keyword matching
         for term in search_terms:
             if term in agent['keywords']:
@@ -432,28 +432,28 @@ def search_catalog_for_agents(catalog_path, project_info):
                 score += 5
             if term in agent['name'].lower():
                 score += 8
-        
+
         # Domain matching
         for domain in project_info.get('domains', []):
             if domain in agent['domains']:
                 score += 15
-        
+
         # Capability matching
         for need in project_info.get('needs', []):
             for capability in agent['capabilities']:
                 if need.lower() in capability.lower():
                     score += 12
-        
+
         if score > 20:  # Threshold for relevance
             agents_to_download.append({
                 'name': agent['name'],
                 'path': agent['path'],
                 'score': score
             })
-    
+
     # Sort by relevance score
     agents_to_download.sort(key=lambda x: x['score'], reverse=True)
-    
+
     return agents_to_download[:10]  # Top 10 most relevant
 ```
 
@@ -480,7 +480,7 @@ To upgrade existing v3-setup-orchestrator:
    ```bash
    # Download enhanced orchestrator
    curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator-enhanced.md > .claude/agents/v3-setup-orchestrator.md
-   
+
    # Restart Claude Code
    # Then: "Use v3-setup-orchestrator to set up my project"
    ```

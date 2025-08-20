@@ -60,38 +60,38 @@ find_python() {
 # Only set up Python venv if this is a Python project
 if [ -f "requirements.txt" ] || [ -f "setup.py" ] || [ -f "pyproject.toml" ] || [ -f "Pipfile" ]; then
     echo -e "${CYAN}🐍 Python project detected${NC}"
-    
+
     PYTHON_CMD=$(find_python) || {
         echo -e "${RED}❌ Python 3.7+ not found${NC}"
         echo "Please install Python from https://python.org"
         exit 1
     }
-    
+
     # Check/create virtual environment
     if [ ! -d "$VENV_DIR" ]; then
         echo -e "${YELLOW}📦 Creating virtual environment...${NC}"
         $PYTHON_CMD -m venv "$VENV_DIR"
         source "$VENV_DIR/bin/activate"
-        
+
         echo -e "${YELLOW}⬆️  Upgrading pip...${NC}"
         pip install --upgrade pip --quiet
-        
+
         if [ -f "requirements.txt" ]; then
             echo -e "${YELLOW}📚 Installing requirements...${NC}"
             pip install -r requirements.txt
         fi
-        
+
         if [ -f "requirements-dev.txt" ]; then
             echo -e "${YELLOW}🔧 Installing dev requirements...${NC}"
             pip install -r requirements-dev.txt
         fi
-        
+
         echo -e "${GREEN}✅ Virtual environment ready${NC}"
     else
         source "$VENV_DIR/bin/activate"
         echo -e "${GREEN}✅ Virtual environment activated${NC}"
     fi
-    
+
     echo -e "${CYAN}🔧 Python:${NC} $(which python) ($(python --version 2>&1))"
 else
     echo -e "${CYAN}📂 Non-Python project${NC}"

@@ -155,7 +155,8 @@ class AgentValidator:
                     ValidationError(
                         "description",
                         f"Must be {self.MAX_DESCRIPTION_LENGTH} characters or less (currently {len(desc)})",
-                    ))
+                    )
+                )
             elif len(desc) < 10:
                 self.errors.append(
                     ValidationError(
@@ -211,7 +212,8 @@ class AgentValidator:
                                     f"examples[{i}]",
                                     "String example must contain <example>, user:, and assistant: sections",
                                     severity="warning",
-                                ))
+                                )
+                            )
                     elif isinstance(example, dict):
                         # Check for required fields in dictionary format
                         required_example_fields = ["context", "user", "assistant"]

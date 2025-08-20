@@ -254,9 +254,11 @@ class AgentValidator:
         # Check for required core agents
         if "core" not in category_counts or category_counts["core"] < 10:
             self.warnings.append(
-                ("Framework",
-                 f"Only {category_counts.get('core', 0)} core agents found (expected 10+)",
-                 ))
+                (
+                    "Framework",
+                    f"Only {category_counts.get('core', 0)} core agents found (expected 10+)",
+                )
+            )
 
     def _report_results(self) -> None:
         """Display validation results."""

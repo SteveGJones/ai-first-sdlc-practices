@@ -152,10 +152,10 @@ claude --project "%PROJECT_ROOT%"
 ```python
 def create_claude_launcher(self) -> bool:
     """Create bin/claude launcher script for one-command Claude startup."""
-    
+
     bin_dir = self.project_dir / "bin"
     bin_dir.mkdir(exist_ok=True)
-    
+
     # Unix/Mac launcher
     unix_launcher = f'''#!/bin/bash
 # bin/claude - One-command Claude launcher
@@ -184,11 +184,11 @@ echo "🤖 Starting Claude Code in {self.project_name}..."
 echo "Python: $(which python)"
 exec claude --project "$PROJECT_ROOT"
 '''
-    
+
     claude_sh = bin_dir / "claude"
     claude_sh.write_text(unix_launcher)
     claude_sh.chmod(0o755)
-    
+
     # Windows launcher
     windows_launcher = f'''@echo off
 REM bin/claude.bat - One-command Claude launcher
@@ -209,13 +209,13 @@ if not exist "%VENV_DIR%\\Scripts\\activate.bat" (
 echo Starting Claude Code in {self.project_name}...
 claude --project "%PROJECT_ROOT%"
 '''
-    
+
     claude_bat = bin_dir / "claude.bat"
     claude_bat.write_text(windows_launcher)
-    
+
     print(f"   ✅ Created Claude launcher: ./bin/claude")
     print(f"   🚀 Start Claude with: ./bin/claude")
-    
+
     return True
 ```
 

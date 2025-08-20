@@ -442,34 +442,51 @@ class TeamDiscoveryEngine:
                 "description": "Implement a basic CRUD endpoint with full team collaboration",
                 "agents": "Core trio",
                 "success_criteria": "Clean handoffs, no duplicated effort, all agents contribute",
-            }]
+            }
+        ]
 
-        archetype_exercises = {"builder": [{"name": "Documentation Flow",
-                                            "description": "Create feature documentation with technical-writer integration",
-                                            "agents": "solution-architect, language-expert, technical-writer",
-                                            "success_criteria": "Complete docs generated, review process smooth",
-                                            }],
-                               "specialist": [{"name": "Compliance Validation",
-                                               "description": "Implement feature with full compliance checking",
-                                               "agents": "domain-specialist, compliance-auditor, solution-architect",
-                                               "success_criteria": "All compliance gates pass, domain rules enforced",
-                                               }],
-                               "innovator": [{"name": "AI Pipeline Integration",
-                                              "description": "Implement AI feature with testing and optimization",
-                                              "agents": "ai-solution-architect, prompt-engineer, ai-test-engineer",
-                                              "success_criteria": "AI functionality works, tests comprehensive, performance acceptable",
-                                              }],
-                               "transformer": [{"name": "Multi-System Integration",
-                                                "description": "Connect to external API with full error handling and monitoring",
-                                                "agents": "integration-orchestrator, sre-specialist, devops-specialist",
-                                                "success_criteria": "Robust integration, monitoring active, failure handling works",
-                                                }],
-                               "orchestrator": [{"name": "Agent Orchestration Challenge",
-                                                 "description": "Coordinate multiple agents on complex multi-step workflow",
-                                                 "agents": "orchestration-architect, a2a-architect, agent-developer",
-                                                 "success_criteria": "Complex workflow completes, agent coordination seamless",
-                                                 }],
-                               }
+        archetype_exercises = {
+            "builder": [
+                {
+                    "name": "Documentation Flow",
+                    "description": "Create feature documentation with technical-writer integration",
+                    "agents": "solution-architect, language-expert, technical-writer",
+                    "success_criteria": "Complete docs generated, review process smooth",
+                }
+            ],
+            "specialist": [
+                {
+                    "name": "Compliance Validation",
+                    "description": "Implement feature with full compliance checking",
+                    "agents": "domain-specialist, compliance-auditor, solution-architect",
+                    "success_criteria": "All compliance gates pass, domain rules enforced",
+                }
+            ],
+            "innovator": [
+                {
+                    "name": "AI Pipeline Integration",
+                    "description": "Implement AI feature with testing and optimization",
+                    "agents": "ai-solution-architect, prompt-engineer, ai-test-engineer",
+                    "success_criteria": "AI functionality works, tests comprehensive, performance acceptable",
+                }
+            ],
+            "transformer": [
+                {
+                    "name": "Multi-System Integration",
+                    "description": "Connect to external API with full error handling and monitoring",
+                    "agents": "integration-orchestrator, sre-specialist, devops-specialist",
+                    "success_criteria": "Robust integration, monitoring active, failure handling works",
+                }
+            ],
+            "orchestrator": [
+                {
+                    "name": "Agent Orchestration Challenge",
+                    "description": "Coordinate multiple agents on complex multi-step workflow",
+                    "agents": "orchestration-architect, a2a-architect, agent-developer",
+                    "success_criteria": "Complex workflow completes, agent coordination seamless",
+                }
+            ],
+        }
 
         return base_exercises + archetype_exercises.get(archetype_key, [])
 

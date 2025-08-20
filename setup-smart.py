@@ -371,10 +371,10 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
 
         # Create virtual environment first (unless disabled)
         self._setup_python_virtual_env()
-        
+
         # Create venv runner scripts for easy command execution
         self._create_venv_runner_scripts()
-        
+
         self._create_requirements_txt()
         self._create_pyproject_toml()
         self._create_setup_py()
@@ -385,124 +385,119 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
 
     def _detect_existing_venv(self) -> Optional[str]:
         """Detect if a virtual environment already exists"""
-        venv_indicators = [
-            'venv',
-            '.venv',
-            'env',
-            '.env',
-            'virtualenv',
-            '.virtualenv'
-        ]
-        
+        venv_indicators = ["venv", ".venv", "env", ".env", "virtualenv", ".virtualenv"]
+
         for venv_name in venv_indicators:
             venv_path = self.project_dir / venv_name
             if venv_path.exists() and venv_path.is_dir():
                 # Check if it's actually a venv by looking for key files
-                if (venv_path / 'bin' / 'activate').exists() or \
-                   (venv_path / 'Scripts' / 'activate.bat').exists():
+                if (venv_path / "bin" / "activate").exists() or (
+                    venv_path / "Scripts" / "activate.bat"
+                ).exists():
                     return venv_name
-        
+
         # Check for Poetry/Pipenv
-        if (self.project_dir / 'poetry.lock').exists():
-            return 'poetry'
-        if (self.project_dir / 'Pipfile.lock').exists():
-            return 'pipenv'
-            
+        if (self.project_dir / "poetry.lock").exists():
+            return "poetry"
+        if (self.project_dir / "Pipfile.lock").exists():
+            return "pipenv"
+
         return None
-    
+
     def _find_python_executable(self) -> str:
         """Find the best Python executable to use"""
         # Use provided python command if specified
         if self.python_cmd:
             try:
                 result = subprocess.run(
-                    [self.python_cmd, '--version'],
+                    [self.python_cmd, "--version"],
                     capture_output=True,
                     text=True,
-                    check=True
+                    check=True,
                 )
-                if 'Python 3' in result.stdout:
+                if "Python 3" in result.stdout:
                     return self.python_cmd
                 else:
-                    print(f"   ⚠️  {self.python_cmd} is not Python 3, searching for alternative...")
+                    print(
+                        f"   ⚠️  {self.python_cmd} is not Python 3, searching for alternative..."
+                    )
             except (subprocess.CalledProcessError, FileNotFoundError):
-                print(f"   ⚠️  {self.python_cmd} not found, searching for alternative...")
-        
+                print(
+                    f"   ⚠️  {self.python_cmd} not found, searching for alternative..."
+                )
+
         # Try Python 3 first
-        for cmd in ['python3', 'python']:
+        for cmd in ["python3", "python"]:
             try:
                 result = subprocess.run(
-                    [cmd, '--version'],
-                    capture_output=True,
-                    text=True,
-                    check=True
+                    [cmd, "--version"], capture_output=True, text=True, check=True
                 )
                 # Check if it's Python 3
-                if 'Python 3' in result.stdout:
+                if "Python 3" in result.stdout:
                     return cmd
             except (subprocess.CalledProcessError, FileNotFoundError):
                 continue
-        
+
         # Default to python3 and let it fail with clear error
-        return 'python3'
-    
+        return "python3"
+
     def _setup_python_virtual_env(self) -> bool:
         """Set up Python virtual environment unless disabled or already exists"""
-        
+
         # Check if we should skip venv creation
-        if getattr(self, 'skip_venv', False):
+        if getattr(self, "skip_venv", False):
             print("   ℹ️  Skipping virtual environment creation (--no-venv flag)")
             return True
-        
+
         # Check for existing virtual environment
         existing_venv = self._detect_existing_venv()
         if existing_venv:
-            if existing_venv in ['poetry', 'pipenv']:
+            if existing_venv in ["poetry", "pipenv"]:
                 print(f"   ✓ Using existing {existing_venv} environment")
             else:
                 print(f"   ✓ Virtual environment already exists: {existing_venv}/")
             return True
-        
+
         # Create new virtual environment
         print("   🔧 Creating Python virtual environment...")
-        
+
         python_cmd = self._find_python_executable()
-        venv_name = getattr(self, 'venv_name', 'venv')
+        venv_name = getattr(self, "venv_name", "venv")
         venv_path = self.project_dir / venv_name
-        
+
         try:
             # Create venv
             subprocess.run(
-                [python_cmd, '-m', 'venv', str(venv_path)],
+                [python_cmd, "-m", "venv", str(venv_path)],
                 check=True,
-                capture_output=True
+                capture_output=True,
             )
-            
+
             # Determine pip path based on OS
-            if os.name == 'nt':  # Windows
-                pip_path = venv_path / 'Scripts' / 'pip'
+            if os.name == "nt":  # Windows
+                pip_path = venv_path / "Scripts" / "pip"
                 activate_cmd = f"{venv_name}\\Scripts\\activate"
             else:  # Unix-like
-                pip_path = venv_path / 'bin' / 'pip'
+                pip_path = venv_path / "bin" / "pip"
                 activate_cmd = f"source {venv_name}/bin/activate"
-            
+
             # Upgrade pip
             subprocess.run(
-                [str(pip_path), 'install', '--upgrade', 'pip'],
+                [str(pip_path), "install", "--upgrade", "pip"],
                 check=True,
-                capture_output=True
+                capture_output=True,
             )
-            
+
             print(f"   ✅ Created virtual environment: {venv_name}/")
             print(f"   📝 Activate with: {activate_cmd}")
-            
+
             # Add venv instructions to context
             self.venv_created = True
             self.venv_name = venv_name
             self.activate_cmd = activate_cmd
-            
+
             return True
-            
+
         except subprocess.CalledProcessError as e:
             print(f"   ⚠️  Failed to create virtual environment: {e}")
             print("   ℹ️  Continuing without virtual environment")
@@ -513,15 +508,15 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
 
     def _create_venv_runner_scripts(self) -> bool:
         """Create convenience scripts for running commands in venv context."""
-        
+
         # Skip if venv was skipped
         if self.skip_venv:
             return True
-        
+
         print("   🔧 Creating venv runner scripts...")
-        
+
         # Unix/Linux/Mac script
-        unix_script = '''#!/bin/bash
+        unix_script = """#!/bin/bash
 # Virtual Environment Runner - Auto-activates venv for commands
 # Usage: ./venv-run.sh python script.py
 # Usage: ./venv-run.sh pip install package
@@ -550,10 +545,10 @@ if [ $# -eq 0 ]; then
 else
     exec "$@"
 fi
-'''
+"""
 
         # Windows script
-        windows_script = '''@echo off
+        windows_script = """@echo off
 REM Virtual Environment Runner - Auto-activates venv for commands
 REM Usage: venv-run.bat python script.py
 REM Usage: venv-run.bat pip install package
@@ -584,42 +579,42 @@ if "%1"=="" (
     set cmd_line=%*
     !cmd_line!
 )
-'''
-        
+"""
+
         # Create the scripts
         try:
             # Unix script
             venv_run_sh = self.project_dir / "venv-run.sh"
             venv_run_sh.write_text(unix_script)
             # Make executable on Unix
-            if os.name != 'nt':
+            if os.name != "nt":
                 venv_run_sh.chmod(0o755)
-            
+
             # Windows script
             venv_run_bat = self.project_dir / "venv-run.bat"
             venv_run_bat.write_text(windows_script)
-            
+
             print(f"   ✅ Created venv runner scripts")
             print(f"   📝 Usage: ./venv-run.sh python script.py (Unix/Mac)")
             print(f"   📝 Usage: venv-run.bat python script.py (Windows)")
-            
+
             return True
-            
+
         except Exception as e:
             print(f"   ⚠️  Failed to create venv runner scripts: {e}")
             return False
 
     def _create_claude_launcher(self) -> bool:
         """Create bin/claude launcher script for one-command Claude startup."""
-        
+
         print("   🚀 Creating Claude launcher script...")
-        
+
         # Create bin directory
         bin_dir = self.project_dir / "bin"
         bin_dir.mkdir(exist_ok=True)
-        
+
         # Unix/Mac launcher script
-        unix_launcher = f'''#!/bin/bash
+        unix_launcher = f"""#!/bin/bash
 # Claude Launcher - One command to start Claude with everything set up
 # Generated by AI-First SDLC setup
 # Usage: ./bin/claude
@@ -663,10 +658,10 @@ fi
 # Launch Claude
 echo -e "${{BLUE}}Launching Claude Code...${{NC}}"
 exec claude "$PROJECT_ROOT"
-'''
-        
+"""
+
         # Windows launcher script
-        windows_launcher = f'''@echo off
+        windows_launcher = f"""@echo off
 REM Claude Launcher - One command to start Claude with everything set up
 REM Generated by AI-First SDLC setup
 REM Usage: bin\\claude.bat
@@ -709,22 +704,22 @@ if errorlevel 1 (
 
 echo Launching Claude Code...
 claude "%PROJECT_ROOT%"
-'''
-        
+"""
+
         try:
             # Create Unix/Mac launcher
             claude_sh = bin_dir / "claude"
             claude_sh.write_text(unix_launcher)
-            if os.name != 'nt':
+            if os.name != "nt":
                 claude_sh.chmod(0o755)  # Make executable
-            
+
             # Create Windows launcher
             claude_bat = bin_dir / "claude.bat"
             claude_bat.write_text(windows_launcher)
-            
+
             print(f"   ✅ Created Claude launcher: ./bin/claude")
             print(f"   💡 Start Claude with: ./bin/claude")
-            
+
             # Also add to gitignore if not present
             gitignore_path = self.project_dir / ".gitignore"
             if gitignore_path.exists():
@@ -732,9 +727,9 @@ claude "%PROJECT_ROOT%"
                 if "bin/claude" not in content:
                     # Don't ignore the launcher scripts
                     pass  # They should be committed
-            
+
             return True
-            
+
         except Exception as e:
             print(f"   ⚠️  Failed to create Claude launcher: {e}")
             return False
@@ -1698,7 +1693,7 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         if language == "python":
             self.setup_python_project()
             self.update_readme_for_python()
-        
+
         # Create Claude launcher for ALL projects (not just Python)
         self._create_claude_launcher()
 

@@ -8,7 +8,7 @@
 
 #### `ai-devops-engineer`
 - **Path**: `agents/ai-builders/ai-devops-engineer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, cd, ci, design, devops, llm, pipeline, testing
 
 #### `ai-team-transformer`
@@ -21,29 +21,29 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `context-engineer`
 - **Path**: `agents/ai-builders/context-engineer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, design
 
 #### `mcp-server-architect`
 - **Path**: `agents/ai-builders/mcp-server-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, claude, design, mcp, model context protocol, model-context-protocol, security
 
 #### `orchestration-architect`
 - **Path**: `agents/ai-builders/orchestration-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, design
 
 #### `rag-system-designer`
 - **Path**: `agents/ai-builders/rag-system-designer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, database, design, quality
 
 ### Ai Development (9 agents)
 
 #### `a2a-architect`
 - **Path**: `agents/ai-development/a2a-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, design, security, testing
 - **Key Capabilities**:
   - '<example>
@@ -52,7 +52,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `agent-developer`
 - **Path**: `agents/ai-development/agent-developer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, database, design, quality, testing
 - **Key Capabilities**:
   - '<example>
@@ -61,7 +61,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `ai-solution-architect`
 - **Path**: `agents/ai-development/ai-solution-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, cd, ci, design, ml, pipeline, quality, security, testing
 - **Key Capabilities**:
   - Validate model governance processes
@@ -70,12 +70,12 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `junior-ai-solution-architect`
 - **Path**: `agents/ai-development/junior-ai-solution-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, cd, ci, cloud, design, ml, pipeline
 
 #### `langchain-architect`
 - **Path**: `agents/ai-development/langchain-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: architecture, design, langchain, llm, testing
 - **Key Capabilities**:
   - '<example>
@@ -84,7 +84,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `mcp-quality-assurance`
 - **Path**: `agents/ai-development/mcp-quality-assurance.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, database, design, mcp, model context protocol, model-context-protocol, qa, quality, security
 - **Key Capabilities**:
   - MCP specification compliance validation
@@ -93,7 +93,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `mcp-server-architect`
 - **Path**: `agents/ai-development/mcp-server-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, database, design, mcp, model context protocol, model-context-protocol, qa, quality, security
 - **Key Capabilities**:
   - MCP protocol specification and implementation
@@ -102,7 +102,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `mcp-test-agent`
 - **Path**: `agents/ai-development/mcp-test-agent.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, database, mcp, model context protocol, model-context-protocol, security, test, testing
 - **Key Capabilities**:
   - Standard challenge scenario execution
@@ -111,7 +111,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `prompt-engineer`
 - **Path**: `agents/ai-development/prompt-engineer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: design, llm, quality, security, testing
 - **Key Capabilities**:
   - '<example>
@@ -122,7 +122,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `api-architect`
 - **Path**: `agents/core/api-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: api
 - **Key Capabilities**:
   - The Api Architect Agent provides specialized expertise in its domain.
@@ -131,7 +131,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `api-design-specialist`
 - **Path**: `agents/core/api-design-specialist.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: api, design
 - **Key Capabilities**:
   - The Api Design Specialist Agent provides specialized expertise in its domain.
@@ -140,7 +140,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `backend-engineer`
 - **Path**: `agents/core/backend-engineer.md`
-- **Description**: 
+- **Description**:
 - **Key Capabilities**:
   - The Backend Engineer Agent provides specialized expertise in its domain.
   - Core competency 1
@@ -148,17 +148,17 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `compliance-auditor`
 - **Path**: `agents/core/compliance-auditor.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, ci, pipeline, python, quality, security
 
 #### `critical-goal-reviewer`
 - **Path**: `agents/core/critical-goal-reviewer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: api, design, pipeline, quality, security, test
 
 #### `data-architect`
 - **Path**: `agents/core/data-architect.md`
-- **Description**: 
+- **Description**:
 - **Key Capabilities**:
   - The Data Architect Agent provides specialized expertise in its domain.
   - Core competency 1
@@ -166,7 +166,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `data-privacy-officer`
 - **Path**: `agents/core/data-privacy-officer.md`
-- **Description**: 
+- **Description**:
 - **Key Capabilities**:
   - The Data Privacy Officer Agent provides specialized expertise in its domain.
   - Core competency 1
@@ -174,7 +174,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `database-architect`
 - **Path**: `agents/core/database-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: api, architecture, database, design, mongodb, rest, security, test
 - **Key Capabilities**:
   - Redis, Memcached caching strategies
@@ -183,7 +183,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `devops-specialist`
 - **Path**: `agents/core/devops-specialist.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, api, architecture, aws, azure, cd, ci, cloud, container, design
 - **Key Capabilities**:
   - You are the DevOps Specialist, an expert in continuous integration, continuous deployment, infrastructure automation, and operational excellence within the AI-First SDLC framework. Your mission is to create robust, automated deployment pipelines that enforce AI-First standards while enabling rapid, reliable software delivery.
@@ -192,7 +192,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `example-security-architect`
 - **Path**: `agents/core/example-security-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: api, architecture, design, jwt, security, sql, test, testing
 - **Key Capabilities**:
   - '<example>
@@ -201,7 +201,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `frontend-engineer`
 - **Path**: `agents/core/frontend-engineer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: frontend
 - **Key Capabilities**:
   - The Frontend Engineer Agent provides specialized expertise in its domain.
@@ -210,12 +210,12 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `frontend-security-specialist`
 - **Path**: `agents/core/frontend-security-specialist.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, api, design, frontend, jwt, pipeline, python, quality, react, security
 
 #### `github-integration-specialist`
 - **Path**: `agents/core/github-integration-specialist.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, api, architecture, cd, ci, design, graphql, oauth, pipeline, python
 - **Key Capabilities**:
   - Branch protection rules configuration and validation
@@ -224,7 +224,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `mobile-architect`
 - **Path**: `agents/core/mobile-architect.md`
-- **Description**: 
+- **Description**:
 - **Key Capabilities**:
   - The Mobile Architect Agent provides specialized expertise in its domain.
   - Core competency 1
@@ -232,7 +232,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `sdlc-coach`
 - **Path**: `agents/core/sdlc-coach.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, cd, ci, devops, pipeline, quality, security, test, testing
 - **Key Capabilities**:
   - Process improvement and optimization strategies
@@ -241,7 +241,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `sdlc-enforcer`
 - **Path**: `agents/core/sdlc-enforcer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, cd, ci, design, python, quality, testing
 - **Key Capabilities**:
   - You are the SDLC Enforcer, the intelligent guardian of AI-First SDLC compliance. You adapt your enforcement based on the project's SDLC level while maintaining appropriate standards. You are both a helpful guide and a firm enforcer, ensuring teams follow best practices suitable for their context.
@@ -250,7 +250,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `security-specialist`
 - **Path**: `agents/core/security-specialist.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: security
 - **Key Capabilities**:
   - The Security Specialist Agent provides specialized expertise in its domain.
@@ -259,7 +259,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `solution-architect`
 - **Path**: `agents/core/solution-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: angular, api, architecture, aws, azure, cloud, design, frontend, react, security
 - **Key Capabilities**:
   - You are a Solution Architect with 20+ years of experience designing systems that have scaled from startup MVPs to enterprise platforms serving billions of requests. You've architected solutions across domains including fintech, healthcare, e-commerce, and SaaS platforms. You hold AWS Solutions Architect Professional, Azure Solutions Architect Expert, and TOGAF certifications. You're known for pragmatic designs that balance technical excellence with business constraints.
@@ -268,12 +268,12 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `sre-specialist`
 - **Path**: `agents/core/sre-specialist.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: design, testing
 
 #### `test-manager`
 - **Path**: `agents/core/test-manager.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, cloud, design, qa, quality, security, test, testing
 - **Key Capabilities**:
   - Test strategy development and implementation
@@ -282,7 +282,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `ux-ui-architect`
 - **Path**: `agents/core/ux-ui-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, api, architecture, design, frontend, pipeline, python, quality, security, test
 - **Key Capabilities**:
   - **Drive Adoption**: Create interfaces that users love, ensuring product success
@@ -293,7 +293,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `ux-ui-architect`
 - **Path**: `agents/creative/ux-ui-architect.md`
-- **Description**: 
+- **Description**:
 - **Key Capabilities**:
   - The Ux Ui Architect Agent provides specialized expertise in its domain.
   - Core competency 1
@@ -312,7 +312,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `technical-writer`
 - **Path**: `agents/documentation/technical-writer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: api, architecture, design, oauth, quality, test, testing
 - **Key Capabilities**:
   - Research their typical workflows and pain points
@@ -323,7 +323,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `a2a-mesh-controller`
 - **Path**: `agents/future/a2a-mesh-controller.md`
-- **Description**: 
+- **Description**:
 - **Key Capabilities**:
   - The A2A Mesh Controller Agent provides specialized expertise in its domain.
   - Core competency 1
@@ -331,7 +331,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `evolution-engine`
 - **Path**: `agents/future/evolution-engine.md`
-- **Description**: 
+- **Description**:
 - **Key Capabilities**:
   - The Evolution Engine Agent provides specialized expertise in its domain.
   - Core competency 1
@@ -339,7 +339,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `mcp-orchestrator`
 - **Path**: `agents/future/mcp-orchestrator.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: mcp, model-context-protocol
 - **Key Capabilities**:
   - The Mcp Orchestrator Agent provides specialized expertise in its domain.
@@ -348,7 +348,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `swarm-coordinator`
 - **Path**: `agents/future/swarm-coordinator.md`
-- **Description**: 
+- **Description**:
 - **Key Capabilities**:
   - The Swarm Coordinator Agent provides specialized expertise in its domain.
   - Core competency 1
@@ -398,7 +398,7 @@ Interview the project and assess what the existing team can handle:
 
 #### `example-python-expert`
 - **Path**: `agents/languages/python/example-python-expert.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: design, python, quality, security, testing
 - **Key Capabilities**:
   - **Pythonic Improvements**: Specific suggestions to make code more idiomatic with before/after examples
@@ -409,7 +409,7 @@ Interview the project and assess what the existing team can handle:
 
 #### `agile-coach`
 - **Path**: `agents/project-management/agile-coach.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: design, quality
 - **Key Capabilities**:
   - Create working agreements and team norms
@@ -418,7 +418,7 @@ Interview the project and assess what the existing team can handle:
 
 #### `delivery-manager`
 - **Path**: `agents/project-management/delivery-manager.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: design, quality
 - **Key Capabilities**:
   - Confirm rollback procedures and disaster recovery plans
@@ -427,14 +427,14 @@ Interview the project and assess what the existing team can handle:
 
 #### `project-plan-tracker`
 - **Path**: `agents/project-management/project-plan-tracker.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: api, quality, test
 
 ### Sdlc (8 agents)
 
 #### `ai-first-kick-starter`
 - **Path**: `agents/sdlc/ai-first-kick-starter.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, api, architecture, cd, ci, claude, devops, go, javascript, langchain
 - **Key Capabilities**:
   - AI-First SDLC framework architecture and best practices
@@ -443,12 +443,12 @@ Interview the project and assess what the existing team can handle:
 
 #### `framework-validator`
 - **Path**: `agents/sdlc/framework-validator.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, cd, ci, design, pipeline, quality
 
 #### `kickstart-architect`
 - **Path**: `agents/sdlc/kickstart-architect.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, api, architecture, cd, ci, design, go, kubernetes, pipeline, python
 - **Key Capabilities**:
   - Requirements analysis and technology stack optimization
@@ -464,12 +464,12 @@ Interview the project and assess what the existing team can handle:
 
 #### `language-javascript-expert`
 - **Path**: `agents/sdlc/language-javascript-expert.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, angular, architecture, cd, ci, frontend, javascript, quality, react, security
 
 #### `language-python-expert`
 - **Path**: `agents/sdlc/language-python-expert.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, api, architecture, design, python, quality, test, testing
 - **Key Capabilities**:
   - Advanced Python typing with protocols, generics, and type variables
@@ -478,12 +478,12 @@ Interview the project and assess what the existing team can handle:
 
 #### `project-bootstrapper`
 - **Path**: `agents/sdlc/project-bootstrapper.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, api, architecture, cd, ci, database, pipeline, python, quality, testing
 
 #### `retrospective-miner`
 - **Path**: `agents/sdlc/retrospective-miner.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, database
 - **Key Capabilities**:
   - Recommend validation rule updates based on common failures
@@ -494,7 +494,7 @@ Interview the project and assess what the existing team can handle:
 
 #### `frontend-security-specialist`
 - **Path**: `agents/security/frontend-security-specialist.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: frontend, security
 - **Key Capabilities**:
   - The Frontend Security Specialist Agent provides specialized expertise in its domain.
@@ -524,7 +524,7 @@ Interview the project and assess what the existing team can handle:
 
 #### `ai-test-engineer`
 - **Path**: `agents/testing/ai-test-engineer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, architecture, design, llm, quality, test, testing
 - **Key Capabilities**:
   - '<example>
@@ -533,11 +533,10 @@ Interview the project and assess what the existing team can handle:
 
 #### `integration-orchestrator`
 - **Path**: `agents/testing/integration-orchestrator.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: api, architecture, cloud, design, frontend, grpc, quality, rest, test, testing
 
 #### `performance-engineer`
 - **Path**: `agents/testing/performance-engineer.md`
-- **Description**: 
+- **Description**:
 - **Keywords**: ai, api, architecture, cd, ci, database, design, pipeline, python, test
-

@@ -89,35 +89,48 @@ class LeadershipDemoScenarios:
         click.echo("")
 
         # Simulate crisis leadership moments
-        crisis_moments = [{"situation": "Production database failure during peak traffic",
-                           "action": ("Immediately coordinated emergency response, delegated tasks, "
-                                      "and implemented hotfix within 30 minutes"),
-                           "impact": 95,
-                           "team_response": "Team rallied around Alex's calm leadership and clear direction",
-                           "lessons": ["Emergency protocols worked",
-                                       "Team coordination improved",
-                                       "Need better monitoring",
-                                       ],
-                           },
-                          {"situation": "Critical security vulnerability discovered in production",
-                           "action": ("Led rapid response team, communicated with stakeholders, "
-                                      "and deployed patch within 2 hours"),
-                           "impact": 90,
-                           "team_response": "Stakeholders praised clear communication and quick resolution",
-                           "lessons": ["Security scanning automation needed",
-                                       "Communication protocols effective",
-                                       ],
-                           },
-                          {"situation": "New team member struggling with complex legacy code",
-                           "action": ("Pair programmed while under pressure, taught debugging techniques, "
-                                      "and delivered on time"),
-                           "impact": 85,
-                           "team_response": "New team member gained confidence and skills",
-                           "lessons": ["Mentoring under pressure is effective",
-                                       "Documentation needs improvement",
-                                       ],
-                           },
-                          ]
+        crisis_moments = [
+            {
+                "situation": "Production database failure during peak traffic",
+                "action": (
+                    "Immediately coordinated emergency response, delegated tasks, "
+                    "and implemented hotfix within 30 minutes"
+                ),
+                "impact": 95,
+                "team_response": "Team rallied around Alex's calm leadership and clear direction",
+                "lessons": [
+                    "Emergency protocols worked",
+                    "Team coordination improved",
+                    "Need better monitoring",
+                ],
+            },
+            {
+                "situation": "Critical security vulnerability discovered in production",
+                "action": (
+                    "Led rapid response team, communicated with stakeholders, "
+                    "and deployed patch within 2 hours"
+                ),
+                "impact": 90,
+                "team_response": "Stakeholders praised clear communication and quick resolution",
+                "lessons": [
+                    "Security scanning automation needed",
+                    "Communication protocols effective",
+                ],
+            },
+            {
+                "situation": "New team member struggling with complex legacy code",
+                "action": (
+                    "Pair programmed while under pressure, taught debugging techniques, "
+                    "and delivered on time"
+                ),
+                "impact": 85,
+                "team_response": "New team member gained confidence and skills",
+                "lessons": [
+                    "Mentoring under pressure is effective",
+                    "Documentation needs improvement",
+                ],
+            },
+        ]
 
         click.echo("📋 Recent Leadership Moments:")
         click.echo("")
@@ -499,43 +512,50 @@ class LeadershipDemoScenarios:
         click.echo("⏱️  Crisis Timeline & Leadership Response:")
         click.echo("")
 
-        crisis_timeline = [{"time": "T+0 min",
-                            "event": "Alert: Database connection pool exhausted",
-                            "leader": "Alex (Billy Wright)",
-                            "action": "Immediately assembles emergency response team, starts war room",
-                            "leadership_score": 95,
-                            },
-                           {"time": "T+2 min",
-                            "event": "Multiple service failures cascade",
-                            "leader": "Marcus (Dual Legend)",
-                            "action": "Coordinates with Alex, initiates rollback procedures while analyzing root cause",
-                            "leadership_score": 92,
-                            },
-                           {"time": "T+5 min",
-                            "event": "Customer support escalations mounting",
-                            "leader": "Sarah (Stan Cullis)",
-                            "action": "Coordinates with support team, prepares customer communication strategy",
-                            "leadership_score": 88,
-                            },
-                           {"time": "T+15 min",
-                            "event": "Temporary fix deployed, service partially restored",
-                            "leader": "Alex (Billy Wright)",
-                            "action": "Validates fix, coordinates testing, manages team stress",
-                            "leadership_score": 94,
-                            },
-                           {"time": "T+30 min",
-                            "event": "Full service restored, post-incident analysis begins",
-                            "leader": "Marcus (Dual Legend)",
-                            "action": "Leads immediate retrospective, plans prevention measures",
-                            "leadership_score": 96,
-                            },
-                           {"time": "T+60 min",
-                            "event": "Stakeholder briefing and learning capture",
-                            "leader": "Sarah (Stan Cullis)",
-                            "action": "Presents findings to leadership, outlines improvement roadmap",
-                            "leadership_score": 90,
-                            },
-                           ]
+        crisis_timeline = [
+            {
+                "time": "T+0 min",
+                "event": "Alert: Database connection pool exhausted",
+                "leader": "Alex (Billy Wright)",
+                "action": "Immediately assembles emergency response team, starts war room",
+                "leadership_score": 95,
+            },
+            {
+                "time": "T+2 min",
+                "event": "Multiple service failures cascade",
+                "leader": "Marcus (Dual Legend)",
+                "action": "Coordinates with Alex, initiates rollback procedures while analyzing root cause",
+                "leadership_score": 92,
+            },
+            {
+                "time": "T+5 min",
+                "event": "Customer support escalations mounting",
+                "leader": "Sarah (Stan Cullis)",
+                "action": "Coordinates with support team, prepares customer communication strategy",
+                "leadership_score": 88,
+            },
+            {
+                "time": "T+15 min",
+                "event": "Temporary fix deployed, service partially restored",
+                "leader": "Alex (Billy Wright)",
+                "action": "Validates fix, coordinates testing, manages team stress",
+                "leadership_score": 94,
+            },
+            {
+                "time": "T+30 min",
+                "event": "Full service restored, post-incident analysis begins",
+                "leader": "Marcus (Dual Legend)",
+                "action": "Leads immediate retrospective, plans prevention measures",
+                "leadership_score": 96,
+            },
+            {
+                "time": "T+60 min",
+                "event": "Stakeholder briefing and learning capture",
+                "leader": "Sarah (Stan Cullis)",
+                "action": "Presents findings to leadership, outlines improvement roadmap",
+                "leadership_score": 90,
+            },
+        ]
 
         for event in crisis_timeline:
             click.echo(f"🕐 {event['time']}: {event['event']}")

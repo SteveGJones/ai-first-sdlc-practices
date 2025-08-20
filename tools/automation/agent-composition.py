@@ -94,7 +94,8 @@ class AgentCompositionManager:
         description_text = (
             f"{composition.get('description', '')}\\n\\n"
             f"This is a composite agent that combines the expertise of: {', '.join(includes)}."
-            f"\\n\\nExamples:\\n{examples_text}")
+            f"\\n\\nExamples:\\n{examples_text}"
+        )
 
         content = f"""---
 name: {name}

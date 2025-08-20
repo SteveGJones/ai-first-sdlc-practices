@@ -65,7 +65,7 @@ python:
     python_version: "auto"  # Or specific like "3.9"
     upgrade_pip: true
     install_requirements: true
-    
+
   # Override options
   skip_venv_creation: false  # Set true to disable
   use_system_packages: false  # --system-site-packages flag
@@ -96,39 +96,39 @@ NEVER:
 # In setup-smart.py
 def setup_python_virtual_env(project_path, skip_venv=False):
     """Set up Python virtual environment unless explicitly disabled."""
-    
+
     if skip_venv:
         print("ℹ️ Skipping virtual environment creation (--no-venv flag)")
         return
-    
+
     if not is_python_project(project_path):
         return
-    
+
     if has_virtual_env(project_path):
         print("✓ Virtual environment already exists")
         return
-    
+
     print("🐍 Setting up Python virtual environment...")
-    
+
     # Determine Python executable
     python_cmd = find_python_executable()
-    
+
     # Create venv
     venv_path = os.path.join(project_path, 'venv')
     subprocess.run([python_cmd, '-m', 'venv', venv_path], check=True)
-    
+
     # Upgrade pip
     pip_path = os.path.join(venv_path, 'bin', 'pip') if os.name != 'nt' else os.path.join(venv_path, 'Scripts', 'pip')
     subprocess.run([pip_path, 'install', '--upgrade', 'pip'], check=True)
-    
+
     # Install requirements if exists
     req_file = os.path.join(project_path, 'requirements.txt')
     if os.path.exists(req_file):
         subprocess.run([pip_path, 'install', '-r', req_file], check=True)
-    
+
     # Update .gitignore
     update_gitignore(project_path, ['venv/', '.venv/', '*.pyc', '__pycache__/'])
-    
+
     print("✓ Virtual environment created at 'venv/'")
     print("  Activate with: source venv/bin/activate")
 ```

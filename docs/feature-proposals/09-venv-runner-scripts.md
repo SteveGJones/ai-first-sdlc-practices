@@ -124,7 +124,7 @@ fi
 ```python
 def create_venv_runner_scripts(self) -> bool:
     """Create convenience scripts for running commands in venv."""
-    
+
     # Unix/Linux/Mac script
     unix_script = '''#!/bin/bash
 # Auto-generated script for running commands in virtual environment
@@ -150,7 +150,7 @@ else
     exec "$@"
 fi
 '''
-    
+
     # Windows script
     windows_script = '''@echo off
 REM Auto-generated script for running commands in virtual environment
@@ -168,26 +168,26 @@ IF NOT EXIST "%VENV_DIR%\\Scripts\\activate.bat" (
 )
 
 if "%~1"=="" (
-    echo Active Python: 
+    echo Active Python:
     where python
     cmd /k
 ) else (
     %*
 )
 '''
-    
+
     # Create scripts
     venv_run_sh = self.project_dir / "venv-run.sh"
     venv_run_bat = self.project_dir / "venv-run.bat"
-    
+
     venv_run_sh.write_text(unix_script)
     venv_run_sh.chmod(0o755)  # Make executable
-    
+
     venv_run_bat.write_text(windows_script)
-    
+
     print("   ✅ Created venv runner scripts: venv-run.sh and venv-run.bat")
     print("   📝 Usage: ./venv-run.sh python script.py")
-    
+
     return True
 ```
 

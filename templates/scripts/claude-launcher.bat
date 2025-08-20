@@ -62,29 +62,29 @@ if not exist "%VENV_DIR%\Scripts\activate.bat" (
         pause
         exit /b 1
     )
-    
+
     call "%VENV_DIR%\Scripts\activate.bat"
-    
+
     echo Upgrading pip...
     python -m pip install --upgrade pip --quiet
-    
+
     if exist "requirements.txt" (
         echo Installing requirements...
         pip install -r requirements.txt
     )
-    
+
     if exist "requirements-dev.txt" (
         echo Installing dev requirements...
         pip install -r requirements-dev.txt
     )
-    
+
     echo Virtual environment ready
 ) else (
     call "%VENV_DIR%\Scripts\activate.bat"
     echo Virtual environment activated
 )
 
-echo Python: 
+echo Python:
 where python
 python --version
 goto :check_claude

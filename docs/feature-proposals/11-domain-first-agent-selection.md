@@ -8,7 +8,7 @@ Current v3-setup-orchestrator has a critical flaw in agent selection:
 
 ### The Problem in Action
 - **MCP project in Python** → Gets Python agents, misses MCP expertise
-- **GraphQL API in TypeScript** → Gets JavaScript agents, misses GraphQL expertise  
+- **GraphQL API in TypeScript** → Gets JavaScript agents, misses GraphQL expertise
 - **gRPC service in Go** → Gets Go agents, misses gRPC expertise
 - **OAuth integration in Java** → Gets Java agents, misses OAuth expertise
 
@@ -57,17 +57,17 @@ def select_agents_domain_first(project_analysis):
     Domain expertise takes precedence over language knowledge.
     """
     agents = []
-    
+
     # STEP 1: Identify domain/protocol needs (MOST IMPORTANT)
     domains = detect_domains(project_analysis)
     for domain in domains:
         agents.extend(get_domain_experts(domain))
-    
+
     # STEP 2: Add architecture pattern experts
     patterns = detect_architecture_patterns(project_analysis)
     for pattern in patterns:
         agents.extend(get_pattern_experts(pattern))
-    
+
     # STEP 3: Add language support (SUPPORTING ROLE ONLY)
     languages = detect_languages(project_analysis)
     for language in languages:
@@ -75,10 +75,10 @@ def select_agents_domain_first(project_analysis):
         lang_agent = get_language_coach(language)
         if not overlaps_with_domain(lang_agent, agents):
             agents.append(lang_agent)
-    
+
     # STEP 4: Always include cross-cutting concerns
     agents.extend(get_mandatory_agents())  # sdlc-enforcer, etc.
-    
+
     return prioritize_and_limit(agents, max_agents=5)
 ```
 
@@ -89,25 +89,25 @@ def detect_domains(project_analysis):
     Sophisticated domain detection beyond file extensions.
     """
     domains = set()
-    
+
     # Check dependencies for protocol indicators
     dependencies = project_analysis.get('dependencies', {})
-    
+
     # MCP Detection
-    if any(dep in str(dependencies).lower() for dep in 
+    if any(dep in str(dependencies).lower() for dep in
            ['mcp', 'model-context-protocol', '@modelcontextprotocol']):
         domains.add('mcp')
-    
+
     # GraphQL Detection
-    if any(dep in str(dependencies).lower() for dep in 
+    if any(dep in str(dependencies).lower() for dep in
            ['graphql', 'apollo', 'relay', 'graphene']):
         domains.add('graphql')
-    
+
     # gRPC Detection
-    if any(dep in str(dependencies).lower() for dep in 
+    if any(dep in str(dependencies).lower() for dep in
            ['grpc', 'protobuf', '@grpc/grpc-js']):
         domains.add('grpc')
-    
+
     # File pattern detection
     files = project_analysis.get('files', [])
     if any(f.endswith('.proto') for f in files):
@@ -116,14 +116,14 @@ def detect_domains(project_analysis):
         domains.add('graphql')
     if any('mcp.json' in f for f in files):
         domains.add('mcp')
-    
+
     # Code content detection
     for content in project_analysis.get('file_contents', []):
         if 'websocket' in content.lower():
             domains.add('websockets')
         if 'oauth' in content.lower() or 'oidc' in content.lower():
             domains.add('oauth')
-    
+
     return domains
 ```
 
@@ -133,23 +133,23 @@ domain_expert_mapping:
   mcp:
     primary: "mcp-server-architect"
     secondary: ["mcp-quality-assurance", "mcp-test-agent"]
-    
+
   graphql:
     primary: "api-architect"  # Until graphql-specific agent exists
     secondary: ["api-design-specialist", "performance-engineer"]
-    
+
   grpc:
     primary: "api-architect"  # Until grpc-specific agent exists
     secondary: ["api-design-specialist", "integration-orchestrator"]
-    
+
   oauth:
     primary: "security-specialist"
     secondary: ["api-architect", "compliance-auditor"]
-    
+
   websockets:
     primary: "backend-engineer"  # Until realtime-architect exists
     secondary: ["performance-engineer", "frontend-engineer"]
-    
+
   microservices:
     primary: "orchestration-architect"
     secondary: ["devops-specialist", "sre-specialist"]
@@ -178,7 +178,7 @@ test_cases = [
         "expected_secondary": "language-python-expert"
     },
     {
-        "project": "GraphQL API in TypeScript", 
+        "project": "GraphQL API in TypeScript",
         "expected_primary": "api-architect",
         "expected_secondary": "language-javascript-expert"
     },

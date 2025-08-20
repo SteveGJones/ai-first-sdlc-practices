@@ -62,30 +62,30 @@ PYTHON_CMD=$(find_python) || error "Python 3.7+ not found. Please install Python
 if [ ! -d "$VENV_DIR" ]; then
     warning "Virtual environment not found at '$VENV_DIR'"
     info "Creating virtual environment..."
-    
+
     $PYTHON_CMD -m venv "$VENV_DIR" || error "Failed to create virtual environment"
-    
+
     # Activate for initial setup
     source "$VENV_DIR/bin/activate"
-    
+
     # Upgrade pip
     info "Upgrading pip..."
     pip install --upgrade pip --quiet
-    
+
     # Install requirements if exists
     if [ -f "requirements.txt" ]; then
         info "Installing requirements.txt..."
         pip install -r requirements.txt
         success "Requirements installed"
     fi
-    
+
     # Install dev requirements if exists
     if [ -f "requirements-dev.txt" ]; then
         info "Installing requirements-dev.txt..."
         pip install -r requirements-dev.txt
         success "Dev requirements installed"
     fi
-    
+
     success "Virtual environment created and configured"
 else
     # Just activate existing venv
@@ -110,7 +110,7 @@ else
     if [ "$1" = "--info" ]; then
         shift
     fi
-    
+
     # Execute the command
     exec "$@"
 fi

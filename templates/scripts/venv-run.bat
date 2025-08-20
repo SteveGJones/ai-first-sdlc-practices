@@ -15,7 +15,7 @@ REM Check if venv exists
 if not exist "%VENV_DIR%\Scripts\activate.bat" (
     echo Warning: Virtual environment not found at '%VENV_DIR%'
     echo Creating virtual environment...
-    
+
     REM Find Python
     where python >nul 2>nul
     if errorlevel 1 (
@@ -29,21 +29,21 @@ if not exist "%VENV_DIR%\Scripts\activate.bat" (
     ) else (
         set PYTHON_CMD=python
     )
-    
+
     REM Create venv
     !PYTHON_CMD! -m venv "%VENV_DIR%"
     if errorlevel 1 (
         echo Error: Failed to create virtual environment
         exit /b 1
     )
-    
+
     REM Activate venv
     call "%VENV_DIR%\Scripts\activate.bat"
-    
+
     REM Upgrade pip
     echo Upgrading pip...
     python -m pip install --upgrade pip --quiet
-    
+
     REM Install requirements if exists
     if exist "requirements.txt" (
         echo Installing requirements.txt...
@@ -54,7 +54,7 @@ if not exist "%VENV_DIR%\Scripts\activate.bat" (
             echo Requirements installed successfully
         )
     )
-    
+
     REM Install dev requirements if exists
     if exist "requirements-dev.txt" (
         echo Installing requirements-dev.txt...
@@ -65,7 +65,7 @@ if not exist "%VENV_DIR%\Scripts\activate.bat" (
             echo Dev requirements installed successfully
         )
     )
-    
+
     echo Virtual environment created and configured
 ) else (
     REM Just activate existing venv
@@ -74,7 +74,7 @@ if not exist "%VENV_DIR%\Scripts\activate.bat" (
 
 REM Show environment info if requested
 if "%1"=="--info" (
-    echo Python: 
+    echo Python:
     where python
     echo Version:
     python --version
@@ -87,7 +87,7 @@ if "%1"=="--info" (
 REM Execute command or start shell
 if "%1"=="" (
     echo No command provided. Starting command prompt with venv activated...
-    echo Python: 
+    echo Python:
     where python
     echo.
     echo Type 'exit' to leave the virtual environment
@@ -101,7 +101,7 @@ if "%1"=="" (
         REM Shift arguments to skip --info
         shift
     )
-    
+
     REM Build command from all arguments
     set cmd_line=%1
     shift
@@ -111,7 +111,7 @@ if "%1"=="" (
         shift
         goto build_loop
     )
-    
+
     REM Execute the command
     !cmd_line!
 )
