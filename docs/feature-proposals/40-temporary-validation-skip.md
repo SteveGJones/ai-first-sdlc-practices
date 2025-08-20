@@ -3,8 +3,13 @@
 ## Branch
 `fix/temporary-validation-skip`
 
+## Target Branch: main
+
 ## Executive Summary
 Emergency fix to temporarily reduce validation strictness during CI/CD deadlock resolution where validation fixes cannot be merged due to the validation tool itself being broken.
+
+## Motivation
+We are in a complete CI/CD deadlock where no PR can be merged because the validation tool itself is broken. The fix PR #39 cannot be merged because it fails the very validation it's trying to fix. This emergency bypass is the only way to break the deadlock.
 
 ## Problem Statement
 We have a chicken-and-egg problem:
