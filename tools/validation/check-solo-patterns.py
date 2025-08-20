@@ -12,6 +12,7 @@ import argparse
 import sys
 import re
 import os
+import subprocess
 from pathlib import Path
 from typing import List
 
@@ -85,17 +86,30 @@ class SoloPatternDetector:
     def _get_pr_changed_files(self) -> List[str]:
         """Get files changed in current PR"""
         try:
-            import subprocess
+            # Check if we're in GitHub Actions CI
+            if os.environ.get("GITHUB_ACTIONS") == "true":
+                # In CI - use proper base ref
+                base_ref = os.environ.get("GITHUB_BASE_REF", "main")
+                # Need to fetch the base branch first in CI
+                subprocess.run(["git", "fetch", "origin", base_ref], 
+                             capture_output=True, check=False)
+                result = subprocess.run(
+                    ["git", "diff", "--name-only", f"origin/{base_ref}...HEAD"],
+                    capture_output=True, text=True
+                )
+            else:
+                # Local development - compare with main
+                result = subprocess.run(
+                    ["git", "diff", "--name-only", "main...HEAD"], 
+                    capture_output=True, text=True
+                )
             
-            # Try to get PR files vs main branch
-            result = subprocess.run(
-                ["git", "diff", "--name-only", "main...HEAD"], 
-                capture_output=True, text=True
-            )
             if result.returncode == 0 and result.stdout.strip():
-                return result.stdout.strip().split('\n')
-        except Exception:
-            pass
+                files = result.stdout.strip().split('\n')
+                print(f"ℹ️ Detected {len(files)} changed files in PR/branch")
+                return files
+        except Exception as e:
+            print(f"⚠️ Error getting PR files: {e}")
         return []
 
     def _get_branch_changed_files(self) -> List[str]:
@@ -233,18 +247,32 @@ class SoloPatternDetector:
         """Scan code comments for solo patterns"""
         print("\n💻 SCANNING CODE COMMENTS...")
 
+        # Get changed files if in CI/PR context
+        changed_files = self._get_pr_changed_files()
+        if not changed_files:
+            changed_files = self._get_branch_changed_files()
+        
         code_extensions = [".py", ".js", ".ts", ".java", ".go", ".rs", ".cpp", ".c"]
         total_violations = 0
-
-        for ext in code_extensions:
-            for file_path in Path(".").rglob(f"*{ext}"):
+        
+        # If we have changed files, only scan those
+        if changed_files:
+            code_files = [f for f in changed_files 
+                         if any(f.endswith(ext) for ext in code_extensions)]
+            print(f"📋 Scanning {len(code_files)} changed code files...")
+            
+            for file_path in code_files:
                 try:
-                    if file_path.stat().st_size > 500000:  # Skip large files
+                    if not os.path.exists(file_path):
+                        continue
+                    if os.path.getsize(file_path) > 500000:  # Skip large files
                         continue
 
-                    content = file_path.read_text()
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        content = f.read()
 
                     # Extract comments based on file type
+                    ext = os.path.splitext(file_path)[1]
                     comments = self._extract_comments(content, ext)
 
                     for comment in comments:
@@ -255,6 +283,10 @@ class SoloPatternDetector:
 
                 except Exception:
                     continue
+        else:
+            # Fallback to scanning all files (shouldn't happen in CI)
+            print("⚠️ No changed files detected, skipping code comment scan")
+            return True
 
         if total_violations > 0:
             print(f"❌ SOLO PATTERNS IN CODE COMMENTS: {total_violations}")
@@ -267,15 +299,37 @@ class SoloPatternDetector:
         """Scan retrospectives for individual work admissions"""
         print("\n📊 SCANNING RETROSPECTIVES...")
 
-        if not os.path.exists("retrospectives"):
-            print("⚠️  No retrospectives directory found")
-            return True
+        # Get changed files if in CI/PR context
+        changed_files = self._get_pr_changed_files()
+        if not changed_files:
+            changed_files = self._get_branch_changed_files()
+        
+        if changed_files:
+            # Only scan changed retrospective files
+            retro_files = [f for f in changed_files 
+                          if f.startswith("retrospectives/") and f.endswith(".md")]
+            if not retro_files:
+                print("ℹ️ No retrospective files changed in this PR")
+                return True
+            print(f"📋 Scanning {len(retro_files)} changed retrospective files...")
+        else:
+            if not os.path.exists("retrospectives"):
+                print("⚠️  No retrospectives directory found")
+                return True
+            # Shouldn't happen in CI, but fallback for local
+            retro_files = [str(p) for p in Path("retrospectives").rglob("*.md")]
 
         total_violations = 0
 
-        for file_path in Path("retrospectives").rglob("*.md"):
+        for file_path in retro_files:
             try:
-                content = file_path.read_text()
+                # Read file content (handle both Path and str)
+                if isinstance(file_path, Path):
+                    content = file_path.read_text()
+                else:
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        content = f.read()
+                
                 violations = self._find_patterns_in_text(content, str(file_path))
                 total_violations += len(violations)
 
