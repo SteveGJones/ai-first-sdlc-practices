@@ -1,0 +1,69 @@
+name: Emergency Fix - Bypass Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      bypass_reason:
+        description: 'Reason for bypassing validation'
+        required: true
+        type: string
+      pr_number:
+        description: 'PR number to merge (optional)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  emergency-merge:
+    runs-on: ubuntu-latest
+    if: github.actor == github.repository_owner || contains(github.actor_teams, 'admin')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Validate emergency use
+      run: |
+        echo "🚨 EMERGENCY BYPASS ACTIVATED"
+        echo "Reason: ${{ inputs.bypass_reason }}"
+        echo "Actor: ${{ github.actor }}"
+        echo "This bypass should only be used for critical CI/CD fixes"
+        
+    - name: Merge specific PR if provided
+      if: inputs.pr_number != ''
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh pr merge ${{ inputs.pr_number }} --admin --merge --delete-branch
+        echo "✅ PR #${{ inputs.pr_number }} merged with admin override"
+        
+    - name: Create audit log
+      run: |
+        mkdir -p audit/
+        cat > audit/emergency-bypass-$(date +%Y%m%d_%H%M%S).md << EOF
+        # Emergency Bypass Log
+        
+        - **Date**: $(date -u)
+        - **Actor**: ${{ github.actor }}
+        - **Reason**: ${{ inputs.bypass_reason }}
+        - **PR**: ${{ inputs.pr_number || 'N/A' }}
+        - **Workflow**: ${{ github.run_id }}
+        
+        ## Action Taken
+        Emergency bypass of validation checks to resolve CI/CD deadlock.
+        EOF
+        
+    - name: Commit audit log
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add audit/
+        git commit -m "audit: emergency bypass by ${{ github.actor }}" || exit 0
+        git push origin main
