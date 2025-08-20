@@ -89,7 +89,8 @@ class LocalFlake8Validator:
         else:
             print("✅ No quality issues")
 
-        # Third check: Comprehensive validation (from comprehensive-validation.yml line 130)
+        # Third check: Comprehensive validation (from comprehensive-validation.yml
+        # line 130)
         print("\n3️⃣ Comprehensive Check (max-complexity=15):")
         print("-" * 40)
         result3 = self._run_flake8_command(

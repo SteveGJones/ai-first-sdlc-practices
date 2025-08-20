@@ -332,7 +332,7 @@ class ClaudeInstaller:
             try:
                 content = self.github_api.get_file("setup-smart.py")
                 setup_script.write_bytes(content)
-                setup_script.chmod(0o755)
+                setup_script.chmod(0o700)  # Executable only by owner
             except Exception as e:
                 print(f"   ❌ Could not download setup-smart.py: {e}")
                 return False

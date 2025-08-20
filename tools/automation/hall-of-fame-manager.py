@@ -316,8 +316,7 @@ class HallOfFameManager:
         else:
             gallery.append(
                 '> "The journey to legendary status is not about perfection, but about the relentless '
-                'pursuit of excellence and the commitment to lifting others as you climb."'
-            )
+                'pursuit of excellence and the commitment to lifting others as you climb."')
             gallery.append("")
 
         # Call to action

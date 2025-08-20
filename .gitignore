@@ -95,3 +95,8 @@ validation-report.json
 validation-report.md
 compliance-report.json
 compliance-report.md
+
+# Backup directories (should not be in repository)
+backups/
+*.backup
+*.bak

@@ -585,8 +585,7 @@ class LeadershipComplianceReporter:
                 "",
                 "*Tracking Billy Wright (Execution) and Stan Cullis (Strategic) Leadership Development*",
                 "",
-            ]
-        )
+            ])
 
         # Executive Summary
         md_lines.extend(
@@ -662,8 +661,7 @@ class LeadershipComplianceReporter:
                         f"**Key Strengths**: {', '.join(profile['strengths'])}",
                         f"**Development Focus**: {', '.join(profile['development_areas'])}",
                         "",
-                    ]
-                )
+                    ])
 
         # Recommendations
         if "recommendations" in content:
@@ -679,8 +677,7 @@ class LeadershipComplianceReporter:
                             f"{rec['description']}",
                             f"*Priority*: {rec['priority']} | *Timeline*: {rec['timeline']}",
                             "",
-                        ]
-                    )
+                        ])
 
         # Visualizations (if included)
         if content.get("visualizations"):
@@ -690,8 +687,7 @@ class LeadershipComplianceReporter:
                     "",
                     "*Charts and visualizations have been generated and saved to the report directory.*",
                     "",
-                ]
-            )
+                ])
 
         return "\n".join(md_lines)
 
@@ -753,8 +749,7 @@ class LeadershipComplianceReporter:
                     "type": "leadership_coverage",
                     "message": "Critical leadership coverage gap - team may lack adequate leadership",
                     "action": "Identify and develop potential leaders immediately",
-                }
-            )
+                })
 
         # Crisis readiness alert
         if metrics.crisis_leadership_readiness < 60:
@@ -807,8 +802,7 @@ class LeadershipComplianceReporter:
                     "description": "Run leadership assessment to identify emerging talent",
                     "command": "python tools/automation/leadership-metrics-tracker.py analyze",
                     "priority": "high",
-                }
-            )
+                })
 
         if metrics.cross_style_mentoring_rate < 40:
             actions.append(
@@ -817,18 +811,14 @@ class LeadershipComplianceReporter:
                     "description": "Pair Billy Wright leaders with Stan Cullis leaders",
                     "command": "Create mentoring pairs between execution and strategic leaders",
                     "priority": "medium",
-                }
-            )
+                })
 
         if metrics.crisis_leadership_readiness < 70:
-            actions.append(
-                {
-                    "title": "Crisis Leadership Exercise",
-                    "description": "Run simulated crisis to develop execution leadership",
-                    "command": "Create high-pressure scenario for leadership development",
-                    "priority": "high",
-                }
-            )
+            actions.append({"title": "Crisis Leadership Exercise",
+                            "description": "Run simulated crisis to develop execution leadership",
+                            "command": "Create high-pressure scenario for leadership development",
+                            "priority": "high",
+                            })
 
         actions.append(
             {
@@ -836,8 +826,7 @@ class LeadershipComplianceReporter:
                 "description": "Document recent leadership actions for tracking",
                 "command": "python tools/automation/leadership-metrics-tracker.py record-moment",
                 "priority": "low",
-            }
-        )
+            })
 
         return actions
 

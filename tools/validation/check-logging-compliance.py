@@ -334,7 +334,7 @@ class LoggingComplianceChecker:
         func_name = func_node.name
 
         # Get function lines
-        func_lines = content.split("\n")[func_node.lineno - 1 : func_node.end_lineno]
+        func_lines = content.split("\n")[func_node.lineno - 1: func_node.end_lineno]
         func_body = "\n".join(func_lines)
 
         # Skip very short functions
@@ -376,15 +376,12 @@ class LoggingComplianceChecker:
                     elif line.strip() and not line.strip().startswith("#"):
                         # End of except block
                         if not except_has_log and "pass" not in line:
-                            violations.append(
-                                {
-                                    "file": str(file_path),
-                                    "line": func_node.lineno,
-                                    "function": func_name,
-                                    "violation": "missing_error_log",
-                                    "message": "Exception handler missing error logging",
-                                }
-                            )
+                            violations.append({"file": str(file_path),
+                                               "line": func_node.lineno,
+                                               "function": func_name,
+                                               "violation": "missing_error_log",
+                                               "message": "Exception handler missing error logging",
+                                               })
                             self.stats["missing_error_logs"] += 1
                         in_except = False
 
