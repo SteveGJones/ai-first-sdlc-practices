@@ -1,5 +1,8 @@
 # Feature Proposal: Temporary Validation Skip for Emergency Deadlock Resolution
 
+## Branch
+`fix/temporary-validation-skip`
+
 ## Executive Summary
 Emergency fix to temporarily reduce validation strictness during CI/CD deadlock resolution where validation fixes cannot be merged due to the validation tool itself being broken.
 
