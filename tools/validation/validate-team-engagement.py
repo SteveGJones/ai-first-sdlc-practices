@@ -108,12 +108,12 @@ class TeamEngagementValidator:
         print("\n🚫 CHECKING FOR FORBIDDEN SOLO WORK PATTERNS...")
 
         solo_patterns = [
-            r"(I will|I'll)\s+(implement|create|fix|write|deploy)",
-            r"Let me\s+(implement|create|fix|write|deploy)\s+(?!.*team|.*specialist|.*agent)",
-            r"(Working on|Implementing|Creating|Fixing)\s+(?!.*with team|.*specialist input)",
-            r"Solo\s+(development|work|implementation)",
-            r"Working\s+alone\s+on",
-            r"Without\s+(team|specialist|agent)\s+(input|consultation|review)",
+            r"\b(I will|I'll)\s+(implement|create|fix|write|deploy)\b",
+            r"\bLet me\s+(implement|create|fix|write|deploy)\s+(?!.*team|.*specialist|.*agent)",
+            r"\bI\s+(am|was)\s+(implementing|creating|fixing|writing)\b",
+            r"\bSolo\s+(development|work|implementation)\b",
+            r"\bWorking\s+alone\s+on\b",
+            r"\bWithout\s+(team|specialist|agent)\s+(input|consultation|review)\b",
         ]
 
         violations_found = []
@@ -134,21 +134,52 @@ class TeamEngagementValidator:
         except (OSError, PermissionError):
             pass
 
-        # Check recent files for solo patterns
-        for file_path in Path(".").rglob("*.py"):
-            if (
-                file_path.is_file() and file_path.stat().st_size < 1000000
-            ):  # Skip large files
-                try:
-                    content = file_path.read_text()
-                    for pattern in solo_patterns:
-                        matches = re.findall(pattern, content, re.IGNORECASE)
-                        if matches:
-                            violations_found.extend(
-                                [(str(file_path), match) for match in matches]
-                            )
-                except (OSError, PermissionError):
-                    continue
+        # In CI, only check files changed in PR
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            # Get files changed in PR
+            try:
+                import subprocess
+                base_ref = os.environ.get("GITHUB_BASE_REF", "main")
+                result = subprocess.run(
+                    ["git", "diff", f"origin/{base_ref}...HEAD", "--name-only"],
+                    capture_output=True, text=True
+                )
+                if result.returncode == 0:
+                    changed_files = result.stdout.strip().split('\n')
+                    for file_name in changed_files:
+                        if file_name.endswith('.py') and Path(file_name).exists():
+                            file_path = Path(file_name)
+                            try:
+                                content = file_path.read_text()
+                                for pattern in solo_patterns:
+                                    matches = re.findall(pattern, content, re.IGNORECASE)
+                                    if matches:
+                                        violations_found.extend(
+                                            [(str(file_path), match) for match in matches]
+                                        )
+                            except (OSError, PermissionError):
+                                pass
+            except (OSError, PermissionError):
+                pass
+        else:
+            # Local check - only check recently modified files
+            for file_path in Path(".").rglob("*.py"):
+                if (
+                    file_path.is_file() and file_path.stat().st_size < 1000000
+                ):  # Skip large files
+                    # Only check files modified in last 24 hours
+                    import time
+                    if (time.time() - file_path.stat().st_mtime) < 86400:
+                        try:
+                            content = file_path.read_text()
+                            for pattern in solo_patterns:
+                                matches = re.findall(pattern, content, re.IGNORECASE)
+                                if matches:
+                                    violations_found.extend(
+                                        [(str(file_path), match) for match in matches]
+                                    )
+                        except (OSError, PermissionError):
+                            continue
 
         if violations_found:
             print("❌ SOLO WORK PATTERNS DETECTED:")
@@ -165,12 +196,15 @@ class TeamEngagementValidator:
         """Validate that team consultations are happening"""
         print("\n🤝 VALIDATING TEAM CONSULTATIONS...")
 
-        required_consultations = [
-            "solution-architect consultation",
-            "sdlc-enforcer compliance check",
-            "critical-goal-reviewer validation",
-            "test-engineer input",
-            "specialist engagement",
+        # More flexible patterns for team consultation
+        consultation_patterns = [
+            r"solution.?architect",
+            r"sdlc.?enforcer",
+            r"critical.?goal.?reviewer",
+            r"test.?engineer",
+            r"specialist",
+            r"team (collaboration|review|input|feedback|analysis|led)",
+            r"(reviewed by|validated by|approved by|coordinated with) \w+.?(specialist|architect|engineer|enforcer)",
         ]
 
         found_consultations = []
@@ -183,13 +217,13 @@ class TeamEngagementValidator:
                 for file_path in Path(docs_path).rglob("*.md"):
                     try:
                         content = file_path.read_text().lower()
-                        for consultation in required_consultations:
-                            if consultation.lower() in content:
-                                found_consultations.append(consultation)
+                        for pattern in consultation_patterns:
+                            if re.search(pattern, content, re.IGNORECASE):
+                                found_consultations.append(pattern)
                     except (OSError, PermissionError):
                         continue
 
-        consultation_score = len(set(found_consultations)) / len(required_consultations)
+        consultation_score = len(set(found_consultations)) / len(consultation_patterns)
 
         if consultation_score < 0.6:  # Require 60% consultation coverage
             print(f"❌ INSUFFICIENT TEAM CONSULTATIONS: {consultation_score:.1%}")

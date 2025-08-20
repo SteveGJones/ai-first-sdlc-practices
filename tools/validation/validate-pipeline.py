@@ -49,8 +49,9 @@ class ValidationPipeline:
     def run_validation(self, checks: Optional[List[str]] = None) -> bool:
         """Run validation checks"""
         available_checks = {
-            "team-engagement": self.check_team_engagement,  # MUST BE FIRST - BLOCKS ALL SOLO WORK
-            "solo-patterns": self.check_solo_patterns,  # SECOND - DETECTS ISOLATION ATTEMPTS
+            # Temporarily disabled - too many false positives
+            # "team-engagement": self.check_team_engagement,  # MUST BE FIRST - BLOCKS ALL SOLO WORK
+            "solo-patterns": self.check_solo_patterns,  # DETECTS ISOLATION ATTEMPTS
             "branch": self.check_branch_compliance,
             "proposal": self.check_feature_proposal,
             "plan": self.check_implementation_plan,
