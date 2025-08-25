@@ -32,7 +32,7 @@ jobs:
     name: SDLC Compliance Check
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0  # Full history for branch validation
 
@@ -107,7 +107,7 @@ jobs:
     name: Code Quality Analysis
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -163,7 +163,7 @@ jobs:
     name: Documentation Check
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -201,7 +201,7 @@ jobs:
     name: Dependency Analysis
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -227,7 +227,7 @@ jobs:
     name: Performance Analysis
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -265,7 +265,7 @@ jobs:
       issues: write
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: 📊 Create Summary Report
       run: |
