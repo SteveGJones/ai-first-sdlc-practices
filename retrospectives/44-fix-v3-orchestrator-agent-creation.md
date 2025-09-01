@@ -1,7 +1,7 @@
 # Retrospective: Fix V3 Orchestrator Agent Creation Issues
 
-**Feature Branch:** feature/fix-v3-orchestrator-agent-creation  
-**Date:** 2025-09-01  
+**Feature Branch:** feature/fix-v3-orchestrator-agent-creation
+**Date:** 2025-09-01
 **Author:** AI Agent with Human Guidance
 
 ## What Went Well

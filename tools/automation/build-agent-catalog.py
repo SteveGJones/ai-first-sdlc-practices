@@ -5,10 +5,9 @@ Extracts metadata, keywords, and capabilities for searchable discovery.
 """
 
 import json
-import os
 import re
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, Any
 
 
 def extract_agent_metadata(file_path: Path) -> Dict[str, Any]:
@@ -208,7 +207,7 @@ def create_readable_index(catalog: Dict[str, Any]):
             if agent["keywords"]:
                 output.append(f"- **Keywords**: {', '.join(agent['keywords'][:10])}\n")
             if agent["capabilities"]:
-                output.append(f"- **Key Capabilities**:\n")
+                output.append("- **Key Capabilities**:\n")
                 for cap in agent["capabilities"][:3]:
                     output.append(f"  - {cap}\n")
             output.append("\n")
