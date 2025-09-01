@@ -1,5 +1,11 @@
 # Feature Proposal: Fix V3 Orchestrator Agent Creation Issues
 
+**Target Branch:** `feature/fix-v3-orchestrator-agent-creation`
+
+## Motivation
+
+Critical bugs in the v3-setup-orchestrator are preventing successful framework installations, leaving projects without essential files like CLAUDE.md and causing agent installation failures. These issues were discovered during real-world usage where installations failed completely.
+
 ## Problem Statement
 
 The v3-setup-orchestrator has critical bugs that cause framework installation failures:
