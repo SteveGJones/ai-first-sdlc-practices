@@ -594,9 +594,9 @@ if "%1"=="" (
             venv_run_bat = self.project_dir / "venv-run.bat"
             venv_run_bat.write_text(windows_script)
 
-            print(f"   ✅ Created venv runner scripts")
-            print(f"   📝 Usage: ./venv-run.sh python script.py (Unix/Mac)")
-            print(f"   📝 Usage: venv-run.bat python script.py (Windows)")
+            print("   ✅ Created venv runner scripts")
+            print("   📝 Usage: ./venv-run.sh python script.py (Unix/Mac)")
+            print("   📝 Usage: venv-run.bat python script.py (Windows)")
 
             return True
 
@@ -717,8 +717,8 @@ claude "%PROJECT_ROOT%"
             claude_bat = bin_dir / "claude.bat"
             claude_bat.write_text(windows_launcher)
 
-            print(f"   ✅ Created Claude launcher: ./bin/claude")
-            print(f"   💡 Start Claude with: ./bin/claude")
+            print("   ✅ Created Claude launcher: ./bin/claude")
+            print("   💡 Start Claude with: ./bin/claude")
 
             # Also add to gitignore if not present
             gitignore_path = self.project_dir / ".gitignore"
