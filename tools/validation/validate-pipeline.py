@@ -1434,7 +1434,7 @@ class ValidationPipeline:
                 capture_output=True,
                 text=True,
                 check=True,
-                cwd=self.project_root
+                cwd=self.project_root,
             )
             author = result.stdout.strip().lower()
             if "dependabot" in author:
