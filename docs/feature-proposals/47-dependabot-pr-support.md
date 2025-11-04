@@ -5,7 +5,7 @@
 **Status**: Proposed
 **Date**: 2025-11-04
 **Author**: AI Team (sdlc-enforcer + ai-solution-architect)
-**Target Branch**: `feature/dependabot-pr-support`
+Target Branch: `feature/dependabot-pr-support`
 
 ## Motivation
 
