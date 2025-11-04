@@ -237,6 +237,15 @@ class ValidationPipeline:
             self.add_skip("Feature Proposal", "Not on feature branch")
             return
 
+        # Check if this is a Dependabot PR (infrastructure update)
+        is_dependabot, detection_method = self._detect_dependabot_pr()
+        if is_dependabot:
+            self.add_skip(
+                "Feature Proposal",
+                f"Infrastructure update by Dependabot - streamlined process applies (detected via: {detection_method})"
+            )
+            return
+
         # Look for proposal
         proposal_dirs = [
             "docs/feature-proposals",
@@ -672,6 +681,15 @@ class ValidationPipeline:
         branch = self._get_current_branch()
         if not branch or branch in ["main", "master"]:
             self.add_skip("Retrospective", "Not on feature branch")
+            return
+
+        # Check if this is a Dependabot PR (infrastructure update)
+        is_dependabot, detection_method = self._detect_dependabot_pr()
+        if is_dependabot:
+            self.add_skip(
+                "Retrospective",
+                f"Infrastructure update by Dependabot - streamlined process applies (detected via: {detection_method})"
+            )
             return
 
         # Look for retrospective
@@ -1385,6 +1403,45 @@ class ValidationPipeline:
                 return result.stdout.strip()
             except subprocess.CalledProcessError:
                 return None
+
+    def _detect_dependabot_pr(self) -> Tuple[bool, str]:
+        """
+        Multi-layer Dependabot PR detection with defense in depth.
+
+        Returns:
+            Tuple[bool, str]: (is_dependabot, detection_method)
+        """
+        # Layer 1: GitHub Actions authenticated payload (highest confidence)
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            # Check PR author from GitHub event
+            actor = os.environ.get("GITHUB_ACTOR", "")
+            if actor in ["dependabot[bot]", "dependabot-preview[bot]", "dependabot"]:
+                return True, "GitHub Actions actor (authenticated)"
+
+        # Layer 2: Branch naming pattern (medium confidence)
+        branch = self._get_current_branch()
+        if branch:
+            # Dependabot uses: dependabot/<ecosystem>/<package>-<version>
+            if branch.startswith("dependabot/"):
+                return True, "branch naming pattern (dependabot/*)"
+
+        # Layer 3: Commit author analysis (fallback)
+        try:
+            result = subprocess.run(
+                ["git", "log", "-1", "--pretty=format:%an"],
+                capture_output=True,
+                text=True,
+                check=True,
+                cwd=self.project_root
+            )
+            author = result.stdout.strip().lower()
+            if "dependabot" in author:
+                return True, "commit author contains 'dependabot'"
+        except subprocess.CalledProcessError:
+            pass  # Git command failed, continue to default
+
+        # Default: Not detected as Dependabot PR
+        return False, "not a Dependabot PR"
 
     def _detect_empty_repository(self) -> None:
         """Detect if this is an empty repository with only framework files"""
