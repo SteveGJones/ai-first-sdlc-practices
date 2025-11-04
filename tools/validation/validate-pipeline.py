@@ -240,10 +240,11 @@ class ValidationPipeline:
         # Check if this is a Dependabot PR (infrastructure update)
         is_dependabot, detection_method = self._detect_dependabot_pr()
         if is_dependabot:
-            self.add_skip(
-                "Feature Proposal",
-                f"Infrastructure update by Dependabot - streamlined process applies (detected via: {detection_method})"
+            message = (
+                f"Infrastructure update by Dependabot - streamlined "
+                f"process applies (detected via: {detection_method})"
             )
+            self.add_skip("Feature Proposal", message)
             return
 
         # Look for proposal
@@ -686,10 +687,11 @@ class ValidationPipeline:
         # Check if this is a Dependabot PR (infrastructure update)
         is_dependabot, detection_method = self._detect_dependabot_pr()
         if is_dependabot:
-            self.add_skip(
-                "Retrospective",
-                f"Infrastructure update by Dependabot - streamlined process applies (detected via: {detection_method})"
+            message = (
+                f"Infrastructure update by Dependabot - streamlined "
+                f"process applies (detected via: {detection_method})"
             )
+            self.add_skip("Retrospective", message)
             return
 
         # Look for retrospective
