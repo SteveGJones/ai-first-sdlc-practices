@@ -119,7 +119,8 @@ class ProgressiveValidationPipeline(ValidationPipeline):
                 "status": "info",
                 "message": f"Running {self.level} level validation",
                 "details": f'Required checks: {", ".join(self.level_config["required"])}',
-            })
+            }
+        )
 
         # Run the parent validation
         validation_passed = super().run_validation(checks)

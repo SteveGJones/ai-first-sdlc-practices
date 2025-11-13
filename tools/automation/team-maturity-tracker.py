@@ -840,9 +840,7 @@ class TeamMaturityTracker:
             return {}
 
         return {
-            "team_name": team_data.get(
-                "team_name",
-                "Legendary Team"),
+            "team_name": team_data.get("team_name", "Legendary Team"),
             "achievement_date": datetime.now().isoformat(),
             "team_size": team_data["team_size"],
             "final_scores": asdict(metrics),
@@ -854,12 +852,8 @@ class TeamMaturityTracker:
                 "👑 Inducted into AI-First SDLC Hall of Fame",
             ],
             "legacy_impact": self._calculate_legacy_impact(team_data),
-            "mentorship_influence": team_data.get(
-                "teams_mentored",
-                0),
-            "community_contributions": team_data.get(
-                "external_contributions",
-                0),
+            "mentorship_influence": team_data.get("teams_mentored", 0),
+            "community_contributions": team_data.get("external_contributions", 0),
         }
 
     def _calculate_legacy_impact(self, team_data: Dict) -> str:

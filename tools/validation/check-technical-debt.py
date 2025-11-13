@@ -882,9 +882,7 @@ def main():
     )
     parser.add_argument(
         "--context",
-        choices=[
-            "application",
-            "framework"],
+        choices=["application", "framework"],
         default="application",
         help="Code context for policy compliance (default: application, auto-detects framework)",
     )

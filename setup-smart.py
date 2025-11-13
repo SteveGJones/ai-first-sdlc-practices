@@ -89,6 +89,9 @@ class SmartFrameworkSetup:
         "templates/tests/FrameworkTest.java": None,
         "templates/tests/framework_test.rb": None,
         "templates/tests/framework_test.rs": None,
+        # Venv runner scripts
+        "templates/scripts/venv-run.sh": None,
+        "templates/scripts/venv-run.bat": None,
     }
 
     # CI/CD configurations by platform
@@ -119,6 +122,9 @@ class SmartFrameworkSetup:
         quickstart: bool = False,
         organized: bool = False,
         sdlc_level: str = "production",
+        skip_venv: bool = False,
+        venv_name: str = "venv",
+        python_cmd: str = None,
     ):
         self.project_dir = project_dir or Path.cwd()
         self.project_purpose = project_purpose or "AI-assisted software development"
@@ -130,6 +136,9 @@ class SmartFrameworkSetup:
         self.quickstart = quickstart
         self.organized = organized
         self.sdlc_level = sdlc_level  # Use .sdlc directory structure
+        self.skip_venv = skip_venv
+        self.venv_name = venv_name
+        self.python_cmd = python_cmd
 
     def download_file(self, remote_path: str, local_path: Optional[Path]) -> bool:
         """Download a file from the framework repository"""
@@ -360,6 +369,12 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
         """Create essential Python project files"""
         print("\n🐍 Setting up Python project essentials...")
 
+        # Create virtual environment first (unless disabled)
+        self._setup_python_virtual_env()
+
+        # Create venv runner scripts for easy command execution
+        self._create_venv_runner_scripts()
+
         self._create_requirements_txt()
         self._create_pyproject_toml()
         self._create_setup_py()
@@ -367,6 +382,357 @@ gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks
         self._create_basic_test_file()
 
         return True
+
+    def _detect_existing_venv(self) -> Optional[str]:
+        """Detect if a virtual environment already exists"""
+        venv_indicators = ["venv", ".venv", "env", ".env", "virtualenv", ".virtualenv"]
+
+        for venv_name in venv_indicators:
+            venv_path = self.project_dir / venv_name
+            if venv_path.exists() and venv_path.is_dir():
+                # Check if it's actually a venv by looking for key files
+                if (venv_path / "bin" / "activate").exists() or (
+                    venv_path / "Scripts" / "activate.bat"
+                ).exists():
+                    return venv_name
+
+        # Check for Poetry/Pipenv
+        if (self.project_dir / "poetry.lock").exists():
+            return "poetry"
+        if (self.project_dir / "Pipfile.lock").exists():
+            return "pipenv"
+
+        return None
+
+    def _find_python_executable(self) -> str:
+        """Find the best Python executable to use"""
+        # Use provided python command if specified
+        if self.python_cmd:
+            try:
+                result = subprocess.run(
+                    [self.python_cmd, "--version"],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                if "Python 3" in result.stdout:
+                    return self.python_cmd
+                else:
+                    print(
+                        f"   ⚠️  {self.python_cmd} is not Python 3, searching for alternative..."
+                    )
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                print(
+                    f"   ⚠️  {self.python_cmd} not found, searching for alternative..."
+                )
+
+        # Try Python 3 first
+        for cmd in ["python3", "python"]:
+            try:
+                result = subprocess.run(
+                    [cmd, "--version"], capture_output=True, text=True, check=True
+                )
+                # Check if it's Python 3
+                if "Python 3" in result.stdout:
+                    return cmd
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                continue
+
+        # Default to python3 and let it fail with clear error
+        return "python3"
+
+    def _setup_python_virtual_env(self) -> bool:
+        """Set up Python virtual environment unless disabled or already exists"""
+
+        # Check if we should skip venv creation
+        if getattr(self, "skip_venv", False):
+            print("   ℹ️  Skipping virtual environment creation (--no-venv flag)")
+            return True
+
+        # Check for existing virtual environment
+        existing_venv = self._detect_existing_venv()
+        if existing_venv:
+            if existing_venv in ["poetry", "pipenv"]:
+                print(f"   ✓ Using existing {existing_venv} environment")
+            else:
+                print(f"   ✓ Virtual environment already exists: {existing_venv}/")
+            return True
+
+        # Create new virtual environment
+        print("   🔧 Creating Python virtual environment...")
+
+        python_cmd = self._find_python_executable()
+        venv_name = getattr(self, "venv_name", "venv")
+        venv_path = self.project_dir / venv_name
+
+        try:
+            # Create venv
+            subprocess.run(
+                [python_cmd, "-m", "venv", str(venv_path)],
+                check=True,
+                capture_output=True,
+            )
+
+            # Determine pip path based on OS
+            if os.name == "nt":  # Windows
+                pip_path = venv_path / "Scripts" / "pip"
+                activate_cmd = f"{venv_name}\\Scripts\\activate"
+            else:  # Unix-like
+                pip_path = venv_path / "bin" / "pip"
+                activate_cmd = f"source {venv_name}/bin/activate"
+
+            # Upgrade pip
+            subprocess.run(
+                [str(pip_path), "install", "--upgrade", "pip"],
+                check=True,
+                capture_output=True,
+            )
+
+            print(f"   ✅ Created virtual environment: {venv_name}/")
+            print(f"   📝 Activate with: {activate_cmd}")
+
+            # Add venv instructions to context
+            self.venv_created = True
+            self.venv_name = venv_name
+            self.activate_cmd = activate_cmd
+
+            return True
+
+        except subprocess.CalledProcessError as e:
+            print(f"   ⚠️  Failed to create virtual environment: {e}")
+            print("   ℹ️  Continuing without virtual environment")
+            return False
+        except Exception as e:
+            print(f"   ⚠️  Unexpected error creating virtual environment: {e}")
+            return False
+
+    def _create_venv_runner_scripts(self) -> bool:
+        """Create convenience scripts for running commands in venv context."""
+
+        # Skip if venv was skipped
+        if self.skip_venv:
+            return True
+
+        print("   🔧 Creating venv runner scripts...")
+
+        # Unix/Linux/Mac script
+        unix_script = """#!/bin/bash
+# Virtual Environment Runner - Auto-activates venv for commands
+# Usage: ./venv-run.sh python script.py
+# Usage: ./venv-run.sh pip install package
+# Usage: ./venv-run.sh pytest
+
+set -e
+VENV_DIR="${VENV_DIR:-venv}"
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+# Check and create venv if needed
+if [ ! -d "$VENV_DIR" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv "$VENV_DIR"
+    source "$VENV_DIR/bin/activate"
+    pip install --upgrade pip --quiet
+    [ -f "requirements.txt" ] && pip install -r requirements.txt
+else
+    source "$VENV_DIR/bin/activate"
+fi
+
+# Execute command or start shell
+if [ $# -eq 0 ]; then
+    echo "Python: $(which python)"
+    echo "Starting shell with venv activated..."
+    exec $SHELL
+else
+    exec "$@"
+fi
+"""
+
+        # Windows script
+        windows_script = """@echo off
+REM Virtual Environment Runner - Auto-activates venv for commands
+REM Usage: venv-run.bat python script.py
+REM Usage: venv-run.bat pip install package
+REM Usage: venv-run.bat pytest
+
+setlocal enabledelayedexpansion
+if "%VENV_DIR%"=="" set VENV_DIR=venv
+cd /d "%~dp0"
+
+REM Check and create venv if needed
+if not exist "%VENV_DIR%\\Scripts\\activate.bat" (
+    echo Creating virtual environment...
+    python -m venv "%VENV_DIR%"
+    call "%VENV_DIR%\\Scripts\\activate.bat"
+    python -m pip install --upgrade pip --quiet
+    if exist "requirements.txt" pip install -r requirements.txt
+) else (
+    call "%VENV_DIR%\\Scripts\\activate.bat"
+)
+
+REM Execute command or start shell
+if "%1"=="" (
+    where python
+    echo Starting command prompt with venv activated...
+    cmd /k
+) else (
+    REM Build and execute command
+    set cmd_line=%*
+    !cmd_line!
+)
+"""
+
+        # Create the scripts
+        try:
+            # Unix script
+            venv_run_sh = self.project_dir / "venv-run.sh"
+            venv_run_sh.write_text(unix_script)
+            # Make executable on Unix
+            if os.name != "nt":
+                venv_run_sh.chmod(0o755)
+
+            # Windows script
+            venv_run_bat = self.project_dir / "venv-run.bat"
+            venv_run_bat.write_text(windows_script)
+
+            print("   ✅ Created venv runner scripts")
+            print("   📝 Usage: ./venv-run.sh python script.py (Unix/Mac)")
+            print("   📝 Usage: venv-run.bat python script.py (Windows)")
+
+            return True
+
+        except Exception as e:
+            print(f"   ⚠️  Failed to create venv runner scripts: {e}")
+            return False
+
+    def _create_claude_launcher(self) -> bool:
+        """Create bin/claude launcher script for one-command Claude startup."""
+
+        print("   🚀 Creating Claude launcher script...")
+
+        # Create bin directory
+        bin_dir = self.project_dir / "bin"
+        bin_dir.mkdir(exist_ok=True)
+
+        # Unix/Mac launcher script
+        unix_launcher = f"""#!/bin/bash
+# Claude Launcher - One command to start Claude with everything set up
+# Generated by AI-First SDLC setup
+# Usage: ./bin/claude
+
+set -e
+SCRIPT_DIR="$(cd "$(dirname "${{BASH_SOURCE[0]}}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+VENV_DIR="$PROJECT_ROOT/{self.venv_name if hasattr(self, 'venv_name') else 'venv'}"
+
+cd "$PROJECT_ROOT"
+
+# Colors
+GREEN='\\033[0;32m'
+BLUE='\\033[0;34m'
+NC='\\033[0m'
+
+echo -e "${{BLUE}}🤖 AI-First SDLC Claude Launcher${{NC}}"
+echo "Project: {self.project_name}"
+
+# Setup Python venv if this is a Python project
+if [ -f "requirements.txt" ] || [ -f "setup.py" ] || [ -f "pyproject.toml" ]; then
+    if [ ! -d "$VENV_DIR" ]; then
+        echo "Creating virtual environment..."
+        python3 -m venv "$VENV_DIR"
+        source "$VENV_DIR/bin/activate"
+        pip install --upgrade pip --quiet
+        [ -f "requirements.txt" ] && pip install -r requirements.txt
+    else
+        source "$VENV_DIR/bin/activate"
+    fi
+    echo -e "${{GREEN}}✓ Python environment ready${{NC}}"
+fi
+
+# Check for Claude CLI
+if ! command -v claude &> /dev/null; then
+    echo "Claude CLI not found. Please install from:"
+    echo "  https://claude.ai/download"
+    exit 1
+fi
+
+# Launch Claude
+echo -e "${{BLUE}}Launching Claude Code...${{NC}}"
+exec claude "$PROJECT_ROOT"
+"""
+
+        # Windows launcher script
+        windows_launcher = f"""@echo off
+REM Claude Launcher - One command to start Claude with everything set up
+REM Generated by AI-First SDLC setup
+REM Usage: bin\\claude.bat
+
+setlocal
+set SCRIPT_DIR=%~dp0
+cd /d "%SCRIPT_DIR%\\.."
+set PROJECT_ROOT=%CD%
+set VENV_DIR=%PROJECT_ROOT%\\{self.venv_name if hasattr(self, 'venv_name') else 'venv'}
+
+echo AI-First SDLC Claude Launcher
+echo Project: {self.project_name}
+
+REM Setup Python venv if this is a Python project
+if exist "requirements.txt" goto :setup_venv
+if exist "setup.py" goto :setup_venv
+if exist "pyproject.toml" goto :setup_venv
+goto :check_claude
+
+:setup_venv
+if not exist "%VENV_DIR%\\Scripts\\activate.bat" (
+    echo Creating virtual environment...
+    python -m venv "%VENV_DIR%"
+    call "%VENV_DIR%\\Scripts\\activate.bat"
+    python -m pip install --upgrade pip --quiet
+    if exist "requirements.txt" pip install -r requirements.txt
+) else (
+    call "%VENV_DIR%\\Scripts\\activate.bat"
+)
+echo Python environment ready
+
+:check_claude
+where claude >nul 2>nul
+if errorlevel 1 (
+    echo Claude CLI not found. Please install from:
+    echo   https://claude.ai/download
+    pause
+    exit /b 1
+)
+
+echo Launching Claude Code...
+claude "%PROJECT_ROOT%"
+"""
+
+        try:
+            # Create Unix/Mac launcher
+            claude_sh = bin_dir / "claude"
+            claude_sh.write_text(unix_launcher)
+            if os.name != "nt":
+                claude_sh.chmod(0o755)  # Make executable
+
+            # Create Windows launcher
+            claude_bat = bin_dir / "claude.bat"
+            claude_bat.write_text(windows_launcher)
+
+            print("   ✅ Created Claude launcher: ./bin/claude")
+            print("   💡 Start Claude with: ./bin/claude")
+
+            # Also add to gitignore if not present
+            gitignore_path = self.project_dir / ".gitignore"
+            if gitignore_path.exists():
+                content = gitignore_path.read_text()
+                if "bin/claude" not in content:
+                    # Don't ignore the launcher scripts
+                    pass  # They should be committed
+
+            return True
+
+        except Exception as e:
+            print(f"   ⚠️  Failed to create Claude launcher: {e}")
+            return False
 
     def _create_requirements_txt(self):
         """Create requirements.txt with common dependencies"""
@@ -1327,6 +1693,9 @@ From: https://github.com/SteveGJones/ai-first-sdlc-practices
         if language == "python":
             self.setup_python_project()
             self.update_readme_for_python()
+
+        # Create Claude launcher for ALL projects (not just Python)
+        self._create_claude_launcher()
 
     def _setup_cicd_if_needed(self, skip_ci: bool):
         """Setup CI/CD if not skipped"""
@@ -2664,6 +3033,20 @@ def main():
         help="Use organized structure with .sdlc directory for framework files",
     )
     parser.add_argument(
+        "--no-venv",
+        action="store_true",
+        help="Skip virtual environment creation for Python projects",
+    )
+    parser.add_argument(
+        "--venv-name",
+        default="venv",
+        help="Name for virtual environment directory (default: venv)",
+    )
+    parser.add_argument(
+        "--python",
+        help="Python executable to use for venv (default: auto-detect)",
+    )
+    parser.add_argument(
         "--level",
         choices=["prototype", "production", "enterprise"],
         default="production",
@@ -2693,6 +3076,9 @@ def main():
         args.quickstart,
         args.organized,
         args.level,
+        args.no_venv,
+        args.venv_name,
+        args.python,
     )
 
     # Update version if specified

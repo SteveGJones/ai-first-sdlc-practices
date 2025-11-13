@@ -239,7 +239,8 @@ class ValidationRunner:
                                 ):
                                     msg = (
                                         f"{file_path}:{child.lineno}: "
-                                        f"Potential argument order issue in {class_name} instantiation")
+                                        f"Potential argument order issue in {class_name} instantiation"
+                                    )
                                     issues_found.append(msg)
 
             except (SyntaxError, UnicodeDecodeError) as e:

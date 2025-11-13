@@ -139,23 +139,30 @@ class TeamEngagementValidator:
             # Get files changed in PR
             try:
                 import subprocess
+
                 base_ref = os.environ.get("GITHUB_BASE_REF", "main")
                 result = subprocess.run(
                     ["git", "diff", f"origin/{base_ref}...HEAD", "--name-only"],
-                    capture_output=True, text=True
+                    capture_output=True,
+                    text=True,
                 )
                 if result.returncode == 0:
-                    changed_files = result.stdout.strip().split('\n')
+                    changed_files = result.stdout.strip().split("\n")
                     for file_name in changed_files:
-                        if file_name.endswith('.py') and Path(file_name).exists():
+                        if file_name.endswith(".py") and Path(file_name).exists():
                             file_path = Path(file_name)
                             try:
                                 content = file_path.read_text()
                                 for pattern in solo_patterns:
-                                    matches = re.findall(pattern, content, re.IGNORECASE)
+                                    matches = re.findall(
+                                        pattern, content, re.IGNORECASE
+                                    )
                                     if matches:
                                         violations_found.extend(
-                                            [(str(file_path), match) for match in matches]
+                                            [
+                                                (str(file_path), match)
+                                                for match in matches
+                                            ]
                                         )
                             except (OSError, PermissionError):
                                 pass
@@ -169,6 +176,7 @@ class TeamEngagementValidator:
                 ):  # Skip large files
                     # Only check files modified in last 24 hours
                     import time
+
                     if (time.time() - file_path.stat().st_mtime) < 86400:
                         try:
                             content = file_path.read_text()
@@ -228,7 +236,7 @@ class TeamEngagementValidator:
         if consultation_score < 0.6:  # Require 60% consultation coverage
             print(f"❌ INSUFFICIENT TEAM CONSULTATIONS: {consultation_score:.1%}")
             print("   Missing consultations:")
-            for consultation in required_consultations:
+            for consultation in consultation_patterns:
                 if consultation not in found_consultations:
                     print(f"   • {consultation}")
             self.violations.append("Insufficient team consultations")
