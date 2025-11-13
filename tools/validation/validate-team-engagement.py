@@ -236,7 +236,7 @@ class TeamEngagementValidator:
         if consultation_score < 0.6:  # Require 60% consultation coverage
             print(f"❌ INSUFFICIENT TEAM CONSULTATIONS: {consultation_score:.1%}")
             print("   Missing consultations:")
-            for consultation in required_consultations:
+            for consultation in consultation_patterns:
                 if consultation not in found_consultations:
                     print(f"   • {consultation}")
             self.violations.append("Insufficient team consultations")
