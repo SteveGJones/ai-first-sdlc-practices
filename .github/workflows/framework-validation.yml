@@ -91,7 +91,7 @@ jobs:
 
     - name: Upload Compliance Reports
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: compliance-reports
         path: |
