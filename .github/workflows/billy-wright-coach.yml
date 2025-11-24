@@ -30,7 +30,7 @@ jobs:
             --output formation
 
       - name: Provide Formation Recommendation
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const formation = '${{ steps.analyze.outputs.formation }}';
@@ -94,7 +94,7 @@ jobs:
             --pr-data "${{ steps.collaboration.outputs.data }}"
 
       - name: Provide Coaching Feedback
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const soloRuns = ${{ steps.solo_check.outputs.found || 0 }};
@@ -183,7 +183,7 @@ jobs:
 
       - name: Create Level Up Issue
         if: steps.levelup.outputs.ready == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const nextLevel = '${{ steps.levelup.outputs.next_level }}';
@@ -226,7 +226,7 @@ jobs:
 
       - name: Create Crisis Scenario
         if: steps.ready.outputs.ready == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const scenario = await exec.exec('python', ['.github/coaching/generate_crisis.py']);
@@ -262,7 +262,7 @@ jobs:
 
       - name: Award Legendary Status
         if: steps.legendary.outputs.achieved == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             // Create Hall of Fame entry
