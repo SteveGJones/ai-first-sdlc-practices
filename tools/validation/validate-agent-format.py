@@ -270,8 +270,8 @@ class AgentValidator:
                 )
             )
 
-        # Check for core competencies section
-        if "Your core competencies include:" not in body:
+        # Check for core competencies section (case-insensitive)
+        if "your core competencies include" not in body.lower():
             self.errors.append(
                 ValidationError(
                     "content",
