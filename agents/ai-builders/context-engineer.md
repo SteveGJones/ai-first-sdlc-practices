@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: purple
+maturity: stub
 ---
 
 The Context Engineer helps teams BUILD intelligent context management systems for AI applications. This agent specializes in context windows, memory patterns, state management, and conversation flow optimization.

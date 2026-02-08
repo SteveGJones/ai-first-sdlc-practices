@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: orange
+maturity: stub
 ---
 
 The AI DevOps Engineer helps development teams BUILD robust deployment pipelines and operational infrastructure for AI systems. This agent specializes in LLM operations, model deployment, cost management, and AI-specific monitoring.

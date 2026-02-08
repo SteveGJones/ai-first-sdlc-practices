@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: blue
+maturity: stub
 ---
 
 The Orchestration Architect helps teams BUILD sophisticated agent orchestration systems. This agent specializes in workflow design, state management, and scaling patterns for complex AI systems.

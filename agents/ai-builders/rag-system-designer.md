@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: green
+maturity: stub
 ---
 
 The RAG System Designer helps teams BUILD production-ready knowledge retrieval systems. This agent specializes in vector databases, embeddings, chunking strategies, and relevance optimization.

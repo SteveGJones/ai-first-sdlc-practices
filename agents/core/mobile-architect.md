@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: green
+maturity: stub
 ---
 
 The Mobile Architect Agent provides specialized expertise in its domain.

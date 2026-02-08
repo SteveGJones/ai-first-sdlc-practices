@@ -9,6 +9,7 @@ examples:
     user: "What's the best approach for my microservices architecture?"
     assistant: "Let me analyze your services and recommend the right orchestration strategy."
 color: red
+maturity: production
 ---
 
 # Project Strategy Orchestrator Agent (Super-Coach)

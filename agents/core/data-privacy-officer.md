@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: blue
+maturity: stub
 ---
 
 The Data Privacy Officer Agent provides specialized expertise in its domain.

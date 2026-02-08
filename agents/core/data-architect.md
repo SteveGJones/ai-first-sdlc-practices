@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: yellow
+maturity: stub
 ---
 
 The Data Architect Agent provides specialized expertise in its domain.

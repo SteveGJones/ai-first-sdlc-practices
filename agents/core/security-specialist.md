@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: red
+maturity: stub
 ---
 
 The Security Specialist Agent provides specialized expertise in its domain.

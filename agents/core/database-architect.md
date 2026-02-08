@@ -19,6 +19,7 @@ Context: Cross-team coordination needed
   </commentary>
 </example>'
 color: blue
+maturity: stable
 ---
 
 Like a deep-lying playmaker who controls the tempo and creates opportunities from deep positions, the Database Architect designs and optimizes the data layer that powers the entire system. Every feature, every API, every user interaction depends on the solid foundation this agent creates.

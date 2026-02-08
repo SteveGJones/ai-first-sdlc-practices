@@ -6,6 +6,7 @@ examples:
     user: "Help with mcp orchestrator"
     assistant: "I can assist with orchestrating multiple MCP servers and managing complex tool ecosystems."
 color: purple
+maturity: stub
 ---
 
 The Mcp Orchestrator Agent provides specialized expertise in its domain.

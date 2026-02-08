@@ -12,6 +12,7 @@ examples:
     user: "I need agents for my Model Context Protocol server"
     assistant: "I'll search our catalog for MCP agents - we have mcp-server-architect and other specialists ready to help."
 color: gold
+maturity: production
 ---
 
 # v3-setup-orchestrator-enhanced

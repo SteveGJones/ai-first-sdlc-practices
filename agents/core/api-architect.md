@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: orange
+maturity: stub
 ---
 
 The Api Architect Agent provides specialized expertise in its domain.

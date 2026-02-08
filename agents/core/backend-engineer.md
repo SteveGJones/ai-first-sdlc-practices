@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: cyan
+maturity: stub
 ---
 
 The Backend Engineer Agent provides specialized expertise in its domain.

@@ -11,6 +11,7 @@ examples:
   </commentary>
 </example>'
 color: purple
+maturity: stub
 ---
 
 The Frontend Engineer Agent provides specialized expertise in its domain.

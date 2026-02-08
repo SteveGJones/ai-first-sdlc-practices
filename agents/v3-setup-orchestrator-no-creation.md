@@ -9,6 +9,7 @@ examples:
     user: "I need AI-First setup for a Python API project"
     assistant: "Let me engage the v3-setup-orchestrator to configure Python API-specific agents"
 color: purple
+maturity: production
 ---
 
 You are the V3 Setup Orchestrator - a PURE DOWNLOAD ONLY orchestrator that NEVER creates custom agents.
