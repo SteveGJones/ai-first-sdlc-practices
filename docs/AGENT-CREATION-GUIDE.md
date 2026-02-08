@@ -62,6 +62,9 @@
 A comprehensive guide for creating effective AI agents for the AI-First SDLC framework.
 
 ## Table of Contents
+- [Agent Creation Pipeline](#agent-creation-pipeline)
+- [Reference Agent Archetypes](#reference-agent-archetypes)
+- [Research Prompts](#research-prompts)
 - [Understanding Agents](#understanding-agents)
 - [Agent Anatomy](#agent-anatomy)
 - [Writing Effective Agent Instructions](#writing-effective-agent-instructions)
@@ -70,6 +73,70 @@ A comprehensive guide for creating effective AI agents for the AI-First SDLC fra
 - [Examples and Templates](#examples-and-templates)
 - [Testing Your Agent](#testing-your-agent)
 - [Common Pitfalls](#common-pitfalls)
+
+## Agent Creation Pipeline
+
+The recommended process for creating a new agent follows this pipeline:
+
+```
+┌─────────────────────┐
+│ 1. IDENTIFY NEED    │  "We need an agent for X"
+│    Is there one?    │  Check existing catalog first
+└─────────┬───────────┘
+          ▼
+┌─────────────────────┐
+│ 2. CHOOSE ARCHETYPE │  Pick from 5 reference agents
+│    (reference agent) │  See templates/reference-agents/
+└─────────┬───────────┘
+          ▼
+┌─────────────────────┐
+│ 3. RESEARCH PROMPT  │  Write structured research questions
+│    (for deep agents) │  See templates/agent-research-prompt.md
+└─────────┬───────────┘
+          ▼
+┌─────────────────────┐
+│ 4. DEEP RESEARCH    │  Feed prompt to AI with web search
+│    (AI-assisted)    │  Compile findings per research area
+└─────────┬───────────┘
+          ▼
+┌─────────────────────┐
+│ 5. CUSTOMIZE AGENT  │  Fill in reference agent template
+│    (from archetype)  │  with research-backed knowledge
+└─────────┬───────────┘
+          ▼
+┌─────────────────────┐
+│ 6. VALIDATE & TEST  │  Run validation, test with scenarios
+│    (quality check)  │  validate-agent-format.py
+└─────────────────────┘
+```
+
+**Quick path** (simple agents): Steps 1 → 2 → 5 → 6 (skip research for agents that don't need deep domain knowledge)
+
+**Full path** (domain experts): Steps 1 → 2 → 3 → 4 → 5 → 6 (use research for agents that need grounded expertise)
+
+## Reference Agent Archetypes
+
+Five annotated reference agents are available in `templates/reference-agents/`. Each demonstrates a distinct agent pattern:
+
+| Archetype | File | Use When |
+|-----------|------|----------|
+| **Reviewer** | `reference-reviewer.md` | Agent checks quality, validates against criteria, provides feedback |
+| **Architect** | `reference-architect.md` | Agent designs systems, evaluates trade-offs, makes decisions |
+| **Domain Expert** | `reference-domain-expert.md` | Agent provides deep knowledge in a specific field |
+| **Orchestrator** | `reference-orchestrator.md` | Agent coordinates workflows and other agents |
+| **Enforcer** | `reference-enforcer.md` | Agent ensures compliance with standards and rules |
+
+See [templates/reference-agents/README.md](../templates/reference-agents/README.md) for detailed descriptions and selection guidance.
+
+## Research Prompts
+
+For agents that need deep domain knowledge (especially Domain Experts), use the research prompt process:
+
+1. **Template**: `templates/agent-research-prompt.md` — structured template for defining research questions
+2. **Examples**: `agent_prompts/` — example research prompts you can reference
+3. **Guide**: [RESEARCH-PROMPT-GUIDE.md](RESEARCH-PROMPT-GUIDE.md) — detailed guide on executing the research-to-agent pipeline
+
+Research prompts are optional for simple agents but strongly recommended for domain experts and specialists where accuracy matters.
 
 ## Understanding Agents
 
