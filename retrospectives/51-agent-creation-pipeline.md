@@ -23,6 +23,13 @@
 - Batch automation for adding `maturity:` fields to 59 files completed cleanly in one pass
 - The `.claude/agents/` sync audit revealed 4 orphan agents with good content that were missing from the main catalog entirely
 
+### Pipeline Automation (Phase 7)
+- Created two meta-agents (deep-research-agent + agent-builder) that automate pipeline Steps 4-5, solving the context window exhaustion problem
+- Each research agent runs as an isolated subprocess with its own full context window, enabling parallel research without quality degradation
+- The research output files act as a knowledge bridge between phases, persisting beyond any single agent's context lifetime
+- Both agents were themselves created via the full pipeline (research prompt, deep research, build from archetype, validation), proving the pipeline works end-to-end
+- Research outputs (1,120 and 745 lines respectively) demonstrate the depth achievable when each agent has dedicated context
+
 ## What Could Be Improved
 
 - Reference agents at ~80-96 lines each are at the upper end of the "50-80 line" target from Issue #52. The annotation comments add useful guidance but increase size
@@ -48,7 +55,7 @@
 - [ ] Consider adding `--template` mode to pipeline validator to suppress placeholder warnings on template files
 - [ ] Add automated composition reference validation (ensure all agents referenced in compositions exist)
 - [ ] Add YAML apostrophe escaping guidance to agent generation prompts
-- [ ] Create a worked example that includes actual deep research output (Step 4 of the pipeline)
+- [x] Create a worked example that includes actual deep research output (Step 4 of the pipeline) — Done: research-output-deep-research-agent.md (1,120 lines) and research-output-agent-builder.md (745 lines)
 - [ ] Rebuild remaining 4 stub agents: data-architect, data-privacy-officer, mobile-architect, mcp-orchestrator
 
 ## Metrics
@@ -64,8 +71,8 @@
 ### Catalog Overhaul
 | Metric | Before | After | Change |
 |--------|--------|-------|--------|
-| Total agents | ~67 (with stubs/shadows) | 66 (clean) | -1 net (8 deleted, 7 added) |
-| Production-quality agents | ~20 estimated | 32 | +12 |
+| Total agents | ~67 (with stubs/shadows) | 68 (clean) | +1 net (8 deleted, 9 added) |
+| Production-quality agents | ~20 estimated | 34 | +14 |
 | Stable agents | ~15 estimated | 26 | +11 |
 | Non-functional stubs | 12 | 4 | -8 |
 | Shadow/duplicate files | 3 | 0 | -3 |
@@ -94,6 +101,8 @@
 | cloud-architect | 540 | New | production |
 | observability-specialist | 324 | New | stable |
 | container-platform-specialist | 293 | New | stable |
+| deep-research-agent | 433 | New (pipeline automation) | production |
+| agent-builder | 352 | New (pipeline automation) | production |
 
 ### Bugs Found and Fixed
 | Bug | Phase | Fix |
@@ -117,3 +126,6 @@
 - 2026-02-08: Phase 4 complete: 4 critical stubs rebuilt via pipeline (security, API, backend, frontend)
 - 2026-02-08: Phase 5 complete: 3 new agents created (cloud, observability, container)
 - 2026-02-08: Phase 6 complete: manifest v3.0.0, discovery guide updated, compositions updated
+- 2026-02-08: Phase 7: Created deep-research-agent (433 lines) and agent-builder (352 lines) to automate pipeline Steps 4-5
+- 2026-02-08: Both agents created via full pipeline: research prompts (116/115 lines), research outputs (1120/745 lines), production agents, validation passed
+- 2026-02-08: Updated manifest (68 agents, 34 production), discovery guide, retrospective, agent_prompts README

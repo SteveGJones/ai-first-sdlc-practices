@@ -110,9 +110,15 @@ The recommended process for creating a new agent follows this pipeline:
 └─────────────────────┘
 ```
 
-**Quick path** (simple agents): Steps 1 → 2 → 5 → 6 (skip research for agents that don't need deep domain knowledge)
+**Quick path** (simple agents): Steps 1 → 2 → 5 → 6 (only for agents with minimal domain knowledge needs, e.g., simple coordinators)
 
-**Full path** (domain experts): Steps 1 → 2 → 3 → 4 → 5 → 6 (use research for agents that need grounded expertise)
+**Full path** (MANDATORY for specialists and architects): Steps 1 → 2 → 3 → 4 → 5 → 6
+
+> **IMPORTANT**: Research is MANDATORY for any agent classified as a domain expert, specialist, or architect. The pipeline validator enforces this with the `--require-research` flag:
+> ```bash
+> python tools/validation/validate-agent-pipeline.py production-agent agents/core/your-agent.md --require-research
+> ```
+> This will FAIL if no corresponding research prompt exists at `agent_prompts/research-your-agent.md`.
 
 ## Reference Agent Archetypes
 
@@ -130,13 +136,34 @@ See [templates/reference-agents/README.md](../templates/reference-agents/README.
 
 ## Research Prompts
 
-For agents that need deep domain knowledge (especially Domain Experts), use the research prompt process:
+Research prompts are the foundation of high-quality agents. They ensure agents are grounded in current, accurate domain knowledge rather than generic content.
 
+**Research is MANDATORY for:**
+- Domain Expert agents (e.g., database-architect, observability-specialist)
+- Architect agents (e.g., security-architect, cloud-architect, api-architect)
+- Specialist agents (e.g., container-platform-specialist, performance-engineer)
+
+**Research may be skipped ONLY for:**
+- Simple coordinator/orchestrator agents with no deep domain knowledge
+- Enforcer agents that encode rules rather than domain expertise
+- Meta-agents (e.g., sdlc-coach, project-bootstrapper)
+
+### Research Resources
 1. **Template**: `templates/agent-research-prompt.md` — structured template for defining research questions
-2. **Examples**: `agent_prompts/` — example research prompts you can reference
+2. **Examples**: `agent_prompts/research-*.md` — 7 production research prompts you can reference
 3. **Guide**: [RESEARCH-PROMPT-GUIDE.md](RESEARCH-PROMPT-GUIDE.md) — detailed guide on executing the research-to-agent pipeline
 
-Research prompts are optional for simple agents but strongly recommended for domain experts and specialists where accuracy matters.
+### Enforcement
+The pipeline validator checks for research prompts:
+```bash
+# Warn if no research prompt exists (default)
+python tools/validation/validate-agent-pipeline.py production-agent agents/core/my-agent.md
+
+# FAIL if no research prompt exists (use for specialists/architects)
+python tools/validation/validate-agent-pipeline.py production-agent agents/core/my-agent.md --require-research
+```
+
+The corresponding research prompt must be at: `agent_prompts/research-{agent-name}.md`
 
 ## Understanding Agents
 

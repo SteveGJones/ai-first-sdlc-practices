@@ -1,7 +1,7 @@
 # AI-First SDLC Agent Discovery Guide
 
 ## Overview
-The AI-First SDLC framework provides **66 specialized AI agents** organized into 10 categories to enhance your development workflow. This guide helps you discover, understand, and install the right agents for your project needs.
+The AI-First SDLC framework provides **68 specialized AI agents** organized into 10 categories to enhance your development workflow. This guide helps you discover, understand, and install the right agents for your project needs.
 
 ## Agent Quality Tiers
 
@@ -9,7 +9,7 @@ Every agent has a maturity label indicating its readiness:
 
 | Tier | Count | Description |
 |------|-------|-------------|
-| **Production** | 32 | Ready for daily use. 100+ lines, deep methodology, battle-tested |
+| **Production** | 34 | Ready for daily use. 100+ lines, deep methodology, battle-tested |
 | **Stable** | 26 | Functional with good coverage. 80-100 lines, clear methodology |
 | **Beta** | 4 | Works but needs depth. 50-80 lines, basic methodology |
 | **Stub** | 4 | Placeholder only. Awaiting research-driven rebuild |
@@ -42,7 +42,7 @@ Every project should have these critical agents:
 
 ## Agent Categories
 
-### Core Agents (25 agents)
+### Core Agents (27 agents)
 
 #### Architecture
 - **api-architect** `production` - REST, GraphQL, gRPC design and API lifecycle management
@@ -74,6 +74,10 @@ Every project should have these critical agents:
 - **database-architect** `stable` - Database design and optimization
 - **data-architect** `stub` - Data architecture (awaiting rebuild)
 - **data-privacy-officer** `stub` - Data privacy compliance (awaiting rebuild)
+
+#### Agent Creation Pipeline
+- **deep-research-agent** `production` - Systematic web research for agent creation (CRAAP evaluation, multi-phase methodology)
+- **agent-builder** `production` - Constructs agents from research documents and reference archetypes (knowledge distillation, anti-pattern detection)
 
 #### Other Core
 - **critical-goal-reviewer** `stable` - Goal alignment validation

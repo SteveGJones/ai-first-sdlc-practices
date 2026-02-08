@@ -122,13 +122,23 @@ class ProductionAgentValidator:
     MIN_CONTENT_LENGTH = 500
     MIN_DOMAIN_WORDS = 50
 
-    def validate(self, file_path: Path) -> List[PipelineResult]:
+    def validate(self, file_path: Path, require_research: bool = False) -> List[PipelineResult]:
         results = []
         if not file_path.exists():
             results.append(PipelineResult("file", f"File not found: {file_path}"))
             return results
 
         content = file_path.read_text()
+
+        # Check for corresponding research prompt
+        agent_name = file_path.stem  # e.g., "security-architect"
+        research_prompt = file_path.parent.parent.parent / "agent_prompts" / f"research-{agent_name}.md"
+        if research_prompt.exists():
+            results.append(PipelineResult("research", f"Research prompt found: {research_prompt.name}", severity="success"))
+        elif require_research:
+            results.append(PipelineResult("research", f"No research prompt found for '{agent_name}'. Production agents MUST have a research prompt at agent_prompts/research-{agent_name}.md"))
+        else:
+            results.append(PipelineResult("research", f"No research prompt found for '{agent_name}'. Consider creating agent_prompts/research-{agent_name}.md for research-grounded content", severity="warning"))
 
         # Check for remaining template placeholders
         remaining = re.findall(r"\[CUSTOMIZE[^\]]*\]", content)
@@ -272,9 +282,10 @@ def validate_reference_agent(file: str, output_json: bool):
 @cli.command("production-agent")
 @click.argument("file", type=click.Path(exists=True))
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
-def validate_production_agent(file: str, output_json: bool):
+@click.option("--require-research", is_flag=True, help="Fail if no corresponding research prompt exists")
+def validate_production_agent(file: str, output_json: bool, require_research: bool):
     """Validate a finished agent created through the pipeline"""
-    results = ProductionAgentValidator().validate(Path(file))
+    results = ProductionAgentValidator().validate(Path(file), require_research=require_research)
     output_results(results, "production-agent", output_json)
 
 

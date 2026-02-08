@@ -19,6 +19,8 @@
       "cloud-architect",
       "observability-specialist",
       "container-platform-specialist",
+      "deep-research-agent",
+      "agent-builder",
       "database-architect",
       "sdlc-coach",
       "compliance-report-generator",
@@ -261,6 +263,40 @@
         "service mesh"
       ]
     },
+    "deep-research-agent": {
+      "version": "1.0.0",
+      "category": "core/pipeline",
+      "maturity": "production",
+      "description": "Executes systematic web research campaigns based on structured research prompts. Uses CRAAP evaluation, multi-phase methodology, and produces synthesis documents for agent creation.",
+      "path": "core/deep-research-agent.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "research",
+        "CRAAP",
+        "synthesis",
+        "agent creation",
+        "pipeline"
+      ]
+    },
+    "agent-builder": {
+      "version": "1.0.0",
+      "category": "core/pipeline",
+      "maturity": "production",
+      "description": "Constructs production-quality agents from research documents and reference archetypes. Applies knowledge distillation, anti-pattern detection, and pipeline validation.",
+      "path": "core/agent-builder.md",
+      "priority": "high",
+      "dependencies": [
+        "deep-research-agent"
+      ],
+      "keywords": [
+        "agent creation",
+        "knowledge distillation",
+        "prompt engineering",
+        "pipeline",
+        "archetype"
+      ]
+    },
     "performance-engineer": {
       "version": "1.0.0",
       "category": "testing/performance",
@@ -368,16 +404,16 @@
     "github-integration-specialist"
   ],
   "statistics": {
-    "total_agents": 66,
+    "total_agents": 68,
     "core_agents": 5,
     "maturity_distribution": {
-      "production": 32,
+      "production": 34,
       "stable": 26,
       "beta": 4,
       "stub": 4
     },
     "categories": {
-      "core": 25,
+      "core": 27,
       "ai-development": 9,
       "ai-builders": 5,
       "testing": 4,
