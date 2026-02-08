@@ -1,6 +1,6 @@
 {
-  "version": "2.0.0",
-  "build_date": "2025-08-02",
+  "version": "3.0.0",
+  "build_date": "2026-02-08",
   "categories": {
     "core": [
       "sdlc-enforcer",
@@ -11,7 +11,23 @@
       "devops-specialist",
       "sre-specialist",
       "test-manager",
-      "example-security-architect"
+      "example-security-architect",
+      "security-architect",
+      "api-architect",
+      "backend-architect",
+      "frontend-architect",
+      "cloud-architect",
+      "observability-specialist",
+      "container-platform-specialist",
+      "database-architect",
+      "sdlc-coach",
+      "compliance-report-generator",
+      "enforcement-strategy-advisor",
+      "frontend-security-specialist",
+      "ux-ui-architect",
+      "data-architect",
+      "data-privacy-officer",
+      "mobile-architect"
     ],
     "ai-development": [
       "ai-solution-architect",
@@ -24,10 +40,18 @@
       "langchain-architect",
       "a2a-architect"
     ],
+    "ai-builders": [
+      "ai-devops-engineer",
+      "ai-team-transformer",
+      "context-engineer",
+      "orchestration-architect",
+      "rag-system-designer"
+    ],
     "testing": [
       "ai-test-engineer",
       "performance-engineer",
-      "integration-orchestrator"
+      "integration-orchestrator",
+      "code-review-specialist"
     ],
     "documentation": [
       "technical-writer",
@@ -36,16 +60,27 @@
     "project-management": [
       "agile-coach",
       "delivery-manager",
-      "project-plan-tracker"
+      "project-plan-tracker",
+      "team-progress-tracker"
     ],
     "sdlc": [
       "ai-first-kick-starter",
       "framework-validator",
       "project-bootstrapper",
       "retrospective-miner",
-      "language-python-expert"
+      "language-python-expert",
+      "language-javascript-expert",
+      "language-go-expert",
+      "sdlc-knowledge-curator"
     ],
-    "languages/python": [
+    "templates": [
+      "project-strategy-orchestrator",
+      "team-assembly-orchestrator"
+    ],
+    "future": [
+      "mcp-orchestrator"
+    ],
+    "languages": [
       "example-python-expert"
     ]
   },
@@ -112,6 +147,119 @@
       "path": "core/sre-specialist.md",
       "priority": "high",
       "dependencies": []
+    },
+    "security-architect": {
+      "version": "1.0.0",
+      "category": "core/security",
+      "maturity": "production",
+      "description": "Expert in threat modeling (STRIDE/DREAD), zero-trust architecture, OWASP Top 10, supply chain security, secure SDLC integration, and compliance frameworks (SOC2/ISO27001/GDPR).",
+      "path": "core/security-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "security",
+        "threat modeling",
+        "zero-trust",
+        "OWASP",
+        "compliance"
+      ]
+    },
+    "api-architect": {
+      "version": "1.0.0",
+      "category": "core/architecture",
+      "maturity": "production",
+      "description": "Expert in REST design principles, GraphQL patterns, gRPC/protobuf, API versioning, OpenAPI/Swagger, API security (OAuth2/OIDC), rate limiting, gateway patterns, and contract testing.",
+      "path": "core/api-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "API",
+        "REST",
+        "GraphQL",
+        "gRPC",
+        "OpenAPI"
+      ]
+    },
+    "backend-architect": {
+      "version": "1.0.0",
+      "category": "core/architecture",
+      "maturity": "production",
+      "description": "Expert in microservices vs monolith decisions, event-driven architecture, CQRS/event sourcing, caching strategies, message queues, database selection, and scalability patterns.",
+      "path": "core/backend-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "backend",
+        "microservices",
+        "event-driven",
+        "CQRS",
+        "scalability"
+      ]
+    },
+    "frontend-architect": {
+      "version": "1.0.0",
+      "category": "core/architecture",
+      "maturity": "production",
+      "description": "Expert in component architecture (React/Vue/Angular), state management, CSS architecture, bundle optimization, accessibility (WCAG 2.1), SSR/SSG patterns, and design system integration.",
+      "path": "core/frontend-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "frontend",
+        "React",
+        "accessibility",
+        "performance",
+        "design systems"
+      ]
+    },
+    "cloud-architect": {
+      "version": "1.0.0",
+      "category": "core/infrastructure",
+      "maturity": "production",
+      "description": "Expert in multi-cloud strategy across AWS/Azure/GCP, IaC (Terraform/Pulumi), cost optimization, cloud security, serverless patterns, and managed services selection.",
+      "path": "core/cloud-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "cloud",
+        "AWS",
+        "Azure",
+        "GCP",
+        "Terraform",
+        "serverless"
+      ]
+    },
+    "observability-specialist": {
+      "version": "1.0.0",
+      "category": "core/operations",
+      "maturity": "stable",
+      "description": "Expert in OpenTelemetry instrumentation, distributed tracing, log aggregation, metrics dashboards, SLO/SLI definitions, alerting strategies, and observability cost management.",
+      "path": "core/observability-specialist.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "observability",
+        "OpenTelemetry",
+        "tracing",
+        "metrics",
+        "SLO"
+      ]
+    },
+    "container-platform-specialist": {
+      "version": "1.0.0",
+      "category": "core/infrastructure",
+      "maturity": "stable",
+      "description": "Expert in Docker, Kubernetes, Helm, container security, service mesh (Istio/Linkerd), GitOps workflows (ArgoCD/Flux), and platform engineering for scalable containerized applications.",
+      "path": "core/container-platform-specialist.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "Docker",
+        "Kubernetes",
+        "Helm",
+        "GitOps",
+        "service mesh"
+      ]
     },
     "performance-engineer": {
       "version": "1.0.0",
@@ -220,25 +368,25 @@
     "github-integration-specialist"
   ],
   "statistics": {
-    "total_agents": 60,
+    "total_agents": 66,
     "core_agents": 5,
     "maturity_distribution": {
-      "production": 27,
-      "stable": 16,
+      "production": 32,
+      "stable": 26,
       "beta": 4,
-      "stub": 12
+      "stub": 4
     },
     "categories": {
-      "core": 13,
+      "core": 25,
       "ai-development": 9,
       "ai-builders": 5,
-      "testing": 3,
+      "testing": 4,
       "documentation": 2,
-      "project-management": 3,
-      "sdlc": 5,
-      "languages": 1,
+      "project-management": 4,
+      "sdlc": 8,
       "templates": 2,
-      "future": 1
+      "future": 1,
+      "languages": 1
     }
   }
 }

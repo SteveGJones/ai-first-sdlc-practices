@@ -1,148 +1,139 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
-
-- [AI-First SDLC Agent Discovery Guide](#ai-first-sdlc-agent-discovery-guide)
-  - [Overview](#overview)
-  - [⚠️ Critical Information](#-critical-information)
-  - [Quick Start: Essential Agents](#quick-start-essential-agents)
-    - [🚨 Core Agents (Install These First!)](#-core-agents-install-these-first)
-  - [Agent Categories](#agent-categories)
-    - [🐍 Language-Specific Agents](#-language-specific-agents)
-      - [Python Development](#python-development)
-      - [Coming Soon](#coming-soon)
-    - [🤖 AI/ML Development Agents](#-aiml-development-agents)
-    - [🧪 Testing & Quality Agents](#-testing--quality-agents)
-    - [📚 Documentation Agents](#-documentation-agents)
-    - [📊 Project Management Agents](#-project-management-agents)
-    - [🛠️ DevOps & Operations Agents](#-devops--operations-agents)
-    - [🔍 Compliance & Analysis Agents](#-compliance--analysis-agents)
-    - [🚀 Setup & Maintenance Agents](#-setup--maintenance-agents)
-  - [How to Discover Agents](#how-to-discover-agents)
-    - [1. During Initial Setup](#1-during-initial-setup)
-    - [2. Using ai-first-kick-starter Agent](#2-using-ai-first-kick-starter-agent)
-    - [3. By Project Type](#3-by-project-type)
-      - [Python API Project](#python-api-project)
-      - [AI/ML Application](#aiml-application)
-      - [LangChain Project](#langchain-project)
-      - [MCP Server Development](#mcp-server-development)
-      - [Microservices Architecture](#microservices-architecture)
-  - [Agent Installation Process](#agent-installation-process)
-    - [Step 1: Identify Needed Agents](#step-1-identify-needed-agents)
-    - [Step 2: Install Agents](#step-2-install-agents)
-    - [Step 3: Restart AI Assistant](#step-3-restart-ai-assistant)
-    - [Step 4: Verify Installation](#step-4-verify-installation)
-  - [Agent Collaboration Patterns](#agent-collaboration-patterns)
-    - [Design → Implementation → Testing](#design-%E2%86%92-implementation-%E2%86%92-testing)
-    - [MCP Server Development Flow](#mcp-server-development-flow)
-    - [Production Deployment](#production-deployment)
-  - [Finding Agents for Specific Needs](#finding-agents-for-specific-needs)
-    - ["I need help with..."](#i-need-help-with)
-      - [Performance Issues](#performance-issues)
-      - [Security Concerns](#security-concerns)
-      - [Documentation](#documentation)
-      - [Testing Strategies](#testing-strategies)
-      - [Code Quality](#code-quality)
-  - [Best Practices](#best-practices)
-    - [1. Start with Core Agents](#1-start-with-core-agents)
-    - [2. Add Agents Incrementally](#2-add-agents-incrementally)
-    - [3. Use Agent Recommendations](#3-use-agent-recommendations)
-    - [4. Consider Project Evolution](#4-consider-project-evolution)
-    - [5. Leverage Agent Collaboration](#5-leverage-agent-collaboration)
-  - [Troubleshooting](#troubleshooting)
-    - [Agents Not Responding](#agents-not-responding)
-    - [Wrong Agent Recommendations](#wrong-agent-recommendations)
-    - [Agent Conflicts](#agent-conflicts)
-  - [Future Agent Development](#future-agent-development)
-  - [Getting Help](#getting-help)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # AI-First SDLC Agent Discovery Guide
 
 ## Overview
-The AI-First SDLC framework provides 32+ specialized AI agents to enhance your development workflow. This guide helps you discover, understand, and install the right agents for your project needs.
+The AI-First SDLC framework provides **66 specialized AI agents** organized into 10 categories to enhance your development workflow. This guide helps you discover, understand, and install the right agents for your project needs.
 
-## ⚠️ Critical Information
+## Agent Quality Tiers
+
+Every agent has a maturity label indicating its readiness:
+
+| Tier | Count | Description |
+|------|-------|-------------|
+| **Production** | 32 | Ready for daily use. 100+ lines, deep methodology, battle-tested |
+| **Stable** | 26 | Functional with good coverage. 80-100 lines, clear methodology |
+| **Beta** | 4 | Works but needs depth. 50-80 lines, basic methodology |
+| **Stub** | 4 | Placeholder only. Awaiting research-driven rebuild |
+
+See `docs/AGENT-FORMAT-SPEC.md` for full maturity tier criteria.
+See `docs/AGENT-ROADMAP.md` for planned future agents.
+
+## Critical Information
 **IMPORTANT**: Installing new agents requires restarting your AI assistant (Claude, GPT, etc.) for them to become active.
 
 ## Quick Start: Essential Agents
 
-### 🚨 Core Agents (Install These First!)
+### Core Agents (Install These First!)
 Every project should have these critical agents:
 
-1. **sdlc-enforcer** ⭐ CRITICAL
+1. **sdlc-enforcer** `production`
    - Primary guardian of AI-First SDLC compliance
    - Enforces Zero Technical Debt policy
-   - Validates framework requirements
    - **When to use**: ALWAYS - from project start
 
-2. **critical-goal-reviewer** ⭐ CRITICAL
+2. **critical-goal-reviewer** `stable`
    - Quality assurance and constructive challenger
    - Reviews work against original goals
-   - Identifies gaps and deviations
    - **When to use**: After completing any significant work
 
-3. **solution-architect** ⭐ CRITICAL
+3. **solution-architect** `stable`
    - System design and architecture expert
    - Reviews technical decisions
-   - Guides implementation patterns
    - **When to use**: Before implementing complex features
 
 ## Agent Categories
 
-### 🐍 Language-Specific Agents
+### Core Agents (25 agents)
 
-#### Python Development
-- **python-expert**: Python best practices and patterns
-- **language-python-expert**: Python-specific SDLC guidance
+#### Architecture
+- **api-architect** `production` - REST, GraphQL, gRPC design and API lifecycle management
+- **backend-architect** `production` - Microservices, event-driven architecture, scalability patterns
+- **frontend-architect** `production` - Component architecture, accessibility, SSR/SSG, design systems
+- **cloud-architect** `production` - Multi-cloud strategy, IaC, cost optimization, serverless
+- **solution-architect** `stable` - System design and architecture decisions
+- **mobile-architect** `stub` - Mobile application architecture (awaiting rebuild)
 
-#### Coming Soon
-- JavaScript/TypeScript agents
-- Java agents
-- Go agents
-- Rust agents
+#### Security
+- **security-architect** `production` - Threat modeling, zero-trust, OWASP, compliance frameworks
+- **frontend-security-specialist** `stable` - Frontend-specific security patterns
+- **example-security-architect** `stable` - Reference implementation for security agents
 
-### 🤖 AI/ML Development Agents
-- **ai-solution-architect**: Enterprise AI system design
-- **junior-ai-solution-architect**: Fresh perspectives on AI
-- **prompt-engineer**: Prompt optimization expert
-- **langchain-architect**: LangChain framework specialist
-- **a2a-architect**: Agent-to-Agent communication
-- **agent-developer**: Creates new AI agents
-- **mcp-server-architect**: Model Context Protocol expert
-- **mcp-test-agent**: MCP testing specialist (NEW)
-- **mcp-quality-assurance**: MCP quality expert (NEW)
+#### Operations
+- **devops-specialist** `production` - CI/CD, deployment automation, infrastructure as code
+- **sre-specialist** `stable` - Production monitoring, incident response, reliability
+- **observability-specialist** `stable` - OpenTelemetry, distributed tracing, SLO/SLI, alerting
+- **container-platform-specialist** `stable` - Docker, Kubernetes, Helm, GitOps, service mesh
 
-### 🧪 Testing & Quality Agents
-- **test-manager**: Test strategy and coordination
-- **ai-test-engineer**: AI-specific testing
-- **performance-engineer**: Performance optimization
-- **integration-orchestrator**: Integration testing
+#### Compliance & Governance
+- **compliance-auditor** `production` - Compliance checking and audit reporting
+- **sdlc-enforcer** `production` - SDLC compliance enforcement
+- **sdlc-coach** `production` - SDLC education and mentoring
+- **compliance-report-generator** `stable` - Automated compliance report generation
+- **enforcement-strategy-advisor** `stable` - Enforcement strategy recommendations
 
-### 📚 Documentation Agents
-- **technical-writer**: Clear technical documentation
-- **documentation-architect**: Documentation systems
+#### Data
+- **database-architect** `stable` - Database design and optimization
+- **data-architect** `stub` - Data architecture (awaiting rebuild)
+- **data-privacy-officer** `stub` - Data privacy compliance (awaiting rebuild)
 
-### 📊 Project Management Agents
-- **agile-coach**: Agile methodology guidance
-- **delivery-manager**: Project delivery coordination
-- **project-plan-tracker**: Progress monitoring
+#### Other Core
+- **critical-goal-reviewer** `stable` - Goal alignment validation
+- **github-integration-specialist** `production` - GitHub automation
+- **test-manager** `stable` - Test strategy and coordination
+- **ux-ui-architect** `stable` - UX/UI design guidance
 
-### 🛠️ DevOps & Operations Agents
-- **devops-specialist**: CI/CD and deployment
-- **sre-specialist**: Site reliability engineering
-- **github-integration-specialist**: GitHub automation
+### AI/ML Development Agents (9 agents)
+- **ai-solution-architect** `production` - Enterprise AI system design
+- **prompt-engineer** `production` - Prompt optimization expert
+- **mcp-server-architect** `production` - Model Context Protocol expert
+- **mcp-test-agent** `production` - MCP testing specialist
+- **mcp-quality-assurance** `production` - MCP quality expert
+- **agent-developer** `production` - Creates new AI agents
+- **junior-ai-solution-architect** `stable` - Fresh perspectives on AI
+- **langchain-architect** `stable` - LangChain framework specialist
+- **a2a-architect** `stable` - Agent-to-Agent communication
 
-### 🔍 Compliance & Analysis Agents
-- **compliance-auditor**: Compliance checking
-- **retrospective-miner**: Retrospective insights
-- **framework-validator**: Framework compliance
+### AI Builders Agents (5 agents)
+- **ai-team-transformer** `production` - AI team transformation strategies
+- **ai-devops-engineer** `stable` - AI-enhanced DevOps workflows
+- **context-engineer** `stable` - Context window optimization
+- **orchestration-architect** `stable` - Multi-agent orchestration patterns
+- **rag-system-designer** `stable` - RAG system architecture
 
-### 🚀 Setup & Maintenance Agents
-- **ai-first-kick-starter**: Post-installation advisor
-- **project-bootstrapper**: Project initialization
-- **kickstart-architect**: Project structure design
+### Testing & Quality Agents (4 agents)
+- **ai-test-engineer** `production` - AI-specific testing
+- **performance-engineer** `production` - Performance optimization
+- **code-review-specialist** `stable` - Automated code review
+- **integration-orchestrator** `stable` - Integration testing
+
+### Documentation Agents (2 agents)
+- **documentation-architect** `production` - Documentation systems
+- **technical-writer** `production` - Clear technical documentation
+
+### Project Management Agents (4 agents)
+- **project-plan-tracker** `production` - Progress monitoring
+- **agile-coach** `beta` - Agile methodology guidance
+- **delivery-manager** `beta` - Project delivery coordination
+- **team-progress-tracker** `stable` - Team-level progress tracking
+
+### SDLC Agents (8 agents)
+- **ai-first-kick-starter** `production` - Post-installation advisor
+- **language-go-expert** `production` - Go language best practices
+- **language-javascript-expert** `production` - JavaScript/TypeScript best practices
+- **framework-validator** `stable` - Framework compliance
+- **language-python-expert** `stable` - Python best practices
+- **project-bootstrapper** `stable` - Project initialization
+- **sdlc-knowledge-curator** `stable` - SDLC knowledge management
+- **retrospective-miner** `beta` - Retrospective insights
+
+### Template Agents (2 agents)
+- **project-strategy-orchestrator** `production` - Project strategy templates
+- **team-assembly-orchestrator** `production` - Team composition templates
+
+### Language Agents (1 agent)
+- **example-python-expert** `beta` - Reference Python implementation
+
+### Future Agents (1 agent)
+- **mcp-orchestrator** `stub` - Multi-MCP coordination (planned)
 
 ## How to Discover Agents
 
@@ -163,23 +154,27 @@ After installation, use this agent to discover more agents:
 
 #### Python API Project
 - Core: sdlc-enforcer, critical-goal-reviewer, solution-architect
-- Recommended: python-expert, ai-test-engineer, devops-specialist
+- Recommended: api-architect, backend-architect, performance-engineer
 
 #### AI/ML Application
 - Core: sdlc-enforcer, critical-goal-reviewer, solution-architect
 - Recommended: ai-solution-architect, prompt-engineer, ai-test-engineer
 
-#### LangChain Project
+#### Cloud-Native Microservices
 - Core: sdlc-enforcer, critical-goal-reviewer, solution-architect
-- Recommended: langchain-architect, prompt-engineer, ai-test-engineer
+- Recommended: cloud-architect, container-platform-specialist, observability-specialist, backend-architect
+
+#### Frontend Application
+- Core: sdlc-enforcer, critical-goal-reviewer, solution-architect
+- Recommended: frontend-architect, ux-ui-architect, performance-engineer
 
 #### MCP Server Development
 - Core: sdlc-enforcer, critical-goal-reviewer, solution-architect
 - Recommended: mcp-server-architect, mcp-test-agent, mcp-quality-assurance
 
-#### Microservices Architecture
+#### Security-Critical Application
 - Core: sdlc-enforcer, critical-goal-reviewer, solution-architect
-- Recommended: integration-orchestrator, devops-specialist, sre-specialist
+- Recommended: security-architect, compliance-auditor, frontend-security-specialist
 
 ## Agent Installation Process
 
@@ -197,12 +192,19 @@ Ask your AI: "What specialized agents do I have available?"
 
 ## Agent Collaboration Patterns
 
-### Design → Implementation → Testing
+### Design -> Implementation -> Testing
 1. **solution-architect**: Creates design
-2. **[language]-expert**: Guides implementation
+2. **backend-architect** / **frontend-architect**: Guides implementation
 3. **test-manager**: Plans testing
 4. **ai-test-engineer**: Executes tests
 5. **critical-goal-reviewer**: Validates against goals
+
+### Cloud-Native Development Flow
+1. **cloud-architect**: Infrastructure design
+2. **container-platform-specialist**: Container orchestration
+3. **observability-specialist**: Monitoring setup
+4. **sre-specialist**: Production readiness
+5. **performance-engineer**: Performance validation
 
 ### MCP Server Development Flow
 1. **mcp-server-architect**: Designs architecture
@@ -213,38 +215,47 @@ Ask your AI: "What specialized agents do I have available?"
 
 ### Production Deployment
 1. **devops-specialist**: CI/CD setup
-2. **performance-engineer**: Performance validation
-3. **sre-specialist**: Production monitoring
-4. **compliance-auditor**: Final checks
+2. **security-architect**: Security review
+3. **performance-engineer**: Performance validation
+4. **observability-specialist**: Monitoring setup
+5. **sre-specialist**: Production monitoring
+6. **compliance-auditor**: Final checks
 
 ## Finding Agents for Specific Needs
 
 ### "I need help with..."
 
+#### API Design
+-> **api-architect**: REST, GraphQL, gRPC design and best practices
+
 #### Performance Issues
-→ **performance-engineer**: Identifies bottlenecks and optimizations
+-> **performance-engineer**: Identifies bottlenecks and optimizations
 
 #### Security Concerns
-→ **compliance-auditor**: Security assessments
-→ **mcp-quality-assurance**: MCP-specific security
+-> **security-architect**: Threat modeling, zero-trust, OWASP
+-> **compliance-auditor**: Compliance assessments
+
+#### Cloud Infrastructure
+-> **cloud-architect**: Multi-cloud strategy and IaC
+-> **container-platform-specialist**: Kubernetes and container orchestration
+
+#### Monitoring & Alerting
+-> **observability-specialist**: OpenTelemetry, tracing, SLOs
+-> **sre-specialist**: Incident response and reliability
 
 #### Documentation
-→ **technical-writer**: User-facing docs
-→ **documentation-architect**: Documentation systems
+-> **technical-writer**: User-facing docs
+-> **documentation-architect**: Documentation systems
 
 #### Testing Strategies
-→ **test-manager**: Overall strategy
-→ **ai-test-engineer**: AI-specific testing
-→ **integration-orchestrator**: Integration testing
-
-#### Code Quality
-→ **critical-goal-reviewer**: Goal alignment
-→ **[language]-expert**: Language best practices
+-> **test-manager**: Overall strategy
+-> **ai-test-engineer**: AI-specific testing
+-> **integration-orchestrator**: Integration testing
 
 ## Best Practices
 
 ### 1. Start with Core Agents
-Always install the three critical agents first.
+Always install the three critical agents first (sdlc-enforcer, critical-goal-reviewer, solution-architect).
 
 ### 2. Add Agents Incrementally
 Don't install all agents at once. Add them as needs arise.
@@ -256,7 +267,7 @@ Let ai-first-kick-starter guide your agent selection.
 As your project grows, revisit agent needs regularly.
 
 ### 5. Leverage Agent Collaboration
-Agents work best together - use complementary agents.
+Agents work best together - use complementary agents via compositions.
 
 ## Troubleshooting
 
@@ -272,20 +283,14 @@ Agents work best together - use complementary agents.
 ### Agent Conflicts
 - Some agents overlap in functionality
 - Choose the most specific agent for your need
-
-## Future Agent Development
-
-New agents are continuously being developed. Check for updates:
-- Ask ai-first-kick-starter about new agents
-- Review the agent manifest regularly
-- Watch for framework updates
+- Check `agents/agent-compositions.yaml` for recommended combinations
 
 ## Getting Help
 
 For agent-related questions:
 1. Use **ai-first-kick-starter** agent
-2. Check agent descriptions in manifest
-3. Ask your AI for agent capabilities
-4. Review agent collaboration examples
+2. Check agent descriptions in manifest (`release/agent-manifest.json`)
+3. Run `python tools/validation/validate-agent-format.py --maturity-report` for catalog overview
+4. Review `docs/AGENT-DIRECTORY-STRUCTURE.md` for directory layout
 
 Remember: The right agents can dramatically improve your development workflow. Start with the core three, then expand based on your specific needs!
