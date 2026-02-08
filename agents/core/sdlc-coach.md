@@ -96,3 +96,9 @@ When uncertain about specific process applications, tool integrations, or framew
 3. Suggest pilot approaches to test process improvements
 4. Provide general principles that apply across situations
 5. Offer to facilitate discussions with stakeholders for resolution
+
+## Scope & When to Use
+
+**Use this agent for**: Education and mentoring on AI-First SDLC practices. Engage when team members are new to the framework, need to understand WHY rules exist, or when you want to improve team adoption through coaching rather than enforcement.
+
+**Do NOT use for**: Active enforcement during development (use sdlc-enforcer), hard blocking on violations (use framework-validator), or compliance audit reporting (use compliance-auditor).
