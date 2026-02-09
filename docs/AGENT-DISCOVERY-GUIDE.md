@@ -9,7 +9,7 @@
   - [Quick Start: Essential Agents](#quick-start-essential-agents)
     - [Core Agents (Install These First!)](#core-agents-install-these-first)
   - [Agent Categories](#agent-categories)
-    - [Core Agents (27 agents)](#core-agents-27-agents)
+    - [Core Agents (29 agents)](#core-agents-29-agents)
       - [Architecture](#architecture)
       - [Security](#security)
       - [Operations](#operations)

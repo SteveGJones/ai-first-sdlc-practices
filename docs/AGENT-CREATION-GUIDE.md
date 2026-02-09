@@ -5,6 +5,8 @@
 - [Agent Creation Guide](#agent-creation-guide)
   - [Table of Contents](#table-of-contents)
   - [Agent Creation Pipeline](#agent-creation-pipeline)
+    - [Recommended Entry Point: pipeline-orchestrator](#recommended-entry-point-pipeline-orchestrator)
+    - [Pipeline Paths](#pipeline-paths)
   - [Reference Agent Archetypes](#reference-agent-archetypes)
   - [Research Prompts](#research-prompts)
     - [Research Resources](#research-resources)
