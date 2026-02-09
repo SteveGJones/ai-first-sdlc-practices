@@ -1,3 +1,35 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Research Prompt Guide](#research-prompt-guide)
+  - [Why Research Prompts](#why-research-prompts)
+  - [When to Use Research Prompts](#when-to-use-research-prompts)
+  - [The Research Prompt Format](#the-research-prompt-format)
+    - [1. Objective](#1-objective)
+    - [2. Context (Optional)](#2-context-optional)
+    - [3. Research Areas (6-10)](#3-research-areas-6-10)
+    - [4. Synthesis Requirements](#4-synthesis-requirements)
+    - [5. Agent Integration Points](#5-agent-integration-points)
+  - [How to Execute Research](#how-to-execute-research)
+    - [Step 1: Write the Research Prompt](#step-1-write-the-research-prompt)
+    - [Step 2: Feed to an AI with Web Search](#step-2-feed-to-an-ai-with-web-search)
+    - [Step 3: Review and Supplement](#step-3-review-and-supplement)
+    - [Step 4: Synthesize into Knowledge Base](#step-4-synthesize-into-knowledge-base)
+    - [Step 5: Customize the Reference Agent](#step-5-customize-the-reference-agent)
+  - [Worked Example](#worked-example)
+    - [1. Identify Need](#1-identify-need)
+    - [2. Choose Archetype](#2-choose-archetype)
+    - [3. Create Research Prompt](#3-create-research-prompt)
+    - [4. Execute Research](#4-execute-research)
+    - [5. Synthesize](#5-synthesize)
+    - [6. Customize Reference Agent](#6-customize-reference-agent)
+    - [7. Validate](#7-validate)
+  - [Tips for Better Research Prompts](#tips-for-better-research-prompts)
+  - [Related Resources](#related-resources)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Research Prompt Guide
 
 How to use research prompts to build agents with deep, grounded domain knowledge.

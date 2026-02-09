@@ -4,6 +4,11 @@
 
 - [Agent Creation Guide](#agent-creation-guide)
   - [Table of Contents](#table-of-contents)
+  - [Agent Creation Pipeline](#agent-creation-pipeline)
+  - [Reference Agent Archetypes](#reference-agent-archetypes)
+  - [Research Prompts](#research-prompts)
+    - [Research Resources](#research-resources)
+    - [Enforcement](#enforcement)
   - [Understanding Agents](#understanding-agents)
     - [What is an Agent?](#what-is-an-agent)
     - [When to Create a New Agent](#when-to-create-a-new-agent)

@@ -7,6 +7,7 @@
   - [YAML Frontmatter Schema](#yaml-frontmatter-schema)
     - [Required Fields](#required-fields)
     - [Optional Fields](#optional-fields)
+    - [Maturity Tiers](#maturity-tiers)
     - [Examples Structure](#examples-structure)
   - [Complete Schema](#complete-schema)
   - [Content Section](#content-section)

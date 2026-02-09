@@ -1,3 +1,17 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Agent Directory Structure](#agent-directory-structure)
+  - [Directories](#directories)
+    - [`agents/` — Authoritative Source](#agents--authoritative-source)
+    - [`.claude/agents/` — Runtime Installation](#claudeagents--runtime-installation)
+    - [`release/agents/` — Distribution Snapshot](#releaseagents--distribution-snapshot)
+  - [Sync Rules](#sync-rules)
+  - [Adding a New Agent to `.claude/agents/`](#adding-a-new-agent-to-claudeagents)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Agent Directory Structure
 
 This document explains the three agent directories in this repository and how they relate to each other.
