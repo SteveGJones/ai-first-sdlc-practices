@@ -291,7 +291,7 @@ class TeamEngagementValidator:
         print("\n🏗️  VALIDATING TEAM STRUCTURE...")
 
         required_team_files = [
-            "CLAUDE-TEAM-FIRST.md",
+            "CLAUDE-CORE.md",
             "AGENTIC-SDLC-TEAM-PRINCIPLES.md",
         ]
 

@@ -3,6 +3,7 @@ name: code-review-specialist
 description: "Expert in code quality, security vulnerabilities (OWASP Top 10), language-specific patterns (Python/JS/Go/Java/Rust), and automated review tools. Use for PR reviews, security assessments, and review process setup."
 tools: Read, Grep, Glob, Bash
 model: sonnet
+maturity: production
 examples:
   - context: Team has a PR touching authentication logic that needs security-focused review
     user: "Review this authentication PR for security issues"
@@ -554,7 +555,7 @@ Present reviews in this structured format:
 - **security-architect**: Escalate for deep security architecture review, comprehensive threat modeling
 - **solution-architect**: Consult for architectural decision review, system design validation
 - **ai-test-engineer**: Collaborate on test strategy; code-review-specialist reviews test code quality
-- **Language experts** (python-expert, javascript-expert, etc.): Engage for deep language-specific idiom guidance
+- **Language experts** (language-python-expert, language-javascript-expert, language-go-expert): Engage for deep language-specific idiom guidance
 - **critical-goal-reviewer**: Hand off for requirements alignment validation after code review
 
 **Notes**:

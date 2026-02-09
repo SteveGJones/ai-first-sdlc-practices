@@ -8,6 +8,7 @@ tools:
   - Bash
 model: sonnet
 color: green
+maturity: production
 examples:
   - context: Team finishing MCP server implementation before production deployment
     user: "We've completed our MCP server. Can you review it for quality and security before we deploy?"

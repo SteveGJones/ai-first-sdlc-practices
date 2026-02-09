@@ -1,6 +1,7 @@
 ---
 name: ai-team-transformer
 description: "Expert in AI team transformation, multi-agent orchestration, and developer coaching. Use for AI adoption programs, team collaboration training, and building legendary AI-augmented teams."
+maturity: production
 examples:
   - context: Team wants to adopt AI-first development practices
     user: "We want to transform our development team to work effectively with AI agents. Where do we start?"

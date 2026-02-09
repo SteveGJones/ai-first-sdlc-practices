@@ -9,6 +9,7 @@ tools:
   - Grep
   - Bash
 model: sonnet
+maturity: production
 examples:
   - context: Team has built an MCP server exposing database tools and needs comprehensive validation before deployment
     user: "Test my MCP server that provides PostgreSQL database tools. I need to know if it's production ready."

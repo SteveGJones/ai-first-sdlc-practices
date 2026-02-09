@@ -30,7 +30,9 @@
       "ux-ui-architect",
       "data-architect",
       "data-privacy-officer",
-      "mobile-architect"
+      "mobile-architect",
+      "repo-knowledge-distiller",
+      "pipeline-orchestrator"
     ],
     "ai-development": [
       "ai-solution-architect",
@@ -107,7 +109,7 @@
     "critical-goal-reviewer": {
       "version": "1.0.0",
       "category": "core/quality",
-      "maturity": "stable",
+      "maturity": "production",
       "description": "Acts as a constructive challenger and devil's advocate. Reviews completed work against original project goals, requirements, and design specifications, identifying gaps and deviations.",
       "path": "core/critical-goal-reviewer.md",
       "priority": "critical",
@@ -145,7 +147,7 @@
     "sre-specialist": {
       "version": "1.0.0",
       "category": "core/reliability",
-      "maturity": "stable",
+      "maturity": "production",
       "description": "Site reliability engineering expert focusing on production monitoring, incident response, and operational excellence. Ensures systems remain reliable and performant in production.",
       "path": "core/sre-specialist.md",
       "priority": "high",
@@ -298,6 +300,43 @@
         "archetype"
       ]
     },
+    "repo-knowledge-distiller": {
+      "version": "1.0.0",
+      "category": "core/pipeline",
+      "maturity": "production",
+      "description": "Analyzes repositories and knowledge bases to produce synthesis documents for agent creation via RELIC evaluation and artifact discovery.",
+      "path": "core/repo-knowledge-distiller.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "repository",
+        "knowledge",
+        "distillation",
+        "synthesis",
+        "artifacts",
+        "pipeline"
+      ]
+    },
+    "pipeline-orchestrator": {
+      "version": "1.0.0",
+      "category": "core/pipeline",
+      "maturity": "production",
+      "description": "Unified entry point for agent creation pipeline. Routes web research or repo analysis, then delegates to agent-builder for construction.",
+      "path": "core/pipeline-orchestrator.md",
+      "priority": "high",
+      "dependencies": [
+        "deep-research-agent",
+        "repo-knowledge-distiller",
+        "agent-builder"
+      ],
+      "keywords": [
+        "orchestrator",
+        "agent-creation",
+        "pipeline",
+        "routing",
+        "end-to-end"
+      ]
+    },
     "performance-engineer": {
       "version": "1.0.0",
       "category": "testing/performance",
@@ -310,7 +349,7 @@
     "integration-orchestrator": {
       "version": "1.0.0",
       "category": "testing/integration",
-      "maturity": "stable",
+      "maturity": "production",
       "description": "Designs and manages complex integration testing strategies, API contract testing, cross-service validation, and end-to-end testing orchestration.",
       "path": "testing/integration-orchestrator.md",
       "priority": "high",
@@ -405,16 +444,17 @@
     "github-integration-specialist"
   ],
   "statistics": {
-    "total_agents": 68,
+    "total_agents": 65,
     "core_agents": 5,
     "maturity_distribution": {
-      "production": 34,
-      "stable": 26,
-      "beta": 4,
-      "stub": 4
+      "production": 52,
+      "stable": 9,
+      "beta": 2,
+      "stub": 1,
+      "research": 1
     },
     "categories": {
-      "core": 27,
+      "core": 29,
       "ai-development": 9,
       "ai-builders": 5,
       "testing": 4,

@@ -84,6 +84,6 @@ After completing the research, synthesize findings into:
 
 This agent should:
 - **Complement**: critical-goal-reviewer by focusing on code quality while goal-reviewer focuses on requirements alignment
-- **Hand off to**: language-specific experts (python-expert, javascript-expert) for deep language idiom questions
+- **Hand off to**: language-specific experts (language-python-expert, language-javascript-expert, language-go-expert) for deep language idiom questions
 - **Receive from**: solution-architect when architectural standards need enforcement in reviews
 - **Never overlap with**: critical-goal-reviewer on goal/requirements alignment assessment

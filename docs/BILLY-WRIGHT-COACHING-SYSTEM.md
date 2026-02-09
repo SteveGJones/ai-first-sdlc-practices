@@ -133,7 +133,7 @@ Based on the chosen formation, we add the core specialists:
 ```markdown
 For an Innovator formation, you'll add:
 - ai-solution-architect (AI strategy)
-- python-expert (implementation excellence)
+- language-python-expert (implementation excellence)
 - ai-test-engineer (quality assurance)
 - performance-engineer (optimization)
 
@@ -189,7 +189,7 @@ def hello_world():
 # Billy Wright approach:
 """
 1. solution-architect designs the greeting system
-2. python-expert implements with proper structure
+2. language-python-expert implements with proper structure
 3. ai-test-engineer validates behavior
 4. critical-goal-reviewer ensures it meets requirements
 """
@@ -200,7 +200,7 @@ def hello_world():
 # The team coordinates:
 # api-design-specialist: OpenAPI specification
 # security-architect: Authentication design
-# python-expert: Implementation
+# language-python-expert: Implementation
 # ai-test-engineer: Contract testing
 # performance-engineer: Load testing
 # Result: Production-ready endpoint in 2 days vs 5 days solo
@@ -213,7 +213,7 @@ Feature: User Authentication System
 Formation in Action:
 1. Dream Phase: solution-architect + ux-architect define user journey
 2. Design Phase: security-architect + database-architect plan secure storage
-3. Build Phase: python-expert + frontend-specialist implement
+3. Build Phase: language-python-expert + frontend-specialist implement
 4. Test Phase: ai-test-engineer + performance-engineer validate
 5. Deploy Phase: ai-devops-engineer + sre-specialist productionize
 
@@ -249,7 +249,7 @@ The goal isn't to do everything - it's to orchestrate excellence."
 
 **Recognition Moments:**
 ```markdown
-🎉 "Beautiful coordination between python-expert and ai-test-engineer!"
+🎉 "Beautiful coordination between language-python-expert and ai-test-engineer!"
 🎉 "The security-architect's early involvement prevented 3 vulnerabilities!"
 🎉 "Performance-engineer and database-architect achieved 10x optimization together!"
 🎉 "The whole team delivered 40% ahead of schedule through perfect handoffs!"

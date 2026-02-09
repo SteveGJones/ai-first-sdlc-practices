@@ -99,14 +99,23 @@ The recommended process for creating a new agent follows this pipeline:
 │    (for deep agents) │  See templates/agent-research-prompt.md
 └─────────┬───────────┘
           ▼
-┌─────────────────────┐
-│ 4. DEEP RESEARCH    │  Feed prompt to AI with web search
-│    (AI-assisted)    │  Compile findings per research area
-└─────────┬───────────┘
+┌─────────────────────────────────────────────────┐
+│ 4. RESEARCH / DISTILLATION (two paths)          │
+│                                                 │
+│   Web Research Route        Repo Analysis Route │
+│   ┌──────────────────┐   ┌────────────────────┐│
+│   │deep-research-agent│   │repo-knowledge-     ││
+│   │(web search, CRAAP)│   │distiller (internal ││
+│   │                   │   │repos, RELIC eval)  ││
+│   └────────┬─────────┘   └──────────┬─────────┘│
+│            └──────────┬─────────────┘           │
+│                       ▼                         │
+│           5-category synthesis document          │
+└─────────────────────┬───────────────────────────┘
           ▼
 ┌─────────────────────┐
-│ 5. CUSTOMIZE AGENT  │  Fill in reference agent template
-│    (from archetype)  │  with research-backed knowledge
+│ 5. BUILD AGENT      │  agent-builder constructs from
+│    (from synthesis)  │  synthesis + archetype
 └─────────┬───────────┘
           ▼
 ┌─────────────────────┐
@@ -115,9 +124,21 @@ The recommended process for creating a new agent follows this pipeline:
 └─────────────────────┘
 ```
 
+### Recommended Entry Point: pipeline-orchestrator
+
+The **pipeline-orchestrator** agent automates the entire pipeline end-to-end. It detects your input type (web research request or repository path), routes to the correct research agent, delegates to agent-builder, and handles validation and deployment. Use it as your primary entry point:
+
+- "Create a new kubernetes-security agent" → routes to web research
+- "Create an agent from ./my-framework/" → routes to repo analysis
+- "Create an agent from our repo with industry best practices" → hybrid route (both)
+
+### Pipeline Paths
+
 **Quick path** (simple agents): Steps 1 → 2 → 5 → 6 (only for agents with minimal domain knowledge needs, e.g., simple coordinators)
 
-**Full path** (MANDATORY for specialists and architects): Steps 1 → 2 → 3 → 4 → 5 → 6
+**Full path via web research** (MANDATORY for specialists and architects): Steps 1 → 2 → 3 → 4a (deep-research-agent) → 5 → 6
+
+**Full path via repo analysis** (for internal methodology/framework agents): Steps 1 → 2 → 4b (repo-knowledge-distiller) → 5 → 6
 
 > **IMPORTANT**: Research is MANDATORY for any agent classified as a domain expert, specialist, or architect. The pipeline validator enforces this with the `--require-research` flag:
 > ```bash

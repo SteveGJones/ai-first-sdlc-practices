@@ -36,7 +36,7 @@ compositions:
     description: "Complete AI/ML system development and deployment"
     base_agent: "ai-solution-architect"
     includes:
-      - "python-expert"
+      - "language-python-expert"
       - "devops-specialist"
       - "performance-engineer"
       - "ai-test-engineer"

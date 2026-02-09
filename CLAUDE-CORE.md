@@ -16,7 +16,7 @@ No manual setup needed!
 
 ## 🔴 FUNDAMENTAL RULE: ALWAYS COLLABORATE WITH EXPERT AGENTS
 
-**YOU HAVE 69+ SPECIALIST AGENTS - ALWAYS CHECK IF AN EXPERT EXISTS FOR YOUR TASK**
+**YOU HAVE 63 SPECIALIST AGENTS - ALWAYS CHECK IF AN EXPERT EXISTS FOR YOUR TASK**
 
 Before ANY action:
 1. **ASK**: "Which expert agents can help with this?" (Answer: Several)
@@ -46,7 +46,7 @@ This framework enforces AI-First SDLC practices with ABSOLUTE ZERO TOLERANCE. AN
 
 **🚨 WORKING ALONE = VIOLATION. ALWAYS ENGAGE SPECIALIST AGENTS 🚨**
 
-**With 69+ expert agents available, you MUST:**
+**With 63 expert agents across 10 categories, you MUST:**
 1. **ALWAYS CHECK**: Is there an expert for this task? (Usually YES)
 2. **ALWAYS ENGAGE**: Use Task tool to bring in specialists
 3. **NEVER SOLO**: You coordinate experts, you don't work alone
@@ -58,7 +58,7 @@ This framework enforces AI-First SDLC practices with ABSOLUTE ZERO TOLERANCE. AN
 - security-specialist, compliance-auditor
 - documentation-architect, technical-writer
 - language-python-expert, language-javascript-expert, language-go-expert
-- And 50+ more specialists!
+- Plus architecture, operations, AI/ML, testing, documentation, project management, and agent creation pipeline specialists
 
 **NO EXCEPTIONS: Always look for and engage expert agents**
 
@@ -247,7 +247,7 @@ project/
 
 ## 🚨 MANDATORY AUTO-LOADED INSTRUCTIONS 🚨
 
-**CLAUDE-TEAM-FIRST.md is AUTOMATICALLY loaded for ALL tasks. Team-first behavior is MANDATORY, not optional.**
+**Team-first behavior is AUTOMATICALLY enforced for ALL tasks. Team-first behavior is MANDATORY, not optional.**
 
 ## 🛡️ AUTOMATIC ENFORCEMENT SYSTEM
 
@@ -266,7 +266,7 @@ Load additional instructions based on task:
 
 | Task | Load File |
 |------|-----------|
-| **TEAM COORDINATION** | **CLAUDE-TEAM-FIRST.md** (AUTO-LOADED - MANDATORY) |
+| **TEAM COORDINATION** | **Built-in team-first enforcement** (AUTO-LOADED - MANDATORY) |
 | Setup framework | CLAUDE-SETUP.md |
 | Create architecture | CLAUDE-CONTEXT-architecture.md |
 | Run validation | CLAUDE-CONTEXT-validation.md |
@@ -324,5 +324,3 @@ If update available: Load CLAUDE-CONTEXT-update.md
 - **Proceeding when team engagement validation fails** → INSTANT DEATH PENALTY
 
 **THERE ARE NO WARNINGS. THERE ARE NO SECOND CHANCES. VIOLATION = TERMINATION.**
-
-Total lines: 120

@@ -144,7 +144,7 @@ agents:
     primary_function: "Ensures security throughout all processes"
     communication_style: "Risk-focused, proactive, defensive"
 
-    receives_from: [solution-architect, ai-solution-architect, python-expert]
+    receives_from: [solution-architect, ai-solution-architect, language-python-expert]
     passes_to:
       secure: [compliance-auditor, sre-specialist]
       threats: [sre-specialist, delivery-manager]
@@ -162,7 +162,7 @@ agents:
 
     receives_from: [all]  # Captain receives requests from everyone
     passes_to:
-      implementation: [ai-solution-architect, python-expert, devops-specialist]
+      implementation: [ai-solution-architect, language-python-expert, devops-specialist]
       validation: [critical-goal-reviewer, test-manager]
       coordination: [agile-coach, delivery-manager]
 
@@ -206,7 +206,7 @@ agents:
     communication_style: "Innovation-focused, AI-native, forward-thinking"
 
     receives_from: [solution-architect, prompt-engineer, langchain-architect]
-    passes_to: [mcp-server-architect, ai-test-engineer, python-expert]
+    passes_to: [mcp-server-architect, ai-test-engineer, language-python-expert]
 
     message_templates:
       ai_design: "🧠 AI_DESIGN: [SYSTEM] | Intelligence Pattern: [APPROACH] | Agent Interaction: [MODEL]"
@@ -239,7 +239,7 @@ agents:
       deployment_ready: "🚀 DEPLOYMENT_READY: [SERVICE] | Health: [STATUS] | Monitoring: [ENABLED]"
 
   # STRIKERS - Results Deliverers
-  python-expert:
+  language-python-expert:
     role: "striker"
     position: "implementation-specialist"
     primary_function: "Executes technical implementations with precision"
@@ -258,7 +258,7 @@ agents:
     primary_function: "Ensures system performance and efficiency"
     communication_style: "Metrics-driven, performance-focused, optimization-oriented"
 
-    receives_from: [python-expert, sre-specialist, devops-specialist]
+    receives_from: [language-python-expert, sre-specialist, devops-specialist]
     passes_to: [sre-specialist, devops-specialist, solution-architect]
 
     message_templates:
@@ -299,7 +299,7 @@ workflows:
         inputs: ["architecture_document", "ai_architecture"]
         outputs: ["security_assessment", "risk_mitigations"]
 
-      - agent: python-expert
+      - agent: language-python-expert
         action: "Implementation"
         inputs: ["implementation_plan", "ai_architecture"]
         outputs: ["working_code", "unit_tests"]
@@ -327,7 +327,7 @@ workflows:
         inputs: ["impact_assessment"]
         outputs: ["resolution_strategy", "resource_requirements"]
 
-      - agent: python-expert
+      - agent: language-python-expert
         action: "Implement fix"
         inputs: ["resolution_strategy"]
         outputs: ["fix_implementation", "regression_tests"]

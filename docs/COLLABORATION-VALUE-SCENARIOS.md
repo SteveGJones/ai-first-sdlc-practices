@@ -58,7 +58,7 @@ Defenders (Foundation):
 - sdlc-enforcer: Process compliance, quality gates
 
 Midfielders (Coordination):
-- python-expert: Business logic, ORM patterns, testing
+- language-python-expert: Business logic, ORM patterns, testing
 - solution-architect: System design, integration patterns
 - devops-specialist: CI/CD, deployment, monitoring
 
@@ -304,7 +304,7 @@ class ArchitectureToolBuilder:
 For resource-constrained projects, start with these core formations:
 
 #### Python 3-Tier: Essential Trio
-- python-expert + database-architect + security-specialist
+- language-python-expert + database-architect + security-specialist
 
 #### MCP Server: Security First
 - mcp-server-architect + security-specialist + ai-test-engineer

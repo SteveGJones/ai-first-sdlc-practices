@@ -475,5 +475,5 @@ Similar teams (n=[X]): [Brief description]
 **Do NOT engage for**:
 - "This team violated [rule]. What do I do?" → sdlc-enforcer
 - "Design an architecture for [system]" → solution-architect
-- "How do I implement [pattern] in Python?" → python-expert
+- "How do I implement [pattern] in Python?" → language-python-expert
 - "Should we adopt AI-First SDLC organization-wide?" → enforcement-strategy-advisor

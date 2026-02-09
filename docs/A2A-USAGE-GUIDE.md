@@ -83,7 +83,7 @@ python tools/automation/a2a-orchestrator.py route \
 
 **Expected Flow:**
 ```
-product-owner → solution-architect → ai-solution-architect → python-expert → ai-test-engineer → critical-goal-reviewer
+product-owner → solution-architect → ai-solution-architect → language-python-expert → ai-test-engineer → critical-goal-reviewer
 ```
 
 ### Scenario 2: Performance Crisis
@@ -211,7 +211,7 @@ python tools/automation/a2a-orchestrator.py send \
 ```bash
 # Developer hits technical roadblock
 python tools/automation/a2a-orchestrator.py escalate \
-  --agent "python-expert" \
+  --agent "language-python-expert" \
   --issue "Unable to integrate ML model with existing database schema - fundamental architectural conflict" \
   --urgency "HIGH"
 
@@ -253,7 +253,7 @@ MIDFIELDERS:
   • delivery-manager - delivery-coordination, timeline-management
 
 STRIKERS:
-  • python-expert - python-implementation, code-quality
+  • language-python-expert - python-implementation, code-quality
   • performance-engineer - performance-optimization, system-monitoring
   • devops-specialist - infrastructure-deployment, scalability
 ```

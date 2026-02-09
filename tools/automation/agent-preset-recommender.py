@@ -75,13 +75,13 @@ AGENT_PRESETS = {
             "documentation-architect",
         ],
         "recommended_agents": ["test-manager", "technical-writer"],
-        "optional_agents": ["python-expert", "devops-specialist"],
+        "optional_agents": ["language-python-expert", "devops-specialist"],
     },
     "cli-tool": {
         "name": "CLI Tool",
         "description": "Command-line interface application",
         "core_agents": ["sdlc-enforcer", "solution-architect", "technical-writer"],
-        "recommended_agents": ["test-manager", "python-expert"],
+        "recommended_agents": ["test-manager", "language-python-expert"],
         "optional_agents": ["documentation-architect", "devops-specialist"],
     },
     "data-pipeline": {
@@ -121,7 +121,7 @@ AGENT_PRESETS = {
 
 # Technology-specific agent recommendations
 TECH_AGENTS = {
-    "python": ["python-expert", "language-python-expert"],
+    "python": ["language-python-expert", "language-python-expert"],
     "javascript": ["devops-specialist", "integration-orchestrator"],
     "typescript": ["devops-specialist", "integration-orchestrator"],
     "docker": ["devops-specialist", "sre-specialist"],

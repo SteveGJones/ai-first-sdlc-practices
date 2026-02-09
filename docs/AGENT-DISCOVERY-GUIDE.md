@@ -72,7 +72,7 @@
 # AI-First SDLC Agent Discovery Guide
 
 ## Overview
-The AI-First SDLC framework provides **68 specialized AI agents** organized into 10 categories to enhance your development workflow. This guide helps you discover, understand, and install the right agents for your project needs.
+The AI-First SDLC framework provides **65 specialized AI agents** organized into 10 categories to enhance your development workflow. This guide helps you discover, understand, and install the right agents for your project needs.
 
 ## Agent Quality Tiers
 
@@ -80,10 +80,11 @@ Every agent has a maturity label indicating its readiness:
 
 | Tier | Count | Description |
 |------|-------|-------------|
-| **Production** | 34 | Ready for daily use. 100+ lines, deep methodology, battle-tested |
-| **Stable** | 26 | Functional with good coverage. 80-100 lines, clear methodology |
-| **Beta** | 4 | Works but needs depth. 50-80 lines, basic methodology |
-| **Stub** | 4 | Placeholder only. Awaiting research-driven rebuild |
+| **Production** | 52 | Ready for daily use. 100+ lines, deep methodology, battle-tested |
+| **Stable** | 9 | Functional with good coverage. 80-100 lines, clear methodology |
+| **Beta** | 2 | Works but needs depth. 50-80 lines, basic methodology |
+| **Stub** | 1 | Placeholder only. Awaiting research-driven rebuild |
+| **Research** | 1 | Future planned agent under development |
 
 See `docs/AGENT-FORMAT-SPEC.md` for full maturity tier criteria.
 See `docs/AGENT-ROADMAP.md` for planned future agents.
@@ -101,36 +102,36 @@ Every project should have these critical agents:
    - Enforces Zero Technical Debt policy
    - **When to use**: ALWAYS - from project start
 
-2. **critical-goal-reviewer** `stable`
+2. **critical-goal-reviewer** `production`
    - Quality assurance and constructive challenger
    - Reviews work against original goals
    - **When to use**: After completing any significant work
 
-3. **solution-architect** `stable`
+3. **solution-architect** `production`
    - System design and architecture expert
    - Reviews technical decisions
    - **When to use**: Before implementing complex features
 
 ## Agent Categories
 
-### Core Agents (27 agents)
+### Core Agents (29 agents)
 
 #### Architecture
 - **api-architect** `production` - REST, GraphQL, gRPC design and API lifecycle management
 - **backend-architect** `production` - Microservices, event-driven architecture, scalability patterns
 - **frontend-architect** `production` - Component architecture, accessibility, SSR/SSG, design systems
 - **cloud-architect** `production` - Multi-cloud strategy, IaC, cost optimization, serverless
-- **solution-architect** `stable` - System design and architecture decisions
-- **mobile-architect** `stub` - Mobile application architecture (awaiting rebuild)
+- **solution-architect** `production` - System design and architecture decisions
+- **mobile-architect** `production` - Mobile application architecture
 
 #### Security
 - **security-architect** `production` - Threat modeling, zero-trust, OWASP, compliance frameworks
-- **frontend-security-specialist** `stable` - Frontend-specific security patterns
+- **frontend-security-specialist** `production` - Frontend-specific security patterns
 - **example-security-architect** `stable` - Reference implementation for security agents
 
 #### Operations
 - **devops-specialist** `production` - CI/CD, deployment automation, infrastructure as code
-- **sre-specialist** `stable` - Production monitoring, incident response, reliability
+- **sre-specialist** `production` - Production monitoring, incident response, reliability
 - **observability-specialist** `stable` - OpenTelemetry, distributed tracing, SLO/SLI, alerting
 - **container-platform-specialist** `stable` - Docker, Kubernetes, Helm, GitOps, service mesh
 
@@ -138,23 +139,25 @@ Every project should have these critical agents:
 - **compliance-auditor** `production` - Compliance checking and audit reporting
 - **sdlc-enforcer** `production` - SDLC compliance enforcement
 - **sdlc-coach** `production` - SDLC education and mentoring
-- **compliance-report-generator** `stable` - Automated compliance report generation
-- **enforcement-strategy-advisor** `stable` - Enforcement strategy recommendations
+- **compliance-report-generator** `production` - Automated compliance report generation
+- **enforcement-strategy-advisor** `production` - Enforcement strategy recommendations
 
 #### Data
-- **database-architect** `stable` - Database design and optimization
+- **database-architect** `production` - Database design and optimization
 - **data-architect** `stub` - Data architecture (awaiting rebuild)
-- **data-privacy-officer** `stub` - Data privacy compliance (awaiting rebuild)
+- **data-privacy-officer** `production` - Data privacy compliance
 
 #### Agent Creation Pipeline
 - **deep-research-agent** `production` - Systematic web research for agent creation (CRAAP evaluation, multi-phase methodology)
 - **agent-builder** `production` - Constructs agents from research documents and reference archetypes (knowledge distillation, anti-pattern detection)
+- **repo-knowledge-distiller** `production` - Analyzes repositories and knowledge bases to produce synthesis documents for agent creation (RELIC evaluation, portable artifact discovery)
+- **pipeline-orchestrator** `production` - Unified entry point for agent creation pipeline, routes web research or repo analysis then delegates to agent-builder
 
 #### Other Core
-- **critical-goal-reviewer** `stable` - Goal alignment validation
+- **critical-goal-reviewer** `production` - Goal alignment validation
 - **github-integration-specialist** `production` - GitHub automation
 - **test-manager** `stable` - Test strategy and coordination
-- **ux-ui-architect** `stable` - UX/UI design guidance
+- **ux-ui-architect** `production` - UX/UI design guidance
 
 ### AI/ML Development Agents (9 agents)
 - **ai-solution-architect** `production` - Enterprise AI system design
@@ -164,21 +167,21 @@ Every project should have these critical agents:
 - **mcp-quality-assurance** `production` - MCP quality expert
 - **agent-developer** `production` - Creates new AI agents
 - **junior-ai-solution-architect** `stable` - Fresh perspectives on AI
-- **langchain-architect** `stable` - LangChain framework specialist
-- **a2a-architect** `stable` - Agent-to-Agent communication
+- **langchain-architect** `production` - LangChain framework specialist
+- **a2a-architect** `production` - Agent-to-Agent communication
 
 ### AI Builders Agents (5 agents)
 - **ai-team-transformer** `production` - AI team transformation strategies
-- **ai-devops-engineer** `stable` - AI-enhanced DevOps workflows
-- **context-engineer** `stable` - Context window optimization
-- **orchestration-architect** `stable` - Multi-agent orchestration patterns
-- **rag-system-designer** `stable` - RAG system architecture
+- **ai-devops-engineer** `production` - AI-enhanced DevOps workflows
+- **context-engineer** `production` - Context window optimization
+- **orchestration-architect** `production` - Multi-agent orchestration patterns
+- **rag-system-designer** `production` - RAG system architecture
 
 ### Testing & Quality Agents (4 agents)
 - **ai-test-engineer** `production` - AI-specific testing
 - **performance-engineer** `production` - Performance optimization
-- **code-review-specialist** `stable` - Automated code review
-- **integration-orchestrator** `stable` - Integration testing
+- **code-review-specialist** `production` - Automated code review
+- **integration-orchestrator** `production` - Integration testing
 
 ### Documentation Agents (2 agents)
 - **documentation-architect** `production` - Documentation systems
@@ -186,9 +189,9 @@ Every project should have these critical agents:
 
 ### Project Management Agents (4 agents)
 - **project-plan-tracker** `production` - Progress monitoring
-- **agile-coach** `beta` - Agile methodology guidance
-- **delivery-manager** `beta` - Project delivery coordination
-- **team-progress-tracker** `stable` - Team-level progress tracking
+- **agile-coach** `production` - Agile methodology guidance
+- **delivery-manager** `production` - Project delivery coordination
+- **team-progress-tracker** `production` - Team-level progress tracking
 
 ### SDLC Agents (8 agents)
 - **ai-first-kick-starter** `production` - Post-installation advisor
@@ -208,7 +211,7 @@ Every project should have these critical agents:
 - **example-python-expert** `beta` - Reference Python implementation
 
 ### Future Agents (1 agent)
-- **mcp-orchestrator** `stub` - Multi-MCP coordination (planned)
+- **mcp-orchestrator** `research` - Multi-MCP coordination (planned)
 
 ## How to Discover Agents
 

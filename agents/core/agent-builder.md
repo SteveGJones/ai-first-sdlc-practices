@@ -324,9 +324,10 @@ When delivering a constructed agent, provide:
 - **critical-goal-reviewer**: Engage after constructing an agent to validate that the finished agent meets its original design objectives
 
 **Receive inputs from:**
-- Research synthesis documents (produced by AI with web search during Phase 4 of the pipeline)
+- Research synthesis documents (produced by deep-research-agent for web research OR repo-knowledge-distiller for internal repositories during Phase 4 of the pipeline)
 - Archetype selection recommendations (from the person or agent who identified the need)
 - Existing agent files (when rebuilding or updating an agent)
+- Pipeline-orchestrator handoff messages (when running the end-to-end pipeline)
 
 **Produce outputs for:**
 - The `agents/core/` or `agents/[category]/` directories (finished agent files)

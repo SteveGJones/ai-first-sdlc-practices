@@ -402,7 +402,7 @@ For topics where the landscape changes frequently (AI/ML tooling, cloud services
 
 ## Collaboration Points
 
-**This agent is spawned by**: The agent creation pipeline (Step 4: Deep Research) or any workflow that needs structured domain research.
+**This agent is spawned by**: The pipeline-orchestrator (for web research route), the agent creation pipeline (Step 4: Deep Research), or directly for standalone research campaigns.
 
 **This agent produces**: A research output document at `agent_prompts/research-output-[agent-name].md` that feeds into Step 5 (Customize Agent from Research).
 
@@ -416,6 +416,9 @@ For topics where the landscape changes frequently (AI/ML tooling, cloud services
 - The agent builder (Step 5) for transforming research into a production agent file
 - The solution-architect when research reveals architectural questions beyond the prompt scope
 - The sdlc-enforcer when research reveals compliance or process concerns
+
+**Work closely with**:
+- **repo-knowledge-distiller**: Pipeline sibling that handles internal repository analysis (same synthesis format, different input source). In hybrid mode, both agents run in parallel and their outputs are merged by pipeline-orchestrator.
 
 **Receive from**:
 - A structured research prompt following `templates/agent-research-prompt.md` format
