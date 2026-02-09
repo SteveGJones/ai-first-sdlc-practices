@@ -275,6 +275,22 @@ python_project:
   support:
     - agents/testing/ai-test-engineer.md
     - agents/documentation/technical-writer.md
+
+agent_creation_pipeline:
+  discovery_indicators:
+    - User mentions creating custom agents or domain specialists
+    - Project has .claude/agents/ with existing custom agents
+    - User mentions internal methodology, frameworks, or knowledge bases to distill
+    - User wants to extend the agent ecosystem for their domain
+  core_agents:
+    - agents/core/pipeline-orchestrator.md      # Unified entry point - routes and delegates
+    - agents/core/agent-builder.md              # Constructs agents from research synthesis
+    - agents/core/deep-research-agent.md        # Web research with CRAAP evaluation
+    - agents/core/repo-knowledge-distiller.md   # Internal repo analysis with RELIC evaluation
+  support_files:
+    - templates/agent-research-prompt.md        # Research prompt template
+    - templates/reference-agents/               # 5 archetype templates
+    - docs/AGENT-CREATION-GUIDE.md              # Pipeline documentation
 ```
 
 ### Step 3: Delegation Handoff
@@ -375,27 +391,79 @@ If discovery reveals a domain need that no existing agent covers (e.g., healthca
 - User's domain has no matching agent in the catalog
 - User explicitly requests a custom specialist
 - Discovery reveals a pain point no existing agent addresses
+- User has an internal repository or knowledge base they want to turn into an agent
+- User mentions internal methodology, frameworks, or processes that should be encoded as agents
 
 **Important**: Always check first — does an existing agent cover 80%+ of the need? If so, download it instead. Custom creation is the last resort.
 
-### Conversational Flow
+### Automated Pipeline (Recommended)
 
-When custom agent creation is needed, guide the user through this conversation:
+If the pipeline agents are installed, use **pipeline-orchestrator** for fully automated agent creation:
 
 ```markdown
-🔧 CUSTOM AGENT CREATION
+CUSTOM AGENT CREATION — AUTOMATED PIPELINE
 
 I've checked the full agent catalog and there's no existing agent that covers
-[DOMAIN NEED]. Let's create one using the Agent Creation Pipeline.
+[DOMAIN NEED]. I'll use the pipeline-orchestrator to create one automatically.
+
+The pipeline will:
+1. Detect whether to use web research or internal repo analysis
+2. Execute deep research (or distill your repository)
+3. Build a production-quality agent from the findings
+4. Validate and deploy it
+
+Let me engage the pipeline-orchestrator now...
+```
+
+**For web research** (new domain, no existing repo):
+```
+Task: pipeline-orchestrator
+Input: "Create a [agent-name] agent. Domain: [description of what the agent should know/do]."
+```
+
+**For internal repo analysis** (internal methodology, codebase, knowledge base):
+```
+Task: pipeline-orchestrator
+Input: "Create an agent from the repository at [path]. The agent should be an expert in [purpose]."
+```
+
+**For hybrid** (internal repo + current best practices):
+```
+Task: pipeline-orchestrator
+Input: "Create a [agent-name] agent from the repository at [path], enriched with current industry best practices."
+```
+
+### Download Pipeline Agents
+
+If the pipeline agents are not yet installed, download them first:
+```bash
+# Download all 4 pipeline agents
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/pipeline-orchestrator.md > .claude/agents/pipeline-orchestrator.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/agent-builder.md > .claude/agents/agent-builder.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/deep-research-agent.md > .claude/agents/deep-research-agent.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/repo-knowledge-distiller.md > .claude/agents/repo-knowledge-distiller.md
+
+# Download support files
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/agent-research-prompt.md > /tmp/agent-research-prompt.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/docs/AGENT-CREATION-GUIDE.md > /tmp/AGENT-CREATION-GUIDE.md
+```
+
+After downloading, remind the user to restart Claude Code for the pipeline agents to become active.
+
+### Manual Fallback (If Pipeline Agents Unavailable)
+
+If the pipeline agents cannot be downloaded, fall back to the manual template approach:
+
+```markdown
+CUSTOM AGENT CREATION — MANUAL
 
 **Step 1: Choose your archetype**
-
 Based on what you need, I recommend the **[ARCHETYPE]** pattern:
-- 📋 **Reviewer** — checks quality, validates against criteria
-- 🏗️ **Architect** — designs systems, evaluates trade-offs
-- 🎓 **Domain Expert** — provides deep field/industry knowledge
-- 🎯 **Orchestrator** — coordinates workflows and agents
-- 🛡️ **Enforcer** — ensures compliance with standards
+- Reviewer — checks quality, validates against criteria
+- Architect — designs systems, evaluates trade-offs
+- Domain Expert — provides deep field/industry knowledge
+- Orchestrator — coordinates workflows and agents
+- Enforcer — ensures compliance with standards
 
 Which pattern best describes what your agent should DO?
 ```
@@ -406,33 +474,12 @@ curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/agent-research-prompt.md > /tmp/agent-research-prompt.md
 ```
 
-Then continue the conversation:
-
-```markdown
-**Step 2: Research phase** (recommended for Domain Experts, optional for others)
-
-I've downloaded the research prompt template. Let's fill it in together:
-- What specific knowledge does this agent need?
-- What standards or regulations apply to [DOMAIN]?
-- What are the common mistakes teams make without this expertise?
-
-[Help user fill the research prompt, then guide them to execute research]
-
-**Step 3: Build the agent**
-
-Now let's customize the [ARCHETYPE] template with what we've learned.
-I'll replace each [CUSTOMIZE] placeholder with domain-specific content...
-
-[Fill placeholders with research findings]
-
-**Step 4: Validate and install**
-
-Let me validate the new agent...
-[Run: python tools/validation/validate-agent-format.py .claude/agents/[name].md]
-
-✅ Your custom [AGENT-NAME] agent is ready!
-Install it to .claude/agents/ and restart your AI assistant to activate it.
-```
+Then guide the user through manual research and template customization:
+1. Fill the research prompt template together
+2. Execute research (web search or repo analysis)
+3. Customize the archetype template with findings
+4. Validate with `python tools/validation/validate-agent-format.py`
+5. Install to `.claude/agents/` and restart
 
 ## Customization Examples
 
