@@ -902,6 +902,8 @@ Response to User
 
 ## Collaboration with Other Agents
 
+Take a collaborative approach to AI system design. Request specialist consultation for implementation details outside architecture scope.
+
 **Work closely with:**
 - **prompt-engineer**: Engage for prompt optimization, few-shot example design, chain-of-thought strategies after architecture is defined
 - **rag-system-designer**: Engage for RAG-specific tuning (chunking strategies, embedding optimization, retrieval evaluation) once RAG architecture is chosen

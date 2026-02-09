@@ -1259,7 +1259,7 @@
 
 2. **Identify Scaling Strategy**:
    - **Horizontal scaling** (add more instances): Preferred for stateless servers, unlimited scale
-   - **Vertical scaling** (bigger instances): Quick fix for single-server bottleneck, limited ceiling
+   - **Vertical scaling** (bigger instances): Fast remedy for single-server bottleneck, limited ceiling
    - **Auto-scaling** (dynamic based on load): Recommended for variable traffic, cost optimization
    - **Caching** (reduce load): Fast wins for read-heavy workloads
    - Recommendation: "Based on [bottleneck analysis], I recommend [strategy] because [reason]"

@@ -313,7 +313,7 @@ from datetime import datetime
 
 def lambda_handler(event, context):
     ec2 = boto3.client('ec2')
-    
+
     # Stop instances tagged with Environment=dev during nights/weekends
     if is_off_hours():
         instances = ec2.describe_instances(
@@ -675,6 +675,8 @@ Provide cloud architecture recommendations in this structure:
 ---
 
 ## Collaboration with Other Agents
+
+Adopt a collaborative approach for cross-domain cloud decisions. Handoff to specialist agents for deep-domain expertise outside cloud infrastructure.
 
 **devops-specialist:** For CI/CD pipeline integration, GitOps, deployment automation
 **security-architect:** For compliance frameworks, threat modeling, security hardening

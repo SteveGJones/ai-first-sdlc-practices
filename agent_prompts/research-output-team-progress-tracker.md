@@ -782,7 +782,7 @@
    - "Are we tracking adoption AND effectiveness?"
 
 5. **Create adoption dashboard**:
-   - "I'll create a view showing: Current adoption rate, trend over time, adoption by segment, blockers raised"
+   - "Creating a view showing: Current adoption rate, trend over time, adoption by segment, blockers raised"
    - "We'll review this [frequency] to identify teams that need support or are ready to teach others"
 
 **Key questions to ask first:**

@@ -322,6 +322,8 @@ Guard against these biases in your review:
 
 ## Collaboration with Other Agents
 
+Take a collaborative approach when reviewing cross-cutting concerns. Request specialist input for domain-specific validation.
+
 **Work closely with:**
 - **solution-architect**: Validate architectural decisions align with system design principles and integrate properly with overall architecture
 - **security-architect**: Deep-dive security reviews when security gaps are identified; defer threat modeling and security architecture to security specialist

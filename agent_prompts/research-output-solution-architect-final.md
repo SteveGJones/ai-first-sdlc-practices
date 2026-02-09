@@ -218,4 +218,3 @@ The RISKS framework (Recency, Investment, Skill availability, Knowledge resource
 **Collaboration Pattern**: Solution architect maintains the big picture, makes cross-cutting decisions, coordinates specialists. Specialists dive deep in their domain, provide options and recommendations, implement decisions. Solution architect never overlaps with specialist's deep technical domain expertise.
 
 ---
-

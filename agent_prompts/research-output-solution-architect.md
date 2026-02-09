@@ -85,4 +85,3 @@ The **Evolutionary Architecture** approach (Neal Ford, Rebecca Parsons, Patrick 
 - ADR GitHub organization: https://adr.github.io/
 
 ---
-

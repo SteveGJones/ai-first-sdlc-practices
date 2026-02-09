@@ -27,9 +27,7 @@ class ValidationError:
         icon = (
             "❌"
             if self.severity == "error"
-            else "⚠️"
-            if self.severity == "warning"
-            else "ℹ️"
+            else "⚠️" if self.severity == "warning" else "ℹ️"
         )
         return f"{icon} {self.field}: {self.message}"
 
@@ -326,9 +324,13 @@ def validate_agent_content(content: str, strict: bool = True) -> Tuple[bool, Lis
 )
 @click.option("--json", "output_json", is_flag=True, help="Output results as JSON")
 @click.option(
-    "--maturity-report", is_flag=True, help="Scan directory and report maturity distribution"
+    "--maturity-report",
+    is_flag=True,
+    help="Scan directory and report maturity distribution",
 )
-def main(agent_file: str, strict: bool, quiet: bool, output_json: bool, maturity_report: bool):
+def main(
+    agent_file: str, strict: bool, quiet: bool, output_json: bool, maturity_report: bool
+):
     """
     Validate an AI agent file against the format specification.
 
@@ -403,7 +405,14 @@ def _run_maturity_report(agents_path: Path, output_json: bool):
     import json as json_mod
 
     agent_files = sorted(agents_path.rglob("*.md"))
-    tiers = {"production": [], "stable": [], "beta": [], "stub": [], "deprecated": [], "unlabeled": []}
+    tiers = {
+        "production": [],
+        "stable": [],
+        "beta": [],
+        "stub": [],
+        "deprecated": [],
+        "unlabeled": [],
+    }
 
     for agent_file in agent_files:
         content = agent_file.read_text()
@@ -429,7 +438,10 @@ def _run_maturity_report(agents_path: Path, output_json: bool):
     total = sum(len(v) for v in tiers.values())
 
     if output_json:
-        result = {"total": total, "tiers": {k: {"count": len(v), "agents": v} for k, v in tiers.items()}}
+        result = {
+            "total": total,
+            "tiers": {k: {"count": len(v), "agents": v} for k, v in tiers.items()},
+        }
         click.echo(json_mod.dumps(result, indent=2))
     else:
         click.echo(f"\n{'=' * 50}")
@@ -438,7 +450,14 @@ def _run_maturity_report(agents_path: Path, output_json: bool):
         click.echo(f"Total agents scanned: {total}\n")
         for tier, agents in tiers.items():
             if agents:
-                icon = {"production": "🟢", "stable": "🔵", "beta": "🟡", "stub": "🔴", "deprecated": "⚫", "unlabeled": "⚪"}.get(tier, "?")
+                icon = {
+                    "production": "🟢",
+                    "stable": "🔵",
+                    "beta": "🟡",
+                    "stub": "🔴",
+                    "deprecated": "⚫",
+                    "unlabeled": "⚪",
+                }.get(tier, "?")
                 click.echo(f"  {icon} {tier}: {len(agents)}")
                 for a in agents:
                     click.echo(f"      {a['name']} ({a['path']})")

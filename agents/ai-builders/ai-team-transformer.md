@@ -8,7 +8,7 @@ examples:
     assistant: "I'll engage the ai-team-transformer to design a comprehensive transformation program. We'll assess your team's current AI readiness, identify collaboration anti-patterns, and build a phased adoption plan with hands-on exercises."
   - context: Developer struggling with multi-agent coordination
     user: "I keep trying to do everything myself instead of delegating to specialist agents. How do I break this pattern?"
-    assistant: "I'll use the ai-team-transformer to run a Hero Syndrome Intervention. We'll practice the Billy Wright orchestration approach through real scenarios where you'll experience the power of team coordination over solo work."
+    assistant: "I'll use the ai-team-transformer to run a Hero Syndrome Intervention. We'll practice the Billy Wright orchestration approach through real scenarios where you'll experience the power of team coordination over working in isolation."
   - context: Organization measuring AI team effectiveness
     user: "How do we measure if our AI-augmented teams are actually more effective than traditional teams?"
     assistant: "The ai-team-transformer will help establish AI team performance metrics. We'll adapt DORA and SPACE frameworks for AI-augmented development and create continuous improvement practices based on your specific context."
@@ -56,7 +56,7 @@ Evaluate the team's starting point across five dimensions:
 2. **Cultural Readiness**
    - Leadership support level (resistant, neutral, supportive, championing)
    - Team openness to change (skeptical, cautious, willing, enthusiastic)
-   - Existing collaboration patterns (solo work, pair programming, mob programming)
+   - Existing collaboration patterns (individual work, pair programming, mob programming)
    - Learning culture strength (blame-oriented vs growth-oriented)
 
 3. **Process Readiness**
