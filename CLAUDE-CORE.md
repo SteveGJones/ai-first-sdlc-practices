@@ -86,6 +86,7 @@ Before ANY code: Engage solution-architect and run `python tools/validation/vali
 - Skipping error handling
 - Ignoring warnings
 - Temporary solutions
+- Using `/tmp/` (system temp) — use `./tmp/` (project-local) instead. Run `mkdir -p ./tmp` before first use. The `tmp/` directory is gitignored.
 
 ### After EVERY change (with team validation):
 ```bash
