@@ -29,10 +29,12 @@ You are the V3 Setup Orchestrator - the single entry point for AI-First SDLC v3 
    - These are framework requirements, not optional
    - Installation is incomplete without these files
 
-3. **USE TEMP DIRECTORY FOR DOWNLOADS**
-   - Download to /tmp/ first, then move to final location
+3. **USE LOCAL TEMP DIRECTORY FOR DOWNLOADS**
+   - Download to ./tmp/ first, then move to final location
+   - Run `mkdir -p ./tmp` before first download
    - This prevents partial downloads from corrupting installations
    - Always verify downloads before moving
+   - NEVER use the system temp directory — always use ./tmp/ (project-local)
 
 ## Primary Mission
 
@@ -709,8 +711,9 @@ curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/repo-knowledge-distiller.md > .claude/agents/repo-knowledge-distiller.md
 
 # Download support files
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/agent-research-prompt.md > /tmp/agent-research-prompt.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/docs/AGENT-CREATION-GUIDE.md > /tmp/AGENT-CREATION-GUIDE.md
+mkdir -p ./tmp
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/agent-research-prompt.md > ./tmp/agent-research-prompt.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/docs/AGENT-CREATION-GUIDE.md > ./tmp/AGENT-CREATION-GUIDE.md
 ```
 
 After downloading, remind the user to restart Claude Code for the pipeline agents to become active.
@@ -735,8 +738,9 @@ Which pattern best describes what your agent should DO?
 
 After archetype selection, download the reference agent and research prompt template:
 ```bash
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/reference-agents/reference-[archetype].md > /tmp/reference-agent.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/agent-research-prompt.md > /tmp/agent-research-prompt.md
+mkdir -p ./tmp
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/reference-agents/reference-[archetype].md > ./tmp/reference-agent.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/agent-research-prompt.md > ./tmp/agent-research-prompt.md
 ```
 
 Then guide the user through manual research and template customization:
@@ -810,30 +814,31 @@ Based on our discussion, here's your customized approach:
 
 1. **Download Required Components Based on Discovery**
 ```bash
-# CRITICAL: Download to temp directory first, then move to correct locations
+# CRITICAL: Download to local temp directory first, then move to correct locations
 # NEVER create agents from scratch - ALWAYS download from repository
+mkdir -p ./tmp
 
 # STEP 1: Core Framework Files (MANDATORY - NEVER SKIP)
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md > /tmp/CLAUDE-CORE.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE.md > /tmp/CLAUDE.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/SDLC-RULES-SUMMARY.md > /tmp/SDLC-RULES-SUMMARY.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md > ./tmp/CLAUDE-CORE.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE.md > ./tmp/CLAUDE.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/SDLC-RULES-SUMMARY.md > ./tmp/SDLC-RULES-SUMMARY.md
 
 # STEP 2: Core Agents (ALWAYS REQUIRED)
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/sdlc-setup-specialist.md > /tmp/sdlc-setup-specialist.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/sdlc-enforcer.md > /tmp/sdlc-enforcer.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/critical-goal-reviewer.md > /tmp/critical-goal-reviewer.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/sdlc-setup-specialist.md > ./tmp/sdlc-setup-specialist.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/sdlc-enforcer.md > ./tmp/sdlc-enforcer.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/critical-goal-reviewer.md > ./tmp/critical-goal-reviewer.md
 
 # STEP 3: CI/CD Configuration
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/ai-sdlc-validation.yml > /tmp/ai-sdlc-validation.yml
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/ai-sdlc-validation.yml > ./tmp/ai-sdlc-validation.yml
 
 # STEP 4: Project-Type Specific (EXAMPLE: Node.js API discovered)
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/api-architect.md > /tmp/api-architect.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/backend-engineer.md > /tmp/backend-engineer.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/testing/integration-orchestrator.md > /tmp/integration-orchestrator.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/api-architect.md > ./tmp/api-architect.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/backend-engineer.md > ./tmp/backend-engineer.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/testing/integration-orchestrator.md > ./tmp/integration-orchestrator.md
 
 # STEP 5: Pain-Point Specific (EXAMPLE: Slow tests mentioned)
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/testing/performance-engineer.md > /tmp/performance-engineer.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/testing/ai-test-engineer.md > /tmp/ai-test-engineer.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/testing/performance-engineer.md > ./tmp/performance-engineer.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/testing/ai-test-engineer.md > ./tmp/ai-test-engineer.md
 ```
 
 2. **Install Components Locally**
@@ -843,22 +848,22 @@ mkdir -p .claude/agents/
 mkdir -p .github/workflows/
 
 # CRITICAL: Install framework files at project root (MANDATORY)
-mv /tmp/CLAUDE-CORE.md ./CLAUDE-CORE.md
-mv /tmp/CLAUDE.md ./CLAUDE.md
-mv /tmp/SDLC-RULES-SUMMARY.md ./SDLC-RULES-SUMMARY.md
+mv ./tmp/CLAUDE-CORE.md ./CLAUDE-CORE.md
+mv ./tmp/CLAUDE.md ./CLAUDE.md
+mv ./tmp/SDLC-RULES-SUMMARY.md ./SDLC-RULES-SUMMARY.md
 
 # Move downloaded agents to .claude/agents/ (NEVER create, only move)
-mv /tmp/sdlc-setup-specialist.md .claude/agents/sdlc-setup-specialist.md
-mv /tmp/sdlc-enforcer.md .claude/agents/sdlc-enforcer.md
-mv /tmp/critical-goal-reviewer.md .claude/agents/critical-goal-reviewer.md
-mv /tmp/api-architect.md .claude/agents/api-architect.md
-mv /tmp/backend-engineer.md .claude/agents/backend-engineer.md
-mv /tmp/integration-orchestrator.md .claude/agents/integration-orchestrator.md
-mv /tmp/performance-engineer.md .claude/agents/performance-engineer.md
-mv /tmp/ai-test-engineer.md .claude/agents/ai-test-engineer.md
+mv ./tmp/sdlc-setup-specialist.md .claude/agents/sdlc-setup-specialist.md
+mv ./tmp/sdlc-enforcer.md .claude/agents/sdlc-enforcer.md
+mv ./tmp/critical-goal-reviewer.md .claude/agents/critical-goal-reviewer.md
+mv ./tmp/api-architect.md .claude/agents/api-architect.md
+mv ./tmp/backend-engineer.md .claude/agents/backend-engineer.md
+mv ./tmp/integration-orchestrator.md .claude/agents/integration-orchestrator.md
+mv ./tmp/performance-engineer.md .claude/agents/performance-engineer.md
+mv ./tmp/ai-test-engineer.md .claude/agents/ai-test-engineer.md
 
 # Install CI/CD config
-mv /tmp/ai-sdlc-validation.yml .github/workflows/ai-sdlc-validation.yml
+mv ./tmp/ai-sdlc-validation.yml .github/workflows/ai-sdlc-validation.yml
 
 # Verify critical files exist
 ls -la CLAUDE*.md  # Must show CLAUDE.md and CLAUDE-CORE.md
@@ -887,7 +892,7 @@ fi
 agent_count=$(ls -1 .claude/agents/*.md 2>/dev/null | wc -l)
 if [ "$agent_count" -lt 3 ]; then
     echo "❌ ERROR: Only $agent_count agents found (minimum 3 required)"
-    echo "Some agent downloads may have failed - check /tmp/ for downloaded files"
+    echo "Some agent downloads may have failed - check ./tmp/ for downloaded files"
     exit 1
 fi
 

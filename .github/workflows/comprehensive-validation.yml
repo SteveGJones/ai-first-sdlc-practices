@@ -73,6 +73,11 @@ jobs:
         echo "Checking technical debt..."
         python tools/validation/check-technical-debt.py .
 
+    - name: 📂 Check /tmp usage
+      run: |
+        echo "Checking for /tmp/ usage (must use ./tmp/ instead)..."
+        python tools/validation/check-tmp-usage.py
+
     - name: 📖 Retrospective Check
       if: github.event_name == 'pull_request'
       run: |
