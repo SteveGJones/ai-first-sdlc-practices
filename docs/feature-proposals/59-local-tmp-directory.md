@@ -1,9 +1,10 @@
 # Feature Proposal: Replace /tmp with ./tmp for Claude Code Compatibility
 
 **Branch**: feature/local-tmp-directory
+**Target Branch**: main
 
-## Problem Statement
-Claude Code requires additional user permissions to access `/tmp` (system temp directory) but not `./tmp` (project-local). Using `/tmp` also risks cross-session file collisions when two Claude Code sessions write to the same temp path.
+## Motivation
+Claude Code requires additional user permissions to access `/tmp` (system temp directory) but not `./tmp` (project-local). Using `/tmp` also risks cross-session file collisions when two Claude Code sessions write to the same temp path. Migrating to `./tmp` eliminates permission prompts and improves isolation.
 
 ## Proposed Solution
 Replace all `/tmp/` references in agent files with `./tmp/` (project-local), add `tmp/` to `.gitignore`, and create enforcement via pre-commit hook and CI check to prevent `/tmp/` from creeping back in.
