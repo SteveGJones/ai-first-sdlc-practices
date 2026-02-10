@@ -34,6 +34,15 @@ repos:
       - id: flake8
         args: ['--max-line-length=127', '--extend-ignore=E203,W503']
 
+  - repo: local
+    hooks:
+      - id: check-tmp-usage
+        name: Check /tmp/ usage in agents
+        entry: python tools/validation/check-tmp-usage.py
+        language: python
+        pass_filenames: false
+        files: '\.md$'
+
   # Temporarily disabled - requires comprehensive type annotation effort
   # - repo: https://github.com/pre-commit/mirrors-mypy
   #   rev: v1.8.0

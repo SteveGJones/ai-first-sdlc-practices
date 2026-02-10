@@ -96,6 +96,9 @@ validation-report.md
 compliance-report.json
 compliance-report.md
 
+# Local temp directory (used instead of /tmp for Claude Code compatibility)
+tmp/
+
 # Backup directories (should not be in repository)
 backups/
 *.backup
