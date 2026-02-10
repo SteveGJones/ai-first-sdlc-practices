@@ -75,7 +75,7 @@ def find_feature_proposal(feature_name: str) -> Optional[Path]:
 
     # Use word boundary matching to avoid substring false positives
     # e.g. "documentation-review" should not match "documentation-reviewer"
-    feature_pattern = re.compile(r'\b' + re.escape(feature_name) + r'\b', re.IGNORECASE)
+    feature_pattern = re.compile(r"\b" + re.escape(feature_name) + r"\b", re.IGNORECASE)
 
     for proposal_dir in proposal_dirs:
         if not os.path.exists(proposal_dir):
@@ -93,7 +93,9 @@ def find_feature_proposal(feature_name: str) -> Optional[Path]:
             try:
                 with open(file, "r") as f:
                     content = f.read()
-                    if f"feature/{feature_name}" in content or feature_pattern.search(content):
+                    if f"feature/{feature_name}" in content or feature_pattern.search(
+                        content
+                    ):
                         return file
             except Exception:
                 continue
