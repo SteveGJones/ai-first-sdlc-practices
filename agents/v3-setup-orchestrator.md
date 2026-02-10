@@ -309,20 +309,285 @@ HANDOFF TO TEAM AGENTS:
 - Success Metrics: [Clear goals]
 ```
 
-### Step 4: Upgrade Orchestration
+### Step 4: Smart Agent Upgrade Orchestration
+
+When a user requests an agent upgrade, execute this intelligent protocol. The upgrade re-uses the same project discovery from Phase 1-3 to select the RIGHT agents for THIS project, always includes the Agent Creation Pipeline, preserves all existing agents, and asks the user before upgrading any agent that already has a local version.
+
+#### Key Principles
+
+1. **Project-aware selection** - Re-run discovery (or use cached results) to determine which agents fit this project
+2. **Pipeline always included** - The 4 Agent Creation Pipeline agents are always part of an upgrade
+3. **Preserve existing** - Never delete or overwrite an existing agent without asking
+4. **Prompt before upgrading** - If a newer version exists for an already-installed agent, ask the user first
+5. **Custom agents untouched** - Agents not in the official catalog are never modified
+
+#### Upgrade Trigger Detection
+
 ```yaml
-upgrade_protocol:
-  trigger: "User requests framework update"
+upgrade_triggers:
+  - "upgrade my agents"
+  - "upgrade agents"
+  - "update agents"
+  - "get the latest agents"
+  - "smart agent upgrade"
+  - "add new agents to my project"
+```
 
-  orchestrator_role:
-    - Check current version
-    - Fetch latest changes
-    - Determine what needs updating
-    - Download new components
-    - Coordinate agent updates
-    - Verify successful upgrade
+#### Phase 1: Project Re-Discovery
 
-  key_principle: "Orchestrator handles upgrades so daily work agents stay focused"
+Re-use the same discovery logic from the initial setup (Phases 1-3 above). If the orchestrator has already run setup for this project, use the cached understanding. Otherwise, run a quick discovery:
+
+```bash
+# Quick project scan (same as initial setup)
+ls -la   # Detect project files
+# Check for: package.json, requirements.txt, go.mod, Dockerfile, etc.
+# Check for: .claude/agents/ (existing agent installation)
+```
+
+Produce a project profile:
+```yaml
+project_profile:
+  type: "[web app | API | microservices | data/ML | library | CLI | mobile]"
+  languages: ["python", "javascript", ...]
+  pain_points: ["[from user or inferred]"]
+  has_existing_agents: true/false
+  existing_agent_count: N
+```
+
+#### Phase 2: Manifest Fetch and Agent Selection
+
+```bash
+# 1. Fetch the latest agent manifest
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/release/agent-manifest.json > /tmp/agent-manifest-latest.json
+
+# 2. Inventory current local agents
+ls .claude/agents/*.md 2>/dev/null | while read f; do basename "$f" .md; done | sort > /tmp/local-agents.txt
+```
+
+```python
+# Mental model for intelligent agent selection
+def select_agents_for_project(project_profile, manifest, local_agents):
+    # ALWAYS include: core SDLC agents + pipeline agents
+    selected = {
+        # Core (always needed)
+        "sdlc-enforcer", "critical-goal-reviewer", "solution-architect",
+        # Pipeline (always included in upgrades)
+        "pipeline-orchestrator", "agent-builder",
+        "deep-research-agent", "repo-knowledge-distiller",
+    }
+
+    # Add project-type-specific agents (same logic as initial setup)
+    if "api" in project_profile.type or "backend" in project_profile.languages:
+        selected |= {"api-architect", "backend-architect", "database-architect"}
+    if "frontend" in project_profile.type or has_react_vue_angular:
+        selected |= {"frontend-architect", "ux-ui-architect", "frontend-security-specialist"}
+    if "microservices" in project_profile.type or has_docker:
+        selected |= {"devops-specialist", "integration-orchestrator",
+                      "sre-specialist", "container-platform-specialist"}
+    if "python" in project_profile.languages:
+        selected.add("language-python-expert")
+    if "javascript" in project_profile.languages:
+        selected.add("language-javascript-expert")
+    if "go" in project_profile.languages:
+        selected.add("language-go-expert")
+
+    # Add pain-point-specific agents
+    if "testing" in pain_points or "slow tests" in pain_points:
+        selected |= {"ai-test-engineer", "performance-engineer"}
+    if "security" in pain_points:
+        selected |= {"security-architect", "code-review-specialist"}
+    if "documentation" in pain_points:
+        selected |= {"documentation-architect", "technical-writer"}
+    if "deployments" in pain_points:
+        selected |= {"devops-specialist", "cloud-architect"}
+
+    # Resolve download paths from manifest
+    agents_to_download = {}
+    for category, agent_list in manifest["categories"].items():
+        for agent_name in agent_list:
+            if agent_name in selected:
+                if agent_name in manifest.get("agents", {}):
+                    path = manifest["agents"][agent_name].get("path")
+                else:
+                    path = None
+                if not path:
+                    path = f"{category}/{agent_name}.md"
+                agents_to_download[agent_name] = path
+
+    # Classify into: new installs vs upgrades vs already current
+    new_agents = []         # Not installed locally -> install directly
+    upgrade_candidates = [] # Installed locally, newer version available -> ASK user
+    custom_agents = []      # Installed locally, not in catalog -> preserve
+
+    for agent_name, path in agents_to_download.items():
+        if agent_name in local_agents:
+            upgrade_candidates.append(agent_name)
+        else:
+            new_agents.append(agent_name)
+
+    for agent in local_agents:
+        if agent not in agents_to_download and agent != "v3-setup-orchestrator":
+            custom_agents.append(agent)
+
+    return new_agents, upgrade_candidates, custom_agents, agents_to_download
+```
+
+#### Phase 3: Present Plan and Ask User
+
+Present the upgrade plan to the user BEFORE downloading anything:
+
+```markdown
+SMART AGENT UPGRADE PLAN
+
+Based on your project ({project_type}, {languages}), here's what I recommend:
+
+NEW AGENTS TO INSTALL ({n}):
+  {list of new agent names with 1-line descriptions}
+
+EXISTING AGENTS WITH NEWER VERSIONS ({n}):
+  {list of agent names - these will be offered for upgrade}
+
+EXISTING AGENTS ALREADY UP TO DATE ({n}):
+  {list - no action needed}
+
+CUSTOM AGENTS (preserved, not modified) ({n}):
+  {list of user-created agents}
+
+Pipeline agents (always included):
+  pipeline-orchestrator, agent-builder, deep-research-agent, repo-knowledge-distiller
+```
+
+Then ask the user:
+
+```
+For your {n} existing agents that have newer research-rebuilt versions available,
+would you like to:
+1. Upgrade all of them (I'll back up the originals first)
+2. Let me choose which ones to upgrade (I'll ask about each one)
+3. Skip upgrades for now (only install new agents)
+```
+
+#### Phase 4: Execute Upgrade
+
+```bash
+# Step 1: Create backup of any agents that will be upgraded (MANDATORY)
+BACKUP_DIR=".claude/agents-backup-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+# Only back up agents that are being upgraded, not the whole directory
+for agent in {upgrade_list}; do
+    cp ".claude/agents/${agent}.md" "$BACKUP_DIR/" 2>/dev/null
+done
+echo "Backed up {n} agents to $BACKUP_DIR"
+
+# Step 2: Download and install NEW agents (no conflict, install directly)
+GITHUB_BASE="https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents"
+
+for agent_name in {new_agents}; do
+    curl -s "${GITHUB_BASE}/{path}" > "/tmp/${agent_name}.md"
+    if [ -s "/tmp/${agent_name}.md" ]; then
+        mv "/tmp/${agent_name}.md" ".claude/agents/${agent_name}.md"
+        echo "Installed: ${agent_name}"
+    else
+        echo "FAILED: ${agent_name} (empty download)"
+    fi
+done
+
+# Step 3: Download and install UPGRADES (user already approved these)
+for agent_name in {approved_upgrades}; do
+    curl -s "${GITHUB_BASE}/{path}" > "/tmp/${agent_name}.md"
+    if [ -s "/tmp/${agent_name}.md" ]; then
+        mv "/tmp/${agent_name}.md" ".claude/agents/${agent_name}.md"
+        echo "Upgraded: ${agent_name}"
+    else
+        echo "FAILED: ${agent_name} (empty download, original preserved)"
+    fi
+done
+
+# Step 4: Download pipeline support files
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/agent-research-prompt.md > /tmp/agent-research-prompt.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/docs/AGENT-CREATION-GUIDE.md > /tmp/AGENT-CREATION-GUIDE.md
+```
+
+If the user chose "Let me choose which ones to upgrade", iterate through each upgrade candidate:
+
+```markdown
+Agent: {agent-name}
+Description: {description from manifest}
+Status: Newer research-rebuilt version available
+
+Upgrade this agent? (yes/no)
+```
+
+#### Phase 5: Verification
+
+```bash
+# Count installed agents
+agent_count=$(ls -1 .claude/agents/*.md 2>/dev/null | wc -l | tr -d ' ')
+echo "Total agents installed: $agent_count"
+
+# Verify pipeline agents (always required)
+for agent in pipeline-orchestrator agent-builder deep-research-agent repo-knowledge-distiller; do
+    if [ -f ".claude/agents/${agent}.md" ]; then
+        echo "OK: ${agent} (pipeline)"
+    else
+        echo "MISSING: ${agent} (pipeline) - retry download"
+    fi
+done
+
+# Verify core agents
+for agent in sdlc-enforcer critical-goal-reviewer solution-architect; do
+    if [ -f ".claude/agents/${agent}.md" ]; then
+        echo "OK: ${agent} (core)"
+    else
+        echo "MISSING: ${agent} (core)"
+    fi
+done
+```
+
+#### Phase 6: Completion Report
+
+```markdown
+SMART UPGRADE COMPLETE
+
+Project: {project_type} ({languages})
+New agents installed: {n} (list)
+Agents upgraded: {n} (list)
+Agents kept as-is: {n} (user chose not to upgrade)
+Custom agents preserved: {n} (list)
+Failed downloads: {n} (list, if any)
+Backup: {backup_dir}
+
+IMPORTANT: Restart Claude Code now for the new agents to load.
+
+After restart, try:
+- "Hey pipeline-orchestrator, create a custom agent for [your domain]"
+- "Hey {project-specific-agent}, help me with [relevant task]"
+```
+
+#### Upgrade Error Handling
+
+```yaml
+error_handling:
+  backup_failure:
+    action: "STOP upgrade immediately. Cannot proceed without backup."
+    severity: "critical"
+
+  download_failure:
+    action: "Retry once. If still fails, skip agent and report."
+    severity: "warn if optional, error if pipeline agent"
+    note: "Original agent is preserved if upgrade download fails"
+
+  empty_download:
+    action: "Do NOT move empty file. Report as failed. Original preserved."
+    check: "[ -s /tmp/agent-name.md ]"
+
+  manifest_fetch_failure:
+    action: "STOP. Cannot determine what to download without manifest."
+    fallback: "Offer to download just the 4 pipeline agents without manifest"
+
+  partial_upgrade:
+    action: "Report what succeeded and what failed."
+    recovery: "User can re-run upgrade to retry failed agents only."
 ```
 
 ## Team Assembly Matrix
