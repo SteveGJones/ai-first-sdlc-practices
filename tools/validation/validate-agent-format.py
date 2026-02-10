@@ -27,7 +27,9 @@ class ValidationError:
         icon = (
             "❌"
             if self.severity == "error"
-            else "⚠️" if self.severity == "warning" else "ℹ️"
+            else "⚠️"
+            if self.severity == "warning"
+            else "ℹ️"
         )
         return f"{icon} {self.field}: {self.message}"
 
