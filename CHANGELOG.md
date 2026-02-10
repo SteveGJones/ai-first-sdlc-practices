@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-02-10
+
+### Added
+- **Smart Agent Upgrade Protocol**: v3-setup-orchestrator intelligently upgrades agents
+  - Project-aware: analyzes your project to select the right agents for your tech stack
+  - Pipeline always included: Agent Creation Pipeline agents added by default
+  - Preserves existing: never deletes or overwrites without asking
+  - Prompts before upgrading: asks user before replacing any existing agent with newer version
+  - Custom agent preservation: user-created agents not in official catalog are never touched
+  - Automatic backup before any upgrade to `.claude/agents-backup-{date}/`
+- **42 Research-Rebuilt Agents**: Systematic rebuild via deep-research-agent pipeline
+  - Each agent grounded in web research with CRAAP source evaluation
+  - Specific tool versions, standards, and methodologies referenced
+  - Actionable decision frameworks based on documented practices
+- **Agent Creation Pipeline** (4 new agents):
+  - `pipeline-orchestrator`: Unified entry point for agent creation
+  - `agent-builder`: Constructs agents from research synthesis using 5 reference archetypes
+  - `deep-research-agent`: Executes web research campaigns with source evaluation
+  - `repo-knowledge-distiller`: Analyzes repositories to extract agent knowledge
+- **35 New Agent Specializations**: security-architect, cloud-architect, frontend-architect, backend-architect, data-architect, mobile-architect, code-review-specialist, team-progress-tracker, sdlc-knowledge-curator, and more
+- **Agent Manifest v3.1.0**: 65 agents across 10 categories with metadata and path resolution
+- **Research Prompt Library**: 50+ structured research prompts and synthesis outputs in `agent_prompts/`
+- **Reference Agent Archetypes**: 5 templates (Domain Expert, Architect, Reviewer, Orchestrator, Enforcer) in `templates/reference-agents/`
+- **Agent Pipeline Validation**: `validate-agent-pipeline.py` for automated agent quality checks
+- **Copy-paste upgrade prompts** in README.md for both full upgrade and pipeline-only modes
+
+### Changed
+- v3-setup-orchestrator enhanced with comprehensive upgrade orchestration protocol
+- README.md updated with agent upgrade instructions
+- Agent manifest expanded from 31 to 65 agents
+
+## [1.7.0] - 2025-07-27
+
+### Added
+- **AI-First Logging Standards**: 10 mandatory logging points for AI-generated code
+  - Function entry/exit, errors, external calls, state mutations, security events
+  - Business milestones, performance anomalies, config changes, validation failures, resource limits
+- **50+ Sensitive Data Patterns**: Comprehensive security coverage for log sanitization
+- **Logging Compliance Checker**: `check-logging-compliance.py` validator
+- **Observability Design Template**: 7th architecture document (`observability-design.md`)
+- **CLAUDE-CONTEXT-logging.md**: Task-specific logging instructions
+
+### Changed
+- Architecture requirements expanded from 6 to 7 mandatory documents
+- Validation pipeline updated with logging compliance checks
+
 ## [1.6.0] - 2025-07-25
 
 ### Added

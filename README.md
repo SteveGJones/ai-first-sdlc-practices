@@ -36,7 +36,8 @@
       - [Quick Update Check](#quick-update-check)
       - [Manual Update Check](#manual-update-check)
       - [Resources](#resources)
-    - [Current Version: 1.6.0](#current-version-160)
+    - [Current Version: 1.8.0](#current-version-180)
+  - [🔄 Upgrading Your Agents](#-upgrading-your-agents)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
   - [🙏 Acknowledgments](#-acknowledgments)
@@ -311,15 +312,39 @@ curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 - **Migration Guides**: [docs/releases/](docs/releases/)
 - **Full Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
-### Current Version: 1.6.0
+### Current Version: 1.8.0
 
 **Latest Features**:
-- 🚫 **Zero Technical Debt Policy** - Architecture-first development
-- 🏗️ **6 Mandatory Architecture Documents** - Before writing any code
-- 🔍 **Technical Debt Detection** - Zero-tolerance enforcement
-- 🔤 **Type Safety Validation** - Across all languages
-- 📐 Design documentation standards
-- ✅ Enhanced validation for design docs
+- 🔄 **Agent Upgrade Protocol** - Upgrade agents in-place via v3-setup-orchestrator
+- 🔬 **42 Research-Rebuilt Agents** - Grounded in systematic web research with CRAAP evaluation
+- 🏗️ **Agent Creation Pipeline** - 4 agents for building custom domain-specific agents
+- 🎯 **65 Total Agents** - Up from 31 in v2, covering 10 categories
+- 📚 **Research Prompt Library** - 50+ structured prompts and synthesis outputs
+
+## 🔄 Upgrading Your Agents
+
+If you already have AI-First SDLC set up and want the latest research-rebuilt agents or the new agent creation pipeline, use the smart upgrade prompt below.
+
+**Tell your AI assistant:**
+```
+I want to upgrade my AI-First SDLC agents to the latest versions. Please:
+1. Update the v3-setup-orchestrator:
+   curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > .claude/agents/v3-setup-orchestrator.md
+2. Tell me to restart Claude Code so the updated orchestrator loads
+3. After restart, I'll say: "Use the v3-setup-orchestrator to upgrade my agents"
+```
+
+**What happens:**
+The orchestrator analyzes your project (languages, frameworks, pain points) and builds a tailored upgrade plan:
+- **Selects the right agents** for your specific project type and tech stack
+- **Always includes the Agent Creation Pipeline** (4 agents for building custom agents)
+- **Preserves all your existing agents** -- nothing is deleted or overwritten without asking
+- **Asks before upgrading** -- if a newer research-rebuilt version exists for an agent you already have, you choose whether to upgrade it, skip it, or decide one-by-one
+- **Ignores custom agents** -- any agents you created yourself are never touched
+
+After the upgrade completes, restart Claude Code for the new agents to load.
+
+See [Migration Guide: v1.7.0 to v1.8.0](docs/releases/v1.7.0-to-v1.8.0.md) for full details.
 
 ## 🤝 Contributing
 
