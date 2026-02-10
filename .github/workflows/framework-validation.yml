@@ -54,6 +54,11 @@ jobs:
         # Auto-detects framework context and applies appropriate thresholds
         python tools/validation/check-technical-debt.py .
 
+    - name: Check /tmp usage
+      run: |
+        echo "📂 Checking for /tmp/ usage (must use ./tmp/ instead)..."
+        python tools/validation/check-tmp-usage.py
+
     - name: Run Framework Validation Pipeline
       run: |
         echo "🔧 Running Framework Validation Pipeline..."
