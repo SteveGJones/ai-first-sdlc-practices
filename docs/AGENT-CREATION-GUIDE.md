@@ -4,6 +4,13 @@
 
 - [Agent Creation Guide](#agent-creation-guide)
   - [Table of Contents](#table-of-contents)
+  - [Agent Creation Pipeline](#agent-creation-pipeline)
+    - [Recommended Entry Point: pipeline-orchestrator](#recommended-entry-point-pipeline-orchestrator)
+    - [Pipeline Paths](#pipeline-paths)
+  - [Reference Agent Archetypes](#reference-agent-archetypes)
+  - [Research Prompts](#research-prompts)
+    - [Research Resources](#research-resources)
+    - [Enforcement](#enforcement)
   - [Understanding Agents](#understanding-agents)
     - [What is an Agent?](#what-is-an-agent)
     - [When to Create a New Agent](#when-to-create-a-new-agent)
@@ -62,6 +69,9 @@
 A comprehensive guide for creating effective AI agents for the AI-First SDLC framework.
 
 ## Table of Contents
+- [Agent Creation Pipeline](#agent-creation-pipeline)
+- [Reference Agent Archetypes](#reference-agent-archetypes)
+- [Research Prompts](#research-prompts)
 - [Understanding Agents](#understanding-agents)
 - [Agent Anatomy](#agent-anatomy)
 - [Writing Effective Agent Instructions](#writing-effective-agent-instructions)
@@ -70,6 +80,118 @@ A comprehensive guide for creating effective AI agents for the AI-First SDLC fra
 - [Examples and Templates](#examples-and-templates)
 - [Testing Your Agent](#testing-your-agent)
 - [Common Pitfalls](#common-pitfalls)
+
+## Agent Creation Pipeline
+
+The recommended process for creating a new agent follows this pipeline:
+
+```
+┌─────────────────────┐
+│ 1. IDENTIFY NEED    │  "We need an agent for X"
+│    Is there one?    │  Check existing catalog first
+└─────────┬───────────┘
+          ▼
+┌─────────────────────┐
+│ 2. CHOOSE ARCHETYPE │  Pick from 5 reference agents
+│    (reference agent) │  See templates/reference-agents/
+└─────────┬───────────┘
+          ▼
+┌─────────────────────┐
+│ 3. RESEARCH PROMPT  │  Write structured research questions
+│    (for deep agents) │  See templates/agent-research-prompt.md
+└─────────┬───────────┘
+          ▼
+┌─────────────────────────────────────────────────┐
+│ 4. RESEARCH / DISTILLATION (two paths)          │
+│                                                 │
+│   Web Research Route        Repo Analysis Route │
+│   ┌──────────────────┐   ┌────────────────────┐│
+│   │deep-research-agent│   │repo-knowledge-     ││
+│   │(web search, CRAAP)│   │distiller (internal ││
+│   │                   │   │repos, RELIC eval)  ││
+│   └────────┬─────────┘   └──────────┬─────────┘│
+│            └──────────┬─────────────┘           │
+│                       ▼                         │
+│           5-category synthesis document          │
+└─────────────────────┬───────────────────────────┘
+          ▼
+┌─────────────────────┐
+│ 5. BUILD AGENT      │  agent-builder constructs from
+│    (from synthesis)  │  synthesis + archetype
+└─────────┬───────────┘
+          ▼
+┌─────────────────────┐
+│ 6. VALIDATE & TEST  │  Run validation, test with scenarios
+│    (quality check)  │  validate-agent-format.py
+└─────────────────────┘
+```
+
+### Recommended Entry Point: pipeline-orchestrator
+
+The **pipeline-orchestrator** agent automates the entire pipeline end-to-end. It detects your input type (web research request or repository path), routes to the correct research agent, delegates to agent-builder, and handles validation and deployment. Use it as your primary entry point:
+
+- "Create a new kubernetes-security agent" → routes to web research
+- "Create an agent from ./my-framework/" → routes to repo analysis
+- "Create an agent from our repo with industry best practices" → hybrid route (both)
+
+### Pipeline Paths
+
+**Quick path** (simple agents): Steps 1 → 2 → 5 → 6 (only for agents with minimal domain knowledge needs, e.g., simple coordinators)
+
+**Full path via web research** (MANDATORY for specialists and architects): Steps 1 → 2 → 3 → 4a (deep-research-agent) → 5 → 6
+
+**Full path via repo analysis** (for internal methodology/framework agents): Steps 1 → 2 → 4b (repo-knowledge-distiller) → 5 → 6
+
+> **IMPORTANT**: Research is MANDATORY for any agent classified as a domain expert, specialist, or architect. The pipeline validator enforces this with the `--require-research` flag:
+> ```bash
+> python tools/validation/validate-agent-pipeline.py production-agent agents/core/your-agent.md --require-research
+> ```
+> This will FAIL if no corresponding research prompt exists at `agent_prompts/research-your-agent.md`.
+
+## Reference Agent Archetypes
+
+Five annotated reference agents are available in `templates/reference-agents/`. Each demonstrates a distinct agent pattern:
+
+| Archetype | File | Use When |
+|-----------|------|----------|
+| **Reviewer** | `reference-reviewer.md` | Agent checks quality, validates against criteria, provides feedback |
+| **Architect** | `reference-architect.md` | Agent designs systems, evaluates trade-offs, makes decisions |
+| **Domain Expert** | `reference-domain-expert.md` | Agent provides deep knowledge in a specific field |
+| **Orchestrator** | `reference-orchestrator.md` | Agent coordinates workflows and other agents |
+| **Enforcer** | `reference-enforcer.md` | Agent ensures compliance with standards and rules |
+
+See [templates/reference-agents/README.md](../templates/reference-agents/README.md) for detailed descriptions and selection guidance.
+
+## Research Prompts
+
+Research prompts are the foundation of high-quality agents. They ensure agents are grounded in current, accurate domain knowledge rather than generic content.
+
+**Research is MANDATORY for:**
+- Domain Expert agents (e.g., database-architect, observability-specialist)
+- Architect agents (e.g., security-architect, cloud-architect, api-architect)
+- Specialist agents (e.g., container-platform-specialist, performance-engineer)
+
+**Research may be skipped ONLY for:**
+- Simple coordinator/orchestrator agents with no deep domain knowledge
+- Enforcer agents that encode rules rather than domain expertise
+- Meta-agents (e.g., sdlc-coach, project-bootstrapper)
+
+### Research Resources
+1. **Template**: `templates/agent-research-prompt.md` — structured template for defining research questions
+2. **Examples**: `agent_prompts/research-*.md` — 7 production research prompts you can reference
+3. **Guide**: [RESEARCH-PROMPT-GUIDE.md](RESEARCH-PROMPT-GUIDE.md) — detailed guide on executing the research-to-agent pipeline
+
+### Enforcement
+The pipeline validator checks for research prompts:
+```bash
+# Warn if no research prompt exists (default)
+python tools/validation/validate-agent-pipeline.py production-agent agents/core/my-agent.md
+
+# FAIL if no research prompt exists (use for specialists/architects)
+python tools/validation/validate-agent-pipeline.py production-agent agents/core/my-agent.md --require-research
+```
+
+The corresponding research prompt must be at: `agent_prompts/research-{agent-name}.md`
 
 ## Understanding Agents
 

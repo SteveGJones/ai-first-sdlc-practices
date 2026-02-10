@@ -16,8 +16,7 @@
 - `agents/v3-setup-orchestrator.md` - Template-compliant setup agent
 - `v3/SETUP-AGENT.md` - V3 entry point
 - `docs/feature-proposals/06-v3-pure-agent-framework.md` - V3 proposal
-- `CLAUDE-TEAM-FIRST.md` - Team-first enforcement
-- `CLAUDE-CORE.md` - Updated with death penalties for solo work
+- `CLAUDE-CORE.md` - Updated with team-first enforcement and death penalties for solo work
 
 ## Next Steps After Reboot
 1. Verify V3 Setup Orchestrator is active

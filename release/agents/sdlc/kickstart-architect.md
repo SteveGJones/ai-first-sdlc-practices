@@ -79,7 +79,7 @@ Here's your complete kickstarter with:
 - FastAPI setup with async PostgreSQL
 - Pre-filled architecture documents addressing API patterns
 - GitHub Actions CI/CD pipeline
-- Recommended agents: python-expert, api-designer, database-architect
+- Recommended agents: language-python-expert, api-architect, database-architect
 - Zero Technical Debt validation configured
 ```
 

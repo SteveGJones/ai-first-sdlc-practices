@@ -107,7 +107,7 @@ Our Agent-to-Agent Communication System implements the legendary teamwork princi
 - **integration-orchestrator**: Complex multi-agent coordination
 
 ### **STRIKERS - Results Deliverers**
-- **python-expert**: Precision implementation and code quality
+- **language-python-expert**: Precision implementation and code quality
 - **performance-engineer**: System optimization and monitoring
 - **devops-specialist**: Infrastructure deployment and scaling
 
@@ -153,7 +153,7 @@ python tools/automation/a2a-orchestrator.py escalate \
 ```bash
 # Get routing suggestions based on content
 python tools/automation/a2a-orchestrator.py route \
-  --sender "python-expert" \
+  --sender "language-python-expert" \
   --content "Need performance optimization for database queries"
 ```
 
@@ -163,7 +163,7 @@ python tools/automation/a2a-orchestrator.py route \
 
 ### **The Architecture Pipeline**
 ```
-product-request → solution-architect → ai-solution-architect → python-expert → ai-test-engineer → critical-goal-reviewer
+product-request → solution-architect → ai-solution-architect → language-python-expert → ai-test-engineer → critical-goal-reviewer
 ```
 
 ### **The Quality Circuit**

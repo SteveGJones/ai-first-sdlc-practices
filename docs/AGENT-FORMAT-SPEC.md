@@ -7,6 +7,7 @@
   - [YAML Frontmatter Schema](#yaml-frontmatter-schema)
     - [Required Fields](#required-fields)
     - [Optional Fields](#optional-fields)
+    - [Maturity Tiers](#maturity-tiers)
     - [Examples Structure](#examples-structure)
   - [Complete Schema](#complete-schema)
   - [Content Section](#content-section)
@@ -56,7 +57,25 @@ Technical specification for AI agent file format used in the AI-First SDLC frame
 | `version` | string | Agent version | "1.0.0" |
 | `category` | string | Agent category | null |
 | `priority` | string | Activation priority | "medium" |
+| `maturity` | string | Agent quality tier | null |
 | `tags` | array | Searchable tags | [] |
+
+### Maturity Tiers
+
+The `maturity` field indicates the quality and readiness level of an agent:
+
+| Tier | Label | Criteria | Frontmatter |
+|------|-------|----------|-------------|
+| `production` | Ready for daily use | 100+ lines, deep methodology, tested in real projects | `maturity: production` |
+| `stable` | Functional, good coverage | 80-100 lines, clear methodology, passes strict validation | `maturity: stable` |
+| `beta` | Works but needs depth | 50-80 lines, basic methodology, passes format validation | `maturity: beta` |
+| `stub` | Placeholder only | <50 lines, template content, not usable | `maturity: stub` |
+| `deprecated` | Being retired | Superseded by another agent | `maturity: deprecated` |
+
+Run the maturity report to see current distribution:
+```bash
+python tools/validation/validate-agent-format.py agents/ --maturity-report
+```
 
 ### Examples Structure
 
@@ -84,6 +103,7 @@ color: enum                    # blue|green|purple|red|cyan|yellow|orange
 version: string                # semantic version
 category: string               # category/subcategory
 priority: enum                 # low|medium|high|critical
+maturity: enum                 # production|stable|beta|stub|deprecated
 tags: array[string]           # searchable tags
 ---
 ```
@@ -305,6 +325,7 @@ For tooling, agents can be represented in JSON:
 - **v1.0.0** (2024-01): Initial specification
 - **v1.1.0** (2024-08): Added optional fields
 - **v1.2.0** (2024-11): Standardized validation rules
+- **v1.3.0** (2025-08): Added maturity tiers (production/stable/beta/stub/deprecated)
 
 ## Compliance
 
@@ -313,7 +334,9 @@ Agent files MUST pass validation to be included in:
 - Agent registries
 - CI/CD pipelines
 
-Use the validation tool:
+Use the validation tools:
 ```bash
-python tools/agents/agent-generator.py validate [agent-file]
+python tools/validation/validate-agent-format.py [agent-file]
+python tools/validation/validate-agent-format.py [agent-file] --no-strict
+python tools/validation/validate-agent-format.py agents/ --maturity-report
 ```

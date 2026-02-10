@@ -66,7 +66,7 @@ def demo_feature_development():
     print("\n4. 🧠 AI Solution Architect Designs System...")
     ai_design_msg = orchestrator.create_message(
         sender="ai-solution-architect",
-        receiver="python-expert",
+        receiver="language-python-expert",
         message_type="handoff",
         content=(
             "AI_DESIGN: Recommendation system | Architecture: ML pipeline with real-time inference API | "
@@ -80,7 +80,7 @@ def demo_feature_development():
     # 5. Implementation and testing coordination
     print("\n5. ⚡ Implementation Team Coordinates...")
     impl_msg = orchestrator.create_message(
-        sender="python-expert",
+        sender="language-python-expert",
         receiver="ai-test-engineer",
         message_type="status_update",
         content=(

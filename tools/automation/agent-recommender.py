@@ -72,7 +72,7 @@ class AgentRecommender:
                 },
             },
             "languages": {
-                "python-expert": {
+                "language-python-expert": {
                     "languages": ["python"],
                     "description": "Python best practices and patterns",
                 },

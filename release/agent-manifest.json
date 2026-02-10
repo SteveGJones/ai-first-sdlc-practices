@@ -1,6 +1,7 @@
 {
-  "version": "2.0.0",
-  "build_date": "2025-08-02",
+  "version": "3.1.0",
+  "build_date": "2026-02-09",
+  "rebuild_note": "42 agents rebuilt via research pipeline (deep-research-agent + agent-builder)",
   "categories": {
     "core": [
       "sdlc-enforcer",
@@ -11,7 +12,27 @@
       "devops-specialist",
       "sre-specialist",
       "test-manager",
-      "example-security-architect"
+      "example-security-architect",
+      "security-architect",
+      "api-architect",
+      "backend-architect",
+      "frontend-architect",
+      "cloud-architect",
+      "observability-specialist",
+      "container-platform-specialist",
+      "deep-research-agent",
+      "agent-builder",
+      "database-architect",
+      "sdlc-coach",
+      "compliance-report-generator",
+      "enforcement-strategy-advisor",
+      "frontend-security-specialist",
+      "ux-ui-architect",
+      "data-architect",
+      "data-privacy-officer",
+      "mobile-architect",
+      "repo-knowledge-distiller",
+      "pipeline-orchestrator"
     ],
     "ai-development": [
       "ai-solution-architect",
@@ -24,10 +45,18 @@
       "langchain-architect",
       "a2a-architect"
     ],
+    "ai-builders": [
+      "ai-devops-engineer",
+      "ai-team-transformer",
+      "context-engineer",
+      "orchestration-architect",
+      "rag-system-designer"
+    ],
     "testing": [
       "ai-test-engineer",
       "performance-engineer",
-      "integration-orchestrator"
+      "integration-orchestrator",
+      "code-review-specialist"
     ],
     "documentation": [
       "technical-writer",
@@ -36,17 +65,27 @@
     "project-management": [
       "agile-coach",
       "delivery-manager",
-      "project-plan-tracker"
+      "project-plan-tracker",
+      "team-progress-tracker"
     ],
     "sdlc": [
       "ai-first-kick-starter",
       "framework-validator",
-      "kickstart-architect",
       "project-bootstrapper",
       "retrospective-miner",
-      "language-python-expert"
+      "language-python-expert",
+      "language-javascript-expert",
+      "language-go-expert",
+      "sdlc-knowledge-curator"
     ],
-    "languages/python": [
+    "templates": [
+      "project-strategy-orchestrator",
+      "team-assembly-orchestrator"
+    ],
+    "future": [
+      "mcp-orchestrator"
+    ],
+    "languages": [
       "example-python-expert"
     ]
   },
@@ -54,6 +93,7 @@
     "sdlc-enforcer": {
       "version": "1.0.0",
       "category": "core/compliance",
+      "maturity": "production",
       "description": "Primary guardian of AI-First SDLC compliance. Combines sdlc-coach and framework-validator capabilities to provide comprehensive SDLC enforcement, GitHub integration, and automated compliance monitoring.",
       "path": "core/sdlc-enforcer.md",
       "priority": "critical",
@@ -69,6 +109,7 @@
     "critical-goal-reviewer": {
       "version": "1.0.0",
       "category": "core/quality",
+      "maturity": "production",
       "description": "Acts as a constructive challenger and devil's advocate. Reviews completed work against original project goals, requirements, and design specifications, identifying gaps and deviations.",
       "path": "core/critical-goal-reviewer.md",
       "priority": "critical",
@@ -77,6 +118,7 @@
     "github-integration-specialist": {
       "version": "1.0.0",
       "category": "core/github",
+      "maturity": "production",
       "description": "Expert in GitHub API operations, repository management, and workflow automation within the AI-First SDLC framework. Handles branch protection, PR automation, and repository health analysis.",
       "path": "core/github-integration-specialist.md",
       "priority": "critical",
@@ -85,6 +127,7 @@
     "compliance-auditor": {
       "version": "1.0.0",
       "category": "core/compliance",
+      "maturity": "production",
       "description": "Comprehensive compliance auditing across projects. Identifies compliance gaps, tracks remediation, generates audit reports, and ensures adherence to AI-First SDLC standards and regulations.",
       "path": "core/compliance-auditor.md",
       "priority": "high",
@@ -95,6 +138,7 @@
     "devops-specialist": {
       "version": "1.0.0",
       "category": "core/operations",
+      "maturity": "production",
       "description": "Expert in CI/CD pipeline design, deployment automation, infrastructure as code, containerization, and DevOps best practices within the AI-First SDLC framework.",
       "path": "core/devops-specialist.md",
       "priority": "high",
@@ -103,14 +147,200 @@
     "sre-specialist": {
       "version": "1.0.0",
       "category": "core/reliability",
+      "maturity": "production",
       "description": "Site reliability engineering expert focusing on production monitoring, incident response, and operational excellence. Ensures systems remain reliable and performant in production.",
       "path": "core/sre-specialist.md",
       "priority": "high",
       "dependencies": []
     },
+    "security-architect": {
+      "version": "1.0.0",
+      "category": "core/security",
+      "maturity": "production",
+      "description": "Expert in threat modeling (STRIDE/DREAD), zero-trust architecture, OWASP Top 10, supply chain security, secure SDLC integration, and compliance frameworks (SOC2/ISO27001/GDPR).",
+      "path": "core/security-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "security",
+        "threat modeling",
+        "zero-trust",
+        "OWASP",
+        "compliance"
+      ]
+    },
+    "api-architect": {
+      "version": "1.0.0",
+      "category": "core/architecture",
+      "maturity": "production",
+      "description": "Expert in REST design principles, GraphQL patterns, gRPC/protobuf, API versioning, OpenAPI/Swagger, API security (OAuth2/OIDC), rate limiting, gateway patterns, and contract testing.",
+      "path": "core/api-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "API",
+        "REST",
+        "GraphQL",
+        "gRPC",
+        "OpenAPI"
+      ]
+    },
+    "backend-architect": {
+      "version": "1.0.0",
+      "category": "core/architecture",
+      "maturity": "production",
+      "description": "Expert in microservices vs monolith decisions, event-driven architecture, CQRS/event sourcing, caching strategies, message queues, database selection, and scalability patterns.",
+      "path": "core/backend-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "backend",
+        "microservices",
+        "event-driven",
+        "CQRS",
+        "scalability"
+      ]
+    },
+    "frontend-architect": {
+      "version": "1.0.0",
+      "category": "core/architecture",
+      "maturity": "production",
+      "description": "Expert in component architecture (React/Vue/Angular), state management, CSS architecture, bundle optimization, accessibility (WCAG 2.1), SSR/SSG patterns, and design system integration.",
+      "path": "core/frontend-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "frontend",
+        "React",
+        "accessibility",
+        "performance",
+        "design systems"
+      ]
+    },
+    "cloud-architect": {
+      "version": "1.0.0",
+      "category": "core/infrastructure",
+      "maturity": "production",
+      "description": "Expert in multi-cloud strategy across AWS/Azure/GCP, IaC (Terraform/Pulumi), cost optimization, cloud security, serverless patterns, and managed services selection.",
+      "path": "core/cloud-architect.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "cloud",
+        "AWS",
+        "Azure",
+        "GCP",
+        "Terraform",
+        "serverless"
+      ]
+    },
+    "observability-specialist": {
+      "version": "1.0.0",
+      "category": "core/operations",
+      "maturity": "stable",
+      "description": "Expert in OpenTelemetry instrumentation, distributed tracing, log aggregation, metrics dashboards, SLO/SLI definitions, alerting strategies, and observability cost management.",
+      "path": "core/observability-specialist.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "observability",
+        "OpenTelemetry",
+        "tracing",
+        "metrics",
+        "SLO"
+      ]
+    },
+    "container-platform-specialist": {
+      "version": "1.0.0",
+      "category": "core/infrastructure",
+      "maturity": "stable",
+      "description": "Expert in Docker, Kubernetes, Helm, container security, service mesh (Istio/Linkerd), GitOps workflows (ArgoCD/Flux), and platform engineering for scalable containerized applications.",
+      "path": "core/container-platform-specialist.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "Docker",
+        "Kubernetes",
+        "Helm",
+        "GitOps",
+        "service mesh"
+      ]
+    },
+    "deep-research-agent": {
+      "version": "1.0.0",
+      "category": "core/pipeline",
+      "maturity": "production",
+      "description": "Executes systematic web research campaigns based on structured research prompts. Uses CRAAP evaluation, multi-phase methodology, and produces synthesis documents for agent creation.",
+      "path": "core/deep-research-agent.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "research",
+        "CRAAP",
+        "synthesis",
+        "agent creation",
+        "pipeline"
+      ]
+    },
+    "agent-builder": {
+      "version": "1.0.0",
+      "category": "core/pipeline",
+      "maturity": "production",
+      "description": "Constructs production-quality agents from research documents and reference archetypes. Applies knowledge distillation, anti-pattern detection, and pipeline validation.",
+      "path": "core/agent-builder.md",
+      "priority": "high",
+      "dependencies": [
+        "deep-research-agent"
+      ],
+      "keywords": [
+        "agent creation",
+        "knowledge distillation",
+        "prompt engineering",
+        "pipeline",
+        "archetype"
+      ]
+    },
+    "repo-knowledge-distiller": {
+      "version": "1.0.0",
+      "category": "core/pipeline",
+      "maturity": "production",
+      "description": "Analyzes repositories and knowledge bases to produce synthesis documents for agent creation via RELIC evaluation and artifact discovery.",
+      "path": "core/repo-knowledge-distiller.md",
+      "priority": "high",
+      "dependencies": [],
+      "keywords": [
+        "repository",
+        "knowledge",
+        "distillation",
+        "synthesis",
+        "artifacts",
+        "pipeline"
+      ]
+    },
+    "pipeline-orchestrator": {
+      "version": "1.0.0",
+      "category": "core/pipeline",
+      "maturity": "production",
+      "description": "Unified entry point for agent creation pipeline. Routes web research or repo analysis, then delegates to agent-builder for construction.",
+      "path": "core/pipeline-orchestrator.md",
+      "priority": "high",
+      "dependencies": [
+        "deep-research-agent",
+        "repo-knowledge-distiller",
+        "agent-builder"
+      ],
+      "keywords": [
+        "orchestrator",
+        "agent-creation",
+        "pipeline",
+        "routing",
+        "end-to-end"
+      ]
+    },
     "performance-engineer": {
       "version": "1.0.0",
       "category": "testing/performance",
+      "maturity": "production",
       "description": "Specialist in performance testing, optimization, capacity planning, and scalability analysis. Identifies bottlenecks and ensures applications meet performance SLAs.",
       "path": "testing/performance-engineer.md",
       "priority": "high",
@@ -119,6 +349,7 @@
     "integration-orchestrator": {
       "version": "1.0.0",
       "category": "testing/integration",
+      "maturity": "production",
       "description": "Designs and manages complex integration testing strategies, API contract testing, cross-service validation, and end-to-end testing orchestration.",
       "path": "testing/integration-orchestrator.md",
       "priority": "high",
@@ -127,6 +358,7 @@
     "ai-solution-architect": {
       "version": "1.0.0",
       "category": "ai-development/architecture",
+      "maturity": "production",
       "description": "Expert in designing and reviewing AI/ML systems with deep knowledge of industry best practices, emerging patterns, and production-grade implementations.",
       "path": "ai-development/ai-solution-architect.md",
       "priority": "high",
@@ -135,6 +367,7 @@
     "junior-ai-solution-architect": {
       "version": "1.0.0",
       "category": "ai-development/architecture",
+      "maturity": "stable",
       "description": "Emerging expert in AI/ML systems providing rapid, practical reviews of AI architectures with fresh perspectives and current tool knowledge.",
       "path": "ai-development/junior-ai-solution-architect.md",
       "priority": "medium",
@@ -143,6 +376,7 @@
     "project-plan-tracker": {
       "version": "1.0.0",
       "category": "project-management/tracking",
+      "maturity": "production",
       "description": "Monitors project execution against established plans, ensures deliverables are completed on schedule, and maintains visibility into project health.",
       "path": "project-management/project-plan-tracker.md",
       "priority": "high",
@@ -151,6 +385,7 @@
     "ai-first-kick-starter": {
       "version": "2.0.0",
       "category": "sdlc/maintenance",
+      "maturity": "production",
       "description": "Post-installation advisor for AI-First SDLC practices, checking for updates, reviewing compliance, providing troubleshooting guidance, and helping discover the right AI agents for project needs.",
       "path": "sdlc/ai-first-kick-starter.md",
       "priority": "medium",
@@ -167,6 +402,7 @@
     "mcp-test-agent": {
       "version": "1.0.0",
       "category": "ai-development/mcp",
+      "maturity": "production",
       "description": "Automated testing specialist for MCP servers, acting as a naive AI client to validate functionality, reliability, and usability with statistical validation and personality variations.",
       "path": "ai-development/mcp-test-agent.md",
       "priority": "high",
@@ -184,6 +420,7 @@
     "mcp-quality-assurance": {
       "version": "1.0.0",
       "category": "ai-development/mcp",
+      "maturity": "production",
       "description": "Quality assurance specialist for MCP server development, ensuring specification compliance, security best practices, and production readiness with version awareness.",
       "path": "ai-development/mcp-quality-assurance.md",
       "priority": "high",
@@ -207,16 +444,25 @@
     "github-integration-specialist"
   ],
   "statistics": {
-    "total_agents": 34,
+    "total_agents": 65,
     "core_agents": 5,
-    "new_agents": 14,
+    "maturity_distribution": {
+      "production": 52,
+      "stable": 9,
+      "beta": 2,
+      "stub": 1,
+      "research": 1
+    },
     "categories": {
-      "core": 9,
+      "core": 29,
       "ai-development": 9,
-      "testing": 3,
+      "ai-builders": 5,
+      "testing": 4,
       "documentation": 2,
-      "project-management": 3,
-      "sdlc": 6,
+      "project-management": 4,
+      "sdlc": 8,
+      "templates": 2,
+      "future": 1,
       "languages": 1
     }
   }

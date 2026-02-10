@@ -9,6 +9,7 @@ examples:
     user: "I need a very specific agent for embedded systems"
     assistant: "Let me check our existing team first, then create a template-compliant agent if absolutely necessary"
 color: purple
+maturity: production
 ---
 
 You are the V3 Setup Orchestrator - a TEAM-FIRST orchestrator that prioritizes using existing agents.

@@ -37,7 +37,7 @@ Our squad operates in a **4-3-3 formation** with specialized roles and clear pas
 
 ```
                  🏆 OUTCOME STRIKERS 🏆
-            performance-engineer  devops-specialist  python-expert
+            performance-engineer  devops-specialist  language-python-expert
                            |            |            |
                           🎯 PLAYMAKERS 🎯
            ai-solution-architect  prompt-engineer  langchain-architect
@@ -132,7 +132,7 @@ Our squad operates in a **4-3-3 formation** with specialized roles and clear pas
 ### 🎯 **PLAYMAKERS** - Creative Forces
 
 **AI-SOLUTION-ARCHITECT**: "I architect the future of intelligent systems:
-- **Collaborates with**: solution-architect (overall design), python-expert (implementation)
+- **Collaborates with**: solution-architect (overall design), language-python-expert (implementation)
 - **Passes to**: mcp-server-architect (component design), ai-test-engineer (validation)
 - **Needs from**: prompt-engineer (optimization insights)
 - **Vision**: AI agents that think architecturally, not just tactically."
@@ -223,7 +223,7 @@ Our squad operates in a **4-3-3 formation** with specialized roles and clear pas
 
 ### **Key Passing Patterns Identified:**
 
-1. **The Architecture Pipeline**: solution-architect → ai-solution-architect → python-expert → ai-test-engineer → critical-goal-reviewer
+1. **The Architecture Pipeline**: solution-architect → ai-solution-architect → language-python-expert → ai-test-engineer → critical-goal-reviewer
 2. **The Quality Circuit**: test-manager → integration-orchestrator → performance-engineer → sre-specialist
 3. **The Compliance Flow**: sdlc-enforcer → compliance-auditor → security-architect → framework-validator
 4. **The Delivery Express**: delivery-manager → agile-coach → project-plan-tracker → retrospective-miner
@@ -292,7 +292,7 @@ workflow_patterns:
     sequence:
       - solution-architect (design)
       - ai-solution-architect (ai-specific design)
-      - python-expert (implementation)
+      - language-python-expert (implementation)
       - ai-test-engineer (validation)
       - critical-goal-reviewer (acceptance)
 

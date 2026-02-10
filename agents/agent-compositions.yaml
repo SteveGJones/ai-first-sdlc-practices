@@ -1,7 +1,7 @@
 # Agent Composition Configuration
 # This file defines composite agents that combine capabilities of multiple base agents
 
-version: "1.0"
+version: "2.0"
 
 compositions:
   full-stack-developer:
@@ -9,10 +9,10 @@ compositions:
     description: "Comprehensive development expertise across frontend, backend, and infrastructure"
     base_agent: "solution-architect"
     includes:
-      - "python-expert"
-      - "api-designer"
+      - "frontend-architect"
+      - "backend-architect"
+      - "api-architect"
       - "devops-specialist"
-      - "security-architect"
     use_cases:
       - "Building complete web applications"
       - "End-to-end feature development"
@@ -36,7 +36,7 @@ compositions:
     description: "Complete AI/ML system development and deployment"
     base_agent: "ai-solution-architect"
     includes:
-      - "python-expert"
+      - "language-python-expert"
       - "devops-specialist"
       - "performance-engineer"
       - "ai-test-engineer"
@@ -58,6 +58,21 @@ compositions:
       - "Enterprise system design"
       - "Multi-system integration"
       - "Large-scale deployments"
+
+  cloud-native-architect:
+    name: "Cloud Native Architect"
+    description: "Cloud infrastructure, containers, and platform engineering"
+    base_agent: "cloud-architect"
+    includes:
+      - "container-platform-specialist"
+      - "devops-specialist"
+      - "observability-specialist"
+      - "sre-specialist"
+    use_cases:
+      - "Cloud migration projects"
+      - "Kubernetes platform design"
+      - "Multi-cloud architecture"
+      - "Platform engineering initiatives"
 
   agile-delivery-lead:
     name: "Agile Delivery Lead"
@@ -85,18 +100,37 @@ compositions:
       - "Quality process implementation"
       - "Test automation"
 
+  production-readiness-reviewer:
+    name: "Production Readiness Reviewer"
+    description: "Pre-launch review covering security, observability, and reliability"
+    base_agent: "sre-specialist"
+    includes:
+      - "security-architect"
+      - "observability-specialist"
+      - "performance-engineer"
+    use_cases:
+      - "Production launch readiness reviews"
+      - "Post-incident reliability improvements"
+      - "SLO definition and monitoring setup"
+
 # Composition Rules
 rules:
   # Agents that should always be included when certain conditions are met
   auto_include:
     - when: "project_has_api"
-      include: ["api-designer", "integration-orchestrator"]
+      include: ["api-architect", "integration-orchestrator"]
 
     - when: "project_is_production"
-      include: ["sre-specialist", "performance-engineer"]
+      include: ["sre-specialist", "performance-engineer", "observability-specialist"]
 
     - when: "project_has_compliance_requirements"
       include: ["compliance-auditor", "security-architect"]
+
+    - when: "project_uses_containers"
+      include: ["container-platform-specialist", "devops-specialist"]
+
+    - when: "project_uses_cloud"
+      include: ["cloud-architect"]
 
   # Conflicting agents that shouldn't be used together
   exclusions:

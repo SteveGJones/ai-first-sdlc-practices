@@ -43,6 +43,9 @@ class AgentValidator:
     # Valid color values
     VALID_COLORS = ["blue", "green", "purple", "red", "cyan", "yellow", "orange"]
 
+    # Valid maturity values
+    VALID_MATURITY = ["production", "stable", "beta", "stub", "deprecated"]
+
     # Field constraints
     NAME_PATTERN = re.compile(r"^[a-z0-9-]{1,50}$")
     MAX_DESCRIPTION_LENGTH = 500  # Increased to accommodate existing agents
@@ -176,6 +179,17 @@ class AgentValidator:
                     )
                 )
 
+        # Validate maturity (optional field)
+        if "maturity" in frontmatter:
+            maturity = frontmatter["maturity"]
+            if maturity not in self.VALID_MATURITY:
+                self.errors.append(
+                    ValidationError(
+                        "maturity",
+                        f"Must be one of: {', '.join(self.VALID_MATURITY)}",
+                    )
+                )
+
         # Validate examples
         if "examples" in frontmatter:
             examples = frontmatter["examples"]
@@ -256,8 +270,8 @@ class AgentValidator:
                 )
             )
 
-        # Check for core competencies section
-        if "Your core competencies include:" not in body:
+        # Check for core competencies section (case-insensitive)
+        if "your core competencies include" not in body.lower():
             self.errors.append(
                 ValidationError(
                     "content",
@@ -311,16 +325,30 @@ def validate_agent_content(content: str, strict: bool = True) -> Tuple[bool, Lis
     "--quiet", "-q", is_flag=True, help="Only show errors, not success message"
 )
 @click.option("--json", "output_json", is_flag=True, help="Output results as JSON")
-def main(agent_file: str, strict: bool, quiet: bool, output_json: bool):
+@click.option(
+    "--maturity-report",
+    is_flag=True,
+    help="Scan directory and report maturity distribution",
+)
+def main(
+    agent_file: str, strict: bool, quiet: bool, output_json: bool, maturity_report: bool
+):
     """
-    Validate an AI agent file against the format specification
+    Validate an AI agent file against the format specification.
 
-    Examples:
-        python validate-agent-format.py agents/core/sdlc-enforcer.md
-        python validate-agent-format.py my-agent.md --no-strict
-        python validate-agent-format.py agent.md --json
+    When --maturity-report is used, AGENT_FILE should be a directory to scan.
+
+    Examples:\n
+        python validate-agent-format.py agents/core/sdlc-enforcer.md\n
+        python validate-agent-format.py my-agent.md --no-strict\n
+        python validate-agent-format.py agents/ --maturity-report
     """
     file_path = Path(agent_file)
+
+    if maturity_report:
+        _run_maturity_report(file_path, output_json)
+        return
+
     validator = AgentValidator(strict=strict)
     is_valid, errors = validator.validate_file(file_path)
 
@@ -343,7 +371,6 @@ def main(agent_file: str, strict: bool, quiet: bool, output_json: bool):
         print(f"\n🔍 Validation Report for {file_path.name}")
         print("=" * 50)
 
-        # Group by severity
         errors_list = [e for e in errors if e.severity == "error"]
         warnings_list = [e for e in errors if e.severity == "warning"]
         info_list = [e for e in errors if e.severity == "info"]
@@ -373,6 +400,71 @@ def main(agent_file: str, strict: bool, quiet: bool, output_json: bool):
         print(f"✅ {file_path.name} is valid!")
 
     sys.exit(0 if is_valid else 1)
+
+
+def _run_maturity_report(agents_path: Path, output_json: bool):
+    """Generate a maturity distribution report for all agents in a directory."""
+    import json as json_mod
+
+    agent_files = sorted(agents_path.rglob("*.md"))
+    tiers = {
+        "production": [],
+        "stable": [],
+        "beta": [],
+        "stub": [],
+        "deprecated": [],
+        "unlabeled": [],
+    }
+
+    for agent_file in agent_files:
+        content = agent_file.read_text()
+        fm_match = re.match(r"^---\s*\n(.*?)\n---", content, re.DOTALL)
+        if not fm_match:
+            continue
+        try:
+            frontmatter = yaml.safe_load(fm_match.group(1))
+        except yaml.YAMLError:
+            continue
+        if not isinstance(frontmatter, dict) or "name" not in frontmatter:
+            continue
+
+        maturity = frontmatter.get("maturity", None)
+        name = frontmatter["name"]
+        rel_path = str(agent_file.relative_to(agents_path))
+
+        if maturity in tiers:
+            tiers[maturity].append({"name": name, "path": rel_path})
+        else:
+            tiers["unlabeled"].append({"name": name, "path": rel_path})
+
+    total = sum(len(v) for v in tiers.values())
+
+    if output_json:
+        result = {
+            "total": total,
+            "tiers": {k: {"count": len(v), "agents": v} for k, v in tiers.items()},
+        }
+        click.echo(json_mod.dumps(result, indent=2))
+    else:
+        click.echo(f"\n{'=' * 50}")
+        click.echo("Agent Maturity Report")
+        click.echo(f"{'=' * 50}\n")
+        click.echo(f"Total agents scanned: {total}\n")
+        for tier, agents in tiers.items():
+            if agents:
+                icon = {
+                    "production": "🟢",
+                    "stable": "🔵",
+                    "beta": "🟡",
+                    "stub": "🔴",
+                    "deprecated": "⚫",
+                    "unlabeled": "⚪",
+                }.get(tier, "?")
+                click.echo(f"  {icon} {tier}: {len(agents)}")
+                for a in agents:
+                    click.echo(f"      {a['name']} ({a['path']})")
+                click.echo()
+        click.echo(f"{'=' * 50}")
 
 
 if __name__ == "__main__":

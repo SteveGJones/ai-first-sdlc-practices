@@ -2912,7 +2912,7 @@ Run 'python tools/agent-installer.py' to install specialist agents.
             "python" in self.project_purpose.lower()
             or "api" in self.project_purpose.lower()
         ):
-            print("     • python-expert - Python best practices")
+            print("     • language-python-expert - Python best practices")
             print("     • ai-test-engineer - AI system testing")
         if (
             "langchain" in self.project_purpose.lower()

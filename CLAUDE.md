@@ -24,7 +24,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🔴 CRITICAL RULE #1: ALWAYS WORK WITH YOUR TEAM OF EXPERTS
 
-**YOU HAVE 69+ EXPERT AGENTS AVAILABLE - USE THEM!**
+**YOU HAVE 63 EXPERT AGENTS AVAILABLE - USE THEM!**
 
 Before doing ANY work, you MUST:
 1. **CHECK**: Is there an expert agent for this? (Answer: Usually YES)
@@ -39,7 +39,7 @@ Before doing ANY work, you MUST:
 - Database? → Engage database-architect
 - API work? → Engage api-architect
 
-**With 69+ experts available, there is NO excuse for working alone.**
+**With 63 experts available, there is NO excuse for working alone.**
 
 ## 🎯 Recommended User Prompt
 
@@ -100,7 +100,7 @@ This is the AI-First SDLC Practices framework - a comprehensive methodology for 
 **CRITICAL RULE #1: YOU MUST ALWAYS WORK AS A TEAM. ALWAYS LOOK FOR EXPERTS TO COLLABORATE WITH.**
 
 ### ⛔ BEFORE DOING ANYTHING - ASK YOURSELF:
-1. **Is there an expert agent for this task?** (Check the 69+ available agents)
+1. **Is there an expert agent for this task?** (Check the 63 available agents)
 2. **Can multiple agents provide better insights?** (Always yes)
 3. **Am I trying to work alone?** (If yes, STOP and engage the team)
 
@@ -169,7 +169,7 @@ You: "Based on solution-architect's design, I'll implement the validation.
 
 **CRITICAL REMINDER**:
 - You are a COORDINATOR of specialists, not a solo developer
-- ALWAYS look for expert agents to collaborate with (69+ available)
+- ALWAYS look for expert agents to collaborate with (63 available)
 - NEVER attempt to solve problems alone when experts exist
 - Team-first is MANDATORY, not optional
 - If you're not using agents, you're doing it WRONG
@@ -241,19 +241,21 @@ See `AI-AUTONOMY.md` for detailed autonomous usage guide.
 ### ⚠️ CRITICAL INSTRUCTION FOR EVERY TASK
 
 **BEFORE you do ANYTHING, you MUST:**
-1. **IDENTIFY**: Which of the 69+ expert agents can help with this task
+1. **IDENTIFY**: Which of the 63 expert agents can help with this task
 2. **ENGAGE**: Use the Task tool to engage relevant specialists
 3. **COLLABORATE**: Work WITH the experts, not alone
 4. **VALIDATE**: Have specialists review your work
 
-**YOU HAVE 69+ EXPERT AGENTS AVAILABLE:**
-- Core specialists (21 agents)
+**YOU HAVE 63 EXPERT AGENTS AVAILABLE:**
+- Core specialists (27 agents)
 - AI development experts (9 agents)
-- Testing specialists (3 agents)
+- AI builders (5 agents)
+- Testing specialists (4 agents)
 - Documentation experts (2 agents)
-- Security specialists (multiple)
-- Language experts (Python, JavaScript, Go, etc.)
-- And many more...
+- Project management (4 agents)
+- SDLC agents (8 agents)
+- Language experts (Python, JavaScript, Go)
+- Templates (2), Future (1), Languages (1)
 
 **Working alone when experts are available = FAILURE**
 
@@ -263,7 +265,7 @@ See `AI-AUTONOMY.md` for detailed autonomous usage guide.
 
 **FUNDAMENTAL RULE**: You are NEVER the sole expert. For EVERY task, there are specialized agents who know more than you. Your job is to FIND and ENGAGE them.
 
-**With 69+ expert agents available, working alone is:**
+**With 63 expert agents available, working alone is:**
 - ❌ A violation of team-first principles
 - ❌ Ignoring available expertise
 - ❌ Producing inferior results
@@ -278,7 +280,7 @@ See `AI-AUTONOMY.md` for detailed autonomous usage guide.
 To discover agents for your project:
 1. **During Setup**: setup-smart.py provides initial recommendations
 2. **Ongoing Discovery**: Use ai-first-kick-starter agent anytime
-3. **Full Catalog**: See docs/AGENT-DISCOVERY-GUIDE.md for all 34+ agents
+3. **Full Catalog**: See docs/AGENT-DISCOVERY-GUIDE.md for all 63 agents
 
 The ai-first-kick-starter agent now helps you:
 - Discover agents based on project needs
@@ -286,7 +288,7 @@ The ai-first-kick-starter agent now helps you:
 - Remind about restart requirements
 - Guide agent installation process
 
-### Your Expert Team (69+ Specialists Available)
+### Your Expert Team (63 Specialists Available)
 
 **ALWAYS CHECK**: Do we have an expert for this? (Usually YES)
 

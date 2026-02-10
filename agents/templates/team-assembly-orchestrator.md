@@ -9,6 +9,7 @@ examples:
     user: "How should my agents work together?"
     assistant: "Let me establish clear roles and communication protocols for your agent team."
 color: blue
+maturity: production
 ---
 
 # Team Assembly Orchestrator Agent (Billy Wright Style)

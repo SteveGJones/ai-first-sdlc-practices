@@ -144,7 +144,7 @@ class A2AOrchestrator:
                 position="team-captain",
                 primary_passes_to=[
                     "ai-solution-architect",
-                    "python-expert",
+                    "language-python-expert",
                     "devops-specialist",
                 ],
                 receives_from=["all"],
@@ -186,8 +186,8 @@ class A2AOrchestrator:
                 },
             ),
             # Strikers
-            "python-expert": AgentCapability(
-                name="python-expert",
+            "language-python-expert": AgentCapability(
+                name="language-python-expert",
                 role="striker",
                 position="implementation-specialist",
                 primary_passes_to=["ai-test-engineer", "performance-engineer"],
@@ -319,7 +319,7 @@ class A2AOrchestrator:
             sequence = [
                 "solution-architect",
                 "ai-solution-architect",
-                "python-expert",
+                "language-python-expert",
                 "ai-test-engineer",
                 "critical-goal-reviewer",
             ]
