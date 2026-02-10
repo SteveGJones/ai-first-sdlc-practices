@@ -360,10 +360,11 @@ project_profile:
 
 ```bash
 # 1. Fetch the latest agent manifest
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/release/agent-manifest.json > /tmp/agent-manifest-latest.json
+mkdir -p ./tmp
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/release/agent-manifest.json > ./tmp/agent-manifest-latest.json
 
 # 2. Inventory current local agents
-ls .claude/agents/*.md 2>/dev/null | while read f; do basename "$f" .md; done | sort > /tmp/local-agents.txt
+ls .claude/agents/*.md 2>/dev/null | while read f; do basename "$f" .md; done | sort > ./tmp/local-agents.txt
 ```
 
 ```python
@@ -485,9 +486,9 @@ echo "Backed up {n} agents to $BACKUP_DIR"
 GITHUB_BASE="https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents"
 
 for agent_name in {new_agents}; do
-    curl -s "${GITHUB_BASE}/{path}" > "/tmp/${agent_name}.md"
-    if [ -s "/tmp/${agent_name}.md" ]; then
-        mv "/tmp/${agent_name}.md" ".claude/agents/${agent_name}.md"
+    curl -s "${GITHUB_BASE}/{path}" > "./tmp/${agent_name}.md"
+    if [ -s "./tmp/${agent_name}.md" ]; then
+        mv "./tmp/${agent_name}.md" ".claude/agents/${agent_name}.md"
         echo "Installed: ${agent_name}"
     else
         echo "FAILED: ${agent_name} (empty download)"
@@ -496,9 +497,9 @@ done
 
 # Step 3: Download and install UPGRADES (user already approved these)
 for agent_name in {approved_upgrades}; do
-    curl -s "${GITHUB_BASE}/{path}" > "/tmp/${agent_name}.md"
-    if [ -s "/tmp/${agent_name}.md" ]; then
-        mv "/tmp/${agent_name}.md" ".claude/agents/${agent_name}.md"
+    curl -s "${GITHUB_BASE}/{path}" > "./tmp/${agent_name}.md"
+    if [ -s "./tmp/${agent_name}.md" ]; then
+        mv "./tmp/${agent_name}.md" ".claude/agents/${agent_name}.md"
         echo "Upgraded: ${agent_name}"
     else
         echo "FAILED: ${agent_name} (empty download, original preserved)"
@@ -506,8 +507,8 @@ for agent_name in {approved_upgrades}; do
 done
 
 # Step 4: Download pipeline support files
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/agent-research-prompt.md > /tmp/agent-research-prompt.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/docs/AGENT-CREATION-GUIDE.md > /tmp/AGENT-CREATION-GUIDE.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/templates/agent-research-prompt.md > ./tmp/agent-research-prompt.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/docs/AGENT-CREATION-GUIDE.md > ./tmp/AGENT-CREATION-GUIDE.md
 ```
 
 If the user chose "Let me choose which ones to upgrade", iterate through each upgrade candidate:
@@ -581,7 +582,7 @@ error_handling:
 
   empty_download:
     action: "Do NOT move empty file. Report as failed. Original preserved."
-    check: "[ -s /tmp/agent-name.md ]"
+    check: "[ -s ./tmp/agent-name.md ]"
 
   manifest_fetch_failure:
     action: "STOP. Cannot determine what to download without manifest."
