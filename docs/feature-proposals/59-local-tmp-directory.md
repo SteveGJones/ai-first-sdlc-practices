@@ -1,5 +1,7 @@
 # Feature Proposal: Replace /tmp with ./tmp for Claude Code Compatibility
 
+**Branch**: feature/local-tmp-directory
+
 ## Problem Statement
 Claude Code requires additional user permissions to access `/tmp` (system temp directory) but not `./tmp` (project-local). Using `/tmp` also risks cross-session file collisions when two Claude Code sessions write to the same temp path.
 

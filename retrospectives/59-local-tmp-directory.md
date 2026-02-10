@@ -1,5 +1,7 @@
 # Retrospective: Replace /tmp with ./tmp for Claude Code Compatibility
 
+**Branch**: feature/local-tmp-directory
+
 ## What Went Well
 - Clean pattern: negative lookbehind regex `(?<!\.)\/tmp\/` catches bare `/tmp/` while allowing `./tmp/`
 - Enforcement at three levels: script, pre-commit hook, and CI check
