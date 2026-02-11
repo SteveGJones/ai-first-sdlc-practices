@@ -270,7 +270,10 @@ class SoloPatternDetector:
         # Exclude template and backup files
         filtered_files = []
         for f in md_files:
-            if any(exclude in f for exclude in ["templates/", "backups/", "examples/"]):
+            if any(
+                exclude in f
+                for exclude in ["templates/", "backups/", "examples/", "archive/"]
+            ):
                 print(f"ℹ️  Skipping template/backup/example file: {f}")
                 continue
             if os.path.exists(f):

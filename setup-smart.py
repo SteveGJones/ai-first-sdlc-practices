@@ -37,7 +37,6 @@ class SmartFrameworkSetup:
         ),
         "CLAUDE-CONTEXT-logging.md": "CLAUDE-CONTEXT-logging.md",
         "CLAUDE-CONTEXT-levels.md": "CLAUDE-CONTEXT-levels.md",
-        "CLAUDE-CONTEXT-agents.md": "CLAUDE-CONTEXT-agents.md",
         # Migration tool for existing projects
         "tools/migrate-to-hierarchical.py": "tools/migrate-to-hierarchical.py",
         "templates/feature-proposal.md": "docs/feature-proposals/template-feature-proposal.md",

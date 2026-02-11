@@ -132,28 +132,19 @@ Every action is tracked:
 ## ⚡ Quick Command Reference
 
 ```bash
-# AUTOMATIC TEAM ENFORCEMENT (RUN FIRST - MANDATORY)
-python tools/automation/auto-team-assembly.py "work description" --force-consultation
-
-# VALIDATE TEAM ENGAGEMENT (MUST PASS)
-python tools/validation/validate-team-engagement.py --strict
-
-# CHECK SOLO PATTERNS (ZERO TOLERANCE)
-python tools/validation/check-solo-patterns.py --threshold 0
-
-# FULL TEAM VALIDATION (COMPREHENSIVE)
-python tools/validation/validate-pipeline.py --checks team-engagement solo-patterns
+# Team-first enforcement is agent-based — use the sdlc-enforcer agent
+# before starting work and the critical-goal-reviewer after completing work.
 
 # Check compliance
-python .sdlc/tools/validation/validate-pipeline.py --ci
+python tools/validation/validate-pipeline.py --ci
 
 # Verify architecture
-python .sdlc/tools/validation/validate-architecture.py --strict
+python tools/validation/validate-architecture.py --strict
 
 # Check technical debt (MUST BE ZERO)
-python .sdlc/tools/validation/check-technical-debt.py --threshold 0
+python tools/validation/check-technical-debt.py --threshold 0
 
-# Run sdlc-enforcer
+# Run sdlc-enforcer agent
 claude "Check my SDLC compliance" # Will block work if violations found
 ```
 

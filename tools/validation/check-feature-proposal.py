@@ -73,20 +73,29 @@ def find_feature_proposal(feature_name: str) -> Optional[Path]:
         "docs/proposals",
     ]
 
+    # Use word boundary matching to avoid substring false positives
+    # e.g. "documentation-review" should not match "documentation-reviewer"
+    feature_pattern = re.compile(r"\b" + re.escape(feature_name) + r"\b", re.IGNORECASE)
+
     for proposal_dir in proposal_dirs:
         if not os.path.exists(proposal_dir):
             continue
 
-        # Look for files containing the feature name
-        for file in Path(proposal_dir).glob("*.md"):
+        files = list(Path(proposal_dir).glob("*.md"))
+
+        # First pass: check filenames for feature name
+        for file in files:
             if feature_name.lower() in file.name.lower():
                 return file
 
-            # Check file content for branch name
+        # Second pass: check file content for branch reference
+        for file in files:
             try:
                 with open(file, "r") as f:
                     content = f.read()
-                    if f"feature/{feature_name}" in content or feature_name in content:
+                    if f"feature/{feature_name}" in content or feature_pattern.search(
+                        content
+                    ):
                         return file
             except Exception:
                 continue

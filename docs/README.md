@@ -67,7 +67,7 @@ Complete documentation for the AI-First SDLC Practices framework.
 - [Agent Test Scenarios](agent-test-scenarios.md) - Testing agent effectiveness
 
 ### Agent System
-- [Agent System Review](AGENT-SYSTEM-REVIEW.md) - Architecture overview
+- [Agent System Review](archive/historical-records/AGENT-SYSTEM-REVIEW.md) - Architecture overview (archived)
 - [Agent Context Coordination](AGENT-CONTEXT-COORDINATION.md) - How agents work together
 - [AI Team Orchestration Guide](AI-TEAM-ORCHESTRATION-GUIDE.md) - Managing agent teams
 
@@ -97,13 +97,13 @@ Complete documentation for the AI-First SDLC Practices framework.
 
 ### Coaching Systems
 - [Billy Wright Coaching System](BILLY-WRIGHT-COACHING-SYSTEM.md) - Team-first development
-- [Billy Wright Dream Team Meeting](BILLY-WRIGHT-DREAM-TEAM-MEETING.md) - Team formation
+- [Billy Wright Dream Team Meeting](archive/meeting-notes/BILLY-WRIGHT-DREAM-TEAM-MEETING.md) - Team formation (archived)
 - [Stan Cullis Zero Tolerance](STAN-CULLIS-ZERO-TOLERANCE.md) - Quality enforcement
 
 ### AI Teams
-- [AI Builders Team](AI-BUILDERS-TEAM-HUDDLE.md) - Infrastructure team
+- [AI Builders Team](archive/meeting-notes/AI-BUILDERS-TEAM-HUDDLE.md) - Infrastructure team (archived)
 - [AI First Kick Starter Vision](AI-FIRST-KICK-STARTER-VISION.md) - Framework vision
-- [A2A Tactical Team Discussion](A2A-TACTICAL-TEAM-DISCUSSION.md) - Team strategies
+- [A2A Tactical Team Discussion](archive/meeting-notes/A2A-TACTICAL-TEAM-DISCUSSION.md) - Team strategies (archived)
 
 ## 🔄 Updates and Releases
 
