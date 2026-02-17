@@ -46,16 +46,39 @@ class AgentValidator:
     # Valid maturity values
     VALID_MATURITY = ["production", "stable", "beta", "stub", "deprecated"]
 
+    # Valid Claude Code tool names
+    VALID_TOOLS = [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Glob",
+        "Grep",
+        "Task",
+        "WebFetch",
+        "WebSearch",
+        "NotebookEdit",
+    ]
+
+    # Valid Claude Code model aliases
+    VALID_MODELS = ["sonnet", "opus", "haiku"]
+
     # Field constraints
     NAME_PATTERN = re.compile(r"^[a-z0-9-]{1,50}$")
-    MAX_DESCRIPTION_LENGTH = 500  # Increased to accommodate existing agents
+    MAX_DESCRIPTION_LENGTH = 500
+    CONTENT_SIZE_WARNING = 50000
     MIN_EXAMPLES = 1
     MAX_EXAMPLES = 5
 
-    # Content section patterns
-    CONTENT_SECTIONS = [
-        r"You are .+",  # Role statement
-        r"Your core competencies include:",  # Competencies list
+    # Content section patterns - accept common heading variants
+    COMPETENCIES_PATTERNS = [
+        "core competencies",
+        "key capabilities",
+        "core expertise",
+        "your core competencies include",
+        "core capabilities",
+        "what you do",
+        "primary capabilities",
     ]
 
     def __init__(self, strict: bool = True):
@@ -190,6 +213,43 @@ class AgentValidator:
                     )
                 )
 
+        # Validate tools (optional field - Claude Code native)
+        if "tools" in frontmatter:
+            tools = frontmatter["tools"]
+            if not isinstance(tools, list):
+                self.errors.append(ValidationError("tools", "Must be a list"))
+            else:
+                for tool in tools:
+                    if not isinstance(tool, str):
+                        self.errors.append(
+                            ValidationError(
+                                "tools",
+                                f"Tool name must be a string, got {type(tool).__name__}",
+                            )
+                        )
+                    elif tool not in self.VALID_TOOLS:
+                        self.errors.append(
+                            ValidationError(
+                                "tools",
+                                f"Unknown tool '{tool}'. Valid: {', '.join(self.VALID_TOOLS)}",
+                                severity="warning",
+                            )
+                        )
+
+        # Validate model (optional field - Claude Code native)
+        if "model" in frontmatter:
+            model = frontmatter["model"]
+            if not isinstance(model, str):
+                self.errors.append(ValidationError("model", "Must be a string"))
+            elif model not in self.VALID_MODELS:
+                self.errors.append(
+                    ValidationError(
+                        "model",
+                        f"Must be one of: {', '.join(self.VALID_MODELS)}",
+                        severity="warning",
+                    )
+                )
+
         # Validate examples
         if "examples" in frontmatter:
             examples = frontmatter["examples"]
@@ -260,6 +320,8 @@ class AgentValidator:
             self.errors.append(ValidationError("content", "Content section is empty"))
             return
 
+        body_lower = body.lower()
+
         # Check for role statement
         if not re.search(r"^You are .+", body, re.MULTILINE):
             self.errors.append(
@@ -270,12 +332,17 @@ class AgentValidator:
                 )
             )
 
-        # Check for core competencies section (case-insensitive)
-        if "your core competencies include" not in body.lower():
+        # Check for core competencies section (accepts common heading variants)
+        has_competencies = any(
+            pattern in body_lower for pattern in self.COMPETENCIES_PATTERNS
+        )
+        if not has_competencies:
             self.errors.append(
                 ValidationError(
                     "content",
-                    "Missing 'Your core competencies include:' section",
+                    "Missing competencies section (expected one of: "
+                    + ", ".join(f"'{p}'" for p in self.COMPETENCIES_PATTERNS[:3])
+                    + ", ...)",
                     severity="warning",
                 )
             )
@@ -287,6 +354,17 @@ class AgentValidator:
                     "content",
                     "Content too short (minimum 100 characters)",
                     severity="warning",
+                )
+            )
+
+        # Warn on very large content (may impact context window)
+        if len(body.strip()) > self.CONTENT_SIZE_WARNING:
+            self.errors.append(
+                ValidationError(
+                    "content",
+                    f"Content is {len(body.strip()):,} characters (warning threshold: {self.CONTENT_SIZE_WARNING:,}). "
+                    "Very large agent prompts may impact context window budget.",
+                    severity="info",
                 )
             )
 
