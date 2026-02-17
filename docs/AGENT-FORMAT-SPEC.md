@@ -7,6 +7,7 @@
   - [YAML Frontmatter Schema](#yaml-frontmatter-schema)
     - [Required Fields](#required-fields)
     - [Optional Fields](#optional-fields)
+    - [Claude Code Native Fields](#claude-code-native-fields)
     - [Maturity Tiers](#maturity-tiers)
     - [Examples Structure](#examples-structure)
   - [Complete Schema](#complete-schema)
