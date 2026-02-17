@@ -2,7 +2,7 @@
 
 **Branch:** `feature/sdlc-enforcer-validity-investigation`
 **Date:** 2026-02-10
-**Feature:** Investigation into why sdlc-enforcer agent fails validation when downloaded to external projects
+**Feature:** Collaborative investigation with team into why sdlc-enforcer agent fails validation when downloaded to external projects
 
 ## What Went Well
 

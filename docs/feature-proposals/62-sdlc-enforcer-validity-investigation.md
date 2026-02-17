@@ -2,11 +2,11 @@
 
 **Target Branch:** `feature/sdlc-enforcer-validity-investigation`
 **Date:** 2026-02-10
-**Author:** AI Investigation Team
+**Author:** AI Investigation Team (with specialist consultation from solution-architect and sdlc-enforcer agents)
 
 ## Motivation
 
-The `agents/core/sdlc-enforcer.md` agent works correctly within this repository but has been reported as "not valid" when downloaded and installed into two separate external projects. Both projects required patches to make the enforcer functional. This investigation identifies the root causes and fixes the underlying issues.
+The `agents/core/sdlc-enforcer.md` agent works correctly within this repository but has been reported as "not valid" when downloaded and installed into two separate external projects. Both projects required patches to make the enforcer functional. This collaborative investigation with the team identifies the root causes and fixes the underlying issues.
 
 ## Investigation Findings
 
