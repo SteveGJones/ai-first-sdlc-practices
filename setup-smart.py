@@ -2592,27 +2592,28 @@ See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
         # Download core agents directly
         print("   📦 Installing core agents...")
 
-        # Updated core agents list with new universal agents
+        # Core agents list - install to flat .claude/agents/ directory
+        # Claude Code loads agents from .claude/agents/*.md (no subdirectories)
         core_agents = [
             (
                 "agents/core/sdlc-enforcer.md",
-                ".claude/agents/core/sdlc-enforcer.md",
+                ".claude/agents/sdlc-enforcer.md",
             ),
             (
                 "agents/core/solution-architect.md",
-                ".claude/agents/core/solution-architect.md",
+                ".claude/agents/solution-architect.md",
             ),
             (
                 "agents/core/critical-goal-reviewer.md",
-                ".claude/agents/core/critical-goal-reviewer.md",
+                ".claude/agents/critical-goal-reviewer.md",
             ),
             (
                 "agents/sdlc/framework-validator.md",
-                ".claude/agents/sdlc/framework-validator.md",
+                ".claude/agents/framework-validator.md",
             ),
             (
                 "agents/core/github-integration-specialist.md",
-                ".claude/agents/core/github-integration-specialist.md",
+                ".claude/agents/github-integration-specialist.md",
             ),
         ]
 

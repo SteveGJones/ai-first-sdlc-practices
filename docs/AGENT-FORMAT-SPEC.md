@@ -46,7 +46,7 @@ Technical specification for AI agent file format used in the AI-First SDLC frame
 | Field | Type | Description | Constraints |
 |-------|------|-------------|-------------|
 | `name` | string | Unique agent identifier | lowercase, alphanumeric + hyphens only, max 50 chars |
-| `description` | string | Brief agent description | max 150 chars, no special formatting |
+| `description` | string | Brief agent description | max 500 chars, no special formatting |
 | `examples` | array | Usage examples | 2-3 examples recommended, see structure below |
 | `color` | string | Visual identifier | enum: blue, green, purple, red, cyan, yellow, orange |
 
@@ -59,6 +59,18 @@ Technical specification for AI agent file format used in the AI-First SDLC frame
 | `priority` | string | Activation priority | "medium" |
 | `maturity` | string | Agent quality tier | null |
 | `tags` | array | Searchable tags | [] |
+| `tools` | array | Claude Code tools the agent can use | [] |
+| `model` | string | Claude Code model alias for the agent | null |
+
+### Claude Code Native Fields
+
+The `tools` and `model` fields configure how Claude Code runs the agent as a subagent:
+
+**tools**: List of Claude Code tool names the agent is permitted to use. Valid values:
+`Read`, `Write`, `Edit`, `Bash`, `Glob`, `Grep`, `Task`, `WebFetch`, `WebSearch`, `NotebookEdit`
+
+**model**: Which Claude model to use when running the agent. Valid aliases:
+`sonnet`, `opus`, `haiku`
 
 ### Maturity Tiers
 
@@ -92,7 +104,7 @@ examples:
 ---
 # Required fields
 name: string                    # [a-z0-9-]{1,50}
-description: string             # .{1,150}
+description: string             # .{1,500}
 examples:                       # array[2..5]
   - context: string            # .{10,200}
     user: string               # .{5,500}
@@ -105,6 +117,8 @@ category: string               # category/subcategory
 priority: enum                 # low|medium|high|critical
 maturity: enum                 # production|stable|beta|stub|deprecated
 tags: array[string]           # searchable tags
+tools: array[string]          # Claude Code tool names
+model: enum                    # sonnet|opus|haiku
 ---
 ```
 
@@ -114,8 +128,8 @@ The content section is free-form Markdown with recommended structure:
 
 ### Minimum Required Sections
 
-1. **Role Statement**: Opening paragraph defining the agent
-2. **Core Competencies**: Bulleted list of expertise areas
+1. **Role Statement**: Opening paragraph defining the agent (typically "You are the [Name], ...")
+2. **Core Competencies**: Bulleted list of expertise areas (heading variants accepted: "Core Competencies", "Key Capabilities", "Core Expertise", "Your Core Competencies Include")
 3. **Activation Criteria**: When/how the agent is used
 
 ### Recommended Sections
@@ -170,7 +184,7 @@ You are the [Agent Name], [role description].
    - Must be unique within agent set
 
 4. **Description Field**
-   - Maximum 150 characters
+   - Maximum 500 characters
    - No markdown formatting
    - No newlines
    - Should be a complete sentence
@@ -195,8 +209,9 @@ You are the [Agent Name], [role description].
 
 2. **Length**
    - Minimum 100 characters
-   - Maximum 10,000 characters
-   - Recommended: 500-2000 characters
+   - Warning above 50,000 characters (may impact context window)
+   - Recommended: 500-40,000 characters
+   - Production-tier agents typically range 20,000-40,000 characters
 
 ## File Naming Convention
 
@@ -239,6 +254,12 @@ examples:
     user: "I need to document my API endpoints"
     assistant: "The api-designer agent can help you create comprehensive API documentation."
 color: blue
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+model: sonnet
 ---
 
 You are the API Designer, an expert in creating elegant, scalable, and maintainable APIs.
@@ -326,6 +347,7 @@ For tooling, agents can be represented in JSON:
 - **v1.1.0** (2024-08): Added optional fields
 - **v1.2.0** (2024-11): Standardized validation rules
 - **v1.3.0** (2025-08): Added maturity tiers (production/stable/beta/stub/deprecated)
+- **v1.4.0** (2026-02): Added `tools` and `model` fields for Claude Code native integration; updated description limit from 150 to 500 chars; updated content size guidance to reflect production-tier agents
 
 ## Compliance
 
