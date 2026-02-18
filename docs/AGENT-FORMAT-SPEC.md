@@ -30,6 +30,8 @@
   - [Automatic Validation Hook](#automatic-validation-hook)
   - [Version History](#version-history)
   - [Compliance](#compliance)
+    - [Official Mode (`--mode official`)](#official-mode---mode-official)
+    - [Project Mode (`--mode project`)](#project-mode---mode-project)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
