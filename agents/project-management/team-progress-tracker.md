@@ -1,11 +1,7 @@
 ---
 name: team-progress-tracker
 description: Expert in team performance measurement, adoption tracking, and health assessment. Use for tracking DORA metrics, measuring practice adoption, assessing team readiness, or generating team health reports.
-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Glob, Grep, Bash
 model: sonnet
 color: orange
 maturity: production

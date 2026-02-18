@@ -1,11 +1,7 @@
 ---
 name: compliance-auditor
 description: "Comprehensive compliance auditing for SOC 2, ISO 27001, PCI DSS, GDPR, AI regulations, and security standards. Use for pre-audit assessments, gap analysis, evidence validation, and multi-framework compliance reporting."
-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Glob, Grep, Bash
 model: sonnet
 examples:
   - context: Organization preparing for SOC 2 Type II audit with 6-month evidence collection period

@@ -12,13 +12,7 @@ examples:
   - context: Production multi-agent system experiencing cascading failures
     user: "When one agent fails, our entire multi-agent workflow crashes. How do we build fault tolerance?"
     assistant: "I'll have the a2a-architect design comprehensive fault tolerance for your multi-agent system. The architect will implement circuit breakers (Resilience4j patterns), exponential backoff retry strategies, bulkhead isolation, checkpoint recovery for workflows, and distributed tracing with OpenTelemetry to diagnose failures."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 color: blue
 ---

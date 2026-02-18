@@ -1,13 +1,7 @@
 ---
 name: agile-coach
 description: Expert in Scrum, Kanban, SAFe, and scaled agile. Use for sprint planning, retrospectives, team dysfunction diagnosis, agile transformation coaching, and metrics implementation (DORA, SPACE, flow).
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 color: orange
 maturity: production

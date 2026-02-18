@@ -13,13 +13,7 @@ examples:
   - context: RAG system experiencing high latency and embedding costs at scale
     user: "We're seeing 3-5 second query latency and high OpenAI embedding costs. What's the optimization approach?"
     assistant: "I'll work with the rag-system-designer to analyze the retrieval pipeline, recommend approximate nearest neighbor indexing (HNSW), implement embedding caching, and evaluate switching to a local embedding model."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 ---
 

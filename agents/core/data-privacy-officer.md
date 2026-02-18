@@ -19,13 +19,7 @@ examples:
     assistant: "I'm the data-privacy-officer. For privacy compliance, encryption strategy should include: (1) Encryption at rest (AES-256) for all personal data in databases, file storage, and backups, (2) Encryption in transit (TLS 1.3) for all data transfers, (3) Pseudonymization using cryptographic hashing (SHA-256 with salt) to separate identifiers from attributes, (4) Key management with regular rotation and access controls, (5) Field-level encryption for sensitive categories (financial data, health data, precise location). For GDPR Article 32, encryption is specifically mentioned as an appropriate technical measure. Consider anonymization (irreversible) vs pseudonymization (reversible with key) based on processing purposes and data retention requirements."
 color: blue
 maturity: production
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 ---
 

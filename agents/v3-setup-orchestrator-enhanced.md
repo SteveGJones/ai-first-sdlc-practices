@@ -11,7 +11,7 @@ examples:
   - context: Discovering existing agents instead of generating
     user: "I need agents for my Model Context Protocol server"
     assistant: "I'll search our catalog for MCP agents - we have mcp-server-architect and other specialists ready to help."
-color: gold
+color: yellow
 maturity: production
 ---
 

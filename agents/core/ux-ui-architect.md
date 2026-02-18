@@ -1,13 +1,7 @@
 ---
 name: ux-ui-architect
 description: "Expert in design systems, WCAG 2.2/3.0 accessibility, user research methods, and design-to-development handoff. Use for interface design, accessibility audits, and UX strategy."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 examples:
   - context: Team designing a multi-brand enterprise design system with accessibility compliance requirements

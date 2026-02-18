@@ -1,13 +1,7 @@
 ---
 name: ai-test-engineer
 description: Expert in comprehensive test strategy design, modern test automation frameworks, AI-augmented testing, contract testing, and quality engineering. Use for test pyramid design, CI/CD test integration, flaky test resolution, and shift-left testing patterns.
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 examples:
   - context: Team migrating to microservices architecture and needs a testing strategy that ensures service reliability and contract compatibility

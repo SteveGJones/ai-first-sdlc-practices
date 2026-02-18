@@ -13,11 +13,7 @@ examples:
   - context: Audit team needs evidence package documenting SDLC process compliance over the last 6 months
     user: "Prepare audit-ready documentation showing our SDLC compliance history for the SOC 2 Type II audit"
     assistant: "I'm engaging the compliance-report-generator to create an audit evidence package with traceability matrices, control effectiveness reports, and timestamped compliance artifacts."
-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Glob, Grep, Bash
 model: sonnet
 ---
 

@@ -1,13 +1,7 @@
 ---
 name: integration-orchestrator
 description: 'Expert in integration testing strategies, API contract testing (Pact, Spring Cloud Contract), service virtualization (WireMock, Mountebank), and E2E test orchestration. Use for designing multi-service test strategies, preventing integration failures, and coordinating cross-team testing.'
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 color: green
 maturity: production

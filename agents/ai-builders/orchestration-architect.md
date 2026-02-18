@@ -1,13 +1,7 @@
 ---
 name: orchestration-architect
 description: 'Expert in multi-agent workflow design, state machines, agent coordination, and distributed orchestration. Use for designing agent pipelines, implementing handoff protocols, scaling orchestration systems, and choosing frameworks like LangGraph, AutoGen, or CrewAI.'
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 color: purple
 maturity: production

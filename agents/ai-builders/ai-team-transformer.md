@@ -12,11 +12,7 @@ examples:
   - context: Organization measuring AI team effectiveness
     user: "How do we measure if our AI-augmented teams are actually more effective than traditional teams?"
     assistant: "The ai-team-transformer will help establish AI team performance metrics. We'll adapt DORA and SPACE frameworks for AI-augmented development and create continuous improvement practices based on your specific context."
-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Glob, Grep, Bash
 model: sonnet
 color: purple
 ---

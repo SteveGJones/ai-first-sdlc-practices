@@ -13,13 +13,7 @@ examples:
   - context: Technology stack selection for a new SaaS product with specific requirements
     user: "We need to choose our tech stack for a new SaaS analytics platform. Requirements are real-time data processing, multi-tenancy, and global deployment. Team knows Python and JavaScript."
     assistant: "I'm the solution-architect. I'll conduct a systematic technology evaluation using weighted decision matrices across dimensions like performance, team expertise, ecosystem maturity, operational complexity, and cost. For your requirements, I'll evaluate options like: event streaming (Kafka vs Pulsar), data processing (Spark vs Flink), storage (PostgreSQL + TimescaleDB vs ClickHouse), and deployment patterns (multi-region active-active vs geo-partitioned)."
-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
-  - Write
-  - Edit
+tools: Read, Glob, Grep, Bash, Write, Edit
 model: sonnet
 ---
 

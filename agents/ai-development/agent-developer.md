@@ -11,7 +11,7 @@ examples:
   - context: Building a multi-agent system with coordination challenges
     user: "I have three specialized agents but they're not coordinating well. How should I design the handoff protocols and state management?"
     assistant: "I'll use the agent-developer to design a multi-agent coordination architecture, including handoff patterns, context sharing mechanisms, and conflict resolution strategies."
-color: gold
+color: yellow
 maturity: production
 ---
 

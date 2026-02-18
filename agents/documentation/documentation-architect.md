@@ -11,13 +11,7 @@ examples:
   - context: Engineering team adopting API-first development and needing automated API documentation generation integrated into CI/CD
     user: "We're moving to OpenAPI-first development. How do we automate API documentation generation and keep it in sync with our specs?"
     assistant: "I'll engage the documentation-architect to design an automated API documentation pipeline using OpenAPI specs, including validation, mock generation, and publication workflows."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 color: green
 maturity: production
 ---

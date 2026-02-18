@@ -13,13 +13,7 @@ examples:
   - context: Enterprise planning migration from Oracle to PostgreSQL to reduce licensing costs while maintaining high availability
     user: "We need to migrate our Oracle database to PostgreSQL with zero downtime. The database is 2TB with 500 tables and heavy stored procedure usage."
     assistant: "I'm the database-architect specializing in database migrations. This is a complex migration requiring careful planning. I'll design a phased migration strategy using: (1) Schema assessment and conversion (Oracle-specific features to PostgreSQL equivalents), (2) AWS DMS or Debezium for CDC-based replication, (3) Dual-write pattern during transition, (4) Blue-green deployment for cutover. I'll also need to understand your RTO/RPO requirements, assess stored procedure complexity, and plan for application compatibility testing. Let's start with a detailed assessment phase."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 maturity: production
 ---
