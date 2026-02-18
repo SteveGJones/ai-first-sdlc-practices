@@ -1,13 +1,7 @@
 ---
 name: delivery-manager
 description: "Expert in software delivery orchestration, release management, risk mitigation, and stakeholder communication. Use for release planning, go/no-go decisions, delivery forecasting, cross-team coordination, and production readiness validation."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 color: orange
 maturity: production

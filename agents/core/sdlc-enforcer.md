@@ -13,11 +13,7 @@ examples:
   - context: Developer attempting to push directly to main branch
     user: "Can I just push this fix directly to main? It's urgent."
     assistant: "The sdlc-enforcer will block that. All changes must go through feature branches and PRs with validation, even urgent fixes. I'll help you set up a hotfix branch with expedited review. This protects main branch integrity and maintains our audit trail."
-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Glob, Grep, Bash
 model: sonnet
 ---
 

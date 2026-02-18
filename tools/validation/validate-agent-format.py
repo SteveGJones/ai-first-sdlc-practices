@@ -61,7 +61,7 @@ class AgentValidator:
     ]
 
     # Valid Claude Code model aliases
-    VALID_MODELS = ["sonnet", "opus", "haiku"]
+    VALID_MODELS = ["sonnet", "opus", "haiku", "inherit"]
 
     # Field constraints
     NAME_PATTERN = re.compile(r"^[a-z0-9-]{1,50}$")
@@ -214,27 +214,32 @@ class AgentValidator:
                 )
 
         # Validate tools (optional field - Claude Code native)
+        # Accepts both comma-separated string (official) and YAML list (legacy)
         if "tools" in frontmatter:
             tools = frontmatter["tools"]
-            if not isinstance(tools, list):
-                self.errors.append(ValidationError("tools", "Must be a list"))
+            if isinstance(tools, str):
+                tool_list = [t.strip() for t in tools.split(",") if t.strip()]
+            elif isinstance(tools, list):
+                tool_list = tools
             else:
-                for tool in tools:
-                    if not isinstance(tool, str):
-                        self.errors.append(
-                            ValidationError(
-                                "tools",
-                                f"Tool name must be a string, got {type(tool).__name__}",
-                            )
+                tool_list = []
+                self.errors.append(ValidationError("tools", "Must be a string or list"))
+            for tool in tool_list:
+                if not isinstance(tool, str):
+                    self.errors.append(
+                        ValidationError(
+                            "tools",
+                            f"Tool name must be a string, got {type(tool).__name__}",
                         )
-                    elif tool not in self.VALID_TOOLS:
-                        self.errors.append(
-                            ValidationError(
-                                "tools",
-                                f"Unknown tool '{tool}'. Valid: {', '.join(self.VALID_TOOLS)}",
-                                severity="warning",
-                            )
+                    )
+                elif tool not in self.VALID_TOOLS:
+                    self.errors.append(
+                        ValidationError(
+                            "tools",
+                            f"Unknown tool '{tool}'. Valid: {', '.join(self.VALID_TOOLS)}",
+                            severity="warning",
                         )
+                    )
 
         # Validate model (optional field - Claude Code native)
         if "model" in frontmatter:

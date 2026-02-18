@@ -1,7 +1,7 @@
 ---
 name: frontend-security-specialist
 description: "Expert in XSS prevention, CSP, OAuth/OIDC, SRI, and frontend threat modeling. Use for securing SPAs, implementing auth flows, and reviewing client-side security."
-tools: [Read, Grep, Glob]
+tools: Read, Grep, Glob
 model: sonnet
 maturity: production
 examples:

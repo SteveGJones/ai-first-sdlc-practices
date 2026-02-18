@@ -1,13 +1,7 @@
 ---
 name: context-engineer
 description: Expert in AI memory architectures, context window optimization, token budget management, and state persistence. Use for designing conversation memory systems, implementing sliding window strategies, RAG-based context extension, and multi-agent context coordination.
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 examples:
   - context: Team building a customer service chatbot that needs to remember conversation history across multiple sessions

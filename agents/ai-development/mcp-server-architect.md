@@ -1,13 +1,7 @@
 ---
 name: mcp-server-architect
 description: Expert in Model Context Protocol server architecture, tool schema design, transport configuration, and production deployment. Use for MCP server design, tool hierarchy planning, security architecture, and integration strategy.
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 examples:
   - context: Team building an MCP server to expose database operations to Claude Desktop

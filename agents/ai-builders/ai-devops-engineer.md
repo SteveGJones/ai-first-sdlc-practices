@@ -13,13 +13,7 @@ examples:
   - context: AI infrastructure costs growing beyond budget without clear visibility
     user: "Our LLM API costs jumped 300% last month and we don't know why."
     assistant: "I'll have the ai-devops-engineer implement token-level cost tracking, set up cost attribution by feature, create budget alerts, and identify optimization opportunities through caching and model tiering."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 ---
 

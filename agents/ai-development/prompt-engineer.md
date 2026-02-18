@@ -1,13 +1,7 @@
 ---
 name: prompt-engineer
 description: "Expert in prompt engineering for Claude, GPT, Gemini, and Llama models. Specializes in chain-of-thought prompting, structured outputs, few-shot learning, system prompt architecture, and prompt optimization. Use for designing effective prompts, implementing advanced techniques, or evaluating prompt performance."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 color: cyan
 maturity: production

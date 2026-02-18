@@ -11,13 +11,7 @@ examples:
   - context: "Platform team building an internal developer platform to reduce cognitive load"
     user: "How do we build an internal developer platform that provides self-service infrastructure?"
     assistant: "I'll have the devops-specialist design an IDP architecture using Backstage or similar. They'll evaluate platform components, design golden paths for common workflows, implement self-service provisioning with guardrails, and define developer experience metrics (DORA, SPACE)."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 color: blue
 maturity: production
