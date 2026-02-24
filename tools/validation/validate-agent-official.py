@@ -178,7 +178,11 @@ def validate_official(frontmatter: Dict, body: str) -> List[Issue]:
             issues.append(Issue("description", "Must be a string"))
         elif len(desc) < 10:
             issues.append(
-                Issue("description", "Very short description may hurt routing accuracy", "warning")
+                Issue(
+                    "description",
+                    "Very short description may hurt routing accuracy",
+                    "warning",
+                )
             )
 
     # Optional: tools
@@ -194,14 +198,20 @@ def validate_official(frontmatter: Dict, body: str) -> List[Issue]:
                 )
             )
         elif fmt == "unknown":
-            issues.append(Issue("tools", "Invalid format — must be comma-separated string"))
+            issues.append(
+                Issue("tools", "Invalid format — must be comma-separated string")
+            )
         for tool in tools_list:
             # Check for Task(agent-name) pattern
             if tool.startswith("Task(") and tool.endswith(")"):
                 continue  # Valid Task restriction syntax
             if tool not in OFFICIAL_VALID_TOOLS:
                 issues.append(
-                    Issue("tools", f"Unknown tool '{tool}'. Valid: {', '.join(OFFICIAL_VALID_TOOLS)}", "warning")
+                    Issue(
+                        "tools",
+                        f"Unknown tool '{tool}'. Valid: {', '.join(OFFICIAL_VALID_TOOLS)}",
+                        "warning",
+                    )
                 )
 
     # Optional: disallowedTools
@@ -210,10 +220,16 @@ def validate_official(frontmatter: Dict, body: str) -> List[Issue]:
         if isinstance(dt, str):
             for tool in [t.strip() for t in dt.split(",") if t.strip()]:
                 if tool not in OFFICIAL_VALID_TOOLS:
-                    issues.append(Issue("disallowedTools", f"Unknown tool '{tool}'", "warning"))
+                    issues.append(
+                        Issue("disallowedTools", f"Unknown tool '{tool}'", "warning")
+                    )
         elif isinstance(dt, list):
             issues.append(
-                Issue("disallowedTools", "Should be comma-separated string per official spec", "warning")
+                Issue(
+                    "disallowedTools",
+                    "Should be comma-separated string per official spec",
+                    "warning",
+                )
             )
 
     # Optional: model
@@ -253,7 +269,9 @@ def validate_official(frontmatter: Dict, body: str) -> List[Issue]:
     if "mcpServers" in frontmatter:
         mcp = frontmatter["mcpServers"]
         if not isinstance(mcp, (list, dict)):
-            issues.append(Issue("mcpServers", "Must be a list or mapping of MCP server configs"))
+            issues.append(
+                Issue("mcpServers", "Must be a list or mapping of MCP server configs")
+            )
 
     # Optional: hooks
     if "hooks" in frontmatter:
@@ -266,14 +284,19 @@ def validate_official(frontmatter: Dict, body: str) -> List[Issue]:
         mem = frontmatter["memory"]
         if mem not in OFFICIAL_VALID_MEMORY_SCOPES:
             issues.append(
-                Issue("memory", f"Must be one of: {', '.join(OFFICIAL_VALID_MEMORY_SCOPES)}")
+                Issue(
+                    "memory",
+                    f"Must be one of: {', '.join(OFFICIAL_VALID_MEMORY_SCOPES)}",
+                )
             )
 
     # Body check
     if not body.strip():
         issues.append(Issue("content", "System prompt (body) is empty"))
     elif len(body.strip()) < 50:
-        issues.append(Issue("content", "System prompt very short (< 50 chars)", "warning"))
+        issues.append(
+            Issue("content", "System prompt very short (< 50 chars)", "warning")
+        )
 
     return issues
 
@@ -292,14 +315,19 @@ def validate_project(frontmatter: Dict, body: str) -> List[Issue]:
         elif len(examples) < 1:
             issues.append(Issue("examples", "At least 1 example required"))
         elif len(examples) > 5:
-            issues.append(Issue("examples", "Maximum 5 examples recommended", "warning"))
+            issues.append(
+                Issue("examples", "Maximum 5 examples recommended", "warning")
+            )
         else:
             for i, ex in enumerate(examples):
                 if isinstance(ex, dict):
                     for f in ["context", "user", "assistant"]:
                         if f not in ex:
                             issues.append(
-                                Issue(f"examples[{i}].{f}", "Required field missing in example")
+                                Issue(
+                                    f"examples[{i}].{f}",
+                                    "Required field missing in example",
+                                )
                             )
 
     # Project-required: color
@@ -314,7 +342,9 @@ def validate_project(frontmatter: Dict, body: str) -> List[Issue]:
     if "maturity" in frontmatter:
         if frontmatter["maturity"] not in PROJECT_VALID_MATURITY:
             issues.append(
-                Issue("maturity", f"Must be one of: {', '.join(PROJECT_VALID_MATURITY)}")
+                Issue(
+                    "maturity", f"Must be one of: {', '.join(PROJECT_VALID_MATURITY)}"
+                )
             )
 
     # Check for unknown fields
@@ -325,9 +355,7 @@ def validate_project(frontmatter: Dict, body: str) -> List[Issue]:
     return issues
 
 
-def validate_agent_file(
-    file_path: Path, mode: str = "project"
-) -> AgentReport:
+def validate_agent_file(file_path: Path, mode: str = "project") -> AgentReport:
     """Validate a single agent file. Mode: 'official' or 'project'."""
     report = AgentReport(file=str(file_path))
 
@@ -407,12 +435,18 @@ def fix_tools_format(file_path: Path) -> bool:
     if fmt == "yaml-list":
         # Match "tools:\n  - Tool1\n  - Tool2\n..." pattern
         # The list items may or may not end with a final newline
-        list_pattern = re.compile(r"^(tools:\s*\n(?:\s+-\s+\S+\n)*\s+-\s+\S+)\n?", re.MULTILINE)
+        list_pattern = re.compile(
+            r"^(tools:\s*\n(?:\s+-\s+\S+\n)*\s+-\s+\S+)\n?", re.MULTILINE
+        )
         match = list_pattern.search(raw_yaml)
         if match:
             replacement = f"tools: {tools_str}"
-            new_yaml = raw_yaml[:match.start()] + replacement + "\n" + raw_yaml[match.end():]
-            new_content = content[:fm_match.start(1)] + new_yaml + content[fm_match.end(1):]
+            new_yaml = (
+                raw_yaml[: match.start()] + replacement + "\n" + raw_yaml[match.end() :]
+            )
+            new_content = (
+                content[: fm_match.start(1)] + new_yaml + content[fm_match.end(1) :]
+            )
             file_path.write_text(new_content, encoding="utf-8")
             return True
 
@@ -420,8 +454,12 @@ def fix_tools_format(file_path: Path) -> bool:
     json_pattern = re.compile(r"^tools:\s*\[.*?\]", re.MULTILINE)
     match = json_pattern.search(raw_yaml)
     if match:
-        new_yaml = raw_yaml[:match.start()] + f"tools: {tools_str}" + raw_yaml[match.end():]
-        new_content = content[:fm_match.start(1)] + new_yaml + content[fm_match.end(1):]
+        new_yaml = (
+            raw_yaml[: match.start()] + f"tools: {tools_str}" + raw_yaml[match.end() :]
+        )
+        new_content = (
+            content[: fm_match.start(1)] + new_yaml + content[fm_match.end(1) :]
+        )
         file_path.write_text(new_content, encoding="utf-8")
         return True
 
@@ -488,7 +526,12 @@ def print_audit_report(reports: List[AgentReport], mode: str):
             field_counts[f] = field_counts.get(f, 0) + 1
 
     click.echo(f"\nField coverage ({total} agents):")
-    all_fields = OFFICIAL_REQUIRED_FIELDS + OFFICIAL_OPTIONAL_FIELDS + PROJECT_REQUIRED_FIELDS + PROJECT_OPTIONAL_FIELDS
+    all_fields = (
+        OFFICIAL_REQUIRED_FIELDS
+        + OFFICIAL_OPTIONAL_FIELDS
+        + PROJECT_REQUIRED_FIELDS
+        + PROJECT_OPTIONAL_FIELDS
+    )
     for f in all_fields:
         count = field_counts.get(f, 0)
         pct = (count / total * 100) if total > 0 else 0
@@ -548,10 +591,14 @@ def print_audit_report(reports: List[AgentReport], mode: str):
     help="Validation mode: official (Claude Code spec only) or project (includes extensions)",
 )
 @click.option("--audit", is_flag=True, help="Audit all agents in directory")
-@click.option("--fix", is_flag=True, help="Auto-fix tools format to comma-separated string")
+@click.option(
+    "--fix", is_flag=True, help="Auto-fix tools format to comma-separated string"
+)
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 @click.option("--quiet", "-q", is_flag=True, help="Only show errors")
-def main(agent_path: str, mode: str, audit: bool, fix: bool, output_json: bool, quiet: bool):
+def main(
+    agent_path: str, mode: str, audit: bool, fix: bool, output_json: bool, quiet: bool
+):
     """
     Validate agent files against the official Claude Code sub-agent specification.
 
