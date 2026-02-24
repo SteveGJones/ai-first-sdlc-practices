@@ -24,7 +24,7 @@ import json
 import click
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 
 
 # === Official Claude Code Sub-Agent Specification ===
@@ -411,8 +411,8 @@ def fix_tools_format(file_path: Path) -> bool:
         match = list_pattern.search(raw_yaml)
         if match:
             replacement = f"tools: {tools_str}"
-            new_yaml = raw_yaml[: match.start()] + replacement + "\n" + raw_yaml[match.end() :]
-            new_content = content[: fm_match.start(1)] + new_yaml + content[fm_match.end(1) :]
+            new_yaml = raw_yaml[:match.start()] + replacement + "\n" + raw_yaml[match.end():]
+            new_content = content[:fm_match.start(1)] + new_yaml + content[fm_match.end(1):]
             file_path.write_text(new_content, encoding="utf-8")
             return True
 
@@ -420,8 +420,8 @@ def fix_tools_format(file_path: Path) -> bool:
     json_pattern = re.compile(r"^tools:\s*\[.*?\]", re.MULTILINE)
     match = json_pattern.search(raw_yaml)
     if match:
-        new_yaml = raw_yaml[: match.start()] + f"tools: {tools_str}" + raw_yaml[match.end() :]
-        new_content = content[: fm_match.start(1)] + new_yaml + content[fm_match.end(1) :]
+        new_yaml = raw_yaml[:match.start()] + f"tools: {tools_str}" + raw_yaml[match.end():]
+        new_content = content[:fm_match.start(1)] + new_yaml + content[fm_match.end(1):]
         file_path.write_text(new_content, encoding="utf-8")
         return True
 
@@ -476,7 +476,7 @@ def print_audit_report(reports: List[AgentReport], mode: str):
         else:
             tools_formats["none"] += 1
 
-    click.echo(f"\nTools format distribution:")
+    click.echo("\nTools format distribution:")
     for fmt, count in tools_formats.items():
         marker = " (official)" if fmt == "comma-sep" else ""
         click.echo(f"  {fmt}: {count}{marker}")
@@ -505,7 +505,7 @@ def print_audit_report(reports: List[AgentReport], mode: str):
 
     # Failing agents
     if failing > 0:
-        click.echo(f"\nFailing agents:")
+        click.echo("\nFailing agents:")
         for r in reports:
             is_valid = r.valid_official if mode == "official" else r.valid_project
             if not is_valid:
