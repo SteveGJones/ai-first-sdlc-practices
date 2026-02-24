@@ -1,11 +1,7 @@
 ---
 name: mcp-quality-assurance
 description: "Expert in MCP specification compliance, security auditing, and production readiness assessment. Use for quality reviews, security assessments, and deployment validation of MCP servers."
-tools:
-  - Read
-  - Grep
-  - Glob
-  - Bash
+tools: Read, Grep, Glob, Bash
 model: sonnet
 color: green
 maturity: production

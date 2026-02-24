@@ -1,13 +1,7 @@
 ---
 name: mcp-test-agent
 description: 'MCP server testing specialist validating functionality, reliability, performance, and AI usability. Use for testing MCP implementations, validating production readiness, or debugging server issues.'
-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 maturity: production
 examples:

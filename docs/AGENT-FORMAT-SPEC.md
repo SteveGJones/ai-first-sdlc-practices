@@ -4,10 +4,17 @@
 
 - [Agent Format Specification](#agent-format-specification)
   - [File Structure](#file-structure)
-  - [YAML Frontmatter Schema](#yaml-frontmatter-schema)
+  - [Official Claude Code Frontmatter](#official-claude-code-frontmatter)
     - [Required Fields](#required-fields)
     - [Optional Fields](#optional-fields)
-    - [Claude Code Native Fields](#claude-code-native-fields)
+    - [Tools Field](#tools-field)
+    - [Model Field](#model-field)
+    - [Permission Modes](#permission-modes)
+    - [Persistent Memory](#persistent-memory)
+    - [Hooks](#hooks)
+  - [Project Extension Fields](#project-extension-fields)
+    - [Project Required Fields](#project-required-fields)
+    - [Project Optional Fields](#project-optional-fields)
     - [Maturity Tiers](#maturity-tiers)
     - [Examples Structure](#examples-structure)
   - [Complete Schema](#complete-schema)
@@ -19,16 +26,18 @@
     - [Content Section](#content-section-1)
   - [File Naming Convention](#file-naming-convention)
   - [Directory Structure](#directory-structure)
-  - [Example: Valid Agent File](#example-valid-agent-file)
-  - [JSON Representation](#json-representation)
+  - [Example Valid Agent File](#example-valid-agent-file)
+  - [Automatic Validation Hook](#automatic-validation-hook)
   - [Version History](#version-history)
   - [Compliance](#compliance)
+    - [Official Mode (`--mode official`)](#official-mode---mode-official)
+    - [Project Mode (`--mode project`)](#project-mode---mode-project)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Agent Format Specification
 
-Technical specification for AI agent file format used in the AI-First SDLC framework.
+Technical specification for AI agent file format used in the AI-First SDLC framework. This spec aligns with the [official Claude Code sub-agent format](https://code.claude.com/docs/en/sub-agents) and adds project-specific extension fields.
 
 ## File Structure
 
@@ -37,21 +46,116 @@ Technical specification for AI agent file format used in the AI-First SDLC frame
 [YAML Frontmatter]
 ---
 
-[Markdown Content]
+[Markdown Content — becomes the agent's system prompt]
 ```
 
-## YAML Frontmatter Schema
+## Official Claude Code Frontmatter
+
+These fields are defined by the official Claude Code sub-agent specification. Only `name` and `description` are required by Claude Code.
 
 ### Required Fields
 
 | Field | Type | Description | Constraints |
 |-------|------|-------------|-------------|
-| `name` | string | Unique agent identifier | lowercase, alphanumeric + hyphens only, max 50 chars |
-| `description` | string | Brief agent description | max 500 chars, no special formatting |
-| `examples` | array | Usage examples | 2-3 examples recommended, see structure below |
-| `color` | string | Visual identifier | enum: blue, green, purple, red, cyan, yellow, orange |
+| `name` | string | Unique agent identifier | lowercase, alphanumeric + hyphens only, 1-50 chars |
+| `description` | string | When Claude should delegate to this agent — acts as a routing hint | max 500 chars, no special formatting |
 
 ### Optional Fields
+
+| Field | Type | Description | Default |
+|-------|------|-------------|---------|
+| `tools` | string | Comma-separated list of tools the agent can use | Inherits all tools |
+| `disallowedTools` | string | Comma-separated list of tools to deny | None |
+| `model` | string | Model alias: `sonnet`, `opus`, `haiku`, or `inherit` | `inherit` |
+| `permissionMode` | string | Permission mode for the agent | `default` |
+| `maxTurns` | integer | Maximum agentic turns before stopping | Unlimited |
+| `skills` | array | Skills to preload into agent context | [] |
+| `mcpServers` | array/map | MCP servers available to the agent | [] |
+| `hooks` | map | Lifecycle hooks scoped to the agent | {} |
+| `memory` | string | Persistent memory scope: `user`, `project`, or `local` | None |
+
+### Tools Field
+
+The `tools` field controls which Claude Code tools the agent can use. Format as a **comma-separated string** (official format):
+
+```yaml
+tools: Read, Glob, Grep, Bash
+```
+
+Valid tool names: `Read`, `Write`, `Edit`, `Bash`, `Glob`, `Grep`, `Task`, `WebFetch`, `WebSearch`, `NotebookEdit`
+
+To restrict which subagents can be spawned, use `Task(agent-name)` syntax:
+
+```yaml
+tools: Task(worker, researcher), Read, Bash
+```
+
+If `tools` is omitted, the agent inherits all tools from the parent conversation.
+
+### Model Field
+
+Controls which AI model the agent uses:
+
+| Value | Description |
+|-------|-------------|
+| `sonnet` | Claude Sonnet — balanced capability and speed |
+| `opus` | Claude Opus — maximum capability |
+| `haiku` | Claude Haiku — fastest, most cost-effective |
+| `inherit` | Use the same model as the main conversation (default) |
+
+### Permission Modes
+
+| Mode | Behavior |
+|------|----------|
+| `default` | Standard permission checking with prompts |
+| `acceptEdits` | Auto-accept file edits |
+| `dontAsk` | Auto-deny permission prompts |
+| `delegate` | Coordination-only mode for agent team leads |
+| `bypassPermissions` | Skip all permission checks (use with caution) |
+| `plan` | Plan mode (read-only exploration) |
+
+### Persistent Memory
+
+The `memory` field gives the agent a persistent directory that survives across conversations:
+
+| Scope | Location | Use When |
+|-------|----------|----------|
+| `user` | `~/.claude/agent-memory/<name>/` | Agent should remember across all projects |
+| `project` | `.claude/agent-memory/<name>/` | Knowledge is project-specific and shareable |
+| `local` | `.claude/agent-memory-local/<name>/` | Project-specific but not version controlled |
+
+### Hooks
+
+Agents can define lifecycle hooks in their frontmatter:
+
+```yaml
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "./scripts/validate-command.sh"
+  PostToolUse:
+    - matcher: "Edit|Write"
+      hooks:
+        - type: command
+          command: "./scripts/run-linter.sh"
+```
+
+## Project Extension Fields
+
+These fields are specific to the AI-First SDLC framework. Claude Code silently ignores unknown frontmatter fields, so these are safe to include. They power the Task tool's routing, the `/agents` UI, and our quality gates.
+
+### Project Required Fields
+
+These are required by this project's validation (`--mode project`) but not by Claude Code itself:
+
+| Field | Type | Description | Constraints |
+|-------|------|-------------|-------------|
+| `examples` | array | Usage examples for Task tool routing | 1-5 examples, see structure below |
+| `color` | string | Visual identifier in `/agents` UI | enum: blue, green, purple, red, cyan, yellow, orange |
+
+### Project Optional Fields
 
 | Field | Type | Description | Default |
 |-------|------|-------------|---------|
@@ -60,18 +164,6 @@ Technical specification for AI agent file format used in the AI-First SDLC frame
 | `priority` | string | Activation priority | "medium" |
 | `maturity` | string | Agent quality tier | null |
 | `tags` | array | Searchable tags | [] |
-| `tools` | array | Claude Code tools the agent can use | [] |
-| `model` | string | Claude Code model alias for the agent | null |
-
-### Claude Code Native Fields
-
-The `tools` and `model` fields configure how Claude Code runs the agent as a subagent:
-
-**tools**: List of Claude Code tool names the agent is permitted to use. Valid values:
-`Read`, `Write`, `Edit`, `Bash`, `Glob`, `Grep`, `Task`, `WebFetch`, `WebSearch`, `NotebookEdit`
-
-**model**: Which Claude model to use when running the agent. Valid aliases:
-`sonnet`, `opus`, `haiku`
 
 ### Maturity Tiers
 
@@ -103,29 +195,25 @@ examples:
 
 ```yaml
 ---
-# Required fields
-name: string                    # [a-z0-9-]{1,50}
-description: string             # .{1,500}
-examples:                       # array[2..5]
+# === Official Claude Code Fields ===
+name: string                    # [a-z0-9-]{1,50} (required)
+description: string             # routing hint, max 500 chars (required)
+tools: string                   # comma-separated tool names (optional)
+model: enum                     # sonnet|opus|haiku|inherit (optional, default: inherit)
+
+# === Project Extension Fields ===
+examples:                       # array[1..5] (project-required)
   - context: string            # .{10,200}
     user: string               # .{5,500}
     assistant: string          # .{10,500}
-color: enum                    # blue|green|purple|red|cyan|yellow|orange
-
-# Optional fields
-version: string                # semantic version
-category: string               # category/subcategory
-priority: enum                 # low|medium|high|critical
-maturity: enum                 # production|stable|beta|stub|deprecated
-tags: array[string]           # searchable tags
-tools: array[string]          # Claude Code tool names
-model: enum                    # sonnet|opus|haiku
+color: enum                    # blue|green|purple|red|cyan|yellow|orange (project-required)
+maturity: enum                 # production|stable|beta|stub|deprecated (optional)
 ---
 ```
 
 ## Content Section
 
-The content section is free-form Markdown with recommended structure:
+The content section is free-form Markdown that becomes the agent's system prompt. Agents receive only this system prompt plus basic environment details — not the full Claude Code system prompt.
 
 ### Minimum Required Sections
 
@@ -172,34 +260,31 @@ You are the [Agent Name], [role description].
    - Must end with `---` (with newline after)
    - Must be valid YAML between delimiters
 
-2. **Required Fields**
-   - All required fields must be present
-   - Fields must have correct types
-   - Fields must meet constraints
+2. **Official Required Fields**
+   - `name` and `description` must be present
+   - Fields must have correct types and meet constraints
 
 3. **Name Field**
    - Lowercase only
    - Alphanumeric and hyphens only
    - No spaces or underscores
-   - Between 3-50 characters
+   - Between 1-50 characters
    - Must be unique within agent set
 
 4. **Description Field**
    - Maximum 500 characters
    - No markdown formatting
    - No newlines
-   - Should be a complete sentence
+   - Should describe when Claude should delegate to this agent
 
-5. **Examples Field**
-   - Minimum 1, maximum 5 examples
-   - Each must have context, user, assistant
-   - Context: 10-200 characters
-   - User: 5-500 characters
-   - Assistant: 10-500 characters
+5. **Tools Field** (if present)
+   - Comma-separated string of valid tool names
+   - Each tool must be a recognized Claude Code tool
+   - YAML lists are accepted but comma-separated is the official format
 
-6. **Color Field**
-   - Must be one of the allowed values
-   - Case-sensitive
+6. **Project Required Fields** (in project mode)
+   - `examples`: Minimum 1, maximum 5 examples; each with context, user, assistant
+   - `color`: Must be one of the allowed values (case-sensitive)
 
 ### Content Section
 
@@ -228,22 +313,29 @@ You are the [Agent Name], [role description].
 
 ```
 agents/
-├── ai-development/      # AI/ML development agents
-├── ai-builders/         # AI infrastructure agents
-├── architecture/        # System architecture agents
-├── development/         # General development agents
-├── operations/          # DevOps/SRE agents
-├── quality/            # Testing/QA agents
-├── security/           # Security agents
-└── templates/          # Agent templates
+├── core/              # Core framework agents
+├── ai-development/    # AI/ML development agents
+├── ai-builders/       # AI infrastructure agents
+├── sdlc/              # SDLC process agents
+├── project-management/ # PM agents
+├── testing/           # Testing/QA agents
+├── documentation/     # Documentation agents
+├── languages/         # Language-specific agents
+├── templates/         # Agent templates
+└── future/            # Experimental agents
 ```
 
-## Example: Valid Agent File
+## Example Valid Agent File
 
 ```markdown
 ---
+# === Official Claude Code Fields ===
 name: api-designer
-description: Expert in REST and GraphQL API design, versioning, and documentation
+description: Expert in REST and GraphQL API design, versioning, and documentation. Use for API architecture decisions, schema design, and documentation standards.
+tools: Read, Glob, Grep, Bash
+model: sonnet
+
+# === Project Extension Fields ===
 examples:
   - context: Designing a new REST API
     user: "I need to design a REST API for user management"
@@ -251,16 +343,8 @@ examples:
   - context: API versioning strategy
     user: "How should I handle API versioning?"
     assistant: "Let me have the api-designer agent explain versioning strategies for your use case."
-  - context: API documentation
-    user: "I need to document my API endpoints"
-    assistant: "The api-designer agent can help you create comprehensive API documentation."
 color: blue
-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
-model: sonnet
+maturity: production
 ---
 
 You are the API Designer, an expert in creating elegant, scalable, and maintainable APIs.
@@ -271,7 +355,6 @@ You are the API Designer, an expert in creating elegant, scalable, and maintaina
 - OpenAPI/Swagger documentation
 - Authentication and authorization patterns
 - Rate limiting and throttling
-- HATEOAS and Richardson Maturity Model
 
 ## Approach
 I follow API-first design principles, ensuring APIs are:
@@ -279,28 +362,6 @@ I follow API-first design principles, ensuring APIs are:
 - Well-documented
 - Versioned appropriately
 - Secure by default
-- Performance-optimized
-
-## Key Capabilities
-
-### REST API Design
-- Resource modeling and URL structure
-- HTTP method semantics
-- Status code selection
-- Content negotiation
-- Pagination strategies
-
-### GraphQL Schema Design
-- Type system modeling
-- Query and mutation design
-- Subscription patterns
-- Schema federation
-
-### API Documentation
-- OpenAPI 3.0 specifications
-- Interactive documentation with examples
-- Client SDK generation
-- Postman collections
 
 ## When Activated
 When you need API design help, I will:
@@ -309,38 +370,31 @@ When you need API design help, I will:
 3. Define request/response schemas
 4. Create comprehensive documentation
 5. Recommend security and performance best practices
-
-## Success Metrics
-- API consistency score > 95%
-- Documentation completeness
-- Developer satisfaction with API ergonomics
-- Backward compatibility maintenance
-
-## Boundaries
-- I focus on API design, not implementation
-- For database schema design, consult database-architect
-- For deployment, engage devops-specialist
 ```
 
-## JSON Representation
+## Automatic Validation Hook
 
-For tooling, agents can be represented in JSON:
+To automatically validate agent files when they are created or edited, add a PostToolUse hook to your `.claude/settings.local.json`:
 
 ```json
 {
-  "name": "api-designer",
-  "description": "Expert in REST and GraphQL API design, versioning, and documentation",
-  "examples": [
-    {
-      "context": "Designing a new REST API",
-      "user": "I need to design a REST API for user management",
-      "assistant": "I'll engage the api-designer agent to help create a well-structured REST API."
-    }
-  ],
-  "color": "blue",
-  "content": "You are the API Designer, an expert in creating elegant, scalable, and maintainable APIs.\n\n## Core Competencies\n..."
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python tools/validation/validate-agent-hook.py"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
+
+This hook runs after every Write or Edit operation. It checks if the modified file is in `agents/` or `.claude/agents/` and validates it against the official spec if so. Non-agent files are ignored.
 
 ## Version History
 
@@ -348,18 +402,33 @@ For tooling, agents can be represented in JSON:
 - **v1.1.0** (2024-08): Added optional fields
 - **v1.2.0** (2024-11): Standardized validation rules
 - **v1.3.0** (2025-08): Added maturity tiers (production/stable/beta/stub/deprecated)
-- **v1.4.0** (2026-02): Added `tools` and `model` fields for Claude Code native integration; updated description limit from 150 to 500 chars; updated content size guidance to reflect production-tier agents
+- **v1.4.0** (2026-02): Added `tools` and `model` fields; updated description limit from 150 to 500 chars
+- **v2.0.0** (2026-02): Aligned with official Claude Code sub-agent spec; separated official vs project extension fields; standardized tools to comma-separated string; added all official optional fields (disallowedTools, permissionMode, maxTurns, skills, mcpServers, hooks, memory); added automatic validation hook documentation
 
 ## Compliance
 
-Agent files MUST pass validation to be included in:
-- Production deployments
-- Agent registries
-- CI/CD pipelines
+Agent files are validated at two levels:
 
-Use the validation tools:
+### Official Mode (`--mode official`)
+Validates only against the Claude Code sub-agent specification. Use this for agents being distributed to external projects.
+
+### Project Mode (`--mode project`)
+Validates official spec plus AI-First SDLC project extension fields. This is the default for this repository.
+
 ```bash
+# Official-only validation (for export)
+python tools/validation/validate-agent-official.py [agent-file] --mode official
+
+# Project validation (default, for this repo)
+python tools/validation/validate-agent-official.py [agent-file]
+
+# Full audit
+python tools/validation/validate-agent-official.py agents/ --audit
+
+# Auto-fix tools format
+python tools/validation/validate-agent-official.py agents/ --fix
+
+# Legacy validator (still works)
 python tools/validation/validate-agent-format.py [agent-file]
-python tools/validation/validate-agent-format.py [agent-file] --no-strict
 python tools/validation/validate-agent-format.py agents/ --maturity-report
 ```

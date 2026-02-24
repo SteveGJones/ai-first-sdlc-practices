@@ -11,13 +11,7 @@ examples:
   - context: Engineering team needs to automate PR workflows and code review processes
     user: "We want to automate PR labeling, require specific reviewers based on file changes, and auto-merge passing PRs"
     assistant: "I'm engaging the github-integration-specialist to design PR automation using CODEOWNERS for reviewer assignment, GitHub Actions for auto-labeling, required status checks, and safe auto-merge workflows with proper approval gates."
-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Grep
-  - Glob
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: green
 maturity: production
