@@ -95,8 +95,8 @@ jobs:
 
       - name: Progressive Validation
         run: |
-          if [ -f "tools/validation/validate-pipeline-progressive.py" ]; then
-            python tools/validation/validate-pipeline-progressive.py --level prototype
+          if [ -f "tools/validation/validate-pipeline.py" ]; then
+            python tools/validation/validate-pipeline.py --progressive --level prototype
           else
             echo "⚠️  Progressive validation not found - using basic checks"
           fi

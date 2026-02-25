@@ -203,7 +203,8 @@ python setup-smart.py --quickstart
 - [Agent Generator Tool](tools/agents/README.md) - Validate and generate agents
 
 ### Core Policies
-- [Zero Technical Debt Policy](ZERO-TECHNICAL-DEBT.md) - Architecture-first development guide
+- [Constitution](CONSTITUTION.md) - All rules (single source of truth)
+- [Zero Technical Debt Policy](docs/ZERO-TECHNICAL-DEBT.md) - Architecture-first development guide
 - [AI Autonomy Guidelines](docs/AI-AUTONOMY.md) - Autonomous AI operation
 
 ## 🚫 Zero Technical Debt Policy
@@ -217,7 +218,7 @@ This framework enforces **Architecture-First Development** to prevent technical 
 
 The policy ensures that tactical coding decisions don't lead to expensive rewrites later. Teams report 70% reduction in refactoring needs after adopting this approach.
 
-See [Zero Technical Debt Policy](ZERO-TECHNICAL-DEBT.md) for implementation details.
+See [Zero Technical Debt Policy](docs/ZERO-TECHNICAL-DEBT.md) for implementation details.
 
 ## 🎯 Core Principles
 

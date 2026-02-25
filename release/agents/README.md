@@ -61,5 +61,5 @@ python tools/automation/agent-installer.py
 
 All agents are validated before release:
 ```bash
-python tools/validation/validate-agents.py agents/
+python tools/validation/validate-agent-format.py agents/
 ```

@@ -276,7 +276,7 @@ def determine_code_context(file_path: str) -> str:
 - [ ] Train AI agents on differentiated standards
 
 ### Documentation Updates:
-- [ ] Update ZERO-TECHNICAL-DEBT.md to reference this policy
+- [ ] Update docs/ZERO-TECHNICAL-DEBT.md to reference this policy
 - [ ] Create framework contributor guidelines
 - [ ] Add policy compliance checks to PR templates
 - [ ] Update validation tool documentation

@@ -50,7 +50,7 @@ Complete documentation for the AI-First SDLC Practices framework.
 - [Workflow Diagrams](workflow-diagram.md) - Visual process flows
 
 ### Framework Principles
-- [Zero Technical Debt Policy](../ZERO-TECHNICAL-DEBT.md) - Architecture-first development
+- [Zero Technical Debt Policy](ZERO-TECHNICAL-DEBT.md) - Architecture-first development
 - [AI Autonomy Guide](AI-AUTONOMY.md) - Guidelines for autonomous AI operation
 - [Language-Specific Validators](../LANGUAGE-SPECIFIC-VALIDATORS.md) - Per-language validation
 
@@ -125,7 +125,7 @@ Complete documentation for the AI-First SDLC Practices framework.
 - [Technical Debt Detection](../tools/validation/check-technical-debt.py) - Zero-tolerance enforcement
 
 ### Standards
-- [SDLC Rules Summary](../SDLC-RULES-SUMMARY.md) - Critical enforcement rules
+- [Constitution](../CONSTITUTION.md) - All rules (single source of truth)
 - [Coach Agreement](COACH-AGREEMENT.md) - AI agent responsibilities
 - [Framework Compliance](FRAMEWORK-COMPLIANCE.md) - Compliance requirements
 

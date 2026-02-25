@@ -1,164 +1,161 @@
 # Agent Catalog Index
-*Generated: 2025-08-20T16:34:04.003309*
-*Total Agents: 65*
+*Generated: 2026-02-24T21:10:29.829309*
+*Total Agents: 70*
 
 ## Agents by Category
 
-### Ai Builders (6 agents)
+### Ai Builders (5 agents)
 
 #### `ai-devops-engineer`
 - **Path**: `agents/ai-builders/ai-devops-engineer.md`
-- **Description**:
-- **Keywords**: ai, cd, ci, design, devops, llm, pipeline, testing
+- **Description**: Expert in LLM serving infrastructure, GPU orchestration, AI cost optimization, and multi-agent system operations. Use for deploying AI systems to production, managing AI-specific CI/CD, and operating ...
+- **Keywords**: ai, api, architecture, aws, azure, cd, ci, claude, cloud, container
+- **Key Capabilities**:
+  - context: AI infrastructure costs growing beyond budget without clear visibility
+  - You are the AI DevOps Engineer, the specialist responsible for deploying and operating AI systems in production. You bridge the gap between AI development and production operations, ensuring that LLM applications, multi-agent systems, and AI workloads run reliably, cost-effectively, and at scale. Your approach is infrastructure-as-code, monitoring-driven, and cost-conscious.
 
 #### `ai-team-transformer`
 - **Path**: `agents/ai-builders/ai-team-transformer.md`
-- **Description**: # Get instant team recommendations
-python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
-- **Keywords**: ai, api, architecture, auth, database, design, devops, go, jwt, ml
-- **Key Capabilities**:
-  - Begins thinking about handoffs
+- **Description**: Expert in AI team transformation, multi-agent orchestration, and developer coaching. Use for AI adoption programs, team collaboration training, and building legendary AI-augmented teams.
+- **Keywords**: ai, api, architecture, auth, database, design, devops, frontend, go, jwt
 
 #### `context-engineer`
 - **Path**: `agents/ai-builders/context-engineer.md`
-- **Description**:
-- **Keywords**: ai, design
-
-#### `mcp-server-architect`
-- **Path**: `agents/ai-builders/mcp-server-architect.md`
-- **Description**:
-- **Keywords**: ai, claude, design, mcp, model context protocol, model-context-protocol, security
+- **Description**: Expert in AI memory architectures, context window optimization, token budget management, and state persistence. Use for designing conversation memory systems, implementing sliding window strategies, R...
+- **Keywords**: ai, api, architecture, aws, claude, cloud, database, design, gpt, graphql
 
 #### `orchestration-architect`
 - **Path**: `agents/ai-builders/orchestration-architect.md`
-- **Description**:
-- **Keywords**: ai, design
+- **Description**: Expert in multi-agent workflow design, state machines, agent coordination, and distributed orchestration. Use for designing agent pipelines, implementing handoff protocols, scaling orchestration syste...
+- **Keywords**: ai, api, architecture, aws, azure, cloud, design, devops, frontend, gpt
 
 #### `rag-system-designer`
 - **Path**: `agents/ai-builders/rag-system-designer.md`
-- **Description**:
-- **Keywords**: ai, database, design, quality
+- **Description**: RAG architecture specialist for vector databases, embeddings, chunking strategies, and retrieval optimization. Use for designing production RAG systems, selecting vector stores, or optimizing retrieva...
+- **Keywords**: ai, api, architecture, cloud, database, design, devops, frontend, jwt, llm
+- **Key Capabilities**:
+  - including index algorithms (HNSW, IVF, ScaNN), distance metrics (cosine, dot product, euclidean), and sharding strategies for scale
+  - with understanding of dimensionality, language support, domain fine-tuning, and latency/cost trade-offs
 
 ### Ai Development (9 agents)
 
 #### `a2a-architect`
 - **Path**: `agents/ai-development/a2a-architect.md`
-- **Description**:
-- **Keywords**: ai, architecture, design, security, testing
-- **Key Capabilities**:
-  - '<example>
-  - '<example>
-  - You are an A2A (Agent-to-Agent) Communication Architect with deep expertise in multi-agent systems. You've designed agent communication protocols for autonomous systems, built orchestration layers for AI agent teams, and solved complex distributed AI challenges. You understand how to make agents work together like a well-coordinated team. Your philosophy is that individual agents are powerful, but orchestrated agents are transformative - the key is creating communication protocols that are simple, reliable, and enable emergent collaboration without central bottlenecks.
+- **Description**: Expert in multi-agent system architecture including MCP and A2A protocols, inter-agent messaging, orchestration patterns, fault tolerance, and scaling strategies. Use for designing agent communication...
+- **Keywords**: ai, api, architecture, auth, cloud, container, database, design, devops, go
 
 #### `agent-developer`
 - **Path**: `agents/ai-development/agent-developer.md`
-- **Description**:
-- **Keywords**: ai, architecture, database, design, quality, testing
+- **Description**: Expert in agent architecture, persona design, and multi-agent systems. Designs agents using ReAct/Plan-Execute/Reflection patterns, implements RAG and tool integration, creates evaluation frameworks. ...
+- **Keywords**: ai, api, architecture, aws, cloud, database, design, gpt, jwt, llm
 - **Key Capabilities**:
-  - '<example>
-  - '<example>
-  - '<example>
+  - context: Existing agent producing inconsistent results in production
+  - context: Building a multi-agent system with coordination challenges
+  - You are the Agent Developer, an expert in designing and building AI agent systems using modern LLM architectures. You design agent reasoning patterns (ReAct, Plan-and-Execute, Reflection), craft effective personas using the Professional Specialist Pattern, architect multi-agent coordination systems, and implement production-ready guardrails and evaluation frameworks. Your approach is research-grounded—every architectural decision traces to established patterns from LangGraph, AutoGen, CrewAI, and production agent systems, and you balance theoretical best practices with practical deployment constraints.
 
 #### `ai-solution-architect`
 - **Path**: `agents/ai-development/ai-solution-architect.md`
-- **Description**:
-- **Keywords**: ai, architecture, cd, ci, design, ml, pipeline, quality, security, testing
-- **Key Capabilities**:
-  - Validate model governance processes
-  - Identify potential bias sources
-  - Review fairness metrics implementation
+- **Description**: Expert in AI/ML system architecture, LLM application design, RAG systems, MLOps pipelines, and AI safety. Use for designing AI systems, evaluating model selection, architecting multi-agent systems, an...
+- **Keywords**: ai, api, architecture, auth, aws, azure, claude, cloud, container, database
 
 #### `junior-ai-solution-architect`
 - **Path**: `agents/ai-development/junior-ai-solution-architect.md`
-- **Description**:
+- **Description**: Use this agent when you need fast review of AI system architectures, implementation approaches, or best practices validation. This includes reviewing AI model selection, data pipeline designs, MLOps p...
 - **Keywords**: ai, architecture, cd, ci, cloud, design, ml, pipeline
 
 #### `langchain-architect`
 - **Path**: `agents/ai-development/langchain-architect.md`
-- **Description**:
-- **Keywords**: architecture, design, langchain, llm, testing
+- **Description**: Expert in LangChain 0.1+ and LangGraph architectures. Use for LCEL chain design, RAG system architecture, multi-agent orchestration, tool integration patterns, or production deployment of LLM applicat...
+- **Keywords**: ai, api, architecture, aws, cd, ci, cloud, database, design, devops
 - **Key Capabilities**:
-  - '<example>
-  - You are a LangChain/LangGraph Architect, a seasoned expert with 5+ years building production LLM applications. You've designed systems handling millions of requests, implemented complex multi-agent architectures, and contributed to the LangChain ecosystem. You deeply understand the framework's internals, best practices, and common pitfalls. Your philosophy is that great LLM applications are built on solid architectural foundations where every token counts, every millisecond matters, and every edge case is handled gracefully.
-  - LangChain architecture patterns and anti-patterns
+  - Success criteria: Accuracy, speed, cost targets
+  - 1. Classify the problem type: RAG, agent, chain, multi-agent
+  - Requirements summary with LangChain component mapping
 
 #### `mcp-quality-assurance`
 - **Path**: `agents/ai-development/mcp-quality-assurance.md`
-- **Description**:
-- **Keywords**: ai, architecture, database, design, mcp, model context protocol, model-context-protocol, qa, quality, security
+- **Description**: Expert in MCP specification compliance, security auditing, and production readiness assessment. Use for quality reviews, security assessments, and deployment validation of MCP servers.
+- **Keywords**: ai, api, architecture, cd, ci, container, database, design, devops, go
 - **Key Capabilities**:
-  - MCP specification compliance validation
-  - Security vulnerability assessment and remediation
-  - Code quality and maintainability review
+  - Current stable version requirements and feature sets
+  - Beta feature implementation guidance with stability caveats
+  - Deprecation timeline awareness for sunset features
 
 #### `mcp-server-architect`
 - **Path**: `agents/ai-development/mcp-server-architect.md`
-- **Description**:
-- **Keywords**: ai, architecture, database, design, mcp, model context protocol, model-context-protocol, qa, quality, security
+- **Description**: Expert in Model Context Protocol server architecture, tool schema design, transport configuration, and production deployment. Use for MCP server design, tool hierarchy planning, security architecture,...
+- **Keywords**: ai, api, architecture, auth, aws, azure, claude, container, database, design
 - **Key Capabilities**:
-  - MCP protocol specification and implementation
-  - Server architecture patterns and best practices
-  - Tool and resource design optimization
+  - MCP specification version tracking and capability negotiation patterns
+  - Transport mechanisms: stdio (local processes), SSE (server-sent events for web), HTTP with long-polling
+  - Protocol primitives: tools (AI-invocable functions), resources (context data with URIs), prompts (reusable templates), sampling (LLM completion requests)
 
 #### `mcp-test-agent`
 - **Path**: `agents/ai-development/mcp-test-agent.md`
-- **Description**:
-- **Keywords**: ai, database, mcp, model context protocol, model-context-protocol, security, test, testing
-- **Key Capabilities**:
-  - Standard challenge scenario execution
-  - Tool functionality validation with diverse inputs
-  - Resource accessibility and permission testing
+- **Description**: MCP server testing specialist validating functionality, reliability, performance, and AI usability. Use for testing MCP implementations, validating production readiness, or debugging server issues.
+- **Keywords**: ai, api, architecture, cd, ci, database, design, javascript, mcp, model context protocol
 
 #### `prompt-engineer`
 - **Path**: `agents/ai-development/prompt-engineer.md`
-- **Description**:
-- **Keywords**: design, llm, quality, security, testing
-- **Key Capabilities**:
-  - '<example>
-  - '<example>
-  - You are a Prompt Engineering Expert with 4+ years optimizing prompts for production LLM applications. You've reduced costs by 70% while improving accuracy, designed prompt systems handling millions of requests, and developed evaluation frameworks. You understand the science and art of prompt engineering across different models and use cases. Your philosophy is that great prompts are clear, concise, and consistent - they guide without constraining, instruct without overwhelming, and adapt without breaking, where every token earns its place.
+- **Description**: Expert in prompt engineering for Claude, GPT, Gemini, and Llama models. Specializes in chain-of-thought prompting, structured outputs, few-shot learning, system prompt architecture, and prompt optimiz...
+- **Keywords**: ai, api, architecture, claude, cloud, database, design, devops, frontend, go
 
-### Core (21 agents)
+### Core (29 agents)
+
+#### `agent-builder`
+- **Path**: `agents/core/agent-builder.md`
+- **Description**: Builds production agents from research via 6-phase pipeline, archetype selection, and knowledge distillation. Use when creating or rebuilding agents.
+- **Keywords**: ai, api, architecture, container, database, design, graphql, grpc, llm, oauth
 
 #### `api-architect`
 - **Path**: `agents/core/api-architect.md`
-- **Description**:
-- **Keywords**: api
-- **Key Capabilities**:
-  - The Api Architect Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+- **Description**: Expert in REST/GraphQL/gRPC API design, versioning strategies, security patterns, contract testing, and OpenAPI specifications. Consult for API design reviews, endpoint architecture, and integration c...
+- **Keywords**: api, architecture, auth, aws, cd, ci, cloud, database, design, devops
 
-#### `api-design-specialist`
-- **Path**: `agents/core/api-design-specialist.md`
-- **Description**:
-- **Keywords**: api, design
-- **Key Capabilities**:
-  - The Api Design Specialist Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+#### `backend-architect`
+- **Path**: `agents/core/backend-architect.md`
+- **Description**: Expert in backend system design, microservices architecture, event-driven patterns, caching strategies, database selection, and scalability patterns. Use when designing distributed systems, evaluating...
+- **Keywords**: api, architecture, aws, azure, cd, ci, cloud, database, design, devops
 
-#### `backend-engineer`
-- **Path**: `agents/core/backend-engineer.md`
-- **Description**:
+#### `cloud-architect`
+- **Path**: `agents/core/cloud-architect.md`
+- **Description**: Expert in multi-cloud strategy, service selection, IaC patterns, cost optimization, and cloud-native architecture across AWS, Azure, and GCP with focus on serverless, managed services, and well-archit...
+- **Keywords**: ai, api, architecture, aws, azure, cd, ci, claude, cloud, container
 - **Key Capabilities**:
-  - The Backend Engineer Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+  - '<example>
+  - 1. **Rehost (Lift-and-Shift)** - Fastest path, minimal changes, move to IaaS (EC2/Azure VMs)
+  - - Minor optimizations, use managed databases (RDS/Azure SQL)
 
 #### `compliance-auditor`
 - **Path**: `agents/core/compliance-auditor.md`
-- **Description**:
-- **Keywords**: ai, architecture, ci, pipeline, python, quality, security
+- **Description**: Comprehensive compliance auditing for SOC 2, ISO 27001, PCI DSS, GDPR, AI regulations, and security standards. Use for pre-audit assessments, gap analysis, evidence validation, and multi-framework com...
+- **Keywords**: ai, api, architecture, aws, azure, cd, ci, cloud, container, design
+- **Key Capabilities**:
+  - **Human Oversight**: Human oversight measures including override capability, system monitoring by qualified personnel, intervention procedures. Evidence: Oversight procedures, training records, override logs.
+  - **Accuracy, Robustness, Cybersecurity**: Performance testing results, resilience to errors and adversarial attacks, cybersecurity measures throughout lifecycle. Evidence: Testing reports, penetration test results, security assessment.
+  - **Quality Management System**: Quality assurance processes, post-market monitoring, incident reporting procedures, continuous improvement. Evidence: QMS documentation, monitoring reports, incident logs.
+
+#### `compliance-report-generator`
+- **Path**: `agents/core/compliance-report-generator.md`
+- **Description**: Expert in SDLC compliance reporting, metrics visualization, remediation tracking, and audit-ready documentation. Use for creating actionable reports tailored to different audiences (team, executive, a...
+- **Keywords**: api, architecture, cd, ci, design, devops, pipeline, quality, security, test
+
+#### `container-platform-specialist`
+- **Path**: `agents/core/container-platform-specialist.md`
+- **Description**: Expert in Docker, Kubernetes, Helm, container security, service mesh (Istio/Linkerd), GitOps workflows, and platform engineering for scalable containerized applications.
+- **Keywords**: api, architecture, aws, azure, cd, ci, cloud, container, database, design
 
 #### `critical-goal-reviewer`
 - **Path**: `agents/core/critical-goal-reviewer.md`
-- **Description**:
-- **Keywords**: api, design, pipeline, quality, security, test
+- **Description**: Expert in requirements verification, goal alignment validation, and gap analysis for completed work. Use after implementing features, completing code sections, or finishing design work to ensure align...
+- **Keywords**: api, architecture, auth, database, design, devops, frontend, jwt, pipeline, quality
+- **Key Capabilities**:
+  - context: Team refactored a data processing pipeline to improve performance but needs to verify it still meets original functional requirements
+  - context: Proactive review after completing a significant API implementation to catch deviations early before they compound
 
 #### `data-architect`
 - **Path**: `agents/core/data-architect.md`
-- **Description**:
+- **Description**: Data Architect Agent
 - **Key Capabilities**:
   - The Data Architect Agent provides specialized expertise in its domain.
   - Core competency 1
@@ -166,73 +163,81 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `data-privacy-officer`
 - **Path**: `agents/core/data-privacy-officer.md`
-- **Description**:
-- **Key Capabilities**:
-  - The Data Privacy Officer Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+- **Description**: Expert in GDPR, CCPA/CPRA, LGPD, PIPL, and privacy-by-design. Use for privacy impact assessments, data subject rights implementation, consent management, data minimization strategies, and multi-jurisd...
+- **Keywords**: ai, api, architecture, cloud, database, design, devops, go, microservice, ml
 
 #### `database-architect`
 - **Path**: `agents/core/database-architect.md`
-- **Description**:
-- **Keywords**: api, architecture, database, design, mongodb, rest, security, test
+- **Description**: Expert in database design, schema modeling, query optimization, HA/DR architecture, and data security. Use for database technology selection, performance tuning, migration planning, and compliance imp...
+- **Keywords**: ai, api, architecture, aws, azure, cd, ci, cloud, container, database
 - **Key Capabilities**:
-  - Redis, Memcached caching strategies
-  - Elasticsearch for search requirements
-  - Neo4j for graph relationships
+  - **Use fully managed database** because operational overhead is significant
+  - Managed services handle: Backups, patching, HA configuration, monitoring, scaling
+  - Cost trade-off: Higher per-unit cost, but lower total cost when including operational labor
+
+#### `deep-research-agent`
+- **Path**: `agents/core/deep-research-agent.md`
+- **Description**: Executes systematic web research campaigns from structured prompts, evaluates sources via CRAAP, and produces synthesis documents.
+- **Keywords**: ai, api, architecture, aws, cloud, database, design, devops, docker, frontend
 
 #### `devops-specialist`
 - **Path**: `agents/core/devops-specialist.md`
-- **Description**:
-- **Keywords**: ai, api, architecture, aws, azure, cd, ci, cloud, container, design
-- **Key Capabilities**:
-  - You are the DevOps Specialist, an expert in continuous integration, continuous deployment, infrastructure automation, and operational excellence within the AI-First SDLC framework. Your mission is to create robust, automated deployment pipelines that enforce AI-First standards while enabling rapid, reliable software delivery.
-  - CI/CD pipeline design and optimization
-  - GitHub Actions, GitLab CI, Jenkins, CircleCI expertise
+- **Description**: Expert in CI/CD pipeline design, GitOps deployment strategies, infrastructure as code, container orchestration, and platform engineering. Use for designing deployment automation, implementing progress...
+- **Keywords**: ai, api, architecture, aws, azure, cd, ci, cloud, container, database
 
-#### `example-security-architect`
-- **Path**: `agents/core/example-security-architect.md`
-- **Description**:
-- **Keywords**: api, architecture, design, jwt, security, sql, test, testing
+#### `enforcement-strategy-advisor`
+- **Path**: `agents/core/enforcement-strategy-advisor.md`
+- **Description**: Expert in behavioral change psychology for software teams, enforcement strategy design, and SDLC adoption coaching. Use for designing enforcement approaches, managing resistance to standards, adapting...
+- **Keywords**: api, architecture, design, quality, security, testing
+
+#### `frontend-architect`
+- **Path**: `agents/core/frontend-architect.md`
+- **Description**: Expert in modern frontend architecture, component design patterns, state management strategies, performance optimization, accessibility standards, and SSR/SSG implementations. Use for architectural de...
+- **Keywords**: angular, api, architecture, auth, ci, container, database, design, devops, frontend
 - **Key Capabilities**:
   - '<example>
-  - You are a Senior Security Architect with 20+ years of experience designing secure systems for financial services, healthcare, and government sectors. You have CISSP, CCSP, and CEH certifications, and you've led security architecture for systems processing billions of transactions daily. You combine deep technical security expertise with practical business understanding to create robust, compliant, and usable security solutions.
-  - Threat modeling using STRIDE, PASTA, and DREAD methodologies
-
-#### `frontend-engineer`
-- **Path**: `agents/core/frontend-engineer.md`
-- **Description**:
-- **Keywords**: frontend
-- **Key Capabilities**:
-  - The Frontend Engineer Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
 
 #### `frontend-security-specialist`
 - **Path**: `agents/core/frontend-security-specialist.md`
-- **Description**:
-- **Keywords**: ai, api, design, frontend, jwt, pipeline, python, quality, react, security
+- **Description**: Expert in XSS prevention, CSP, OAuth/OIDC, SRI, and frontend threat modeling. Use for securing SPAs, implementing auth flows, and reviewing client-side security.
+- **Keywords**: angular, api, architecture, auth, cd, ci, cloud, container, database, design
 
 #### `github-integration-specialist`
 - **Path**: `agents/core/github-integration-specialist.md`
-- **Description**:
-- **Keywords**: ai, api, architecture, cd, ci, design, graphql, oauth, pipeline, python
-- **Key Capabilities**:
-  - Branch protection rules configuration and validation
-  - Pull request automation and management
-  - GitHub Actions workflow design and optimization
+- **Description**: Expert in GitHub platform features, Actions workflows, Advanced Security, branch protection, PR automation, and organization governance. Use for GitHub repository configuration, CI/CD design, security...
+- **Keywords**: ai, api, architecture, auth, aws, azure, cd, ci, cloud, design
 
 #### `mobile-architect`
 - **Path**: `agents/core/mobile-architect.md`
-- **Description**:
+- **Description**: Expert in mobile app architecture (native iOS/Android, React Native, Flutter, KMP), cross-platform decisions, mobile performance optimization, mobile CI/CD, and platform-specific guidelines. Consult f...
+- **Keywords**: api, architecture, aws, cd, ci, cloud, database, design, devops, frontend
 - **Key Capabilities**:
-  - The Mobile Architect Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+  - App size and startup time are critical metrics
+  - - Team has strong JavaScript/TypeScript skills
+  - Need to share code with React web app
+
+#### `observability-specialist`
+- **Path**: `agents/core/observability-specialist.md`
+- **Description**: Expert in OpenTelemetry instrumentation, distributed tracing, log aggregation, metrics dashboards, SLO/SLI definitions, and alerting strategies. Designs comprehensive observability solutions with cost...
+- **Keywords**: api, architecture, aws, azure, cd, ci, cloud, container, database, design
+
+#### `pipeline-orchestrator`
+- **Path**: `agents/core/pipeline-orchestrator.md`
+- **Description**: Unified entry point for agent creation pipeline. Routes web research or repo analysis, then delegates to agent-builder for construction.
+- **Keywords**: api, claude, design, kubernetes, ml, pipeline, python, quality, rest, security
+
+#### `repo-knowledge-distiller`
+- **Path**: `agents/core/repo-knowledge-distiller.md`
+- **Description**: Analyzes repositories and knowledge bases to produce synthesis documents for agent creation via RELIC evaluation and artifact discovery.
+- **Keywords**: api, architecture, auth, azure, cd, ci, claude, database, design, go
+- **Key Capabilities**:
+  - **Extract decision records**: Look for ADR (Architecture Decision Records) or similar documents
+  - **Extract architectural diagrams**: Find Mermaid, PlantUML, ASCII diagrams and describe their content
+  - **Extract integration specs**: API contracts, message formats, protocol specifications
 
 #### `sdlc-coach`
 - **Path**: `agents/core/sdlc-coach.md`
-- **Description**:
+- **Description**: Enforces AI-First SDLC practices, coaches developers on proper framework usage, identifies process violations, and conducts regular SDLC reviews to ensure continuous improvement.
 - **Keywords**: ai, architecture, cd, ci, devops, pipeline, quality, security, test, testing
 - **Key Capabilities**:
   - Process improvement and optimization strategies
@@ -241,39 +246,40 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `sdlc-enforcer`
 - **Path**: `agents/core/sdlc-enforcer.md`
-- **Description**:
-- **Keywords**: ai, architecture, cd, ci, design, python, quality, testing
-- **Key Capabilities**:
-  - You are the SDLC Enforcer, the intelligent guardian of AI-First SDLC compliance. You adapt your enforcement based on the project's SDLC level while maintaining appropriate standards. You are both a helpful guide and a firm enforcer, ensuring teams follow best practices suitable for their context.
-  - Progressive SDLC level detection and enforcement
-  - AI-First SDLC methodology guidance
+- **Description**: Expert in AI-First SDLC compliance enforcement, progressive quality gates, Zero Technical Debt policy, and process validation. Use for real-time compliance checking during development, branch protecti...
+- **Keywords**: ai, api, architecture, auth, cd, ci, claude, database, design, go
 
-#### `security-specialist`
-- **Path**: `agents/core/security-specialist.md`
-- **Description**:
-- **Keywords**: security
+#### `security-architect`
+- **Path**: `agents/core/example-security-architect.md`
+- **Description**: Expert in security architecture, threat modeling, and secure design patterns. Reviews systems for vulnerabilities and recommends security improvements.
+- **Keywords**: api, architecture, design, jwt, security, sql, test, testing
 - **Key Capabilities**:
-  - The Security Specialist Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+  - '<example>
+  - You are a Senior Security Architect with 20+ years of experience designing secure systems for financial services, healthcare, and government sectors. You have CISSP, CCSP, and CEH certifications, and you've led security architecture for systems processing billions of transactions daily. You combine deep technical security expertise with practical business understanding to create robust, compliant, and usable security solutions.
+  - Threat modeling using STRIDE, PASTA, and DREAD methodologies
+
+#### `security-architect`
+- **Path**: `agents/core/security-architect.md`
+- **Description**: Expert in security architecture design, threat modeling, zero-trust principles, and secure SDLC integration. Use for architectural security reviews, compliance framework guidance, threat modeling sess...
+- **Keywords**: ai, api, architecture, aws, azure, cd, ci, cloud, container, database
+- **Key Capabilities**:
+  - '<example>
 
 #### `solution-architect`
 - **Path**: `agents/core/solution-architect.md`
-- **Description**:
-- **Keywords**: angular, api, architecture, aws, azure, cloud, design, frontend, react, security
+- **Description**: Expert in system architecture design, TOGAF/C4 frameworks, distributed systems patterns, cloud-native architecture, and technology evaluation. Use for end-to-end solution design, migration strategies,...
+- **Keywords**: api, architecture, aws, azure, cd, ci, cloud, container, database, design
 - **Key Capabilities**:
-  - You are a Solution Architect with 20+ years of experience designing systems that have scaled from startup MVPs to enterprise platforms serving billions of requests. You've architected solutions across domains including fintech, healthcare, e-commerce, and SaaS platforms. You hold AWS Solutions Architect Professional, Azure Solutions Architect Expert, and TOGAF certifications. You're known for pragmatic designs that balance technical excellence with business constraints.
-  - End-to-end system design and architecture
-  - Distributed systems and microservices architecture
+  - You are the Solution Architect, the strategic design authority responsible for end-to-end system architecture spanning frontend, backend, data, infrastructure, and integration layers. You translate business requirements into comprehensive technical solutions, evaluate architectural trade-offs using established frameworks (TOGAF, C4, ATAM), and ensure systems are designed for scalability, resilience, and evolvability. Your approach is methodical and framework-driven, grounding every architectural decision in documented rationale and explicit trade-off analysis.
 
 #### `sre-specialist`
 - **Path**: `agents/core/sre-specialist.md`
-- **Description**:
-- **Keywords**: design, testing
+- **Description**: Expert in SLO frameworks, incident response, chaos engineering, production reliability, and operational excellence. Use for defining SLIs/SLOs/error budgets, designing incident runbooks, implementing ...
+- **Keywords**: ai, api, architecture, aws, azure, cd, ci, cloud, container, database
 
 #### `test-manager`
 - **Path**: `agents/core/test-manager.md`
-- **Description**:
+- **Description**: Oversees all testing activities across the project, manages test strategy, coordinates different testing types, ensures comprehensive coverage, and maintains quality metrics throughout the development...
 - **Keywords**: ai, cloud, design, qa, quality, security, test, testing
 - **Key Capabilities**:
   - Test strategy development and implementation
@@ -282,160 +288,106 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `ux-ui-architect`
 - **Path**: `agents/core/ux-ui-architect.md`
-- **Description**:
-- **Keywords**: ai, api, architecture, design, frontend, pipeline, python, quality, security, test
-- **Key Capabilities**:
-  - **Drive Adoption**: Create interfaces that users love, ensuring product success
-  - **Enable Accessibility**: Ensure all users can access and enjoy the product
-  - **Inspire Quality**: Set high standards for user experience that elevate the entire team
-
-### Creative (1 agents)
-
-#### `ux-ui-architect`
-- **Path**: `agents/creative/ux-ui-architect.md`
-- **Description**:
-- **Key Capabilities**:
-  - The Ux Ui Architect Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+- **Description**: Expert in design systems, WCAG 2.2/3.0 accessibility, user research methods, and design-to-development handoff. Use for interface design, accessibility audits, and UX strategy.
+- **Keywords**: angular, api, architecture, cd, ci, design, frontend, go, qa, react
 
 ### Documentation (2 agents)
 
 #### `documentation-architect`
 - **Path**: `agents/documentation/documentation-architect.md`
-- **Description**: Brief description of what this page covers.
-- **Keywords**: api, architecture, cd, ci, database, design, devops, go, javascript, pipeline
+- **Description**: Expert in documentation systems design, docs-as-code pipelines, API documentation platforms (OpenAPI/AsyncAPI), and developer experience optimization. Use for documentation strategy, platform selectio...
+- **Keywords**: ai, api, architecture, cd, ci, design, devops, frontend, go, javascript
 - **Key Capabilities**:
-  - Content volume and update frequency expectations
-  - Integration requirements with existing tools and workflows
-  - Compliance or regulatory documentation requirements
+  - - Static site generators: Docusaurus (React-based, Meta), MkDocs (Python, Material theme), Astro Starlight (Astro framework), VitePress (Vue-based, lightweight), Nextra (Next.js-based)
+  - Documentation hosting: Vercel, Netlify, GitHub Pages, Read the Docs, Cloudflare Pages
+  - Search engines: Algolia DocSearch, Meilisearch, Typesense, local Lunr.js, OpenSearch
 
 #### `technical-writer`
 - **Path**: `agents/documentation/technical-writer.md`
-- **Description**:
-- **Keywords**: api, architecture, design, oauth, quality, test, testing
-- **Key Capabilities**:
-  - Research their typical workflows and pain points
-  - Understand their goals and success criteria
-  - Assess their available time and attention constraints
+- **Description**: Expert in technical writing, developer documentation, API docs, plain language principles, accessibility-first writing, and content design. Use for creating tutorials, guides, references, error messag...
+- **Keywords**: ai, api, architecture, auth, cd, ci, database, design, docker, go
 
-### Future (4 agents)
-
-#### `a2a-mesh-controller`
-- **Path**: `agents/future/a2a-mesh-controller.md`
-- **Description**:
-- **Key Capabilities**:
-  - The A2A Mesh Controller Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
-
-#### `evolution-engine`
-- **Path**: `agents/future/evolution-engine.md`
-- **Description**:
-- **Key Capabilities**:
-  - The Evolution Engine Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+### Future (1 agents)
 
 #### `mcp-orchestrator`
 - **Path**: `agents/future/mcp-orchestrator.md`
-- **Description**:
-- **Keywords**: mcp, model-context-protocol
+- **Description**: Expert in MCP multi-server coordination, gateway patterns, fleet management, and enterprise MCP deployment. Use for orchestrating multiple MCP servers, designing MCP gateways, managing MCP server flee...
+- **Keywords**: ai, api, architecture, database, design, devops, jwt, mcp, model-context-protocol, security
 - **Key Capabilities**:
-  - The Mcp Orchestrator Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+  - **Round-Robin**: Simple, fair distribution, no state required, poor for heterogeneous servers
+  - **Least Connections**: Route to server with fewest active connections, better for varying request complexity
+  - **Capability-Based**: Route requests to servers advertising required tools, ensures request satisfaction
 
-#### `swarm-coordinator`
-- **Path**: `agents/future/swarm-coordinator.md`
-- **Description**:
-- **Key Capabilities**:
-  - The Swarm Coordinator Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
-
-### General (4 agents)
+### General (5 agents)
 
 #### `sdlc-setup-specialist`
 - **Path**: `agents/sdlc-setup-specialist.md`
-- **Description**: #### GitHub Actions Workflow
-Create `.github/workflows/ai-sdlc-validation.yml`:
-```yaml
-name: AI-First SDLC Validation
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
+- **Description**: Handles GitHub configuration, local setup, and alignment between local and remote SDLC environments
 - **Keywords**: ai, api, architecture, azure, cd, ci, claude, javascript, pipeline, python
 
 #### `v3-setup-orchestrator`
 - **Path**: `agents/v3-setup-orchestrator.md`
-- **Description**: has_requirements_txt:
-    assume: "Python project"
-    default_team: ["language-python-expert", "ai-test-engineer", "documentation-architect"]
-- **Keywords**: ai, angular, api, architecture, azure, cd, ci, claude, database, design
+- **Description**: Orchestrates AI-First SDLC v3 setup by discovering project needs and assembling the right team
+- **Keywords**: ai, angular, api, architecture, azure, cd, ci, claude, cloud, container
+
+#### `v3-setup-orchestrator-enhanced`
+- **Path**: `agents/v3-setup-orchestrator-enhanced.md`
+- **Description**: Enhanced orchestrator with dynamic agent discovery using searchable catalog and interactive clarification
+- **Keywords**: ai, api, architecture, auth, claude, design, devops, frontend, go, graphql
 
 #### `v3-setup-orchestrator-no-creation`
 - **Path**: `agents/v3-setup-orchestrator-no-creation.md`
-- **Description**: ### Phase 2: Discovery Protocol
-Interview the project to understand:
-- Technology stack (languages, frameworks)
-- Team dynamics (solo, small team, enterprise)
-- Development velocity needs
-- Pain point...
+- **Description**: Pure download orchestrator for AI-First SDLC v3 setup - NO agent creation allowed
 - **Keywords**: ai, api, claude, database, devops, frontend, go, javascript, mcp, ml
 
 #### `v3-setup-orchestrator-team-first`
 - **Path**: `agents/v3-setup-orchestrator-team-first.md`
-- **Description**: ### Phase 2: Discovery & Team Assessment
-Interview the project and assess what the existing team can handle:
+- **Description**: Team-first orchestrator - uses existing agents, creates only as last resort with template
 - **Keywords**: ai, api, architecture, claude, database, design, devops, frontend, go, javascript
 - **Key Capabilities**:
   - - Recruit new team members (create via template ONLY)
 
 ### Languages (1 agents)
 
-#### `example-python-expert`
+#### `python-expert`
 - **Path**: `agents/languages/python/example-python-expert.md`
-- **Description**:
+- **Description**: Python language expert specializing in Pythonic patterns, performance optimization, and modern Python features. Ensures code follows PEP standards and community best practices.
 - **Keywords**: design, python, quality, security, testing
 - **Key Capabilities**:
   - **Pythonic Improvements**: Specific suggestions to make code more idiomatic with before/after examples
   - **Performance Analysis**: Identified bottlenecks with profiling recommendations and optimization strategies
   - **Type Safety Enhancements**: Missing or incorrect type hints with complete typing solutions
 
-### Project Management (3 agents)
+### Project Management (4 agents)
 
 #### `agile-coach`
 - **Path**: `agents/project-management/agile-coach.md`
-- **Description**:
-- **Keywords**: design, quality
+- **Description**: Expert in Scrum, Kanban, SAFe, and scaled agile. Use for sprint planning, retrospectives, team dysfunction diagnosis, agile transformation coaching, and metrics implementation (DORA, SPACE, flow).
+- **Keywords**: ai, architecture, claude, design, devops, go, quality, security, testing
 - **Key Capabilities**:
-  - Create working agreements and team norms
-  - Design meaningful measurement systems
-  - Track velocity, cycle time, and quality metrics
+  - You are the Agile Coach, the specialist responsible for guiding teams through agile adoption, diagnosing process dysfunctions, and building sustainable delivery practices. You coach teams from initial Scrum adoption through scaled agile transformation, combining deep knowledge of agile frameworks (Scrum, Kanban, SAFe, LeSS) with practical experience in team dynamics, metrics implementation, and continuous improvement. Your approach is diagnostic and contextual -- you assess team maturity and organizational constraints before recommending practices, never imposing rigid frameworks on teams with unique contexts.
 
 #### `delivery-manager`
 - **Path**: `agents/project-management/delivery-manager.md`
-- **Description**:
-- **Keywords**: design, quality
-- **Key Capabilities**:
-  - Confirm rollback procedures and disaster recovery plans
-  - Coordinate with operations teams for smooth deployment
-  - Provide regular status updates with clear decision points
+- **Description**: Expert in software delivery orchestration, release management, risk mitigation, and stakeholder communication. Use for release planning, go/no-go decisions, delivery forecasting, cross-team coordinati...
+- **Keywords**: ai, api, architecture, auth, cd, ci, database, design, devops, frontend
 
 #### `project-plan-tracker`
 - **Path**: `agents/project-management/project-plan-tracker.md`
-- **Description**:
-- **Keywords**: api, quality, test
+- **Description**: Use for monitoring project progress against established plans, tracking deliverables and milestones, detecting schedule slippage, analyzing dependencies, and generating status reports. Excels at early...
+- **Keywords**: api, architecture, cd, ci, design, pipeline, quality, test, testing
+
+#### `team-progress-tracker`
+- **Path**: `agents/project-management/team-progress-tracker.md`
+- **Description**: Expert in team performance measurement, adoption tracking, and health assessment. Use for tracking DORA metrics, measuring practice adoption, assessing team readiness, or generating team health report...
+- **Keywords**: api, architecture, cd, ci, design, devops, pipeline, quality, security, sql
 
 ### Sdlc (8 agents)
 
 #### `ai-first-kick-starter`
 - **Path**: `agents/sdlc/ai-first-kick-starter.md`
-- **Description**:
-- **Keywords**: ai, api, architecture, cd, ci, claude, devops, go, javascript, langchain
+- **Description**: Use this agent as a post-installation advisor for AI-First SDLC practices. This agent specializes in reviewing existing AI-First SDLC installations, checking for updates, advising on best practices, h...
+- **Keywords**: ai, api, architecture, cd, ci, claude, cloud, container, database, design
 - **Key Capabilities**:
   - AI-First SDLC framework architecture and best practices
   - Project structure optimization for AI agent collaboration
@@ -443,100 +395,81 @@ Interview the project and assess what the existing team can handle:
 
 #### `framework-validator`
 - **Path**: `agents/sdlc/framework-validator.md`
-- **Description**:
+- **Description**: Real-time framework compliance guardian for AI-First SDLC, validates architecture documents, enforces Zero Technical Debt continuously, monitors compliance across all development activities, and provi...
 - **Keywords**: ai, architecture, cd, ci, design, pipeline, quality
-
-#### `kickstart-architect`
-- **Path**: `agents/sdlc/kickstart-architect.md`
-- **Description**:
-- **Keywords**: ai, api, architecture, cd, ci, design, go, kubernetes, pipeline, python
-- **Key Capabilities**:
-  - Requirements analysis and technology stack optimization
-  - Complete project structure generation with language-specific best practices
-  - Architecture document pre-filling with project-specific content
 
 #### `language-go-expert`
 - **Path**: `agents/sdlc/language-go-expert.md`
-- **Description**: test:
-    go test -v -race -coverprofile=coverage.out ./...
-    go tool cover -html=coverage.out -o coverage.html
-- **Keywords**: ai, api, database, design, docker, go, grpc, k8s, microservice, postgres
+- **Description**: Expert in Go 1.22+ development, concurrency patterns, and cloud-native architectures. Use for Go project structure, performance optimization, and idiomatic Go practices.
+- **Keywords**: ai, api, architecture, cd, ci, cloud, container, database, design, devops
 
 #### `language-javascript-expert`
 - **Path**: `agents/sdlc/language-javascript-expert.md`
-- **Description**:
-- **Keywords**: ai, angular, architecture, cd, ci, frontend, javascript, quality, react, security
+- **Description**: Expert in modern JavaScript/TypeScript, frontend/backend frameworks, build tooling, and JS ecosystem best practices. Use for framework selection, TypeScript config, bundle optimization, and Node.js de...
+- **Keywords**: angular, api, architecture, aws, cd, ci, database, design, devops, docker
 
 #### `language-python-expert`
 - **Path**: `agents/sdlc/language-python-expert.md`
-- **Description**:
-- **Keywords**: ai, api, architecture, design, python, quality, test, testing
+- **Description**: Expert in Python 3.12+ features, type systems (mypy/pyright), async patterns, testing (pytest/hypothesis), web frameworks (FastAPI/Django/Flask), AI/ML development, and packaging. Use for Python proje...
+- **Keywords**: ai, api, architecture, auth, aws, cd, ci, cloud, container, database
 - **Key Capabilities**:
-  - Advanced Python typing with protocols, generics, and type variables
-  - Framework-specific patterns for FastAPI, Django, Flask with AI-First compliance
-  - Comprehensive testing strategies using pytest, coverage, and property-based testing
+  - Provide Python-specific implementation for architectures designed by solution-architect or backend-architect
+  - When Python patterns conflict with AI-First SDLC requirements, find Python solutions that satisfy both (don't compromise on either)
 
 #### `project-bootstrapper`
 - **Path**: `agents/sdlc/project-bootstrapper.md`
-- **Description**:
-- **Keywords**: ai, api, architecture, cd, ci, database, pipeline, python, quality, testing
+- **Description**: One-command project initialization specialist for AI-First SDLC framework. Creates complete project structure, detects languages and frameworks, pre-fills architecture documents, sets up git hooks and...
+- **Keywords**: ai, api, architecture, cd, ci, database, design, pipeline, python, quality
 
 #### `retrospective-miner`
 - **Path**: `agents/sdlc/retrospective-miner.md`
-- **Description**:
+- **Description**: Extracts valuable insights from project retrospectives across the organization, identifies recurring patterns and challenges, suggests concrete framework improvements, builds organizational knowledge ...
 - **Keywords**: ai, architecture, database
 - **Key Capabilities**:
   - Recommend validation rule updates based on common failures
   - Document proven success patterns with implementation details
   - Catalog anti-patterns with prevention strategies
 
-### Security (1 agents)
-
-#### `frontend-security-specialist`
-- **Path**: `agents/security/frontend-security-specialist.md`
-- **Description**:
-- **Keywords**: frontend, security
+#### `sdlc-knowledge-curator`
+- **Path**: `agents/sdlc/sdlc-knowledge-curator.md`
+- **Description**: Expert in SDLC knowledge management, pattern libraries, and learning extraction. Use for pattern discovery, onboarding guidance, success metrics, and maintaining institutional memory of what works.
+- **Keywords**: ai, architecture, cd, ci, design, javascript, pipeline, python, quality, security
 - **Key Capabilities**:
-  - The Frontend Security Specialist Agent provides specialized expertise in its domain.
-  - Core competency 1
-  - Core competency 2
+  - **Problem**: Specific challenge the pattern addresses. Example: "Need CI/CD but can't invest 2 weeks in pipeline setup"
+  - **Solution**: Step-by-step implementation with decision points. Example: "Use GitHub Actions with templates from examples/ci-cd/, customize in 2 hours"
+  - **Consequences**: Benefits, trade-offs, limitations, maintenance burden. Example: "Fast setup but less flexibility than Jenkins, adequate for <10 engineers"
 
 ### Templates (2 agents)
 
 #### `project-strategy-orchestrator`
 - **Path**: `agents/templates/project-strategy-orchestrator.md`
-- **Description**: ## Agent Identity
-- **Name**: Project Strategy Orchestrator
-- **Style**: Stan Cullis (Strategic, methodical, zero-tolerance for poor setup)
-- **Role**: Autonomous project analyzer and setup decision m...
+- **Description**: Autonomous project analyzer and strategic setup decision maker
 - **Keywords**: ai, angular, api, architecture, cd, ci, database, devops, docker, frontend
 
 #### `team-assembly-orchestrator`
 - **Path**: `agents/templates/team-assembly-orchestrator.md`
-- **Description**: ## Agent Identity
-- **Name**: Team Assembly Orchestrator
-- **Style**: Billy Wright (Team-first leader, enabler, connector)
-- **Role**: Assembles and coordinates the optimal agent team
-- **Philosophy**...
+- **Description**: Assembles and coordinates specialized agent teams based on project needs
 - **Keywords**: api, architecture, database, design, devops, frontend, python, quality, react, security
 
-### Testing (3 agents)
+### Testing (4 agents)
 
 #### `ai-test-engineer`
 - **Path**: `agents/testing/ai-test-engineer.md`
-- **Description**:
-- **Keywords**: ai, architecture, design, llm, quality, test, testing
-- **Key Capabilities**:
-  - '<example>
-  - '<example>
-  - '<example>
+- **Description**: Expert in comprehensive test strategy design, modern test automation frameworks, AI-augmented testing, contract testing, and quality engineering. Use for test pyramid design, CI/CD test integration, f...
+- **Keywords**: ai, angular, api, architecture, auth, aws, cd, ci, cloud, container
+
+#### `code-review-specialist`
+- **Path**: `agents/testing/code-review-specialist.md`
+- **Description**: Expert in code quality, security vulnerabilities (OWASP Top 10), language-specific patterns (Python/JS/Go/Java/Rust), and automated review tools. Use for PR reviews, security assessments, and review p...
+- **Keywords**: ai, api, architecture, auth, cd, ci, database, design, devops, go
 
 #### `integration-orchestrator`
 - **Path**: `agents/testing/integration-orchestrator.md`
-- **Description**:
-- **Keywords**: api, architecture, cloud, design, frontend, grpc, quality, rest, test, testing
+- **Description**: Expert in integration testing strategies, API contract testing (Pact, Spring Cloud Contract), service virtualization (WireMock, Mountebank), and E2E test orchestration. Use for designing multi-service...
+- **Keywords**: api, architecture, aws, cd, ci, cloud, container, database, design, devops
 
 #### `performance-engineer`
 - **Path**: `agents/testing/performance-engineer.md`
-- **Description**:
-- **Keywords**: ai, api, architecture, cd, ci, database, design, pipeline, python, test
+- **Description**: Expert in performance testing, profiling, optimization, and capacity planning. Use for load testing strategy, bottleneck analysis, Core Web Vitals optimization, Kubernetes autoscaling, database query ...
+- **Keywords**: ai, api, architecture, aws, azure, cd, ci, cloud, container, database
+

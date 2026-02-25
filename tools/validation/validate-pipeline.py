@@ -194,14 +194,12 @@ class ValidationPipeline:
         """Check for forbidden solo work patterns - ZERO TOLERANCE"""
         print("\n🚫 CHECKING FOR SOLO WORK PATTERNS (ZERO TOLERANCE)")
 
-        # Run the solo pattern detector
+        # Run the team engagement validator (includes solo pattern detection)
         try:
             result = subprocess.run(
                 [
                     sys.executable,
-                    "tools/validation/check-solo-patterns.py",
-                    "--threshold",
-                    "0",
+                    "tools/validation/validate-team-engagement.py",
                 ],
                 capture_output=True,
                 text=True,
@@ -210,24 +208,24 @@ class ValidationPipeline:
 
             if result.returncode != 0:
                 self.add_error(
-                    "Solo Patterns",
-                    "SOLO WORK PATTERNS DETECTED - IMMEDIATE BLOCKAGE REQUIRED",
-                    "Convert all solo work to team collaboration. Engage specialists for all tasks.",
+                    "Team Engagement",
+                    "Team engagement validation failed",
+                    "Ensure team collaboration patterns are present.",
                 )
             else:
-                self.add_success("Solo Patterns", "No solo work patterns found")
+                self.add_success("Team Engagement", "Team engagement validated")
 
         except FileNotFoundError:
             self.add_warning(
-                "Solo Patterns",
-                "Solo pattern detector not found",
-                "Ensure tools/validation/check-solo-patterns.py exists",
+                "Team Engagement",
+                "Team engagement validator not found",
+                "Ensure tools/validation/validate-team-engagement.py exists",
             )
         except Exception as e:
             self.add_error(
-                "Solo Patterns",
-                f"Solo pattern detection failed: {str(e)}",
-                "Fix solo pattern detection issues",
+                "Team Engagement",
+                f"Team engagement validation failed: {str(e)}",
+                "Fix team engagement validation issues",
             )
 
     def check_feature_proposal(self) -> None:

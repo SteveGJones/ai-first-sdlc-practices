@@ -49,7 +49,7 @@ When contributing to the framework:
 
 ### Active Workflows (.github/workflows/)
 
-1. **ai-sdlc-validation.yml**: Validates our own compliance
+1. **validation.yml**: Validates our own compliance
 2. **test-ci-examples.yml**: Tests our CI/CD examples
 3. **security-and-dependencies.yml**: Framework security scanning
 4. **release.yml**: Publishes new framework versions

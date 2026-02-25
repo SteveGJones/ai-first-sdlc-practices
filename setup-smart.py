@@ -46,10 +46,10 @@ class SmartFrameworkSetup:
         "tools/automation/setup-branch-protection-gh.py": "tools/setup-branch-protection-gh.py",
         "tools/validation/check-feature-proposal.py": "tools/check-feature-proposal.py",
         "tools/validation/validate-pipeline.py": "tools/validate-pipeline.py",
-        "tools/validation/validate-pipeline-progressive.py": "tools/validate-pipeline-progressive.py",
+        # validate-pipeline-progressive.py consolidated into validate-pipeline.py
         "tools/automation/sdlc-level.py": "tools/sdlc-level.py",
-        # Zero Technical Debt additions
-        "ZERO-TECHNICAL-DEBT.md": "ZERO-TECHNICAL-DEBT.md",
+        # Core rules
+        "CONSTITUTION.md": "CONSTITUTION.md",
         "LANGUAGE-SPECIFIC-VALIDATORS.md": "LANGUAGE-SPECIFIC-VALIDATORS.md",
         "tools/validation/validate-architecture.py": "tools/validation/validate-architecture.py",
         "tools/validation/check-technical-debt.py": "tools/validation/check-technical-debt.py",
@@ -2981,8 +2981,8 @@ Run 'python tools/agent-installer.py' to install specialist agents.
         """Print documentation and reference links"""
         print("\n📚 Framework Documentation:")
         print("   https://github.com/SteveGJones/ai-first-sdlc-practices")
-        print("\n📖 Zero Technical Debt Policy:")
-        print("   cat ZERO-TECHNICAL-DEBT.md")
+        print("\n📖 All Rules:")
+        print("   cat CONSTITUTION.md")
 
 
 def main():

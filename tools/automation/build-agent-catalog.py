@@ -9,6 +9,11 @@ import re
 from pathlib import Path
 from typing import Dict, Any
 
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
 
 def extract_agent_metadata(file_path: Path) -> Dict[str, Any]:
     """Extract metadata from an agent markdown file."""
@@ -30,11 +35,25 @@ def extract_agent_metadata(file_path: Path) -> Dict[str, Any]:
     else:
         category = "unknown"
 
-    # Extract description (first paragraph after # header)
-    desc_match = re.search(
-        r"^#[^#].*?\n\n(.*?)(?:\n\n|\n#)", content, re.MULTILINE | re.DOTALL
-    )
-    description = desc_match.group(1).strip() if desc_match else ""
+    # Extract description from YAML frontmatter first, fall back to regex
+    description = ""
+    if content.startswith("---") and yaml is not None:
+        frontmatter_parts = content.split("---", 2)
+        if len(frontmatter_parts) >= 3:
+            try:
+                metadata = yaml.safe_load(frontmatter_parts[1])
+                if isinstance(metadata, dict):
+                    description = metadata.get("description", "")
+                    if metadata.get("name"):
+                        name = metadata["name"]
+            except (yaml.YAMLError, AttributeError):
+                pass
+
+    if not description:
+        desc_match = re.search(
+            r"^#[^#].*?\n\n(.*?)(?:\n\n|\n#)", content, re.MULTILINE | re.DOTALL
+        )
+        description = desc_match.group(1).strip() if desc_match else ""
 
     # Extract keywords from content
     keywords = set()

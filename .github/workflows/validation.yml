@@ -1,0 +1,198 @@
+name: AI-First SDLC Validation
+
+on:
+  push:
+    branches: [ main, develop, 'feature/**', 'fix/**', 'docs/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      strict_mode:
+        description: 'Force strict validation mode'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  actions: read
+  checks: write
+
+jobs:
+  # Job 1: Core SDLC Compliance
+  sdlc-validation:
+    runs-on: ubuntu-latest
+    name: SDLC Compliance Check
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Branch Compliance Check
+      run: python tools/validation/validate-pipeline.py --checks branch --ci
+
+    - name: Feature Proposal Check
+      if: github.event_name == 'pull_request'
+      run: |
+        BRANCH_NAME="${{ github.head_ref }}"
+        python tools/validation/check-feature-proposal.py --branch "$BRANCH_NAME"
+
+    - name: Architecture Validation
+      run: |
+        if [ "${{ inputs.strict_mode }}" == "true" ]; then
+          python tools/validation/validate-architecture.py --mode strict
+        else
+          python tools/validation/validate-architecture.py
+        fi
+
+    - name: Technical Debt Check
+      run: python tools/validation/check-technical-debt.py .
+
+    - name: Check /tmp usage
+      run: python tools/validation/check-tmp-usage.py
+
+    - name: Retrospective Check
+      if: github.event_name == 'pull_request'
+      run: python tools/validation/validate-pipeline.py --checks retrospective
+
+    - name: Security Scan
+      run: python tools/validation/validate-pipeline.py --checks security --ci
+
+    - name: Type Safety Check
+      run: python tools/validation/validate-pipeline.py --checks type-safety --ci
+
+    - name: Generate Compliance Report
+      if: always()
+      run: |
+        python tools/validation/validate-pipeline.py --ci --export json --output sdlc-compliance.json || true
+        python tools/validation/validate-pipeline.py --ci --export markdown --output sdlc-compliance.md || true
+
+  # Job 2: Code Quality
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality Analysis
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.9'
+
+    - name: Install quality tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pre-commit
+
+    - name: Flake8 Linting
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=15 --max-line-length=127 --statistics
+
+    - name: Pre-commit Hooks
+      run: pre-commit run --all-files || echo "::warning::Pre-commit checks failed"
+
+  # Job 3: Framework Tool Testing (Python matrix)
+  test-framework-tools:
+    runs-on: ubuntu-latest
+    name: Framework Tools (Python ${{ matrix.python-version }})
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Test framework tools
+      run: |
+        python tools/automation/progress-tracker.py --help
+        python tools/automation/context-manager.py --help
+        python tools/validation/validate-pipeline.py --help
+        python -m py_compile tools/validation/check-feature-proposal.py
+
+  # Job 4: Summary
+  summary:
+    runs-on: ubuntu-latest
+    needs: [sdlc-validation, code-quality, test-framework-tools]
+    if: always()
+    name: Validation Summary
+    permissions:
+      pull-requests: write
+      issues: write
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Create Summary Report
+      run: |
+        echo "## AI-First SDLC Validation Summary" > summary.md
+        echo "" >> summary.md
+        echo "| Check | Status |" >> summary.md
+        echo "|-------|--------|" >> summary.md
+        echo "| SDLC Compliance | ${{ needs.sdlc-validation.result == 'success' && 'Pass' || 'Fail' }} |" >> summary.md
+        echo "| Code Quality | ${{ needs.code-quality.result == 'success' && 'Pass' || 'Warn' }} |" >> summary.md
+        echo "| Framework Tools | ${{ needs.test-framework-tools.result == 'success' && 'Pass' || 'Warn' }} |" >> summary.md
+
+        if [[ "${{ needs.sdlc-validation.result }}" == "failure" ]]; then
+          echo "" >> summary.md
+          echo "**SDLC validation failed. Review logs above.**" >> summary.md
+          exit 1
+        fi
+
+    - name: Comment PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v8
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('summary.md', 'utf8');
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          const botComment = comments.find(c =>
+            c.user.type === 'Bot' && c.body.includes('SDLC Validation Summary')
+          );
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: summary
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: summary
+            });
+          }
