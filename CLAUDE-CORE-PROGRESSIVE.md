@@ -252,7 +252,7 @@ Load additional context as needed:
 | Architecture docs | CLAUDE-CONTEXT-architecture.md |
 | Validation errors | CLAUDE-CONTEXT-validation.md |
 | Level migration | CLAUDE-CONTEXT-levels.md |
-| Agent assistance | CLAUDE-CONTEXT-agents.md |
+| Agent assistance | AGENT-INDEX.md |
 
 ## Progressive Enforcement Philosophy
 

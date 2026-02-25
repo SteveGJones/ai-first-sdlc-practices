@@ -51,7 +51,7 @@ Complete documentation for the AI-First SDLC Practices framework.
 
 ### Framework Principles
 - [Zero Technical Debt Policy](../ZERO-TECHNICAL-DEBT.md) - Architecture-first development
-- [AI Autonomy Guide](../AI-AUTONOMY.md) - Guidelines for autonomous AI operation
+- [AI Autonomy Guide](AI-AUTONOMY.md) - Guidelines for autonomous AI operation
 - [Language-Specific Validators](../LANGUAGE-SPECIFIC-VALIDATORS.md) - Per-language validation
 
 ## 🤖 Agent Development
@@ -75,8 +75,8 @@ Complete documentation for the AI-First SDLC Practices framework.
 
 ### Design Documents
 - [Architecture Templates](../templates/architecture/) - 6 mandatory architecture documents
-- [Feature Proposal Template](../templates/feature-proposal-template.md) - Proposing new features
-- [Retrospective Template](../templates/retrospective-template.md) - Post-implementation reviews
+- [Feature Proposal Template](../templates/feature-proposal.md) - Proposing new features
+- [Retrospective Template](../templates/retrospective.md) - Post-implementation reviews
 
 ### Implementation Patterns
 - [3-Tier Python Collaboration Pattern](3-TIER-PYTHON-COLLABORATION-PATTERN.md) - Multi-tier architecture
@@ -153,7 +153,7 @@ Complete documentation for the AI-First SDLC Practices framework.
 ### Templates
 - [All Templates](../templates/) - Complete template collection
 - [CLAUDE.md Template](../templates/CLAUDE.md) - AI instructions template
-- [Design Doc Template](../templates/design-doc-template.md) - System design template
+- [Design Doc Template](../templates/design-documentation.md) - System design template
 
 ## 🆘 Help
 

@@ -281,7 +281,7 @@ python tools/automation/team-dashboard.py --help
 ### Documentation
 - **Full Orchestration Guide**: `docs/AI-TEAM-ORCHESTRATION-GUIDE.md`
 - **Agent Discovery**: `docs/AGENT-DISCOVERY-GUIDE.md`
-- **Team Collaboration**: `AGENTIC-TEAM-COLLABORATION-PROTOCOLS.md`
+- **Team Collaboration**: `AGENTIC-TEAM-STANDARDS.md`
 
 ### Community Resources
 - Check the agent manifest for new agent releases

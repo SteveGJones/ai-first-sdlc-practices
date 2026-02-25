@@ -292,7 +292,7 @@ class TeamEngagementValidator:
 
         required_team_files = [
             "CLAUDE-CORE.md",
-            "AGENTIC-SDLC-TEAM-PRINCIPLES.md",
+            "AGENTIC-TEAM-STANDARDS.md",
         ]
 
         required_dirs = ["docs/feature-proposals", "retrospectives"]

@@ -272,10 +272,10 @@ Load additional instructions based on task:
 | Create architecture | CLAUDE-CONTEXT-architecture.md |
 | Run validation | CLAUDE-CONTEXT-validation.md |
 | Update framework | CLAUDE-CONTEXT-update.md |
-| Language work | CLAUDE-CONTEXT-language-validators.md |
+| Language work | LANGUAGE-SPECIFIC-VALIDATORS.md |
 | Logging standards | CLAUDE-CONTEXT-logging.md |
-| AI agents/help | CLAUDE-CONTEXT-agents.md |
-| Quality standards | AGENTIC-SDLC-TEAM-PRINCIPLES.md |
+| AI agents/help | AGENT-INDEX.md |
+| Quality standards | AGENTIC-TEAM-STANDARDS.md |
 
 ## Framework Updates
 
@@ -301,7 +301,7 @@ If update available: Load CLAUDE-CONTEXT-update.md
 3. **Verification Discipline**: Monitor CI within 5 minutes of every push
 4. **Quality Ownership**: You own the entire pipeline, not just local development
 
-**Details**: Load AGENTIC-SDLC-TEAM-PRINCIPLES.md for complete standards
+**Details**: Load AGENTIC-TEAM-STANDARDS.md for complete standards
 
 ## 🚨 DEATH PENALTY VIOLATIONS 🚨
 
