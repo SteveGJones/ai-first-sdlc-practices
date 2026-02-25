@@ -1,3 +1,25 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI Agent Installation Guide](#ai-agent-installation-guide)
+  - [⚠️ Critical Reminder](#-critical-reminder)
+  - [Quick Installation Steps](#quick-installation-steps)
+    - [1. Identify Needed Agents](#1-identify-needed-agents)
+    - [2. Install Agents](#2-install-agents)
+    - [3. Restart Your AI Assistant](#3-restart-your-ai-assistant)
+    - [4. Verify Installation](#4-verify-installation)
+  - [Platform-Specific Notes](#platform-specific-notes)
+    - [Claude (Anthropic)](#claude-anthropic)
+    - [GPT (OpenAI)](#gpt-openai)
+    - [Other Platforms](#other-platforms)
+  - [Common Issues](#common-issues)
+    - [Agent Not Responding](#agent-not-responding)
+    - [Multiple Agents Needed](#multiple-agents-needed)
+  - [Best Practices](#best-practices)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI Agent Installation Guide
 
 ## ⚠️ Critical Reminder

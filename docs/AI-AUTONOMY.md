@@ -1,3 +1,32 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI Autonomy Guide - Using AI-First SDLC Framework](#ai-autonomy-guide---using-ai-first-sdlc-framework)
+  - [🌐 Starting Point](#-starting-point)
+  - [🤖 Quick Start for Claude](#-quick-start-for-claude)
+    - [1. First, ask the user for project purpose:](#1-first-ask-the-user-for-project-purpose)
+    - [2. After receiving their response, proceed with setup:](#2-after-receiving-their-response-proceed-with-setup)
+  - [🤝 Human-Claude Interaction Points](#-human-claude-interaction-points)
+  - [📋 Decision Matrix for Autonomous Setup](#-decision-matrix-for-autonomous-setup)
+    - [CI/CD Platform Selection](#cicd-platform-selection)
+    - [Authentication Handling](#authentication-handling)
+  - [🔍 Pre-Setup Verification](#-pre-setup-verification)
+  - [🛠️ Handling Common Scenarios](#-handling-common-scenarios)
+    - [Scenario 1: Fresh Project](#scenario-1-fresh-project)
+    - [Scenario 2: Existing Project](#scenario-2-existing-project)
+    - [Scenario 3: No gh CLI Available](#scenario-3-no-gh-cli-available)
+  - [📊 Status Reporting](#-status-reporting)
+  - [🚨 Error Handling](#-error-handling)
+    - [Common Errors and Responses](#common-errors-and-responses)
+  - [🎯 Complete Autonomous Workflow](#-complete-autonomous-workflow)
+  - [🚫 Zero Technical Debt Workflow (MANDATORY)](#-zero-technical-debt-workflow-mandatory)
+  - [📝 Key Commands for Claude](#-key-commands-for-claude)
+  - [🔄 Incremental Improvements](#-incremental-improvements)
+  - [💡 Tips for Success](#-tips-for-success)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI Autonomy Guide - Using AI-First SDLC Framework
 
 This guide enables Claude (or other AI agents) to set up and use the AI-First SDLC framework in existing projects.
