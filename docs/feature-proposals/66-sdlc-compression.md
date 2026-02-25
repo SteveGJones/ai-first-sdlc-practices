@@ -60,6 +60,19 @@ Then standard templates total under 350 lines and lite variants exist under 50 l
 
 ---
 
+## Success Criteria
+
+- [ ] CONSTITUTION.md contains all 37 rules in under 160 lines
+- [ ] CLAUDE-CORE.md is under 160 lines with zero rhetoric
+- [ ] SDLC-RULES-SUMMARY.md deleted, ZERO-TECHNICAL-DEBT.md moved to docs/
+- [ ] Templates compressed 60%+ with lite variants under 50 lines each
+- [ ] Validation scripts reduced from 23 to ~17
+- [ ] CI workflows reduced from 11 to ~8
+- [ ] Zero broken references to deleted files
+- [ ] All Python files compile successfully
+
+---
+
 ## Risks
 
 | Risk | Impact | Mitigation |
