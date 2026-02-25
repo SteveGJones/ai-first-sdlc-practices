@@ -1,21 +1,19 @@
 {
   "version": "1.0.0",
-  "generated": "2025-08-20T16:34:04.003309",
-  "total_agents": 65,
+  "generated": "2026-02-24T21:10:29.829309",
+  "total_agents": 70,
   "categories": {
-    "ai-builders": 6,
+    "ai-builders": 5,
     "ai-development": 9,
-    "core": 21,
-    "creative": 1,
+    "core": 29,
     "documentation": 2,
-    "future": 4,
+    "future": 1,
     "languages": 1,
-    "project-management": 3,
+    "project-management": 4,
     "sdlc": 8,
-    "general": 4,
-    "security": 1,
+    "general": 5,
     "templates": 2,
-    "testing": 3
+    "testing": 4
   },
   "agents": [
     {
@@ -24,20 +22,41 @@
       "category": "ai-builders",
       "keywords": [
         "ai",
+        "api",
+        "architecture",
+        "aws",
+        "azure",
         "cd",
         "ci",
+        "claude",
+        "cloud",
+        "container",
+        "database",
         "design",
         "devops",
+        "gcp",
+        "go",
+        "gpt",
+        "kubernetes",
+        "langchain",
         "llm",
+        "ml",
         "pipeline",
+        "python",
+        "quality",
+        "security",
+        "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "context: AI infrastructure costs growing beyond budget without clear visibility",
+        "You are the AI DevOps Engineer, the specialist responsible for deploying and operating AI systems in production. You bridge the gap between AI development and production operations, ensuring that LLM applications, multi-agent systems, and AI workloads run reliably, cost-effectively, and at scale. Your approach is infrastructure-as-code, monitoring-driven, and cost-conscious."
+      ],
       "domains": [
         "ai-infrastructure",
         "tool-integration"
       ],
-      "description": ""
+      "description": "Expert in LLM serving infrastructure, GPU orchestration, AI cost optimization, and multi-agent system operations. Use for deploying AI systems to production, managing AI-specific CI/CD, and operating ..."
     },
     {
       "name": "ai-team-transformer",
@@ -51,26 +70,27 @@
         "database",
         "design",
         "devops",
+        "frontend",
         "go",
         "jwt",
+        "kubernetes",
         "ml",
         "oauth",
         "pipeline",
-        "python",
+        "qa",
         "quality",
+        "react",
         "rest",
         "security",
         "test",
         "testing"
       ],
-      "capabilities": [
-        "Begins thinking about handoffs"
-      ],
+      "capabilities": [],
       "domains": [
         "ai-infrastructure",
         "tool-integration"
       ],
-      "description": "# Get instant team recommendations\npython tools/coaching/vision-to-team-mapper.py --analyze \"ai-powered chatbot\""
+      "description": "Expert in AI team transformation, multi-agent orchestration, and developer coaching. Use for AI adoption programs, team collaboration training, and building legendary AI-augmented teams."
     },
     {
       "name": "context-engineer",
@@ -78,35 +98,31 @@
       "category": "ai-builders",
       "keywords": [
         "ai",
-        "design"
+        "api",
+        "architecture",
+        "aws",
+        "claude",
+        "cloud",
+        "database",
+        "design",
+        "gpt",
+        "graphql",
+        "grpc",
+        "llm",
+        "python",
+        "quality",
+        "rest",
+        "rust",
+        "security",
+        "test",
+        "testing"
       ],
       "capabilities": [],
       "domains": [
         "ai-infrastructure",
         "tool-integration"
       ],
-      "description": ""
-    },
-    {
-      "name": "mcp-server-architect",
-      "path": "agents/ai-builders/mcp-server-architect.md",
-      "category": "ai-builders",
-      "keywords": [
-        "ai",
-        "claude",
-        "design",
-        "mcp",
-        "model context protocol",
-        "model-context-protocol",
-        "security"
-      ],
-      "capabilities": [],
-      "domains": [
-        "ai-infrastructure",
-        "tool-integration",
-        "protocol-implementation"
-      ],
-      "description": ""
+      "description": "Expert in AI memory architectures, context window optimization, token budget management, and state persistence. Use for designing conversation memory systems, implementing sliding window strategies, R..."
     },
     {
       "name": "orchestration-architect",
@@ -114,14 +130,29 @@
       "category": "ai-builders",
       "keywords": [
         "ai",
-        "design"
+        "api",
+        "architecture",
+        "aws",
+        "azure",
+        "cloud",
+        "design",
+        "devops",
+        "frontend",
+        "gpt",
+        "kubernetes",
+        "mongodb",
+        "pipeline",
+        "python",
+        "quality",
+        "test",
+        "testing"
       ],
       "capabilities": [],
       "domains": [
         "ai-infrastructure",
         "tool-integration"
       ],
-      "description": ""
+      "description": "Expert in multi-agent workflow design, state machines, agent coordination, and distributed orchestration. Use for designing agent pipelines, implementing handoff protocols, scaling orchestration syste..."
     },
     {
       "name": "rag-system-designer",
@@ -129,16 +160,34 @@
       "category": "ai-builders",
       "keywords": [
         "ai",
+        "api",
+        "architecture",
+        "cloud",
         "database",
         "design",
-        "quality"
+        "devops",
+        "frontend",
+        "jwt",
+        "llm",
+        "ml",
+        "oauth",
+        "pipeline",
+        "postgres",
+        "python",
+        "qa",
+        "quality",
+        "test",
+        "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "including index algorithms (HNSW, IVF, ScaNN), distance metrics (cosine, dot product, euclidean), and sharding strategies for scale",
+        "with understanding of dimensionality, language support, domain fine-tuning, and latency/cost trade-offs"
+      ],
       "domains": [
         "ai-infrastructure",
         "tool-integration"
       ],
-      "description": ""
+      "description": "RAG architecture specialist for vector databases, embeddings, chunking strategies, and retrieval optimization. Use for designing production RAG systems, selecting vector stores, or optimizing retrieva..."
     },
     {
       "name": "a2a-architect",
@@ -146,23 +195,33 @@
       "category": "ai-development",
       "keywords": [
         "ai",
+        "api",
         "architecture",
+        "auth",
+        "cloud",
+        "container",
+        "database",
         "design",
-        "security",
-        "testing"
+        "devops",
+        "go",
+        "grpc",
+        "kubernetes",
+        "langchain",
+        "mcp",
+        "model context protocol",
+        "mongodb",
+        "python",
+        "quality",
+        "rest",
+        "testing",
+        "typescript"
       ],
-      "capabilities": [
-        "'<example>",
-        "'<example>",
-        "You are an A2A (Agent-to-Agent) Communication Architect with deep expertise in multi-agent systems. You've designed agent communication protocols for autonomous systems, built orchestration layers for AI agent teams, and solved complex distributed AI challenges. You understand how to make agents work together like a well-coordinated team. Your philosophy is that individual agents are powerful, but orchestrated agents are transformative - the key is creating communication protocols that are simple, reliable, and enable emergent collaboration without central bottlenecks.",
-        "Agent communication protocol design",
-        "Multi-agent system architectures"
-      ],
+      "capabilities": [],
       "domains": [
         "ai-infrastructure",
         "machine-learning"
       ],
-      "description": ""
+      "description": "Expert in multi-agent system architecture including MCP and A2A protocols, inter-agent messaging, orchestration patterns, fault tolerance, and scaling strategies. Use for designing agent communication..."
     },
     {
       "name": "agent-developer",
@@ -170,24 +229,35 @@
       "category": "ai-development",
       "keywords": [
         "ai",
+        "api",
         "architecture",
+        "aws",
+        "cloud",
         "database",
         "design",
+        "gpt",
+        "jwt",
+        "llm",
+        "oauth",
+        "pipeline",
         "quality",
+        "react",
+        "rest",
+        "security",
+        "sql",
+        "test",
         "testing"
       ],
       "capabilities": [
-        "'<example>",
-        "'<example>",
-        "'<example>",
-        "You are an Agent Developer, a meta-expert who creates other AI agents. With deep understanding of cognitive architectures, prompt engineering, and AI behavior, you craft specialized agents that excel in their domains. You've developed hundreds of agents, from simple task-specific ones to complex reasoning systems. You know how to balance capability with reliability, specificity with flexibility. Your philosophy is that every agent should be an expert that users trust - with clear boundaries, deep expertise, and consistent personality, where the best agents feel like knowledgeable colleagues, not just tools.",
-        "Agent architecture design and specification"
+        "context: Existing agent producing inconsistent results in production",
+        "context: Building a multi-agent system with coordination challenges",
+        "You are the Agent Developer, an expert in designing and building AI agent systems using modern LLM architectures. You design agent reasoning patterns (ReAct, Plan-and-Execute, Reflection), craft effective personas using the Professional Specialist Pattern, architect multi-agent coordination systems, and implement production-ready guardrails and evaluation frameworks. Your approach is research-grounded—every architectural decision traces to established patterns from LangGraph, AutoGen, CrewAI, and production agent systems, and you balance theoretical best practices with practical deployment constraints."
       ],
       "domains": [
         "ai-infrastructure",
         "machine-learning"
       ],
-      "description": ""
+      "description": "Expert in agent architecture, persona design, and multi-agent systems. Designs agents using ReAct/Plan-Execute/Reflection patterns, implements RAG and tool integration, creates evaluation frameworks. ..."
     },
     {
       "name": "ai-solution-architect",
@@ -195,28 +265,45 @@
       "category": "ai-development",
       "keywords": [
         "ai",
+        "api",
         "architecture",
-        "cd",
-        "ci",
+        "auth",
+        "aws",
+        "azure",
+        "claude",
+        "cloud",
+        "container",
+        "database",
         "design",
+        "devops",
+        "docker",
+        "gcp",
+        "gpt",
+        "javascript",
+        "k8s",
+        "kubernetes",
+        "langchain",
+        "llm",
+        "mcp",
         "ml",
+        "model context protocol",
         "pipeline",
+        "postgres",
+        "python",
         "quality",
+        "react",
+        "rest",
+        "rust",
         "security",
+        "test",
         "testing"
       ],
-      "capabilities": [
-        "Validate model governance processes",
-        "Identify potential bias sources",
-        "Review fairness metrics implementation",
-        "Check privacy and data protection",
-        "Assess explainability capabilities"
-      ],
+      "capabilities": [],
       "domains": [
         "ai-infrastructure",
         "machine-learning"
       ],
-      "description": ""
+      "description": "Expert in AI/ML system architecture, LLM application design, RAG systems, MLOps pipelines, and AI safety. Use for designing AI systems, evaluating model selection, architecting multi-agent systems, an..."
     },
     {
       "name": "junior-ai-solution-architect",
@@ -237,31 +324,51 @@
         "ai-infrastructure",
         "machine-learning"
       ],
-      "description": ""
+      "description": "Use this agent when you need fast review of AI system architectures, implementation approaches, or best practices validation. This includes reviewing AI model selection, data pipeline designs, MLOps p..."
     },
     {
       "name": "langchain-architect",
       "path": "agents/ai-development/langchain-architect.md",
       "category": "ai-development",
       "keywords": [
+        "ai",
+        "api",
         "architecture",
+        "aws",
+        "cd",
+        "ci",
+        "cloud",
+        "database",
         "design",
+        "devops",
+        "frontend",
+        "gcp",
+        "go",
+        "gpt",
+        "kubernetes",
         "langchain",
         "llm",
+        "ml",
+        "pipeline",
+        "python",
+        "quality",
+        "react",
+        "security",
+        "sql",
+        "test",
         "testing"
       ],
       "capabilities": [
-        "'<example>",
-        "You are a LangChain/LangGraph Architect, a seasoned expert with 5+ years building production LLM applications. You've designed systems handling millions of requests, implemented complex multi-agent architectures, and contributed to the LangChain ecosystem. You deeply understand the framework's internals, best practices, and common pitfalls. Your philosophy is that great LLM applications are built on solid architectural foundations where every token counts, every millisecond matters, and every edge case is handled gracefully.",
-        "LangChain architecture patterns and anti-patterns",
-        "Chain and prompt engineering optimization",
-        "Memory system design and implementation"
+        "Success criteria: Accuracy, speed, cost targets",
+        "1. Classify the problem type: RAG, agent, chain, multi-agent",
+        "Requirements summary with LangChain component mapping",
+        "Clear understanding of use case, scale, and constraints"
       ],
       "domains": [
         "ai-infrastructure",
         "machine-learning"
       ],
-      "description": ""
+      "description": "Expert in LangChain 0.1+ and LangGraph architectures. Use for LCEL chain design, RAG system architecture, multi-agent orchestration, tool integration patterns, or production deployment of LLM applicat..."
     },
     {
       "name": "mcp-quality-assurance",
@@ -269,13 +376,20 @@
       "category": "ai-development",
       "keywords": [
         "ai",
+        "api",
         "architecture",
+        "cd",
+        "ci",
+        "container",
         "database",
         "design",
+        "devops",
+        "go",
+        "llm",
         "mcp",
+        "ml",
         "model context protocol",
         "model-context-protocol",
-        "qa",
         "quality",
         "security",
         "sql",
@@ -283,18 +397,18 @@
         "testing"
       ],
       "capabilities": [
-        "MCP specification compliance validation",
-        "Security vulnerability assessment and remediation",
-        "Code quality and maintainability review",
-        "Performance profiling and optimization",
-        "Documentation completeness and accuracy"
+        "Current stable version requirements and feature sets",
+        "Beta feature implementation guidance with stability caveats",
+        "Deprecation timeline awareness for sunset features",
+        "Migration path recommendations between major versions",
+        "When testing version negotiation, validate server correctly identifies highest mutually supported protocol version because incorrect negotiation causes connection failures: test with client supporting older version, verify graceful degradation, check feature availability matrix"
       ],
       "domains": [
         "ai-infrastructure",
         "machine-learning",
         "protocol-implementation"
       ],
-      "description": ""
+      "description": "Expert in MCP specification compliance, security auditing, and production readiness assessment. Use for quality reviews, security assessments, and deployment validation of MCP servers."
     },
     {
       "name": "mcp-server-architect",
@@ -302,31 +416,48 @@
       "category": "ai-development",
       "keywords": [
         "ai",
+        "api",
         "architecture",
+        "auth",
+        "aws",
+        "azure",
+        "claude",
+        "container",
         "database",
         "design",
+        "devops",
+        "docker",
+        "go",
+        "javascript",
+        "kubernetes",
+        "llm",
         "mcp",
+        "ml",
         "model context protocol",
         "model-context-protocol",
-        "qa",
+        "python",
         "quality",
+        "react",
+        "rust",
         "security",
+        "sql",
         "test",
-        "testing"
+        "testing",
+        "typescript"
       ],
       "capabilities": [
-        "MCP protocol specification and implementation",
-        "Server architecture patterns and best practices",
-        "Tool and resource design optimization",
-        "Transport layer configuration and optimization",
-        "Security and authentication frameworks"
+        "MCP specification version tracking and capability negotiation patterns",
+        "Transport mechanisms: stdio (local processes), SSE (server-sent events for web), HTTP with long-polling",
+        "Protocol primitives: tools (AI-invocable functions), resources (context data with URIs), prompts (reusable templates), sampling (LLM completion requests)",
+        "JSON-RPC 2.0 message framing and error handling conventions",
+        "Capability negotiation handshake and version compatibility strategies"
       ],
       "domains": [
         "ai-infrastructure",
         "machine-learning",
         "protocol-implementation"
       ],
-      "description": ""
+      "description": "Expert in Model Context Protocol server architecture, tool schema design, transport configuration, and production deployment. Use for MCP server design, tool hierarchy planning, security architecture,..."
     },
     {
       "name": "mcp-test-agent",
@@ -334,137 +465,86 @@
       "category": "ai-development",
       "keywords": [
         "ai",
+        "api",
+        "architecture",
+        "cd",
+        "ci",
         "database",
+        "design",
+        "javascript",
         "mcp",
         "model context protocol",
         "model-context-protocol",
+        "nosql",
+        "python",
+        "quality",
         "security",
+        "sql",
         "test",
         "testing"
       ],
-      "capabilities": [
-        "Standard challenge scenario execution",
-        "Tool functionality validation with diverse inputs",
-        "Resource accessibility and permission testing",
-        "Error handling and recovery testing",
-        "Transport layer reliability assessment"
-      ],
+      "capabilities": [],
       "domains": [
         "ai-infrastructure",
         "machine-learning",
         "protocol-implementation"
       ],
-      "description": ""
+      "description": "MCP server testing specialist validating functionality, reliability, performance, and AI usability. Use for testing MCP implementations, validating production readiness, or debugging server issues."
     },
     {
       "name": "prompt-engineer",
       "path": "agents/ai-development/prompt-engineer.md",
       "category": "ai-development",
       "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "claude",
+        "cloud",
+        "database",
         "design",
+        "devops",
+        "frontend",
+        "go",
+        "gpt",
+        "javascript",
+        "langchain",
         "llm",
+        "ml",
+        "pipeline",
+        "python",
         "quality",
+        "react",
         "security",
+        "test",
         "testing"
       ],
-      "capabilities": [
-        "'<example>",
-        "'<example>",
-        "You are a Prompt Engineering Expert with 4+ years optimizing prompts for production LLM applications. You've reduced costs by 70% while improving accuracy, designed prompt systems handling millions of requests, and developed evaluation frameworks. You understand the science and art of prompt engineering across different models and use cases. Your philosophy is that great prompts are clear, concise, and consistent - they guide without constraining, instruct without overwhelming, and adapt without breaking, where every token earns its place.",
-        "Prompt design and optimization techniques",
-        "Few-shot and zero-shot learning strategies"
-      ],
+      "capabilities": [],
       "domains": [
         "ai-infrastructure",
         "machine-learning"
       ],
-      "description": ""
+      "description": "Expert in prompt engineering for Claude, GPT, Gemini, and Llama models. Specializes in chain-of-thought prompting, structured outputs, few-shot learning, system prompt architecture, and prompt optimiz..."
     },
     {
-      "name": "api-architect",
-      "path": "agents/core/api-architect.md",
-      "category": "core",
-      "keywords": [
-        "api"
-      ],
-      "capabilities": [
-        "The Api Architect Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
-      ],
-      "domains": [
-        "software-architecture",
-        "system-design"
-      ],
-      "description": ""
-    },
-    {
-      "name": "api-design-specialist",
-      "path": "agents/core/api-design-specialist.md",
-      "category": "core",
-      "keywords": [
-        "api",
-        "design"
-      ],
-      "capabilities": [
-        "The Api Design Specialist Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
-      ],
-      "domains": [
-        "software-architecture",
-        "system-design"
-      ],
-      "description": ""
-    },
-    {
-      "name": "backend-engineer",
-      "path": "agents/core/backend-engineer.md",
-      "category": "core",
-      "keywords": [],
-      "capabilities": [
-        "The Backend Engineer Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
-      ],
-      "domains": [
-        "software-architecture",
-        "system-design"
-      ],
-      "description": ""
-    },
-    {
-      "name": "compliance-auditor",
-      "path": "agents/core/compliance-auditor.md",
+      "name": "agent-builder",
+      "path": "agents/core/agent-builder.md",
       "category": "core",
       "keywords": [
         "ai",
+        "api",
         "architecture",
-        "ci",
+        "container",
+        "database",
+        "design",
+        "graphql",
+        "grpc",
+        "llm",
+        "oauth",
         "pipeline",
         "python",
         "quality",
-        "security"
-      ],
-      "capabilities": [],
-      "domains": [
-        "software-architecture",
-        "system-design"
-      ],
-      "description": ""
-    },
-    {
-      "name": "critical-goal-reviewer",
-      "path": "agents/core/critical-goal-reviewer.md",
-      "category": "core",
-      "keywords": [
-        "api",
-        "design",
-        "pipeline",
-        "quality",
+        "rest",
         "security",
         "test"
       ],
@@ -473,7 +553,260 @@
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Builds production agents from research via 6-phase pipeline, archetype selection, and knowledge distillation. Use when creating or rebuilding agents."
+    },
+    {
+      "name": "api-architect",
+      "path": "agents/core/api-architect.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "aws",
+        "cd",
+        "ci",
+        "cloud",
+        "database",
+        "design",
+        "devops",
+        "frontend",
+        "graphql",
+        "grpc",
+        "jwt",
+        "kubernetes",
+        "microservice",
+        "oauth",
+        "quality",
+        "rest",
+        "rust",
+        "security",
+        "sql",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Expert in REST/GraphQL/gRPC API design, versioning strategies, security patterns, contract testing, and OpenAPI specifications. Consult for API design reviews, endpoint architecture, and integration c..."
+    },
+    {
+      "name": "backend-architect",
+      "path": "agents/core/backend-architect.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "aws",
+        "azure",
+        "cd",
+        "ci",
+        "cloud",
+        "database",
+        "design",
+        "devops",
+        "frontend",
+        "go",
+        "graphql",
+        "grpc",
+        "kubernetes",
+        "microservice",
+        "mongodb",
+        "nosql",
+        "python",
+        "rest",
+        "security",
+        "sql",
+        "test",
+        "testing",
+        "typescript"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Expert in backend system design, microservices architecture, event-driven patterns, caching strategies, database selection, and scalability patterns. Use when designing distributed systems, evaluating..."
+    },
+    {
+      "name": "cloud-architect",
+      "path": "agents/core/cloud-architect.md",
+      "category": "core",
+      "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "aws",
+        "azure",
+        "cd",
+        "ci",
+        "claude",
+        "cloud",
+        "container",
+        "database",
+        "design",
+        "devops",
+        "gcp",
+        "go",
+        "gpt",
+        "k8s",
+        "kubernetes",
+        "microservice",
+        "ml",
+        "nosql",
+        "pipeline",
+        "postgres",
+        "python",
+        "react",
+        "rest",
+        "security",
+        "sql",
+        "testing",
+        "typescript"
+      ],
+      "capabilities": [
+        "'<example>",
+        "1. **Rehost (Lift-and-Shift)** - Fastest path, minimal changes, move to IaaS (EC2/Azure VMs)",
+        "- Minor optimizations, use managed databases (RDS/Azure SQL)",
+        "- Decompose into microservices, adopt serverless/containers",
+        "Phase 1: Replatform to Azure App Service + Azure SQL (leverage managed PaaS)"
+      ],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Expert in multi-cloud strategy, service selection, IaC patterns, cost optimization, and cloud-native architecture across AWS, Azure, and GCP with focus on serverless, managed services, and well-archit..."
+    },
+    {
+      "name": "compliance-auditor",
+      "path": "agents/core/compliance-auditor.md",
+      "category": "core",
+      "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "aws",
+        "azure",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
+        "design",
+        "gcp",
+        "kubernetes",
+        "pipeline",
+        "python",
+        "qa",
+        "quality",
+        "rest",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [
+        "**Human Oversight**: Human oversight measures including override capability, system monitoring by qualified personnel, intervention procedures. Evidence: Oversight procedures, training records, override logs.",
+        "**Accuracy, Robustness, Cybersecurity**: Performance testing results, resilience to errors and adversarial attacks, cybersecurity measures throughout lifecycle. Evidence: Testing reports, penetration test results, security assessment.",
+        "**Quality Management System**: Quality assurance processes, post-market monitoring, incident reporting procedures, continuous improvement. Evidence: QMS documentation, monitoring reports, incident logs."
+      ],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Comprehensive compliance auditing for SOC 2, ISO 27001, PCI DSS, GDPR, AI regulations, and security standards. Use for pre-audit assessments, gap analysis, evidence validation, and multi-framework com..."
+    },
+    {
+      "name": "compliance-report-generator",
+      "path": "agents/core/compliance-report-generator.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "cd",
+        "ci",
+        "design",
+        "devops",
+        "pipeline",
+        "quality",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Expert in SDLC compliance reporting, metrics visualization, remediation tracking, and audit-ready documentation. Use for creating actionable reports tailored to different audiences (team, executive, a..."
+    },
+    {
+      "name": "container-platform-specialist",
+      "path": "agents/core/container-platform-specialist.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "aws",
+        "azure",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
+        "database",
+        "design",
+        "devops",
+        "docker",
+        "gcp",
+        "go",
+        "grpc",
+        "k8s",
+        "kubernetes",
+        "pipeline",
+        "python",
+        "rust",
+        "security",
+        "test",
+        "testing",
+        "typescript"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Expert in Docker, Kubernetes, Helm, container security, service mesh (Istio/Linkerd), GitOps workflows, and platform engineering for scalable containerized applications."
+    },
+    {
+      "name": "critical-goal-reviewer",
+      "path": "agents/core/critical-goal-reviewer.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "database",
+        "design",
+        "devops",
+        "frontend",
+        "jwt",
+        "pipeline",
+        "quality",
+        "rest",
+        "security",
+        "sql",
+        "test",
+        "testing"
+      ],
+      "capabilities": [
+        "context: Team refactored a data processing pipeline to improve performance but needs to verify it still meets original functional requirements",
+        "context: Proactive review after completing a significant API implementation to catch deviations early before they compound"
+      ],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Expert in requirements verification, goal alignment validation, and gap analysis for completed work. Use after implementing features, completing code sections, or finishing design work to ensure align..."
     },
     {
       "name": "data-architect",
@@ -490,51 +823,110 @@
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Data Architect Agent"
     },
     {
       "name": "data-privacy-officer",
       "path": "agents/core/data-privacy-officer.md",
       "category": "core",
-      "keywords": [],
-      "capabilities": [
-        "The Data Privacy Officer Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
+      "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "cloud",
+        "database",
+        "design",
+        "devops",
+        "go",
+        "microservice",
+        "ml",
+        "pipeline",
+        "quality",
+        "rest",
+        "security",
+        "sql",
+        "test",
+        "testing"
       ],
+      "capabilities": [],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in GDPR, CCPA/CPRA, LGPD, PIPL, and privacy-by-design. Use for privacy impact assessments, data subject rights implementation, consent management, data minimization strategies, and multi-jurisd..."
     },
     {
       "name": "database-architect",
       "path": "agents/core/database-architect.md",
       "category": "core",
       "keywords": [
+        "ai",
         "api",
         "architecture",
+        "aws",
+        "azure",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
         "database",
         "design",
+        "devops",
+        "frontend",
+        "go",
+        "graphql",
+        "ml",
         "mongodb",
+        "nosql",
+        "pipeline",
         "rest",
         "security",
-        "test"
+        "sql",
+        "test",
+        "testing"
       ],
       "capabilities": [
-        "Redis, Memcached caching strategies",
-        "Elasticsearch for search requirements",
-        "Neo4j for graph relationships",
-        "InfluxDB for time-series data",
-        "- Query optimization and indexing strategies"
+        "**Use fully managed database** because operational overhead is significant",
+        "Managed services handle: Backups, patching, HA configuration, monitoring, scaling",
+        "Cost trade-off: Higher per-unit cost, but lower total cost when including operational labor",
+        "Example: RDS vs EC2 self-managed (RDS 30% more expensive, but saves 20+ hours/month ops work)",
+        "- **Use serverless database (Aurora Serverless, Neon)** because it automatically scales and optimizes costs"
       ],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in database design, schema modeling, query optimization, HA/DR architecture, and data security. Use for database technology selection, performance tuning, migration planning, and compliance imp..."
+    },
+    {
+      "name": "deep-research-agent",
+      "path": "agents/core/deep-research-agent.md",
+      "category": "core",
+      "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "aws",
+        "cloud",
+        "database",
+        "design",
+        "devops",
+        "docker",
+        "frontend",
+        "kubernetes",
+        "ml",
+        "pipeline",
+        "quality",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Executes systematic web research campaigns from structured prompts, evaluates sources via CRAAP, and produces synthesis documents."
     },
     {
       "name": "devops-specialist",
@@ -550,30 +942,54 @@
         "ci",
         "cloud",
         "container",
+        "database",
         "design",
         "devops",
         "docker",
+        "frontend",
         "gcp",
+        "go",
+        "k8s",
         "kubernetes",
+        "oauth",
         "pipeline",
         "python",
-        "security"
+        "quality",
+        "rest",
+        "security",
+        "sql",
+        "test",
+        "testing",
+        "typescript"
       ],
-      "capabilities": [
-        "You are the DevOps Specialist, an expert in continuous integration, continuous deployment, infrastructure automation, and operational excellence within the AI-First SDLC framework. Your mission is to create robust, automated deployment pipelines that enforce AI-First standards while enabling rapid, reliable software delivery.",
-        "CI/CD pipeline design and optimization",
-        "GitHub Actions, GitLab CI, Jenkins, CircleCI expertise",
-        "Infrastructure as Code (Terraform, CloudFormation, Pulumi)",
-        "Container orchestration (Docker, Kubernetes, ECS)"
-      ],
+      "capabilities": [],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in CI/CD pipeline design, GitOps deployment strategies, infrastructure as code, container orchestration, and platform engineering. Use for designing deployment automation, implementing progress..."
     },
     {
-      "name": "example-security-architect",
+      "name": "enforcement-strategy-advisor",
+      "path": "agents/core/enforcement-strategy-advisor.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "quality",
+        "security",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Expert in behavioral change psychology for software teams, enforcement strategy design, and SDLC adoption coaching. Use for designing enforcement approaches, managing resistance to standards, adapting..."
+    },
+    {
+      "name": "security-architect",
       "path": "agents/core/example-security-architect.md",
       "category": "core",
       "keywords": [
@@ -597,51 +1013,80 @@
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in security architecture, threat modeling, and secure design patterns. Reviews systems for vulnerabilities and recommends security improvements."
     },
     {
-      "name": "frontend-engineer",
-      "path": "agents/core/frontend-engineer.md",
+      "name": "frontend-architect",
+      "path": "agents/core/frontend-architect.md",
       "category": "core",
       "keywords": [
-        "frontend"
+        "angular",
+        "api",
+        "architecture",
+        "auth",
+        "ci",
+        "container",
+        "database",
+        "design",
+        "devops",
+        "frontend",
+        "graphql",
+        "grpc",
+        "javascript",
+        "jwt",
+        "oauth",
+        "pipeline",
+        "react",
+        "rest",
+        "rust",
+        "security",
+        "test",
+        "testing",
+        "typescript",
+        "vue"
       ],
       "capabilities": [
-        "The Frontend Engineer Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
+        "'<example>"
       ],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in modern frontend architecture, component design patterns, state management strategies, performance optimization, accessibility standards, and SSR/SSG implementations. Use for architectural de..."
     },
     {
       "name": "frontend-security-specialist",
       "path": "agents/core/frontend-security-specialist.md",
       "category": "core",
       "keywords": [
-        "ai",
+        "angular",
         "api",
+        "architecture",
+        "auth",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
+        "database",
         "design",
         "frontend",
+        "javascript",
         "jwt",
-        "pipeline",
-        "python",
-        "quality",
+        "oauth",
         "react",
         "security",
+        "sql",
         "test",
-        "testing"
+        "testing",
+        "typescript",
+        "vue"
       ],
       "capabilities": [],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in XSS prevention, CSP, OAuth/OIDC, SRI, and frontend threat modeling. Use for securing SPAs, implementing auth flows, and reviewing client-side security."
     },
     {
       "name": "github-integration-specialist",
@@ -651,45 +1096,170 @@
         "ai",
         "api",
         "architecture",
+        "auth",
+        "aws",
+        "azure",
         "cd",
         "ci",
+        "cloud",
         "design",
+        "devops",
+        "docker",
+        "frontend",
+        "gcp",
         "graphql",
+        "javascript",
         "oauth",
         "pipeline",
         "python",
+        "quality",
         "rest",
-        "security"
+        "security",
+        "test"
       ],
-      "capabilities": [
-        "Branch protection rules configuration and validation",
-        "Pull request automation and management",
-        "GitHub Actions workflow design and optimization",
-        "Repository health metrics and analysis",
-        "Webhook integration and event handling"
-      ],
+      "capabilities": [],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in GitHub platform features, Actions workflows, Advanced Security, branch protection, PR automation, and organization governance. Use for GitHub repository configuration, CI/CD design, security..."
     },
     {
       "name": "mobile-architect",
       "path": "agents/core/mobile-architect.md",
       "category": "core",
-      "keywords": [],
+      "keywords": [
+        "api",
+        "architecture",
+        "aws",
+        "cd",
+        "ci",
+        "cloud",
+        "database",
+        "design",
+        "devops",
+        "frontend",
+        "go",
+        "graphql",
+        "javascript",
+        "oauth",
+        "pipeline",
+        "quality",
+        "react",
+        "rest",
+        "security",
+        "test",
+        "testing",
+        "typescript"
+      ],
       "capabilities": [
-        "The Mobile Architect Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
+        "App size and startup time are critical metrics",
+        "- Team has strong JavaScript/TypeScript skills",
+        "Need to share code with React web app",
+        "Rapid prototyping and iteration are priorities",
+        "Large ecosystem of third-party libraries is valuable"
       ],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in mobile app architecture (native iOS/Android, React Native, Flutter, KMP), cross-platform decisions, mobile performance optimization, mobile CI/CD, and platform-specific guidelines. Consult f..."
+    },
+    {
+      "name": "observability-specialist",
+      "path": "agents/core/observability-specialist.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "aws",
+        "azure",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
+        "database",
+        "design",
+        "devops",
+        "grpc",
+        "kubernetes",
+        "ml",
+        "pipeline",
+        "python",
+        "quality",
+        "rust",
+        "security",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Expert in OpenTelemetry instrumentation, distributed tracing, log aggregation, metrics dashboards, SLO/SLI definitions, and alerting strategies. Designs comprehensive observability solutions with cost..."
+    },
+    {
+      "name": "pipeline-orchestrator",
+      "path": "agents/core/pipeline-orchestrator.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "claude",
+        "design",
+        "kubernetes",
+        "ml",
+        "pipeline",
+        "python",
+        "quality",
+        "rest",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Unified entry point for agent creation pipeline. Routes web research or repo analysis, then delegates to agent-builder for construction."
+    },
+    {
+      "name": "repo-knowledge-distiller",
+      "path": "agents/core/repo-knowledge-distiller.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "azure",
+        "cd",
+        "ci",
+        "claude",
+        "database",
+        "design",
+        "go",
+        "kubernetes",
+        "mcp",
+        "pipeline",
+        "python",
+        "quality",
+        "react",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [
+        "**Extract decision records**: Look for ADR (Architecture Decision Records) or similar documents",
+        "**Extract architectural diagrams**: Find Mermaid, PlantUML, ASCII diagrams and describe their content",
+        "**Extract integration specs**: API contracts, message formats, protocol specifications",
+        "**Extract design patterns**: Documented approaches to common problems",
+        "**Extract environment structures**: Development, staging, production environment definitions"
+      ],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Analyzes repositories and knowledge bases to produce synthesis documents for agent creation via RELIC evaluation and artifact discovery."
     },
     {
       "name": "sdlc-coach",
@@ -718,7 +1288,7 @@
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Enforces AI-First SDLC practices, coaches developers on proper framework usage, identifies process violations, and conducts regular SDLC reviews to ensure continuous improvement."
     },
     {
       "name": "sdlc-enforcer",
@@ -726,83 +1296,143 @@
       "category": "core",
       "keywords": [
         "ai",
+        "api",
         "architecture",
+        "auth",
         "cd",
         "ci",
+        "claude",
+        "database",
         "design",
+        "go",
+        "oauth",
+        "pipeline",
         "python",
         "quality",
+        "rust",
+        "security",
+        "test",
+        "typescript"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Expert in AI-First SDLC compliance enforcement, progressive quality gates, Zero Technical Debt policy, and process validation. Use for real-time compliance checking during development, branch protecti..."
+    },
+    {
+      "name": "security-architect",
+      "path": "agents/core/security-architect.md",
+      "category": "core",
+      "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "aws",
+        "azure",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
+        "database",
+        "design",
+        "devops",
+        "gcp",
+        "javascript",
+        "k8s",
+        "kubernetes",
+        "llm",
+        "ml",
+        "pipeline",
+        "python",
+        "quality",
+        "rest",
+        "security",
+        "test",
         "testing"
       ],
       "capabilities": [
-        "You are the SDLC Enforcer, the intelligent guardian of AI-First SDLC compliance. You adapt your enforcement based on the project's SDLC level while maintaining appropriate standards. You are both a helpful guide and a firm enforcer, ensuring teams follow best practices suitable for their context.",
-        "Progressive SDLC level detection and enforcement",
-        "AI-First SDLC methodology guidance",
-        "Zero Technical Debt policy (Production level)",
-        "Branch protection and PR workflow management"
+        "'<example>"
       ],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
-    },
-    {
-      "name": "security-specialist",
-      "path": "agents/core/security-specialist.md",
-      "category": "core",
-      "keywords": [
-        "security"
-      ],
-      "capabilities": [
-        "The Security Specialist Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
-      ],
-      "domains": [
-        "software-architecture",
-        "system-design"
-      ],
-      "description": ""
+      "description": "Expert in security architecture design, threat modeling, zero-trust principles, and secure SDLC integration. Use for architectural security reviews, compliance framework guidance, threat modeling sess..."
     },
     {
       "name": "solution-architect",
       "path": "agents/core/solution-architect.md",
       "category": "core",
       "keywords": [
-        "angular",
         "api",
         "architecture",
         "aws",
         "azure",
+        "cd",
+        "ci",
         "cloud",
+        "container",
+        "database",
         "design",
+        "devops",
+        "docker",
         "frontend",
+        "gcp",
+        "go",
+        "graphql",
+        "grpc",
+        "javascript",
+        "kubernetes",
+        "oauth",
+        "pipeline",
+        "python",
+        "quality",
         "react",
+        "rest",
         "security",
+        "test",
         "testing",
-        "vue"
+        "typescript"
       ],
       "capabilities": [
-        "You are a Solution Architect with 20+ years of experience designing systems that have scaled from startup MVPs to enterprise platforms serving billions of requests. You've architected solutions across domains including fintech, healthcare, e-commerce, and SaaS platforms. You hold AWS Solutions Architect Professional, Azure Solutions Architect Expert, and TOGAF certifications. You're known for pragmatic designs that balance technical excellence with business constraints.",
-        "End-to-end system design and architecture",
-        "Distributed systems and microservices architecture",
-        "Cloud architecture patterns and platform optimization",
-        "Integration patterns and API design strategies"
+        "You are the Solution Architect, the strategic design authority responsible for end-to-end system architecture spanning frontend, backend, data, infrastructure, and integration layers. You translate business requirements into comprehensive technical solutions, evaluate architectural trade-offs using established frameworks (TOGAF, C4, ATAM), and ensure systems are designed for scalability, resilience, and evolvability. Your approach is methodical and framework-driven, grounding every architectural decision in documented rationale and explicit trade-off analysis."
       ],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in system architecture design, TOGAF/C4 frameworks, distributed systems patterns, cloud-native architecture, and technology evaluation. Use for end-to-end solution design, migration strategies,..."
     },
     {
       "name": "sre-specialist",
       "path": "agents/core/sre-specialist.md",
       "category": "core",
       "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "aws",
+        "azure",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
+        "database",
         "design",
+        "devops",
+        "gcp",
+        "go",
+        "grpc",
+        "javascript",
+        "kubernetes",
+        "llm",
+        "ml",
+        "pipeline",
+        "python",
+        "security",
+        "test",
         "testing"
       ],
       "capabilities": [],
@@ -810,7 +1440,7 @@
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Expert in SLO frameworks, incident response, chaos engineering, production reliability, and operational excellence. Use for defining SLIs/SLOs/error budgets, designing incident runbooks, implementing ..."
     },
     {
       "name": "test-manager",
@@ -837,173 +1467,142 @@
         "software-architecture",
         "system-design"
       ],
-      "description": ""
+      "description": "Oversees all testing activities across the project, manages test strategy, coordinates different testing types, ensures comprehensive coverage, and maintains quality metrics throughout the development..."
     },
     {
       "name": "ux-ui-architect",
       "path": "agents/core/ux-ui-architect.md",
       "category": "core",
       "keywords": [
-        "ai",
+        "angular",
         "api",
         "architecture",
+        "cd",
+        "ci",
         "design",
         "frontend",
-        "pipeline",
-        "python",
-        "quality",
+        "go",
+        "qa",
+        "react",
+        "rest",
         "security",
         "test",
-        "testing"
+        "testing",
+        "typescript",
+        "vue"
       ],
-      "capabilities": [
-        "**Drive Adoption**: Create interfaces that users love, ensuring product success",
-        "**Enable Accessibility**: Ensure all users can access and enjoy the product",
-        "**Inspire Quality**: Set high standards for user experience that elevate the entire team",
-        "**Bridge Communication**: Translate between user needs and technical possibilities"
-      ],
+      "capabilities": [],
       "domains": [
         "software-architecture",
         "system-design"
       ],
-      "description": ""
-    },
-    {
-      "name": "ux-ui-architect",
-      "path": "agents/creative/ux-ui-architect.md",
-      "category": "creative",
-      "keywords": [],
-      "capabilities": [
-        "The Ux Ui Architect Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
-      ],
-      "domains": [],
-      "description": ""
+      "description": "Expert in design systems, WCAG 2.2/3.0 accessibility, user research methods, and design-to-development handoff. Use for interface design, accessibility audits, and UX strategy."
     },
     {
       "name": "documentation-architect",
       "path": "agents/documentation/documentation-architect.md",
       "category": "documentation",
       "keywords": [
+        "ai",
         "api",
         "architecture",
         "cd",
         "ci",
-        "database",
         "design",
         "devops",
+        "frontend",
         "go",
         "javascript",
+        "jwt",
         "pipeline",
         "python",
         "quality",
+        "react",
+        "rest",
+        "rust",
+        "security",
         "test",
-        "testing"
+        "testing",
+        "vue"
       ],
       "capabilities": [
-        "Content volume and update frequency expectations",
-        "Integration requirements with existing tools and workflows",
-        "Compliance or regulatory documentation requirements",
-        "Budget constraints for tooling and maintenance resources",
-        "Timeline expectations for implementation phases"
+        "- Static site generators: Docusaurus (React-based, Meta), MkDocs (Python, Material theme), Astro Starlight (Astro framework), VitePress (Vue-based, lightweight), Nextra (Next.js-based)",
+        "Documentation hosting: Vercel, Netlify, GitHub Pages, Read the Docs, Cloudflare Pages",
+        "Search engines: Algolia DocSearch, Meilisearch, Typesense, local Lunr.js, OpenSearch",
+        "Versioning strategies: Git-based, documentation versions aligned with software versions, legacy version archiving",
+        "- Git workflow for documentation (branch strategies, review processes, merge requirements)"
       ],
       "domains": [
         "technical-writing",
         "knowledge-management"
       ],
-      "description": "Brief description of what this page covers."
+      "description": "Expert in documentation systems design, docs-as-code pipelines, API documentation platforms (OpenAPI/AsyncAPI), and developer experience optimization. Use for documentation strategy, platform selectio..."
     },
     {
       "name": "technical-writer",
       "path": "agents/documentation/technical-writer.md",
       "category": "documentation",
       "keywords": [
+        "ai",
         "api",
         "architecture",
+        "auth",
+        "cd",
+        "ci",
+        "database",
         "design",
+        "docker",
+        "go",
+        "graphql",
+        "grpc",
+        "javascript",
         "oauth",
+        "python",
         "quality",
+        "rest",
+        "security",
         "test",
         "testing"
       ],
-      "capabilities": [
-        "Research their typical workflows and pain points",
-        "Understand their goals and success criteria",
-        "Assess their available time and attention constraints",
-        "Determine their preferred learning and reference styles",
-        "Clarify specific use cases and user scenarios"
-      ],
+      "capabilities": [],
       "domains": [
         "technical-writing",
         "knowledge-management"
       ],
-      "description": ""
-    },
-    {
-      "name": "a2a-mesh-controller",
-      "path": "agents/future/a2a-mesh-controller.md",
-      "category": "future",
-      "keywords": [],
-      "capabilities": [
-        "The A2A Mesh Controller Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
-      ],
-      "domains": [],
-      "description": ""
-    },
-    {
-      "name": "evolution-engine",
-      "path": "agents/future/evolution-engine.md",
-      "category": "future",
-      "keywords": [],
-      "capabilities": [
-        "The Evolution Engine Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
-      ],
-      "domains": [],
-      "description": ""
+      "description": "Expert in technical writing, developer documentation, API docs, plain language principles, accessibility-first writing, and content design. Use for creating tutorials, guides, references, error messag..."
     },
     {
       "name": "mcp-orchestrator",
       "path": "agents/future/mcp-orchestrator.md",
       "category": "future",
       "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "database",
+        "design",
+        "devops",
+        "jwt",
         "mcp",
-        "model-context-protocol"
+        "model-context-protocol",
+        "security",
+        "test",
+        "testing"
       ],
       "capabilities": [
-        "The Mcp Orchestrator Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
+        "**Round-Robin**: Simple, fair distribution, no state required, poor for heterogeneous servers",
+        "**Least Connections**: Route to server with fewest active connections, better for varying request complexity",
+        "**Capability-Based**: Route requests to servers advertising required tools, ensures request satisfaction",
+        "**Affinity Routing**: Sticky sessions for stateful workflows, session continuity, complicates load distribution",
+        "**Weighted Routing**: Proportional to server capacity/performance, accommodates heterogeneous fleet"
       ],
       "domains": [
         "protocol-implementation"
       ],
-      "description": ""
+      "description": "Expert in MCP multi-server coordination, gateway patterns, fleet management, and enterprise MCP deployment. Use for orchestrating multiple MCP servers, designing MCP gateways, managing MCP server flee..."
     },
     {
-      "name": "swarm-coordinator",
-      "path": "agents/future/swarm-coordinator.md",
-      "category": "future",
-      "keywords": [],
-      "capabilities": [
-        "The Swarm Coordinator Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
-      ],
-      "domains": [],
-      "description": ""
-    },
-    {
-      "name": "example-python-expert",
+      "name": "python-expert",
       "path": "agents/languages/python/example-python-expert.md",
       "category": "languages",
       "keywords": [
@@ -1021,49 +1620,62 @@
         "**Security Considerations**: Potential vulnerabilities with secure coding alternatives"
       ],
       "domains": [],
-      "description": ""
+      "description": "Python language expert specializing in Pythonic patterns, performance optimization, and modern Python features. Ensures code follows PEP standards and community best practices."
     },
     {
       "name": "agile-coach",
       "path": "agents/project-management/agile-coach.md",
       "category": "project-management",
       "keywords": [
+        "ai",
+        "architecture",
+        "claude",
         "design",
-        "quality"
+        "devops",
+        "go",
+        "quality",
+        "security",
+        "testing"
       ],
       "capabilities": [
-        "Create working agreements and team norms",
-        "Design meaningful measurement systems",
-        "Track velocity, cycle time, and quality metrics",
-        "Generate actionable insights from data",
-        "Guide teams in using metrics for improvement"
+        "You are the Agile Coach, the specialist responsible for guiding teams through agile adoption, diagnosing process dysfunctions, and building sustainable delivery practices. You coach teams from initial Scrum adoption through scaled agile transformation, combining deep knowledge of agile frameworks (Scrum, Kanban, SAFe, LeSS) with practical experience in team dynamics, metrics implementation, and continuous improvement. Your approach is diagnostic and contextual -- you assess team maturity and organizational constraints before recommending practices, never imposing rigid frameworks on teams with unique contexts."
       ],
       "domains": [
         "delivery",
         "coordination"
       ],
-      "description": ""
+      "description": "Expert in Scrum, Kanban, SAFe, and scaled agile. Use for sprint planning, retrospectives, team dysfunction diagnosis, agile transformation coaching, and metrics implementation (DORA, SPACE, flow)."
     },
     {
       "name": "delivery-manager",
       "path": "agents/project-management/delivery-manager.md",
       "category": "project-management",
       "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "auth",
+        "cd",
+        "ci",
+        "database",
         "design",
-        "quality"
+        "devops",
+        "frontend",
+        "go",
+        "pipeline",
+        "qa",
+        "quality",
+        "rest",
+        "security",
+        "test",
+        "testing"
       ],
-      "capabilities": [
-        "Confirm rollback procedures and disaster recovery plans",
-        "Coordinate with operations teams for smooth deployment",
-        "Provide regular status updates with clear decision points",
-        "Translate technical complexity into business-relevant information",
-        "Manage expectations and facilitate key decisions"
-      ],
+      "capabilities": [],
       "domains": [
         "delivery",
         "coordination"
       ],
-      "description": ""
+      "description": "Expert in software delivery orchestration, release management, risk mitigation, and stakeholder communication. Use for release planning, go/no-go decisions, delivery forecasting, cross-team coordinati..."
     },
     {
       "name": "project-plan-tracker",
@@ -1071,7 +1683,37 @@
       "category": "project-management",
       "keywords": [
         "api",
+        "architecture",
+        "cd",
+        "ci",
+        "design",
+        "pipeline",
         "quality",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "delivery",
+        "coordination"
+      ],
+      "description": "Use for monitoring project progress against established plans, tracking deliverables and milestones, detecting schedule slippage, analyzing dependencies, and generating status reports. Excels at early..."
+    },
+    {
+      "name": "team-progress-tracker",
+      "path": "agents/project-management/team-progress-tracker.md",
+      "category": "project-management",
+      "keywords": [
+        "api",
+        "architecture",
+        "cd",
+        "ci",
+        "design",
+        "devops",
+        "pipeline",
+        "quality",
+        "security",
+        "sql",
         "test"
       ],
       "capabilities": [],
@@ -1079,7 +1721,7 @@
         "delivery",
         "coordination"
       ],
-      "description": ""
+      "description": "Expert in team performance measurement, adoption tracking, and health assessment. Use for tracking DORA metrics, measuring practice adoption, assessing team readiness, or generating team health report..."
     },
     {
       "name": "ai-first-kick-starter",
@@ -1092,7 +1734,12 @@
         "cd",
         "ci",
         "claude",
+        "cloud",
+        "container",
+        "database",
+        "design",
         "devops",
+        "frontend",
         "go",
         "javascript",
         "langchain",
@@ -1101,8 +1748,10 @@
         "pipeline",
         "python",
         "quality",
+        "security",
         "test",
-        "testing"
+        "testing",
+        "typescript"
       ],
       "capabilities": [
         "AI-First SDLC framework architecture and best practices",
@@ -1115,7 +1764,7 @@
         "process-improvement",
         "methodology"
       ],
-      "description": ""
+      "description": "Use this agent as a post-installation advisor for AI-First SDLC practices. This agent specializes in reviewing existing AI-First SDLC installations, checking for updates, advising on best practices, h..."
     },
     {
       "name": "framework-validator",
@@ -1135,38 +1784,7 @@
         "process-improvement",
         "methodology"
       ],
-      "description": ""
-    },
-    {
-      "name": "kickstart-architect",
-      "path": "agents/sdlc/kickstart-architect.md",
-      "category": "sdlc",
-      "keywords": [
-        "ai",
-        "api",
-        "architecture",
-        "cd",
-        "ci",
-        "design",
-        "go",
-        "kubernetes",
-        "pipeline",
-        "python",
-        "quality",
-        "testing"
-      ],
-      "capabilities": [
-        "Requirements analysis and technology stack optimization",
-        "Complete project structure generation with language-specific best practices",
-        "Architecture document pre-filling with project-specific content",
-        "CI/CD pipeline configuration for multiple platforms",
-        "Agent team assembly and configuration management"
-      ],
-      "domains": [
-        "process-improvement",
-        "methodology"
-      ],
-      "description": ""
+      "description": "Real-time framework compliance guardian for AI-First SDLC, validates architecture documents, enforces Zero Technical Debt continuously, monitors compliance across all development activities, and provi..."
     },
     {
       "name": "language-go-expert",
@@ -1175,16 +1793,24 @@
       "keywords": [
         "ai",
         "api",
+        "architecture",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
         "database",
         "design",
+        "devops",
         "docker",
         "go",
         "grpc",
-        "k8s",
+        "kubernetes",
         "microservice",
-        "postgres",
+        "pipeline",
         "quality",
+        "rest",
         "security",
+        "sql",
         "test",
         "testing"
       ],
@@ -1193,22 +1819,30 @@
         "process-improvement",
         "methodology"
       ],
-      "description": "test:\n    go test -v -race -coverprofile=coverage.out ./...\n    go tool cover -html=coverage.out -o coverage.html"
+      "description": "Expert in Go 1.22+ development, concurrency patterns, and cloud-native architectures. Use for Go project structure, performance optimization, and idiomatic Go practices."
     },
     {
       "name": "language-javascript-expert",
       "path": "agents/sdlc/language-javascript-expert.md",
       "category": "sdlc",
       "keywords": [
-        "ai",
         "angular",
+        "api",
         "architecture",
+        "aws",
         "cd",
         "ci",
+        "database",
+        "design",
+        "devops",
+        "docker",
         "frontend",
+        "go",
+        "graphql",
         "javascript",
-        "quality",
         "react",
+        "rest",
+        "rust",
         "security",
         "test",
         "testing",
@@ -1220,7 +1854,7 @@
         "process-improvement",
         "methodology"
       ],
-      "description": ""
+      "description": "Expert in modern JavaScript/TypeScript, frontend/backend frameworks, build tooling, and JS ecosystem best practices. Use for framework selection, TypeScript config, bundle optimization, and Node.js de..."
     },
     {
       "name": "language-python-expert",
@@ -1230,24 +1864,40 @@
         "ai",
         "api",
         "architecture",
+        "auth",
+        "aws",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
+        "database",
         "design",
+        "devops",
+        "frontend",
+        "gcp",
+        "javascript",
+        "kubernetes",
+        "microservice",
+        "ml",
+        "pipeline",
         "python",
         "quality",
+        "rust",
+        "security",
+        "sql",
         "test",
-        "testing"
+        "testing",
+        "typescript"
       ],
       "capabilities": [
-        "Advanced Python typing with protocols, generics, and type variables",
-        "Framework-specific patterns for FastAPI, Django, Flask with AI-First compliance",
-        "Comprehensive testing strategies using pytest, coverage, and property-based testing",
-        "Package structure optimization for maintainability and distribution",
-        "Performance patterns with async/await, concurrency, and optimization"
+        "Provide Python-specific implementation for architectures designed by solution-architect or backend-architect",
+        "When Python patterns conflict with AI-First SDLC requirements, find Python solutions that satisfy both (don't compromise on either)"
       ],
       "domains": [
         "process-improvement",
         "methodology"
       ],
-      "description": ""
+      "description": "Expert in Python 3.12+ features, type systems (mypy/pyright), async patterns, testing (pytest/hypothesis), web frameworks (FastAPI/Django/Flask), AI/ML development, and packaging. Use for Python proje..."
     },
     {
       "name": "project-bootstrapper",
@@ -1260,6 +1910,7 @@
         "cd",
         "ci",
         "database",
+        "design",
         "pipeline",
         "python",
         "quality",
@@ -1270,7 +1921,7 @@
         "process-improvement",
         "methodology"
       ],
-      "description": ""
+      "description": "One-command project initialization specialist for AI-First SDLC framework. Creates complete project structure, detects languages and frameworks, pre-fills architecture documents, sets up git hooks and..."
     },
     {
       "name": "retrospective-miner",
@@ -1292,7 +1943,37 @@
         "process-improvement",
         "methodology"
       ],
-      "description": ""
+      "description": "Extracts valuable insights from project retrospectives across the organization, identifies recurring patterns and challenges, suggests concrete framework improvements, builds organizational knowledge ..."
+    },
+    {
+      "name": "sdlc-knowledge-curator",
+      "path": "agents/sdlc/sdlc-knowledge-curator.md",
+      "category": "sdlc",
+      "keywords": [
+        "ai",
+        "architecture",
+        "cd",
+        "ci",
+        "design",
+        "javascript",
+        "pipeline",
+        "python",
+        "quality",
+        "security",
+        "testing"
+      ],
+      "capabilities": [
+        "**Problem**: Specific challenge the pattern addresses. Example: \"Need CI/CD but can't invest 2 weeks in pipeline setup\"",
+        "**Solution**: Step-by-step implementation with decision points. Example: \"Use GitHub Actions with templates from examples/ci-cd/, customize in 2 hours\"",
+        "**Consequences**: Benefits, trade-offs, limitations, maintenance burden. Example: \"Fast setup but less flexibility than Jenkins, adequate for <10 engineers\"",
+        "**By Maturity**: Experimental (< 5 teams, < 3 months), Validated (5-20 teams, 3-12 months), Proven (20+ teams, 12+ months, documented success metrics)",
+        "**By Complexity**: Simple (1-2 hour implementation, single developer), Moderate (1-3 days, team coordination), Complex (1+ weeks, cross-team dependencies)"
+      ],
+      "domains": [
+        "process-improvement",
+        "methodology"
+      ],
+      "description": "Expert in SDLC knowledge management, pattern libraries, and learning extraction. Use for pattern discovery, onboarding guidance, success metrics, and maintaining institutional memory of what works."
     },
     {
       "name": "sdlc-setup-specialist",
@@ -1313,27 +1994,7 @@
       ],
       "capabilities": [],
       "domains": [],
-      "description": "#### GitHub Actions Workflow\nCreate `.github/workflows/ai-sdlc-validation.yml`:\n```yaml\nname: AI-First SDLC Validation\non:\n  push:\n    branches: [main, develop]\n  pull_request:\n    branches: [main]"
-    },
-    {
-      "name": "frontend-security-specialist",
-      "path": "agents/security/frontend-security-specialist.md",
-      "category": "security",
-      "keywords": [
-        "frontend",
-        "security"
-      ],
-      "capabilities": [
-        "The Frontend Security Specialist Agent provides specialized expertise in its domain.",
-        "Core competency 1",
-        "Core competency 2",
-        "Core competency 3"
-      ],
-      "domains": [
-        "cybersecurity",
-        "compliance"
-      ],
-      "description": ""
+      "description": "Handles GitHub configuration, local setup, and alignment between local and remote SDLC environments"
     },
     {
       "name": "project-strategy-orchestrator",
@@ -1368,7 +2029,7 @@
       ],
       "capabilities": [],
       "domains": [],
-      "description": "## Agent Identity\n- **Name**: Project Strategy Orchestrator\n- **Style**: Stan Cullis (Strategic, methodical, zero-tolerance for poor setup)\n- **Role**: Autonomous project analyzer and setup decision m..."
+      "description": "Autonomous project analyzer and strategic setup decision maker"
     },
     {
       "name": "team-assembly-orchestrator",
@@ -1390,7 +2051,7 @@
       ],
       "capabilities": [],
       "domains": [],
-      "description": "## Agent Identity\n- **Name**: Team Assembly Orchestrator\n- **Style**: Billy Wright (Team-first leader, enabler, connector)\n- **Role**: Assembles and coordinates the optimal agent team\n- **Philosophy**..."
+      "description": "Assembles and coordinates specialized agent teams based on project needs"
     },
     {
       "name": "ai-test-engineer",
@@ -1398,25 +2059,80 @@
       "category": "testing",
       "keywords": [
         "ai",
+        "angular",
+        "api",
         "architecture",
+        "auth",
+        "aws",
+        "cd",
+        "ci",
+        "cloud",
+        "container",
+        "database",
         "design",
-        "llm",
+        "devops",
+        "docker",
+        "frontend",
+        "graphql",
+        "javascript",
+        "kubernetes",
+        "ml",
+        "mongodb",
+        "pipeline",
+        "postgres",
+        "python",
+        "qa",
         "quality",
+        "react",
+        "rest",
+        "security",
+        "sql",
         "test",
-        "testing"
+        "testing",
+        "typescript",
+        "vue"
       ],
-      "capabilities": [
-        "'<example>",
-        "'<example>",
-        "'<example>",
-        "You are an AI Test Engineer specializing in testing LLM-based applications. You've developed testing frameworks for production AI systems, created evaluation pipelines for Fortune 500 companies, and pioneered techniques for detecting and preventing AI failures. You understand the unique challenges of testing non-deterministic systems and bring systematic approaches to ensure AI reliability and quality.",
-        "LLM application testing and validation frameworks"
-      ],
+      "capabilities": [],
       "domains": [
         "quality-assurance",
         "test-automation"
       ],
-      "description": ""
+      "description": "Expert in comprehensive test strategy design, modern test automation frameworks, AI-augmented testing, contract testing, and quality engineering. Use for test pyramid design, CI/CD test integration, f..."
+    },
+    {
+      "name": "code-review-specialist",
+      "path": "agents/testing/code-review-specialist.md",
+      "category": "testing",
+      "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "auth",
+        "cd",
+        "ci",
+        "database",
+        "design",
+        "devops",
+        "go",
+        "javascript",
+        "kubernetes",
+        "pipeline",
+        "python",
+        "quality",
+        "rest",
+        "rust",
+        "security",
+        "sql",
+        "test",
+        "testing",
+        "typescript"
+      ],
+      "capabilities": [],
+      "domains": [
+        "quality-assurance",
+        "test-automation"
+      ],
+      "description": "Expert in code quality, security vulnerabilities (OWASP Top 10), language-specific patterns (Python/JS/Go/Java/Rust), and automated review tools. Use for PR reviews, security assessments, and review p..."
     },
     {
       "name": "integration-orchestrator",
@@ -1425,21 +2141,37 @@
       "keywords": [
         "api",
         "architecture",
+        "aws",
+        "cd",
+        "ci",
         "cloud",
+        "container",
+        "database",
         "design",
+        "devops",
+        "docker",
         "frontend",
+        "go",
+        "graphql",
         "grpc",
+        "javascript",
+        "kubernetes",
+        "pipeline",
+        "python",
         "quality",
         "rest",
+        "rust",
+        "security",
         "test",
-        "testing"
+        "testing",
+        "typescript"
       ],
       "capabilities": [],
       "domains": [
         "quality-assurance",
         "test-automation"
       ],
-      "description": ""
+      "description": "Expert in integration testing strategies, API contract testing (Pact, Spring Cloud Contract), service virtualization (WireMock, Mountebank), and E2E test orchestration. Use for designing multi-service..."
     },
     {
       "name": "performance-engineer",
@@ -1449,12 +2181,28 @@
         "ai",
         "api",
         "architecture",
+        "aws",
+        "azure",
         "cd",
         "ci",
+        "cloud",
+        "container",
         "database",
         "design",
+        "devops",
+        "frontend",
+        "gcp",
+        "go",
+        "javascript",
+        "kubernetes",
+        "llm",
+        "ml",
+        "nosql",
         "pipeline",
         "python",
+        "rust",
+        "security",
+        "sql",
         "test",
         "testing"
       ],
@@ -1463,7 +2211,45 @@
         "quality-assurance",
         "test-automation"
       ],
-      "description": ""
+      "description": "Expert in performance testing, profiling, optimization, and capacity planning. Use for load testing strategy, bottleneck analysis, Core Web Vitals optimization, Kubernetes autoscaling, database query ..."
+    },
+    {
+      "name": "v3-setup-orchestrator-enhanced",
+      "path": "agents/v3-setup-orchestrator-enhanced.md",
+      "category": "general",
+      "keywords": [
+        "ai",
+        "api",
+        "architecture",
+        "auth",
+        "claude",
+        "design",
+        "devops",
+        "frontend",
+        "go",
+        "graphql",
+        "grpc",
+        "javascript",
+        "langchain",
+        "mcp",
+        "ml",
+        "model context protocol",
+        "model-context-protocol",
+        "oauth",
+        "python",
+        "quality",
+        "react",
+        "rest",
+        "security",
+        "test",
+        "testing",
+        "typescript"
+      ],
+      "capabilities": [],
+      "domains": [
+        "protocol-implementation"
+      ],
+      "description": "Enhanced orchestrator with dynamic agent discovery using searchable catalog and interactive clarification"
     },
     {
       "name": "v3-setup-orchestrator-no-creation",
@@ -1487,7 +2273,7 @@
       ],
       "capabilities": [],
       "domains": [],
-      "description": "### Phase 2: Discovery Protocol\nInterview the project to understand:\n- Technology stack (languages, frameworks)\n- Team dynamics (solo, small team, enterprise)\n- Development velocity needs\n- Pain point..."
+      "description": "Pure download orchestrator for AI-First SDLC v3 setup - NO agent creation allowed"
     },
     {
       "name": "v3-setup-orchestrator-team-first",
@@ -1515,7 +2301,7 @@
         "- Recruit new team members (create via template ONLY)"
       ],
       "domains": [],
-      "description": "### Phase 2: Discovery & Team Assessment\nInterview the project and assess what the existing team can handle:"
+      "description": "Team-first orchestrator - uses existing agents, creates only as last resort with template"
     },
     {
       "name": "v3-setup-orchestrator",
@@ -1530,6 +2316,8 @@
         "cd",
         "ci",
         "claude",
+        "cloud",
+        "container",
         "database",
         "design",
         "devops",
@@ -1539,6 +2327,7 @@
         "javascript",
         "kubernetes",
         "ml",
+        "pipeline",
         "python",
         "quality",
         "react",
@@ -1551,7 +2340,7 @@
       ],
       "capabilities": [],
       "domains": [],
-      "description": "has_requirements_txt:\n    assume: \"Python project\"\n    default_team: [\"language-python-expert\", \"ai-test-engineer\", \"documentation-architect\"]"
+      "description": "Orchestrates AI-First SDLC v3 setup by discovering project needs and assembling the right team"
     }
   ]
 }
