@@ -35,8 +35,9 @@ def extract_agent_metadata(file_path: Path) -> Dict[str, Any]:
     else:
         category = "unknown"
 
-    # Extract description from YAML frontmatter first, fall back to regex
+    # Extract description and capabilities from YAML frontmatter first
     description = ""
+    yaml_capabilities = []
     if content.startswith("---") and yaml is not None:
         frontmatter_parts = content.split("---", 2)
         if len(frontmatter_parts) >= 3:
@@ -46,6 +47,12 @@ def extract_agent_metadata(file_path: Path) -> Dict[str, Any]:
                     description = metadata.get("description", "")
                     if metadata.get("name"):
                         name = metadata["name"]
+                    # Extract capabilities from examples contexts
+                    examples = metadata.get("examples", [])
+                    if isinstance(examples, list):
+                        for ex in examples:
+                            if isinstance(ex, dict) and ex.get("context"):
+                                yaml_capabilities.append(ex["context"])
             except (yaml.YAMLError, AttributeError):
                 pass
 
@@ -78,18 +85,29 @@ def extract_agent_metadata(file_path: Path) -> Dict[str, Any]:
         matches = re.findall(pattern, content.lower())
         keywords.update(matches)
 
-    # Extract capabilities from "What I Do" or similar sections
-    capabilities = []
-    cap_match = re.search(
-        r"(?:what i do|capabilities|responsibilities|expertise).*?\n(.*?)(?:\n#|\n\n#|$)",
-        content,
-        re.IGNORECASE | re.DOTALL,
-    )
-    if cap_match:
-        cap_text = cap_match.group(1)
-        # Extract bullet points
-        cap_lines = re.findall(r"[-*]\s+(.*?)(?:\n|$)", cap_text)
-        capabilities = [line.strip() for line in cap_lines[:5]]  # Top 5 capabilities
+    # Use YAML example contexts as capabilities if available
+    capabilities = yaml_capabilities[:5] if yaml_capabilities else []
+
+    # Fall back to regex extraction only if no YAML capabilities
+    if not capabilities:
+        cap_match = re.search(
+            r"(?:what i do|capabilities|responsibilities|expertise).*?\n(.*?)(?:\n#|\n\n#|$)",
+            content,
+            re.IGNORECASE | re.DOTALL,
+        )
+        if cap_match:
+            cap_text = cap_match.group(1)
+            cap_lines = re.findall(r"[-*]\s+(.*?)(?:\n|$)", cap_text)
+            # Clean raw markdown artifacts from capabilities
+            cleaned = []
+            for line in cap_lines[:5]:
+                line = line.strip()
+                line = re.sub(r"[`<>]", "", line)  # Remove backticks and tags
+                if len(line) > 100:
+                    line = line[:100] + "..."
+                if line:
+                    cleaned.append(line)
+            capabilities = cleaned
 
     # Determine domains based on category and content
     domains = []
@@ -154,11 +172,13 @@ def build_catalog():
     # Find all agent markdown files
     agent_files = list(agents_dir.rglob("*.md"))
 
-    # Filter out README files and templates
+    # Filter out README files, templates, and the templates directory
     agent_files = [
         f
         for f in agent_files
-        if "README" not in f.name and "template" not in f.stem.lower()
+        if "README" not in f.name
+        and "template" not in f.stem.lower()
+        and "templates" not in f.parts
     ]
 
     for file_path in sorted(agent_files):

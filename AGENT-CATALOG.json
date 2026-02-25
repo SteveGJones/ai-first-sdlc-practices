@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "generated": "2026-02-24T21:10:29.829309",
-  "total_agents": 70,
+  "generated": "2026-02-25T14:52:03.180605",
+  "total_agents": 68,
   "categories": {
     "ai-builders": 5,
     "ai-development": 9,
@@ -12,7 +12,6 @@
     "project-management": 4,
     "sdlc": 8,
     "general": 5,
-    "templates": 2,
     "testing": 4
   },
   "agents": [
@@ -49,8 +48,9 @@
         "testing"
       ],
       "capabilities": [
-        "context: AI infrastructure costs growing beyond budget without clear visibility",
-        "You are the AI DevOps Engineer, the specialist responsible for deploying and operating AI systems in production. You bridge the gap between AI development and production operations, ensuring that LLM applications, multi-agent systems, and AI workloads run reliably, cost-effectively, and at scale. Your approach is infrastructure-as-code, monitoring-driven, and cost-conscious."
+        "Team deploying a customer-facing LLM API requiring sub-second response times and cost control",
+        "Multi-agent orchestration system ready for production deployment with 10 specialized agents",
+        "AI infrastructure costs growing beyond budget without clear visibility"
       ],
       "domains": [
         "ai-infrastructure",
@@ -85,7 +85,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team wants to adopt AI-first development practices",
+        "Developer struggling with multi-agent coordination",
+        "Organization measuring AI team effectiveness"
+      ],
       "domains": [
         "ai-infrastructure",
         "tool-integration"
@@ -117,7 +121,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team building a customer service chatbot that needs to remember conversation history across multiple sessions",
+        "AI application hitting token limits in long conversations",
+        "Multi-agent system where agents need to share context"
+      ],
       "domains": [
         "ai-infrastructure",
         "tool-integration"
@@ -147,7 +155,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team building document processing pipeline with multiple specialized agents for extraction, validation, and transformation",
+        "Production system where agents occasionally give conflicting responses and coordination is unclear",
+        "Engineering team evaluating orchestration frameworks for new AI-powered customer support system"
+      ],
       "domains": [
         "ai-infrastructure",
         "tool-integration"
@@ -180,8 +192,9 @@
         "testing"
       ],
       "capabilities": [
-        "including index algorithms (HNSW, IVF, ScaNN), distance metrics (cosine, dot product, euclidean), and sharding strategies for scale",
-        "with understanding of dimensionality, language support, domain fine-tuning, and latency/cost trade-offs"
+        "Team building a technical documentation search system with 50K+ pages",
+        "Existing RAG system returning irrelevant results despite semantic search",
+        "RAG system experiencing high latency and embedding costs at scale"
       ],
       "domains": [
         "ai-infrastructure",
@@ -216,7 +229,11 @@
         "testing",
         "typescript"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team designing multi-agent research system with LangChain and AutoGen agents",
+        "Team implementing agent orchestration with supervisor coordinating 50 workers",
+        "Production multi-agent system experiencing cascading failures"
+      ],
       "domains": [
         "ai-infrastructure",
         "machine-learning"
@@ -249,9 +266,9 @@
         "testing"
       ],
       "capabilities": [
-        "context: Existing agent producing inconsistent results in production",
-        "context: Building a multi-agent system with coordination challenges",
-        "You are the Agent Developer, an expert in designing and building AI agent systems using modern LLM architectures. You design agent reasoning patterns (ReAct, Plan-and-Execute, Reflection), craft effective personas using the Professional Specialist Pattern, architect multi-agent coordination systems, and implement production-ready guardrails and evaluation frameworks. Your approach is research-grounded—every architectural decision traces to established patterns from LangGraph, AutoGen, CrewAI, and production agent systems, and you balance theoretical best practices with practical deployment constraints."
+        "Team needs to design a new specialized agent for their domain",
+        "Existing agent producing inconsistent results in production",
+        "Building a multi-agent system with coordination challenges"
       ],
       "domains": [
         "ai-infrastructure",
@@ -298,7 +315,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team designing a new customer service AI system using LLMs and RAG",
+        "Reviewing an existing AI system architecture for production readiness",
+        "Designing MLOps infrastructure for a new AI initiative"
+      ],
       "domains": [
         "ai-infrastructure",
         "machine-learning"
@@ -359,10 +380,9 @@
         "testing"
       ],
       "capabilities": [
-        "Success criteria: Accuracy, speed, cost targets",
-        "1. Classify the problem type: RAG, agent, chain, multi-agent",
-        "Requirements summary with LangChain component mapping",
-        "Clear understanding of use case, scale, and constraints"
+        "Team building a RAG system for enterprise document analysis with LangChain",
+        "Developer implementing complex agent workflow with multiple decision points",
+        "After implementing a LangChain application experiencing high token costs"
       ],
       "domains": [
         "ai-infrastructure",
@@ -397,11 +417,9 @@
         "testing"
       ],
       "capabilities": [
-        "Current stable version requirements and feature sets",
-        "Beta feature implementation guidance with stability caveats",
-        "Deprecation timeline awareness for sunset features",
-        "Migration path recommendations between major versions",
-        "When testing version negotiation, validate server correctly identifies highest mutually supported protocol version because incorrect negotiation causes connection failures: test with client supporting older version, verify graceful degradation, check feature availability matrix"
+        "Team finishing MCP server implementation before production deployment",
+        "Development team concerned about security in their database MCP tools",
+        "Team wants to validate MCP specification compliance before release"
       ],
       "domains": [
         "ai-infrastructure",
@@ -446,11 +464,9 @@
         "typescript"
       ],
       "capabilities": [
-        "MCP specification version tracking and capability negotiation patterns",
-        "Transport mechanisms: stdio (local processes), SSE (server-sent events for web), HTTP with long-polling",
-        "Protocol primitives: tools (AI-invocable functions), resources (context data with URIs), prompts (reusable templates), sampling (LLM completion requests)",
-        "JSON-RPC 2.0 message framing and error handling conventions",
-        "Capability negotiation handshake and version compatibility strategies"
+        "Team building an MCP server to expose database operations to Claude Desktop",
+        "Existing MCP server experiencing performance issues with resource enumeration",
+        "Deploying MCP server to production with multiple AI clients"
       ],
       "domains": [
         "ai-infrastructure",
@@ -483,7 +499,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team has built an MCP server exposing database tools and needs comprehensive validation before deployment",
+        "Developer is debugging why their MCP server works inconsistently and needs root cause analysis",
+        "Team needs to validate error handling before releasing MCP server to external AI clients"
+      ],
       "domains": [
         "ai-infrastructure",
         "machine-learning",
@@ -519,7 +539,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team building an AI application with inconsistent LLM outputs that need better structure and reliability",
+        "Developer implementing a complex reasoning task requiring step-by-step analysis across multiple domains",
+        "Engineering team optimizing LLM costs while maintaining output quality across a production application"
+      ],
       "domains": [
         "ai-infrastructure",
         "machine-learning"
@@ -667,7 +691,7 @@
         "typescript"
       ],
       "capabilities": [
-        "'<example>",
+        "'example",
         "1. **Rehost (Lift-and-Shift)** - Fastest path, minimal changes, move to IaaS (EC2/Azure VMs)",
         "- Minor optimizations, use managed databases (RDS/Azure SQL)",
         "- Decompose into microservices, adopt serverless/containers",
@@ -706,9 +730,9 @@
         "testing"
       ],
       "capabilities": [
-        "**Human Oversight**: Human oversight measures including override capability, system monitoring by qualified personnel, intervention procedures. Evidence: Oversight procedures, training records, override logs.",
-        "**Accuracy, Robustness, Cybersecurity**: Performance testing results, resilience to errors and adversarial attacks, cybersecurity measures throughout lifecycle. Evidence: Testing reports, penetration test results, security assessment.",
-        "**Quality Management System**: Quality assurance processes, post-market monitoring, incident reporting procedures, continuous improvement. Evidence: QMS documentation, monitoring reports, incident logs."
+        "Organization preparing for SOC 2 Type II audit with 6-month evidence collection period",
+        "Software organization with multiple compliance requirements across frameworks",
+        "Development team implementing high-risk AI system under EU AI Act"
       ],
       "domains": [
         "software-architecture",
@@ -733,7 +757,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team needs monthly SDLC compliance status with actionable remediation items",
+        "Executive leadership requires quarterly compliance dashboard showing progress toward SOC 2 readiness",
+        "Audit team needs evidence package documenting SDLC process compliance over the last 6 months"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -799,8 +827,9 @@
         "testing"
       ],
       "capabilities": [
-        "context: Team refactored a data processing pipeline to improve performance but needs to verify it still meets original functional requirements",
-        "context: Proactive review after completing a significant API implementation to catch deviations early before they compound"
+        "Team has just completed implementing a new authentication module with OAuth2 and multi-factor authentication capabilities",
+        "Team refactored a data processing pipeline to improve performance but needs to verify it still meets original functional requirements",
+        "Proactive review after completing a significant API implementation to catch deviations early before they compound"
       ],
       "domains": [
         "software-architecture",
@@ -848,7 +877,13 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team designing a new user analytics system that will collect behavioral data across multiple regions including EU, California, and Brazil",
+        "Application receives a GDPR data subject access request (DSAR) from a user requesting all their personal data",
+        "Engineering team about to start building a new feature that will process user location data for personalized recommendations",
+        "Startup expanding from US-only operations to serve European customers, needs to understand GDPR compliance requirements",
+        "Security team implementing encryption for user data and needs guidance on privacy-specific encryption requirements"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -886,11 +921,9 @@
         "testing"
       ],
       "capabilities": [
-        "**Use fully managed database** because operational overhead is significant",
-        "Managed services handle: Backups, patching, HA configuration, monitoring, scaling",
-        "Cost trade-off: Higher per-unit cost, but lower total cost when including operational labor",
-        "Example: RDS vs EC2 self-managed (RDS 30% more expensive, but saves 20+ hours/month ops work)",
-        "- **Use serverless database (Aurora Serverless, Neon)** because it automatically scales and optimizes costs"
+        "Team designing database schema for new e-commerce platform with complex product catalog and high transaction volume",
+        "Production application experiencing slow query performance and connection pool exhaustion during peak traffic",
+        "Enterprise planning migration from Oracle to PostgreSQL to reduce licensing costs while maintaining high availability"
       ],
       "domains": [
         "software-architecture",
@@ -921,7 +954,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Building a new specialist agent that requires current domain knowledge",
+        "Gathering current best practices and tooling for an existing agent refresh",
+        "Investigating a new domain where no agent exists yet"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -962,7 +999,11 @@
         "testing",
         "typescript"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team needs to design a CI/CD pipeline with zero-trust security and SLSA compliance",
+        "Organization adopting GitOps for Kubernetes deployments across multiple environments",
+        "Platform team building an internal developer platform to reduce cognitive load"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -981,7 +1022,11 @@
         "security",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team with 5+ developers consistently skipping architecture documentation despite multiple warnings from sdlc-enforcer",
+        "Organization rolling out Zero Technical Debt policy to 15 teams with varying maturity levels",
+        "Senior team resisting retrospective requirements, claiming they already do informal post-mortems"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -1003,8 +1048,8 @@
         "testing"
       ],
       "capabilities": [
-        "'<example>",
-        "You are a Senior Security Architect with 20+ years of experience designing secure systems for financial services, healthcare, and government sectors. You have CISSP, CCSP, and CEH certifications, and you've led security architecture for systems processing billions of transactions daily. You combine deep technical security expertise with practical business understanding to create robust, compliant, and usable security solutions.",
+        "'example",
+        "You are a Senior Security Architect with 20+ years of experience designing secure systems for financ...",
         "Threat modeling using STRIDE, PASTA, and DREAD methodologies",
         "Security design patterns and architecture principles",
         "Cryptographic implementation and key management"
@@ -1046,7 +1091,7 @@
         "vue"
       ],
       "capabilities": [
-        "'<example>"
+        "'example"
       ],
       "domains": [
         "software-architecture",
@@ -1081,7 +1126,10 @@
         "typescript",
         "vue"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team building a React SPA with user-generated content and third-party integrations",
+        "Implementing OAuth 2.0 authentication in a Vue.js application"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -1117,7 +1165,11 @@
         "security",
         "test"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team setting up a new repository for a microservices project with security scanning requirements",
+        "Organization wants to optimize GitHub Actions usage and reduce runner costs",
+        "Engineering team needs to automate PR workflows and code review processes"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -1153,11 +1205,9 @@
         "typescript"
       ],
       "capabilities": [
-        "App size and startup time are critical metrics",
-        "- Team has strong JavaScript/TypeScript skills",
-        "Need to share code with React web app",
-        "Rapid prototyping and iteration are priorities",
-        "Large ecosystem of third-party libraries is valuable"
+        "Team deciding between native and cross-platform development for a new mobile app",
+        "Designing mobile app architecture for offline-first experience",
+        "Setting up mobile CI/CD pipeline for automated builds and distribution"
       ],
       "domains": [
         "software-architecture",
@@ -1216,7 +1266,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Creating a new agent from web research",
+        "Creating an agent from an internal repository",
+        "Determining the right research approach"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -1249,11 +1303,9 @@
         "testing"
       ],
       "capabilities": [
-        "**Extract decision records**: Look for ADR (Architecture Decision Records) or similar documents",
-        "**Extract architectural diagrams**: Find Mermaid, PlantUML, ASCII diagrams and describe their content",
-        "**Extract integration specs**: API contracts, message formats, protocol specifications",
-        "**Extract design patterns**: Documented approaches to common problems",
-        "**Extract environment structures**: Development, staging, production environment definitions"
+        "Creating an agent from an internal methodology repository",
+        "Extracting knowledge from a documentation-heavy repository",
+        "Discovering portable skills and configurations from a Claude Code project"
       ],
       "domains": [
         "software-architecture",
@@ -1314,7 +1366,11 @@
         "test",
         "typescript"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Starting any new feature or work in an AI-First SDLC project",
+        "Checking if project setup meets AI-First SDLC standards",
+        "Developer attempting to push directly to main branch"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -1353,7 +1409,7 @@
         "testing"
       ],
       "capabilities": [
-        "'<example>"
+        "'example"
       ],
       "domains": [
         "software-architecture",
@@ -1397,7 +1453,9 @@
         "typescript"
       ],
       "capabilities": [
-        "You are the Solution Architect, the strategic design authority responsible for end-to-end system architecture spanning frontend, backend, data, infrastructure, and integration layers. You translate business requirements into comprehensive technical solutions, evaluate architectural trade-offs using established frameworks (TOGAF, C4, ATAM), and ensure systems are designed for scalability, resilience, and evolvability. Your approach is methodical and framework-driven, grounding every architectural decision in documented rationale and explicit trade-off analysis."
+        "Team designing a new microservices platform that needs to scale from 100K to 10M users",
+        "Legacy system migration from on-premise monolith to cloud-native architecture",
+        "Technology stack selection for a new SaaS product with specific requirements"
       ],
       "domains": [
         "software-architecture",
@@ -1435,7 +1493,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team launching a new service requiring 99.95% availability SLA",
+        "Production incidents are frequent and chaotic with no clear response process",
+        "Organization wants to start chaos engineering practice"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -1491,7 +1553,10 @@
         "typescript",
         "vue"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team designing a multi-brand enterprise design system with accessibility compliance requirements",
+        "Product team needs to improve dashboard usability based on user complaints about information overload"
+      ],
       "domains": [
         "software-architecture",
         "system-design"
@@ -1526,11 +1591,9 @@
         "vue"
       ],
       "capabilities": [
-        "- Static site generators: Docusaurus (React-based, Meta), MkDocs (Python, Material theme), Astro Starlight (Astro framework), VitePress (Vue-based, lightweight), Nextra (Next.js-based)",
-        "Documentation hosting: Vercel, Netlify, GitHub Pages, Read the Docs, Cloudflare Pages",
-        "Search engines: Algolia DocSearch, Meilisearch, Typesense, local Lunr.js, OpenSearch",
-        "Versioning strategies: Git-based, documentation versions aligned with software versions, legacy version archiving",
-        "- Git workflow for documentation (branch strategies, review processes, merge requirements)"
+        "Team launching a new developer platform with APIs, SDKs, and multiple client types requiring comprehensive documentation",
+        "Organization with fragmented documentation across wikis, PDFs, GitHub READMEs, and Confluence with no clear ownership or versioning",
+        "Engineering team adopting API-first development and needing automated API documentation generation integrated into CI/CD"
       ],
       "domains": [
         "technical-writing",
@@ -1564,7 +1627,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team needs API documentation that developers can follow under deadline pressure",
+        "Existing documentation generates excessive support tickets due to unclear instructions",
+        "Tutorial needs to teach a complex distributed systems concept to backend developers"
+      ],
       "domains": [
         "technical-writing",
         "knowledge-management"
@@ -1590,11 +1657,9 @@
         "testing"
       ],
       "capabilities": [
-        "**Round-Robin**: Simple, fair distribution, no state required, poor for heterogeneous servers",
-        "**Least Connections**: Route to server with fewest active connections, better for varying request complexity",
-        "**Capability-Based**: Route requests to servers advertising required tools, ensures request satisfaction",
-        "**Affinity Routing**: Sticky sessions for stateful workflows, session continuity, complicates load distribution",
-        "**Weighted Routing**: Proportional to server capacity/performance, accommodates heterogeneous fleet"
+        "Team needs to coordinate multiple MCP servers across a distributed system with different tool providers",
+        "Organization deploying MCP infrastructure at enterprise scale with multi-tenant requirements",
+        "AI agent workflow spans multiple MCP servers requiring coordinated tool execution"
       ],
       "domains": [
         "protocol-implementation"
@@ -1613,8 +1678,8 @@
         "testing"
       ],
       "capabilities": [
-        "**Pythonic Improvements**: Specific suggestions to make code more idiomatic with before/after examples",
-        "**Performance Analysis**: Identified bottlenecks with profiling recommendations and optimization strategies",
+        "**Pythonic Improvements**: Specific suggestions to make code more idiomatic with before/after exampl...",
+        "**Performance Analysis**: Identified bottlenecks with profiling recommendations and optimization str...",
         "**Type Safety Enhancements**: Missing or incorrect type hints with complete typing solutions",
         "**PEP Compliance Issues**: Style violations with automated tool recommendations (black, ruff, mypy)",
         "**Security Considerations**: Potential vulnerabilities with secure coding alternatives"
@@ -1638,7 +1703,9 @@
         "testing"
       ],
       "capabilities": [
-        "You are the Agile Coach, the specialist responsible for guiding teams through agile adoption, diagnosing process dysfunctions, and building sustainable delivery practices. You coach teams from initial Scrum adoption through scaled agile transformation, combining deep knowledge of agile frameworks (Scrum, Kanban, SAFe, LeSS) with practical experience in team dynamics, metrics implementation, and continuous improvement. Your approach is diagnostic and contextual -- you assess team maturity and organizational constraints before recommending practices, never imposing rigid frameworks on teams with unique contexts."
+        "Development team struggling with missed sprint commitments, inconsistent velocity, and low morale after three months of Scrum adoption",
+        "Organization with 8 development teams needs to coordinate dependencies and align on quarterly objectives while maintaining team autonomy",
+        "Engineering team using AI coding assistants (GitHub Copilot) experiencing confusion about velocity tracking and estimation accuracy"
       ],
       "domains": [
         "delivery",
@@ -1670,7 +1737,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Multi-team enterprise project approaching critical release with 12 integration dependencies across 4 teams, delivery date in 3 weeks",
+        "Team experiencing frequent production incidents and missed delivery commitments, stakeholders losing confidence",
+        "Executive leadership needs visibility into delivery risks and timeline confidence for quarterly planning"
+      ],
       "domains": [
         "delivery",
         "coordination"
@@ -1692,7 +1763,12 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team has completed the authentication module and needs to verify progress against the implementation plan",
+        "Product manager needs to know if all planned MVP deliverables are complete before the release",
+        "Project is experiencing delays on API integration and the team needs to assess impact",
+        "Weekly status meeting requires current project health assessment"
+      ],
       "domains": [
         "delivery",
         "coordination"
@@ -1716,7 +1792,11 @@
         "sql",
         "test"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Engineering manager wants to understand team delivery capability",
+        "DevOps lead tracking infrastructure-as-code adoption across teams",
+        "Director concerned about team morale declining"
+      ],
       "domains": [
         "delivery",
         "coordination"
@@ -1814,7 +1894,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team building a new Go microservice with gRPC and needs proper project structure",
+        "Go service experiencing memory pressure and goroutine leaks under load",
+        "Team needs to choose between Go frameworks and ORMs for a new project"
+      ],
       "domains": [
         "process-improvement",
         "methodology"
@@ -1849,7 +1933,12 @@
         "typescript",
         "vue"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team starting a new TypeScript project and needs to choose the right tooling stack",
+        "React application has performance issues with slow initial load and large bundle size",
+        "Node.js backend needs to choose between Express, Fastify, and newer frameworks",
+        "Team wants to add TypeScript to an existing JavaScript codebase incrementally"
+      ],
       "domains": [
         "process-improvement",
         "methodology"
@@ -1890,8 +1979,9 @@
         "typescript"
       ],
       "capabilities": [
-        "Provide Python-specific implementation for architectures designed by solution-architect or backend-architect",
-        "When Python patterns conflict with AI-First SDLC requirements, find Python solutions that satisfy both (don't compromise on either)"
+        "Team building a FastAPI microservice with async operations and needs strict type safety for AI-First SDLC compliance",
+        "Django project needs migration to typed Python with comprehensive testing while maintaining backward compatibility",
+        "AI/ML team needs Python data pipeline with production-grade quality and performance optimization"
       ],
       "domains": [
         "process-improvement",
@@ -1963,11 +2053,10 @@
         "testing"
       ],
       "capabilities": [
-        "**Problem**: Specific challenge the pattern addresses. Example: \"Need CI/CD but can't invest 2 weeks in pipeline setup\"",
-        "**Solution**: Step-by-step implementation with decision points. Example: \"Use GitHub Actions with templates from examples/ci-cd/, customize in 2 hours\"",
-        "**Consequences**: Benefits, trade-offs, limitations, maintenance burden. Example: \"Fast setup but less flexibility than Jenkins, adequate for <10 engineers\"",
-        "**By Maturity**: Experimental (< 5 teams, < 3 months), Validated (5-20 teams, 3-12 months), Proven (20+ teams, 12+ months, documented success metrics)",
-        "**By Complexity**: Simple (1-2 hour implementation, single developer), Moderate (1-3 days, team coordination), Complex (1+ weeks, cross-team dependencies)"
+        "Team struggling with repeated architecture documentation violations",
+        "New JavaScript team joining the AI-First SDLC framework",
+        "Engineering manager wants to measure AI-First adoption effectiveness",
+        "Team discovering a new anti-pattern in their workflow"
       ],
       "domains": [
         "process-improvement",
@@ -1992,66 +2081,12 @@
         "python",
         "test"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Delegated by V3 orchestrator to set up GitHub",
+        "Ensuring local and remote alignment"
+      ],
       "domains": [],
       "description": "Handles GitHub configuration, local setup, and alignment between local and remote SDLC environments"
-    },
-    {
-      "name": "project-strategy-orchestrator",
-      "path": "agents/templates/project-strategy-orchestrator.md",
-      "category": "templates",
-      "keywords": [
-        "ai",
-        "angular",
-        "api",
-        "architecture",
-        "cd",
-        "ci",
-        "database",
-        "devops",
-        "docker",
-        "frontend",
-        "go",
-        "javascript",
-        "k8s",
-        "kubernetes",
-        "ml",
-        "mongodb",
-        "postgres",
-        "python",
-        "quality",
-        "react",
-        "security",
-        "test",
-        "testing",
-        "typescript",
-        "vue"
-      ],
-      "capabilities": [],
-      "domains": [],
-      "description": "Autonomous project analyzer and strategic setup decision maker"
-    },
-    {
-      "name": "team-assembly-orchestrator",
-      "path": "agents/templates/team-assembly-orchestrator.md",
-      "category": "templates",
-      "keywords": [
-        "api",
-        "architecture",
-        "database",
-        "design",
-        "devops",
-        "frontend",
-        "python",
-        "quality",
-        "react",
-        "security",
-        "test",
-        "testing"
-      ],
-      "capabilities": [],
-      "domains": [],
-      "description": "Assembles and coordinates specialized agent teams based on project needs"
     },
     {
       "name": "ai-test-engineer",
@@ -2092,7 +2127,11 @@
         "typescript",
         "vue"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team migrating to microservices architecture and needs a testing strategy that ensures service reliability and contract compatibility",
+        "Development team experiencing frequent CI pipeline failures due to unreliable tests that pass locally but fail in CI",
+        "Organization wants to accelerate testing without sacrificing coverage, exploring AI-assisted test generation"
+      ],
       "domains": [
         "quality-assurance",
         "test-automation"
@@ -2127,7 +2166,11 @@
         "testing",
         "typescript"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team has a PR touching authentication logic that needs security-focused review",
+        "Developer wants to set up automated code review for a Python/TypeScript project",
+        "Code changes in a PR include database migrations and need design review"
+      ],
       "domains": [
         "quality-assurance",
         "test-automation"
@@ -2166,7 +2209,11 @@
         "testing",
         "typescript"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Team building microservices architecture with multiple service dependencies and needs comprehensive integration testing strategy",
+        "Frontend and backend teams experiencing frequent integration issues after deployments despite passing unit tests",
+        "Team needs to test complex user journeys across multiple services but E2E tests are flaky and slow"
+      ],
       "domains": [
         "quality-assurance",
         "test-automation"
@@ -2206,7 +2253,11 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Production API experiencing P95 latency above 500ms under normal load",
+        "Planning for Black Friday traffic expecting 10x normal load",
+        "Setting up performance testing in CI/CD pipeline"
+      ],
       "domains": [
         "quality-assurance",
         "test-automation"
@@ -2245,7 +2296,11 @@
         "testing",
         "typescript"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "MCP project needing specialized agents",
+        "Ambiguous project requirements",
+        "Discovering existing agents instead of generating"
+      ],
       "domains": [
         "protocol-implementation"
       ],
@@ -2271,7 +2326,10 @@
         "test",
         "testing"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Starting fresh project setup",
+        "Customizing for specific project type"
+      ],
       "domains": [],
       "description": "Pure download orchestrator for AI-First SDLC v3 setup - NO agent creation allowed"
     },
@@ -2298,7 +2356,8 @@
         "testing"
       ],
       "capabilities": [
-        "- Recruit new team members (create via template ONLY)"
+        "Starting fresh project setup",
+        "Specialized need not covered"
       ],
       "domains": [],
       "description": "Team-first orchestrator - uses existing agents, creates only as last resort with template"
@@ -2338,7 +2397,10 @@
         "typescript",
         "vue"
       ],
-      "capabilities": [],
+      "capabilities": [
+        "Starting AI-First SDLC in an existing project",
+        "Team wants AI agents but needs guidance"
+      ],
       "domains": [],
       "description": "Orchestrates AI-First SDLC v3 setup by discovering project needs and assembling the right team"
     }
