@@ -136,7 +136,7 @@ python .sdlc/tools/automation/setup-branch-protection-gh.py
 #### GitHub Actions
 ```bash
 mkdir -p .github/workflows
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/ai-sdlc-validation.yml > .github/workflows/ai-sdlc-validation.yml
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/validation.yml > .github/workflows/validation.yml
 ```
 
 ### Phase 6: Pre-Reboot Tasks
@@ -286,11 +286,8 @@ python .sdlc/tools/automation/installation-state-manager.py update-todos \
 
 ### Using Team Validators
 ```bash
-# Ensure team-first from start
+# Ensure team-first from start (includes solo pattern detection)
 python .sdlc/tools/validation/validate-team-engagement.py --strict
-
-# Check for solo patterns
-python .sdlc/tools/validation/check-solo-patterns.py --threshold 0
 ```
 
 ## CRITICAL REMINDERS

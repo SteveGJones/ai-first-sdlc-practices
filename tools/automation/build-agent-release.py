@@ -46,7 +46,7 @@ class AgentReleaseBuilder:
         result = subprocess.run(
             [
                 sys.executable,
-                "tools/validation/validate-agents.py",
+                "tools/validation/validate-agent-format.py",
                 str(self.source_dir),
             ],
             capture_output=True,
@@ -232,7 +232,7 @@ python tools/automation/agent-installer.py
 
 All agents are validated before release:
 ```bash
-python tools/validation/validate-agents.py agents/
+python tools/validation/validate-agent-format.py agents/
 ```
 """
 

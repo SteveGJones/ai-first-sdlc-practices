@@ -80,13 +80,13 @@ python tools/automation/sdlc-level.py migrate <target-level>
 ### Run Progressive Validation
 ```bash
 # Auto-detects level
-python tools/validation/validate-pipeline-progressive.py
+python tools/validation/validate-pipeline.py --progressive
 
 # Specify level explicitly
-python tools/validation/validate-pipeline-progressive.py --level prototype
+python tools/validation/validate-pipeline.py --progressive --level prototype
 
 # Strict mode (required checks only)
-python tools/validation/validate-pipeline-progressive.py --strict
+python tools/validation/validate-pipeline.py --progressive --strict
 ```
 
 ### Level-Specific Checks

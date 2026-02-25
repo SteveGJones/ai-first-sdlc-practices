@@ -98,7 +98,7 @@ Here's your complete kickstarter with:
 project_root/
 ├── .github/
 │   └── workflows/
-│       ├── ai-sdlc-validation.yml
+│       ├── validation.yml
 │       └── python-checks.yml
 ├── docs/
 │   ├── feature-proposals/

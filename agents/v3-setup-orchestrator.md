@@ -131,7 +131,7 @@ download_decision_tree:
 
   # Step 2: Download CI/CD configs for their platform
   ci_cd_configs:
-    github_actions: ".github/workflows/ai-sdlc-validation.yml"
+    github_actions: ".github/workflows/validation.yml"
     gitlab: "examples/ci-cd/.gitlab-ci.yml"
     jenkins: "examples/ci-cd/Jenkinsfile"
     azure: "examples/ci-cd/azure-pipelines.yml"
@@ -148,7 +148,7 @@ download_decision_tree:
 Use WebFetch or curl to download files from GitHub:
 ```bash
 # Examples:
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/ai-sdlc-validation.yml > ai-sdlc-validation.yml
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/validation.yml > validation.yml
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/sdlc-setup-specialist.md > sdlc-setup-specialist.md
 # Or use WebFetch for reading content directly
 ```
@@ -237,7 +237,7 @@ def determine_setup(discovery_results):
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/sdlc-setup-specialist.md > sdlc-setup-specialist.md
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/sdlc-enforcer.md > sdlc-enforcer.md
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/critical-goal-reviewer.md > critical-goal-reviewer.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/ai-sdlc-validation.yml > ai-sdlc-validation.yml
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/validation.yml > validation.yml
 
 # Then based on discovery, download team-specific agents...
 ```
@@ -822,7 +822,7 @@ mkdir -p ./tmp
 # STEP 1: Core Framework Files (MANDATORY - NEVER SKIP)
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md > ./tmp/CLAUDE-CORE.md
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE.md > ./tmp/CLAUDE.md
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/SDLC-RULES-SUMMARY.md > ./tmp/SDLC-RULES-SUMMARY.md
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CONSTITUTION.md > ./tmp/CONSTITUTION.md
 
 # STEP 2: Core Agents (ALWAYS REQUIRED)
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/sdlc-setup-specialist.md > ./tmp/sdlc-setup-specialist.md
@@ -830,7 +830,7 @@ curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/ma
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/critical-goal-reviewer.md > ./tmp/critical-goal-reviewer.md
 
 # STEP 3: CI/CD Configuration
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/ai-sdlc-validation.yml > ./tmp/ai-sdlc-validation.yml
+curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/.github/workflows/validation.yml > ./tmp/validation.yml
 
 # STEP 4: Project-Type Specific (EXAMPLE: Node.js API discovered)
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/core/api-architect.md > ./tmp/api-architect.md
@@ -851,7 +851,7 @@ mkdir -p .github/workflows/
 # CRITICAL: Install framework files at project root (MANDATORY)
 mv ./tmp/CLAUDE-CORE.md ./CLAUDE-CORE.md
 mv ./tmp/CLAUDE.md ./CLAUDE.md
-mv ./tmp/SDLC-RULES-SUMMARY.md ./SDLC-RULES-SUMMARY.md
+mv ./tmp/CONSTITUTION.md ./CONSTITUTION.md
 
 # Move downloaded agents to .claude/agents/ (NEVER create, only move)
 mv ./tmp/sdlc-setup-specialist.md .claude/agents/sdlc-setup-specialist.md
@@ -864,7 +864,7 @@ mv ./tmp/performance-engineer.md .claude/agents/performance-engineer.md
 mv ./tmp/ai-test-engineer.md .claude/agents/ai-test-engineer.md
 
 # Install CI/CD config
-mv ./tmp/ai-sdlc-validation.yml .github/workflows/ai-sdlc-validation.yml
+mv ./tmp/validation.yml .github/workflows/validation.yml
 
 # Verify critical files exist
 ls -la CLAUDE*.md  # Must show CLAUDE.md and CLAUDE-CORE.md
@@ -966,7 +966,7 @@ Perfect! Based on your needs, I'm setting up:
 Downloading framework components...
 ✓ CLAUDE.md (MANDATORY framework file)
 ✓ CLAUDE-CORE.md (compact instructions)
-✓ SDLC-RULES-SUMMARY.md (enforcement rules)
+✓ CONSTITUTION.md (all rules, single source of truth)
 ✓ Core agents (sdlc-enforcer, critical-goal-reviewer)
 ✓ API specialists (api-architect, backend-engineer)
 ✓ Testing experts (performance-engineer, ai-test-engineer)

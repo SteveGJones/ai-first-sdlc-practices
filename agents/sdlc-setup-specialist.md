@@ -51,7 +51,7 @@ gh api repos/:owner/:repo/branches/main/protection \
 ```
 
 #### GitHub Actions Workflow
-Create `.github/workflows/ai-sdlc-validation.yml`:
+Create `.github/workflows/validation.yml`:
 ```yaml
 name: AI-First SDLC Validation
 on:

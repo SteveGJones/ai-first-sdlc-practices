@@ -358,15 +358,7 @@ python tools/coaching/vision-to-team-mapper.py --analyze "ai-powered chatbot"
 
 #### `sdlc-setup-specialist`
 - **Path**: `agents/sdlc-setup-specialist.md`
-- **Description**: #### GitHub Actions Workflow
-Create `.github/workflows/ai-sdlc-validation.yml`:
-```yaml
-name: AI-First SDLC Validation
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
+- **Description**: Handles GitHub configuration, local setup, and alignment between local and remote SDLC environments
 - **Keywords**: ai, api, architecture, azure, cd, ci, claude, javascript, pipeline, python
 
 #### `v3-setup-orchestrator`
