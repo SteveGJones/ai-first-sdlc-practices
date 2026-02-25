@@ -13,7 +13,7 @@ LIMITS = {
     "CLAUDE-CONTEXT-architecture.md": 200,
     "CLAUDE-CONTEXT-validation.md": 150,
     "CLAUDE-CONTEXT-update.md": 100,
-    "CLAUDE-CONTEXT-language-validators.md": 200,
+    "LANGUAGE-SPECIFIC-VALIDATORS.md": 200,
 }
 
 # Target compression ratio

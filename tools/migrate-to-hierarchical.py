@@ -19,7 +19,7 @@ HIERARCHICAL_FILES = [
     "CLAUDE-CONTEXT-architecture.md",
     "CLAUDE-CONTEXT-validation.md",
     "CLAUDE-CONTEXT-update.md",
-    "CLAUDE-CONTEXT-language-validators.md",
+    "LANGUAGE-SPECIFIC-VALIDATORS.md",
 ]
 
 

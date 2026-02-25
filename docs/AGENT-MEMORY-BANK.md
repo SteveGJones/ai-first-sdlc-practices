@@ -1,3 +1,38 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Agent Memory Bank: Critical Learnings & Patterns](#agent-memory-bank-critical-learnings--patterns)
+  - [🚨 Critical Failures to Remember](#-critical-failures-to-remember)
+    - [1. The "handof" Typo Disaster (CodeQL Alert &#035;75)](#1-the-handof-typo-disaster-codeql-alert-75)
+    - [2. Local Validation Lying About Compliance](#2-local-validation-lying-about-compliance)
+    - [3. Magic Number Patching Attempts](#3-magic-number-patching-attempts)
+    - [4. Overconfidence When Local Passes](#4-overconfidence-when-local-passes)
+  - [🏆 Success Patterns to Replicate](#-success-patterns-to-replicate)
+    - [1. Mathematical Formula Approach](#1-mathematical-formula-approach)
+    - [2. Systematic Diagnostic Tools](#2-systematic-diagnostic-tools)
+    - [3. Team Collaboration on Root Cause Analysis](#3-team-collaboration-on-root-cause-analysis)
+    - [4. Evidence-Based Threshold Calculation](#4-evidence-based-threshold-calculation)
+  - [🔧 Quick Reference Cards](#-quick-reference-cards)
+    - [Card 1: "PR Failing CI But Local Passes"](#card-1-pr-failing-ci-but-local-passes)
+    - [Card 2: "Magic Number Violations"](#card-2-magic-number-violations)
+    - [Card 3: "CodeQL Argument Errors"](#card-3-codeql-argument-errors)
+    - [Card 4: "Team Needs Systematic Solution"](#card-4-team-needs-systematic-solution)
+  - [🧠 Memorable Acronyms & Mnemonics](#-memorable-acronyms--mnemonics)
+    - [VERIFY (Before Any Commit)](#verify-before-any-commit)
+    - [MATH (For Threshold Calculation)](#math-for-threshold-calculation)
+    - [CI-FIRST (When Local Passes But CI Fails)](#ci-first-when-local-passes-but-ci-fails)
+  - [🔍 Proven Diagnostic Commands](#-proven-diagnostic-commands)
+    - [Environment Comparison](#environment-comparison)
+    - [Technical Debt Analysis](#technical-debt-analysis)
+    - [CodeQL Preparation](#codeql-preparation)
+  - [📝 Code Snippets That Work](#-code-snippets-that-work)
+    - [Technical Debt Calculator (Proven)](#technical-debt-calculator-proven)
+    - [Environment Diagnostic Tool](#environment-diagnostic-tool)
+  - [🎯 When to Update This Document](#-when-to-update-this-document)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Agent Memory Bank: Critical Learnings & Patterns
 
 > **Purpose**: Living document of team learnings to prevent repeating failures and replicate successes

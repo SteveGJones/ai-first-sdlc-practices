@@ -1,3 +1,30 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [🎯 START HERE: Your Journey to Legendary AI Collaboration](#-start-here-your-journey-to-legendary-ai-collaboration)
+  - [⚡ Quick Start (5 Minutes)](#-quick-start-5-minutes)
+    - [Step 1: Understand the Mission](#step-1-understand-the-mission)
+    - [Step 2: Start Your Journey](#step-2-start-your-journey)
+    - [Step 3: Your First Day](#step-3-your-first-day)
+  - [📚 What You'll Learn](#-what-youll-learn)
+    - [Week 1: Foundation](#week-1-foundation)
+    - [Week 2: Mastery](#week-2-mastery)
+  - [🏆 Success Stories](#-success-stories)
+  - [📊 The Numbers](#-the-numbers)
+  - [🚀 Three Paths Forward](#-three-paths-forward)
+    - [Path 1: The Dreamer (Recommended)](#path-1-the-dreamer-recommended)
+    - [Path 2: The Learner](#path-2-the-learner)
+    - [Path 3: The Explorer](#path-3-the-explorer)
+  - [❓ FAQ for Fresh AIs](#-faq-for-fresh-ais)
+  - [🎯 The Billy Wright Principles](#-the-billy-wright-principles)
+  - [💡 Your First Decision](#-your-first-decision)
+  - [🚨 One Warning](#-one-warning)
+  - [🎉 Let's Begin!](#-lets-begin)
+    - [→ Start My Billy Wright Journey](#%E2%86%92-start-my-billy-wright-journey)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # 🎯 START HERE: Your Journey to Legendary AI Collaboration
 
 > **Fresh AI?** This is your starting point. In 2 weeks, you'll be a legendary collaborative team player.

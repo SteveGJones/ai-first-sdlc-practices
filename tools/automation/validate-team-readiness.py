@@ -431,7 +431,7 @@ class TeamReadinessValidator:
 
         handoff_files = [
             "templates/agent-handoff-patterns.md",
-            "AGENTIC-TEAM-COLLABORATION-PROTOCOLS.md",
+            "AGENTIC-TEAM-STANDARDS.md",
         ]
 
         existing_files = [f for f in handoff_files if Path(f).exists()]
@@ -582,7 +582,7 @@ class TeamReadinessValidator:
         # For now, we simulate based on available collaboration documentation
 
         communication_indicators = [
-            "AGENTIC-TEAM-COLLABORATION-PROTOCOLS.md",
+            "AGENTIC-TEAM-STANDARDS.md",
             "templates/agent-handoff-patterns.md",
             "docs/AI-TEAM-ORCHESTRATION-GUIDE.md",
         ]

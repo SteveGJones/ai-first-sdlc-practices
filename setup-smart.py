@@ -32,9 +32,7 @@ class SmartFrameworkSetup:
         "CLAUDE-CONTEXT-architecture.md": "CLAUDE-CONTEXT-architecture.md",
         "CLAUDE-CONTEXT-validation.md": "CLAUDE-CONTEXT-validation.md",
         "CLAUDE-CONTEXT-update.md": "CLAUDE-CONTEXT-update.md",
-        "CLAUDE-CONTEXT-language-validators.md": (
-            "CLAUDE-CONTEXT-language-validators.md"
-        ),
+        "LANGUAGE-SPECIFIC-VALIDATORS.md": "LANGUAGE-SPECIFIC-VALIDATORS.md",
         "CLAUDE-CONTEXT-logging.md": "CLAUDE-CONTEXT-logging.md",
         "CLAUDE-CONTEXT-levels.md": "CLAUDE-CONTEXT-levels.md",
         # Migration tool for existing projects

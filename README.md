@@ -204,7 +204,7 @@ python setup-smart.py --quickstart
 
 ### Core Policies
 - [Zero Technical Debt Policy](ZERO-TECHNICAL-DEBT.md) - Architecture-first development guide
-- [AI Autonomy Guidelines](AI-AUTONOMY.md) - Autonomous AI operation
+- [AI Autonomy Guidelines](docs/AI-AUTONOMY.md) - Autonomous AI operation
 
 ## 🚫 Zero Technical Debt Policy
 
