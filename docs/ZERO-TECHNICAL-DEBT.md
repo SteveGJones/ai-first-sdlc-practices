@@ -1,3 +1,28 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Zero Technical Debt Policy](#zero-technical-debt-policy)
+  - [🛑 STOP - Read This First](#-stop---read-this-first)
+  - [⚡ The Only Workflow Allowed](#-the-only-workflow-allowed)
+  - [📋 Required Architecture Documents](#-required-architecture-documents)
+    - [1. requirements-traceability-matrix.md](#1-requirements-traceability-matrixmd)
+    - [2. what-if-analysis.md](#2-what-if-analysismd)
+    - [3. architecture-decision-record.md](#3-architecture-decision-recordmd)
+    - [4. system-invariants.md](#4-system-invariantsmd)
+    - [5. integration-design.md](#5-integration-designmd)
+    - [6. failure-mode-analysis.md](#6-failure-mode-analysismd)
+  - [🚫 FORBIDDEN Actions](#-forbidden-actions)
+  - [✅ Validation Commands](#-validation-commands)
+  - [📋 Framework vs Application Standards](#-framework-vs-application-standards)
+  - [🤖 Why This Is Mandatory for AI](#-why-this-is-mandatory-for-ai)
+  - [🔴 Red Flags That Require FULL STOP](#-red-flags-that-require-full-stop)
+  - [📊 Your Metrics](#-your-metrics)
+  - [🏃 The Enforcement Loop](#-the-enforcement-loop)
+  - [💭 Mindset Required](#-mindset-required)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Zero Technical Debt Policy
 
 **Status:** MANDATORY - NO EXCEPTIONS
