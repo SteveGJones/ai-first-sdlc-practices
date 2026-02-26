@@ -182,7 +182,7 @@ These relaxed standards apply ONLY to framework infrastructure code:
 
 **Files primarily affected:**
 - `setup-smart.py`: Large project bootstrapping functions with sequential steps
-- `fix-type-annotations.py`: Utility script with nested file processing logic
+- Framework utility scripts with nested file processing logic
 - Framework validation tools: Complex pattern matching and file analysis
 
 **Business justification:**

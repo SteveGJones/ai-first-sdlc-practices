@@ -7,11 +7,11 @@
   - [The Solution: Practical Transformation Through Doing](#the-solution-practical-transformation-through-doing)
   - [Core System Components](#core-system-components)
     - [1. The AI Team Transformer Agent](#1-the-ai-team-transformer-agent)
-    - [2. The Coaching Tool Suite](#2-the-coaching-tool-suite)
-      - [Legendary Team Coach (`legendary-team-coach.py`)](#legendary-team-coach-legendary-team-coachpy)
-      - [Vision-to-Team Mapper (`vision-to-team-mapper.py`)](#vision-to-team-mapper-vision-to-team-mapperpy)
-      - [Team Transformation Scripts (`team-transformation-scripts.py`)](#team-transformation-scripts-team-transformation-scriptspy)
-    - [3. The Complete Demo (`fresh-ai-transformation-demo.py`)](#3-the-complete-demo-fresh-ai-transformation-demopy)
+    - [2. The Coaching Methodology](#2-the-coaching-methodology)
+      - [Legendary Team Coach](#legendary-team-coach)
+      - [Vision-to-Team Mapper](#vision-to-team-mapper)
+      - [Team Transformation Scripts](#team-transformation-scripts)
+    - [3. The Transformation Journey](#3-the-transformation-journey)
   - [How It Works](#how-it-works)
     - [Stage 1: Vision Intake (Day 1-2)](#stage-1-vision-intake-day-1-2)
     - [Stage 2: Foundation Building (Day 3-7)](#stage-2-foundation-building-day-3-7)
@@ -50,32 +50,31 @@ The specialist who coaches fresh AIs through the complete transformation:
 - Chemistry building through practical challenges
 - Billy Wright collaborative leadership approach
 
-### 2. The Coaching Tool Suite
-**Location**: `tools/coaching/`
+### 2. The Coaching Methodology
 
-#### Legendary Team Coach (`legendary-team-coach.py`)
+#### Legendary Team Coach
 Complete transformation program with:
 - Vision-to-team mapping
 - Progressive skill building exercises
 - Real-time coaching feedback
 - Legendary status assessment
 
-#### Vision-to-Team Mapper (`vision-to-team-mapper.py`)
+#### Vision-to-Team Mapper
 Instant team recommendations for any project vision:
 - Analyzes project type and complexity
 - Suggests core and extended team members
 - Provides first feature suggestions
 - Includes team chemistry exercises
 
-#### Team Transformation Scripts (`team-transformation-scripts.py`)
+#### Team Transformation Scripts
 Library of coaching conversations and exercises:
 - Hero syndrome interventions
 - Handoff practice scenarios
 - Crisis coordination drills
 - Behavior pattern recognition
 
-### 3. The Complete Demo (`fresh-ai-transformation-demo.py`)
-Shows the full transformation journey from fresh AI vision to legendary team conductor.
+### 3. The Transformation Journey
+Shows the full transformation from fresh AI vision to legendary team conductor.
 
 ## How It Works
 

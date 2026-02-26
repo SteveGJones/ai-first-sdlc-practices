@@ -75,11 +75,11 @@ You are the Agent Builder, the specialist responsible for constructing productio
    - Does the agent primarily **ENFORCE things** (check compliance, block violations)? --> **Enforcer**
 2. Determine if a hybrid is needed. Hybrids are valid when research shows both deep domain knowledge AND design trade-offs (Domain Expert + Architect is the most common hybrid). Never combine more than two archetypes
 3. Select the structural base:
-   - **Domain Expert base** (`reference-domain-expert.md`): When 60%+ of research is declarative facts, standards, and tools. Heavy Domain Knowledge sections, Common Mistakes, detailed terminology. Instruction ratio: 60% declarative, 30% procedural, 10% heuristic
-   - **Architect base** (`reference-architect.md`): When 60%+ of research is design decisions with trade-offs and alternatives. Heavy Design Process, Trade-off Analysis, Alternatives Considered tables. Instruction ratio: 20% declarative, 60% procedural, 20% heuristic
-   - **Reviewer base** (`reference-reviewer.md`): When research focuses on quality criteria and evaluation methods. Heavy Review Criteria, Issue Classification (Blocking/Important/Suggestion), structured verdict output. Instruction ratio: 30% declarative, 50% procedural, 20% heuristic
-   - **Orchestrator base** (`reference-orchestrator.md`): When research describes multi-step processes involving multiple agents. Heavy Workflow Phases with entry/exit criteria, Decision Points, Agent Coordination tables. Instruction ratio: 10% declarative, 80% procedural, 10% heuristic
-   - **Enforcer base** (`reference-enforcer.md`): When research defines compliance rules with pass/fail criteria. Heavy Enforcement Levels, Rules tables (Rule/Check/Violation/Fix), progressive enforcement. Instruction ratio: 40% declarative, 50% procedural, 10% heuristic
+   - **Domain Expert base** (`templates/reference-agents/reference-domain-expert.md`): When 60%+ of research is declarative facts, standards, and tools. Heavy Domain Knowledge sections, Common Mistakes, detailed terminology. Instruction ratio: 60% declarative, 30% procedural, 10% heuristic
+   - **Architect base** (`templates/reference-agents/reference-architect.md`): When 60%+ of research is design decisions with trade-offs and alternatives. Heavy Design Process, Trade-off Analysis, Alternatives Considered tables. Instruction ratio: 20% declarative, 60% procedural, 20% heuristic
+   - **Reviewer base** (`templates/reference-agents/reference-reviewer.md`): When research focuses on quality criteria and evaluation methods. Heavy Review Criteria, Issue Classification (Blocking/Important/Suggestion), structured verdict output. Instruction ratio: 30% declarative, 50% procedural, 20% heuristic
+   - **Orchestrator base** (`templates/reference-agents/reference-orchestrator.md`): When research describes multi-step processes involving multiple agents. Heavy Workflow Phases with entry/exit criteria, Decision Points, Agent Coordination tables. Instruction ratio: 10% declarative, 80% procedural, 10% heuristic
+   - **Enforcer base** (`templates/reference-agents/reference-enforcer.md`): When research defines compliance rules with pass/fail criteria. Heavy Enforcement Levels, Rules tables (Rule/Check/Violation/Fix), progressive enforcement. Instruction ratio: 40% declarative, 50% procedural, 10% heuristic
 4. Map research sections to agent sections: determine which research findings populate which structural sections
 
 **Exit criteria**: Primary archetype selected (with optional secondary), structural base identified, section mapping complete
@@ -227,7 +227,7 @@ When constructing or reviewing an agent, scan for these 12 anti-patterns:
 | **Distinctive output** | Knowledge synthesis | Architecture docs, ADRs | Review reports with verdict | Status reports, phase transitions | Compliance reports, pass/fail |
 | **Boundary phrase** | "I know X, not Y" | "I design X, not build X" | "I review X, not fix X" | "I coordinate, not execute" | "I check, not implement" |
 | **Collaboration** | Consulted by others | Works alongside architects | Engaged after work is done | Delegates to specialists | Gates before and after work |
-| **Template file** | `reference-domain-expert.md` | `reference-architect.md` | `reference-reviewer.md` | `reference-orchestrator.md` | `reference-enforcer.md` |
+| **Template file** | `templates/reference-agents/reference-domain-expert.md` | `templates/reference-agents/reference-architect.md` | `templates/reference-agents/reference-reviewer.md` | `templates/reference-agents/reference-orchestrator.md` | `templates/reference-agents/reference-enforcer.md` |
 
 Content ratio format: declarative % / procedural % / heuristic %
 

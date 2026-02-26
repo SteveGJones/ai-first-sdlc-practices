@@ -56,7 +56,7 @@ Our Agent-to-Agent Communication System implements the legendary teamwork princi
 
 ### **System Components**
 
-1. **📋 Tactical Team Discussion** (`docs/A2A-TACTICAL-TEAM-DISCUSSION.md`)
+1. **📋 Tactical Team Discussion** (`docs/archive/meeting-notes/A2A-TACTICAL-TEAM-DISCUSSION.md`)
    - Complete agent voice analysis in Billy Wright 4-3-3 formation
    - Each agent's unique contribution, passing patterns, and support needs
    - Identified communication gaps and optimization opportunities
@@ -291,7 +291,8 @@ python tools/automation/demo-a2a-communication.py --demo analysis  # Communicati
 
 ```
 docs/
-├── A2A-TACTICAL-TEAM-DISCUSSION.md     # Strategic team voice analysis
+├── archive/meeting-notes/
+│   └── A2A-TACTICAL-TEAM-DISCUSSION.md # Strategic team voice analysis (archived)
 ├── A2A-USAGE-GUIDE.md                  # Practical examples and best practices
 └── A2A-SYSTEM-SUMMARY.md               # This comprehensive overview
 

@@ -145,7 +145,7 @@ python tools/validate-pipeline.py --ci
 1. Create proposal: `docs/feature-proposals/XX-platform-name-support.md`
 2. Add example config: `examples/ci-cd/platform-name/`
 3. Update documentation: `docs/ci-cd-platforms.md`
-4. Add tests: `tests/test_platform_validation.py`
+4. Add validation tests for the new platform
 
 ### Improving Validation Rules
 

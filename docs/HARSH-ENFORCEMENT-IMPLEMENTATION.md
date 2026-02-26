@@ -50,7 +50,7 @@ The `sdlc-enforcer` agent has been transformed into an uncompromising dictator t
 
 ### 2. Compact SDLC Rules Summary
 
-Created `SDLC-RULES-SUMMARY.md` (139 lines) containing:
+Created a compact SDLC rules summary (now consolidated into `CONSTITUTION.md`) containing:
 
 - **The ONLY Allowed Workflow**: 8 mandatory steps with violation consequences
 - **Instant Death Violations**: 7 violations that terminate projects
@@ -96,7 +96,7 @@ The system enforces through:
 
 ## Testing and Verification
 
-Created `test_harsh_enforcement.py` to verify:
+The enforcement system is verified by:
 - Harsh language usage (10+ harsh terms required)
 - No soft language allowed
 - Rules compactness (<200 lines)
