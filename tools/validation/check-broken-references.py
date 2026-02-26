@@ -27,7 +27,12 @@ HISTORICAL_DIRS = {
 # Directories with example/template/instructional content that references user-project files
 EXAMPLE_DIRS = {
     "examples", "v3", "plan", "tools/migration", "tools/orchestration",
-    "agent_prompts", "templates",
+    "agent_prompts", "templates", ".github/coaching",
+}
+
+# Individual files to exclude from scanning (scripts that create/download files at runtime)
+EXCLUDED_FILES = {
+    "setup-smart.py",
 }
 
 # Files commonly referenced in templates/examples but don't exist in this repo
@@ -66,6 +71,25 @@ USER_PROJECT_FILES = {
     "rubocop.yml", "auto-approve.yml", "sdlc-gates.yaml",
     "gate-status.json", "agent-compositions.yaml",
     "agent_memory.json", "agent_transitions.json", "collaborative_decisions.json",
+    # Runtime coaching/tracking files
+    "team_progress.json", "CONTRIBUTORS.md", ".github/CONTRIBUTING.md",
+    "docs/contributing.md",
+    # CI config example files
+    ".circleci/config.yml", ".vscode/tasks.json",
+    # Example/aspirational doc filenames
+    "test-agent.md", "agent-template.md", "custom-rules.py",
+    "adoption-guide.md", "user-guide.md",
+    "hall-of-fame.md", "HALL-OF-FAME.md", "celebration-guide.md",
+    "success-stories.md", "wiki.md",
+    # Agent pipeline template references
+    "agent_prompts/research-your-agent.md",
+}
+
+# SDLC level requirement filenames (exist in user projects, not this repo)
+SDLC_LEVEL_FILES = {
+    "feature-intent.md", "basic-design.md",
+    "compliance-mapping.md", "audit-trail.md",
+    "team-coordination.md", "stakeholder-log.md",
 }
 
 # Architecture template filenames (referenced as targets for user projects to create)
@@ -91,7 +115,12 @@ def is_excluded_dir(file_path: Path) -> bool:
 def is_known_template_ref(ref: str) -> bool:
     """Check if a reference is a known user-project or template file."""
     basename = Path(ref).name
-    return basename in USER_PROJECT_FILES or basename in ARCHITECTURE_TEMPLATES
+    return (
+        basename in USER_PROJECT_FILES
+        or basename in ARCHITECTURE_TEMPLATES
+        or basename in SDLC_LEVEL_FILES
+        or ref in USER_PROJECT_FILES  # Also check full ref for paths like .circleci/config.yml
+    )
 
 
 def strip_code_blocks(content: str) -> str:
@@ -107,11 +136,13 @@ def extract_references(content: str, file_ext: str) -> list:
 
     refs = set()
 
-    # Markdown links: [text](path.ext)
+    # Markdown links: [text](path.ext) — strip #anchor fragments
     for match in re.finditer(r"\[[^\]]*\]\(([^)]+)\)", content):
         ref = match.group(1)
         if not ref.startswith(("http", "mailto", "#")):
-            refs.add(ref)
+            ref = ref.split("#")[0]  # Strip anchor fragments
+            if ref:  # Skip if only an anchor
+                refs.add(ref)
 
     # Backtick references: `path/to/file.ext`
     for match in re.finditer(r"`([^`\s]+\.\w{1,5})`", content):
@@ -143,7 +174,11 @@ def resolve_reference(ref: str, source_file: Path, project_root: Path) -> Path:
 
     # Try searching common locations for bare filenames
     if "/" not in ref:
-        for search_dir in ["tools/validation", "tools/automation", "docs", "templates", "."]:
+        for search_dir in [
+            "tools/validation", "tools/automation", "tools/agents",
+            "docs", "templates", "templates/architecture",
+            "templates/reference-agents", "agents", ".",
+        ]:
             candidate = project_root / search_dir / ref
             if candidate.exists():
                 return candidate
@@ -173,6 +208,7 @@ def find_broken_references(strict: bool = False):
         and "venv" not in f.parts
         and "node_modules" not in f.parts
         and not is_excluded_dir(f)
+        and f.name not in EXCLUDED_FILES
     ]
 
     for file_path in sorted(scan_files):
@@ -202,6 +238,21 @@ def find_broken_references(strict: bool = False):
                 continue
             # Skip placeholder patterns (XX-name, template-*)
             if "XX-" in ref or "template-" in ref.lower():
+                continue
+            # Skip .sdlc/ prefix paths (user-project runtime structure)
+            if ref.startswith(".sdlc/"):
+                continue
+            # Skip .claude/ prefix paths (user-project agent directory)
+            if ref.startswith(".claude/"):
+                continue
+            # Skip refs that start with a dash (regex artifacts)
+            if ref.startswith("-"):
+                continue
+            # Skip generic example filenames
+            if ref in ("path.ext",):
+                continue
+            # Skip paths under docs/architecture/decisions/ (user-project ADR paths)
+            if ref.startswith("docs/architecture/decisions/"):
                 continue
 
             resolved = resolve_reference(ref, file_path, project_root)

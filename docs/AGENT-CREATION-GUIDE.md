@@ -154,11 +154,11 @@ Five annotated reference agents are available in `templates/reference-agents/`. 
 
 | Archetype | File | Use When |
 |-----------|------|----------|
-| **Reviewer** | `reference-reviewer.md` | Agent checks quality, validates against criteria, provides feedback |
-| **Architect** | `reference-architect.md` | Agent designs systems, evaluates trade-offs, makes decisions |
-| **Domain Expert** | `reference-domain-expert.md` | Agent provides deep knowledge in a specific field |
-| **Orchestrator** | `reference-orchestrator.md` | Agent coordinates workflows and other agents |
-| **Enforcer** | `reference-enforcer.md` | Agent ensures compliance with standards and rules |
+| **Reviewer** | `templates/reference-agents/reference-reviewer.md` | Agent checks quality, validates against criteria, provides feedback |
+| **Architect** | `templates/reference-agents/reference-architect.md` | Agent designs systems, evaluates trade-offs, makes decisions |
+| **Domain Expert** | `templates/reference-agents/reference-domain-expert.md` | Agent provides deep knowledge in a specific field |
+| **Orchestrator** | `templates/reference-agents/reference-orchestrator.md` | Agent coordinates workflows and other agents |
+| **Enforcer** | `templates/reference-agents/reference-enforcer.md` | Agent ensures compliance with standards and rules |
 
 See [templates/reference-agents/README.md](../templates/reference-agents/README.md) for detailed descriptions and selection guidance.
 

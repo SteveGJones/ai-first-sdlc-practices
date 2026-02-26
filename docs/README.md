@@ -27,13 +27,11 @@
     - [Standards](#standards)
   - [🛠️ Advanced Topics](#-advanced-topics)
     - [Performance](#performance)
-    - [Security](#security)
     - [Integration](#integration)
   - [📖 Reference](#-reference)
     - [Commands](#commands)
     - [Templates](#templates)
   - [🆘 Help](#-help)
-    - [Troubleshooting](#troubleshooting)
     - [Support](#support)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -90,7 +88,6 @@ Complete documentation for the AI-First SDLC Practices framework.
 - [V3 Setup Agent](../agents/v3-setup-orchestrator.md) - The orchestrator agent
 
 ### Legacy Setup
-- [Setup Guide](SETUP-GUIDE.md) - Traditional setup instructions
 - [CI/CD Platforms](ci-cd-platforms.md) - Integration with various CI/CD systems
 
 ## 👥 Team Dynamics
@@ -98,7 +95,7 @@ Complete documentation for the AI-First SDLC Practices framework.
 ### Coaching Systems
 - [Billy Wright Coaching System](BILLY-WRIGHT-COACHING-SYSTEM.md) - Team-first development
 - [Billy Wright Dream Team Meeting](archive/meeting-notes/BILLY-WRIGHT-DREAM-TEAM-MEETING.md) - Team formation (archived)
-- [Stan Cullis Zero Tolerance](STAN-CULLIS-ZERO-TOLERANCE.md) - Quality enforcement
+- [Constitution](../CONSTITUTION.md) - Zero-tolerance quality enforcement
 
 ### AI Teams
 - [AI Builders Team](archive/meeting-notes/AI-BUILDERS-TEAM-HUDDLE.md) - Infrastructure team (archived)
@@ -121,27 +118,19 @@ Complete documentation for the AI-First SDLC Practices framework.
 
 ### Validation Tools
 - [Validation Pipeline](../tools/validation/) - Compliance checking tools
-- [Local Validation](LOCAL-VALIDATION.md) - Pre-push validation
 - [Technical Debt Detection](../tools/validation/check-technical-debt.py) - Zero-tolerance enforcement
 
 ### Standards
 - [Constitution](../CONSTITUTION.md) - All rules (single source of truth)
-- [Coach Agreement](COACH-AGREEMENT.md) - AI agent responsibilities
-- [Framework Compliance](FRAMEWORK-COMPLIANCE.md) - Compliance requirements
+- [Framework Compliance Policy](FRAMEWORK-COMPLIANCE-POLICY.md) - Compliance requirements
 
 ## 🛠️ Advanced Topics
 
 ### Performance
-- [Compact Instructions](CLAUDE-COMPACT-INSTRUCTIONS.md) - Optimizing context usage
-- [Performance Patterns](PERFORMANCE-PATTERNS.md) - Optimization strategies
-
-### Security
-- [Security Guidelines](SECURITY.md) - Security best practices
-- [Agent Security](AGENT-SECURITY.md) - Securing agent operations
+- [Claude Core Instructions](../CLAUDE-CORE.md) - Compact instruction format
 
 ### Integration
-- [GitHub Integration](GITHUB-INTEGRATION.md) - Working with GitHub
-- [MCP Integration](MCP-INTEGRATION.md) - Model Context Protocol
+- [CI/CD Platforms](ci-cd-platforms.md) - Platform-specific integration guides
 
 ## 📖 Reference
 
@@ -156,10 +145,6 @@ Complete documentation for the AI-First SDLC Practices framework.
 - [Design Doc Template](../templates/design-documentation.md) - System design template
 
 ## 🆘 Help
-
-### Troubleshooting
-- [Common Issues](TROUBLESHOOTING.md) - Solving common problems
-- [FAQ](FAQ.md) - Frequently asked questions
 
 ### Support
 - [Contributing Guide](../CONTRIBUTING.md) - How to contribute

@@ -305,8 +305,8 @@ This is Billy Wright collaboration at its finest!
 1. **Day 1**: [Billy Wright Coaching System](BILLY-WRIGHT-COACHING-SYSTEM.md)
 2. **Day 2**: [Team Chemistry Development](../tools/automation/team-chemistry.py)
 3. **Day 3**: [Formation Patterns](BILLY-WRIGHT-COACHING-SYSTEM.md#formations)
-4. **Day 4**: [Crisis Response Patterns](GITHUB-COACHING-SYSTEM.md#crisis-training)
-5. **Day 5**: [Path to Legendary Status](GITHUB-COACHING-SYSTEM.md#legendary-achievement)
+4. **Day 4**: [Crisis Response Patterns](GITHUB-COACHING-SYSTEM.md)
+5. **Day 5**: [Path to Legendary Status](GITHUB-COACHING-SYSTEM.md)
 
 ## 🎉 Your First Week Celebration
 
