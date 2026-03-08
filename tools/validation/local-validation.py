@@ -195,6 +195,30 @@ class ValidationRunner:
             self.log("Security checks passed", "SUCCESS")
             return True
 
+    def check_logging_compliance(self) -> bool:
+        """Check logging compliance using framework tools"""
+        self.log("📝 Checking logging compliance...", "INFO")
+
+        returncode, stdout, stderr = self.run_command(
+            [
+                "python",
+                "tools/validation/check-logging-compliance.py",
+                ".",
+                "--threshold",
+                "0",
+            ]
+        )
+
+        if returncode != 0:
+            self.errors.append("Logging compliance check failed")
+            self.log("Logging compliance violations found", "ERROR")
+            if stderr:
+                self.log(stderr, "ERROR")
+            return False
+        else:
+            self.log("Logging compliance check passed", "SUCCESS")
+            return True
+
     def check_static_analysis(self) -> bool:
         """Run CodeQL-style static analysis checks"""
         self.log("🔍 Running static analysis checks...", "INFO")
@@ -284,6 +308,7 @@ class ValidationRunner:
             ("Architecture", self.check_architecture_compliance),
             ("Type Safety", self.check_type_safety),
             ("Security", self.check_security),
+            ("Logging Compliance", self.check_logging_compliance),
             ("Static Analysis", self.check_static_analysis),
         ]
 

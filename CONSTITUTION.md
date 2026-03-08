@@ -69,6 +69,7 @@ Check your level: `python tools/automation/sdlc-level.py check`
 
 7.1. Required logging points: function entry/exit, errors & exceptions, external calls, state mutations, security events, business milestones, performance anomalies, config changes, validation failures, resource limits.
 7.2. Forbidden in logs: passwords, tokens, PII, biometrics, encryption keys.
+7.3. Validate: `python tools/validation/check-logging-compliance.py . --threshold 0`.
 
 *Details: Load CLAUDE-CONTEXT-logging.md.*
 

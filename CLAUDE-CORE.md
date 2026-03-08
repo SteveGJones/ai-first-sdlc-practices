@@ -69,7 +69,7 @@ CI is the source of truth — local success does not guarantee CI success. Full 
 
 ## Logging
 
-10 required logging points: function entry/exit, errors, external calls, state mutations, security events, business milestones, performance anomalies, config changes, validation failures, resource limits. Never log passwords, tokens, PII, biometrics, or keys. Details: CLAUDE-CONTEXT-logging.md.
+10 required logging points: function entry/exit, errors, external calls, state mutations, security events, business milestones, performance anomalies, config changes, validation failures, resource limits. Never log passwords, tokens, PII, biometrics, or keys. Validate: `python tools/validation/check-logging-compliance.py . --threshold 0`. Details: CLAUDE-CONTEXT-logging.md.
 
 ## Python Virtual Environment
 
@@ -97,6 +97,7 @@ Never install packages globally. Never commit venv directories.
 python tools/validation/validate-pipeline.py --ci
 python tools/validation/validate-architecture.py --strict
 python tools/validation/check-technical-debt.py
+python tools/validation/check-logging-compliance.py . --threshold 0
 
 # Progress tracking
 python tools/automation/progress-tracker.py add "task"

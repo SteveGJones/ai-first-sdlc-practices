@@ -5,6 +5,7 @@ Ensures all code has proper logging at mandatory points
 """
 
 import ast
+import json
 import os
 import re
 import sys
@@ -16,8 +17,10 @@ import argparse
 class LoggingComplianceChecker:
     """Validates that code includes mandatory logging"""
 
-    def __init__(self, project_root: Optional[Path] = None):
+    def __init__(self, project_root: Optional[Path] = None, context: str = "auto"):
         self.project_root = project_root or Path.cwd()
+        self.context = context  # "application", "framework", or "auto"
+        self.config = self._load_config()
         self.violations: List[Dict[str, Any]] = []
         self.stats = {
             "files_checked": 0,
@@ -225,6 +228,43 @@ class LoggingComplianceChecker:
                 return True
         return False
 
+    def _load_config(self) -> Dict[str, Any]:
+        """Load project-level configuration from .ai-sdlc.json"""
+        config_path = self.project_root / ".ai-sdlc.json"
+        if config_path.exists():
+            try:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, IOError):
+                return {}
+        return {}
+
+    def _determine_file_context(self, file_path: Path) -> str:
+        """Determine if file is framework infrastructure or application code."""
+        try:
+            relative_path = str(file_path.relative_to(self.project_root))
+        except ValueError:
+            relative_path = str(file_path)
+        framework_patterns = [
+            "tools/", "templates/", "examples/", "setup.py",
+            "setup-smart.py", "migrate-", "fix-", ".github/",
+            "docs/", "retrospectives/", "agent_prompts/",
+        ]
+        if any(relative_path.startswith(p) or f"/{p}" in relative_path
+               for p in framework_patterns):
+            return "framework"
+        return "application"
+
+    def _apply_config(self) -> None:
+        """Apply project-level configuration overrides."""
+        logging_config = self.config.get("logging", {})
+        custom_patterns = logging_config.get("custom_patterns", {})
+        for ext, patterns in custom_patterns.items():
+            if ext in self.log_patterns:
+                self.log_patterns[ext].extend(patterns)
+            else:
+                self.log_patterns[ext] = patterns
+
     def check_file(self, file_path: Path) -> List[Dict[str, Any]]:
         """Check a single file for logging compliance"""
         violations: List[Dict[str, Any]] = []
@@ -234,7 +274,7 @@ class LoggingComplianceChecker:
             content = file_path.read_text(encoding="utf-8")
 
             # Check for sensitive data in logs
-            sensitive_violations = self._check_sensitive_data(content, file_path)
+            sensitive_violations = self._check_sensitive_data(file_path, content)
             violations.extend(sensitive_violations)
 
             # Language-specific checks
@@ -579,6 +619,9 @@ class LoggingComplianceChecker:
         print("🔍 Scanning for Logging Compliance...")
         print("=" * 60)
 
+        # Apply project-level configuration
+        self._apply_config()
+
         # Skip directories
         skip_dirs = {
             "node_modules",
@@ -593,8 +636,16 @@ class LoggingComplianceChecker:
             "logs",
         }
 
+        # Add config-specified directories to skip
+        config_skip = self.config.get("logging", {}).get("skip_directories", [])
+        skip_dirs.update(config_skip)
+
         # File extensions to check
         check_extensions = {".py", ".js", ".ts"}
+
+        # Auto-detect context if needed
+        framework_files = 0
+        application_files = 0
 
         for root, dirs, files in os.walk(self.project_root):
             # Skip unwanted directories
@@ -607,11 +658,42 @@ class LoggingComplianceChecker:
                 if "test" in file.lower() or "spec" in file.lower():
                     continue
 
-                if file_path.suffix in check_extensions:
-                    violations = self.check_file(file_path)
-                    self.violations.extend(violations)
+                if file_path.suffix not in check_extensions:
+                    continue
+
+                # Track file context for auto-detection
+                file_ctx = self._determine_file_context(file_path)
+                if file_ctx == "framework":
+                    framework_files += 1
+                else:
+                    application_files += 1
+
+                # In application mode, skip framework files
+                if self.context == "application" and file_ctx == "framework":
+                    continue
+
+                violations = self.check_file(file_path)
+                self.violations.extend(violations)
+
+        # Auto-detect framework context
+        if self.context == "auto":
+            if application_files == 0 or framework_files > application_files:
+                self.context = "framework"
+                print(f"Auto-detected: Framework repo ({framework_files} framework, "
+                      f"{application_files} application files)")
+                print("Framework tools exempt from application logging requirements.\n")
+                # Clear violations from framework files
+                self.violations.clear()
+                self._reset_stats()
+            else:
+                self.context = "application"
 
         return {"violations": self.violations, "stats": self.stats}
+
+    def _reset_stats(self) -> None:
+        """Reset violation statistics."""
+        for key in self.stats:
+            self.stats[key] = 0
 
     def generate_report(self) -> None:
         """Generate compliance report"""
@@ -698,10 +780,16 @@ def main() -> None:
         default=0,
         help="Maximum allowed violations (default: 0)",
     )
+    parser.add_argument(
+        "--context",
+        choices=["auto", "application", "framework"],
+        default="auto",
+        help="File context mode: auto-detect, application-only, or framework (default: auto)",
+    )
 
     args = parser.parse_args()
 
-    checker = LoggingComplianceChecker(Path(args.path))
+    checker = LoggingComplianceChecker(Path(args.path), context=args.context)
     results = checker.scan_project()
     checker.generate_report()
 
