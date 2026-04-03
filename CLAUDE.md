@@ -1,5 +1,45 @@
 # CLAUDE.md
 
-All rules are in **CONSTITUTION.md**. Core instructions are in **CLAUDE-CORE.md**.
+AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full instructions: **CLAUDE-CORE.md**.
 
-This file exists for CI compatibility. Do not add content here.
+## Essential Workflow
+
+```
+specify → architect → implement → review
+```
+
+1. Feature proposal (`docs/feature-proposals/XX-name.md`) + retrospective (`retrospectives/XX-name.md`)
+2. Feature branch (`feature/name`) — never commit to main directly
+3. Implement with zero technical debt, validate continuously
+4. PR with complete retrospective — CI must pass
+
+## Validation (run after every change)
+
+```bash
+python tools/validation/local-validation.py --syntax       # After writing code
+python tools/validation/local-validation.py --quick        # Before commits
+python tools/validation/local-validation.py --pre-push     # Before PR
+```
+
+Pre-push runs 8 checks: syntax, pre-commit, technical debt, architecture, type safety, security, logging compliance, static analysis.
+
+## Key Validators
+
+```bash
+python tools/validation/check-technical-debt.py --threshold 0
+python tools/validation/check-logging-compliance.py . --threshold 0
+python tools/validation/validate-architecture.py --strict
+python tools/validation/check-broken-references.py
+```
+
+## Code Quality
+
+No TODOs, no `any` types, no commented-out code. Use `./tmp/` not `/tmp/`. 10 mandatory logging points for application code (see CONSTITUTION.md Article 7). Never log secrets or PII.
+
+## Context Loading
+
+Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
+- CONSTITUTION.md — all rules (10 articles, progressive levels)
+- CLAUDE-CONTEXT-logging.md — logging standards
+- CLAUDE-CONTEXT-architecture.md — architecture docs
+- AGENT-INDEX.md — 63+ specialist agents

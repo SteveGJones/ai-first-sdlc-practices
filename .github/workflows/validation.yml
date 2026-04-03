@@ -66,6 +66,9 @@ jobs:
     - name: Check /tmp usage
       run: python tools/validation/check-tmp-usage.py
 
+    - name: Logging Compliance Check
+      run: python tools/validation/check-logging-compliance.py . --threshold 0
+
     - name: Retrospective Check
       if: github.event_name == 'pull_request'
       run: python tools/validation/validate-pipeline.py --checks retrospective
