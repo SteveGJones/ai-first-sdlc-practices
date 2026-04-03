@@ -27,30 +27,48 @@ Look for `.claude/team-config.json` in the project root. If it exists, display t
 
    | Selection | Plugins |
    |-----------|---------|
-   | A. Full-stack | `sdlc-team-fullstack` |
-   | B. AI/ML | `sdlc-team-ai`, `sdlc-lang-python` |
-   | C. Cloud | `sdlc-team-cloud` |
-   | D. API | `sdlc-team-fullstack`, `sdlc-team-cloud` |
-   | E. Security | `sdlc-team-security` |
+   | A. Full-stack | `sdlc-team-common`, `sdlc-team-fullstack` |
+   | B. AI/ML | `sdlc-team-common`, `sdlc-team-ai`, `sdlc-lang-python` |
+   | C. Cloud | `sdlc-team-common`, `sdlc-team-cloud` |
+   | D. API | `sdlc-team-common`, `sdlc-team-fullstack`, `sdlc-team-cloud` |
+   | E. Security | `sdlc-team-common`, `sdlc-team-security` |
    | F. Custom | User picks from list |
 
 4. **Auto-detect language** by scanning file extensions in the project:
    - `.py` files dominant → also recommend `sdlc-lang-python`
    - `.js`/`.ts` files dominant → also recommend `sdlc-lang-javascript`
 
-5. **Present the recommendation** to the user:
+5. **Ask about project management and documentation needs:**
+   - "Do you need project management support (sprints, delivery tracking)?" → recommend `sdlc-team-pm`
+   - "Do you need documentation architecture?" → recommend `sdlc-team-docs`
+
+6. **Present the recommendation** to the user:
 
    ```
    Recommended team for this project:
 
    ✓ sdlc-core (already installed)
-   ○ sdlc-team-ai — AI architects, prompt engineers, RAG designers
-   ○ sdlc-lang-python — Python-specific validation and patterns
+     → sdlc-enforcer, critical-goal-reviewer, code-review-specialist
+
+   ○ sdlc-team-common — 8 agents:
+     solution-architect, deep-research-agent, performance-engineer,
+     observability-specialist, database-architect, agent-builder,
+     pipeline-orchestrator, repo-knowledge-distiller
+
+   ○ sdlc-team-ai — 14 agents:
+     ai-solution-architect, prompt-engineer, mcp-server-architect,
+     rag-system-designer, context-engineer, orchestration-architect,
+     ai-devops-engineer, ai-team-transformer, a2a-architect,
+     agent-developer, langchain-architect, mcp-quality-assurance,
+     mcp-test-agent, ai-test-engineer
+
+   ○ sdlc-lang-python — 1 agent:
+     language-python-expert
 
    Install these plugins? [Y/n]
    ```
 
-6. **If confirmed, install the plugins.** Tell the user to run:
+7. **If confirmed, install the plugins.** Tell the user to run:
 
    ```
    /plugin install <plugin-name>@ai-first-sdlc
@@ -58,7 +76,7 @@ Look for `.claude/team-config.json` in the project root. If it exists, display t
 
    for each recommended plugin. Note: skill cannot programmatically install plugins — it provides the commands for the user to run.
 
-7. **Write `.claude/team-config.json`** to record the selection:
+8. **Write `.claude/team-config.json`** to record the selection:
 
    ```json
    {
@@ -80,4 +98,4 @@ Look for `.claude/team-config.json` in the project root. If it exists, display t
    - API → `enterprise-architect`
    - Security → `compliance-specialist`
 
-8. **Report** the configured formation and installed plugins.
+9. **Report** the configured formation and installed plugins.
