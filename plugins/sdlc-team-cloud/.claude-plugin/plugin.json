@@ -1,7 +1,7 @@
 {
   "name": "sdlc-team-cloud",
-  "version": "0.1.0-stub",
-  "description": "Cloud infrastructure agents — cloud, container, SRE specialists. Coming in Phase 2.",
+  "version": "1.0.0",
+  "description": "Cloud infrastructure agents — cloud, container, SRE specialists",
   "author": { "name": "SteveGJones" },
   "keywords": ["sdlc", "cloud", "infrastructure", "kubernetes", "agents"]
 }
