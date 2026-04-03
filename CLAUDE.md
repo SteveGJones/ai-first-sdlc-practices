@@ -43,3 +43,25 @@ Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
 - CLAUDE-CONTEXT-logging.md — logging standards
 - CLAUDE-CONTEXT-architecture.md — architecture docs
 - AGENT-INDEX.md — 63+ specialist agents
+
+## Plugin Installation (Recommended)
+
+Install the SDLC plugin family for skills, agents, and automated enforcement:
+
+```bash
+/plugin marketplace add SteveGJones/ai-first-sdlc-practices
+/plugin install sdlc-core@ai-first-sdlc
+```
+
+Then configure your team: `/sdlc-core:setup-team`
+
+### Available Skills
+
+| Skill | Description |
+|-------|-------------|
+| `/sdlc-core:validate` | Run 8-check validation pipeline |
+| `/sdlc-core:new-feature` | Create feature proposal, retrospective, and branch |
+| `/sdlc-core:commit` | Validated commit with quick checks |
+| `/sdlc-core:pr` | Full validation + PR creation |
+| `/sdlc-core:setup-team` | Configure team formation |
+| `/sdlc-core:release-plugin` | Package source into plugins |
