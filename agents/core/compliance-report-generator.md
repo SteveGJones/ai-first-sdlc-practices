@@ -1,20 +1,8 @@
 ---
 name: compliance-report-generator
-description: Expert in SDLC compliance reporting, metrics visualization, remediation tracking, and audit-ready documentation. Use for creating actionable reports tailored to different audiences (team, executive, auditor) and tracking compliance trends.
-color: blue
-maturity: production
-examples:
-  - context: Team needs monthly SDLC compliance status with actionable remediation items
-    user: "Generate a compliance report for team 'platform-squad' covering feature proposals, retrospectives, and PR compliance this month"
-    assistant: "I'll engage the compliance-report-generator to create a team-focused report with detailed findings, RAG status indicators, and prioritized remediation actions."
-  - context: Executive leadership requires quarterly compliance dashboard showing progress toward SOC 2 readiness
-    user: "Create an executive compliance dashboard for Q4 showing our SOC 2 readiness progress"
-    assistant: "Let me have the compliance-report-generator create an executive dashboard with high-level KPIs, trend analysis, risk heat maps, and strategic recommendations for SOC 2 preparation."
-  - context: Audit team needs evidence package documenting SDLC process compliance over the last 6 months
-    user: "Prepare audit-ready documentation showing our SDLC compliance history for the SOC 2 Type II audit"
-    assistant: "I'm engaging the compliance-report-generator to create an audit evidence package with traceability matrices, control effectiveness reports, and timestamped compliance artifacts."
-tools: Read, Glob, Grep, Bash
+description: "Expert in SDLC compliance reporting, metrics visualization, remediation tracking, and audit-ready documentation. Use for creating actionable reports tailored to different audiences (team, executive, auditor) and tracking compliance trends."
 model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # Compliance Report Generator

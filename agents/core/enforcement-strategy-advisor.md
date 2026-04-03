@@ -1,18 +1,8 @@
 ---
 name: enforcement-strategy-advisor
-description: Expert in behavioral change psychology for software teams, enforcement strategy design, and SDLC adoption coaching. Use for designing enforcement approaches, managing resistance to standards, adapting strategies to team maturity, and turning compliance into habit.
-examples:
-  - context: Team with 5+ developers consistently skipping architecture documentation despite multiple warnings from sdlc-enforcer
-    user: "The 'velocity-first' team keeps bypassing architecture doc requirements. They say it slows them down and they'll document later. How do we change this behavior?"
-    assistant: "I'll engage the enforcement-strategy-advisor to design a behavioral intervention strategy that demonstrates value, addresses the root velocity concern, and builds sustainable documentation habits using progressive enforcement and peer modeling."
-  - context: Organization rolling out Zero Technical Debt policy to 15 teams with varying maturity levels
-    user: "We need to enforce Zero Technical Debt across all teams, but they range from junior to senior. How do we adapt the enforcement approach?"
-    assistant: "Let me consult the enforcement-strategy-advisor to design a maturity-based rollout strategy with differentiated enforcement levels, team-specific coaching approaches, and a pilot program to build champions before broader adoption."
-  - context: Senior team resisting retrospective requirements, claiming they already do informal post-mortems
-    user: "Our most experienced team thinks retrospectives are bureaucratic overhead. They're passive-resisting the requirement. What's the strategy?"
-    assistant: "I'm bringing in the enforcement-strategy-advisor to craft an approach that acknowledges their experience, shows how structured retrospectives differ from informal discussions, and uses their influence to model best practices for other teams."
-color: purple
-maturity: production
+description: "Expert in behavioral change psychology for software teams, enforcement strategy design, and SDLC adoption coaching. Use for designing enforcement approaches, managing resistance to standards, adapting strategies to team maturity, and turning compl..."
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # Enforcement Strategy Advisor

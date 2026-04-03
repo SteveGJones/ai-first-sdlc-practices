@@ -1,18 +1,8 @@
 ---
 name: performance-engineer
-description: Expert in performance testing, profiling, optimization, and capacity planning. Use for load testing strategy, bottleneck analysis, Core Web Vitals optimization, Kubernetes autoscaling, database query tuning, and performance SLA compliance.
-examples:
-  - context: Production API experiencing P95 latency above 500ms under normal load
-    user: "Our API response times have degraded to P95 of 800ms. Can you help identify the bottleneck?"
-    assistant: "I'll engage the performance-engineer to profile the application, identify the root cause using distributed tracing and CPU/memory profiling, and recommend optimizations based on the bottleneck type."
-  - context: Planning for Black Friday traffic expecting 10x normal load
-    user: "We're expecting 10x traffic next month during our sale event. How do we prepare?"
-    assistant: "Let me consult the performance-engineer to create a capacity plan including load testing scenarios, autoscaling configuration, database optimization, and caching strategy to handle the spike."
-  - context: Setting up performance testing in CI/CD pipeline
-    user: "We need to implement performance testing in our CI/CD pipeline to catch regressions early"
-    assistant: "I'll have the performance-engineer design a continuous performance testing strategy using k6 or Gatling integrated into your pipeline with performance budgets and regression detection."
-color: yellow
-maturity: production
+description: "Expert in performance testing, profiling, optimization, and capacity planning. Use for load testing strategy, bottleneck analysis, Core Web Vitals optimization, Kubernetes autoscaling, database query tuning, and performance SLA compliance."
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # Performance Engineer Agent

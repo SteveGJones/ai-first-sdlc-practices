@@ -1,26 +1,8 @@
 ---
 name: pipeline-orchestrator
 description: "Unified entry point for agent creation pipeline. Routes web research or repo analysis, then delegates to agent-builder for construction."
-examples:
-  - context: Creating a new agent from web research
-    user: "I need to create a new kubernetes-security-expert agent. Research the domain and build it."
-    assistant: "I''ll engage the pipeline-orchestrator to run the full agent creation pipeline. It will create a research prompt, route to deep-research-agent for web research, then delegate to agent-builder for construction."
-  - context: Creating an agent from an internal repository
-    user: "I have a testing framework at ./test-framework/. Create an agent from that repository''s knowledge."
-    assistant: "I''ll use the pipeline-orchestrator to analyze your repository with repo-knowledge-distiller, then feed the synthesis to agent-builder for agent construction."
-  - context: Determining the right research approach
-    user: "I want to create a new agent for our internal deployment methodology. Should I use web research or repo analysis?"
-    assistant: "I''ll engage the pipeline-orchestrator to evaluate your input. Since you have an internal methodology, it will route to repo-knowledge-distiller for repository analysis rather than web research."
-color: purple
-version: "1.0.0"
-category: core/pipeline
-maturity: production
-tags:
-  - orchestrator
-  - agent-creation
-  - pipeline
-  - routing
-  - end-to-end
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # Pipeline Orchestrator

@@ -1,33 +1,8 @@
 ---
 name: api-architect
-description: Expert in REST/GraphQL/gRPC API design, versioning strategies, security patterns, contract testing, and OpenAPI specifications. Consult for API design reviews, endpoint architecture, and integration contracts.
-examples:
-- '<example>
-Context: Team designing a new REST API for a microservices platform
-  user: "We need to design a REST API for our order management service. How should we handle versioning and ensure backward compatibility?"
-  assistant: "I''ll engage the api-architect to design a versioning strategy and ensure our REST API follows best practices for backward compatibility."
-  <commentary>
-  The API Architect specializes in versioning strategies (URL path, header-based, media type) and can evaluate trade-offs between different approaches. They ensure the API design supports evolution without breaking existing clients.
-  </commentary>
-</example>'
-- '<example>
-Context: Evaluating GraphQL vs REST for a new customer-facing API
-  user: "Should we use GraphQL or REST for our new mobile app API? We have complex, nested data relationships."
-  assistant: "I''ll consult the api-architect to evaluate GraphQL vs REST for our use case and recommend the appropriate approach."
-  <commentary>
-  The API Architect can analyze data access patterns, client requirements, and system constraints to recommend the optimal API style. They understand trade-offs between GraphQL''s flexibility and REST''s simplicity.
-  </commentary>
-</example>'
-- '<example>
-Context: Implementing API security for a public-facing API
-  user: "We need to secure our public API. What''s the best approach for authentication and rate limiting?"
-  assistant: "I''ll engage the api-architect to design our API security strategy, including OAuth2 implementation and rate limiting policies."
-  <commentary>
-  The API Architect specializes in API security patterns including OAuth2, OIDC, API keys, and rate limiting strategies. They can design comprehensive security that balances usability and protection.
-  </commentary>
-</example>'
-color: blue
-maturity: production
+description: "Expert in REST/GraphQL/gRPC API design, versioning strategies, security patterns, contract testing, and OpenAPI specifications. Consult for API design reviews, endpoint architecture, and integration contracts."
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # API Architect Agent

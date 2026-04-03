@@ -1,18 +1,8 @@
 ---
 name: mobile-architect
-description: Expert in mobile app architecture (native iOS/Android, React Native, Flutter, KMP), cross-platform decisions, mobile performance optimization, mobile CI/CD, and platform-specific guidelines. Consult for platform selection, mobile architecture design, and mobile-first patterns.
-examples:
-  - context: Team deciding between native and cross-platform development for a new mobile app
-    user: "We're building a mobile app for iOS and Android. Should we go native or use a cross-platform framework like React Native or Flutter?"
-    assistant: "I'll engage the mobile-architect to evaluate native vs cross-platform options based on your team skills, performance requirements, and long-term maintenance needs."
-  - context: Designing mobile app architecture for offline-first experience
-    user: "Our mobile app needs to work offline and sync data when connectivity returns. How should we architect this?"
-    assistant: "I'll consult the mobile-architect to design an offline-first architecture with proper sync patterns and conflict resolution strategies."
-  - context: Setting up mobile CI/CD pipeline for automated builds and distribution
-    user: "We need to automate our mobile build, test, and deployment process. What's the best approach for mobile CI/CD?"
-    assistant: "I'll engage the mobile-architect to design a mobile CI/CD pipeline covering automated builds, code signing, testing, and distribution workflows."
-color: blue
-maturity: production
+description: "Expert in mobile app architecture (native iOS/Android, React Native, Flutter, KMP), cross-platform decisions, mobile performance optimization, mobile CI/CD, and platform-specific guidelines. Consult for platform selection, mobile architecture desi..."
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # Mobile Architect Agent

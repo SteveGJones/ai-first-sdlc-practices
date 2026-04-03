@@ -1,20 +1,8 @@
 ---
 name: context-engineer
-description: Expert in AI memory architectures, context window optimization, token budget management, and state persistence. Use for designing conversation memory systems, implementing sliding window strategies, RAG-based context extension, and multi-agent context coordination.
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: "Expert in AI memory architectures, context window optimization, token budget management, and state persistence. Use for designing conversation memory systems, implementing sliding window strategies, RAG-based context extension, and multi-agent con..."
 model: sonnet
-examples:
-  - context: Team building a customer service chatbot that needs to remember conversation history across multiple sessions
-    user: "Our support bot loses context when users return after a few hours. How should we design the memory system?"
-    assistant: "I'll engage the context-engineer to design a hierarchical memory architecture with immediate context (current session), short-term memory (recent sessions via Redis), and long-term memory (semantic embeddings in a vector store) for your support bot."
-  - context: AI application hitting token limits in long conversations
-    user: "We're hitting the 128k context window limit in long design discussions. How do we handle this?"
-    assistant: "Let me consult the context-engineer to implement a sliding window strategy with semantic compression—we'll retain critical information through summarization while discarding low-relevance segments."
-  - context: Multi-agent system where agents need to share context
-    user: "Our agents are duplicating work because they don't know what other agents have already done. How do we share context?"
-    assistant: "I'm engaging the context-engineer to design a shared context store with agent-specific scopes and a coordination protocol that prevents context duplication while maintaining isolation."
-color: green
-maturity: production
+tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Context Engineer

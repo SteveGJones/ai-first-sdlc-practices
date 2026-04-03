@@ -1,19 +1,8 @@
 ---
 name: documentation-architect
-description: Expert in documentation systems design, docs-as-code pipelines, API documentation platforms (OpenAPI/AsyncAPI), and developer experience optimization. Use for documentation strategy, platform selection, information architecture, and documentation quality frameworks.
-examples:
-  - context: Team launching a new developer platform with APIs, SDKs, and multiple client types requiring comprehensive documentation
-    user: "We need to design a documentation system for our new developer platform. How should we structure it and what tools should we use?"
-    assistant: "I'll engage the documentation-architect to design a comprehensive documentation system including information architecture, platform selection, automation pipelines, and metrics tracking for your developer platform."
-  - context: Organization with fragmented documentation across wikis, PDFs, GitHub READMEs, and Confluence with no clear ownership or versioning
-    user: "Our documentation is scattered everywhere and always out of date. How do we consolidate and maintain it?"
-    assistant: "I'll consult the documentation-architect to design a unified documentation architecture with docs-as-code workflows, ownership models, and freshness monitoring to eliminate fragmentation."
-  - context: Engineering team adopting API-first development and needing automated API documentation generation integrated into CI/CD
-    user: "We're moving to OpenAPI-first development. How do we automate API documentation generation and keep it in sync with our specs?"
-    assistant: "I'll engage the documentation-architect to design an automated API documentation pipeline using OpenAPI specs, including validation, mock generation, and publication workflows."
+description: "Expert in documentation systems design, docs-as-code pipelines, API documentation platforms (OpenAPI/AsyncAPI), and developer experience optimization. Use for documentation strategy, platform selection, information architecture, and documentation..."
+model: sonnet
 tools: Read, Write, Edit, Glob, Grep, Bash
-color: green
-maturity: production
 ---
 
 # Documentation Architect Agent

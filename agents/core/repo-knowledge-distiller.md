@@ -1,26 +1,8 @@
 ---
 name: repo-knowledge-distiller
 description: "Analyzes repositories and knowledge bases to produce synthesis documents for agent creation via RELIC evaluation and artifact discovery."
-examples:
-  - context: Creating an agent from an internal methodology repository
-    user: "I have a repository at ./my-framework that contains our team''s testing methodology. Distill it into an agent synthesis document."
-    assistant: "I''ll engage the repo-knowledge-distiller to systematically analyze your repository, classify its content, discover portable artifacts, and produce a 5-category synthesis document compatible with the agent-builder pipeline."
-  - context: Extracting knowledge from a documentation-heavy repository
-    user: "Analyze the docs/ directory of this project and produce a synthesis for a domain-expert agent."
-    assistant: "I''ll use the repo-knowledge-distiller to scan the documentation structure, extract key concepts and decision frameworks, catalog any tools and patterns, and generate a synthesis document that the agent-builder can consume directly."
-  - context: Discovering portable skills and configurations from a Claude Code project
-    user: "This project has .claude/agents/ and MCP configs. Distill everything portable into a synthesis."
-    assistant: "I''ll engage the repo-knowledge-distiller to discover all portable artifacts including Claude agents, MCP configurations, hooks, and commands, then produce a synthesis document with a Portable Artifacts appendix."
-color: cyan
-version: "1.0.0"
-category: core/pipeline
-maturity: production
-tags:
-  - repository-analysis
-  - knowledge-extraction
-  - agent-creation
-  - synthesis
-  - skill-discovery
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # Repository Knowledge Distiller

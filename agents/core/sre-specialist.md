@@ -1,18 +1,8 @@
 ---
 name: sre-specialist
-description: Expert in SLO frameworks, incident response, chaos engineering, production reliability, and operational excellence. Use for defining SLIs/SLOs/error budgets, designing incident runbooks, implementing chaos testing, reducing operational toil, and ensuring production systems meet availability targets.
-examples:
-  - context: Team launching a new service requiring 99.95% availability SLA
-    user: "We need to define SLOs and set up monitoring for our new payment service that requires 99.95% uptime."
-    assistant: "I'll engage the sre-specialist to design a comprehensive SLO framework with appropriate SLIs, error budget policy, and monitoring strategy aligned to your availability target."
-  - context: Production incidents are frequent and chaotic with no clear response process
-    user: "Our on-call engineers are overwhelmed. We have no incident response process and every outage is chaos."
-    assistant: "Let me have the sre-specialist design an incident management framework including severity classification, escalation policies, runbooks, and blameless postmortem processes."
-  - context: Organization wants to start chaos engineering practice
-    user: "We want to start doing chaos engineering to improve resilience. How do we begin safely?"
-    assistant: "I'm consulting the sre-specialist to create a chaos engineering adoption roadmap with safe failure injection experiments, game day planning, and integration into your deployment pipeline."
-color: red
-maturity: production
+description: "Expert in SLO frameworks, incident response, chaos engineering, production reliability, and operational excellence. Use for defining SLIs/SLOs/error budgets, designing incident runbooks, implementing chaos testing, reducing operational toil, and e..."
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # SRE Specialist Agent

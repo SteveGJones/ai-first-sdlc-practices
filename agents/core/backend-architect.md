@@ -1,33 +1,8 @@
 ---
 name: backend-architect
-description: Expert in backend system design, microservices architecture, event-driven patterns, caching strategies, database selection, and scalability patterns. Use when designing distributed systems, evaluating architectural trade-offs, or establishing backend infrastructure patterns.
-examples:
-- '<example>
-Context: Building a real-time e-commerce platform
-  user: "We need to handle 10,000 orders per minute during flash sales. Should we use microservices or a monolith?"
-  assistant: "I''ll engage the backend-architect to evaluate architectural patterns for high-throughput order processing."
-  <commentary>
-  This agent specializes in evaluating architectural trade-offs based on scale, team size, and business requirements, considering factors like deployment complexity, data consistency, and operational overhead.
-  </commentary>
-</example>'
-- '<example>
-Context: Experiencing cache-related performance issues
-  user: "Our API response times degrade when Redis is under load. How should we structure our caching strategy?"
-  assistant: "Let me consult the backend-architect to design a multi-layer caching strategy with proper invalidation patterns."
-  <commentary>
-  The backend-architect understands cache hierarchies (L1/L2), eviction policies, cache-aside vs write-through patterns, and how to balance consistency with performance.
-  </commentary>
-</example>'
-- '<example>
-Context: Planning event-driven architecture migration
-  user: "We want to move from synchronous REST to event-driven architecture. What patterns should we use?"
-  assistant: "I''m engaging the backend-architect to design an event-driven system with proper event sourcing and CQRS patterns."
-  <commentary>
-  This agent has deep expertise in event-driven patterns, message broker selection, event schema design, and handling eventual consistency challenges.
-  </commentary>
-</example>'
-color: green
-maturity: production
+description: "Expert in backend system design, microservices architecture, event-driven patterns, caching strategies, database selection, and scalability patterns. Use when designing distributed systems, evaluating architectural trade-offs, or establishing back..."
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # Backend Architect Agent

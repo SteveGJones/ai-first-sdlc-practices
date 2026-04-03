@@ -1,33 +1,8 @@
 ---
 name: agent-builder
-description: Builds production agents from research via 6-phase pipeline, archetype selection, and knowledge distillation. Use when creating or rebuilding agents.
-examples:
-- '<example>
-  Context: Creating a new specialist agent from completed research
-  user: "I have a research synthesis for a database-architect agent. Build the production agent from it."
-  assistant: "I''ll engage the agent-builder to construct a production-quality database-architect agent. It will analyze the research, select the appropriate archetype (Domain Expert + Architect hybrid), distill knowledge using the 30/50/20 rule, and produce a validated agent file."
-  <commentary>
-  The agent-builder specializes in transforming research documents into production agents. It knows all 5 reference archetypes, applies knowledge distillation techniques, and validates output against pipeline standards.
-  </commentary>
-</example>'
-- '<example>
-  Context: Rebuilding an existing agent with new research findings
-  user: "The security-architect agent needs to be rebuilt with updated research on zero-trust architecture and OWASP 2025 changes."
-  assistant: "I''ll use the agent-builder to reconstruct the security-architect agent. It will merge the new research with the existing agent structure, apply the could-be-anyone specificity filter, and ensure all decision frameworks are preserved."
-  <commentary>
-  The agent-builder can rebuild existing agents by analyzing new research, preserving effective existing content, and applying anti-pattern detection to ensure the rebuilt agent maintains production quality.
-  </commentary>
-</example>'
-- '<example>
-  Context: Choosing the right archetype for a new agent
-  user: "We need an agent for code review quality. Should it be a reviewer or an enforcer?"
-  assistant: "I''ll consult the agent-builder for archetype selection guidance. It will evaluate whether the agent primarily EVALUATES work (Reviewer archetype) or ENFORCES compliance rules (Enforcer archetype) based on the intended use cases."
-  <commentary>
-  The agent-builder has deep knowledge of all 5 reference archetypes and their selection criteria. It can guide archetype decisions based on the agent''s primary function: KNOWS, DESIGNS, EVALUATES, COORDINATES, or ENFORCES.
-  </commentary>
-</example>'
-color: purple
-maturity: production
+description: "Builds production agents from research via 6-phase pipeline, archetype selection, and knowledge distillation. Use when creating or rebuilding agents."
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 # Agent Builder

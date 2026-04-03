@@ -1,17 +1,8 @@
 ---
 name: data-architect
-description: Data Architect Agent
-examples:
-- '<example>
-  Context: When specialized expertise is needed
-  user: "Help with data architect"
-  assistant: "I can assist with that specific task."
-  <commentary>
-  This agent specializes in data architect
-  </commentary>
-</example>'
-color: yellow
-maturity: stub
+description: "Data Architect Agent"
+model: sonnet
+tools: Read, Glob, Grep, Bash
 ---
 
 The Data Architect Agent provides specialized expertise in its domain.
