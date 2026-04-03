@@ -18,6 +18,7 @@ EXCLUDE_DIRS = {
     "examples/ci-cd",
     "templates/gitignore",
     "docs/feature-proposals",
+    "plugins",
 }
 
 # Pattern: matches /tmp/ but NOT ./tmp/ (negative lookbehind)

@@ -634,6 +634,7 @@ class LoggingComplianceChecker:
             "coverage",
             ".pytest_cache",
             "logs",
+            "plugins",
         }
 
         # Add config-specified directories to skip

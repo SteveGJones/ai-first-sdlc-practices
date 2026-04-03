@@ -44,6 +44,7 @@ class TechnicalDebtDetector:
             "target",
             ".idea",
             ".vscode",
+            "plugins",
         }
 
         # File extensions to check
