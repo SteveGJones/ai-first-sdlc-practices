@@ -33,48 +33,78 @@ sdlc-core:
   hooks:
     - source: plugins/sdlc-core/hooks/hooks.json
 
-# Stub plugins — agents mapped here will be populated in Phase 2
+sdlc-team-common:
+  agents:
+    - source: agents/core/solution-architect.md
+    - source: agents/core/deep-research-agent.md
+    - source: agents/testing/performance-engineer.md
+    - source: agents/core/observability-specialist.md
+    - source: agents/core/database-architect.md
+    - source: agents/core/agent-builder.md
+    - source: agents/core/pipeline-orchestrator.md
+    - source: agents/core/repo-knowledge-distiller.md
+
 sdlc-team-ai:
-  agents: []
-  # Future:
-  # - source: agents/ai-development/ai-solution-architect.md
-  # - source: agents/ai-development/prompt-engineer.md
-  # - source: agents/ai-development/mcp-server-architect.md
-  # - source: agents/ai-builders/rag-system-designer.md
-  # - source: agents/ai-builders/context-engineer.md
-  # - source: agents/ai-builders/orchestration-architect.md
+  agents:
+    - source: agents/ai-development/ai-solution-architect.md
+    - source: agents/ai-development/prompt-engineer.md
+    - source: agents/ai-development/mcp-server-architect.md
+    - source: agents/ai-builders/rag-system-designer.md
+    - source: agents/ai-builders/context-engineer.md
+    - source: agents/ai-builders/orchestration-architect.md
+    - source: agents/ai-builders/ai-devops-engineer.md
+    - source: agents/ai-builders/ai-team-transformer.md
+    - source: agents/ai-development/a2a-architect.md
+    - source: agents/ai-development/agent-developer.md
+    - source: agents/ai-development/langchain-architect.md
+    - source: agents/ai-development/mcp-quality-assurance.md
+    - source: agents/ai-development/mcp-test-agent.md
+    - source: agents/testing/ai-test-engineer.md
 
 sdlc-team-fullstack:
-  agents: []
-  # Future:
-  # - source: agents/core/frontend-architect.md
-  # - source: agents/core/backend-architect.md
-  # - source: agents/core/api-architect.md
-  # - source: agents/core/devops-specialist.md
+  agents:
+    - source: agents/core/frontend-architect.md
+    - source: agents/core/backend-architect.md
+    - source: agents/core/api-architect.md
+    - source: agents/core/devops-specialist.md
+    - source: agents/core/ux-ui-architect.md
+    - source: agents/core/mobile-architect.md
+    - source: agents/core/frontend-security-specialist.md
+    - source: agents/core/data-architect.md
+    - source: agents/testing/integration-orchestrator.md
+    - source: agents/core/github-integration-specialist.md
 
 sdlc-team-cloud:
-  agents: []
-  # Future:
-  # - source: agents/core/cloud-architect.md
-  # - source: agents/core/container-platform-specialist.md
-  # - source: agents/core/sre-specialist.md
-  # - source: agents/ai-builders/ai-devops-engineer.md
+  agents:
+    - source: agents/core/cloud-architect.md
+    - source: agents/core/container-platform-specialist.md
+    - source: agents/core/sre-specialist.md
 
 sdlc-team-security:
-  agents: []
-  # Future:
-  # - source: agents/core/security-architect.md
-  # - source: agents/core/compliance-auditor.md
-  # - source: agents/core/data-privacy-officer.md
+  agents:
+    - source: agents/core/security-architect.md
+    - source: agents/core/compliance-auditor.md
+    - source: agents/core/compliance-report-generator.md
+    - source: agents/core/enforcement-strategy-advisor.md
+    - source: agents/core/data-privacy-officer.md
+
+sdlc-team-pm:
+  agents:
+    - source: agents/project-management/agile-coach.md
+    - source: agents/project-management/delivery-manager.md
+    - source: agents/project-management/project-plan-tracker.md
+    - source: agents/project-management/team-progress-tracker.md
+    - source: agents/sdlc/retrospective-miner.md
+
+sdlc-team-docs:
+  agents:
+    - source: agents/documentation/technical-writer.md
+    - source: agents/documentation/documentation-architect.md
 
 sdlc-lang-python:
-  agents: []
-  skills: []
-  # Future:
-  # - source: agents/sdlc/language-python-expert.md
+  agents:
+    - source: agents/sdlc/language-python-expert.md
 
 sdlc-lang-javascript:
-  agents: []
-  skills: []
-  # Future:
-  # - source: agents/sdlc/language-javascript-expert.md
+  agents:
+    - source: agents/sdlc/language-javascript-expert.md
