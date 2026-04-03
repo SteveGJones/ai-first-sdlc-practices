@@ -1,0 +1,54 @@
+{
+  "name": "ai-first-sdlc",
+  "owner": {
+    "name": "SteveGJones"
+  },
+  "metadata": {
+    "description": "AI-First SDLC Practices — plugin family for zero-debt development",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "sdlc-core",
+      "source": "./sdlc-core",
+      "description": "Core SDLC rules, validators, enforcement, and workflows",
+      "version": "0.1.0"
+    },
+    {
+      "name": "sdlc-team-ai",
+      "source": "./sdlc-team-ai",
+      "description": "AI/ML specialist agents — architects, prompt engineers, RAG designers",
+      "version": "0.1.0-stub"
+    },
+    {
+      "name": "sdlc-team-fullstack",
+      "source": "./sdlc-team-fullstack",
+      "description": "Full-stack agents — frontend, backend, API, DevOps architects",
+      "version": "0.1.0-stub"
+    },
+    {
+      "name": "sdlc-team-cloud",
+      "source": "./sdlc-team-cloud",
+      "description": "Cloud infrastructure agents — cloud, container, SRE specialists",
+      "version": "0.1.0-stub"
+    },
+    {
+      "name": "sdlc-team-security",
+      "source": "./sdlc-team-security",
+      "description": "Security agents — security, compliance, privacy specialists",
+      "version": "0.1.0-stub"
+    },
+    {
+      "name": "sdlc-lang-python",
+      "source": "./sdlc-lang-python",
+      "description": "Python-specific validation, patterns, and expert agents",
+      "version": "0.1.0-stub"
+    },
+    {
+      "name": "sdlc-lang-javascript",
+      "source": "./sdlc-lang-javascript",
+      "description": "JavaScript/TypeScript-specific validation and patterns",
+      "version": "0.1.0-stub"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "sdlc-lang-python",
+  "version": "0.1.0-stub",
+  "description": "Python-specific validation, patterns, and expert agents. Coming in Phase 3.",
+  "author": { "name": "SteveGJones" },
+  "keywords": ["sdlc", "python", "validation", "patterns"]
+}

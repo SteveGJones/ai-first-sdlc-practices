@@ -1,0 +1,7 @@
+{
+  "name": "sdlc-team-ai",
+  "version": "0.1.0-stub",
+  "description": "AI/ML specialist agents — architects, prompt engineers, RAG designers. Coming in Phase 2.",
+  "author": { "name": "SteveGJones" },
+  "keywords": ["sdlc", "ai", "ml", "agents"]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "sdlc-core",
+  "version": "0.1.0",
+  "description": "AI-First SDLC — zero-debt development with validators, enforcement, and workflows",
+  "author": {
+    "name": "SteveGJones"
+  },
+  "repository": "https://github.com/SteveGJones/ai-first-sdlc-practices",
+  "license": "MIT",
+  "keywords": ["sdlc", "ai-first", "zero-debt", "validation", "enforcement"]
+}
