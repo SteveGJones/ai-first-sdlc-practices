@@ -1,0 +1,7 @@
+{
+  "name": "sdlc-team-fullstack",
+  "version": "0.1.0-stub",
+  "description": "Full-stack agents — frontend, backend, API, DevOps architects. Coming in Phase 2.",
+  "author": { "name": "SteveGJones" },
+  "keywords": ["sdlc", "fullstack", "frontend", "backend", "agents"]
+}
