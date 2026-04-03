@@ -14,6 +14,7 @@
 
 - **Skills are instruction-only, not executable**: Skills tell Claude what commands to run but cannot execute autonomously. A future MCP server wrapping the validators would give Claude native tool access without Bash.
 - **Release process is manual**: The release-plugin skill describes a copy workflow but doesn't automate it with a script. Phase 4 should add a Python script or GitHub Action for CI-driven releases.
+- **Build artifacts must be excluded from source validation**: The `plugins/` directory contains copies of validators which themselves contain patterns the debt checker looks for (e.g., `deprecated`, `assertEquals`). This caused CI to double-count issues and fail. All validators need `plugins` in their skip_dirs — future validators must account for this too.
 
 ## Lessons Learned
 
@@ -21,6 +22,8 @@
 2. **`disable-model-invocation: true` is essential for workflow skills**: Skills with side effects (commit, PR, deploy) must be manual-only. Auto-loaded skills should be pure reference (like `rules`).
 3. **Marketplace source paths must be relative**: Plugins within a marketplace use `./sdlc-core` relative paths. This enables same-repo hosting without external infrastructure.
 4. **SessionStart hooks are the team onboarding entry point**: The banner displays formation status and suggests setup-team, creating a natural discovery flow for new users.
+5. **Source-to-release pipelines require exclusion rules**: When build artifacts contain copies of source, every scanner must exclude the output directory. This is the same lesson as `.gitignore` for build dirs — `plugins/` is this project's `dist/`.
+6. **`/reload-plugins` doesn't activate newly installed plugins**: A full session restart is required after first-time plugin install. Document this in setup instructions.
 
 ## Changes Made
 
