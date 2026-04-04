@@ -406,5 +406,5 @@ Output `LOOP_COMPLETE`.
 4. PR is created and merged to main
 5. Build journal complete with all 8 sections at every phase
 6. Framework Quality Report complete with Friction Log and Agent Value Assessment
-7. CLAUDE.md exists and accurately describes the project
+7. CLAUDE.md and Claude memory exist and accurately describe the project
 8. App is running on port 18080
