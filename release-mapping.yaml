@@ -19,6 +19,8 @@ sdlc-core:
     - source: CONSTITUTION.md
       dest: skills/rules/constitution.md
     - source: skills/setup-team/SKILL.md
+    - source: skills/setup-ci/SKILL.md
+    - source: skills/setup-ci/templates/python.yml
     - source: skills/release-plugin/SKILL.md
   agents:
     - source: agents/core/sdlc-enforcer.md

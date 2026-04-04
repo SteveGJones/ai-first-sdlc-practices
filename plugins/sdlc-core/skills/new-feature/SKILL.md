@@ -53,4 +53,12 @@ print('Syntax OK')
 "
 ```
 
-5. **Report** the created files and branch name to the user.
+5. **Check for CI/CD** (first feature only)
+
+If `.github/workflows/` does not exist or contains no workflow files:
+
+```
+No CI/CD workflow found. Run /sdlc-core:setup-ci to add GitHub Actions validation.
+```
+
+6. **Report** the created files and branch name to the user.
