@@ -37,8 +37,20 @@ git checkout -b feature/$1
 
 4. **Run syntax validation**
 
+```
+/sdlc-core:validate --syntax
+```
+
+If the validate skill is not available (e.g., first-time setup), run the inline fallback:
+
 ```bash
-python tools/validation/local-validation.py --syntax
+python -c "
+import ast, pathlib
+for f in pathlib.Path('.').rglob('*.py'):
+    if '.venv' in str(f): continue
+    ast.parse(f.read_text())
+print('Syntax OK')
+"
 ```
 
 5. **Report** the created files and branch name to the user.
