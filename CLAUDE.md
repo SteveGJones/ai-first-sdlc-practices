@@ -55,6 +55,20 @@ Install the SDLC plugin family for skills, agents, and automated enforcement:
 
 Then configure your team: `/sdlc-core:setup-team`
 
+### Plugin Family
+
+| Plugin | Description |
+|--------|-------------|
+| `sdlc-core` | Rules, validators, enforcement, workflows (always install) |
+| `sdlc-team-common` | Cross-cutting architects, researchers, performance engineers |
+| `sdlc-team-ai` | AI/ML specialists (14 agents) |
+| `sdlc-team-fullstack` | Frontend, backend, API, DevOps (10 agents) |
+| `sdlc-team-cloud` | Cloud, containers, SRE (3 agents) |
+| `sdlc-team-security` | Security, compliance, privacy (5 agents) |
+| `sdlc-team-pm` | Agile coach, delivery manager, tracking (5 agents) |
+| `sdlc-team-docs` | Technical writer, documentation architect |
+| `sdlc-lang-*` | Language-specific validation and patterns (Python, JS, Go, Java, Rust) |
+
 ### Available Skills
 
 | Skill | Description |
