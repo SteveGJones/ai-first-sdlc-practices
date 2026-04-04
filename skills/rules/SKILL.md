@@ -13,9 +13,9 @@ For the complete rules reference, see [constitution.md](constitution.md).
 
 ### Validation Commands
 
-- After writing code: `python tools/validation/local-validation.py --syntax`
-- Before commits: `python tools/validation/local-validation.py --quick`
-- Before PR: `python tools/validation/local-validation.py --pre-push`
+- After writing code: `/sdlc-core:validate --syntax`
+- Before commits: `/sdlc-core:validate --quick`
+- Before PR: `/sdlc-core:validate --pre-push`
 
 ### Zero Technical Debt Policy
 
