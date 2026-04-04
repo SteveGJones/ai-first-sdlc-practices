@@ -1,14 +1,8 @@
 # PROMPT.md — SDLC Plugin Integration Test
 
-## What This Is
+Build a Python web app from scratch in this blank repository using the AI-First SDLC plugin framework. The app displays a visual timeline of its own construction. Every phase produces a detailed journal entry documenting what worked, what didn't, and what should change in the framework.
 
-An automated end-to-end test of the AI-First SDLC plugin framework. Starting from a blank GitHub repo, build a Python web app that displays a visual timeline of its own construction. Every phase produces a detailed journal entry documenting what worked, what didn't, and what should change in the framework.
-
-The build journal serves two audiences:
-- **External users** browsing the demo app see how an AI built the app phase by phase
-- **Framework maintainers** reading the journal see which agents contributed, where skills fell short, and what to fix next
-
-The loop ends when the app is **running on port 18080**, **all tests pass**, the **PR is merged to main**, and the **Framework Quality Report is complete**.
+You are done when: the app is **running on port 18080**, **all tests pass**, the **PR is merged to main**, and the **Framework Quality Report is complete**.
 
 ## Ground Rules
 

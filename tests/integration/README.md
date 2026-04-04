@@ -1,20 +1,29 @@
 # SDLC Plugin Integration Test
 
-Automated end-to-end test of the AI-First SDLC plugin framework.
-Produces a working demo app with a full framework quality report.
+Automated end-to-end test of the AI-First SDLC plugin framework. Drop `PROMPT.md` and `ralph.yml` into a blank GitHub repo, run `ralph run`, and walk away. When it finishes you get:
+
+1. **A working demo app** — a Python web app displaying a visual timeline of its own construction, running at http://127.0.0.1:18080
+2. **A framework quality report** — honest assessment of what worked, what didn't, and what should change
+
+## Why This Exists
+
+The build journal serves two audiences:
+- **External users** browsing the demo app see how an AI built a real application phase by phase — what agents it consulted, what decisions it made, what went wrong
+- **Framework maintainers** reading the journal get a prioritised Friction Log, Agent Value Assessment, and Constitution Compliance report that tells them exactly what to fix next
+
+This is both the test and the demo. If the app works and the journal is honest, the framework works. If it doesn't, we have a bug to fix.
 
 ## What It Does
 
-Starting from a blank GitHub repo, Ralph drives Claude through 10 phases:
+Ralph drives Claude through 10 phases with zero human intervention:
 bootstrap, planning, architecture, implementation, testing, self-population,
 validation, runtime proof, shipping (commit/push/PR/merge), and session handoff.
 
-The result is a Build Journal Web App — a Python web app that displays a
-visual timeline of its own construction. Every phase is documented with:
-- What agents were invoked and what they actually contributed
-- What worked and what didn't (honest, specific)
+Every phase produces an 8-section journal entry documenting:
+- What agents were invoked and what they **actually** contributed
+- What worked and what didn't (honest, specific — not rubber stamps)
 - Validation results (actual command output, not just pass/fail)
-- Framework recommendations (what should change)
+- Framework recommendations (what should change in the SDLC framework)
 
 ## Prerequisites
 
