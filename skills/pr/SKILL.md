@@ -13,8 +13,8 @@ Run full validation, then create a PR if clean.
 
 1. **Run pre-push validation**
 
-```bash
-python tools/validation/local-validation.py --pre-push
+```
+/sdlc-core:validate --pre-push
 ```
 
 2. **If validation fails**, report the issues and stop. Do NOT push or create PR.
@@ -40,7 +40,7 @@ gh pr create --title "<short title under 70 chars>" --body "$(cat <<'EOF'
 <List of files modified/created>
 
 ## Test plan
-- [ ] `python tools/validation/local-validation.py --pre-push` passes
+- [ ] `/sdlc-core:validate --pre-push` passes
 - [ ] CI pipeline passes
 <additional test steps as needed>
 
