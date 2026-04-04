@@ -26,6 +26,7 @@ sdlc-core:
     - source: agents/core/sdlc-enforcer.md
     - source: agents/core/critical-goal-reviewer.md
     - source: agents/testing/code-review-specialist.md
+    - source: agents/core/verification-enforcer.md
   scripts:
     - source: tools/validation/local-validation.py
     - source: tools/validation/check-technical-debt.py
