@@ -61,6 +61,8 @@ If nothing, say "No recommendations — this phase worked as designed">
 
 ## Phase 0: Bootstrap
 
+**Assumption:** You are in a blank, checked-out GitHub repo. A human created this repo and ran `ralph run` in it. Do not create, delete, or rename repositories.
+
 ### 0a. Virtual environment
 
 ```bash
@@ -106,7 +108,7 @@ Verify: `/plugin list` should show sdlc-core, sdlc-team-common, sdlc-team-fullst
 
 ### 0d. Initial commit
 
-Create `README.md`:
+Update `README.md`:
 ```markdown
 # SDLC Integration Test
 

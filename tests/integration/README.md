@@ -34,19 +34,21 @@ Every phase produces an 8-section journal entry documenting:
 
 ## How to Run
 
-1. Create a blank GitHub repo:
+**Important:** You (a human) create and manage the repo. The Ralph loop never creates, deletes, or renames repositories. It only works inside the directory you give it.
+
+1. **You** create a blank GitHub repo and clone it:
    ```bash
-   gh repo create sdlc-integration-test --public --clone
-   cd sdlc-integration-test
+   gh repo create my-sdlc-test --public --clone
+   cd my-sdlc-test
    ```
 
-2. Copy the test files:
+2. **You** copy the test files into it:
    ```bash
    cp /path/to/ai-first-sdlc-practices/tests/integration/PROMPT.md .
    cp /path/to/ai-first-sdlc-practices/tests/integration/ralph.yml .
    ```
 
-3. Run:
+3. **You** start the loop:
    ```bash
    ralph run
    ```
@@ -84,15 +86,27 @@ Browse the app at http://127.0.0.1:18080:
 - **Max iterations**: 40. If it hits 40, something is fundamentally broken —
   the journal is the diagnostic.
 
-## Cleaning Up
+## Re-running
 
-To re-run the test, delete and recreate the repo:
+To run the test again, **you** (not the loop) manage the repo:
+
 ```bash
+# Option A: Delete and recreate (you decide)
 cd ..
-gh repo delete sdlc-integration-test --yes
-gh repo create sdlc-integration-test --public --clone
-cd sdlc-integration-test
+gh repo delete my-sdlc-test --yes
+gh repo create my-sdlc-test --public --clone
+cd my-sdlc-test
+
+# Option B: Use a new repo name
+gh repo create my-sdlc-test-2 --public --clone
+cd my-sdlc-test-2
+```
+
+Then copy the test files and run again:
+```bash
 cp /path/to/tests/integration/PROMPT.md .
 cp /path/to/tests/integration/ralph.yml .
 ralph run
 ```
+
+**Never put repo deletion commands in PROMPT.md.** An unverified AI loop must not have the ability to delete repositories.
