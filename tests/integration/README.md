@@ -30,7 +30,25 @@ Every phase produces an 8-section journal entry documenting:
 - GitHub CLI (`gh`) authenticated
 - Python 3.12+
 - Ralph orchestrator installed (`ralph --version`)
-- Claude Code with SDLC plugins accessible at the marketplace path
+- Claude Code installed
+- **SDLC plugins installed globally** (see below)
+
+### Plugin Installation (one-time setup)
+
+Plugin installation modifies `~/.claude/settings.json` (global, machine-wide). Do this once, not per test run:
+
+```bash
+# In Claude Code, from the ai-first-sdlc-practices directory:
+/plugin marketplace add /Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins
+/plugin install sdlc-core@ai-first-sdlc
+/plugin install sdlc-team-common@ai-first-sdlc
+/plugin install sdlc-team-fullstack@ai-first-sdlc
+/plugin install sdlc-team-pm@ai-first-sdlc
+/plugin install sdlc-team-docs@ai-first-sdlc
+/plugin install sdlc-lang-python@ai-first-sdlc
+```
+
+Verify with `/plugin list`. The Ralph loop will verify plugins are present but will **not** install or modify global settings.
 
 ## How to Run
 

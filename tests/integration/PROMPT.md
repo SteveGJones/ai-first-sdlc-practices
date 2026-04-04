@@ -87,24 +87,25 @@ __pycache__/
 .ralph/
 ```
 
-### 0c. Install SDLC plugins from local marketplace
+### 0c. Verify SDLC plugins are available
 
+The SDLC plugins must be installed **before** running this test. Plugin installation modifies global Claude settings (`~/.claude/settings.json`) and is a human responsibility — not something the loop does.
+
+Verify the plugins are available:
 ```
-/plugin marketplace add /Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins
-/plugin install sdlc-core@ai-first-sdlc
+/plugin list
 ```
 
-Run team setup:
+Expected: sdlc-core, sdlc-team-common, sdlc-team-fullstack, sdlc-team-pm, sdlc-team-docs, sdlc-lang-python.
+
+If plugins are missing, **stop and ask the human to install them.** Do not run `/plugin marketplace add` or `/plugin install` — these modify global machine settings.
+
+Configure the team for this project:
 ```
 /sdlc-core:setup-team
 ```
 
-Select **A. Full-stack web application**. Say yes to PM and docs. Then:
-```
-/plugin install sdlc-lang-python@ai-first-sdlc
-```
-
-Verify: `/plugin list` should show sdlc-core, sdlc-team-common, sdlc-team-fullstack, sdlc-team-pm, sdlc-team-docs, sdlc-lang-python.
+Select **A. Full-stack web application**. Say yes to PM and docs.
 
 ### 0d. Initial commit
 
