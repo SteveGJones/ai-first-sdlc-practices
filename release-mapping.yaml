@@ -16,7 +16,8 @@ sdlc-core:
     - source: skills/commit/SKILL.md
     - source: skills/pr/SKILL.md
     - source: skills/rules/SKILL.md
-    - source: skills/rules/constitution.md
+    - source: CONSTITUTION.md
+      dest: skills/rules/constitution.md
     - source: skills/setup-team/SKILL.md
     - source: skills/release-plugin/SKILL.md
   agents:
