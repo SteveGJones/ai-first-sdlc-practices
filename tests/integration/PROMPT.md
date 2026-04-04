@@ -87,18 +87,48 @@ __pycache__/
 .ralph/
 ```
 
-### 0c. Verify SDLC plugins are available
+### 0c. Install SDLC plugins for this project
 
-The SDLC plugins must be installed **before** running this test. Plugin installation modifies global Claude settings (`~/.claude/settings.json`) and is a human responsibility — not something the loop does.
+Install plugins with **project scope** — this writes to `.claude/settings.json` in the repo, not to global `~/.claude/settings.json`. Do NOT use global scope.
 
-Verify the plugins are available:
+First, add the local marketplace:
+```bash
+# Write marketplace config to project settings
+cat > .claude/settings.json << 'EOF'
+{
+  "extraKnownMarketplaces": {
+    "ai-first-sdlc": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "sdlc-core@ai-first-sdlc": true,
+    "sdlc-team-common@ai-first-sdlc": true,
+    "sdlc-team-fullstack@ai-first-sdlc": true,
+    "sdlc-team-pm@ai-first-sdlc": true,
+    "sdlc-team-docs@ai-first-sdlc": true,
+    "sdlc-lang-python@ai-first-sdlc": true
+  }
+}
+EOF
+mkdir -p .claude
 ```
-/plugin list
+
+Alternatively, if the `/plugin install --scope project` command is available:
+```
+/plugin marketplace add /Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins --scope project
+/plugin install sdlc-core@ai-first-sdlc --scope project
+/plugin install sdlc-team-common@ai-first-sdlc --scope project
+/plugin install sdlc-team-fullstack@ai-first-sdlc --scope project
+/plugin install sdlc-team-pm@ai-first-sdlc --scope project
+/plugin install sdlc-team-docs@ai-first-sdlc --scope project
+/plugin install sdlc-lang-python@ai-first-sdlc --scope project
 ```
 
-Expected: sdlc-core, sdlc-team-common, sdlc-team-fullstack, sdlc-team-pm, sdlc-team-docs, sdlc-lang-python.
-
-If plugins are missing, **stop and ask the human to install them.** Do not run `/plugin marketplace add` or `/plugin install` — these modify global machine settings.
+Verify: `/plugin list` should show all 6 plugins.
 
 Configure the team for this project:
 ```

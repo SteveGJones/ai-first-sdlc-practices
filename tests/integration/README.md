@@ -31,24 +31,9 @@ Every phase produces an 8-section journal entry documenting:
 - Python 3.12+
 - Ralph orchestrator installed (`ralph --version`)
 - Claude Code installed
-- **SDLC plugins installed globally** (see below)
+- The `ai-first-sdlc-practices` repo cloned locally (source for plugins)
 
-### Plugin Installation (one-time setup)
-
-Plugin installation modifies `~/.claude/settings.json` (global, machine-wide). Do this once, not per test run:
-
-```bash
-# In Claude Code, from the ai-first-sdlc-practices directory:
-/plugin marketplace add /Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins
-/plugin install sdlc-core@ai-first-sdlc
-/plugin install sdlc-team-common@ai-first-sdlc
-/plugin install sdlc-team-fullstack@ai-first-sdlc
-/plugin install sdlc-team-pm@ai-first-sdlc
-/plugin install sdlc-team-docs@ai-first-sdlc
-/plugin install sdlc-lang-python@ai-first-sdlc
-```
-
-Verify with `/plugin list`. The Ralph loop will verify plugins are present but will **not** install or modify global settings.
+The SDLC plugins are installed **by the loop** with project scope — they write to `.claude/settings.json` inside the test repo, not to your global `~/.claude/settings.json`. No global settings are modified.
 
 ## How to Run
 
