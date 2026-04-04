@@ -46,6 +46,17 @@ Phase 1 created the plugin family with stub team plugins. Teams can install but 
 
 ---
 
+## Success Criteria
+
+- All 10 plugins contain their assigned agents (verified by file listing)
+- All 52 agent frontmatter fields normalized to Claude Code plugin schema
+- setup-team skill shows agent rosters with counts per plugin
+- All plugins bumped to v1.0.0
+- Agent Template Compliance Check passes (all agents have required fields)
+- Plugin marketplace.json updated with all 10 plugins
+
+---
+
 ## Changes Made
 
 | Action | File |

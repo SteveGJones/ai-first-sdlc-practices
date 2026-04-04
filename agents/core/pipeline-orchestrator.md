@@ -3,6 +3,20 @@ name: pipeline-orchestrator
 description: "Unified entry point for agent creation pipeline. Routes web research or repo analysis, then delegates to agent-builder for construction."
 model: sonnet
 tools: Read, Glob, Grep, Bash
+examples:
+- '<example>
+Context: Team wants to build a new specialized agent and needs to run the full agent creation pipeline.
+  user: "We need a new agent for our GraphQL API. How do we start the pipeline?"
+  assistant: "I will orchestrate the agent creation pipeline for your GraphQL API agent. Phase 1: I will determine whether to run web research (for broad GraphQL best practices) or repo analysis (if you have an existing GraphQL codebase to distill). For a new agent without an existing codebase, I will route to deep-research-agent with a structured research prompt covering GraphQL schema design, resolver patterns, performance (N+1 problem, DataLoader), and security (query depth limiting, introspection). Once research is complete, I will hand off to agent-builder with the synthesis document and archetype recommendation."
+  <commentary>The Pipeline Orchestrator routes agent creation requests through research or repo analysis phases and coordinates handoffs to the agent-builder.</commentary>
+</example>'
+- '<example>
+Context: Team has an internal library with no documentation and wants an agent that understands it.
+  user: "We have a 10,000-line internal framework. Can we build an agent that understands it without web research?"
+  assistant: "I will orchestrate a repo-based agent creation for your internal framework. Since the knowledge is proprietary (web research won''t help), I will route to repo-knowledge-distiller with your repository path. The distiller will apply RELIC evaluation to extract architecture patterns, public APIs, configuration patterns, and implicit constraints from the codebase. I will then hand the synthesis document to agent-builder to construct a Domain Expert archetype agent specialized in your framework. Expected pipeline duration: 2-3 hours for distillation + construction."
+  <commentary>Pipeline Orchestrator routes to repo-knowledge-distiller instead of web research for internal/proprietary knowledge bases.</commentary>
+</example>'
+color: green
 ---
 
 # Pipeline Orchestrator
