@@ -1,3 +1,32 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC Practices](#ai-first-sdlc-practices)
+  - [Setup](#setup)
+    - [Plugin Install (Recommended)](#plugin-install-recommended)
+    - [Available Plugins](#available-plugins)
+    - [Available Skills](#available-skills)
+    - [Agent-Based Setup (Pre-release / Development)](#agent-based-setup-pre-release--development)
+    - [Script-Based Setup (Legacy)](#script-based-setup-legacy)
+  - [How It Works](#how-it-works)
+    - [Rules](#rules)
+    - [Validation](#validation)
+    - [Agents](#agents)
+  - [Documentation](#documentation)
+    - [Agent Development](#agent-development)
+  - [Integration Testing](#integration-testing)
+  - [Known Limitations](#known-limitations)
+  - [Zero Technical Debt Policy](#zero-technical-debt-policy)
+  - [Development](#development)
+    - [Using the Framework (Your Project)](#using-the-framework-your-project)
+    - [Developing the Framework (This Repo)](#developing-the-framework-this-repo)
+    - [Current Version: 1.8.0](#current-version-180)
+  - [Contributing](#contributing)
+  - [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC Practices
 
 A framework for integrating AI agents as primary developers while maintaining quality and process compliance. Provides specialist agents, validation tools, enforcement rules, and workflow skills for zero-technical-debt development.
