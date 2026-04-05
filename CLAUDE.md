@@ -16,12 +16,19 @@ specify → architect → implement → review
 ## Validation (run after every change)
 
 ```bash
-python tools/validation/local-validation.py --syntax       # After writing code
-python tools/validation/local-validation.py --quick        # Before commits
-python tools/validation/local-validation.py --pre-push     # Before PR
+python tools/validation/local-validation.py --syntax       # After writing code (this repo)
+python tools/validation/local-validation.py --quick        # Before commits (this repo)
+python tools/validation/local-validation.py --pre-push     # Before PR (this repo)
 ```
 
-Pre-push runs 8 checks: syntax, pre-commit, technical debt, architecture, type safety, security, logging compliance, static analysis.
+For plugin consumers (projects using the plugins, not this repo):
+```
+/sdlc-core:validate --syntax       # After writing code
+/sdlc-core:validate --quick        # Before commits
+/sdlc-core:validate --pre-push     # Before PR
+```
+
+Pre-push runs 10 checks: syntax, ruff lint, ruff format, technical debt, tests, import check, type safety, security, smoke test.
 
 ## Key Validators
 
@@ -39,10 +46,10 @@ No TODOs, no `any` types, no commented-out code. Use `./tmp/` not `/tmp/`. 10 ma
 ## Context Loading
 
 Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
-- CONSTITUTION.md — all rules (10 articles, progressive levels)
+- CONSTITUTION.md — all rules (11 articles, progressive levels)
 - CLAUDE-CONTEXT-logging.md — logging standards
 - CLAUDE-CONTEXT-architecture.md — architecture docs
-- AGENT-INDEX.md — 63+ specialist agents
+- AGENT-INDEX.md — 50+ specialist agents across 10 plugins
 
 ## Plugin Installation (Recommended)
 
@@ -73,9 +80,10 @@ Then configure your team: `/sdlc-core:setup-team`
 
 | Skill | Description |
 |-------|-------------|
-| `/sdlc-core:validate` | Run 8-check validation pipeline |
+| `/sdlc-core:validate` | Run 10-check validation pipeline (syntax/lint/tests/security/smoke) |
 | `/sdlc-core:new-feature` | Create feature proposal, retrospective, and branch |
-| `/sdlc-core:commit` | Validated commit with quick checks |
+| `/sdlc-core:commit` | Validated commit with test execution |
 | `/sdlc-core:pr` | Full validation + PR creation |
 | `/sdlc-core:setup-team` | Configure team formation |
+| `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
