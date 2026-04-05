@@ -76,7 +76,13 @@ Look for `.claude/team-config.json` in the project root. If it exists, display t
 
    for each recommended plugin. Note: skill cannot programmatically install plugins — it provides the commands for the user to run.
 
-8. **Write `.claude/team-config.json`** to record the selection:
+8. **Write team configuration** to record the selection.
+
+   **Primary location**: `.sdlc/team-config.json` (project root, not `.claude/`).
+
+   **Why not `.claude/`**: Claude Code treats `.claude/` as a sensitive path and may block writes. Using `.sdlc/` avoids this friction while keeping configuration project-local and gitignore-able.
+
+   If `.sdlc/` directory does not exist, create it first.
 
    ```json
    {
@@ -97,5 +103,7 @@ Look for `.claude/team-config.json` in the project root. If it exists, display t
    - Cloud → `cloud-native-architect`
    - API → `enterprise-architect`
    - Security → `compliance-specialist`
+
+   **Fallback**: If `.sdlc/team-config.json` also fails to write for any reason, write to `team-config.json` in the project root and warn the user.
 
 9. **Report** the configured formation and installed plugins.
