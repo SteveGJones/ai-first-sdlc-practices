@@ -37,8 +37,28 @@ git checkout -b feature/$1
 
 4. **Run syntax validation**
 
-```bash
-python tools/validation/local-validation.py --syntax
+```
+/sdlc-core:validate --syntax
 ```
 
-5. **Report** the created files and branch name to the user.
+If the validate skill is not available (e.g., first-time setup), run the inline fallback:
+
+```bash
+python -c "
+import ast, pathlib
+for f in pathlib.Path('.').rglob('*.py'):
+    if '.venv' in str(f): continue
+    ast.parse(f.read_text())
+print('Syntax OK')
+"
+```
+
+5. **Check for CI/CD** (first feature only)
+
+If `.github/workflows/` does not exist or contains no workflow files:
+
+```
+No CI/CD workflow found. Run /sdlc-core:setup-ci to add GitHub Actions validation.
+```
+
+6. **Report** the created files and branch name to the user.

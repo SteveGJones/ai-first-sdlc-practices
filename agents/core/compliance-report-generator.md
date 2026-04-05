@@ -1,20 +1,22 @@
 ---
 name: compliance-report-generator
-description: Expert in SDLC compliance reporting, metrics visualization, remediation tracking, and audit-ready documentation. Use for creating actionable reports tailored to different audiences (team, executive, auditor) and tracking compliance trends.
-color: blue
-maturity: production
-examples:
-  - context: Team needs monthly SDLC compliance status with actionable remediation items
-    user: "Generate a compliance report for team 'platform-squad' covering feature proposals, retrospectives, and PR compliance this month"
-    assistant: "I'll engage the compliance-report-generator to create a team-focused report with detailed findings, RAG status indicators, and prioritized remediation actions."
-  - context: Executive leadership requires quarterly compliance dashboard showing progress toward SOC 2 readiness
-    user: "Create an executive compliance dashboard for Q4 showing our SOC 2 readiness progress"
-    assistant: "Let me have the compliance-report-generator create an executive dashboard with high-level KPIs, trend analysis, risk heat maps, and strategic recommendations for SOC 2 preparation."
-  - context: Audit team needs evidence package documenting SDLC process compliance over the last 6 months
-    user: "Prepare audit-ready documentation showing our SDLC compliance history for the SOC 2 Type II audit"
-    assistant: "I'm engaging the compliance-report-generator to create an audit evidence package with traceability matrices, control effectiveness reports, and timestamped compliance artifacts."
-tools: Read, Glob, Grep, Bash
+description: "Expert in SDLC compliance reporting, metrics visualization, remediation tracking, and audit-ready documentation. Use for creating actionable reports tailored to different audiences (team, executive, auditor) and tracking compliance trends."
 model: sonnet
+tools: Read, Glob, Grep, Bash
+examples:
+- '<example>
+Context: Engineering team needs to present compliance status to executives who don''t understand technical details.
+  user: "We need a compliance report for our board meeting. They don''t understand SOC 2 controls."
+  assistant: "I will generate an executive compliance report tailored for board-level communication. I will translate technical control gaps into business risk language (e.g., ''access control weakness'' becomes ''unauthorized access risk with $X liability exposure''), create a compliance health dashboard with RAG status indicators, show trend lines for remediation progress, and summarize the top 3 risks with associated remediation investments and timelines. Technical details will be in an appendix for the CTO."
+  <commentary>The Compliance Report Generator creates audience-tailored reports that translate technical compliance status into business risk language for executives.</commentary>
+</example>'
+- '<example>
+Context: Team needs to track remediation progress across 47 compliance findings over a 6-month period.
+  user: "We have 47 audit findings to remediate. How do we track and report progress effectively?"
+  assistant: "I will create a remediation tracking report system. I will build a findings register with severity classification (Critical/High/Medium/Low), assigned owner, target date, and current status. Weekly status reports will show velocity (findings closed per week), slippage alerts (items past due date), and projected completion date based on current velocity. I will generate both a team-level operational view and an executive summary showing percentage complete and days to target completion."
+  <commentary>Remediation tracking, progress visualization, and velocity-based forecasting are Compliance Report Generator specialties.</commentary>
+</example>'
+color: red
 ---
 
 # Compliance Report Generator

@@ -1,0 +1,9 @@
+{
+  "name": "sdlc-team-docs",
+  "version": "1.0.0",
+  "description": "Documentation agents — technical writer, documentation architect",
+  "author": {
+    "name": "SteveGJones"
+  },
+  "keywords": ["sdlc", "documentation", "technical-writing", "docs-as-code"]
+}

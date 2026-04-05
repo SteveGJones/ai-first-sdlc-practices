@@ -55,6 +55,15 @@ Check your level: `python tools/automation/sdlc-level.py check`
 5.4. Zero technical debt threshold: `python tools/validation/check-technical-debt.py --threshold 0`. [Production+]
 5.5. CI is the source of truth — local success does not guarantee CI success.
 5.6. Create a language-specific validator for your project (see LANGUAGE-SPECIFIC-VALIDATORS.md). [Production+]
+5.7. **Tests must exist and pass before code is considered complete.** [Prototype+]
+  - Write tests alongside or before implementation code — not as an afterthought.
+  - Run the test suite after every significant code change. Static analysis alone is not sufficient.
+  - At minimum: verify every module imports cleanly and the application starts without error.
+  - For Python: `pytest` must be configured and passing. For other languages: equivalent test runner.
+5.8. **Smoke test the running application** before any commit that changes application code. [Prototype+]
+  - Start the application and verify it launches without errors.
+  - Hit at least one endpoint or entry point to confirm basic functionality.
+  - If the app cannot start, it is not ready to commit — regardless of what static checks say.
 
 ## Article 6: Agent Collaboration [Production+]
 
@@ -87,14 +96,24 @@ Check your level: `python tools/automation/sdlc-level.py check`
 9.2. Internal review process — users see only the final version.
 9.3. Use mathematical/systematic solutions, not magic number patches.
 
-## Article 10: Progressive Levels
+## Article 10: Verification & Proof [Prototype+]
 
-10.1. **Prototype**: Quick exploration and MVPs. TODOs allowed. Basic validation only. Direct commits allowed for solo developers.
-10.2. **Production**: Professional applications with real users. Zero technical debt. Full validation pipeline. All architecture documents required.
-10.3. **Enterprise**: Large teams and regulated environments. Add compliance documentation, audit trails, multiple reviewer approval, stakeholder communication logs.
-10.4. Check graduation readiness: `python tools/automation/sdlc-level.py graduation`.
-10.5. Don't over-engineer prototypes. Don't under-engineer production systems.
+10.1. **Documentation must match code.** Every API endpoint, database column, and feature described in documentation must be verifiable in the actual codebase. Documentation that describes intent rather than reality is a defect.
+10.2. **Tests must exist for every module.** No application module is complete without corresponding test files. A test directory with no tests is a failure, not a pass.
+10.3. **Tests must be run, not just written.** `pytest` (or equivalent) must be executed and the output recorded. Test configuration alone is not evidence of testing.
+10.4. **The application must be started and verified.** Before any commit that changes application code, start the app and confirm it launches without error. Hit at least one endpoint. Static analysis cannot catch runtime errors.
+10.5. **Evidence over assertion.** "Tests pass" requires actual test output. "App works" requires actual HTTP responses. Claims without evidence are not accepted by the verification-enforcer agent.
+10.6. **Fix-then-reverify.** When a verification check fails, fix the issue and re-run ALL checks — not just the one that failed. Partial re-verification is not sufficient.
+10.7. Invoke the `verification-enforcer` agent at every phase transition and before any PR. It is the last gate before shipping.
+
+## Article 11: Progressive Levels
+
+11.1. **Prototype**: Quick exploration and MVPs. TODOs allowed. Basic validation only. Direct commits allowed for solo developers.
+11.2. **Production**: Professional applications with real users. Zero technical debt. Full validation pipeline. All architecture documents required.
+11.3. **Enterprise**: Large teams and regulated environments. Add compliance documentation, audit trails, multiple reviewer approval, stakeholder communication logs.
+11.4. Check graduation readiness: `python tools/automation/sdlc-level.py graduation`.
+11.5. Don't over-engineer prototypes. Don't under-engineer production systems.
 
 ---
 
-*This document is the single source of truth for all AI-First SDLC rules. Enforcement is handled by the sdlc-enforcer agent and validation scripts. For setup instructions, see CLAUDE-SETUP.md. For context-specific guidance, see the context loading table in CLAUDE-CORE.md.*
+*This document is the single source of truth for all AI-First SDLC rules. Enforcement is handled by the sdlc-enforcer and verification-enforcer agents and validation scripts. For setup instructions, see CLAUDE-SETUP.md. For context-specific guidance, see the context loading table in CLAUDE-CORE.md.*

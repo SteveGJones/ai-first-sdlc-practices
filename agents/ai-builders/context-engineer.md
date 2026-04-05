@@ -1,20 +1,22 @@
 ---
 name: context-engineer
-description: Expert in AI memory architectures, context window optimization, token budget management, and state persistence. Use for designing conversation memory systems, implementing sliding window strategies, RAG-based context extension, and multi-agent context coordination.
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: "Expert in AI memory architectures, context window optimization, token budget management, and state persistence. Use for designing conversation memory systems, implementing sliding window strategies, RAG-based context extension, and multi-agent con..."
 model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
 examples:
-  - context: Team building a customer service chatbot that needs to remember conversation history across multiple sessions
-    user: "Our support bot loses context when users return after a few hours. How should we design the memory system?"
-    assistant: "I'll engage the context-engineer to design a hierarchical memory architecture with immediate context (current session), short-term memory (recent sessions via Redis), and long-term memory (semantic embeddings in a vector store) for your support bot."
-  - context: AI application hitting token limits in long conversations
-    user: "We're hitting the 128k context window limit in long design discussions. How do we handle this?"
-    assistant: "Let me consult the context-engineer to implement a sliding window strategy with semantic compression—we'll retain critical information through summarization while discarding low-relevance segments."
-  - context: Multi-agent system where agents need to share context
-    user: "Our agents are duplicating work because they don't know what other agents have already done. How do we share context?"
-    assistant: "I'm engaging the context-engineer to design a shared context store with agent-specific scopes and a coordination protocol that prevents context duplication while maintaining isolation."
-color: green
-maturity: production
+- '<example>
+Context: Developer building a long-running conversational AI assistant is hitting context window limits.
+  user: "Our chatbot loses context after about 20 turns. How do we solve this?"
+  assistant: "I will design a memory architecture for your chatbot. The problem is naive context accumulation — every message grows the window. I recommend a hybrid memory system: a sliding window for recent turns (last 8), a summary buffer that compresses older conversation into a running summary, and semantic retrieval (vector search over conversation history) for relevant past context. This keeps tokens under budget while preserving meaningful continuity."
+  <commentary>The Context Engineer specializes in AI memory architectures, sliding window strategies, and context window optimization for conversational systems.</commentary>
+</example>'
+- '<example>
+Context: Multi-agent system needs to share state between agents without exceeding token budgets.
+  user: "How should our agents share context without each one loading the entire conversation history?"
+  assistant: "I will design a shared context protocol for your multi-agent system. Each agent should receive only its relevant context slice: a global state document (project summary, current task, constraints) plus its specific task context. I will implement a context router that selects relevant memory chunks via semantic similarity, compresses them with LLMLingua if needed, and injects only what each agent needs. This reduces per-agent token consumption by 60-80%."
+  <commentary>Multi-agent context sharing and token budget management across agent boundaries is a Context Engineer specialty.</commentary>
+</example>'
+color: purple
 ---
 
 # Context Engineer

@@ -63,6 +63,16 @@ jobs:
     - name: Technical Debt Check
       run: python tools/validation/check-technical-debt.py .
 
+    - name: Constitution Sync Check
+      run: |
+        if ! diff -q CONSTITUTION.md plugins/sdlc-core/skills/rules/constitution.md > /dev/null 2>&1; then
+          echo "::error::CONSTITUTION.md and plugins/sdlc-core/skills/rules/constitution.md have drifted apart."
+          echo "Run /sdlc-core:release-plugin to sync, or manually copy CONSTITUTION.md to the plugin."
+          diff CONSTITUTION.md plugins/sdlc-core/skills/rules/constitution.md || true
+          exit 1
+        fi
+        echo "Constitution sync: OK"
+
     - name: Check /tmp usage
       run: python tools/validation/check-tmp-usage.py
 

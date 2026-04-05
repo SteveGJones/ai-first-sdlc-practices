@@ -1,0 +1,10 @@
+# Ralph Integration Test — SDLC Plugin Ecosystem
+# Drop this + PROMPT.md into a blank checked-out GitHub repo, then: ralph run
+
+cli:
+  backend: "claude"
+
+event_loop:
+  prompt_file: "PROMPT.md"
+  completion_promise: "LOOP_COMPLETE"
+  max_iterations: 40

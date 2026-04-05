@@ -1,7 +1,7 @@
 {
   "name": "sdlc-lang-javascript",
-  "version": "0.1.0-stub",
-  "description": "JavaScript/TypeScript-specific validation and patterns. Coming in Phase 3.",
+  "version": "1.0.0",
+  "description": "JavaScript/TypeScript-specific validation and patterns",
   "author": { "name": "SteveGJones" },
   "keywords": ["sdlc", "javascript", "typescript", "validation"]
 }

@@ -3,358 +3,220 @@
 **Table of Contents**
 
 - [AI-First SDLC Practices](#ai-first-sdlc-practices)
-  - [🎯 Quick Setup for Your Project (V3 - Zero Dependencies!)](#-quick-setup-for-your-project-v3---zero-dependencies)
-  - [🚀 Quick Start](#-quick-start)
-    - [🆕 V3: Pure Agent-Based Setup (Recommended)](#-v3-pure-agent-based-setup-recommended)
-      - [Step-by-Step V3 Setup](#step-by-step-v3-setup)
-    - [V2: Script-Based Setup (Legacy)](#v2-script-based-setup-legacy)
-    - [For Humans (One-liner Setup)](#for-humans-one-liner-setup)
-    - [Alternative: Direct Python Setup](#alternative-direct-python-setup)
-    - [🚀 Quickstart Mode (NEW!)](#-quickstart-mode-new)
-    - [What This Does](#what-this-does)
-    - [🆕 Enhanced Setup Features (Phase 2)](#-enhanced-setup-features-phase-2)
-      - [Smart Language Detection](#smart-language-detection)
-      - [Intelligent .gitignore Assembly](#intelligent-gitignore-assembly)
-      - [Language-Specific Test Templates](#language-specific-test-templates)
-      - [Quickstart Mode](#quickstart-mode)
-  - [📚 Documentation](#-documentation)
-    - [Essential Guides](#essential-guides)
+  - [Setup](#setup)
+    - [Plugin Install (Recommended)](#plugin-install-recommended)
+    - [Available Plugins](#available-plugins)
+    - [Available Skills](#available-skills)
+    - [Agent-Based Setup (Pre-release / Development)](#agent-based-setup-pre-release--development)
+    - [Script-Based Setup (Legacy)](#script-based-setup-legacy)
+  - [How It Works](#how-it-works)
+    - [Rules](#rules)
+    - [Validation](#validation)
+    - [Agents](#agents)
+  - [Documentation](#documentation)
     - [Agent Development](#agent-development)
-    - [Core Policies](#core-policies)
-  - [🚫 Zero Technical Debt Policy](#-zero-technical-debt-policy)
-  - [🎯 Core Principles](#-core-principles)
-  - [🛠️ Components](#-components)
-    - [Templates](#templates)
-    - [Tools](#tools)
-    - [Examples](#examples)
-  - [📋 Requirements](#-requirements)
-  - [🏗️ Framework Development vs Usage](#-framework-development-vs-usage)
-    - [Using the Framework (You're Starting a New Project)](#using-the-framework-youre-starting-a-new-project)
-    - [Developing the Framework (Contributing to This Repo)](#developing-the-framework-contributing-to-this-repo)
-  - [🔄 Updating the Framework](#-updating-the-framework)
-    - [For Projects Using This Framework](#for-projects-using-this-framework)
-      - [Quick Update Check](#quick-update-check)
-      - [Manual Update Check](#manual-update-check)
-      - [Resources](#resources)
+  - [Integration Testing](#integration-testing)
+  - [Known Limitations](#known-limitations)
+  - [Zero Technical Debt Policy](#zero-technical-debt-policy)
+  - [Development](#development)
+    - [Using the Framework (Your Project)](#using-the-framework-your-project)
+    - [Developing the Framework (This Repo)](#developing-the-framework-this-repo)
     - [Current Version: 1.8.0](#current-version-180)
-  - [🔄 Upgrading Your Agents](#-upgrading-your-agents)
-  - [🤝 Contributing](#-contributing)
-  - [📄 License](#-license)
-  - [🙏 Acknowledgments](#-acknowledgments)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # AI-First SDLC Practices
 
-A comprehensive framework for integrating AI agents as primary developers while maintaining quality and process compliance.
+A framework for integrating AI agents as primary developers while maintaining quality and process compliance. Provides specialist agents, validation tools, enforcement rules, and workflow skills for zero-technical-debt development.
 
-## 🎯 Quick Setup for Your Project (V3 - Zero Dependencies!)
+## Setup
 
-**Tell your AI assistant (Claude):**
+### Plugin Install (Recommended)
+
+Install the plugin family from the Claude Code marketplace. This is the standard approach for using the framework in your projects.
+
+**Step 1: Add the marketplace and install the core plugin**
 ```
-I want to set up AI-First SDLC v3 for my project. Please:
-1. Download the V3 orchestrator: curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
-2. Install it: mkdir -p .claude/agents && mv v3-setup-orchestrator.md .claude/agents/
-3. Tell me to restart you so the agent loads
-4. After restart, I'll say: "Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project"
+/plugin marketplace add SteveGJones/ai-first-sdlc-practices
+/plugin install sdlc-core@ai-first-sdlc
 ```
 
-The V3 orchestrator will interview you about your project and set up a customized AI-First SDLC in < 2 minutes.
+**Step 2: Configure your team**
+```
+/sdlc-core:setup-team
+```
 
-**⚠️ IMPORTANT**: This framework is designed to be ADDED TO your existing project, not cloned separately.
+This presents project types (Full-stack, AI/ML, Cloud, API, Security, Custom) and installs the matching team plugins. For example, a full-stack web app installs:
 
-## 🚀 Quick Start
+| Plugin | Description |
+|--------|-------------|
+| `sdlc-core` | Rules, validators, enforcement, workflows (always installed) |
+| `sdlc-team-common` | Solution architect, research agent, performance engineer, database architect |
+| `sdlc-team-fullstack` | Frontend, backend, API, DevOps architects |
 
-### 🆕 V3: Pure Agent-Based Setup (Recommended)
-The new V3 approach uses AI agents exclusively - no Python scripts or dependencies required!
+**Step 3: Start working**
+```
+/sdlc-core:new-feature 1 my-feature "Description of the feature"
+```
 
-#### Step-by-Step V3 Setup
+### Available Plugins
 
-**Step 1: Install the V3 Orchestrator Agent**
+| Plugin | Description |
+|--------|-------------|
+| `sdlc-core` | Rules, validators, enforcement, workflows (always install) |
+| `sdlc-team-common` | Cross-cutting architects, researchers, performance engineers |
+| `sdlc-team-ai` | AI/ML specialists — architects, prompt engineers, RAG designers |
+| `sdlc-team-fullstack` | Frontend, backend, API, DevOps architects |
+| `sdlc-team-cloud` | Cloud, container, SRE specialists |
+| `sdlc-team-security` | Security, compliance, privacy specialists |
+| `sdlc-team-pm` | Agile coach, delivery manager, progress tracking |
+| `sdlc-team-docs` | Technical writer, documentation architect |
+| `sdlc-lang-python` | Python-specific validation, patterns, expert agent |
+| `sdlc-lang-javascript` | JavaScript/TypeScript validation and patterns |
+
+### Available Skills
+
+| Skill | Description |
+|-------|-------------|
+| `/sdlc-core:validate` | Run validation pipeline (--syntax, --quick, --pre-push) |
+| `/sdlc-core:new-feature` | Create feature proposal, retrospective, and branch |
+| `/sdlc-core:commit` | Validated commit with test execution |
+| `/sdlc-core:pr` | Full validation + PR creation |
+| `/sdlc-core:setup-team` | Configure team formation for your project |
+| `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
+| `/sdlc-core:release-plugin` | Package source into plugins |
+
+### Agent-Based Setup (Pre-release / Development)
+
+For testing unreleased agents or contributing to the framework, install agents directly from the repository. This approach gives you access to agents before they're published as plugins.
+
 ```bash
-# Download and install the orchestrator
+# Download the setup orchestrator
 curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > v3-setup-orchestrator.md
-mkdir -p .claude/agents
-mv v3-setup-orchestrator.md .claude/agents/
+mkdir -p .claude/agents && mv v3-setup-orchestrator.md .claude/agents/
+
+# Restart Claude Code, then:
+# "Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project"
 ```
 
-**Step 2: Restart your AI assistant** (Required for agent to load)
+The orchestrator interviews you about your project and downloads only the agents you need. Use this approach when:
+- You want agents that haven't been released as plugins yet
+- You're contributing to the framework and testing changes
+- You need a custom agent selection not covered by the plugin team presets
 
-**Step 3: Invoke the V3 Orchestrator**
-```
-Use the v3-setup-orchestrator agent to set up AI-First SDLC for my project
-```
+### Script-Based Setup (Legacy)
 
-The V3 Setup Orchestrator will:
-1. **Discover** - Interview you about your project's purpose and challenges
-2. **Decide** - Select the right SDLC variant and agent team
-3. **Download** - Fetch only needed components from GitHub repository
-4. **Delegate** - Hand off to specialists for GitHub and local setup
-5. **Deploy** - Activate your customized AI team for daily work
+The original Python script approach. Still functional but superseded by the plugin system.
 
-**✨ V3 Benefits**:
-- Zero dependencies (no Python required)
-- Intelligent agent orchestration
-- Downloads only what you need from GitHub
-- Customized to your project's reality
-- < 2 minute setup
-
-### V2: Script-Based Setup (Legacy)
-For projects requiring the traditional Python-based setup:
-
-```
-I want to add AI-First SDLC practices to this project. Please:
-1. First read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-CORE.md
-2. Then read https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/CLAUDE-SETUP.md
-3. Download and run: curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
-4. Run: python setup-smart.py "[describe your project]" --non-interactive
-Do NOT clone the repository - we're adding the framework to THIS project.
-```
-
-**⚠️ V2 Requirements**:
-- Python 3.8+ required
-- Multiple dependencies
-- Downloads entire framework
-- Generic setup for all projects
-
-### For Humans (One-liner Setup)
 ```bash
-# Quick setup with curl (recommended)
-curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash -s -- "building a REST API"
-
-# Or without project purpose (uses default)
-curl -L https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup.sh | bash
-```
-
-### Alternative: Direct Python Setup
-```bash
-# If you prefer to download and run manually
 curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
-python setup-smart.py "building a REST API with FastAPI"
+python setup-smart.py "describe your project" --non-interactive
 ```
 
-### 🚀 Quickstart Mode (NEW!)
+## How It Works
+
+The framework enforces a specify-architect-implement-review workflow:
+
+1. **Feature proposal** (`docs/feature-proposals/XX-name.md`) documents what and why
+2. **Architecture** designed with specialist agents before coding
+3. **Implementation** with continuous testing and validation
+4. **Review** by code-review-specialist and verification-enforcer agents
+5. **Ship** with full validation passing
+
+### Rules
+
+All rules are in [CONSTITUTION.md](CONSTITUTION.md) — 11 articles covering git workflow, documentation, architecture, code quality, validation, agent collaboration, logging, security, self-review, verification, and progressive levels (Prototype/Production/Enterprise).
+
+### Validation
+
 ```bash
-# Ultra-fast setup in < 10 seconds
-python setup-smart.py --quickstart
-
-# Creates only:
-# - README.md (if missing)
-# - .gitignore (smart language-specific)
-# - Initial test file
-# - VERSION file
+/sdlc-core:validate --syntax      # After writing code
+/sdlc-core:validate --quick       # Before commits
+/sdlc-core:validate --pre-push    # Before PRs
 ```
 
-Both methods will:
-1. Download new hierarchical instruction system (CLAUDE-CORE.md + context modules)
-2. Set up branch protection using gh CLI (prompts for auth if needed)
-3. Create all necessary directories and templates
-4. Generate initial feature proposal on ai-first-kick-start branch
+The validation pipeline runs up to 10 checks: syntax, lint, format, technical debt, tests, import check, type safety, security, and smoke test. Each check includes a preflight gate that reports missing tools with install instructions.
 
-### What This Does
-1. **Downloads hierarchical instruction system** (CLAUDE-CORE.md for 88% less context usage)
-2. **Creates `ai-first-kick-start` branch** automatically
-3. **Generates compatibility CLAUDE.md** pointing to new modular system
-4. **Sets up branch protection** using secure gh CLI (prompts for auth if needed)
-5. **Creates initial feature proposal** to kickstart the workflow
-6. **Configures validation tools** and framework scripts
-7. **Provides AI education** on branch protection verification and troubleshooting
-8. **Sets up CI/CD** for your platform (GitHub, GitLab, etc.)
+### Agents
 
-### 🆕 Enhanced Setup Features (Phase 2)
+The framework provides 50+ specialist agents across 10 categories. Key agents in `sdlc-core`:
 
-#### Smart Language Detection
-- Automatically detects: Python, Node.js, Go, Java, Ruby, Rust
-- Prompts for language selection in blank projects
-- Creates language-specific .gitignore and test files
+| Agent | Role |
+|-------|------|
+| `sdlc-enforcer` | Process compliance and quality gates |
+| `critical-goal-reviewer` | Requirements verification and gap analysis |
+| `code-review-specialist` | Code quality, security (OWASP), patterns |
+| `verification-enforcer` | Docs-code fidelity, test coverage, runtime proof |
 
-#### Intelligent .gitignore Assembly
-- Merges base + AI-tools + language-specific patterns
-- Backs up existing .gitignore files automatically
-- Removes duplicate entries during merge
+## Documentation
 
-#### Language-Specific Test Templates
-- Python: `test_framework_setup.py`
-- Node.js: `test/framework.test.js`
-- Java: `src/test/java/FrameworkTest.java`
-- Ruby: `test/framework_test.rb`
-- Rust: `tests/framework_test.rs`
-- Go/General: `test-framework.sh`
-
-#### Quickstart Mode
-```bash
-python setup-smart.py --quickstart
-# - Auto-detects everything possible
-# - Creates minimal setup in < 10 seconds
-# - Perfect for rapid prototyping
-```
-
-## 📚 Documentation
-
-### Essential Guides
-- [Documentation Index](docs/README.md) - Complete documentation directory
-- [HOWTO Guide](docs/HOWTO.md) - Comprehensive usage guide
-- [Quick Reference](docs/QUICK-REFERENCE.md) - Command cheat sheet
-- [Workflow Diagrams](docs/workflow-diagram.md) - Visual process flows
+| Document | Description |
+|----------|-------------|
+| [CONSTITUTION.md](CONSTITUTION.md) | All rules — single source of truth (11 articles) |
+| [CLAUDE-CORE.md](CLAUDE-CORE.md) | Operational instructions, commands, context loading |
+| [CLAUDE.md](CLAUDE.md) | Gateway file — concise entry point for Claude Code |
+| [docs/HOWTO.md](docs/HOWTO.md) | Comprehensive usage guide |
+| [docs/QUICK-REFERENCE.md](docs/QUICK-REFERENCE.md) | Command cheat sheet |
 
 ### Agent Development
-- **[Agent Creation Guide](docs/AGENT-CREATION-GUIDE.md)** - How to write effective agents
-- **[Agent Format Specification](docs/AGENT-FORMAT-SPEC.md)** - Technical specification
-- [Agent Generator Tool](tools/agents/README.md) - Validate and generate agents
 
-### Core Policies
-- [Constitution](CONSTITUTION.md) - All rules (single source of truth)
-- [Zero Technical Debt Policy](docs/ZERO-TECHNICAL-DEBT.md) - Architecture-first development guide
-- [AI Autonomy Guidelines](docs/AI-AUTONOMY.md) - Autonomous AI operation
+| Document | Description |
+|----------|-------------|
+| [Agent Creation Guide](docs/AGENT-CREATION-GUIDE.md) | How to write effective agents |
+| [Agent Format Spec](docs/AGENT-FORMAT-SPEC.md) | Technical specification |
+| [AGENT-INDEX.md](AGENT-INDEX.md) | Full catalog of all agents |
 
-## 🚫 Zero Technical Debt Policy
+## Integration Testing
 
-This framework enforces **Architecture-First Development** to prevent technical debt accumulation:
+The framework includes an automated integration test at `tests/integration/`. It uses Ralph to drive Claude through 10 phases — from blank repo to running app — producing a Build Journal Web App that documents its own construction. The build journal serves as both a demo and a framework quality report.
 
-1. **No code without architecture** - All 6 architecture documents must be complete
-2. **Zero tolerance for debt indicators** - No TODOs, FIXMEs, commented code, or `any` types
-3. **Type safety mandatory** - Proper typing required in all languages
-4. **Automated enforcement** - Pre-commit hooks and CI/CD validation
+See [tests/integration/README.md](tests/integration/README.md) for how to run it.
 
-The policy ensures that tactical coding decisions don't lead to expensive rewrites later. Teams report 70% reduction in refactoring needs after adopting this approach.
+## Known Limitations
 
-See [Zero Technical Debt Policy](docs/ZERO-TECHNICAL-DEBT.md) for implementation details.
+1. **`.claude/` write protection**: Claude Code blocks writes to `.claude/` in project directories (security feature). Project-scoped plugin installation and project-scoped memory both require workarounds. See [#81](https://github.com/SteveGJones/ai-first-sdlc-practices/issues/81).
 
-## 🎯 Core Principles
+2. **Slash commands in automated loops**: Skills like `/sdlc-core:new-feature` and `/sdlc-core:validate` require an interactive Claude Code session. They cannot be invoked from Ralph loops or CI scripts. The loop can read the skill's SKILL.md and execute the steps manually.
 
-1. **Zero Technical Debt Policy** - Architecture-first development, no tactical shortcuts
-2. **Mandatory Branch Strategy** - No direct pushes to main
-3. **Feature Proposals First** - Document before implementing
-4. **Architecture Documentation Required** - 6 mandatory documents before coding
-5. **Progress Tracking** - Maintain task visibility
-6. **Context Preservation** - Seamless handoffs between sessions
-7. **Automated Validation** - Ensure compliance continuously
+3. **Plugin cache**: Claude Code caches plugins globally at `~/.claude/plugins/cache/`. When testing new plugin versions, clear the cache first: `rm -rf ~/.claude/plugins/cache/ai-first-sdlc/`
 
-## 🛠️ Components
+## Zero Technical Debt Policy
 
-### Templates
-- `CLAUDE-CORE.md` - Essential AI instructions (88% smaller than legacy)
-- `CLAUDE-CONTEXT-*.md` - Task-specific instructions loaded dynamically
-- Feature proposal templates
-- Implementation plan templates
-- Retrospective templates
-- Architecture templates (6 mandatory documents):
-  - Requirements Traceability Matrix
-  - What-If Analysis
-  - Architecture Decision Records
-  - System Invariants
-  - Integration Design
-  - Failure Mode Analysis
+The framework enforces architecture-first development:
 
-### Tools
-- **Progress Tracker** - Task management for AI and humans
-- **Context Manager** - Preserve state between sessions
-- **Validation Pipeline** - 9-point compliance checks + architecture & debt validation
-- **Architecture Validator** - Ensures all 6 architecture documents are complete
-- **Technical Debt Detector** - Zero-tolerance enforcement for code quality
-- **Branch Protection** - Automated git configuration
-- **Setup Script** - One-command framework installation with architecture templates
+1. No code without architecture — design documents required before implementation
+2. No TODOs, FIXMEs, commented code, or `any` types
+3. Type safety mandatory — strict typing in all languages
+4. Tests mandatory — written alongside implementation, not after
+5. Smoke test mandatory — the app must start and respond before committing
+6. Automated enforcement via pre-commit hooks and CI/CD validation
 
-### Examples
-- Simple project setup
-- Multi-agent collaboration
-- CI/CD integration
+See [CONSTITUTION.md](CONSTITUTION.md) Articles 4, 5, and 10 for the complete rules.
 
-## 📋 Requirements
+## Development
 
-- Python 3.8+
-- Git 2.0+
-- Optional: pre-commit (for hooks)
+### Using the Framework (Your Project)
 
-## 🏗️ Framework Development vs Usage
+Install the plugins, run setup-team, and follow the workflow. The framework tools validate your code, the agents assist your design, and the skills enforce the process.
 
-### Using the Framework (You're Starting a New Project)
-- Run the setup script in YOUR project
-- Framework tools are downloaded to YOUR project
-- Follow the practices in YOUR development
-- Your CI/CD runs the validation
+### Developing the Framework (This Repo)
 
-### Developing the Framework (Contributing to This Repo)
-- See [.framework/FRAMEWORK-DEVELOPMENT.md](.framework/FRAMEWORK-DEVELOPMENT.md)
-- We dogfood our own practices
-- Framework CI/CD tests the framework itself
-- Located in `.framework/` and `.github/`
+This repo dogfoods its own practices. Key development conventions:
 
-## 🔄 Updating the Framework
-
-### For Projects Using This Framework
-
-The AI-First SDLC framework now includes version management. To check for updates:
-
-#### Quick Update Check
-```bash
-# Give this prompt to Claude:
-"Check for updates to the AI-First SDLC framework"
-```
-
-Claude will:
-1. Check your current version (`cat VERSION`)
-2. Compare with latest version
-3. Apply updates if available
-4. Verify everything works
-
-#### Manual Update Check
-```bash
-# Your version
-cat VERSION
-
-# Latest version
-curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/VERSION
-```
-
-#### Resources
-- **Update Prompt**: [docs/updates/UPDATE-PROMPT.md](docs/updates/UPDATE-PROMPT.md)
-- **What's New**: [docs/updates/whats-new.md](docs/updates/whats-new.md)
-- **Migration Guides**: [docs/releases/](docs/releases/)
-- **Full Changelog**: [CHANGELOG.md](CHANGELOG.md)
+- Branch naming: `feature/`, `fix/`, `docs/`
+- Feature proposals required before implementation
+- Retrospective required before PR
+- Plugin source lives in `skills/`, `agents/`, `tools/` — packaged to `plugins/` via `release-mapping.yaml`
+- Run `/sdlc-core:release-plugin` to package source into plugins
 
 ### Current Version: 1.8.0
 
-**Latest Features**:
-- 🔄 **Agent Upgrade Protocol** - Upgrade agents in-place via v3-setup-orchestrator
-- 🔬 **42 Research-Rebuilt Agents** - Grounded in systematic web research with CRAAP evaluation
-- 🏗️ **Agent Creation Pipeline** - 4 agents for building custom domain-specific agents
-- 🎯 **65 Total Agents** - Up from 31 in v2, covering 10 categories
-- 📚 **Research Prompt Library** - 50+ structured prompts and synthesis outputs
+## Contributing
 
-## 🔄 Upgrading Your Agents
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-If you already have AI-First SDLC set up and want the latest research-rebuilt agents or the new agent creation pipeline, use the smart upgrade prompt below.
+## License
 
-**Tell your AI assistant:**
-```
-I want to upgrade my AI-First SDLC agents to the latest versions. Please:
-1. Update the v3-setup-orchestrator:
-   curl -s https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/agents/v3-setup-orchestrator.md > .claude/agents/v3-setup-orchestrator.md
-2. Tell me to restart Claude Code so the updated orchestrator loads
-3. After restart, I'll say: "Use the v3-setup-orchestrator to upgrade my agents"
-```
-
-**What happens:**
-The orchestrator analyzes your project (languages, frameworks, pain points) and builds a tailored upgrade plan:
-- **Selects the right agents** for your specific project type and tech stack
-- **Always includes the Agent Creation Pipeline** (4 agents for building custom agents)
-- **Preserves all your existing agents** -- nothing is deleted or overwritten without asking
-- **Asks before upgrading** -- if a newer research-rebuilt version exists for an agent you already have, you choose whether to upgrade it, skip it, or decide one-by-one
-- **Ignores custom agents** -- any agents you created yourself are never touched
-
-After the upgrade completes, restart Claude Code for the new agents to load.
-
-See [Migration Guide: v1.7.0 to v1.8.0](docs/releases/v1.7.0-to-v1.8.0.md) for full details.
-
-## 🤝 Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to the framework itself.
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
-## 🙏 Acknowledgments
-
-This framework was developed based on successful patterns discovered during real-world AI-assisted software development projects.
+MIT License — see [LICENSE](LICENSE) for details.

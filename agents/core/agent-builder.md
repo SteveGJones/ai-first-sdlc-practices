@@ -1,33 +1,22 @@
 ---
 name: agent-builder
-description: Builds production agents from research via 6-phase pipeline, archetype selection, and knowledge distillation. Use when creating or rebuilding agents.
+description: "Builds production agents from research via 6-phase pipeline, archetype selection, and knowledge distillation. Use when creating or rebuilding agents."
+model: sonnet
+tools: Read, Glob, Grep, Bash
 examples:
 - '<example>
-  Context: Creating a new specialist agent from completed research
-  user: "I have a research synthesis for a database-architect agent. Build the production agent from it."
-  assistant: "I''ll engage the agent-builder to construct a production-quality database-architect agent. It will analyze the research, select the appropriate archetype (Domain Expert + Architect hybrid), distill knowledge using the 30/50/20 rule, and produce a validated agent file."
-  <commentary>
-  The agent-builder specializes in transforming research documents into production agents. It knows all 5 reference archetypes, applies knowledge distillation techniques, and validates output against pipeline standards.
-  </commentary>
+Context: Team has completed research on Kubernetes deployment patterns and needs to build an agent from it.
+  user: "We have a 50-page research synthesis on Kubernetes best practices. Can you build an agent from it?"
+  assistant: "I will construct a Kubernetes specialist agent using the 6-phase pipeline. Starting with Phase 1 (Research Analysis): I will catalog the knowledge units in your synthesis — declarative facts (Kubernetes API versions, resource types), procedural rules (when to use StatefulSets vs. Deployments, health probe configuration patterns), and anti-patterns (common misconfigurations). Phase 2 (Archetype Selection): Kubernetes expertise is 60% declarative knowledge + design trade-offs, so I will use a Domain Expert + Architect hybrid. I will then build the YAML frontmatter with domain-specific examples and construct the agent body following the 30/50/20 content ratio rule."
+  <commentary>The Agent Builder executes the 6-phase construction pipeline from research synthesis to finished agent, applying archetype selection and knowledge distillation techniques.</commentary>
 </example>'
 - '<example>
-  Context: Rebuilding an existing agent with new research findings
-  user: "The security-architect agent needs to be rebuilt with updated research on zero-trust architecture and OWASP 2025 changes."
-  assistant: "I''ll use the agent-builder to reconstruct the security-architect agent. It will merge the new research with the existing agent structure, apply the could-be-anyone specificity filter, and ensure all decision frameworks are preserved."
-  <commentary>
-  The agent-builder can rebuild existing agents by analyzing new research, preserving effective existing content, and applying anti-pattern detection to ensure the rebuilt agent maintains production quality.
-  </commentary>
+Context: Existing agent is producing generic, inconsistent outputs and needs to be rebuilt.
+  user: "Our security-reviewer agent gives vague feedback. Every review looks the same. How do we fix it?"
+  assistant: "I will diagnose and rebuild your security-reviewer agent. Running the could-be-anyone test on your current agent — if I can replace ''security-reviewer'' with any other agent name and the instructions still make sense, it is a Platitude Agent anti-pattern. I will audit for specificity: count named tools (OWASP ZAP, Semgrep, Bandit), specific standards (OWASP Top 10 2021, CWE-89 for SQL injection), and decision frameworks (when to classify a finding as Critical vs. High). I will rebuild using the Reviewer archetype template with issue classification, severity scales, and structured verdict format."
+  <commentary>Agent quality diagnosis, anti-pattern detection, and agent reconstruction are core Agent Builder capabilities.</commentary>
 </example>'
-- '<example>
-  Context: Choosing the right archetype for a new agent
-  user: "We need an agent for code review quality. Should it be a reviewer or an enforcer?"
-  assistant: "I''ll consult the agent-builder for archetype selection guidance. It will evaluate whether the agent primarily EVALUATES work (Reviewer archetype) or ENFORCES compliance rules (Enforcer archetype) based on the intended use cases."
-  <commentary>
-  The agent-builder has deep knowledge of all 5 reference archetypes and their selection criteria. It can guide archetype decisions based on the agent''s primary function: KNOWS, DESIGNS, EVALUATES, COORDINATES, or ENFORCES.
-  </commentary>
-</example>'
-color: purple
-maturity: production
+color: green
 ---
 
 # Agent Builder
