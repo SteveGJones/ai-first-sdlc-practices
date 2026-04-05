@@ -35,6 +35,41 @@ Every phase produces an 8-section journal entry documenting:
 
 The SDLC plugins are installed **by the loop** with project scope — they write to `.claude/settings.json` inside the test repo, not to your global `~/.claude/settings.json`. No global settings are modified.
 
+### Clearing stale global plugin installs
+
+If you previously installed the SDLC plugins globally (via `/plugin install sdlc-core@ai-first-sdlc` without `--scope project`), the global cached versions will take precedence over the project-scoped install. This means the test runs against old plugin versions, not the latest source.
+
+To ensure the test uses the latest plugins from source:
+
+1. **Remove the global plugin cache:**
+   ```bash
+   rm -rf ~/.claude/plugins/cache/ai-first-sdlc/
+   ```
+
+2. **Remove the SDLC plugins from global settings.** Edit `~/.claude/settings.json` and:
+   - Remove all `sdlc-*@ai-first-sdlc` entries from `enabledPlugins`
+   - Remove the `ai-first-sdlc` entry from `extraKnownMarketplaces`
+
+   Or use Claude Code:
+   ```
+   /plugin uninstall sdlc-core@ai-first-sdlc
+   /plugin uninstall sdlc-team-common@ai-first-sdlc
+   /plugin uninstall sdlc-team-fullstack@ai-first-sdlc
+   /plugin uninstall sdlc-team-pm@ai-first-sdlc
+   /plugin uninstall sdlc-team-docs@ai-first-sdlc
+   /plugin uninstall sdlc-lang-python@ai-first-sdlc
+   ```
+
+3. **Verify clean state:**
+   ```bash
+   # Should show no ai-first-sdlc entries
+   grep "ai-first-sdlc" ~/.claude/settings.json
+   # Should not exist
+   ls ~/.claude/plugins/cache/ai-first-sdlc/ 2>/dev/null
+   ```
+
+After this, the test loop's project-scoped install in Phase 0 will install fresh from the source directory every time. No stale cache, no version confusion.
+
 ## How to Run
 
 **Important:** You (a human) create and manage the repo. The Ralph loop never creates, deletes, or renames repositories. It only works inside the directory you give it.
