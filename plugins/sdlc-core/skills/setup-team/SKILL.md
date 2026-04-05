@@ -165,10 +165,24 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
        "sdlc-core@ai-first-sdlc",
        "<team-plugin>@ai-first-sdlc"
      ],
+     "technologies_detected": ["postgresql", "redis", "fastapi"],
+     "discovered_tools": [
+       {
+         "name": "@postgresql/mcp-server",
+         "type": "mcp-server",
+         "url": "https://npmjs.com/package/@postgresql/mcp-server",
+         "installed": true,
+         "discovered_at": "<YYYY-MM-DD>"
+       }
+     ],
      "configured_at": "<YYYY-MM-DD>",
      "configured_by": "sdlc:setup-team"
    }
    ```
+
+   - `technologies_detected`: list of technology names found by the tech stack scan (step 5a) plus any added by the user (step 5b)
+   - `discovered_tools`: list of 1st-party tools found during discovery (step 5c), with `installed: true/false` indicating whether the user chose to install each one
+   - If no technologies were detected and discovery was skipped, omit both fields
 
    The formation name maps from `agents/agent-compositions.yaml`:
    - Full-stack → `full-stack-developer`
