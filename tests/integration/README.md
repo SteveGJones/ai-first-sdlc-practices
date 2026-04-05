@@ -1,5 +1,7 @@
 # SDLC Plugin Integration Test
 
+> **This is a smoke test for plugin developers, not a user workflow.** The cache-clear and reinstall steps below are for testing that fresh plugin installs work correctly. Normal users install the plugins once and keep them — see `CLAUDE.md` in the repo root for the standard setup instructions.
+
 Automated end-to-end test of the AI-First SDLC plugin framework. Drop `PROMPT.md` and `ralph.yml` into a blank GitHub repo, run `ralph run`, and walk away. When it finishes you get:
 
 1. **A working demo app** — a Python web app displaying a visual timeline of its own construction, running at http://127.0.0.1:18080
