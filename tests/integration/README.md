@@ -35,7 +35,7 @@ Every phase produces an 8-section journal entry documenting:
 - Claude Code installed
 - The `ai-first-sdlc-practices` repo cloned locally (source for plugins)
 
-The SDLC plugins install globally (`~/.claude/settings.json`) — Claude Code does not yet support project-scoped plugin installation in non-interactive sessions (see [#81](https://github.com/SteveGJones/ai-first-sdlc-practices/issues/81)). You install them fresh before the test and clean up after.
+The SDLC plugins are installed by the loop as part of Phase 0. They install globally (`~/.claude/settings.json`) because Claude Code does not yet support project-scoped installation in non-interactive sessions (see [#81](https://github.com/SteveGJones/ai-first-sdlc-practices/issues/81)). You clear the cache before and clean up after.
 
 ### Clearing stale global plugin installs
 
@@ -76,20 +76,11 @@ After this, the test loop's project-scoped install in Phase 0 will install fresh
 
 **Important:** You (a human) create and manage the repo. The Ralph loop never creates, deletes, or renames repositories. It only works inside the directory you give it.
 
-1. **You** clear any stale global plugin cache and install fresh:
+1. **You** clear any stale global plugin cache:
    ```bash
-   # Remove stale cache
    rm -rf ~/.claude/plugins/cache/ai-first-sdlc/
-
-   # Install fresh from source (in Claude Code, from any directory):
-   /plugin marketplace add /path/to/ai-first-sdlc-practices/plugins
-   /plugin install sdlc-core@ai-first-sdlc
-   /plugin install sdlc-team-common@ai-first-sdlc
-   /plugin install sdlc-team-fullstack@ai-first-sdlc
-   /plugin install sdlc-team-pm@ai-first-sdlc
-   /plugin install sdlc-team-docs@ai-first-sdlc
-   /plugin install sdlc-lang-python@ai-first-sdlc
    ```
+   This ensures the loop installs fresh from the source directory, not from a stale cache.
 
 2. **You** create a blank GitHub repo and clone it:
    ```bash
@@ -174,10 +165,9 @@ gh repo create my-sdlc-test-2 --public --clone
 cd my-sdlc-test-2
 ```
 
-Then clear the cache, re-install plugins, copy test files, and run:
+Then clear the cache, copy test files, and run:
 ```bash
 rm -rf ~/.claude/plugins/cache/ai-first-sdlc/
-# Re-install plugins (step 1 from How to Run)
 cp /path/to/tests/integration/PROMPT.md .
 cp /path/to/tests/integration/ralph.yml .
 ralph run

@@ -87,17 +87,23 @@ __pycache__/
 .ralph/
 ```
 
-### 0c. Verify SDLC plugins are installed
+### 0c. Install SDLC plugins
 
-The human who set up this test installed the plugins and cleared the global cache beforehand (see integration test README). Verify they're available:
+Install the plugins from the local marketplace. This tests the plugin install flow.
 
 ```
-/plugin list
+/plugin marketplace add /Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins
+/plugin install sdlc-core@ai-first-sdlc
+/plugin install sdlc-team-common@ai-first-sdlc
+/plugin install sdlc-team-fullstack@ai-first-sdlc
+/plugin install sdlc-team-pm@ai-first-sdlc
+/plugin install sdlc-team-docs@ai-first-sdlc
+/plugin install sdlc-lang-python@ai-first-sdlc
 ```
 
-Expected: sdlc-core, sdlc-team-common, sdlc-team-fullstack, sdlc-team-pm, sdlc-team-docs, sdlc-lang-python.
+Verify: `/plugin list` should show all 6 plugins.
 
-If plugins are missing, **stop and report in the journal.** Do not attempt to install plugins — this is a test setup issue.
+If any install fails, record the error in the journal and continue with whatever plugins are available. Plugin installation currently writes to global settings (`~/.claude/settings.json`) — project-scoped installation is blocked by `.claude/` write protection (see #81). This is a known limitation.
 
 Configure the team for this project by creating `.sdlc/team-config.json`:
 ```json
