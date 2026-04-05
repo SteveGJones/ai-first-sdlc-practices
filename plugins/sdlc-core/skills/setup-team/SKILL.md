@@ -107,31 +107,39 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    - "Do you need project management support (sprints, delivery tracking)?" → recommend `sdlc-team-pm`
    - "Do you need documentation architecture?" → recommend `sdlc-team-docs`
 
-7. **Present the recommendation** to the user:
+7. **Present the recommendation** to the user in three sections:
 
    ```
-   Recommended team for this project:
+   Recommended setup for your project:
 
-   ✓ sdlc-core (already installed)
-     → sdlc-enforcer, critical-goal-reviewer, code-review-specialist
+   === SDLC Framework ===
+   These provide the development methodology — rules, validation, specialist agents.
 
-   ○ sdlc-team-common — 8 agents:
-     solution-architect, deep-research-agent, performance-engineer,
-     observability-specialist, database-architect, agent-builder,
-     pipeline-orchestrator, repo-knowledge-distiller
+   ✓ sdlc-core — rules, validation, enforcement (always installed)
+     → sdlc-enforcer, critical-goal-reviewer, code-review-specialist, verification-enforcer
+   ○ <team plugins from step 3>
+   ○ <language plugin from step 4>
 
-   ○ sdlc-team-ai — 14 agents:
-     ai-solution-architect, prompt-engineer, mcp-server-architect,
-     rag-system-designer, context-engineer, orchestration-architect,
-     ai-devops-engineer, ai-team-transformer, a2a-architect,
-     agent-developer, langchain-architect, mcp-quality-assurance,
-     mcp-test-agent, ai-test-engineer
+   === Technology-Specific Tools ===
+   Official vendor tooling discovered for your tech stack.
 
-   ○ sdlc-lang-python — 1 agent:
-     language-python-expert
+   ○ <tool name> — <capabilities>
+     Source: <url> | Type: <MCP Server/Agent Skills/Plugin/Action> | Maintained: <Yes/No>
+   ○ <tool name> — <capabilities>
+     Source: <url> | Type: <MCP Server/Agent Skills/Plugin/Action> | Maintained: <Yes/No>
 
-   Install these plugins? [Y/n]
+   (If no tools were discovered:)
+   No official vendor tooling found for your tech stack.
+   You can search later using the pipeline-orchestrator's discovery phase.
+
+   === Project Support (optional) ===
+   ○ sdlc-team-pm — sprint planning, delivery tracking, retrospectives
+   ○ sdlc-team-docs — technical writing, documentation architecture
+
+   Install all? [Y/n/customize]
    ```
+
+   If the user chooses "customize", allow them to select/deselect individual items from all three sections.
 
 8. **If confirmed, install the plugins.** Tell the user to run:
 
