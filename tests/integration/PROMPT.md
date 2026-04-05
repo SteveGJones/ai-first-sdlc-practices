@@ -87,55 +87,36 @@ __pycache__/
 .ralph/
 ```
 
-### 0c. Install SDLC plugins for this project
+### 0c. Verify SDLC plugins are available
 
-Install plugins with **project scope** — this writes to `.claude/settings.json` in the repo, not to global `~/.claude/settings.json`. Do NOT use global scope.
+The SDLC plugins are configured in `.claude/settings.json` which was pre-seeded by the human who set up this test (see the integration test README for setup instructions). Claude Code's `.claude/` write protection prevents the loop from writing this file.
 
-First, add the local marketplace:
-```bash
-# Write marketplace config to project settings
-cat > .claude/settings.json << 'EOF'
+Verify the plugins are loaded:
+```
+/plugin list
+```
+
+Expected: sdlc-core, sdlc-team-common, sdlc-team-fullstack, sdlc-team-pm, sdlc-team-docs, sdlc-lang-python.
+
+If plugins are missing, **stop.** The human needs to create `.claude/settings.json` — see the integration test README. Do not attempt to write to `.claude/` — it will be blocked.
+
+Configure the team for this project by creating `.sdlc/team-config.json`:
+```json
 {
-  "extraKnownMarketplaces": {
-    "ai-first-sdlc": {
-      "source": {
-        "source": "directory",
-        "path": "/Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "sdlc-core@ai-first-sdlc": true,
-    "sdlc-team-common@ai-first-sdlc": true,
-    "sdlc-team-fullstack@ai-first-sdlc": true,
-    "sdlc-team-pm@ai-first-sdlc": true,
-    "sdlc-team-docs@ai-first-sdlc": true,
-    "sdlc-lang-python@ai-first-sdlc": true
-  }
+  "project_type": "full-stack web application",
+  "formation": "full-stack-developer",
+  "installed_plugins": [
+    "sdlc-core@ai-first-sdlc",
+    "sdlc-team-common@ai-first-sdlc",
+    "sdlc-team-fullstack@ai-first-sdlc",
+    "sdlc-team-pm@ai-first-sdlc",
+    "sdlc-team-docs@ai-first-sdlc",
+    "sdlc-lang-python@ai-first-sdlc"
+  ],
+  "configured_at": "<today's date>",
+  "configured_by": "sdlc:setup-team"
 }
-EOF
-mkdir -p .claude
 ```
-
-Alternatively, if the `/plugin install --scope project` command is available:
-```
-/plugin marketplace add /Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins --scope project
-/plugin install sdlc-core@ai-first-sdlc --scope project
-/plugin install sdlc-team-common@ai-first-sdlc --scope project
-/plugin install sdlc-team-fullstack@ai-first-sdlc --scope project
-/plugin install sdlc-team-pm@ai-first-sdlc --scope project
-/plugin install sdlc-team-docs@ai-first-sdlc --scope project
-/plugin install sdlc-lang-python@ai-first-sdlc --scope project
-```
-
-Verify: `/plugin list` should show all 6 plugins.
-
-Configure the team for this project:
-```
-/sdlc-core:setup-team
-```
-
-Select **A. Full-stack web application**. Say yes to PM and docs.
 
 ### 0d. Initial commit
 

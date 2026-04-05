@@ -33,7 +33,7 @@ Every phase produces an 8-section journal entry documenting:
 - Claude Code installed
 - The `ai-first-sdlc-practices` repo cloned locally (source for plugins)
 
-The SDLC plugins are installed **by the loop** with project scope — they write to `.claude/settings.json` inside the test repo, not to your global `~/.claude/settings.json`. No global settings are modified.
+The SDLC plugins are configured via `.claude/settings.json` inside the test repo (project scope). **You create this file** as part of setup because Claude Code's `.claude/` write protection blocks the loop from creating it. See issue #81 for details.
 
 ### Clearing stale global plugin installs
 
@@ -86,7 +86,37 @@ After this, the test loop's project-scoped install in Phase 0 will install fresh
    cp /path/to/ai-first-sdlc-practices/tests/integration/ralph.yml .
    ```
 
-3. **You** start the loop:
+3. **You** pre-seed the plugin configuration.
+
+   Claude Code's `.claude/` write protection prevents the loop from creating this file (see [#81](https://github.com/SteveGJones/ai-first-sdlc-practices/issues/81)). You must create it:
+
+   ```bash
+   mkdir -p .claude
+   cat > .claude/settings.json << 'EOF'
+   {
+     "extraKnownMarketplaces": {
+       "ai-first-sdlc": {
+         "source": {
+           "source": "directory",
+           "path": "/Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins"
+         }
+       }
+     },
+     "enabledPlugins": {
+       "sdlc-core@ai-first-sdlc": true,
+       "sdlc-team-common@ai-first-sdlc": true,
+       "sdlc-team-fullstack@ai-first-sdlc": true,
+       "sdlc-team-pm@ai-first-sdlc": true,
+       "sdlc-team-docs@ai-first-sdlc": true,
+       "sdlc-lang-python@ai-first-sdlc": true
+     }
+   }
+   EOF
+   ```
+
+   Adjust the `path` to wherever your `ai-first-sdlc-practices` repo is cloned.
+
+4. **You** start the loop:
    ```bash
    ralph run
    ```
