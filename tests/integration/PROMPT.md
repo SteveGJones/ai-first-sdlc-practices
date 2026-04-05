@@ -87,18 +87,17 @@ __pycache__/
 .ralph/
 ```
 
-### 0c. Verify SDLC plugins are available
+### 0c. Verify SDLC plugins are installed
 
-The SDLC plugins are configured in `.claude/settings.json` which was pre-seeded by the human who set up this test (see the integration test README for setup instructions). Claude Code's `.claude/` write protection prevents the loop from writing this file.
+The human who set up this test installed the plugins and cleared the global cache beforehand (see integration test README). Verify they're available:
 
-Verify the plugins are loaded:
 ```
 /plugin list
 ```
 
 Expected: sdlc-core, sdlc-team-common, sdlc-team-fullstack, sdlc-team-pm, sdlc-team-docs, sdlc-lang-python.
 
-If plugins are missing, **stop.** The human needs to create `.claude/settings.json` — see the integration test README. Do not attempt to write to `.claude/` — it will be blocked.
+If plugins are missing, **stop and report in the journal.** Do not attempt to install plugins — this is a test setup issue.
 
 Configure the team for this project by creating `.sdlc/team-config.json`:
 ```json

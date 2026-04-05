@@ -33,7 +33,7 @@ Every phase produces an 8-section journal entry documenting:
 - Claude Code installed
 - The `ai-first-sdlc-practices` repo cloned locally (source for plugins)
 
-The SDLC plugins are configured via `.claude/settings.json` inside the test repo (project scope). **You create this file** as part of setup because Claude Code's `.claude/` write protection blocks the loop from creating it. See issue #81 for details.
+The SDLC plugins install globally (`~/.claude/settings.json`) — Claude Code does not yet support project-scoped plugin installation in non-interactive sessions (see [#81](https://github.com/SteveGJones/ai-first-sdlc-practices/issues/81)). You install them fresh before the test and clean up after.
 
 ### Clearing stale global plugin installs
 
@@ -74,47 +74,32 @@ After this, the test loop's project-scoped install in Phase 0 will install fresh
 
 **Important:** You (a human) create and manage the repo. The Ralph loop never creates, deletes, or renames repositories. It only works inside the directory you give it.
 
-1. **You** create a blank GitHub repo and clone it:
+1. **You** clear any stale global plugin cache and install fresh:
+   ```bash
+   # Remove stale cache
+   rm -rf ~/.claude/plugins/cache/ai-first-sdlc/
+
+   # Install fresh from source (in Claude Code, from any directory):
+   /plugin marketplace add /path/to/ai-first-sdlc-practices/plugins
+   /plugin install sdlc-core@ai-first-sdlc
+   /plugin install sdlc-team-common@ai-first-sdlc
+   /plugin install sdlc-team-fullstack@ai-first-sdlc
+   /plugin install sdlc-team-pm@ai-first-sdlc
+   /plugin install sdlc-team-docs@ai-first-sdlc
+   /plugin install sdlc-lang-python@ai-first-sdlc
+   ```
+
+2. **You** create a blank GitHub repo and clone it:
    ```bash
    gh repo create my-sdlc-test --public --clone
    cd my-sdlc-test
    ```
 
-2. **You** copy the test files into it:
+3. **You** copy the test files into it:
    ```bash
    cp /path/to/ai-first-sdlc-practices/tests/integration/PROMPT.md .
    cp /path/to/ai-first-sdlc-practices/tests/integration/ralph.yml .
    ```
-
-3. **You** pre-seed the plugin configuration.
-
-   Claude Code's `.claude/` write protection prevents the loop from creating this file (see [#81](https://github.com/SteveGJones/ai-first-sdlc-practices/issues/81)). You must create it:
-
-   ```bash
-   mkdir -p .claude
-   cat > .claude/settings.json << 'EOF'
-   {
-     "extraKnownMarketplaces": {
-       "ai-first-sdlc": {
-         "source": {
-           "source": "directory",
-           "path": "/Users/stevejones/Documents/Development/ai-first-sdlc-practices/plugins"
-         }
-       }
-     },
-     "enabledPlugins": {
-       "sdlc-core@ai-first-sdlc": true,
-       "sdlc-team-common@ai-first-sdlc": true,
-       "sdlc-team-fullstack@ai-first-sdlc": true,
-       "sdlc-team-pm@ai-first-sdlc": true,
-       "sdlc-team-docs@ai-first-sdlc": true,
-       "sdlc-lang-python@ai-first-sdlc": true
-     }
-   }
-   EOF
-   ```
-
-   Adjust the `path` to wherever your `ai-first-sdlc-practices` repo is cloned.
 
 4. **You** start the loop:
    ```bash
@@ -154,6 +139,23 @@ Browse the app at http://127.0.0.1:18080:
 - **Max iterations**: 40. If it hits 40, something is fundamentally broken —
   the journal is the diagnostic.
 
+## After the Test
+
+Clean up the global plugin install so it doesn't affect other projects:
+
+```bash
+# Remove the global plugin cache
+rm -rf ~/.claude/plugins/cache/ai-first-sdlc/
+
+# Optionally remove from global settings (in Claude Code):
+/plugin uninstall sdlc-core@ai-first-sdlc
+/plugin uninstall sdlc-team-common@ai-first-sdlc
+/plugin uninstall sdlc-team-fullstack@ai-first-sdlc
+/plugin uninstall sdlc-team-pm@ai-first-sdlc
+/plugin uninstall sdlc-team-docs@ai-first-sdlc
+/plugin uninstall sdlc-lang-python@ai-first-sdlc
+```
+
 ## Re-running
 
 To run the test again, **you** (not the loop) manage the repo:
@@ -170,11 +172,13 @@ gh repo create my-sdlc-test-2 --public --clone
 cd my-sdlc-test-2
 ```
 
-Then copy the test files and run again:
+Then clear the cache, re-install plugins, copy test files, and run:
 ```bash
+rm -rf ~/.claude/plugins/cache/ai-first-sdlc/
+# Re-install plugins (step 1 from How to Run)
 cp /path/to/tests/integration/PROMPT.md .
 cp /path/to/tests/integration/ralph.yml .
 ralph run
 ```
 
-**Never put repo deletion commands in PROMPT.md.** An unverified AI loop must not have the ability to delete repositories.
+**Never put repo deletion or plugin uninstall commands in PROMPT.md.** An unverified AI loop must not have the ability to delete repositories or modify global settings.
