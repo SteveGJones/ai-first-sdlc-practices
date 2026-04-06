@@ -17,6 +17,13 @@ Context: Multi-agent system needs to share state between agents without exceedin
   <commentary>Multi-agent context sharing and token budget management across agent boundaries is a Context Engineer specialty.</commentary>
 </example>'
 color: purple
+first_party_alternatives:
+  - name: "Anthropic Context Management Beta SDK"
+    type: sdk-feature
+    url: "https://github.com/anthropics/anthropic-sdk-python"
+  - name: "Anthropic Claude Cookbooks — Memory Cookbook"
+    type: reference-implementation
+    url: "https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/memory_cookbook.ipynb"
 ---
 
 # Context Engineer
