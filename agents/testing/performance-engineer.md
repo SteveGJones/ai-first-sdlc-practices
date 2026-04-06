@@ -17,6 +17,12 @@ Context: API response times have degraded from 200ms to 800ms over the past mont
   <commentary>Performance regression diagnosis, distributed tracing analysis, and bottleneck isolation are core Performance Engineer capabilities.</commentary>
 </example>'
 color: cyan
+first_party_alternatives:
+  - name: Grafana k6
+    type: OSS + Cloud SaaS
+    url: https://k6.io/
+    capabilities: Load, stress, soak, spike, and browser testing; JavaScript/TypeScript scripts; CI/CD integration; Grafana Cloud hosted option
+    maintained: true
 ---
 
 # Performance Engineer Agent
