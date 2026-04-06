@@ -1,0 +1,10 @@
+# SDLC Setup Smoke Test
+# Tests plugin installation + setup-team flow in a Docker container
+
+cli:
+  backend: "claude"
+
+event_loop:
+  prompt_file: "PROMPT.md"
+  completion_promise: "LOOP_COMPLETE"
+  max_iterations: 10

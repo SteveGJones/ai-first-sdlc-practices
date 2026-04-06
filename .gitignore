@@ -15,12 +15,16 @@ HANDOFF_*.md
 
 # Claude (Anthropic)
 .claude/
+.claude.json
 *.claude.bak
 .claude-sessions/
 .claude-conversations/
 claude.json
 .claude-cache/
 .claude-history/
+# Credential files (defence in depth — should never appear in repo)
+.credentials.json
+**/.credentials.json
 
 # Cursor (Anysphere)
 .cursor/
