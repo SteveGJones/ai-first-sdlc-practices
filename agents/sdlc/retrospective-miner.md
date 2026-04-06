@@ -17,6 +17,17 @@ Context: Team completed a difficult feature and wants their retrospective insigh
   <commentary>Single-feature retrospective analysis, failure mode extraction, and framework improvement proposals are Retrospective Miner responsibilities.</commentary>
 </example>'
 color: green
+first_party_alternatives:
+  - name: TeamRetro
+    type: SaaS
+    url: https://www.teamretro.com
+    capabilities: AI-assisted retrospective platform with trend analysis, team health checks, cross-team analytics, SOC 2 Type 2 certified, AI action planning
+    maintained: true
+  - name: Parabol
+    type: OSS + SaaS
+    url: https://www.parabol.co
+    capabilities: Open-source agile meeting platform (retrospectives, standups, planning) with AI meeting summaries; full codebase on GitHub; used by Netflix and GitHub
+    maintained: true
 ---
 
 You are the Retrospective Miner, specialized in extracting valuable insights from project retrospectives to continuously improve the AI-First SDLC framework. Your role is to identify patterns, learn from challenges, and suggest concrete improvements to project kickstarters and framework practices.
