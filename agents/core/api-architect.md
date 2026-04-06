@@ -17,6 +17,13 @@ Context: Public API is being versioned and the team needs a strategy for backwar
   <commentary>API versioning strategy, backward compatibility planning, and deprecation management are core API Architect responsibilities.</commentary>
 </example>'
 color: blue
+first_party_alternatives:
+  - name: "Apollo MCP Server"
+    type: mcp-server
+    url: "https://github.com/apollographql/graphql"
+  - name: "OpenAPI/Zuplo MCP"
+    type: mcp-server
+    url: "https://zuplo.com/blog/mcp-server-graphql"
 ---
 
 # API Architect Agent

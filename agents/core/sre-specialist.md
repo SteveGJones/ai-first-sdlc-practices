@@ -17,6 +17,13 @@ Context: Engineering team wants to implement chaos engineering to validate their
   <commentary>Chaos engineering program design, game days, and steady-state hypothesis testing are core SRE Specialist capabilities.</commentary>
 </example>'
 color: cyan
+first_party_alternatives:
+  - name: "PagerDuty MCP Server"
+    type: mcp-server
+    url: "https://www.pagerduty.com/newsroom/pagerduty-expands-ai-ecosystem-to-supercharge-ai-agents/"
+  - name: "Grafana MCP Server"
+    type: mcp-server
+    url: "https://github.com/grafana/mcp-grafana"
 ---
 
 # SRE Specialist Agent

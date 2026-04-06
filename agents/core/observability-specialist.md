@@ -17,6 +17,16 @@ Context: Team needs to define SLOs for their payment processing service.
   <commentary>SLO definition, error budget calculation, and burn rate alerting are core Observability Specialist capabilities.</commentary>
 </example>'
 color: cyan
+first_party_alternatives:
+  - name: "Grafana MCP Server"
+    type: mcp-server
+    url: "https://github.com/grafana/mcp-grafana"
+  - name: "Datadog MCP Server"
+    type: mcp-server
+    url: "https://docs.datadoghq.com/bits_ai/mcp_server/"
+  - name: "Sentry MCP Server"
+    type: mcp-server
+    url: "https://github.com/getsentry/sentry-mcp-stdio"
 ---
 
 # Observability Specialist Agent

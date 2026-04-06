@@ -17,6 +17,10 @@ Context: Team needs to implement data governance and data quality monitoring for
   <commentary>Data quality frameworks, dbt testing strategies, and data governance implementation are core Data Architect capabilities.</commentary>
 </example>'
 color: blue
+first_party_alternatives:
+  - name: "dbt MCP Server"
+    type: mcp-server
+    url: "https://docs.getdbt.com/docs/dbt-versions/2025-release-notes"
 ---
 
 The Data Architect Agent provides specialized expertise in its domain.

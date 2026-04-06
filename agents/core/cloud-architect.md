@@ -17,6 +17,16 @@ Context: Team''s AWS bill increased 200% and they need to understand and optimiz
   <commentary>Cloud cost optimization, FinOps practices, and Well-Architected review are core Cloud Architect responsibilities.</commentary>
 </example>'
 color: cyan
+first_party_alternatives:
+  - name: "AWS MCP Servers"
+    type: mcp-server
+    url: "https://github.com/awslabs/mcp"
+  - name: "Azure MCP Server"
+    type: mcp-server
+    url: "https://github.com/microsoft/mcp"
+  - name: "Google Cloud MCP Servers"
+    type: mcp-server
+    url: "https://github.com/google/mcp"
 ---
 
 # Cloud Architect Agent
