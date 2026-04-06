@@ -17,6 +17,13 @@ Context: Next.js application has poor Core Web Vitals scores affecting SEO.
   <commentary>Core Web Vitals optimization, Next.js performance tuning, and rendering strategy selection are Frontend Architect responsibilities.</commentary>
 </example>'
 color: orange
+first_party_alternatives:
+  - name: "Next.js DevTools MCP"
+    type: mcp-server
+    url: "https://github.com/vercel/next-devtools-mcp"
+  - name: "Storybook MCP Server"
+    type: mcp-server
+    url: "https://storybook.js.org/docs/ai/mcp/overview"
 ---
 
 # Frontend Architect Agent

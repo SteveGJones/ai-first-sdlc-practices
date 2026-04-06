@@ -17,6 +17,13 @@ Context: Mobile app is failing App Store review due to performance issues and ba
   <commentary>Mobile performance optimization, platform-specific battery management, and App Store compliance are Mobile Architect responsibilities.</commentary>
 </example>'
 color: blue
+first_party_alternatives:
+  - name: "Expo MCP Server"
+    type: mcp-server
+    url: "https://docs.expo.dev/eas/ai/mcp/"
+  - name: "iOS Simulator MCP"
+    type: mcp-server
+    url: "https://www.npmjs.com/package/ios-simulator-mcp"
 ---
 
 # Mobile Architect Agent

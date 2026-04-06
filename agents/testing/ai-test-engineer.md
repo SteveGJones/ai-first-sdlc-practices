@@ -17,6 +17,17 @@ Context: CI pipeline has 40 flaky tests that fail intermittently and are destroy
   <commentary>Flaky test diagnosis, root cause categorization, and test isolation patterns are core AI Test Engineer capabilities.</commentary>
 </example>'
 color: cyan
+first_party_alternatives:
+  - name: promptfoo
+    type: OSS tool (OpenAI-owned)
+    url: https://github.com/promptfoo/promptfoo
+    capabilities: LLM/agent/RAG evaluation, red-teaming, CI/CD integration
+    maintained: true
+  - name: DeepEval by Confident AI
+    type: SaaS + OSS
+    url: https://deepeval.com
+    capabilities: 50+ research-backed LLM evaluation metrics (faithfulness, hallucination, relevance, bias, toxicity), pytest-compatible CI gating
+    maintained: true
 ---
 
 # AI Test Engineer Agent

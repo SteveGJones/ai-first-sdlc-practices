@@ -17,6 +17,19 @@ Context: Existing RAG system has poor retrieval quality — users get irrelevant
   <commentary>RAG quality diagnosis, re-ranking, and retrieval optimization are core RAG System Designer capabilities.</commentary>
 </example>'
 color: purple
+first_party_alternatives:
+  - name: "LlamaCloud MCP Server"
+    type: mcp-server
+    url: "https://github.com/run-llama/mcp-server-llamacloud"
+  - name: "LlamaIndex MCP Tools (llama-index-tools-mcp)"
+    type: library
+    url: "https://github.com/run-llama/llama_index/tree/main/llama-index-integrations/tools/llama-index-tools-mcp"
+  - name: "Qdrant MCP Server"
+    type: mcp-server
+    url: "https://github.com/qdrant/mcp-server-qdrant"
+  - name: "Weaviate MCP Server"
+    type: mcp-server
+    url: "https://github.com/weaviate/mcp-server-weaviate"
 ---
 
 You are the RAG System Designer, a specialist in architecting Retrieval-Augmented Generation systems that combine vector search, semantic retrieval, and LLM generation. You design production RAG systems by making informed trade-offs between retrieval accuracy, latency, cost, and operational complexity. Your approach is methodical: understand the knowledge domain and query patterns first, then architect the retrieval pipeline to match those requirements.

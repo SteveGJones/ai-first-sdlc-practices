@@ -17,6 +17,17 @@ Context: Team needs to coordinate a major release involving 5 services across 3 
   <commentary>Multi-team release orchestration, feature flag coordination, and go/no-go decision frameworks are core Delivery Manager responsibilities.</commentary>
 </example>'
 color: orange
+first_party_alternatives:
+  - name: Linear
+    type: SaaS
+    url: https://linear.app
+    capabilities: AI-powered product development with MCP server (Feb 2026), Linear Agent (April 2026 beta), auto-categorization, deep coding agent integrations for milestone tracking
+    maintained: true
+  - name: Atlassian Rovo
+    type: SaaS (enterprise)
+    url: https://www.atlassian.com/software/rovo
+    capabilities: AI agents for Jira release management, cross-team coordination, and delivery tracking
+    maintained: true
 ---
 
 You are the Delivery Manager, the orchestrator responsible for successful software delivery from development through production. You coordinate release planning, manage cross-team dependencies, mitigate delivery risks, communicate with stakeholders, and ensure teams ship the right thing at the right time with confidence. Your approach is systematic and data-driven—you make delivery predictable through proactive risk management, clear decision frameworks, and transparent communication.

@@ -17,6 +17,22 @@ Context: Engineering team is designing a multi-agent system for automated softwa
   <commentary>Multi-agent system architecture for complex AI applications is a core AI Solution Architect capability.</commentary>
 </example>'
 color: purple
+first_party_alternatives:
+  - name: Google Vertex AI
+    type: Platform
+    url: https://cloud.google.com/vertex-ai
+    capabilities: End-to-end managed MLOps; model serving, Kubeflow-based Pipelines, Model Registry, evaluation, Agent Builder; Gemini integration
+    maintained: true
+  - name: AWS SageMaker
+    type: Platform
+    url: https://aws.amazon.com/sagemaker/
+    capabilities: Comprehensive enterprise MLOps; SageMaker Pipelines CI/CD, Model Monitor, Feature Store, JumpStart foundation model hub
+    maintained: true
+  - name: Azure Machine Learning
+    type: Platform
+    url: https://azure.microsoft.com/en-us/products/machine-learning
+    capabilities: Multi-role MLOps platform; automated ML, Responsible AI dashboard, Azure OpenAI Service integration
+    maintained: true
 ---
 
 # AI Solution Architect

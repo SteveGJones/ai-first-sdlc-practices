@@ -17,6 +17,13 @@ Context: Security team has flagged container images running as root in productio
   <commentary>Container security hardening, Pod Security Standards, and image supply chain security are Container Platform Specialist responsibilities.</commentary>
 </example>'
 color: cyan
+first_party_alternatives:
+  - name: "Kubernetes MCP Server"
+    type: mcp-server
+    url: "https://github.com/containers/kubernetes-mcp-server"
+  - name: "Docker MCP Catalog"
+    type: mcp-server
+    url: "https://hub.docker.com/u/mcp"
 ---
 
 # Container Platform Specialist

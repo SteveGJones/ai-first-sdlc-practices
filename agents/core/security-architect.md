@@ -17,6 +17,13 @@ Context: Team needs to integrate a third-party payment processor and wants to mi
   <commentary>PCI DSS scope reduction, secure integration patterns, and compliance framework guidance are core Security Architect responsibilities.</commentary>
 </example>'
 color: red
+first_party_alternatives:
+  - name: "Snyk MCP Server"
+    type: mcp-server
+    url: "https://github.com/snyk/agent-scan"
+  - name: "Semgrep MCP"
+    type: mcp-server
+    url: "https://www.pulsemcp.com/servers/semgrep"
 ---
 
 # Security Architect Agent

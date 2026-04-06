@@ -12,7 +12,7 @@ Configure the right agent team for this project by selecting a project type and 
 
 1. **Check current team configuration**
 
-Look for `.claude/team-config.json` in the project root. If it exists, display the current formation and ask if the user wants to reconfigure.
+Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.json` as a fallback). If it exists, display the current formation and ask if the user wants to reconfigure.
 
 2. **Ask the user what kind of project this is** (present as multiple choice):
 
@@ -38,37 +38,110 @@ Look for `.claude/team-config.json` in the project root. If it exists, display t
    - `.py` files dominant → also recommend `sdlc-lang-python`
    - `.js`/`.ts` files dominant → also recommend `sdlc-lang-javascript`
 
-5. **Ask about project management and documentation needs:**
+5. **Scan tech stack and discover 1st-party tools**
+
+   **5a. Scan project files for technologies:**
+
+   Check the following files for known technology names. If a file doesn't exist, skip it.
+
+   | File | What to extract |
+   |------|----------------|
+   | `README.md` | Technology mentions in the project description (databases, frameworks, cloud providers, services) |
+   | `CLAUDE.md` | Technology references in project instructions |
+   | `requirements.txt` / `pyproject.toml` | Python packages: flask, fastapi, django, sqlalchemy, redis, celery, boto3, psycopg2, pymongo, etc. |
+   | `package.json` | JS/TS dependencies: express, next, prisma, mongoose, ioredis, aws-sdk, etc. |
+   | `Gemfile` | Ruby gems: rails, pg, redis, sidekiq, etc. |
+   | `go.mod` | Go modules: gin, gorm, go-redis, aws-sdk-go, etc. |
+   | `Cargo.toml` | Rust crates: actix-web, diesel, redis-rs, rusoto, etc. |
+   | `docker-compose.yml` | Service images: postgres, redis, mongo, rabbitmq, elasticsearch, etc. |
+   | `.env` / `.env.example` | Connection strings: DATABASE_URL (extract db type), REDIS_URL, MONGO_URI, etc. |
+
+   Map detected packages/services to technology names:
+   - `psycopg2` / `psycopg2-binary` / `asyncpg` → PostgreSQL
+   - `pymongo` / `motor` → MongoDB
+   - `redis` / `redis-py` / `ioredis` → Redis
+   - `boto3` / `aws-sdk` / `aws-sdk-go` → AWS
+   - `google-cloud-*` → Google Cloud
+   - `azure-*` → Azure
+   - `celery` → Celery
+   - `elasticsearch` / `opensearch` → Elasticsearch
+   - `prisma` → Prisma
+   - `stripe` → Stripe
+   - `twilio` → Twilio
+
+   **5b. Present findings and ask the user:**
+
+   If technologies were detected:
+   ```
+   I detected the following technologies in your project:
+   - PostgreSQL (from requirements.txt: psycopg2-binary)
+   - Redis (from docker-compose.yml: redis:7)
+   - AWS (from requirements.txt: boto3)
+
+   Any other technologies I should search for? (e.g., Stripe, Twilio, Elasticsearch)
+   Or press Enter to continue with these.
+   ```
+
+   If the project is empty or no dependency files found:
+   ```
+   No dependency files found yet (new project).
+   What technologies will this project use? (e.g., PostgreSQL, MongoDB, Redis, AWS, Stripe)
+   Or press Enter to skip technology discovery.
+   ```
+
+   **5c. Run discovery for each technology:**
+
+   For each technology (detected + user-specified), search for official vendor tooling using these sources:
+
+   - MCP server registries: WebSearch `"{technology} mcp server" site:npmjs.com` and `site:pypi.org`
+   - Vendor GitHub org: WebSearch `"github.com/{vendor}" mcp OR agent OR skills OR claude`
+   - Claude plugin marketplace: WebSearch `"{technology} claude code plugin"`
+   - GitHub Actions marketplace: WebSearch `"{technology} github action" site:github.com/marketplace`
+   - Targeted web search: `"{technology} official mcp server"`, `"{technology} agent skills"`
+
+   For each tool found, record: name, type (MCP Server / Agent Skills / Plugin / Action), source URL, brief capabilities description, and whether it appears actively maintained (last commit/publish within 6 months).
+
+   **5d. If no technologies detected and user skipped:** Skip this step entirely and proceed to step 6.
+
+6. **Ask about project management and documentation needs:**
    - "Do you need project management support (sprints, delivery tracking)?" → recommend `sdlc-team-pm`
    - "Do you need documentation architecture?" → recommend `sdlc-team-docs`
 
-6. **Present the recommendation** to the user:
+7. **Present the recommendation** to the user in three sections:
 
    ```
-   Recommended team for this project:
+   Recommended setup for your project:
 
-   ✓ sdlc-core (already installed)
-     → sdlc-enforcer, critical-goal-reviewer, code-review-specialist
+   === SDLC Framework ===
+   These provide the development methodology — rules, validation, specialist agents.
 
-   ○ sdlc-team-common — 8 agents:
-     solution-architect, deep-research-agent, performance-engineer,
-     observability-specialist, database-architect, agent-builder,
-     pipeline-orchestrator, repo-knowledge-distiller
+   ✓ sdlc-core — rules, validation, enforcement (always installed)
+     → sdlc-enforcer, critical-goal-reviewer, code-review-specialist, verification-enforcer
+   ○ <team plugins from step 3>
+   ○ <language plugin from step 4>
 
-   ○ sdlc-team-ai — 14 agents:
-     ai-solution-architect, prompt-engineer, mcp-server-architect,
-     rag-system-designer, context-engineer, orchestration-architect,
-     ai-devops-engineer, ai-team-transformer, a2a-architect,
-     agent-developer, langchain-architect, mcp-quality-assurance,
-     mcp-test-agent, ai-test-engineer
+   === Technology-Specific Tools ===
+   Official vendor tooling discovered for your tech stack.
 
-   ○ sdlc-lang-python — 1 agent:
-     language-python-expert
+   ○ <tool name> — <capabilities>
+     Source: <url> | Type: <MCP Server/Agent Skills/Plugin/Action> | Maintained: <Yes/No>
+   ○ <tool name> — <capabilities>
+     Source: <url> | Type: <MCP Server/Agent Skills/Plugin/Action> | Maintained: <Yes/No>
 
-   Install these plugins? [Y/n]
+   (If no tools were discovered:)
+   No official vendor tooling found for your tech stack.
+   You can search later using the pipeline-orchestrator's discovery phase.
+
+   === Project Support (optional) ===
+   ○ sdlc-team-pm — sprint planning, delivery tracking, retrospectives
+   ○ sdlc-team-docs — technical writing, documentation architecture
+
+   Install all? [Y/n/customize]
    ```
 
-7. **If confirmed, install the plugins.** Tell the user to run:
+   If the user chooses "customize", allow them to select/deselect individual items from all three sections.
+
+8. **If confirmed, install the plugins.** Tell the user to run:
 
    ```
    /plugin install <plugin-name>@ai-first-sdlc
@@ -76,7 +149,43 @@ Look for `.claude/team-config.json` in the project root. If it exists, display t
 
    for each recommended plugin. Note: skill cannot programmatically install plugins — it provides the commands for the user to run.
 
-8. **Write team configuration** to record the selection.
+9. **Write the plugin library** at `.sdlc/recommended-plugins.json`
+
+   If the file doesn't exist, create it. If it exists, read it and append new entries (dedup on `name` — don't add tools already in the list).
+
+   ```json
+   {
+     "version": "1.0",
+     "last_updated": "<YYYY-MM-DD>",
+     "plugins": [
+       {
+         "name": "sdlc-core",
+         "source": "ai-first-sdlc",
+         "type": "sdlc-framework",
+         "installed": true,
+         "added_by": "setup-team",
+         "added_at": "<YYYY-MM-DD>"
+       },
+       {
+         "name": "<discovered-tool-name>",
+         "source": "<url>",
+         "type": "<mcp-server/agent-skills/plugin/action>",
+         "installed": "<true/false>",
+         "added_by": "setup-team",
+         "added_at": "<YYYY-MM-DD>",
+         "note": "<optional context>"
+       }
+     ]
+   }
+   ```
+
+   Include:
+   - All SDLC framework plugins the user chose to install (type: `sdlc-framework`)
+   - All technology-specific tools from step 5c discovery (type: `mcp-server`, `agent-skills`, etc.) with `installed: true/false` based on the user's choice
+   - Do NOT duplicate entries that already exist (match on `name`)
+   - Update `last_updated` to today's date
+
+10. **Write team configuration** to record the selection.
 
    **Primary location**: `.sdlc/team-config.json` (project root, not `.claude/`).
 
@@ -92,10 +201,24 @@ Look for `.claude/team-config.json` in the project root. If it exists, display t
        "sdlc-core@ai-first-sdlc",
        "<team-plugin>@ai-first-sdlc"
      ],
+     "technologies_detected": ["postgresql", "redis", "fastapi"],
+     "discovered_tools": [
+       {
+         "name": "@postgresql/mcp-server",
+         "type": "mcp-server",
+         "url": "https://npmjs.com/package/@postgresql/mcp-server",
+         "installed": true,
+         "discovered_at": "<YYYY-MM-DD>"
+       }
+     ],
      "configured_at": "<YYYY-MM-DD>",
      "configured_by": "sdlc:setup-team"
    }
    ```
+
+   - `technologies_detected`: list of technology names found by the tech stack scan (step 5a) plus any added by the user (step 5b)
+   - `discovered_tools`: list of 1st-party tools found during discovery (step 5c), with `installed: true/false` indicating whether the user chose to install each one
+   - If no technologies were detected and discovery was skipped, omit both fields
 
    The formation name maps from `agents/agent-compositions.yaml`:
    - Full-stack → `full-stack-developer`
@@ -106,4 +229,4 @@ Look for `.claude/team-config.json` in the project root. If it exists, display t
 
    **Fallback**: If `.sdlc/team-config.json` also fails to write for any reason, write to `team-config.json` in the project root and warn the user.
 
-9. **Report** the configured formation and installed plugins.
+11. **Report** the configured formation and installed plugins.

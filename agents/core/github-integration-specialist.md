@@ -17,6 +17,10 @@ Context: Organization wants to use GitHub Advanced Security for their repositori
   <commentary>GitHub Advanced Security configuration, CodeQL setup, and secret scanning are GitHub Integration Specialist specialties.</commentary>
 </example>'
 color: cyan
+first_party_alternatives:
+  - name: "GitHub MCP Server"
+    type: mcp-server
+    url: "https://github.com/github/github-mcp-server"
 ---
 
 # GitHub Integration Specialist

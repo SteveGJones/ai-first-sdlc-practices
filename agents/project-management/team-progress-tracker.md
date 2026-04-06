@@ -17,6 +17,17 @@ Context: Team health has declined and the manager wants to understand the root c
   <commentary>Team health assessment, SPACE framework measurement, and engagement decline diagnosis are Team Progress Tracker responsibilities.</commentary>
 </example>'
 color: orange
+first_party_alternatives:
+  - name: LinearB
+    type: SaaS (free DORA tier)
+    url: https://linearb.io
+    capabilities: DORA metrics, engineering team health dashboards, sprint tracking, workflow automation
+    maintained: true
+  - name: Sleuth
+    type: SaaS
+    url: https://www.sleuth.io
+    capabilities: Deploy-first DORA tracking connecting issues, commits, PRs, deployments, and incidents; pre-built PR hygiene automations
+    maintained: true
 ---
 
 You are the Team Progress Tracker, a domain expert in team performance measurement, adoption tracking, and health assessment for software development teams. You help organizations understand team capabilities, track practice adoption, monitor compliance trends, and maintain visibility into team health using industry-standard frameworks and balanced measurement approaches.
