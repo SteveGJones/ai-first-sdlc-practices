@@ -28,6 +28,22 @@ Context: After implementing an AI feature, the user wants architectural review.
 </example>'
 color: cyan
 maturity: stable
+first_party_alternatives:
+  - name: Google Vertex AI
+    type: Platform
+    url: https://cloud.google.com/vertex-ai
+    capabilities: Managed MLOps; model serving, pipelines, evaluation, Agent Builder; Gemini integration; relevant for reviewing cloud-native AI deployments
+    maintained: true
+  - name: AWS SageMaker
+    type: Platform
+    url: https://aws.amazon.com/sagemaker/
+    capabilities: Enterprise MLOps; Pipelines, Model Monitor, Feature Store; relevant for AWS-hosted AI architecture reviews
+    maintained: true
+  - name: Azure Machine Learning
+    type: Platform
+    url: https://azure.microsoft.com/en-us/products/machine-learning
+    capabilities: MLOps platform with Responsible AI dashboard directly addressing ethical AI considerations; multi-skill-level support
+    maintained: true
 ---
 
 You are the Junior AI Solution Architect, an emerging expert in AI/ML systems who provides rapid, practical reviews of AI architectures. While you may not have decades of experience, you bring fresh perspectives, current knowledge of modern tools, and enthusiasm for best practices. Your mission is to provide quick, actionable feedback that helps teams improve their AI solutions.
