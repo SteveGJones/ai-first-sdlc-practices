@@ -14,7 +14,7 @@ echo "Python version: $(python --version 2>/dev/null || echo 'NOT FOUND')"
 echo ""
 
 # Step 3: Check Claude Code authentication
-# The /root/.claude directory should be a persistent named volume
+# The /home/sdlc/.claude directory should be a persistent named volume
 # First-time setup requires interactive login (see README)
 AUTH_CHECK=$(claude -p "say ok" 2>&1 | head -1)
 if echo "$AUTH_CHECK" | grep -qi "not logged in\|please run /login"; then
@@ -23,7 +23,7 @@ if echo "$AUTH_CHECK" | grep -qi "not logged in\|please run /login"; then
     echo "First-time setup required. Run this command interactively:"
     echo ""
     echo "  docker run --rm -it \\"
-    echo "    -v sdlc-smoke-claude-creds:/root/.claude \\"
+    echo "    -v sdlc-smoke-claude-creds:/home/sdlc/.claude \\"
     echo "    --entrypoint /bin/bash \\"
     echo "    sdlc-smoke-base:latest \\"
     echo "    -c 'claude /login'"

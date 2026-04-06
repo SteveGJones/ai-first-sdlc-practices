@@ -13,10 +13,19 @@ RUN npm install -g @anthropic-ai/claude-code
 # Install Ralph orchestrator
 RUN npm install -g @ralph-orchestrator/ralph-cli
 
-WORKDIR /workspace
-
-# Copy entrypoint script
+# Copy entrypoint script (as root, before USER switch)
 COPY entrypoint.sh /opt/entrypoint.sh
 RUN chmod +x /opt/entrypoint.sh
+
+# Create a non-root user for runtime.
+# Claude Code's --dangerously-skip-permissions (used by ralph-orchestrator)
+# refuses to run as root for security reasons.
+# UID 1001 because node:22-slim already has a 'node' user at UID 1000.
+RUN useradd -m -s /bin/bash -u 1001 sdlc && \
+    mkdir -p /workspace /home/sdlc/.claude && \
+    chown -R sdlc:sdlc /workspace /home/sdlc/.claude
+
+USER sdlc
+WORKDIR /workspace
 
 ENTRYPOINT ["/opt/entrypoint.sh"]

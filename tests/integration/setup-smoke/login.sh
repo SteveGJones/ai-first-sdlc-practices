@@ -30,9 +30,11 @@ read
 # Ensure ANTHROPIC_API_KEY is NOT set
 unset ANTHROPIC_API_KEY
 
-# Run interactive container with named volume mounted at /root/.claude
+# Run interactive container as the sdlc user with named volume mounted at /home/sdlc/.claude
+# (The Dockerfile creates the sdlc user with UID 1000. Login must run as this user
+# so credentials get the right ownership for run.sh, which also runs as sdlc.)
 docker run --rm -it \
-    -v sdlc-smoke-claude-creds:/root/.claude \
+    -v sdlc-smoke-claude-creds:/home/sdlc/.claude \
     --entrypoint /bin/bash \
     sdlc-smoke-base:latest \
     -c "unset ANTHROPIC_API_KEY && claude /login && echo '' && echo 'Verifying auth...' && claude -p 'say ok' && echo '' && echo 'Login successful. You can now run ./run.sh'"

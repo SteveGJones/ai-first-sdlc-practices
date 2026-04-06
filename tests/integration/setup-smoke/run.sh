@@ -32,7 +32,7 @@ echo "Plugins: installed from public GitHub during test"
 echo ""
 
 docker run --rm \
-    -v sdlc-smoke-claude-creds:/root/.claude \
+    -v sdlc-smoke-claude-creds:/home/sdlc/.claude \
     -v "$SCRIPT_DIR/PROMPT.md:/workspace/PROMPT.md:ro" \
     -v "$SCRIPT_DIR/ralph.yml:/workspace/ralph.yml:ro" \
     -v "$SCRIPT_DIR/fixtures/eventflow/README.md:/workspace/README.md:ro" \
