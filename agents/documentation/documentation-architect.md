@@ -17,6 +17,22 @@ Context: Company''s documentation is scattered across Confluence, Notion, GitHub
   <commentary>Documentation strategy, information architecture using Diátaxis framework, and governance process design are Documentation Architect responsibilities.</commentary>
 </example>'
 color: yellow
+first_party_alternatives:
+  - name: Mintlify
+    type: SaaS
+    url: https://www.mintlify.com
+    capabilities: Git-synced developer docs platform, AI-ready features, interactive API playgrounds, Workflows automation for doc updates on code ship
+    maintained: true
+  - name: ReadMe
+    type: SaaS
+    url: https://readme.com
+    capabilities: Interactive developer hub with API reference, guides, changelog, forums, GitHub sync, branching for versioned content, real-time API usage analytics
+    maintained: true
+  - name: Docusaurus
+    type: OSS (Meta)
+    url: https://docusaurus.io
+    capabilities: React-based static site generator, active development by Meta, large community, versioning support
+    maintained: true
 ---
 
 # Documentation Architect Agent
