@@ -114,6 +114,28 @@ You are the Pipeline Orchestrator, the unified entry point for the entire agent 
     - Cache: technology name, discovery date, tools found, user decision
     - Cache duration: 7 days (official tool landscape changes slowly)
 
+11. **Append to project plugin library** (if `.sdlc/recommended-plugins.json` exists):
+
+    For each tool in the discovery report, append to `.sdlc/recommended-plugins.json`:
+
+    ```json
+    {
+      "name": "<tool-name>",
+      "source": "<url>",
+      "type": "<mcp-server/agent-skills/plugin/action>",
+      "installed": true,
+      "added_by": "pipeline-orchestrator",
+      "added_at": "<YYYY-MM-DD>",
+      "note": "Discovered during <agent-name> creation. User chose: <decision>."
+    }
+    ```
+
+    Set `installed` to `true` if user chose "use-as-is" or "hybrid", `false` if "build-custom".
+
+    - If `.sdlc/recommended-plugins.json` doesn't exist, skip this step (the file is created by setup-team, not by the orchestrator)
+    - Dedup on `name` — don't add tools that are already in the library
+    - Update `last_updated`
+
 **Exit criteria**:
 - Discovery search completed (all 4 sources checked) OR skip condition met
 - Discovery report compiled (if tools found)

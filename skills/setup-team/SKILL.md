@@ -149,7 +149,43 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
 
    for each recommended plugin. Note: skill cannot programmatically install plugins — it provides the commands for the user to run.
 
-9. **Write team configuration** to record the selection.
+9. **Write the plugin library** at `.sdlc/recommended-plugins.json`
+
+   If the file doesn't exist, create it. If it exists, read it and append new entries (dedup on `name` — don't add tools already in the list).
+
+   ```json
+   {
+     "version": "1.0",
+     "last_updated": "<YYYY-MM-DD>",
+     "plugins": [
+       {
+         "name": "sdlc-core",
+         "source": "ai-first-sdlc",
+         "type": "sdlc-framework",
+         "installed": true,
+         "added_by": "setup-team",
+         "added_at": "<YYYY-MM-DD>"
+       },
+       {
+         "name": "<discovered-tool-name>",
+         "source": "<url>",
+         "type": "<mcp-server/agent-skills/plugin/action>",
+         "installed": "<true/false>",
+         "added_by": "setup-team",
+         "added_at": "<YYYY-MM-DD>",
+         "note": "<optional context>"
+       }
+     ]
+   }
+   ```
+
+   Include:
+   - All SDLC framework plugins the user chose to install (type: `sdlc-framework`)
+   - All technology-specific tools from step 5c discovery (type: `mcp-server`, `agent-skills`, etc.) with `installed: true/false` based on the user's choice
+   - Do NOT duplicate entries that already exist (match on `name`)
+   - Update `last_updated` to today's date
+
+10. **Write team configuration** to record the selection.
 
    **Primary location**: `.sdlc/team-config.json` (project root, not `.claude/`).
 
@@ -193,4 +229,4 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
 
    **Fallback**: If `.sdlc/team-config.json` also fails to write for any reason, write to `team-config.json` in the project root and warn the user.
 
-10. **Report** the configured formation and installed plugins.
+11. **Report** the configured formation and installed plugins.
