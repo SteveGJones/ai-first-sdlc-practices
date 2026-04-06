@@ -11,7 +11,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 ### For Human Contributors
 
 1. **Fork the repository** and clone it locally
-2. **Run the setup**: `python setup-smart.py "contributing to framework"`
+2. **Set up the dev environment** (see below) — symlinks shipped skills/agents into your local Claude Code session
 3. **Create a feature branch**: `git checkout -b feature/your-contribution`
 4. **Read CLAUDE.md**: Understand the AI-First workflow
 
@@ -22,6 +22,41 @@ When asked to contribute to this project:
 2. Always create feature proposals before implementation
 3. Update retrospectives incrementally
 4. Never push directly to main
+
+## 🔧 Dev Environment Setup
+
+This repo develops the SDLC plugin family. To test your changes to skills and agents locally — without publishing first — run the dev environment setup script after cloning:
+
+```bash
+./scripts/setup-dev-environment.sh
+```
+
+This symlinks every skill and agent we ship (per `release-mapping.yaml`) into `.claude/skills/` and `.claude/agents/`. Your local Claude Code session then uses the source files you're actively editing instead of the published versions from the GitHub marketplace.
+
+**If you have pre-existing real files in `.claude/agents/`** (e.g., from a prior setup), use `--force` to replace them with symlinks:
+
+```bash
+./scripts/setup-dev-environment.sh --force
+```
+
+After running, restart Claude Code for the symlinks to take effect.
+
+### The "shipped only" rule
+
+> **Only use shipped skills and agents during development.** Don't create project-specific skills in `.claude/skills/` or download agents to `.claude/agents/`. Anything you'd want to use should either be:
+>
+> 1. **Shipped in the SDLC plugin** (then edit it in `skills/` or `agents/` and re-run `setup-dev-environment.sh`)
+> 2. **Installed from another plugin** (then it lives in the global plugin cache, not in this repo)
+>
+> This prevents accidentally testing against stale state and keeps the dev environment consistent across the team.
+
+### What it does and doesn't touch
+
+- **Touches**: shipped skills (8) and shipped agents (53) — anything in `release-mapping.yaml`
+- **Does NOT touch**: skills/agents from other plugins (`superpowers`, `claude-code-guide`, `code-review`, etc.) — these remain globally installed
+- **Does NOT touch**: per-developer Claude state (sessions, history, settings) — `.claude/` stays gitignored
+
+See `scripts/README.md` for the full documentation.
 
 ## 📋 Contribution Process
 
