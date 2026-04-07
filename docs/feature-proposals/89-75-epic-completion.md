@@ -88,7 +88,7 @@ The other five (`local-validation.py`, `check-broken-references.py`, `check-logg
 
 ---
 
-## Acceptance Criteria
+## Success Criteria
 
 ### #91
 - [ ] `plugins/sdlc-core/scripts/` contains only `session-banner.sh` and `check-tmp-usage.py`
