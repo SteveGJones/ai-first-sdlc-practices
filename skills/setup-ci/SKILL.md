@@ -34,18 +34,34 @@ mkdir -p .github/workflows
 
 4. **Generate workflow** from the appropriate template:
    - Python: use [templates/python.yml](templates/python.yml)
-   - Copy the template to `.github/workflows/sdlc-validate.yml`
+   - JavaScript/TypeScript: use [templates/javascript.yml](templates/javascript.yml)
+   - Go: use [templates/go.yml](templates/go.yml)
+   - Copy the chosen template to `.github/workflows/sdlc-validate.yml`
 
 5. **Report** the created file and suggest next steps:
    ```
    Created .github/workflows/sdlc-validate.yml
 
-   This workflow runs on push and PR to main:
+   Python workflow runs on push and PR to main:
    - Lint (ruff)
    - Format check (ruff format)
    - Type check (mypy)
    - Tests (pytest)
    - Security (bandit)
+
+   JavaScript/TypeScript workflow runs:
+   - Install (npm ci)
+   - Lint (npm run lint)
+   - Type check (tsc --noEmit if tsconfig.json present)
+   - Tests (npm test)
+   - Security audit (npm audit --audit-level=high)
+
+   Go workflow runs:
+   - Modules (go mod download)
+   - Vet (go vet ./...)
+   - Lint (staticcheck ./...)
+   - Tests with race detector (go test -race ./...)
+   - Security scan (gosec ./...)
 
    Commit and push to activate CI.
    ```
