@@ -24,6 +24,7 @@ sdlc-core:
     - source: skills/setup-ci/templates/javascript.yml
     - source: skills/setup-ci/templates/go.yml
     - source: skills/release-plugin/SKILL.md
+    - source: skills/integration-test/SKILL.md
   agents:
     - source: agents/core/sdlc-enforcer.md
     - source: agents/core/critical-goal-reviewer.md

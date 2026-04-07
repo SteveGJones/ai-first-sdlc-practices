@@ -24,6 +24,14 @@ Last successful run: 1 Ralph iteration, 348 seconds, 10/10 PASS, 14 plugins reco
 
 ## Quick Start
 
+The canonical entry point is the `/sdlc-core:integration-test` skill, which wraps the harness below with preflight checks and a clean report. Use the skill for routine runs:
+
+```
+/sdlc-core:integration-test --smoke
+```
+
+The first time only, you still need to build the base image and authenticate:
+
 ```bash
 cd tests/integration/setup-smoke
 
@@ -35,8 +43,11 @@ cd tests/integration/setup-smoke
 # Follow the prompts: paste the OAuth URL into your host browser,
 # complete login, paste the code back. Credentials are stored in
 # the named Docker volume 'sdlc-smoke-claude-creds'.
+```
 
-# 3. Run the smoke test (~5-6 min)
+After that, every run goes through the skill (or you can keep calling `./run.sh` directly if you prefer the raw harness):
+
+```bash
 ./run.sh
 ```
 
