@@ -1,0 +1,51 @@
+name: Constitution Sync
+
+# Fails if CONSTITUTION.md (source of truth) and the plugin copy at
+# plugins/sdlc-core/skills/rules/constitution.md drift out of sync.
+# The plugin copy is published to plugin consumers; drift means in-repo
+# developers and plugin consumers see different rules.
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+    paths:
+      - 'CONSTITUTION.md'
+      - 'plugins/sdlc-core/skills/rules/constitution.md'
+      - '.github/workflows/constitution-sync.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'CONSTITUTION.md'
+      - 'plugins/sdlc-core/skills/rules/constitution.md'
+
+permissions:
+  contents: read
+
+jobs:
+  check-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Diff CONSTITUTION.md against plugin copy
+        run: |
+          if ! diff -q CONSTITUTION.md plugins/sdlc-core/skills/rules/constitution.md > /dev/null; then
+            echo "::error::Constitution drift detected between source and plugin copy"
+            echo ""
+            echo "CONSTITUTION.md (source of truth) and"
+            echo "plugins/sdlc-core/skills/rules/constitution.md (plugin copy)"
+            echo "are out of sync. The plugin copy is what plugin consumers see, so"
+            echo "this drift means in-repo developers and plugin consumers are reading"
+            echo "different rules."
+            echo ""
+            echo "To fix:"
+            echo "  1. Run /sdlc-core:release-plugin (or manually copy CONSTITUTION.md"
+            echo "     to plugins/sdlc-core/skills/rules/constitution.md)"
+            echo "  2. git add plugins/sdlc-core/skills/rules/constitution.md"
+            echo "  3. Amend or extend your commit"
+            echo ""
+            echo "Diff:"
+            diff CONSTITUTION.md plugins/sdlc-core/skills/rules/constitution.md || true
+            exit 1
+          fi
+          echo "✅ CONSTITUTION.md and plugin copy are in sync"

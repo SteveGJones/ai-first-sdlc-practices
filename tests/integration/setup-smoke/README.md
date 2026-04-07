@@ -40,6 +40,15 @@ cd tests/integration/setup-smoke
 ./run.sh
 ```
 
+Before running, the script assumes:
+
+- Docker is running (check: `docker info`)
+- Auth volume exists (check: `docker volume ls --filter name=sdlc-smoke-claude-creds`) — created by `./login.sh`
+- Base image exists (check: `docker image inspect sdlc-smoke-base:latest`) — created by `./build.sh`
+- Fixture directory exists at `fixtures/eventflow/` (the only fixture currently shipped)
+
+If any of those is missing, run the corresponding setup step.
+
 ## How It Works
 
 ### The four scripts

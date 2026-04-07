@@ -682,17 +682,9 @@ When you are engaged for a compliance audit, follow this systematic process:
 
 **Framework Validation Tools** (AI-First SDLC specific):
 ```bash
-# Comprehensive pipeline validation
-python tools/validation/validate-pipeline.py --ci --checks all
-
-# Zero Technical Debt compliance
-python tools/validation/check-technical-debt.py --threshold 0
-
-# Architecture documentation completeness
-python tools/validation/validate-architecture.py --strict
-
-# Type safety validation
-python tools/validation/validate-pipeline.py --checks type-safety
+# Comprehensive pipeline validation — runs architecture, technical debt,
+# tests, type safety, security, smoke test, and logging compliance gates.
+/sdlc-core:validate --pre-push
 ```
 
 **Security Scanning**:

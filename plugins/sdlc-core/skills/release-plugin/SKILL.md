@@ -33,8 +33,9 @@ Package source files into plugin directories based on `release-mapping.yaml`.
    - Copy to `plugins/<plugin>/agents/<filename>`
 
    **Scripts** — for each script entry:
-   - Read the source file (e.g., `tools/validation/check-technical-debt.py`)
+   - Read the source file (e.g., `plugins/sdlc-core/scripts/session-banner.sh`)
    - Copy to `plugins/<plugin>/scripts/<filename>`
+   - The validation pipeline itself runs through the `validate` skill, not via wrapper scripts. Only hook-invoked scripts (e.g., `session-banner.sh`, `check-tmp-usage.py`) belong here.
 
    **Hooks** — hooks are plugin-native, no copy needed (they reference `${CLAUDE_PLUGIN_ROOT}`)
 

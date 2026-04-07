@@ -21,6 +21,8 @@ sdlc-core:
     - source: skills/setup-team/SKILL.md
     - source: skills/setup-ci/SKILL.md
     - source: skills/setup-ci/templates/python.yml
+    - source: skills/setup-ci/templates/javascript.yml
+    - source: skills/setup-ci/templates/go.yml
     - source: skills/release-plugin/SKILL.md
   agents:
     - source: agents/core/sdlc-enforcer.md
@@ -28,11 +30,9 @@ sdlc-core:
     - source: agents/testing/code-review-specialist.md
     - source: agents/core/verification-enforcer.md
   scripts:
-    - source: tools/validation/local-validation.py
-    - source: tools/validation/check-technical-debt.py
-    - source: tools/validation/check-logging-compliance.py
-    - source: tools/validation/validate-architecture.py
-    - source: tools/validation/check-broken-references.py
+    # Only scripts invoked by plugin hooks (see plugins/sdlc-core/hooks/hooks.json)
+    # belong here. The validation pipeline runs through the `validate` skill,
+    # not via wrapper scripts shipped at this path.
     - source: tools/validation/check-tmp-usage.py
   hooks:
     - source: plugins/sdlc-core/hooks/hooks.json

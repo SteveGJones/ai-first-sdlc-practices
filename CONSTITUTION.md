@@ -33,7 +33,7 @@ Check your level: `python tools/automation/sdlc-level.py check`
   - integration-design.md
   - failure-mode-analysis.md
 
-3.2. Architecture validation must pass: `python tools/validation/validate-architecture.py --strict`.
+3.2. Architecture validation must pass — bundled into `/sdlc-core:validate --pre-push`.
 3.3. Start with the hardest integrations first.
 
 *Bootstrap exception: Fresh installs may run in BOOTSTRAP MODE — see CLAUDE-CONTEXT-architecture.md.*
@@ -49,10 +49,10 @@ Check your level: `python tools/automation/sdlc-level.py check`
 
 ## Article 5: Validation [Prototype+]
 
-5.1. Run syntax check after writing code: `python tools/validation/local-validation.py --syntax`.
-5.2. Run quick validation before commits: `python tools/validation/local-validation.py --quick`. [Production+]
-5.3. Run full validation before PR: `python tools/validation/local-validation.py --pre-push`. [Production+]
-5.4. Zero technical debt threshold: `python tools/validation/check-technical-debt.py --threshold 0`. [Production+]
+5.1. Run syntax check after writing code: `/sdlc-core:validate --syntax`.
+5.2. Run quick validation before commits: `/sdlc-core:validate --quick`. [Production+]
+5.3. Run full validation before PR: `/sdlc-core:validate --pre-push`. [Production+]
+5.4. Zero technical debt threshold — enforced by `/sdlc-core:validate --pre-push`. [Production+]
 5.5. CI is the source of truth — local success does not guarantee CI success.
 5.6. Create a language-specific validator for your project (see LANGUAGE-SPECIFIC-VALIDATORS.md). [Production+]
 5.7. **Tests must exist and pass before code is considered complete.** [Prototype+]
@@ -78,7 +78,7 @@ Check your level: `python tools/automation/sdlc-level.py check`
 
 7.1. Required logging points: function entry/exit, errors & exceptions, external calls, state mutations, security events, business milestones, performance anomalies, config changes, validation failures, resource limits.
 7.2. Forbidden in logs: passwords, tokens, PII, biometrics, encryption keys.
-7.3. Validate: `python tools/validation/check-logging-compliance.py . --threshold 0`.
+7.3. Validate — enforced by the logging compliance gate inside `/sdlc-core:validate --pre-push`.
 
 *Details: Load CLAUDE-CONTEXT-logging.md.*
 

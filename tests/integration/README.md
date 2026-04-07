@@ -27,6 +27,8 @@ Every phase produces an 8-section journal entry documenting:
 - Validation results (actual command output, not just pass/fail)
 - Framework recommendations (what should change in the SDLC framework)
 
+> **Note:** A faster Docker-based smoke variant of this test (~5 min vs 45-60 min) lives in `tests/integration/setup-smoke/`. Use the smoke variant for routine "did I break something?" checks. Use the full test below before major releases or when validating large framework changes.
+
 ## Prerequisites
 
 - GitHub CLI (`gh`) authenticated
