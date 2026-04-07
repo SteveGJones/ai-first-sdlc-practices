@@ -58,6 +58,10 @@ After running, restart Claude Code for the symlinks to take effect.
 
 See `scripts/README.md` for the full documentation.
 
+### Constitution sync check
+
+`CONSTITUTION.md` is the authoritative ruleset; `plugins/sdlc-core/skills/rules/constitution.md` is the plugin copy that ships to consumers. A CI workflow (`.github/workflows/constitution-sync.yml`) fails any PR where the two files have drifted. If your PR edits `CONSTITUTION.md`, also run `/sdlc-core:release-plugin` (or copy the file manually) so the plugin copy stays in sync.
+
 ## 📋 Contribution Process
 
 ### 1. Create a Feature Proposal (REQUIRED)
