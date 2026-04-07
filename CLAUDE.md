@@ -2,6 +2,10 @@
 
 AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full instructions: **CLAUDE-CORE.md**.
 
+## Active Work
+
+**EPIC #97 — Multi-Option Commissioned SDLC.** Active branch `feature/sdlc-commissioning`. The framework is being extended to commission a fixed SDLC bundle per project from four options (Solo / Single-team / Programme / Assured) instead of configuring one universal shape. Sub-feature #98 (commissioning infrastructure) is the current focus. See `research/sdlc/Agentic_SDLC_Options.md` for the four-option research and `docs/feature-proposals/98-sdlc-commissioning-infrastructure.md` for the active spec.
+
 ## Essential Workflow
 
 ```
