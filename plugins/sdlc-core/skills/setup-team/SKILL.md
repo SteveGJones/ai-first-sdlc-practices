@@ -99,7 +99,61 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    - GitHub Actions marketplace: WebSearch `"{technology} github action" site:github.com/marketplace`
    - Targeted web search: `"{technology} official mcp server"`, `"{technology} agent skills"`
 
-   For each tool found, record: name, type (MCP Server / Agent Skills / Plugin / Action), source URL, brief capabilities description, and whether it appears actively maintained (last commit/publish within 6 months).
+   For each tool found, record: name, **category** (one of `claude-plugin` / `mcp-server-npm` / `mcp-server-pip` / `mcp-server-binary` / `github-action` / `standalone-cli` / `library-framework`), source URL, brief capabilities description, and whether it appears actively maintained (last commit/publish within 6 months).
+
+   Classification rules:
+   - In a Claude Code plugin marketplace (has `.claude-plugin/marketplace.json`)? → `claude-plugin`
+   - npm package runnable via `npx`, exposes MCP? → `mcp-server-npm`
+   - PyPI package runnable via `python -m`, exposes MCP? → `mcp-server-pip`
+   - Pre-built binary distributed via GitHub releases, exposes MCP? → `mcp-server-binary`
+   - Published in the GitHub Actions marketplace, used via `uses:` in workflow YAML? → `github-action`
+   - Standalone repository the user clones and runs? → `standalone-cli`
+   - Foundation library (FastMCP, Anthropic SDK, etc.) used to build other tools? → `library-framework`
+
+   **5c.1 Generate install instructions per tool.** Every tool gets an install snippet derived from its category. Use the exact format below per category — never invent install commands or guess at undocumented setup. If you cannot determine the install path with confidence, write: `Manual setup required. See <url>/README.md.`
+
+   - **`claude-plugin`** in `anthropics/claude-plugins-official`:
+     ```
+     /plugin marketplace add anthropics/claude-plugins-official
+     /plugin install <plugin-name>@claude-plugins-official
+     ```
+   - **`claude-plugin`** in another marketplace repo (read its `.claude-plugin/marketplace.json` to get the marketplace name):
+     ```
+     /plugin marketplace add <owner>/<repo>
+     /plugin install <plugin-name>@<marketplace-name>
+     ```
+   - **`mcp-server-npm`** — add to `.mcp.json` (create if missing):
+     ```json
+     { "mcpServers": { "<server-name>": { "command": "npx", "args": ["-y", "<package>"], "env": { "<env-var>": "<value>" } } } }
+     ```
+     Note any required env vars (API keys, connection strings) explicitly. Then restart Claude Code or run `/mcp`.
+   - **`mcp-server-pip`** — install package, then add to `.mcp.json`:
+     ```bash
+     pip install <package>
+     ```
+     ```json
+     { "mcpServers": { "<server-name>": { "command": "python", "args": ["-m", "<module>"], "env": { "<env-var>": "<value>" } } } }
+     ```
+   - **`mcp-server-binary`** — download from release URL, then add to `.mcp.json` with absolute path to the binary
+   - **`github-action`** — add to a workflow YAML file:
+     ```yaml
+     - name: <descriptive name>
+       uses: <owner>/<repo>@<version-tag>
+       with:
+         <input>: <value>
+     ```
+     Pin to a specific version tag, not `@main`. Note any required `secrets.*`.
+   - **`standalone-cli`**:
+     ```bash
+     git clone <repo-url> ~/tools/<tool-name>
+     cd ~/tools/<tool-name>
+     <run command from README>
+     ```
+   - **`library-framework`**:
+     ```bash
+     <pip|npm|cargo> install <package>
+     ```
+     Foundation library — used to *build* tools, not invoked directly. Link to docs.
 
    **5d. If no technologies detected and user skipped:** Skip this step entirely and proceed to step 6.
 
@@ -121,12 +175,21 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    ○ <language plugin from step 4>
 
    === Technology-Specific Tools ===
-   Official vendor tooling discovered for your tech stack.
+   Official vendor tooling discovered for your tech stack. Each tool below includes ready-to-run installation instructions.
 
    ○ <tool name> — <capabilities>
-     Source: <url> | Type: <MCP Server/Agent Skills/Plugin/Action> | Maintained: <Yes/No>
+     Source: <url>
+     Category: <claude-plugin/mcp-server-npm/mcp-server-pip/mcp-server-binary/github-action/standalone-cli/library-framework>
+     Maintained: <Yes/No>
+     Install:
+       <category-appropriate install snippet from step 5c.1>
+
    ○ <tool name> — <capabilities>
-     Source: <url> | Type: <MCP Server/Agent Skills/Plugin/Action> | Maintained: <Yes/No>
+     Source: <url>
+     Category: <category>
+     Maintained: <Yes/No>
+     Install:
+       <install snippet>
 
    (If no tools were discovered:)
    No official vendor tooling found for your tech stack.
