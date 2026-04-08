@@ -74,6 +74,7 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-team-security` | Security, compliance, privacy (5 agents) |
 | `sdlc-team-pm` | Agile coach, delivery manager, tracking (5 agents) |
 | `sdlc-team-docs` | Technical writer, documentation architect |
+| `sdlc-knowledge-base` | Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint operations. Orthogonal to SDLC option choice. |
 | `sdlc-lang-*` | Language-specific validation and patterns (Python, JS, Go, Java, Rust) |
 
 ### Available Skills
@@ -87,3 +88,4 @@ Then configure your team: `/sdlc-core:setup-team`
 | `/sdlc-core:setup-team` | Configure team formation |
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
+| `/sdlc-core:kb-*` | Knowledge base operations (init, ingest, query, lint, rebuild-indexes, validate-citations, promote-answer, staleness-check) — installed by `sdlc-knowledge-base` plugin |
