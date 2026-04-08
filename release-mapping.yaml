@@ -138,3 +138,4 @@ sdlc-knowledge-base:
     - source: skills/kb-lint/SKILL.md
     - source: skills/kb-validate-citations/SKILL.md
     - source: skills/kb-promote-answer-to-library/SKILL.md
+    - source: skills/kb-staleness-check/SKILL.md
