@@ -117,5 +117,6 @@ sdlc-lang-javascript:
 # Components added incrementally by sub-features 3-12 of the EPIC. The agents,
 # skills, and templates blocks below grow as each sub-feature lands.
 sdlc-knowledge-base:
-  agents: []
+  agents:
+    - source: agents/knowledge-base/research-librarian.md
   skills: []
