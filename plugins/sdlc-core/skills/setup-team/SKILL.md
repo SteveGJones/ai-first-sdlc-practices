@@ -99,16 +99,26 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    - GitHub Actions marketplace: WebSearch `"{technology} github action" site:github.com/marketplace`
    - Targeted web search: `"{technology} official mcp server"`, `"{technology} agent skills"`
 
-   For each tool found, record: name, **category** (one of `claude-plugin` / `mcp-server-npm` / `mcp-server-pip` / `mcp-server-binary` / `github-action` / `standalone-cli` / `library-framework`), source URL, brief capabilities description, and whether it appears actively maintained (last commit/publish within 6 months).
+   For each tool found, record: name, **category** (one of `claude-plugin` / `mcp-server-npm` / `mcp-server-pip` / `mcp-server-binary` / `github-action` / `standalone-cli` / `library-framework`), **section** (A or B — see below), source URL, brief capabilities description, and whether it appears actively maintained (last commit/publish within 6 months).
 
-   Classification rules:
-   - In a Claude Code plugin marketplace (has `.claude-plugin/marketplace.json`)? → `claude-plugin`
-   - npm package runnable via `npx`, exposes MCP? → `mcp-server-npm`
-   - PyPI package runnable via `python -m`, exposes MCP? → `mcp-server-pip`
-   - Pre-built binary distributed via GitHub releases, exposes MCP? → `mcp-server-binary`
-   - Published in the GitHub Actions marketplace, used via `uses:` in workflow YAML? → `github-action`
-   - Standalone repository the user clones and runs? → `standalone-cli`
-   - Foundation library (FastMCP, Anthropic SDK, etc.) used to build other tools? → `library-framework`
+   **Two-section split**:
+   - **Section A — Claude Code Environment Tools**: install these *into* Claude Code to extend its capabilities
+   - **Section B — Project Dependencies**: libraries for the user's own project code (custom MCP server, custom agent, app calling Claude)
+
+   Classification rules (each category maps to exactly one section):
+   - In a Claude Code plugin marketplace (has `.claude-plugin/marketplace.json`)? → `claude-plugin` → **Section A**
+   - npm package runnable via `npx`, exposes MCP as a **pre-built server**? → `mcp-server-npm` → **Section A**
+   - PyPI package runnable via `python -m`, exposes MCP as a **pre-built server**? → `mcp-server-pip` → **Section A**
+   - Pre-built binary distributed via GitHub releases, exposes MCP? → `mcp-server-binary` → **Section A**
+   - Claude Code-specific GitHub Action (e.g., `anthropics/claude-code-action`)? → `github-action` → **Section A**
+   - Standalone repository the user clones and runs alongside Claude Code? → `standalone-cli` → **Section A**
+   - Foundation library (FastMCP, `@modelcontextprotocol/sdk`, Anthropic SDK, vendor driver) used to **build** other tools? → `library-framework` → **Section B**
+
+   **Key distinction** — the difference between `mcp-server-npm` (Section A) and `library-framework` (Section B):
+   - `@modelcontextprotocol/server-filesystem` is a pre-built MCP server → Section A: the user runs `npx -y @modelcontextprotocol/server-filesystem` via `.mcp.json`
+   - `@modelcontextprotocol/sdk` is a library for building MCP servers → Section B: the user runs `npm install @modelcontextprotocol/sdk` inside their own project and imports from it in code they write
+
+   If uncertain: "Does the user run this as-is alongside Claude Code, or do they import it in code they're writing themselves?" Running as-is = A. Importing in their own code = B.
 
    **5c.1 Generate install instructions per tool.** Every tool gets an install snippet derived from its category. Use the exact format below per category — never invent install commands or guess at undocumented setup. If you cannot determine the install path with confidence, write: `Manual setup required. See <url>/README.md.`
 
@@ -174,25 +184,40 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    ○ <team plugins from step 3>
    ○ <language plugin from step 4>
 
-   === Technology-Specific Tools ===
-   Official vendor tooling discovered for your tech stack. Each tool below includes ready-to-run installation instructions.
+   === Section A: Claude Code Environment Tools ===
+   Install these INTO Claude Code to extend its capabilities. Each has ready-to-run installation instructions.
 
    ○ <tool name> — <capabilities>
      Source: <url>
-     Category: <claude-plugin/mcp-server-npm/mcp-server-pip/mcp-server-binary/github-action/standalone-cli/library-framework>
+     Category: <claude-plugin/mcp-server-npm/mcp-server-pip/mcp-server-binary/github-action/standalone-cli>
      Maintained: <Yes/No>
-     Install:
+     Install (MANDATORY — never omit):
        <category-appropriate install snippet from step 5c.1>
 
    ○ <tool name> — <capabilities>
-     Source: <url>
-     Category: <category>
-     Maintained: <Yes/No>
-     Install:
-       <install snippet>
+     ...
 
-   (If no tools were discovered:)
-   No official vendor tooling found for your tech stack.
+   (If no Section A tools were found:)
+   _No Claude Code environment tools found for your tech stack._
+
+   === Section B: Project Dependencies ===
+   These are libraries for your OWN project's source code if you're building something (custom MCP server, custom agent, app calling Claude). They are NOT installed in Claude Code.
+
+   ○ <library name> — <what it helps you build>
+     Source: <url>
+     Category: library-framework
+     Install (in your project, not Claude Code):
+       <package-manager> install <package-name>
+     Usage: <import statement>
+     Docs: <docs-url>
+
+   ○ <library name> — ...
+
+   (If no Section B libraries were found:)
+   _No project dependencies found for your tech stack._
+
+   (If neither section has entries:)
+   No official vendor tooling or libraries found for your tech stack.
    You can search later using the pipeline-orchestrator's discovery phase.
 
    === Project Support (optional) ===
