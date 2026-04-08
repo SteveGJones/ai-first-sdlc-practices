@@ -123,6 +123,14 @@ sdlc-knowledge-base:
   skills:
     - source: skills/kb-init/SKILL.md
     - source: skills/kb-init/templates/claude-md-section.md
+    # Starter pack — three example library files (dogfood from
+    # the Agentic SDLC research) plus shelf-index and log seed.
+    # kb-init optionally copies these into a fresh project's library/.
+    - source: skills/kb-init/templates/starter-pack/library/agentic-sdlc-options.md
+    - source: skills/kb-init/templates/starter-pack/library/agent-suitability-rubric.md
+    - source: skills/kb-init/templates/starter-pack/library/specification-formality-and-agent-performance.md
+    - source: skills/kb-init/templates/starter-pack/library/_shelf-index.md
+    - source: skills/kb-init/templates/starter-pack/library/log.md
     - source: skills/kb-rebuild-indexes/SKILL.md
     - source: skills/kb-rebuild-indexes/templates/shelf-index-example.md
     - source: skills/kb-ingest/SKILL.md
