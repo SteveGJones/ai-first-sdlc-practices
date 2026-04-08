@@ -70,7 +70,7 @@ You are the Pipeline Orchestrator, the unified entry point for the entire agent 
    - Record each finding: repo name, description, stars, last commit date, license
 
 4. **Check Claude Code plugin marketplace**:
-   - Search `plugins/.claude-plugin/marketplace.json` for plugins related to the target technology
+   - Search `.claude-plugin/marketplace.json` (at the repo root) for plugins related to the target technology
    - Check if any existing plugin in the marketplace already covers the domain
    - Record findings: plugin name, version, description, agent count
 

@@ -43,7 +43,7 @@ Package source files into plugin directories based on `release-mapping.yaml`.
    - Read the current version from `.claude-plugin/plugin.json`
    - Apply the version bump (patch/minor/major)
    - Write the updated version back
-   - Also update the version in `plugins/.claude-plugin/marketplace.json` for this plugin
+   - Also update the version in `.claude-plugin/marketplace.json` (at the repo root) for this plugin
 
 4. **Validate the result:**
    - Verify every source file in the mapping exists
