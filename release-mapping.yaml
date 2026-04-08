@@ -112,3 +112,30 @@ sdlc-lang-python:
 sdlc-lang-javascript:
   agents:
     - source: agents/sdlc/language-javascript-expert.md
+
+# Knowledge base plugin — orthogonal to SDLC option choice. EPIC #105.
+# Components added incrementally by sub-features 3-12 of the EPIC. The agents,
+# skills, and templates blocks below grow as each sub-feature lands.
+sdlc-knowledge-base:
+  agents:
+    - source: agents/knowledge-base/research-librarian.md
+    - source: agents/knowledge-base/agent-knowledge-updater.md
+  skills:
+    - source: skills/kb-init/SKILL.md
+    - source: skills/kb-init/templates/claude-md-section.md
+    # Starter pack — three example library files (dogfood from
+    # the Agentic SDLC research) plus shelf-index and log seed.
+    # kb-init optionally copies these into a fresh project's library/.
+    - source: skills/kb-init/templates/starter-pack/library/agentic-sdlc-options.md
+    - source: skills/kb-init/templates/starter-pack/library/agent-suitability-rubric.md
+    - source: skills/kb-init/templates/starter-pack/library/specification-formality-and-agent-performance.md
+    - source: skills/kb-init/templates/starter-pack/library/_shelf-index.md
+    - source: skills/kb-init/templates/starter-pack/library/log.md
+    - source: skills/kb-rebuild-indexes/SKILL.md
+    - source: skills/kb-rebuild-indexes/templates/shelf-index-example.md
+    - source: skills/kb-ingest/SKILL.md
+    - source: skills/kb-query/SKILL.md
+    - source: skills/kb-lint/SKILL.md
+    - source: skills/kb-validate-citations/SKILL.md
+    - source: skills/kb-promote-answer-to-library/SKILL.md
+    - source: skills/kb-staleness-check/SKILL.md
