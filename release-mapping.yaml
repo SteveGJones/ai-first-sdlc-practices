@@ -119,4 +119,6 @@ sdlc-lang-javascript:
 sdlc-knowledge-base:
   agents:
     - source: agents/knowledge-base/research-librarian.md
-  skills: []
+  skills:
+    - source: skills/kb-rebuild-indexes/SKILL.md
+    - source: skills/kb-rebuild-indexes/templates/shelf-index-example.md
