@@ -120,5 +120,7 @@ sdlc-knowledge-base:
   agents:
     - source: agents/knowledge-base/research-librarian.md
   skills:
+    - source: skills/kb-init/SKILL.md
+    - source: skills/kb-init/templates/claude-md-section.md
     - source: skills/kb-rebuild-indexes/SKILL.md
     - source: skills/kb-rebuild-indexes/templates/shelf-index-example.md
