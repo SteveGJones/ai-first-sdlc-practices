@@ -112,3 +112,10 @@ sdlc-lang-python:
 sdlc-lang-javascript:
   agents:
     - source: agents/sdlc/language-javascript-expert.md
+
+# Knowledge base plugin — orthogonal to SDLC option choice. EPIC #105.
+# Components added incrementally by sub-features 3-12 of the EPIC. The agents,
+# skills, and templates blocks below grow as each sub-feature lands.
+sdlc-knowledge-base:
+  agents: []
+  skills: []
