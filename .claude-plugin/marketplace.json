@@ -1,0 +1,21 @@
+{
+  "name": "ai-first-sdlc",
+  "owner": { "name": "SteveGJones" },
+  "metadata": {
+    "description": "AI-First SDLC Practices — plugin family for zero-debt development",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    { "name": "sdlc-core", "source": "./plugins/sdlc-core", "description": "Core SDLC rules, validators, enforcement, and workflows", "version": "1.0.0" },
+    { "name": "sdlc-team-common", "source": "./plugins/sdlc-team-common", "description": "Cross-cutting specialist agents — architects, researchers, performance engineers", "version": "1.0.0" },
+    { "name": "sdlc-team-ai", "source": "./plugins/sdlc-team-ai", "description": "AI/ML specialist agents — architects, prompt engineers, RAG designers", "version": "1.0.0" },
+    { "name": "sdlc-team-fullstack", "source": "./plugins/sdlc-team-fullstack", "description": "Full-stack agents — frontend, backend, API, DevOps architects", "version": "1.0.0" },
+    { "name": "sdlc-team-cloud", "source": "./plugins/sdlc-team-cloud", "description": "Cloud infrastructure agents — cloud, container, SRE specialists", "version": "1.0.0" },
+    { "name": "sdlc-team-security", "source": "./plugins/sdlc-team-security", "description": "Security agents — security, compliance, privacy specialists", "version": "1.0.0" },
+    { "name": "sdlc-team-pm", "source": "./plugins/sdlc-team-pm", "description": "Project management agents — agile coach, delivery manager, progress tracking", "version": "1.0.0" },
+    { "name": "sdlc-team-docs", "source": "./plugins/sdlc-team-docs", "description": "Documentation agents — technical writer, documentation architect", "version": "1.0.0" },
+    { "name": "sdlc-lang-python", "source": "./plugins/sdlc-lang-python", "description": "Python-specific validation, patterns, and expert agents", "version": "1.0.0" },
+    { "name": "sdlc-lang-javascript", "source": "./plugins/sdlc-lang-javascript", "description": "JavaScript/TypeScript-specific validation and patterns", "version": "1.0.0" },
+    { "name": "sdlc-knowledge-base", "source": "./plugins/sdlc-knowledge-base", "description": "Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint operations", "version": "0.1.0" }
+  ]
+}
