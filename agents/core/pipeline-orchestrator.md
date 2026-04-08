@@ -19,8 +19,8 @@ Context: Team has an internal library with no documentation and wants an agent t
 - '<example>
 Context: User requests a MongoDB agent and the pipeline discovers official tooling.
   user: "We need a MongoDB expert agent for our team."
-  assistant: "Before building a custom agent, I will check for official MongoDB tooling. Discovery found: (1) @mongodb/mcp-server on npm — official MCP server with query, schema inspection, and index management capabilities, actively maintained. (2) mongodb/agent-skills on GitHub — pre-built agent skills for CRUD, aggregation, and vector search. These official tools cover the core MongoDB use case. Options: (a) Use the official MCP server and agent skills as-is — install and configure them. (b) Hybrid — install the official tools and build a lightweight agent that adds architectural guidance (schema design patterns, index optimization, migration planning). (c) Build a custom agent from scratch, ignoring official tools. Which approach?"
-  <commentary>The Pipeline Orchestrator discovers 1st-party tools before building from scratch, presenting the user with options to use official tooling, build a hybrid, or build custom.</commentary>
+  assistant: "Before building a custom agent, I will check for official MongoDB tooling. Discovery found two tools, classified and with installation instructions:\n\n**@mongodb/mcp-server** (mcp-server-npm)\n- Source: https://www.npmjs.com/package/@mongodb/mcp-server\n- Publisher: MongoDB Inc. (verified)\n- Description: Official MCP server with query, schema inspection, and index management\n- Status: Active (last published 2 weeks ago)\n- Install: add to .mcp.json:\n  ```\n  { \"mcpServers\": { \"mongodb\": { \"command\": \"npx\", \"args\": [\"-y\", \"@mongodb/mcp-server\"], \"env\": { \"MONGODB_URI\": \"<your-connection-string>\" } } } }\n  ```\n  Then restart Claude Code or run /mcp to refresh.\n\n**mongodb/agent-skills** (claude-plugin)\n- Source: https://github.com/mongodb/agent-skills\n- Publisher: MongoDB Inc. (official)\n- Description: Pre-built agent skills for CRUD, aggregation, and vector search\n- Install:\n  ```\n  /plugin marketplace add mongodb/agent-skills\n  /plugin install mongodb-skills@mongodb-agent-skills\n  ```\n\nOptions: (a) Use both as-is. (b) Hybrid — install both and build a lightweight agent for architectural guidance. (c) Build a custom agent from scratch. Which approach?"
+  <commentary>The Pipeline Orchestrator discovers 1st-party tools and provides ready-to-run installation instructions per tool type. Notice the MCP server gets a .mcp.json snippet and the Claude plugin gets the marketplace add + install commands. Different tool types, different install paths, both spelled out so the user can copy-paste.</commentary>
 </example>'
 color: green
 ---
@@ -85,36 +85,139 @@ You are the Pipeline Orchestrator, the unified entry point for the entire agent 
    - Search: "{vendor} ai integration"
    - Record any additional official tooling found
 
-7. **Compile discovery report**:
+7. **Classify each found tool by type.** Before compiling the report, assign each tool to one of these categories. The category determines the install instruction format (see the reference table below).
+
+   | Category | Identifying signal |
+   |---|---|
+   | `claude-plugin` | Lives in a Claude Code plugin marketplace (`anthropics/claude-plugins-official`, `claude-code-marketplace`, our own `ai-first-sdlc`, or any repo with a `.claude-plugin/marketplace.json`) |
+   | `mcp-server-npm` | Published as an npm package, runnable via `npx`, exposes MCP server protocol |
+   | `mcp-server-pip` | Published as a Python package on PyPI, runnable via `python -m`, exposes MCP server protocol |
+   | `mcp-server-binary` | Distributed as a pre-built binary (GitHub release), exposes MCP server protocol |
+   | `github-action` | Published in the GitHub Actions marketplace, used via `uses:` in workflow YAML |
+   | `standalone-cli` | A standalone repository the user clones and runs, not packaged as plugin/MCP/Action |
+   | `library-framework` | A foundation library (e.g., FastMCP, Anthropic SDK) used to *build* other tools, not directly a tool itself |
+
+8. **Compile discovery report with installation instructions.** Every tool gets an install instruction generated from its category using the reference formats below:
+
    ```markdown
    ## 1st-Party Tool Discovery Report: {Technology}
 
-   | Source | Tool | Publisher | Description | Status | Last Updated |
-   |--------|------|-----------|-------------|--------|--------------|
-   | npm | @{vendor}/mcp-server | {vendor} (verified) | {desc} | Active | {date} |
-   | GitHub | {vendor}/{repo} | {vendor} (official) | {desc} | Active | {date} |
-   | Marketplace | {plugin-name} | {publisher} | {desc} | v{ver} | {date} |
-   | Actions | {action-name} | {publisher} | {desc} | Active | {date} |
+   ### {Tool 1 Name}
+   - **Source**: {url}
+   - **Publisher**: {publisher} ({verified | official | community})
+   - **Type**: {category}
+   - **Description**: {what it does}
+   - **Why it matters here**: {project-specific relevance}
+   - **Status**: {Active | Stale | Archived} (last updated {date})
+   - **Install**:
+     ```
+     {category-appropriate install instructions — see reference below}
+     ```
+
+   ### {Tool 2 Name}
+   ...
 
    **Coverage assessment**: {High/Medium/Low/None} — {explanation of what the official tools cover vs what gaps remain}
    ```
 
-8. **Present findings to user with three options**:
-   - **(a) Use official tools as-is**: Install and configure the discovered 1st-party tools. No custom agent needed. Pipeline ends here.
+   **Install instruction reference (use the exact format for each category):**
+
+   - **`claude-plugin`** in `anthropics/claude-plugins-official`:
+     ```
+     /plugin marketplace add anthropics/claude-plugins-official
+     /plugin install <plugin-name>@claude-plugins-official
+     ```
+   - **`claude-plugin`** in another marketplace repo:
+     ```
+     /plugin marketplace add <owner>/<repo>
+     /plugin install <plugin-name>@<marketplace-name>
+     ```
+     Note: the marketplace name comes from the `name` field in the repo's `.claude-plugin/marketplace.json`, not the repo name. Read the file to confirm.
+   - **`mcp-server-npm`**: add to the project's `.mcp.json` (create if missing):
+     ```json
+     {
+       "mcpServers": {
+         "<server-name>": {
+           "command": "npx",
+           "args": ["-y", "<npm-package-name>"],
+           "env": { "<env-var>": "<value-or-placeholder>" }
+         }
+       }
+     }
+     ```
+     Then restart Claude Code or run `/mcp` to refresh. Note any required env vars (API keys, connection strings) explicitly.
+   - **`mcp-server-pip`**: install the package, then add to `.mcp.json`:
+     ```bash
+     pip install <package-name>
+     ```
+     ```json
+     {
+       "mcpServers": {
+         "<server-name>": {
+           "command": "python",
+           "args": ["-m", "<module-name>"],
+           "env": { "<env-var>": "<value>" }
+         }
+       }
+     }
+     ```
+   - **`mcp-server-binary`**: download the binary from `<release-url>`, place it at `<path>`, then add to `.mcp.json`:
+     ```json
+     {
+       "mcpServers": {
+         "<server-name>": {
+           "command": "<absolute-path-to-binary>",
+           "args": [],
+           "env": {}
+         }
+       }
+     }
+     ```
+   - **`github-action`**: add to the relevant workflow file (e.g., `.github/workflows/<workflow>.yml`):
+     ```yaml
+     - name: <descriptive name>
+       uses: <owner>/<repo>@<version-tag>
+       with:
+         <input-name>: <value>
+     ```
+     Pin to a specific version tag, not `@main`. Note any required `secrets.*` references the action expects.
+   - **`standalone-cli`**: clone and run instructions:
+     ```bash
+     git clone <repo-url> ~/tools/<tool-name>
+     cd ~/tools/<tool-name>
+     <run command from the repo's README>
+     ```
+     Include the README link so the user can find current usage.
+   - **`library-framework`** (foundation, not directly a tool):
+     ```bash
+     <package-manager> install <package-name>
+     ```
+     This is a foundation library. It's not directly invoked by Claude Code; it's used when *building* other tools (custom MCP servers, agents, plugins). Link to the library's documentation: `<docs-url>`.
+
+   If you cannot determine the install format for a tool with confidence — for example, a tool whose category is ambiguous or whose installation depends on undocumented setup — say so explicitly in the install field rather than guessing:
+
+   ```
+   **Install**: Manual setup required. See <repo-url>/README.md for instructions.
+   ```
+
+   Never invent install commands. If the README doesn't describe how to install, link to the README and stop.
+
+9. **Present findings to user with three options**:
+   - **(a) Use official tools as-is**: Install and configure the discovered 1st-party tools using the install instructions in the report. No custom agent needed. Pipeline ends here.
    - **(b) Hybrid approach**: Install the official tools AND build a lightweight custom agent that adds value on top (architectural guidance, organization-specific patterns, integration with other agents). Pipeline continues to Phase 1 with discovery context.
    - **(c) Build custom agent from scratch**: Ignore official tools, proceed with full custom agent creation pipeline. Pipeline continues to Phase 1 without discovery context.
    - If NO official tools were found: "No official 1st-party tools discovered for {technology}. Proceeding to custom agent creation." → Route directly to Phase 1.
 
-9. **Route based on user decision**:
-   - **(a) Use as-is**: Provide installation instructions, update project configuration, produce abbreviated Pipeline Completion Report. Pipeline ENDS.
-   - **(b) Hybrid**: Store discovery results as `discovery_context` for Phase 5 (agent-builder will reference official tools in the agent's instructions). Continue to Phase 1.
-   - **(c) Build custom**: Continue to Phase 1 with `first_party_alternatives` noted for transparency in the Pipeline Completion Report.
+10. **Route based on user decision**:
+    - **(a) Use as-is**: The discovery report (with install instructions per tool) IS the deliverable. Update project configuration, produce abbreviated Pipeline Completion Report. Pipeline ENDS.
+    - **(b) Hybrid**: Store discovery results as `discovery_context` for Phase 5 (agent-builder will reference official tools in the agent's instructions). Continue to Phase 1.
+    - **(c) Build custom**: Continue to Phase 1 with `first_party_alternatives` noted for transparency in the Pipeline Completion Report.
 
-10. **Store discovery results in memory**:
+11. **Store discovery results in memory**:
     - Cache: technology name, discovery date, tools found, user decision
     - Cache duration: 7 days (official tool landscape changes slowly)
 
-11. **Append to project plugin library** (if `.sdlc/recommended-plugins.json` exists):
+12. **Append to project plugin library** (if `.sdlc/recommended-plugins.json` exists):
 
     For each tool in the discovery report, append to `.sdlc/recommended-plugins.json`:
 
