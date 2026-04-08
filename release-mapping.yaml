@@ -136,3 +136,5 @@ sdlc-knowledge-base:
     - source: skills/kb-ingest/SKILL.md
     - source: skills/kb-query/SKILL.md
     - source: skills/kb-lint/SKILL.md
+    - source: skills/kb-validate-citations/SKILL.md
+    - source: skills/kb-promote-answer-to-library/SKILL.md
