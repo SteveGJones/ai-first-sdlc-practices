@@ -216,8 +216,24 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    (If no Section B libraries were found:)
    _No project dependencies found for your tech stack._
 
-   (If neither section has entries:)
-   No official vendor tooling or libraries found for your tech stack.
+   === Section C: Gaps Worth Custom Agents ===
+   Topics where no pre-built Claude Code tool exists AND no library alone substitutes for expertise. For each gap, you can commission research + custom agent creation via the pipeline-orchestrator agent (deep-research-agent → synthesis → agent-builder). This skill surfaces the gaps; actual agent creation is invoked separately via `@pipeline-orchestrator`.
+
+   ○ Gap: <topic>
+     Why a custom agent: <what's missing that a custom agent would provide>
+     What the agent would know: <1-2 sentence description>
+     Research scope: <topics the research campaign would cover>
+     Estimated pipeline duration: 2-3 hours (web research + synthesis + construction)
+     Create (when you want it): @pipeline-orchestrator create a <topic-slug> agent
+
+   ○ Gap: <topic>
+     ...
+
+   (If no Section C gaps were identified:)
+   _No coverage gaps identified for your tech stack — existing Section A / Section B tooling covers your needs._
+
+   (If neither A, B, nor C has entries:)
+   No official vendor tooling, libraries, or custom agent candidates found for your tech stack.
    You can search later using the pipeline-orchestrator's discovery phase.
 
    === Project Support (optional) ===
