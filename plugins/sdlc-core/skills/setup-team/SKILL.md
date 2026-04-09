@@ -261,7 +261,7 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    === Section C: Gaps Worth Custom Agents ===
    Topics where no pre-built Claude Code tool exists AND no library alone substitutes for expertise. For each gap, you can commission research + custom agent creation via the pipeline-orchestrator agent (deep-research-agent → synthesis → agent-builder). This skill surfaces the gaps; actual agent creation is invoked separately via `@pipeline-orchestrator`.
 
-   **Prerequisite**: the `Create` commands below require `sdlc-team-common@ai-first-sdlc` installed. This plugin provides the agents that execute the research → synthesis → agent-builder pipeline (`pipeline-orchestrator`, `deep-research-agent`, `agent-builder`). If `sdlc-team-common` is not already in your selected plugins, it becomes **required** (not just recommended) when Section C has any entries — see the escalation logic in step 5e.
+   **Prerequisite**: the `Create` commands below require `sdlc-team-common@ai-first-sdlc` installed. This plugin provides the agents that execute the research → synthesis → agent-builder pipeline (`pipeline-orchestrator`, `deep-research-agent`, `agent-builder`). If `sdlc-team-common` is not already in your selected plugins, it becomes **required** (not just recommended) when Section C has any entries — see the escalation logic below.
 
    ○ Gap: <topic>
      Why a custom agent: <what's missing that a custom agent would provide>

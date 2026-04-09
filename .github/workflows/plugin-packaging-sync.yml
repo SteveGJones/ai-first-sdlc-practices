@@ -1,0 +1,70 @@
+name: Plugin Packaging Sync
+
+# Fails if any source file listed in release-mapping.yaml is missing from its
+# plugin directory or differs from its packaged copy. Catches the failure mode
+# where source files are added to release-mapping.yaml but release-plugin is
+# never run, leaving the plugin directory empty or out-of-sync with source.
+#
+# This workflow is the direct result of issue #137: sdlc-knowledge-base
+# shipped to main in EPIC #105 with an empty plugin directory (only the
+# manifest and README), because release-plugin was never run to sync the
+# source files. Users installing the plugin got a non-functional shell.
+
+on:
+  push:
+    branches: [main, develop, 'feature/**', 'fix/**', 'docs/**']
+    paths:
+      - 'release-mapping.yaml'
+      - 'agents/**'
+      - 'skills/**'
+      - 'plugins/**'
+      - 'tools/validation/check-plugin-packaging.py'
+      - '.github/workflows/plugin-packaging-sync.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'release-mapping.yaml'
+      - 'agents/**'
+      - 'skills/**'
+      - 'plugins/**'
+      - 'tools/validation/check-plugin-packaging.py'
+
+permissions:
+  contents: read
+
+jobs:
+  check-packaging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Verify plugin packaging matches release-mapping.yaml
+        run: python tools/validation/check-plugin-packaging.py
+
+      - name: On failure — show remediation
+        if: failure()
+        run: |
+          echo "::error::Plugin packaging drift detected"
+          echo ""
+          echo "One or more plugins have source files that are missing from their"
+          echo "plugin directory OR differ from the packaged copy. This typically"
+          echo "means release-plugin was not run after changes to release-mapping.yaml"
+          echo "or after updating source files referenced by release-mapping."
+          echo ""
+          echo "To fix locally:"
+          echo "  1. Run /sdlc-core:release-plugin (in Claude Code)"
+          echo "     OR manually copy the drifted files from source to their"
+          echo "     plugin destinations per release-mapping.yaml"
+          echo "  2. git add plugins/"
+          echo "  3. Amend or extend your commit"
+          echo ""
+          echo "This is the failure mode from issue #137. It would have caught"
+          echo "the sdlc-knowledge-base empty-directory bug at PR time."

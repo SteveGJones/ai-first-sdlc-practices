@@ -11,13 +11,13 @@ The plugin packages a research library pattern validated in production by three 
 /plugin install sdlc-knowledge-base@ai-first-sdlc
 
 # Initialise your project (default: with starter pack)
-/sdlc-core:kb-init
+/sdlc-knowledge-base:kb-init
 
 # Try a query against the starter pack
-/sdlc-core:kb-query "What does our research say about specification formality?"
+/sdlc-knowledge-base:kb-query "What does our research say about specification formality?"
 
 # Replace placeholder hashes with real ones
-/sdlc-core:kb-rebuild-indexes
+/sdlc-knowledge-base:kb-rebuild-indexes
 ```
 
 That's the minimal flow. The starter pack ships with three example library files synthesised from Agentic SDLC research; replace or extend with library files relevant to your own problem space.
@@ -35,14 +35,14 @@ That's the minimal flow. The starter pack ships with three example library files
 
 | Skill | Purpose |
 |---|---|
-| `/sdlc-core:kb-init` | Initialise a project: append `[Knowledge Base]` section to CLAUDE.md, create `library/` structure, optionally seed with starter pack |
-| `/sdlc-core:kb-ingest <source>` | Integrate a new source into the library (wraps `agent-knowledge-updater`) |
-| `/sdlc-core:kb-query <question>` | Query the library (wraps `research-librarian`); supports `--promote-to-library` |
-| `/sdlc-core:kb-lint` | Six-check health report: contradictions, stale claims, orphan files, missing cross-references, concepts lacking pages, data gaps |
-| `/sdlc-core:kb-rebuild-indexes` | Hash-based incremental rebuild of the shelf-index |
-| `/sdlc-core:kb-promote-answer-to-library` | File a query result back as a new library page with provenance tracking |
-| `/sdlc-core:kb-validate-citations` | Spot obvious citation hallucinations (DOI resolution, arXiv ID validation) |
-| `/sdlc-core:kb-staleness-check` | Opt-in check for shelf-index drift; designed to be wired into pre-push hooks |
+| `/sdlc-knowledge-base:kb-init` | Initialise a project: append `[Knowledge Base]` section to CLAUDE.md, create `library/` structure, optionally seed with starter pack |
+| `/sdlc-knowledge-base:kb-ingest <source>` | Integrate a new source into the library (wraps `agent-knowledge-updater`) |
+| `/sdlc-knowledge-base:kb-query <question>` | Query the library (wraps `research-librarian`); supports `--promote-to-library` |
+| `/sdlc-knowledge-base:kb-lint` | Six-check health report: contradictions, stale claims, orphan files, missing cross-references, concepts lacking pages, data gaps |
+| `/sdlc-knowledge-base:kb-rebuild-indexes` | Hash-based incremental rebuild of the shelf-index |
+| `/sdlc-knowledge-base:kb-promote-answer-to-library` | File a query result back as a new library page with provenance tracking |
+| `/sdlc-knowledge-base:kb-validate-citations` | Spot obvious citation hallucinations (DOI resolution, arXiv ID validation) |
+| `/sdlc-knowledge-base:kb-staleness-check` | Opt-in check for shelf-index drift; designed to be wired into pre-push hooks |
 
 ### Templates and starter pack
 
@@ -74,7 +74,7 @@ The plugin supports three usage modes depending on how much investment you want 
 
 ### Minimal (1 day setup)
 
-- Run `/sdlc-core:kb-init --with-starter-pack` (the default)
+- Run `/sdlc-knowledge-base:kb-init --with-starter-pack` (the default)
 - The starter pack gives you 3 working library files immediately
 - Add 2-3 more library files of your own using the format shown in the starter pack
 - Skip deep research engines; manually curate sources from things you already have
@@ -83,19 +83,19 @@ The plugin supports three usage modes depending on how much investment you want 
 
 ### Standard (1 week setup)
 
-- Run `/sdlc-core:kb-init`
+- Run `/sdlc-knowledge-base:kb-init`
 - Use a deep research engine (Perplexity Pro, Gemini Deep Research, ChatGPT Deep Research) to commission 10-15 research prompts on the project's key topics
-- Synthesise the raw results into 10-20 library files via `/sdlc-core:kb-ingest`
-- Run `/sdlc-core:kb-rebuild-indexes` after each batch
-- Run `/sdlc-core:kb-validate-citations` to spot obvious hallucinations
-- Run `/sdlc-core:kb-lint` periodically (weekly or before major reviews)
+- Synthesise the raw results into 10-20 library files via `/sdlc-knowledge-base:kb-ingest`
+- Run `/sdlc-knowledge-base:kb-rebuild-indexes` after each batch
+- Run `/sdlc-knowledge-base:kb-validate-citations` to spot obvious hallucinations
+- Run `/sdlc-knowledge-base:kb-lint` periodically (weekly or before major reviews)
 - **Use case**: a team or programme that wants the full research library pattern as developed by the original three production projects. This is the proven shape.
 
 ### Programme (2+ weeks setup)
 
 - Standard mode plus:
 - Cross-team library: multiple sub-domains, each with its own set of library files
-- Wire `/sdlc-core:kb-staleness-check --strict` into pre-push validation
+- Wire `/sdlc-knowledge-base:kb-staleness-check --strict` into pre-push validation
 - Use `kb-promote-answer-to-library` regularly to compound exploration value
 - Periodic lint with action items tracked back to research commissions
 - **Use case**: a programme with multiple teams making interdependent decisions, where evidence quality is institutional rather than individual
@@ -136,7 +136,7 @@ The pattern was first deployed by three projects independently. If your project 
 
 1. **Librarian system prompt** — the plugin's `research-librarian` is close to the original proposal that all three projects kept as-is. If you customised the system prompt, diff against `agents/knowledge-base/research-librarian.md` and re-apply your customisations.
 2. **Library file format** — the plugin's frontmatter and section structure match the original proposal. If your files match, no migration needed. If you added custom frontmatter fields, they remain — the librarian ignores fields it doesn't know about.
-3. **Shelf-index format** — the plugin uses inline content hashes per entry. If your existing index doesn't have hashes, run `/sdlc-core:kb-rebuild-indexes --full` to regenerate the index with hashes.
+3. **Shelf-index format** — the plugin uses inline content hashes per entry. If your existing index doesn't have hashes, run `/sdlc-knowledge-base:kb-rebuild-indexes --full` to regenerate the index with hashes.
 4. **agent-knowledge-updater** — if you have your own updater, compare its decision rules against the plugin's. The plugin's updater is opinionated about what belongs in the knowledge base; if your version is more permissive, decide which philosophy to keep.
 5. **Custom skills** — if you built custom skills around the workflow, they keep working. The plugin's skills coexist; you can adopt them gradually.
 

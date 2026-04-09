@@ -62,6 +62,19 @@ See `scripts/README.md` for the full documentation.
 
 `CONSTITUTION.md` is the authoritative ruleset; `plugins/sdlc-core/skills/rules/constitution.md` is the plugin copy that ships to consumers. A CI workflow (`.github/workflows/constitution-sync.yml`) fails any PR where the two files have drifted. If your PR edits `CONSTITUTION.md`, also run `/sdlc-core:release-plugin` (or copy the file manually) so the plugin copy stays in sync.
 
+### Plugin packaging sync check
+
+Every source file listed in `release-mapping.yaml` must be packaged into its plugin directory. The CI workflow `.github/workflows/plugin-packaging-sync.yml` runs `tools/validation/check-plugin-packaging.py` and fails any PR where source files are missing from their plugin directory or differ from the packaged copy.
+
+**This exists because of issue #137:** `sdlc-knowledge-base` shipped to main with an empty plugin directory because `release-plugin` was never run after adding the source files. The validator catches that failure mode now.
+
+If your PR adds or modifies any source file referenced by `release-mapping.yaml` (agents, skills, templates), either:
+
+1. **Run `/sdlc-core:release-plugin`** to sync the plugin directory automatically, OR
+2. **Manually copy** the changed source files to their plugin destinations following the mapping rules (agents flatten category; skills preserve structure under `skills/`; see the validator source for the full rules)
+
+Then run `python tools/validation/check-plugin-packaging.py` locally before pushing to confirm everything is in sync. A passing local check will also pass the CI check.
+
 ## 📋 Contribution Process
 
 ### 1. Create a Feature Proposal (REQUIRED)
