@@ -4,7 +4,7 @@
 **Status:** In Progress
 **Author:** Claude (AI Agent) and Steve Jones
 **Created:** 2026-04-09
-**Target Branch:** `fix/enable-model-invocation`
+**Target Branch:** `fix/enable-model-invocation`, `fix/enable-commit-model-invocation`
 **Issue:** #139
 **Type:** Enhancement
 
