@@ -1,7 +1,7 @@
 ---
 name: commit
 description: Validated commit — runs quick checks before committing. Use when ready to commit changes.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[commit message]"
 ---
 
