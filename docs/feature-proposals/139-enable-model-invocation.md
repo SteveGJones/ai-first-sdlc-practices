@@ -4,7 +4,7 @@
 **Status:** In Progress
 **Author:** Claude (AI Agent) and Steve Jones
 **Created:** 2026-04-09
-**Target Branch:** `fix/enable-model-invocation`
+**Target Branch:** `fix/enable-model-invocation`, `fix/enable-commit-model-invocation`
 **Issue:** #139
 **Type:** Enhancement
 
@@ -48,6 +48,8 @@ Flip `disable-model-invocation` from `true` to `false` on 13 source skill files 
 
 | Action | File |
 |--------|------|
-| Modify | 13 source skill files under `skills/` (one line each) |
-| Modify | 13 plugin copy files under `plugins/sdlc-core/skills/` and `plugins/sdlc-knowledge-base/skills/` |
+| Modify | 14 source skill files under `skills/` (one line each — 13 in PR #140 + `commit` in follow-up PR) |
+| Modify | 14 plugin copy files under `plugins/sdlc-core/skills/` and `plugins/sdlc-knowledge-base/skills/` |
 | Create | `docs/feature-proposals/139-enable-model-invocation.md` (this file) |
+
+**Note:** The initial PR (#140) flipped 13 skills but kept `commit` as explicit-only. Steve challenged this: "a commit is a local checkpoint, not a publication — it doesn't overwrite anything, it just means better history." He was right. A follow-up PR flips `commit` to `false` as well. Only `pr` remains `disable-model-invocation: true`.
