@@ -1,7 +1,7 @@
 ---
 name: kb-lint
 description: Health-check the project knowledge base. Looks for contradictions between files, stale claims that newer sources have superseded, orphan files with no inbound cross-references, important concepts mentioned but lacking their own page, missing cross-references, and data gaps. Returns a structured report; does not auto-fix.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[--scope <pattern>]"
 ---
 

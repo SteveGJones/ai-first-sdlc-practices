@@ -1,7 +1,7 @@
 ---
 name: validate
 description: Run the SDLC validation pipeline using direct tool invocations. No wrapper scripts required. Use when checking code quality before commits or PRs.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[--syntax | --quick | --pre-push]"
 ---
 

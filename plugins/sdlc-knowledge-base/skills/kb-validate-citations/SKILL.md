@@ -1,7 +1,7 @@
 ---
 name: kb-validate-citations
 description: Spot-check citations in library files for obvious hallucinations. Resolves DOIs against the DOI registry, validates arXiv IDs, checks the format of journal references. Soft-fails on transient lookup failures rather than blocking. Recommended after kb-ingest and as part of periodic library hygiene.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[<file-path-or-glob>]"
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: kb-query
 description: Query the project knowledge base. Wraps the research-librarian agent. The librarian reads the shelf-index, identifies the 2-4 most relevant library files for the question, deep-reads only those, and returns structured evidence with citations. Stateless — reads the index fresh on every query.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "<question> [--promote-to-library]"
 ---
 

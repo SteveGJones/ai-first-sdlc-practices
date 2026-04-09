@@ -1,7 +1,7 @@
 ---
 name: setup-ci
 description: Generate a GitHub Actions workflow for SDLC validation. Use when setting up CI/CD for a new project.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[python | javascript | go]"
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: kb-rebuild-indexes
 description: Rebuild the knowledge base shelf-index with hash-based change detection. Incremental by default — only re-extracts files whose content has changed since the last index. Use after ingesting new sources, after editing library files, or whenever the librarian agent reports a stale index.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[--full]"
 ---
 
