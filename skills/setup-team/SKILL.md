@@ -32,7 +32,24 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    | C. Cloud | `sdlc-team-common`, `sdlc-team-cloud` |
    | D. API | `sdlc-team-common`, `sdlc-team-fullstack`, `sdlc-team-cloud` |
    | E. Security | `sdlc-team-common`, `sdlc-team-security` |
-   | F. Custom | User picks from list |
+   | F. Custom | `sdlc-team-common` (pre-selected) + user picks additional team plugins |
+
+   **`sdlc-team-common` is a near-universal default.** It contains the research-and-agent-creation pipeline (`pipeline-orchestrator`, `deep-research-agent`, `agent-builder`, `repo-knowledge-distiller`) plus cross-cutting specialists (`solution-architect`, `database-architect`, `performance-engineer`, `observability-specialist`). Every project type above includes it because:
+
+   - Discovery during setup relies on `pipeline-orchestrator` for the research → synthesis → agent-builder workflow
+   - Any Section C coverage gap identified during discovery requires these agents to act on
+   - Cross-cutting architecture decisions benefit from `solution-architect` regardless of project type
+
+   For option F (Custom), `sdlc-team-common` is pre-selected. If the user wants to deselect it, present this warning:
+
+   > ⚠️ You are deselecting `sdlc-team-common`. This plugin provides the agents required for custom agent creation (`pipeline-orchestrator`, `deep-research-agent`, `agent-builder`). Without it:
+   > - You cannot act on Section C coverage gaps from discovery
+   > - You cannot use `@pipeline-orchestrator create a <topic> agent`
+   > - Research-driven architecture decisions have no dedicated research agent
+   >
+   > Only deselect if you have a specific reason (e.g., the project will never create custom agents, or you have equivalent tooling elsewhere). Continue with deselection? [y/N]
+
+   Default to "N". Users who confirm deselection get a note in the configuration so the decision is traceable.
 
 4. **Auto-detect language** by scanning file extensions in the project:
    - `.py` files dominant → also recommend `sdlc-lang-python`
@@ -167,6 +184,25 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
 
    **5d. If no technologies detected and user skipped:** Skip this step entirely and proceed to step 6.
 
+   **5e. Escalate `sdlc-team-common` to required if Section C gaps exist.**
+
+   After discovery completes, count the Section C gaps identified. If the count is greater than zero:
+
+   - Mark `sdlc-team-common` as **required** (not merely recommended) in the plugin selection
+   - If the user selected project type F (Custom) and explicitly deselected team-common earlier in step 3, block progression with this message:
+
+     > ⚠️ Cannot proceed. Discovery identified **{N} Section C coverage gap(s)** that require custom agent creation, but you deselected `sdlc-team-common`. This plugin provides the agents that execute the research → synthesis → agent-builder pipeline. Without it, you cannot act on any Section C recommendation.
+     >
+     > Options:
+     > 1. **Include `sdlc-team-common`** in your plugin selection (recommended)
+     > 2. **Remove the Section C gaps** if you genuinely don't want to create custom agents (unusual — the gaps were identified because your tech stack has no pre-built tools that cover them)
+     > 3. **Abort setup** and reconsider your tooling strategy
+     >
+     > Which option? [1/2/3]
+
+   - When team-common is required by Section C gaps, record `required_by: "section-c-gaps"` in the final `.sdlc/team-config.json` so the dependency is traceable
+   - If team-common was already in the user's selection, no block is needed — just note in the final summary that team-common is required (not merely recommended) because of the Section C gaps
+
 6. **Ask about project management and documentation needs:**
    - "Do you need project management support (sprints, delivery tracking)?" → recommend `sdlc-team-pm`
    - "Do you need documentation architecture?" → recommend `sdlc-team-docs`
@@ -181,7 +217,13 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
 
    ✓ sdlc-core — rules, validation, enforcement (always installed)
      → sdlc-enforcer, critical-goal-reviewer, code-review-specialist, verification-enforcer
-   ○ <team plugins from step 3>
+
+   ★ sdlc-team-common — research + agent creation pipeline, cross-cutting specialists
+     → pipeline-orchestrator, deep-research-agent, agent-builder, repo-knowledge-distiller, solution-architect, database-architect, performance-engineer, observability-specialist
+     [Required if Section C has any gaps, else strongly recommended]
+     [Marker ★ = universal default; ✓ = always installed; ○ = optional/selected]
+
+   ○ <other team plugins from step 3>
    ○ <language plugin from step 4>
 
    === Section A: Claude Code Environment Tools ===
@@ -218,6 +260,8 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
 
    === Section C: Gaps Worth Custom Agents ===
    Topics where no pre-built Claude Code tool exists AND no library alone substitutes for expertise. For each gap, you can commission research + custom agent creation via the pipeline-orchestrator agent (deep-research-agent → synthesis → agent-builder). This skill surfaces the gaps; actual agent creation is invoked separately via `@pipeline-orchestrator`.
+
+   **Prerequisite**: the `Create` commands below require `sdlc-team-common@ai-first-sdlc` installed. This plugin provides the agents that execute the research → synthesis → agent-builder pipeline (`pipeline-orchestrator`, `deep-research-agent`, `agent-builder`). If `sdlc-team-common` is not already in your selected plugins, it becomes **required** (not just recommended) when Section C has any entries — see the escalation logic below.
 
    ○ Gap: <topic>
      Why a custom agent: <what's missing that a custom agent would provide>
