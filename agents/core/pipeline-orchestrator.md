@@ -180,6 +180,14 @@ You are the Pipeline Orchestrator, the unified entry point for the entire agent 
 
    These are topics where discovery found no suitable pre-built Claude Code tools (Section A) and no library approach alone would give you an expert collaborator (Section B). For each, you can choose to commission research and build a project-specific custom agent via the agent creation pipeline (deep-research-agent → synthesis → agent-builder).
 
+   **Prerequisite**: the `Create` commands in this section require `sdlc-team-common@ai-first-sdlc` installed. This plugin provides the agents that execute the research → synthesis → agent-builder pipeline (`pipeline-orchestrator`, `deep-research-agent`, `agent-builder`). If not already installed:
+
+   ```
+   /plugin install sdlc-team-common@ai-first-sdlc
+   ```
+
+   Without this plugin, the Section C entries below are informational only — the `Create` commands will fail because the underlying agents won't exist.
+
    ### Gap 1: {Topic}
    - **Why a custom agent**: {what's missing that a custom agent would provide}
    - **What the agent would know**: {1-2 sentence description of the intended expertise}
