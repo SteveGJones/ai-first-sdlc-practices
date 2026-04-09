@@ -1,7 +1,7 @@
 ---
 name: kb-staleness-check
 description: Check whether the knowledge base shelf-index is stale relative to the library files. Reports drifted entries without rebuilding. Designed to be invoked from environment validation or pre-push hooks as an opt-in check. Default mode is warning; strict mode fails with non-zero exit when any drift is detected.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[--strict]"
 ---
 

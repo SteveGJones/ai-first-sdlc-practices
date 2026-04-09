@@ -1,7 +1,7 @@
 ---
 name: setup-team
 description: Configure SDLC team formation for this project. Recommends and installs team plugins based on project type.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # SDLC Team Setup

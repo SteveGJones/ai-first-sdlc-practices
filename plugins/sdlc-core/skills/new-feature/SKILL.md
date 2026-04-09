@@ -1,7 +1,7 @@
 ---
 name: new-feature
 description: Create a new feature with proposal, retrospective, and branch. Use when starting new development work.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "<number> <name> [title]"
 ---
 

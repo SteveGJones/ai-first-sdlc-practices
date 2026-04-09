@@ -1,7 +1,7 @@
 ---
 name: kb-ingest
 description: Integrate a new source into the project knowledge base. Wraps the agent-knowledge-updater agent. Source can be a local file path, a URL, or pasted content. The updater reads the source, classifies it, identifies which existing library files it touches, makes surgical updates or creates new files, rebuilds the shelf-index, and appends to log.md.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "<source-path-or-url-or-text>"
 ---
 

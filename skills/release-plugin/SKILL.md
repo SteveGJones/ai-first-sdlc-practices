@@ -1,7 +1,7 @@
 ---
 name: release-plugin
 description: Package source files into plugin directories using release-mapping.yaml. Use when preparing a plugin release.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[patch | minor | major]"
 ---
 

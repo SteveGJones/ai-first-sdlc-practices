@@ -1,7 +1,7 @@
 ---
 name: kb-promote-answer-to-library
 description: File a librarian query result back into the library as a new page with provenance tracking. Karpathy's "good answers can be filed back into the wiki as new pages" insight made concrete. The library compounds from explorations, not just from external sources.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "<query-result-text-or-file> [--title <title>] [--path <library-file-path>]"
 ---
 

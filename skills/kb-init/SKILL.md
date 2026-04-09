@@ -1,7 +1,7 @@
 ---
 name: kb-init
 description: Initialise a project for knowledge base use. Appends the [Knowledge Base] section to the project's CLAUDE.md, creates the library/ directory structure, optionally seeds with three example library files from the Agentic SDLC research, and reports next steps. Run once after installing sdlc-knowledge-base.
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[--with-starter-pack | --empty]"
 ---
 
