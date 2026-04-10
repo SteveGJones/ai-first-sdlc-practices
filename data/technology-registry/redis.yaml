@@ -1,0 +1,121 @@
+# Redis — Curated technology registry entry
+# Covers: MCP server, Claude Code plugin, Python/Node clients, caching architecture gaps
+
+display_name: Redis
+category: cache
+description: >
+  In-memory data store used as cache, message broker, and real-time database.
+  Supports strings, hashes, lists, sets, sorted sets, streams, JSON documents,
+  and vector search. Widely used for caching, session management, rate limiting,
+  and pub/sub messaging.
+
+section_a:
+  - name: redis-mcp-server
+    type: mcp-server-pip
+    package: redis-mcp-server
+    source: https://github.com/redis/mcp-redis
+    publisher: Redis Inc.
+    publisher_verified: true
+    description: >
+      Official MCP server for Redis — string/hash/list/set/sorted-set/stream/
+      pub-sub operations, JSON documents, vector search, index management,
+      server info.
+    env:
+      - name: REDIS_HOST
+        description: Redis server hostname
+        example: "127.0.0.1"
+      - name: REDIS_PORT
+        description: Redis server port
+        example: "6379"
+      - name: REDIS_PWD
+        description: Redis password
+      - name: REDIS_SSL
+        description: Enable TLS connection
+        example: "False"
+      - name: REDIS_CLUSTER_MODE
+        description: Enable cluster mode
+        example: "False"
+    install_override: |
+      uvx --from redis-mcp-server@latest redis-mcp-server --url redis://localhost:6379/0
+    verified_date: 2026-04-10
+
+  - name: Redis Agent Skills
+    type: claude-plugin
+    package: redis-development
+    source: https://github.com/redis/agent-skills
+    publisher: Redis Inc.
+    publisher_verified: true
+    description: >
+      Official Redis agent skills — data structure patterns, caching, rate
+      limiting, vector search, anti-pattern guardrails, production defaults.
+      Knowledge injection, not tools.
+    install_override: |
+      /plugin marketplace add redis/agent-skills
+      /plugin install redis-development@redis
+    verified_date: 2026-04-10
+
+section_b:
+  - name: redis-py
+    package: redis
+    ecosystem: pip
+    source: https://pypi.org/project/redis/
+    publisher: "Redis Inc. (PyPI: RedisLabs)"
+    description: Official Python client for Redis
+    usage: "import redis"
+    docs: https://redis.io/docs/latest/develop/clients/redis-py/
+    verified_date: 2026-04-10
+
+  - name: node-redis
+    package: redis
+    ecosystem: npm
+    source: https://www.npmjs.com/package/redis
+    publisher: "Redis Inc. (@redis scope)"
+    description: >
+      Official Node.js client for Redis (recommended over ioredis for new
+      projects)
+    usage: 'import { createClient } from "redis"'
+    docs: https://redis.io/docs/latest/develop/clients/nodejs/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Redis caching architecture patterns
+    slug: redis-caching-architect
+    why: >
+      The MCP server provides data operations and the agent skill teaches correct
+      Redis patterns, but neither addresses system-level caching architecture —
+      invalidation strategies, TTL policy design, cache stampede prevention,
+      multi-tier caching, or cache key design conventions.
+    agent_would_know: >
+      Cache invalidation patterns (cache-aside, write-through, write-behind),
+      TTL policy design, stampede prevention, multi-tier caching, Redis Streams
+      for event-driven architectures.
+    research_scope:
+      - Cache invalidation patterns
+      - TTL policy design
+      - Cache stampede prevention (locking/probabilistic early expiration)
+      - Multi-tier caching (L1 in-process / L2 Redis / L3 persistent)
+      - Cache warming strategies
+      - Monitoring cache hit ratios and eviction rates
+    create_command: "@pipeline-orchestrator create a redis-caching-architect agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: database-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Cache layer design, data structure selection, persistence vs pure-cache
+      trade-offs.
+  - agent: performance-engineer
+    plugin: sdlc-team-common
+    relevance: >
+      Cache hit ratio analysis, latency profiling, connection pool tuning.
+
+trusted_sources:
+  - url: https://github.com/redis
+    type: github-org
+  - url: https://www.npmjs.com/~redis
+    type: npm-scope
+  - url: https://pypi.org/user/RedisLabs/
+    type: pypi-publisher
+  - url: https://redis.io/docs/
+    type: vendor-docs
