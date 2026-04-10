@@ -50,63 +50,117 @@ staleness_threshold_days: 180
 # Maps informal/short names to canonical technology keys.
 # Applied before manifest lookup.
 aliases:
+  # Databases
+  mongo: mongodb
   pg: postgresql
   postgres: postgresql
   psql: postgresql
-  mongo: mongodb
+  mysql2: mysql
+  es: elasticsearch
+  elastic: elasticsearch
+  opensearch: elasticsearch
+  sqlite3: sqlite
+  # Cloud
+  amazon: aws
   dynamodb: aws
   s3: aws
   lambda: aws
+  gcloud: gcp
+  "google cloud": gcp
+  firebase: gcp
+  # Messaging
+  confluent: kafka
+  amqp: rabbitmq
+  "apache flink": flink
+  # ... plus framework, DevOps, and service aliases (46 total)
 
 # --- Detection patterns ---
 # Maps package names, Docker images, and env vars to technology keys.
 # Replaces the hardcoded mappings in setup-team step 5a.
-# Adding a new technology to the registry automatically teaches
-# setup-team to detect it — no code change needed.
 detection:
-  # Note: this example shows only technologies with registry files.
-  # Sub-feature 4 (#146) populates the full set.
   pip:
-    psycopg2: postgresql
-    psycopg2-binary: postgresql
-    asyncpg: postgresql
+    # Databases
     pymongo: mongodb
     motor: mongodb
+    psycopg2: postgresql
+    psycopg2-binary: postgresql
     redis: redis
     boto3: aws
+    # ... plus 20+ more pip mappings
   npm:
-    pg: postgresql
     mongoose: mongodb
+    mongodb: mongodb
+    pg: postgresql
     ioredis: redis
     redis: redis
     aws-sdk: aws
     "@aws-sdk/client-s3": aws
+    # ... plus 15+ more npm mappings
   docker:
-    "postgres:*": postgresql
     "mongo:*": mongodb
+    "postgres:*": postgresql
     "redis:*": redis
+    "rabbitmq:*": rabbitmq
+    # ... plus 4 more docker mappings
   env:
-    "DATABASE_URL=postgres*": postgresql
     "MONGO_URI=*": mongodb
-    "MONGO_URL=*": mongodb
     "REDIS_URL=*": redis
+    "REDIS_HOST=*": redis
+    "AWS_REGION=*": aws
+    # ... plus 14 more env mappings
+  go:
+    go.mongodb.org/mongo-driver: mongodb
+    github.com/lib/pq: postgresql
+    github.com/go-redis/redis: redis
+    github.com/aws/aws-sdk-go-v2: aws
+    # ... plus 8 more go mappings
+  gem:
+    pg: postgresql
+    redis: redis
+    aws-sdk: aws
+    # ... plus 7 more gem mappings
+  cargo:
+    redis: redis
+    aws-sdk-s3: aws
+    diesel: postgresql
+    # ... plus 6 more cargo mappings
+  # Full file has 116 detection patterns across 7 ecosystems
 
 # --- Technology manifest ---
 # Every technology with a registry file is listed here.
-# Setup-team uses this to know what's available without scanning the directory.
 technologies:
+  # Databases
   mongodb:
     file: mongodb.yaml
     display_name: MongoDB
-  redis:
-    file: redis.yaml
-    display_name: Redis
-  aws:
-    file: aws.yaml
-    display_name: Amazon Web Services
   postgresql:
     file: postgresql.yaml
     display_name: PostgreSQL
+  mysql:
+    file: mysql.yaml
+    display_name: MySQL
+  elasticsearch:
+    file: elasticsearch.yaml
+    display_name: Elasticsearch
+  sqlite:
+    file: sqlite.yaml
+    display_name: SQLite
+  redis:
+    file: redis.yaml
+    display_name: Redis
+  # Cloud platforms
+  aws:
+    file: aws.yaml
+    display_name: Amazon Web Services
+  azure:
+    file: azure.yaml
+    display_name: Microsoft Azure
+  gcp:
+    file: gcp.yaml
+    display_name: Google Cloud Platform
+  # ... plus 22 more technologies (31 total)
+  # Full manifest covers: messaging, Python/JS frameworks, language
+  # ecosystems, DevOps/infrastructure, and services
 ```
 
 ### Index fields
@@ -128,42 +182,63 @@ Each technology file contains everything needed to generate the three-section di
 ### Full example: `mongodb.yaml`
 
 ```yaml
+# MongoDB — Curated technology registry entry
+# Covers: MCP server, Claude Code plugin, Python/Node drivers, architecture gaps
+
 display_name: MongoDB
 category: database
-description: Document database for JSON-like data with flexible schemas
+description: >
+  Document database with flexible schema, rich querying, aggregation pipelines,
+  and Atlas cloud platform. Widely used for web applications, content management,
+  IoT, and real-time analytics.
 
-# --- Section A: Claude Code Environment Tools ---
-# Pre-built tools the user installs INTO Claude Code.
 section_a:
-  - name: "@mongodb/mcp-server"
+  - name: mongodb-mcp-server
     type: mcp-server-npm
-    package: "@mongodb/mcp-server"
-    source: https://www.npmjs.com/package/@mongodb/mcp-server
+    package: mongodb-mcp-server
+    source: https://github.com/mongodb-js/mongodb-mcp-server
     publisher: MongoDB Inc.
     publisher_verified: true
     description: >
-      Pre-built MCP server with query execution, schema inspection,
-      index management, and aggregation pipeline support.
+      Official MCP server for MongoDB and Atlas — query execution, schema
+      inspection, index management, aggregation, Atlas cluster management,
+      vector search, performance advisor.
     env:
-      - name: MONGODB_URI
+      - name: MDB_MCP_CONNECTION_STRING
         description: MongoDB connection string
         example: "mongodb://localhost:27017/mydb"
-    verified_date: "2026-04-10"
+    install_override: |
+      npx mongodb-mcp-server@latest --readOnly
+      Or install Claude Code plugin: /plugin install mongodb
+    verified_date: 2026-04-10
 
-# --- Section B: Project Dependencies ---
-# Libraries for the user's own project code. NOT installed in Claude Code.
+  - name: MongoDB Agent Skills
+    type: claude-plugin
+    package: mongodb
+    source: https://github.com/mongodb/agent-skills
+    publisher: MongoDB Inc.
+    publisher_verified: true
+    description: >
+      Official MongoDB agent skills — schema design, query optimization,
+      natural language querying, search/AI, Atlas Streams. 7 skills bundled
+      with MCP server.
+    install_override: |
+      /plugin marketplace add mongodb/agent-skills
+      /plugin install mongodb@mongodb
+    verified_date: 2026-04-10
+
 section_b:
   - name: pymongo
     package: pymongo
     ecosystem: pip
     source: https://pypi.org/project/pymongo/
     publisher: MongoDB Inc.
-    description: Official Python driver for MongoDB
+    description: Official Python driver for MongoDB with sync and async APIs
     usage: "from pymongo import MongoClient"
-    docs: https://pymongo.readthedocs.io/
-    verified_date: "2026-04-10"
+    docs: https://www.mongodb.com/docs/languages/python/pymongo-driver/current/
+    verified_date: 2026-04-10
 
-  - name: mongodb (Node.js driver)
+  - name: mongodb (Node.js)
     package: mongodb
     ecosystem: npm
     source: https://www.npmjs.com/package/mongodb
@@ -171,48 +246,46 @@ section_b:
     description: Official Node.js driver for MongoDB
     usage: 'const { MongoClient } = require("mongodb")'
     docs: https://www.mongodb.com/docs/drivers/node/current/
-    verified_date: "2026-04-10"
+    verified_date: 2026-04-10
 
-# --- Section C: Gaps Worth Custom Agents ---
-# Pre-authored gap templates. Emitted verbatim in discovery reports.
 section_c:
-  - topic: MongoDB schema design patterns
-    slug: mongodb-schema-expert
+  - topic: MongoDB architecture patterns
+    slug: mongodb-architecture-advisor
     why: >
-      The @mongodb/mcp-server covers operational tasks (query, index management)
-      but not architectural guidance. A custom agent would provide schema design
-      patterns (embedded vs referenced, denormalization trade-offs, sharding key
-      selection), migration planning, and team-specific conventions.
+      The MCP server + agent skills cover operational tasks and coding patterns,
+      but not application-level architecture — repository patterns, connection
+      management, schema evolution strategies, testing approaches, sharding key
+      selection methodology, and operational readiness.
     agent_would_know: >
-      MongoDB schema design patterns for document databases, idiomatic
-      aggregation pipelines, performance trade-offs for common access patterns.
+      MongoDB application architecture patterns, schema evolution and migration
+      strategies, sharding and replication design, testing patterns with
+      embedded MongoDB.
     research_scope:
-      - MongoDB University schema design course
-      - Official best practices documentation
-      - Schema evolution patterns for large deployments
-      - Sharding strategies and key selection
-    estimated_duration: "2-3 hours"
-    create_command: "@pipeline-orchestrator create a mongodb-schema-expert agent"
-    verified_date: "2026-04-10"
+      - Document model design patterns
+      - Schema versioning and migration
+      - Connection pooling and lifecycle
+      - Transaction design (multi-document/distributed)
+      - Sharding key selection
+      - Testing patterns (test containers/fixtures)
+      - Security architecture (field-level encryption/CSFLE)
+    create_command: "@pipeline-orchestrator create a mongodb-architecture-advisor agent"
+    verified_date: 2026-04-10
 
-# --- Framework cross-references ---
-# Our own plugins/agents that complement this technology.
 our_agents:
   - agent: database-architect
-    plugin: sdlc-team-fullstack
+    plugin: sdlc-team-common
     relevance: >
-      Schema design, query optimization, index strategy
-      for MongoDB collections.
+      Schema design, query optimization, index strategy for MongoDB collections.
   - agent: backend-architect
     plugin: sdlc-team-fullstack
     relevance: >
-      Application-layer patterns for MongoDB integration
-      (connection pooling, retry logic, transactions).
+      Application-layer patterns for MongoDB integration (connection pooling,
+      retry logic, transactions).
 
-# --- Trusted sources ---
-# Used for both web-search fallback and freshness verification.
 trusted_sources:
   - url: https://github.com/mongodb
+    type: github-org
+  - url: https://github.com/mongodb-js
     type: github-org
   - url: https://www.npmjs.com/~mongodb
     type: npm-scope
@@ -223,116 +296,275 @@ trusted_sources:
 ### Full example: `redis.yaml`
 
 ```yaml
+# Redis — Curated technology registry entry
+# Covers: MCP server, Claude Code plugin, Python/Node clients, caching architecture gaps
+
 display_name: Redis
 category: cache
-description: In-memory data store used as cache, message broker, and database
+description: >
+  In-memory data store used as cache, message broker, and real-time database.
+  Supports strings, hashes, lists, sets, sorted sets, streams, JSON documents,
+  and vector search. Widely used for caching, session management, rate limiting,
+  and pub/sub messaging.
 
 section_a:
   - name: redis-mcp-server
-    type: mcp-server-npm
-    package: "@redis/mcp-server"
-    source: https://www.npmjs.com/package/@redis/mcp-server
-    publisher: Redis Ltd.
+    type: mcp-server-pip
+    package: redis-mcp-server
+    source: https://github.com/redis/mcp-redis
+    publisher: Redis Inc.
     publisher_verified: true
     description: >
-      Pre-built MCP server for Redis with key operations, pub/sub,
-      and cluster management.
+      Official MCP server for Redis — string/hash/list/set/sorted-set/stream/
+      pub-sub operations, JSON documents, vector search, index management,
+      server info.
     env:
-      - name: REDIS_URL
-        description: Redis connection URL
-        example: "redis://localhost:6379"
-    verified_date: "2026-04-10"
+      - name: REDIS_HOST
+        description: Redis server hostname
+        example: "127.0.0.1"
+      - name: REDIS_PORT
+        description: Redis server port
+        example: "6379"
+      - name: REDIS_PWD
+        description: Redis password
+      - name: REDIS_SSL
+        description: Enable TLS connection
+        example: "False"
+      - name: REDIS_CLUSTER_MODE
+        description: Enable cluster mode
+        example: "False"
+    install_override: |
+      uvx --from redis-mcp-server@latest redis-mcp-server --url redis://localhost:6379/0
+    verified_date: 2026-04-10
+
+  - name: Redis Agent Skills
+    type: claude-plugin
+    package: redis-development
+    source: https://github.com/redis/agent-skills
+    publisher: Redis Inc.
+    publisher_verified: true
+    description: >
+      Official Redis agent skills — data structure patterns, caching, rate
+      limiting, vector search, anti-pattern guardrails, production defaults.
+      Knowledge injection, not tools.
+    install_override: |
+      /plugin marketplace add redis/agent-skills
+      /plugin install redis-development@redis
+    verified_date: 2026-04-10
 
 section_b:
   - name: redis-py
     package: redis
     ecosystem: pip
     source: https://pypi.org/project/redis/
-    publisher: Redis Ltd.
+    publisher: "Redis Inc. (PyPI: RedisLabs)"
     description: Official Python client for Redis
     usage: "import redis"
-    docs: https://redis-py.readthedocs.io/
-    verified_date: "2026-04-10"
+    docs: https://redis.io/docs/latest/develop/clients/redis-py/
+    verified_date: 2026-04-10
 
-  - name: ioredis
-    package: ioredis
+  - name: node-redis
+    package: redis
     ecosystem: npm
-    source: https://www.npmjs.com/package/ioredis
-    publisher: Community (widely adopted)
-    description: Full-featured Redis client for Node.js with cluster and sentinel support
-    usage: 'const Redis = require("ioredis")'
-    docs: https://github.com/redis/ioredis
-    verified_date: "2026-04-10"
+    source: https://www.npmjs.com/package/redis
+    publisher: "Redis Inc. (@redis scope)"
+    description: >
+      Official Node.js client for Redis (recommended over ioredis for new
+      projects)
+    usage: 'import { createClient } from "redis"'
+    docs: https://redis.io/docs/latest/develop/clients/nodejs/
+    verified_date: 2026-04-10
 
 section_c:
   - topic: Redis caching architecture patterns
-    slug: redis-caching-expert
+    slug: redis-caching-architect
     why: >
-      The MCP server provides operational access to Redis commands but not
-      architectural guidance. A custom agent would advise on caching strategies
-      (write-through, write-behind, cache-aside), eviction policies, TTL design,
-      and cache invalidation patterns for specific application architectures.
+      The MCP server provides data operations and the agent skill teaches correct
+      Redis patterns, but neither addresses system-level caching architecture —
+      invalidation strategies, TTL policy design, cache stampede prevention,
+      multi-tier caching, or cache key design conventions.
     agent_would_know: >
-      Redis caching patterns, eviction strategies, pub/sub design,
-      Lua scripting for atomic operations, cluster topology decisions.
+      Cache invalidation patterns (cache-aside, write-through, write-behind),
+      TTL policy design, stampede prevention, multi-tier caching, Redis Streams
+      for event-driven architectures.
     research_scope:
-      - Redis University caching patterns course
-      - Cache invalidation strategies (event-driven, TTL-based)
-      - Redis Cluster vs Sentinel decision framework
-      - Memory optimization and eviction policy selection
-    estimated_duration: "2-3 hours"
-    create_command: "@pipeline-orchestrator create a redis-caching-expert agent"
-    verified_date: "2026-04-10"
+      - Cache invalidation patterns
+      - TTL policy design
+      - Cache stampede prevention (locking/probabilistic early expiration)
+      - Multi-tier caching (L1 in-process / L2 Redis / L3 persistent)
+      - Cache warming strategies
+      - Monitoring cache hit ratios and eviction rates
+    create_command: "@pipeline-orchestrator create a redis-caching-architect agent"
+    verified_date: 2026-04-10
 
 our_agents:
   - agent: database-architect
-    plugin: sdlc-team-fullstack
+    plugin: sdlc-team-common
     relevance: >
-      Cache layer design, data structure selection,
-      persistence vs pure-cache trade-offs.
+      Cache layer design, data structure selection, persistence vs pure-cache
+      trade-offs.
   - agent: performance-engineer
     plugin: sdlc-team-common
     relevance: >
-      Cache hit ratio analysis, latency profiling,
-      connection pool tuning.
+      Cache hit ratio analysis, latency profiling, connection pool tuning.
 
 trusted_sources:
   - url: https://github.com/redis
     type: github-org
   - url: https://www.npmjs.com/~redis
     type: npm-scope
-  - url: https://pypi.org/user/redis/
+  - url: https://pypi.org/user/RedisLabs/
     type: pypi-publisher
+  - url: https://redis.io/docs/
+    type: vendor-docs
 ```
 
 ### Full example: `aws.yaml`
 
 ```yaml
+# Amazon Web Services — Curated technology registry entry
+# Covers: Official MCP servers (curated top 8 of 84+), SDKs, architecture gaps
+#
+# Full AWS MCP server catalog (84+ servers):
+#   https://awslabs.github.io/mcp/
+# All servers follow the pattern: uvx awslabs.<name>@latest
+
 display_name: Amazon Web Services
 category: cloud
-description: Cloud platform with 200+ services including compute, storage, databases, and AI/ML
+description: >
+  Comprehensive cloud platform with 200+ services spanning compute, storage,
+  databases, networking, machine learning, analytics, security, and developer
+  tools. The dominant public cloud provider by market share.
 
+# NOTE: AWS publishes 84+ official MCP servers at https://awslabs.github.io/mcp/
+# The section below curates the most commonly needed ones. Consult the full
+# catalog for specialized services (e.g., Bedrock, SageMaker, Aurora DSQL,
+# CodePipeline, Neptune, Valkey, etc.).
 section_a:
-  - name: aws-mcp-server
-    type: mcp-server-npm
-    package: "@aws/mcp-server"
-    source: https://www.npmjs.com/package/@aws/mcp-server
+  - name: AWS Documentation MCP Server
+    type: mcp-server-pip
+    package: awslabs.aws-documentation-mcp-server
+    source: https://pypi.org/project/awslabs.aws-documentation-mcp-server/
     publisher: Amazon Web Services
     publisher_verified: true
     description: >
-      Pre-built MCP server for AWS with S3, DynamoDB, Lambda,
-      and CloudFormation operations.
+      Fetch AWS docs as markdown, search documentation, get recommendations.
+      No AWS credentials needed.
+    install_override: "uvx awslabs.aws-documentation-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: AWS API MCP Server
+    type: mcp-server-pip
+    package: awslabs.aws-api-mcp-server
+    source: https://pypi.org/project/awslabs.aws-api-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      Interact with AWS services via CLI commands with security controls.
     env:
-      - name: AWS_ACCESS_KEY_ID
-        description: AWS access key
-        example: "AKIA..."
-      - name: AWS_SECRET_ACCESS_KEY
-        description: AWS secret key
-        example: "(secret)"
       - name: AWS_REGION
-        description: AWS region
+        description: AWS region for API calls
         example: "us-east-1"
-    verified_date: "2026-04-10"
+      - name: AWS_API_MCP_PROFILE_NAME
+        description: AWS CLI profile name
+        example: "default"
+    install_override: "uvx awslabs.aws-api-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: AWS IaC MCP Server
+    type: mcp-server-pip
+    package: awslabs.aws-iac-mcp-server
+    source: https://pypi.org/project/awslabs.aws-iac-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      CloudFormation/CDK validation, compliance checking, deployment
+      troubleshooting. Supersedes cdk/cfn/ccapi servers.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+    install_override: "uvx awslabs.aws-iac-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: AWS Serverless MCP Server
+    type: mcp-server-pip
+    package: awslabs.aws-serverless-mcp-server
+    source: https://pypi.org/project/awslabs.aws-serverless-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      Lambda, DynamoDB, API Gateway, ACM, Route 53 — init, deploy, monitor,
+      troubleshoot.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+      - name: AWS_REGION
+        description: AWS region for API calls
+    install_override: "uvx awslabs.aws-serverless-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: AWS Billing and Cost Management MCP Server
+    type: mcp-server-pip
+    package: awslabs.billing-cost-management-mcp-server
+    source: https://pypi.org/project/awslabs.billing-cost-management-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      Cost Explorer, Cost Optimization Hub, Savings Plans, Budgets, S3 Storage
+      Lens, Cost Anomaly Detection.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+      - name: AWS_REGION
+        description: AWS region for API calls
+    install_override: "uvx awslabs.billing-cost-management-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: Amazon CloudWatch MCP Server
+    type: mcp-server-pip
+    package: awslabs.cloudwatch-mcp-server
+    source: https://pypi.org/project/awslabs.cloudwatch-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      AI-powered root cause analysis using CloudWatch metrics, alarms, and logs.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+    install_override: "uvx awslabs.cloudwatch-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: IAM MCP Server
+    type: mcp-server-pip
+    package: awslabs.iam-mcp-server
+    source: https://pypi.org/project/awslabs.iam-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      IAM users, roles, groups, policies, access keys with security simulation.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+      - name: AWS_REGION
+        description: AWS region for API calls
+    install_override: "uvx awslabs.iam-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: Amazon EKS MCP Server
+    type: mcp-server-pip
+    package: awslabs.eks-mcp-server
+    source: https://pypi.org/project/awslabs.eks-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      EKS cluster management and application deployment.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+      - name: AWS_REGION
+        description: AWS region for API calls
+    install_override: "uvx awslabs.eks-mcp-server@latest"
+    verified_date: 2026-04-10
 
 section_b:
   - name: boto3
@@ -342,79 +574,79 @@ section_b:
     publisher: Amazon Web Services
     description: Official AWS SDK for Python
     usage: "import boto3"
-    docs: https://boto3.amazonaws.com/v1/documentation/api/latest/
-    verified_date: "2026-04-10"
+    docs: https://aws.amazon.com/sdk-for-python/
+    verified_date: 2026-04-10
 
-  - name: AWS SDK for JavaScript
+  - name: AWS SDK v3 (JavaScript)
     package: "@aws-sdk/client-s3"
     ecosystem: npm
     source: https://www.npmjs.com/package/@aws-sdk/client-s3
     publisher: Amazon Web Services
-    description: Official AWS SDK v3 for JavaScript (modular, per-service packages)
-    usage: 'const { S3Client } = require("@aws-sdk/client-s3")'
+    description: >
+      Official AWS SDK v3 for JavaScript (modular per-service packages).
+      v2 is end-of-support.
+    usage: 'import { S3Client } from "@aws-sdk/client-s3"'
     docs: https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/
-    verified_date: "2026-04-10"
+    verified_date: 2026-04-10
 
 section_c:
-  - topic: AWS infrastructure architecture
-    slug: aws-infrastructure-expert
+  - topic: AWS multi-account and organizations strategy
+    slug: aws-organizations-expert
     why: >
-      The MCP server provides operational access to AWS APIs but not
-      architectural guidance. A custom agent would advise on service selection
-      (e.g., ECS vs EKS vs Lambda), cost optimization, IAM policy design,
-      networking (VPC, subnets, security groups), and multi-region strategies.
+      No MCP server addresses AWS Organizations, Control Tower, Service Control
+      Policies, or multi-account landing zone design.
     agent_would_know: >
-      AWS Well-Architected Framework pillars, service selection decision
-      trees, cost optimization patterns, IAM least-privilege design.
+      Multi-account strategy, landing zone patterns, SCP design, Organization
+      Unit hierarchy.
     research_scope:
-      - AWS Well-Architected Framework (all 6 pillars)
-      - Service comparison guides (compute, storage, database tiers)
-      - IAM policy patterns and security best practices
-      - Cost optimization strategies (reserved instances, savings plans, right-sizing)
-      - Multi-region and disaster recovery patterns
-    estimated_duration: "2-3 hours"
-    create_command: "@pipeline-orchestrator create an aws-infrastructure-expert agent"
-    verified_date: "2026-04-10"
+      - AWS Organizations best practices
+      - Control Tower landing zones
+      - SCP design patterns
+      - Cross-account access patterns
+      - Consolidated billing optimization
+    create_command: "@pipeline-orchestrator create an aws-organizations-expert agent"
+    verified_date: 2026-04-10
 
-  - topic: AWS serverless patterns
-    slug: aws-serverless-expert
+  - topic: AWS application architecture patterns
+    slug: aws-application-architect
     why: >
-      Serverless on AWS (Lambda, Step Functions, EventBridge, API Gateway)
-      requires specialized architectural knowledge distinct from traditional
-      infrastructure. Cold starts, execution limits, event-driven design,
-      and observability differ fundamentally from container-based approaches.
+      Existing servers are service-oriented but don't provide opinionated guidance
+      on event-driven architectures, CQRS, saga patterns, microservice
+      decomposition, or domain-driven design on AWS.
     agent_would_know: >
-      AWS serverless design patterns, Lambda optimization, Step Functions
-      orchestration, EventBridge event-driven architecture.
+      Event-driven architecture on AWS, microservice patterns, DDD with AWS
+      services, Well-Architected Framework application.
     research_scope:
-      - Lambda performance optimization (cold starts, provisioned concurrency)
-      - Step Functions vs direct Lambda orchestration
-      - EventBridge patterns and schema registry
-      - Serverless observability (X-Ray, CloudWatch Insights)
-    estimated_duration: "2-3 hours"
-    create_command: "@pipeline-orchestrator create an aws-serverless-expert agent"
-    verified_date: "2026-04-10"
+      - Event-driven architecture patterns (EventBridge/SNS/SQS)
+      - Microservice decomposition strategies
+      - CQRS and saga patterns on AWS
+      - Domain-driven design with AWS services
+      - Well-Architected Framework (all 6 pillars)
+    create_command: "@pipeline-orchestrator create an aws-application-architect agent"
+    verified_date: 2026-04-10
 
 our_agents:
   - agent: solution-architect
     plugin: sdlc-team-common
     relevance: >
-      End-to-end AWS solution design, service selection,
-      cost-performance trade-off analysis.
+      End-to-end AWS solution design, service selection, cost-performance
+      trade-off analysis.
   - agent: observability-specialist
     plugin: sdlc-team-common
     relevance: >
-      CloudWatch, X-Ray, and OpenTelemetry integration
-      for AWS-hosted applications.
+      CloudWatch, X-Ray, and OpenTelemetry integration for AWS-hosted
+      applications.
 
 trusted_sources:
   - url: https://github.com/aws
     type: github-org
+  - url: https://github.com/awslabs
+    type: github-org
   - url: https://www.npmjs.com/~aws-sdk
     type: npm-scope
-  - url: https://pypi.org/user/amazon/
+  - url: https://pypi.org/user/awslabs-mcp/
     type: pypi-publisher
-  - url: https://docs.aws.amazon.com/
+  - url: https://awslabs.github.io/mcp/
     type: vendor-docs
 ```
 
