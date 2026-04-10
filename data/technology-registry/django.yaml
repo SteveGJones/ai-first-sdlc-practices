@@ -1,0 +1,91 @@
+# Django — Curated technology registry entry
+# Covers: MCP servers (django-mcp-server, mcp-django), Django/DRF libraries, ORM patterns gap
+
+display_name: Django
+category: framework
+description: >
+  High-level Python web framework that encourages rapid development and clean,
+  pragmatic design. Batteries-included: ORM, admin, auth, forms, migrations,
+  and a mature third-party ecosystem. Powers Instagram, Disqus, and Mozilla.
+
+section_a:
+  - name: django-mcp-server
+    type: mcp-server-pip
+    package: django-mcp-server
+    source: https://github.com/omarbenhamid/django-mcp-server
+    publisher: Omar Benhamid
+    publisher_verified: false
+    description: >
+      Django MCP — declarative tool registration, model exposure for AI queries,
+      DRF API annotation to MCP tools. WSGI and ASGI. 310 stars.
+    verified_date: 2026-04-10
+
+  - name: mcp-django
+    type: mcp-server-pip
+    package: mcp-django
+    source: https://github.com/joshuadavidthomas/mcp-django
+    publisher: Josh Thomas
+    publisher_verified: false
+    description: >
+      Django project exploration — apps, models, config inspection, management
+      commands, Python shell, djangopackages.org integration. Designed for
+      Claude Code. WARNING: grants shell access, dev only.
+    install_override: |
+      Add to .mcp.json:
+      {"mcpServers":{"django":{"command":"python","args":["-m","mcp_django"],"cwd":"/path/to/project","env":{"DJANGO_SETTINGS_MODULE":"myproject.settings"}}}}
+    verified_date: 2026-04-10
+
+section_b:
+  - name: Django
+    package: django
+    ecosystem: pip
+    source: https://pypi.org/project/django/
+    publisher: Django Software Foundation
+    description: High-level Python web framework
+    usage: "import django"
+    docs: https://docs.djangoproject.com/
+    verified_date: 2026-04-10
+
+  - name: Django REST Framework
+    package: djangorestframework
+    ecosystem: pip
+    source: https://pypi.org/project/djangorestframework/
+    publisher: Tom Christie / Encode
+    description: Web APIs for Django
+    usage: "from rest_framework import serializers, viewsets"
+    docs: https://www.django-rest-framework.org/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Django ORM and admin patterns
+    slug: django-patterns-expert
+    why: >
+      MCP servers cover model exposure and project inspection but not advanced
+      ORM patterns, admin customization, or template/frontend integration.
+    agent_would_know: >
+      Complex queryset optimization, migration strategies, admin customization,
+      signal design, middleware patterns, and Django Ninja integration.
+    research_scope:
+      - Complex queryset patterns and optimization
+      - Migration strategies and data migrations
+      - Admin customization patterns
+      - Signal and middleware design
+      - Django Ninja integration
+    create_command: "@pipeline-orchestrator create a django-patterns-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      API design, ORM patterns, migration orchestration.
+  - agent: python-standards-enforcer
+    plugin: sdlc-lang-python
+    relevance: >
+      Python code quality, packaging, type checking for Django apps.
+
+trusted_sources:
+  - url: https://github.com/django
+    type: github-org
+  - url: https://docs.djangoproject.com/
+    type: vendor-docs

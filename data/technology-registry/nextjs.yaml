@@ -1,0 +1,69 @@
+# Next.js — Curated technology registry entry
+# Covers: MCP server (next-devtools-mcp by Vercel), Next.js library, architecture patterns gap
+
+display_name: Next.js
+category: framework
+description: >
+  React framework for production — server-side rendering, static site
+  generation, API routes, App Router, and edge middleware. Built and maintained
+  by Vercel. Powers many high-traffic production sites.
+
+section_a:
+  - name: next-devtools-mcp (Official, Vercel)
+    type: mcp-server-npm
+    package: next-devtools-mcp
+    source: https://github.com/vercel/next-devtools-mcp
+    publisher: Vercel
+    publisher_verified: true
+    description: >
+      Next.js dev tools — docs search, dev server discovery, browser automation
+      (Playwright), upgrade guidance. Next.js 16+ has built-in /_next/mcp
+      endpoint.
+    install_override: "npx -y next-devtools-mcp@latest"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: Next.js
+    package: next
+    ecosystem: npm
+    source: https://www.npmjs.com/package/next
+    publisher: Vercel
+    description: React framework for production — SSR, SSG, API routes, App Router
+    usage: 'import { NextResponse } from "next/server"'
+    docs: https://nextjs.org/docs
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Next.js architecture patterns
+    slug: nextjs-patterns-expert
+    why: >
+      MCP covers docs and dev server but not ISR cache debugging, middleware
+      patterns, performance profiling, or Vercel deployment optimization.
+    agent_would_know: >
+      App Router layout design, ISR and caching strategies, middleware patterns,
+      performance optimization, and deployment to Vercel or self-hosted
+      environments.
+    research_scope:
+      - App Router patterns (layouts, loading, error boundaries)
+      - ISR and caching strategies
+      - Middleware design
+      - Performance optimization
+      - Deployment (Vercel, self-hosted)
+    create_command: "@pipeline-orchestrator create a nextjs-patterns-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: frontend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Component architecture, SSR/SSG patterns, routing design.
+  - agent: javascript-standards-enforcer
+    plugin: sdlc-lang-js
+    relevance: >
+      JavaScript/TypeScript code quality, ESLint, React best practices.
+
+trusted_sources:
+  - url: https://github.com/vercel
+    type: github-org
+  - url: https://nextjs.org/docs
+    type: vendor-docs

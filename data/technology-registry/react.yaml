@@ -1,0 +1,78 @@
+# React — Curated technology registry entry
+# Covers: MCP server (shadcn/ui), React/React DOM libraries, architecture patterns gap
+
+display_name: React
+category: framework
+description: >
+  Library for building web and native user interfaces. Component-based
+  architecture with hooks, JSX, and a rich ecosystem. Created and maintained
+  by Meta. Powers Facebook, Instagram, Netflix, and Airbnb.
+
+section_a:
+  - name: shadcn/ui MCP
+    type: mcp-server-npm
+    package: shadcn-ui-mcp
+    source: https://www.shadcn.io/mcp/claude-code
+    publisher: shadcn
+    publisher_verified: false
+    description: >
+      Component browsing, search, and installation for shadcn/ui React
+      components.
+    install_override: 'claude mcp add --transport http shadcn https://www.shadcn.io/api/mcp'
+    verified_date: 2026-04-10
+
+section_b:
+  - name: React
+    package: react
+    ecosystem: npm
+    source: https://www.npmjs.com/package/react
+    publisher: Meta
+    description: Library for web and native user interfaces
+    usage: 'import { useState } from "react"'
+    docs: https://react.dev
+    verified_date: 2026-04-10
+
+  - name: React DOM
+    package: react-dom
+    ecosystem: npm
+    source: https://www.npmjs.com/package/react-dom
+    publisher: Meta
+    description: React rendering for web browsers
+    usage: 'import { createRoot } from "react-dom/client"'
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: React architecture patterns
+    slug: react-patterns-expert
+    why: >
+      No official React MCP from Meta. Hooks patterns, state management,
+      component composition, testing, and performance optimization benefit
+      from expert guidance.
+    agent_would_know: >
+      Custom hooks design, state management strategies (Context, Zustand,
+      Redux Toolkit), component composition and render optimization, testing
+      with React Testing Library and MSW, and Server Components with Suspense.
+    research_scope:
+      - Hooks patterns (custom hooks, useCallback/useMemo)
+      - State management (Context, Zustand, Redux Toolkit)
+      - Component composition and render optimization
+      - Testing (React Testing Library, MSW)
+      - Server Components and Suspense patterns
+    create_command: "@pipeline-orchestrator create a react-patterns-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: frontend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Component architecture, state management, rendering patterns.
+  - agent: javascript-standards-enforcer
+    plugin: sdlc-lang-js
+    relevance: >
+      JavaScript/TypeScript code quality, ESLint, React best practices.
+
+trusted_sources:
+  - url: https://github.com/facebook/react
+    type: github-org
+  - url: https://react.dev
+    type: vendor-docs

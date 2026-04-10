@@ -1,0 +1,85 @@
+# FastAPI — Curated technology registry entry
+# Covers: MCP server (fastapi-mcp), FastAPI/Pydantic libraries, advanced patterns gap
+
+display_name: FastAPI
+category: framework
+description: >
+  Modern Python web framework for building APIs with automatic OpenAPI docs,
+  type-validated request/response models via Pydantic, and native async support.
+  High performance on par with Node.js and Go frameworks.
+
+section_a:
+  - name: fastapi-mcp
+    type: mcp-server-pip
+    package: fastapi-mcp
+    source: https://github.com/tadata-org/fastapi_mcp
+    publisher: Tadata Inc.
+    publisher_verified: false
+    description: >
+      Auto-expose FastAPI endpoints as MCP tools. Zero-config, framework-native,
+      ASGI transport. Preserves schemas. 11.8k stars — strongest framework MCP
+      integration.
+    install_override: |
+      pip install fastapi-mcp
+      # In your app:
+      from fastapi_mcp import FastApiMCP
+      mcp = FastApiMCP(app)
+      mcp.mount_http()
+    verified_date: 2026-04-10
+
+section_b:
+  - name: FastAPI
+    package: fastapi
+    ecosystem: pip
+    source: https://pypi.org/project/fastapi/
+    publisher: Sebastian Ramirez
+    description: Modern Python web framework with automatic API docs
+    usage: "from fastapi import FastAPI"
+    docs: https://fastapi.tiangolo.com/
+    verified_date: 2026-04-10
+
+  - name: Pydantic
+    package: pydantic
+    ecosystem: pip
+    source: https://pypi.org/project/pydantic/
+    publisher: Samuel Colvin / Pydantic org
+    description: Data validation using Python type annotations
+    usage: "from pydantic import BaseModel"
+    docs: https://docs.pydantic.dev/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: FastAPI advanced patterns
+    slug: fastapi-patterns-expert
+    why: >
+      fastapi-mcp handles HTTP endpoints but not complex DI patterns, WebSocket
+      handling, background tasks, or deployment (multi-worker, Docker, K8s
+      health checks).
+    agent_would_know: >
+      Nested dependency injection, WebSocket lifecycle, background task design,
+      async testing patterns, and production deployment with multi-worker
+      Uvicorn behind Docker or Kubernetes.
+    research_scope:
+      - Dependency injection patterns (nested, DB sessions)
+      - WebSocket patterns
+      - Background task design
+      - Testing (TestClient, async fixtures, dependency overrides)
+      - Deployment (multi-worker Uvicorn, Docker)
+    create_command: "@pipeline-orchestrator create a fastapi-patterns-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      API design, dependency injection, async patterns.
+  - agent: python-standards-enforcer
+    plugin: sdlc-lang-python
+    relevance: >
+      Python code quality, type checking, Pydantic model validation.
+
+trusted_sources:
+  - url: https://github.com/fastapi
+    type: github-org
+  - url: https://fastapi.tiangolo.com/
+    type: vendor-docs

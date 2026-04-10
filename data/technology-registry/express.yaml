@@ -1,0 +1,56 @@
+# Express.js — Curated technology registry entry
+# Covers: Express library, application architecture gap (no MCP tooling needed)
+
+display_name: Express.js
+category: framework
+description: >
+  Fast, unopinionated, minimalist web framework for Node.js. De facto standard
+  for Node.js HTTP servers. Middleware-driven architecture with a vast ecosystem
+  of third-party middleware and template engines.
+
+section_b:
+  - name: Express
+    package: express
+    ecosystem: npm
+    source: https://www.npmjs.com/package/express
+    publisher: OpenJS Foundation
+    description: Fast minimalist web framework for Node.js
+    usage: 'const express = require("express")'
+    docs: https://expressjs.com/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Express.js application architecture
+    slug: express-patterns-expert
+    why: >
+      No MCP tools exist (nor are needed). But Express middleware patterns,
+      error handling, routing organization, and security hardening benefit
+      from expert guidance.
+    agent_would_know: >
+      Middleware composition, async error propagation, router organization
+      for large applications, security hardening with helmet/cors/rate-limiting,
+      and performance tuning with compression and clustering.
+    research_scope:
+      - Middleware composition patterns
+      - Error handling and async error propagation
+      - Router organization for large apps
+      - Security (helmet, cors, rate limiting)
+      - Performance (compression, clustering)
+    create_command: "@pipeline-orchestrator create an express-patterns-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      API design, middleware patterns, request lifecycle.
+  - agent: javascript-standards-enforcer
+    plugin: sdlc-lang-js
+    relevance: >
+      JavaScript/TypeScript code quality, ESLint, Node.js best practices.
+
+trusted_sources:
+  - url: https://github.com/expressjs
+    type: github-org
+  - url: https://expressjs.com/
+    type: vendor-docs
