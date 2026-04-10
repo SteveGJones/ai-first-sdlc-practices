@@ -1,0 +1,73 @@
+# Supabase — Curated technology registry entry
+# Covers: Official Supabase MCP, JS/Python clients, auth/realtime patterns gap
+
+display_name: Supabase
+category: database
+description: >
+  Open-source Firebase alternative built on PostgreSQL. Provides database,
+  authentication, edge functions, realtime subscriptions, storage, and vector
+  embeddings. Managed hosting with a generous free tier. Self-hostable via
+  Docker Compose.
+
+section_a:
+  - name: Supabase MCP (Official)
+    type: mcp-server-npm
+    package: "@supabase/mcp-server-supabase"
+    source: https://github.com/supabase-community/supabase-mcp
+    publisher: Supabase
+    publisher_verified: true
+    description: >
+      Official Supabase MCP — 30+ tools for database design, SQL, migrations,
+      edge functions, branching, storage, project management, docs search.
+      OAuth or PAT auth.
+    install_override: |
+      Remote (OAuth): {"mcpServers":{"supabase":{"type":"http","url":"https://mcp.supabase.com/mcp"}}}
+    verified_date: 2026-04-10
+
+section_b:
+  - name: "@supabase/supabase-js"
+    package: "@supabase/supabase-js"
+    ecosystem: npm
+    source: https://www.npmjs.com/package/@supabase/supabase-js
+    publisher: Supabase
+    description: Official Supabase client for JavaScript
+    usage: 'import { createClient } from "@supabase/supabase-js"'
+    docs: https://supabase.com/docs/reference/javascript
+    verified_date: 2026-04-10
+
+  - name: supabase (Python)
+    package: supabase
+    ecosystem: pip
+    source: https://pypi.org/project/supabase/
+    publisher: Supabase
+    description: Official Supabase client for Python
+    usage: 'from supabase import create_client'
+    docs: https://supabase.com/docs/reference/python
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Supabase auth and realtime patterns
+    slug: supabase-patterns-expert
+    why: >
+      MCP covers DB/migrations/edge functions but not Realtime subscriptions,
+      Auth user management, RLS policy design, or Storage management.
+    agent_would_know: >
+      Row Level Security policy design, Realtime subscription patterns, Auth
+      user management and custom claims, Edge Function development, and
+      Storage bucket management.
+    research_scope:
+      - Row Level Security (RLS) policy design
+      - Realtime subscription patterns
+      - Auth user management and custom claims
+      - Edge Function patterns
+      - Storage bucket management
+    create_command: "@pipeline-orchestrator create a supabase-patterns-expert agent"
+    verified_date: 2026-04-10
+
+trusted_sources:
+  - url: https://github.com/supabase
+    type: github-org
+  - url: https://www.npmjs.com/~supabase
+    type: npm-scope
+  - url: https://supabase.com/docs
+    type: vendor-docs

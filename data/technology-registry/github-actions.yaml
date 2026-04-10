@@ -1,0 +1,73 @@
+# GitHub Actions — Curated technology registry entry
+# Covers: Official GitHub MCP, Actions toolkit, workflow architecture gap
+
+display_name: GitHub Actions
+category: ci-cd
+description: >
+  CI/CD platform integrated into GitHub. Workflow automation via YAML, matrix
+  builds, reusable workflows, composite actions, and a marketplace of 20k+
+  community actions. Free for public repos, generous minutes for private repos.
+
+section_a:
+  - name: GitHub MCP Server (Official)
+    type: mcp-server-binary
+    package: "github/github-mcp-server"
+    source: https://github.com/github/github-mcp-server
+    publisher: GitHub
+    publisher_verified: true
+    description: >
+      Official GitHub MCP — repos, issues, PRs, actions (list workflows, run
+      workflow, artifacts), code security, discussions. Remote MCP at
+      api.githubcopilot.com/mcp/.
+    env:
+      - name: GITHUB_PERSONAL_ACCESS_TOKEN
+        description: GitHub personal access token
+    install_override: 'claude mcp add --transport http github https://api.githubcopilot.com/mcp/'
+    verified_date: 2026-04-10
+
+section_b:
+  - name: "@actions/core"
+    package: "@actions/core"
+    ecosystem: npm
+    source: https://github.com/actions/toolkit
+    publisher: GitHub
+    description: Core functions for GitHub Actions (inputs, outputs, logging)
+    usage: 'import * as core from "@actions/core"'
+    docs: https://github.com/actions/toolkit
+    verified_date: 2026-04-10
+
+  - name: "@actions/github"
+    package: "@actions/github"
+    ecosystem: npm
+    source: https://github.com/actions/toolkit
+    publisher: GitHub
+    description: Octokit client and context for GitHub Actions
+    usage: 'import { getOctokit, context } from "@actions/github"'
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: GitHub Actions workflow architecture
+    slug: github-actions-architect
+    why: >
+      MCP covers workflow listing and triggering but not YAML authoring, matrix
+      strategies, caching, self-hosted runners, secrets management, or
+      composite action development.
+    agent_would_know: >
+      Complex workflow YAML patterns, matrix strategy optimization, caching
+      strategies, self-hosted runner management, composite action development,
+      and environment protection rules.
+    research_scope:
+      - Complex workflow YAML patterns
+      - Matrix strategy optimization
+      - Caching strategies (actions/cache)
+      - Self-hosted runner management
+      - Composite action development
+      - Environment and deployment protection
+    create_command: "@pipeline-orchestrator create a github-actions-architect agent"
+    verified_date: 2026-04-10
+
+trusted_sources:
+  - url: https://github.com/actions
+    type: github-org
+  - url: https://docs.github.com/en/actions
+    type: vendor-docs

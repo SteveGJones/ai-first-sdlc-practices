@@ -1,0 +1,69 @@
+# Java — Curated technology registry entry
+# Covers: MCP servers (Gradle, Maven tools), architecture patterns gap
+#
+# NOTE: Java uses Maven/Gradle for dependency management, which are not in the
+# ecosystem enum (pip, npm, cargo, go, gem). Section B is omitted until the
+# registry schema is extended to support Maven/Gradle ecosystems.
+
+display_name: Java
+category: language
+description: >
+  Statically typed, object-oriented language running on the JVM. Powers
+  enterprise applications, Android development, and large-scale distributed
+  systems. Modern Java (17+) includes records, sealed classes, pattern
+  matching, and virtual threads (Project Loom).
+
+section_a:
+  - name: gradle-mcp
+    type: mcp-server-binary
+    package: "dev.rnett.gradle-mcp:gradle-mcp"
+    source: https://github.com/rnett/gradle-mcp
+    publisher: rnett
+    publisher_verified: false
+    description: >
+      Comprehensive Gradle MCP — project mapping, task execution, testing
+      with filtered suites, dependency search, Kotlin REPL. Requires JDK 17+.
+    install_override: "Download from Maven Central; requires JDK 17+"
+    verified_date: 2026-04-10
+
+  - name: maven-tools-mcp
+    type: mcp-server-binary
+    package: maven-tools-mcp
+    source: https://github.com/arvindand/maven-tools-mcp
+    publisher: arvindand
+    publisher_verified: false
+    description: >
+      Maven Central intelligence for all JVM build tools — stability filtering,
+      upgrade comparisons, dependency health, license data, CVE checks.
+    verified_date: 2026-04-10
+
+# Section B omitted: Java uses Maven/Gradle, not in ecosystem enum (pip/npm/cargo/go/gem).
+# Spring Boot (org.springframework.boot:spring-boot), JUnit, Lombok, etc. would
+# belong here once Maven/Gradle ecosystem support is added.
+
+section_c:
+  - topic: Java/Spring architecture patterns
+    slug: java-spring-architect
+    why: >
+      MCP tools cover build tooling but not Spring Boot patterns, Jakarta EE,
+      virtual threads (Project Loom), or reactive patterns (WebFlux).
+    agent_would_know: >
+      Spring Boot auto-configuration, dependency injection, Jakarta EE patterns,
+      virtual threads and structured concurrency, reactive programming with
+      WebFlux, and multi-module build configuration.
+    research_scope:
+      - Spring Boot auto-configuration and DI patterns
+      - Jakarta EE patterns (CDI, JPA)
+      - Virtual threads and structured concurrency
+      - Reactive patterns (WebFlux)
+      - Build tool configuration (multi-module)
+    create_command: "@pipeline-orchestrator create a java-spring-architect agent"
+    verified_date: 2026-04-10
+
+trusted_sources:
+  - url: https://github.com/spring-projects
+    type: github-org
+  - url: https://spring.io/docs
+    type: vendor-docs
+  - url: https://github.com/openjdk
+    type: github-org
