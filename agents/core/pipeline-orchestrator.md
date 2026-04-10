@@ -55,37 +55,47 @@ You are the Pipeline Orchestrator, the unified entry point for the entire agent 
 1. **Extract the target technology/vendor** from the user request:
    - Identify the primary technology (e.g., "MongoDB", "Kubernetes", "Stripe", "PostgreSQL")
    - Identify the vendor/organization (e.g., "MongoDB Inc.", "CNCF", "Stripe", "PostgreSQL Global Development Group")
-   - Derive registry search terms: package scope (`@mongodb/`, `@stripe/`), org name (`mongodb`, `kubernetes`)
+   - Derive the canonical technology key (lowercase, hyphenated — e.g., `mongodb`, `github-actions`)
 
-2. **Check MCP server registries**:
+2. **Check the curated technology registry first (fast path):**
+
+   Read `data/technology-registry/_index.yaml`. Normalize the technology name through the `aliases` map (e.g., "postgres" → "postgresql"). Check if the canonical key exists in the `technologies` manifest.
+
+   - **If found**: Read `data/technology-registry/{file}` and extract `section_a`, `section_b`, `section_c`, `our_agents`, `trusted_sources`. Skip steps 3-6 — the registry provides pre-verified, pre-classified data for this technology. Proceed directly to step 7 (classify) using registry data.
+
+   - **If not found**: The technology is not in the registry. Proceed to steps 3-6 (web search discovery) as before.
+
+   The registry is additive — if it's missing or the technology isn't in it, the existing web search behavior kicks in unchanged.
+
+3. **Check MCP server registries** (web search fallback — only for technologies NOT in the registry):
    - **npm**: Search for `@{vendor}/*mcp*` or `{vendor}-mcp-server` — e.g., `npm search @mongodb/mcp`
    - **PyPI**: Search for `{vendor}-mcp-server` or `{vendor}-mcp` — e.g., `pip index versions mongodb-mcp-server`
    - Look for: official publisher (verified org), recent updates (< 6 months), minimum downloads/stars
    - Record each finding: package name, publisher, description, last updated, download count
 
-3. **Check vendor GitHub organization**:
+4. **Check vendor GitHub organization** (web search fallback):
    - Search `github.com/{vendor-org}` for repositories matching: `*agent*`, `*mcp*`, `*skills*`, `*ai-integration*`
    - Example: `github.com/mongodb` for `mcp-server`, `agent-skills`, `ai-toolkit`
    - Look for: official org (verified badge), active maintenance (commits in last 6 months), documentation quality
    - Record each finding: repo name, description, stars, last commit date, license
 
-4. **Check Claude Code plugin marketplace**:
+5. **Check Claude Code plugin marketplace** (web search fallback):
    - Search `.claude-plugin/marketplace.json` (at the repo root) for plugins related to the target technology
    - Check if any existing plugin in the marketplace already covers the domain
    - Record findings: plugin name, version, description, agent count
 
-5. **Check GitHub Actions marketplace**:
+6. **Check GitHub Actions marketplace** (web search fallback):
    - Search for `{vendor}` or `{technology}` actions that provide agent-compatible capabilities
    - Look for: official publisher, CI/CD integration, reusable workflows
    - Record findings: action name, publisher, description, usage count
 
-6. **Run targeted web searches** (if registry checks found fewer than 2 results):
+7. **Run targeted web searches** (web search fallback, if steps 3-6 found fewer than 2 results):
    - Search: "{vendor} official mcp server"
    - Search: "{vendor} agent skills"
    - Search: "{vendor} ai integration"
    - Record any additional official tooling found
 
-7. **Classify each found tool by category AND by section.** Before compiling the report, assign each tool to one of seven categories. Each category is also assigned to one of three sections:
+8. **Classify each found tool by category AND by section.** For web search results (step 2 path), assign each tool to one of seven categories. Registry entries (step 2 fast path) are already pre-classified — their `type` field maps directly to a category and section. Each category is also assigned to one of three sections:
 
    - **Section A — Claude Code Environment Tools**: things the user installs *into* Claude Code to extend its capabilities (plugins, pre-built MCP servers, standalone CLIs used alongside Claude Code)
    - **Section B — Project Dependencies**: libraries and frameworks the user adds to their *own project's source code* when building something (e.g., custom MCP server, custom agent, app calling Claude). These are NOT installed in Claude Code.
@@ -107,7 +117,7 @@ You are the Pipeline Orchestrator, the unified entry point for the entire agent 
 
    If you're uncertain which side something falls on, ask: "Does the user run this as-is alongside Claude Code, or do they import it in code they're writing themselves?" Running as-is = A. Importing in their own code = B.
 
-8. **Assess coverage per technology and identify gaps for Section C.**
+9. **Assess coverage per technology and identify gaps for Section C.** For registry entries, Section C gaps are pre-authored — emit them directly. For web search results, assess coverage as before:
 
    For each technology in the discovery pool, evaluate whether Sections A and B together adequately cover the agentic need:
 
@@ -126,7 +136,7 @@ You are the Pipeline Orchestrator, the unified entry point for the entire agent 
    - **Estimated pipeline duration**: 2-3 hours (web research + synthesis + construction)
    - **Create command**: `@pipeline-orchestrator create a <topic-slug> agent`
 
-9. **Compile discovery report with MANDATORY install instructions in Sections A and B, plus Section C gaps.**
+10. **Compile discovery report with MANDATORY install instructions in Sections A and B, plus Section C gaps.**
 
    **MANDATORY PER TOOL**: You MUST populate the `Install` field for every tool in both Section A and Section B. If you cannot determine the install path with confidence, write exactly: `Manual setup required. See <url>/README.md.` — never omit the field. A discovery report with any missing `Install` field is incomplete and must be regenerated before presenting to the user.
 
