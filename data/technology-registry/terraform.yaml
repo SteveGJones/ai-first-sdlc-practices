@@ -55,6 +55,17 @@ section_c:
     create_command: "@pipeline-orchestrator create a terraform-patterns-expert agent"
     verified_date: 2026-04-10
 
+our_agents:
+  - agent: devops-specialist
+    plugin: sdlc-team-fullstack
+    relevance: >
+      IaC pipeline design, state management strategy, module composition.
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Infrastructure architecture, multi-environment strategy, cost
+      optimization.
+
 trusted_sources:
   - url: https://github.com/hashicorp
     type: github-org

@@ -66,6 +66,13 @@ section_c:
     create_command: "@pipeline-orchestrator create a github-actions-architect agent"
     verified_date: 2026-04-10
 
+our_agents:
+  - agent: devops-specialist
+    plugin: sdlc-team-fullstack
+    relevance: >
+      CI/CD pipeline architecture, workflow optimization, deployment
+      strategies.
+
 trusted_sources:
   - url: https://github.com/actions
     type: github-org

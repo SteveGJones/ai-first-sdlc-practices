@@ -69,6 +69,17 @@ section_c:
     create_command: "@pipeline-orchestrator create a stripe-payments-expert agent"
     verified_date: 2026-04-10
 
+our_agents:
+  - agent: api-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Payment API integration patterns, webhook design, idempotency
+      strategies.
+  - agent: security-architect
+    plugin: sdlc-team-security
+    relevance: >
+      PCI compliance considerations, secret management for API keys.
+
 trusted_sources:
   - url: https://github.com/stripe
     type: github-org

@@ -65,6 +65,18 @@ section_c:
     create_command: "@pipeline-orchestrator create a docker-optimization-expert agent"
     verified_date: 2026-04-10
 
+our_agents:
+  - agent: devops-specialist
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Container orchestration patterns, Dockerfile optimization, multi-stage
+      build strategy.
+  - agent: security-architect
+    plugin: sdlc-team-security
+    relevance: >
+      Container security scanning, image supply chain, runtime security
+      policies.
+
 trusted_sources:
   - url: https://github.com/docker
     type: github-org

@@ -64,6 +64,17 @@ section_c:
     create_command: "@pipeline-orchestrator create a supabase-patterns-expert agent"
     verified_date: 2026-04-10
 
+our_agents:
+  - agent: database-architect
+    plugin: sdlc-team-common
+    relevance: >
+      PostgreSQL schema design, Row Level Security policy architecture.
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Edge Function patterns, realtime subscription architecture, auth flow
+      design.
+
 trusted_sources:
   - url: https://github.com/supabase
     type: github-org

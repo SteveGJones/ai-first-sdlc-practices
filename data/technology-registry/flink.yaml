@@ -74,6 +74,17 @@ section_c:
     create_command: "@pipeline-orchestrator create a flink-stream-architect agent"
     verified_date: 2026-04-10
 
+our_agents:
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Stream processing topology design, exactly-once semantics, state
+      management strategy.
+  - agent: performance-engineer
+    plugin: sdlc-team-common
+    relevance: >
+      Parallelism optimization, memory tuning, backpressure analysis.
+
 trusted_sources:
   - url: https://github.com/apache/flink
     type: github-org

@@ -60,6 +60,13 @@ section_c:
     create_command: "@pipeline-orchestrator create a sqlite-optimization-expert agent"
     verified_date: 2026-04-10
 
+our_agents:
+  - agent: database-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Schema design, query optimization, WAL mode configuration for
+      concurrent access.
+
 trusted_sources:
   - url: https://sqlite.org/docs.html
     type: vendor-docs

@@ -41,6 +41,12 @@ section_c:
     create_command: "@pipeline-orchestrator create a vue-patterns-expert agent"
     verified_date: 2026-04-10
 
+our_agents:
+  - agent: frontend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Component architecture, state management patterns, SSR with Nuxt.js.
+
 trusted_sources:
   - url: https://github.com/vuejs
     type: github-org
