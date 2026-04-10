@@ -101,34 +101,36 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
 
 5. **Scan tech stack and discover 1st-party tools**
 
-   **5a. Scan project files for technologies:**
+   **5a. Scan project files for technologies (registry-driven):**
 
-   Check the following files for known technology names. If a file doesn't exist, skip it.
+   **5a.1 Load the technology registry index.** Read `data/technology-registry/_index.yaml` (relative to the framework install, not the user's project). This file contains:
+   - `detection` — maps package names, Docker images, and env vars to technology keys, organized by ecosystem (`pip`, `npm`, `docker`, `env`, `go`, `gem`, `cargo`)
+   - `aliases` — normalizes informal names to canonical keys
+   - `technologies` — manifest of available technology files
 
-   | File | What to extract |
-   |------|----------------|
-   | `README.md` | Technology mentions in the project description (databases, frameworks, cloud providers, services) |
-   | `CLAUDE.md` | Technology references in project instructions |
-   | `requirements.txt` / `pyproject.toml` | Python packages: flask, fastapi, django, sqlalchemy, redis, celery, boto3, psycopg2, pymongo, etc. |
-   | `package.json` | JS/TS dependencies: express, next, prisma, mongoose, ioredis, aws-sdk, etc. |
-   | `Gemfile` | Ruby gems: rails, pg, redis, sidekiq, etc. |
-   | `go.mod` | Go modules: gin, gorm, go-redis, aws-sdk-go, etc. |
-   | `Cargo.toml` | Rust crates: actix-web, diesel, redis-rs, rusoto, etc. |
-   | `docker-compose.yml` | Service images: postgres, redis, mongo, rabbitmq, elasticsearch, etc. |
-   | `.env` / `.env.example` | Connection strings: DATABASE_URL (extract db type), REDIS_URL, MONGO_URI, etc. |
+   If the registry index doesn't exist or fails to load, fall back to web-search-only discovery (the pre-registry behavior in step 5c).
 
-   Map detected packages/services to technology names:
-   - `psycopg2` / `psycopg2-binary` / `asyncpg` → PostgreSQL
-   - `pymongo` / `motor` → MongoDB
-   - `redis` / `redis-py` / `ioredis` → Redis
-   - `boto3` / `aws-sdk` / `aws-sdk-go` → AWS
-   - `google-cloud-*` → Google Cloud
-   - `azure-*` → Azure
-   - `celery` → Celery
-   - `elasticsearch` / `opensearch` → Elasticsearch
-   - `prisma` → Prisma
-   - `stripe` → Stripe
-   - `twilio` → Twilio
+   **5a.2 Scan project dependency files.** Check the following files. If a file doesn't exist, skip it.
+
+   | File | Ecosystem | What to extract |
+   |------|-----------|----------------|
+   | `requirements.txt` / `pyproject.toml` | `pip` | Python package names |
+   | `package.json` | `npm` | `dependencies` + `devDependencies` keys |
+   | `Gemfile` | `gem` | Ruby gem names |
+   | `go.mod` | `go` | Go module paths |
+   | `Cargo.toml` | `cargo` | Crate names from `[dependencies]` |
+   | `docker-compose.yml` | `docker` | Service image names (match with glob patterns like `postgres:*`) |
+   | `.env` / `.env.example` | `env` | Variable names and values (match with patterns like `DATABASE_URL=postgres*`) |
+   | `README.md` / `CLAUDE.md` | — | Technology name mentions (match against `technologies` manifest display names and keys) |
+
+   **5a.3 Match packages to technologies.** For each package/image/var found in a dependency file:
+   1. Look up the package name in `detection[ecosystem]` from the registry index
+   2. If found → add the mapped technology key to the detected set
+   3. If not found → the package is not in the registry (no action; it won't block anything)
+
+   For `README.md`/`CLAUDE.md`: scan for technology names mentioned in prose. Match against both the `technologies` manifest keys (e.g., `mongodb`) and display names (e.g., `MongoDB`). Also check `aliases` for informal mentions.
+
+   **5a.4 Normalize via aliases.** For any technology detected by name (from README/CLAUDE.md or user input in step 5b), normalize through the `aliases` map before looking up the registry. E.g., user says "postgres" → aliases normalize to `postgresql` → look up `postgresql` in the manifest.
 
    **5b. Present findings and ask the user:**
 
@@ -150,9 +152,17 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    Or press Enter to skip technology discovery.
    ```
 
-   **5c. Run discovery for each technology:**
+   **5c. Discover tools for each technology (registry-first, web-search fallback):**
 
-   For each technology (detected + user-specified), search for official vendor tooling using these sources:
+   For each technology (detected + user-specified):
+
+   **5c.1 Check the registry first.** Look up the technology key in the `technologies` manifest from `_index.yaml`:
+
+   - **If the technology has a registry file**: Read `data/technology-registry/{file}` and extract `section_a`, `section_b`, `section_c`, `our_agents`, and `trusted_sources` directly. This is the fast path — no web search needed.
+
+   - **If the technology is NOT in the registry**: Fall back to web search discovery (step 5c.2 below). This ensures technologies not yet in the registry are still discoverable.
+
+   **5c.2 Web search fallback (only for technologies not in the registry).** Search for official vendor tooling using these sources:
 
    - MCP server registries: WebSearch `"{technology} mcp server" site:npmjs.com` and `site:pypi.org`
    - Vendor GitHub org: WebSearch `"github.com/{vendor}" mcp OR agent OR skills OR claude`
@@ -160,71 +170,45 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    - GitHub Actions marketplace: WebSearch `"{technology} github action" site:github.com/marketplace`
    - Targeted web search: `"{technology} official mcp server"`, `"{technology} agent skills"`
 
-   For each tool found, record: name, **category** (one of `claude-plugin` / `mcp-server-npm` / `mcp-server-pip` / `mcp-server-binary` / `github-action` / `standalone-cli` / `library-framework`), **section** (A or B — see below), source URL, brief capabilities description, and whether it appears actively maintained (last commit/publish within 6 months).
+   For each tool found, record: name, **category** (one of `claude-plugin` / `mcp-server-npm` / `mcp-server-pip` / `mcp-server-binary` / `github-action` / `standalone-cli` / `library-framework`), **section** (A or B), source URL, brief capabilities description, and whether it appears actively maintained (last commit/publish within 6 months).
 
-   **Two-section split**:
-   - **Section A — Claude Code Environment Tools**: install these *into* Claude Code to extend its capabilities
-   - **Section B — Project Dependencies**: libraries for the user's own project code (custom MCP server, custom agent, app calling Claude)
+   **Section classification rules** (apply to both registry entries and web search results):
+   - `claude-plugin` → **Section A**
+   - `mcp-server-npm` / `mcp-server-pip` / `mcp-server-binary` → **Section A**
+   - `github-action` / `standalone-cli` → **Section A**
+   - `library-framework` → **Section B**
 
-   Classification rules (each category maps to exactly one section):
-   - In a Claude Code plugin marketplace (has `.claude-plugin/marketplace.json`)? → `claude-plugin` → **Section A**
-   - npm package runnable via `npx`, exposes MCP as a **pre-built server**? → `mcp-server-npm` → **Section A**
-   - PyPI package runnable via `python -m`, exposes MCP as a **pre-built server**? → `mcp-server-pip` → **Section A**
-   - Pre-built binary distributed via GitHub releases, exposes MCP? → `mcp-server-binary` → **Section A**
-   - Claude Code-specific GitHub Action (e.g., `anthropics/claude-code-action`)? → `github-action` → **Section A**
-   - Standalone repository the user clones and runs alongside Claude Code? → `standalone-cli` → **Section A**
-   - Foundation library (FastMCP, `@modelcontextprotocol/sdk`, Anthropic SDK, vendor driver) used to **build** other tools? → `library-framework` → **Section B**
+   **5c.3 Generate install instructions per tool.** For registry entries: if the entry has an `install_override` field, emit it verbatim. Otherwise, generate the install snippet from the entry's `type` and structured fields using these templates:
 
-   **Key distinction** — the difference between `mcp-server-npm` (Section A) and `library-framework` (Section B):
-   - `@modelcontextprotocol/server-filesystem` is a pre-built MCP server → Section A: the user runs `npx -y @modelcontextprotocol/server-filesystem` via `.mcp.json`
-   - `@modelcontextprotocol/sdk` is a library for building MCP servers → Section B: the user runs `npm install @modelcontextprotocol/sdk` inside their own project and imports from it in code they write
-
-   If uncertain: "Does the user run this as-is alongside Claude Code, or do they import it in code they're writing themselves?" Running as-is = A. Importing in their own code = B.
-
-   **5c.1 Generate install instructions per tool.** Every tool gets an install snippet derived from its category. Use the exact format below per category — never invent install commands or guess at undocumented setup. If you cannot determine the install path with confidence, write: `Manual setup required. See <url>/README.md.`
-
-   - **`claude-plugin`** in `anthropics/claude-plugins-official`:
-     ```
-     /plugin marketplace add anthropics/claude-plugins-official
-     /plugin install <plugin-name>@claude-plugins-official
-     ```
-   - **`claude-plugin`** in another marketplace repo (read its `.claude-plugin/marketplace.json` to get the marketplace name):
-     ```
-     /plugin marketplace add <owner>/<repo>
-     /plugin install <plugin-name>@<marketplace-name>
-     ```
-   - **`mcp-server-npm`** — add to `.mcp.json` (create if missing):
+   - **`claude-plugin`**: Use the `install_override` (registry entries for plugins always have one since marketplace info varies).
+   - **`mcp-server-npm`** — generate from `package` and `env` fields:
      ```json
-     { "mcpServers": { "<server-name>": { "command": "npx", "args": ["-y", "<package>"], "env": { "<env-var>": "<value>" } } } }
+     { "mcpServers": { "<name>": { "command": "npx", "args": ["-y", "<package>"], "env": { "<env.name>": "<env.example or description>" } } } }
      ```
-     Note any required env vars (API keys, connection strings) explicitly. Then restart Claude Code or run `/mcp`.
-   - **`mcp-server-pip`** — install package, then add to `.mcp.json`:
-     ```bash
-     pip install <package>
-     ```
+     Then restart Claude Code or run `/mcp`.
+   - **`mcp-server-pip`** — generate from `package`, `module` (if present), and `env` fields:
      ```json
-     { "mcpServers": { "<server-name>": { "command": "python", "args": ["-m", "<module>"], "env": { "<env-var>": "<value>" } } } }
+     { "mcpServers": { "<name>": { "command": "python", "args": ["-m", "<module>"], "env": { "<env.name>": "<env.example or description>" } } } }
      ```
-   - **`mcp-server-binary`** — download from release URL, then add to `.mcp.json` with absolute path to the binary
-   - **`github-action`** — add to a workflow YAML file:
+     Or use `install_override` if the entry specifies `uvx` or another install method.
+   - **`mcp-server-binary`** — use `install_override` (binary installs vary too much to template).
+   - **`github-action`** — generate from `source`:
      ```yaml
-     - name: <descriptive name>
+     - name: <description>
        uses: <owner>/<repo>@<version-tag>
-       with:
-         <input>: <value>
      ```
-     Pin to a specific version tag, not `@main`. Note any required `secrets.*`.
-   - **`standalone-cli`**:
+   - **`standalone-cli`** — generate from `source` and `name`:
      ```bash
-     git clone <repo-url> ~/tools/<tool-name>
-     cd ~/tools/<tool-name>
-     <run command from README>
+     git clone <source> ~/tools/<name>
      ```
-   - **`library-framework`**:
+   - **`library-framework`** (Section B) — generate from `package` and `ecosystem`:
      ```bash
-     <pip|npm|cargo> install <package>
+     <pip|npm|cargo add|go get> install <package>
      ```
-     Foundation library — used to *build* tools, not invoked directly. Link to docs.
+
+   For web search results (not from registry): use the same templates but derive fields from the search results. If you cannot determine the install path with confidence, write: `Manual setup required. See <url>/README.md.`
+
+   **5c.4 Include framework cross-references.** If the registry entry has an `our_agents` field, include the cross-referenced agents in the recommendation output. Each entry has `agent`, `plugin`, and `relevance` — show the relevance to the user and ensure the `plugin` is included in the plugin recommendation (step 7).
 
    **5d. If no technologies detected and user skipped:** Skip this step entirely and proceed to step 6.
 
