@@ -103,7 +103,11 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
 
    **5a. Scan project files for technologies (registry-driven):**
 
-   **5a.1 Load the technology registry index.** Read `data/technology-registry/_index.yaml` (relative to the framework install, not the user's project). This file contains:
+   **5a.1 Load the technology registry index.** Find and read `_index.yaml` from the technology registry. Search in order:
+   1. `data/technology-registry/_index.yaml` (repo root — for framework developers)
+   2. Glob for `**/sdlc-core/data/technology-registry/_index.yaml` (plugin install — for plugin consumers)
+
+   This file contains:
    - `detection` — maps package names, Docker images, and env vars to technology keys, organized by ecosystem (`pip`, `npm`, `docker`, `env`, `go`, `gem`, `cargo`)
    - `aliases` — normalizes informal names to canonical keys
    - `technologies` — manifest of available technology files
@@ -158,7 +162,7 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
 
    **5c.1 Check the registry first.** Look up the technology key in the `technologies` manifest from `_index.yaml`:
 
-   - **If the technology has a registry file**: Read `data/technology-registry/{file}` and extract `section_a`, `section_b`, `section_c`, `our_agents`, and `trusted_sources` directly. This is the fast path — no web search needed.
+   - **If the technology has a registry file**: Read `{file}` from the same directory where `_index.yaml` was found (step 5a.1). Extract `section_a`, `section_b`, `section_c`, `our_agents`, and `trusted_sources` directly. This is the fast path — no web search needed.
 
    - **If the technology is NOT in the registry**: Fall back to web search discovery (step 5c.2 below). This ensures technologies not yet in the registry are still discoverable.
 

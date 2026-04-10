@@ -1,0 +1,54 @@
+# Vue.js — Curated technology registry entry
+# Covers: Vue library, architecture patterns gap
+#
+# NOTE: No known Vue-specific MCP server. Section A omitted.
+
+display_name: Vue.js
+category: framework
+description: >
+  Progressive JavaScript framework for building user interfaces. Incrementally
+  adoptable architecture with Composition API, reactive data binding, and
+  single-file components. Powers Alibaba, GitLab, Nintendo, and a large
+  open-source ecosystem including Nuxt.js for SSR.
+
+section_b:
+  - name: Vue
+    package: vue
+    ecosystem: npm
+    source: https://www.npmjs.com/package/vue
+    publisher: Evan You
+    description: Progressive JavaScript framework for UIs
+    usage: 'import { createApp } from "vue"'
+    docs: https://vuejs.org/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Vue.js architecture patterns
+    slug: vue-patterns-expert
+    why: >
+      No MCP tooling. Vue Composition API, Pinia state management, Vue Router
+      patterns, and Nuxt.js SSR benefit from expert guidance.
+    agent_would_know: >
+      Composition API patterns, Pinia state management design, Vue Router and
+      navigation guards, Nuxt.js SSR patterns, and component design with
+      slots and provide/inject.
+    research_scope:
+      - Composition API patterns
+      - Pinia state management
+      - Vue Router and navigation guards
+      - Nuxt.js SSR patterns
+      - Component design and slots
+    create_command: "@pipeline-orchestrator create a vue-patterns-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: frontend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Component architecture, state management patterns, SSR with Nuxt.js.
+
+trusted_sources:
+  - url: https://github.com/vuejs
+    type: github-org
+  - url: https://vuejs.org/
+    type: vendor-docs

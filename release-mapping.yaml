@@ -36,6 +36,39 @@ sdlc-core:
     - source: tools/validation/check-tmp-usage.py
   hooks:
     - source: plugins/sdlc-core/hooks/hooks.json
+  data:
+    - source: data/technology-registry/_index.yaml
+    - source: data/technology-registry/aws.yaml
+    - source: data/technology-registry/azure.yaml
+    - source: data/technology-registry/django.yaml
+    - source: data/technology-registry/docker.yaml
+    - source: data/technology-registry/elasticsearch.yaml
+    - source: data/technology-registry/express.yaml
+    - source: data/technology-registry/fastapi.yaml
+    - source: data/technology-registry/flask.yaml
+    - source: data/technology-registry/flink.yaml
+    - source: data/technology-registry/gcp.yaml
+    - source: data/technology-registry/github-actions.yaml
+    - source: data/technology-registry/go.yaml
+    - source: data/technology-registry/java.yaml
+    - source: data/technology-registry/kafka.yaml
+    - source: data/technology-registry/kubernetes.yaml
+    - source: data/technology-registry/mongodb.yaml
+    - source: data/technology-registry/mysql.yaml
+    - source: data/technology-registry/nextjs.yaml
+    - source: data/technology-registry/postgresql.yaml
+    - source: data/technology-registry/python.yaml
+    - source: data/technology-registry/rabbitmq.yaml
+    - source: data/technology-registry/react.yaml
+    - source: data/technology-registry/redis.yaml
+    - source: data/technology-registry/ruby.yaml
+    - source: data/technology-registry/rust.yaml
+    - source: data/technology-registry/sqlite.yaml
+    - source: data/technology-registry/streamlit.yaml
+    - source: data/technology-registry/stripe.yaml
+    - source: data/technology-registry/supabase.yaml
+    - source: data/technology-registry/terraform.yaml
+    - source: data/technology-registry/vue.yaml
 
 sdlc-team-common:
   agents:

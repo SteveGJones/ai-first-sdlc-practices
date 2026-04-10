@@ -1,0 +1,109 @@
+# MongoDB — Curated technology registry entry
+# Covers: MCP server, Claude Code plugin, Python/Node drivers, architecture gaps
+
+display_name: MongoDB
+category: database
+description: >
+  Document database with flexible schema, rich querying, aggregation pipelines,
+  and Atlas cloud platform. Widely used for web applications, content management,
+  IoT, and real-time analytics.
+
+section_a:
+  - name: mongodb-mcp-server
+    type: mcp-server-npm
+    package: mongodb-mcp-server
+    source: https://github.com/mongodb-js/mongodb-mcp-server
+    publisher: MongoDB Inc.
+    publisher_verified: true
+    description: >
+      Official MCP server for MongoDB and Atlas — query execution, schema
+      inspection, index management, aggregation, Atlas cluster management,
+      vector search, performance advisor.
+    env:
+      - name: MDB_MCP_CONNECTION_STRING
+        description: MongoDB connection string
+        example: "mongodb://localhost:27017/mydb"
+    install_override: |
+      npx mongodb-mcp-server@latest --readOnly
+      Or install Claude Code plugin: /plugin install mongodb
+    verified_date: 2026-04-10
+
+  - name: MongoDB Agent Skills
+    type: claude-plugin
+    package: mongodb
+    source: https://github.com/mongodb/agent-skills
+    publisher: MongoDB Inc.
+    publisher_verified: true
+    description: >
+      Official MongoDB agent skills — schema design, query optimization,
+      natural language querying, search/AI, Atlas Streams. 7 skills bundled
+      with MCP server.
+    install_override: |
+      /plugin marketplace add mongodb/agent-skills
+      /plugin install mongodb@mongodb
+    verified_date: 2026-04-10
+
+section_b:
+  - name: pymongo
+    package: pymongo
+    ecosystem: pip
+    source: https://pypi.org/project/pymongo/
+    publisher: MongoDB Inc.
+    description: Official Python driver for MongoDB with sync and async APIs
+    usage: "from pymongo import MongoClient"
+    docs: https://www.mongodb.com/docs/languages/python/pymongo-driver/current/
+    verified_date: 2026-04-10
+
+  - name: mongodb (Node.js)
+    package: mongodb
+    ecosystem: npm
+    source: https://www.npmjs.com/package/mongodb
+    publisher: MongoDB Inc.
+    description: Official Node.js driver for MongoDB
+    usage: 'const { MongoClient } = require("mongodb")'
+    docs: https://www.mongodb.com/docs/drivers/node/current/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: MongoDB architecture patterns
+    slug: mongodb-architecture-advisor
+    why: >
+      The MCP server + agent skills cover operational tasks and coding patterns,
+      but not application-level architecture — repository patterns, connection
+      management, schema evolution strategies, testing approaches, sharding key
+      selection methodology, and operational readiness.
+    agent_would_know: >
+      MongoDB application architecture patterns, schema evolution and migration
+      strategies, sharding and replication design, testing patterns with
+      embedded MongoDB.
+    research_scope:
+      - Document model design patterns
+      - Schema versioning and migration
+      - Connection pooling and lifecycle
+      - Transaction design (multi-document/distributed)
+      - Sharding key selection
+      - Testing patterns (test containers/fixtures)
+      - Security architecture (field-level encryption/CSFLE)
+    create_command: "@pipeline-orchestrator create a mongodb-architecture-advisor agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: database-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Schema design, query optimization, index strategy for MongoDB collections.
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Application-layer patterns for MongoDB integration (connection pooling,
+      retry logic, transactions).
+
+trusted_sources:
+  - url: https://github.com/mongodb
+    type: github-org
+  - url: https://github.com/mongodb-js
+    type: github-org
+  - url: https://www.npmjs.com/~mongodb
+    type: npm-scope
+  - url: https://pypi.org/user/mongodb/
+    type: pypi-publisher

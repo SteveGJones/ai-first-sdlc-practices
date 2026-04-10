@@ -1,0 +1,89 @@
+# Stripe — Curated technology registry entry
+# Covers: Official Stripe MCP (with remote MCP support), SDKs, payment flow gaps
+
+display_name: Stripe
+category: payment
+description: >
+  Payment processing platform for internet businesses. APIs for payments,
+  subscriptions, invoicing, Connect marketplaces, Checkout, billing, and
+  financial reporting. Used by millions of businesses from startups to
+  Fortune 500 companies.
+
+section_a:
+  - name: Stripe MCP (Official)
+    type: mcp-server-npm
+    package: "@stripe/mcp"
+    source: https://github.com/stripe/ai
+    publisher: Stripe
+    publisher_verified: true
+    description: >
+      Official Stripe MCP — 24 tools for payments, customers, subscriptions,
+      invoicing, disputes, products, documentation search. Supports remote
+      MCP at mcp.stripe.com.
+    env:
+      - name: STRIPE_SECRET_KEY
+        description: Stripe secret key (for local mode)
+    install_override: |
+      Remote (recommended): claude mcp add --transport http stripe https://mcp.stripe.com/
+      Local: npx -y @stripe/mcp@latest
+    verified_date: 2026-04-10
+
+section_b:
+  - name: stripe (Node.js)
+    package: stripe
+    ecosystem: npm
+    source: https://www.npmjs.com/package/stripe
+    publisher: Stripe Inc.
+    description: Official Stripe SDK for Node.js
+    usage: 'const Stripe = require("stripe")'
+    docs: https://docs.stripe.com/api?lang=node
+    verified_date: 2026-04-10
+
+  - name: stripe (Python)
+    package: stripe
+    ecosystem: pip
+    source: https://pypi.org/project/stripe/
+    publisher: Stripe Inc.
+    description: Official Stripe SDK for Python
+    usage: 'from stripe import StripeClient'
+    docs: https://docs.stripe.com/api?lang=python
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Stripe payment flow architecture
+    slug: stripe-payments-expert
+    why: >
+      MCP covers basic payment operations but not webhook management,
+      Connect/marketplace patterns, Checkout Sessions, 3D Secure/SCA flows,
+      or Elements rendering.
+    agent_would_know: >
+      Webhook management and verification, Connect multi-party marketplace
+      architecture, Checkout Session and payment flow design, 3D Secure/SCA
+      compliance, and subscription lifecycle patterns.
+    research_scope:
+      - Webhook management and verification
+      - Connect multi-party marketplace
+      - Checkout Session and payment flows
+      - 3D Secure and SCA compliance
+      - Subscription lifecycle patterns
+    create_command: "@pipeline-orchestrator create a stripe-payments-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: api-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Payment API integration patterns, webhook design, idempotency
+      strategies.
+  - agent: security-architect
+    plugin: sdlc-team-security
+    relevance: >
+      PCI compliance considerations, secret management for API keys.
+
+trusted_sources:
+  - url: https://github.com/stripe
+    type: github-org
+  - url: https://www.npmjs.com/~stripe
+    type: npm-scope
+  - url: https://docs.stripe.com/
+    type: vendor-docs
