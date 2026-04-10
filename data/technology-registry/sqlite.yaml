@@ -1,0 +1,65 @@
+# SQLite — Curated technology registry entry
+# Covers: MCP server (Anthropic reference), Python/Node drivers, optimization gaps
+
+display_name: SQLite
+category: database
+description: >
+  Lightweight, serverless, self-contained SQL database engine. The most widely
+  deployed database in the world — embedded in mobile apps, desktop software,
+  browsers, and used for development/testing. Zero configuration required.
+
+section_a:
+  - name: mcp-server-sqlite
+    type: mcp-server-pip
+    package: mcp-server-sqlite
+    source: https://pypi.org/project/mcp-server-sqlite/
+    publisher: Anthropic
+    publisher_verified: true
+    description: >
+      Reference SQLite MCP server — SQL execution, schema inspection, business
+      insight generation. Archived source but PyPI package still available.
+    install_override: "uvx mcp-server-sqlite --db-path /path/to/db.sqlite"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: sqlite3 (built-in)
+    package: sqlite3
+    ecosystem: pip
+    source: https://docs.python.org/3/library/sqlite3.html
+    publisher: Python Software Foundation
+    description: Built-in Python SQLite interface (no install needed)
+    usage: "import sqlite3"
+    docs: https://docs.python.org/3/library/sqlite3.html
+    verified_date: 2026-04-10
+
+  - name: better-sqlite3
+    package: better-sqlite3
+    ecosystem: npm
+    source: https://www.npmjs.com/package/better-sqlite3
+    publisher: WiseLibs
+    description: Synchronous SQLite3 API for Node.js
+    usage: 'const Database = require("better-sqlite3")'
+    docs: https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: SQLite optimization patterns
+    slug: sqlite-optimization-expert
+    why: >
+      MCP server covers basic SQL but not WAL mode tuning, FTS5 configuration,
+      vacuum scheduling, or extension usage guidance.
+    agent_would_know: >
+      SQLite WAL mode tuning, FTS5 index configuration, extension usage
+      (JSON1, spatial), concurrent access patterns.
+    research_scope:
+      - WAL mode configuration
+      - FTS5 full-text search setup
+      - Vacuum and integrity management
+      - Extension configuration
+      - Concurrent access patterns
+    create_command: "@pipeline-orchestrator create a sqlite-optimization-expert agent"
+    verified_date: 2026-04-10
+
+trusted_sources:
+  - url: https://sqlite.org/docs.html
+    type: vendor-docs
