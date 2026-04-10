@@ -1,0 +1,97 @@
+# Apache Kafka — Curated technology registry entry
+# Covers: Confluent MCP server, Python/JS clients, event-driven architecture gaps
+
+display_name: Apache Kafka
+category: messaging
+description: >
+  Distributed event streaming platform for high-throughput, fault-tolerant
+  publish-subscribe messaging. Used for real-time data pipelines, event sourcing,
+  stream processing, and activity tracking. Confluent provides the managed
+  cloud platform and official tooling.
+
+section_a:
+  - name: Confluent MCP Server (Official)
+    type: mcp-server-npm
+    package: "@confluentinc/mcp-confluent"
+    source: https://github.com/confluentinc/mcp-confluent
+    publisher: Confluent Inc.
+    publisher_verified: true
+    description: >
+      50+ tools for Kafka, Flink SQL, Schema Registry, Connectors via
+      Confluent Cloud/Local.
+    env:
+      - name: CONFLUENT_CLOUD_API_KEY
+        description: Confluent Cloud API key
+      - name: CONFLUENT_CLOUD_API_SECRET
+        description: Confluent Cloud API secret
+      - name: BOOTSTRAP_SERVERS
+        description: Kafka bootstrap server addresses
+      - name: KAFKA_API_KEY
+        description: Kafka cluster API key
+      - name: KAFKA_API_SECRET
+        description: Kafka cluster API secret
+    install_override: "npx -y @confluentinc/mcp-confluent -e /path/to/.env"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: confluent-kafka
+    package: confluent-kafka
+    ecosystem: pip
+    source: https://pypi.org/project/confluent-kafka/
+    publisher: Confluent Inc.
+    description: >
+      Production Python Kafka client built on librdkafka.
+    usage: "from confluent_kafka import Producer, Consumer"
+    docs: https://docs.confluent.io/kafka-clients/python/current/overview.html
+    verified_date: 2026-04-10
+
+  - name: "@confluentinc/kafka-javascript"
+    package: "@confluentinc/kafka-javascript"
+    ecosystem: npm
+    source: https://www.npmjs.com/package/@confluentinc/kafka-javascript
+    publisher: Confluent Inc.
+    description: >
+      Official JS Kafka client with KafkaJS-compatible API. Recommended over
+      kafkajs (unmaintained).
+    usage: 'const { Kafka } = require("@confluentinc/kafka-javascript").KafkaJS'
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Event-driven architecture with Kafka
+    slug: kafka-event-architecture-expert
+    why: >
+      All MCP tools are operational. No tool helps design event-driven
+      topologies, schema evolution, exactly-once semantics, or dead letter
+      queue patterns.
+    agent_would_know: >
+      Event sourcing, CQRS, schema evolution with Schema Registry, exactly-once
+      semantics, stream processing topology design, partition strategy.
+    research_scope:
+      - Event sourcing and CQRS patterns
+      - Schema evolution with Schema Registry
+      - Exactly-once semantics configuration
+      - Stream processing topology design
+      - Dead letter queue patterns
+      - Partition strategy and consumer group design
+    create_command: "@pipeline-orchestrator create a kafka-event-architecture-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Event-driven architecture design, Kafka topology planning, service
+      integration patterns.
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Producer/consumer implementation patterns, error handling, retry logic,
+      idempotency guarantees.
+
+trusted_sources:
+  - url: https://github.com/confluentinc
+    type: github-org
+  - url: https://github.com/apache/kafka
+    type: github-org
+  - url: https://www.npmjs.com/~confluentinc
+    type: npm-scope

@@ -72,6 +72,10 @@ def source_to_plugin_dest(source: str, dest_override: str | None, plugin: str) -
     if parts[0] == "tools" and len(parts) >= 2:
         return REPO_ROOT / "plugins" / plugin / "scripts" / parts[-1]
 
+    # data/<path> — preserve structure under data/
+    if parts[0] == "data" and len(parts) >= 2:
+        return REPO_ROOT / "plugins" / plugin / Path(*parts)
+
     # Fallback: unknown shape, return source mapped under plugin root
     # (will likely fail the existence check and surface the unknown case)
     return REPO_ROOT / "plugins" / plugin / src_path
@@ -82,7 +86,7 @@ def check_plugin(plugin_name: str, plugin_config: dict, verbose: bool) -> list[s
     Check one plugin's packaging. Returns a list of error messages (empty if OK).
     """
     errors = []
-    component_types = ("skills", "agents", "scripts", "hooks")
+    component_types = ("skills", "agents", "scripts", "hooks", "data")
 
     for component_type in component_types:
         entries = plugin_config.get(component_type) or []

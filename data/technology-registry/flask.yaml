@@ -1,0 +1,67 @@
+# Flask — Curated technology registry entry
+# Covers: MCP server (flask-mcp-server), Flask library, application patterns gap
+
+display_name: Flask
+category: framework
+description: >
+  Lightweight Python web framework with a simple core and rich extension
+  ecosystem. Ideal for APIs, microservices, and small-to-medium web applications.
+  Built on Werkzeug WSGI toolkit and Jinja2 templating.
+
+section_a:
+  - name: flask-mcp-server
+    type: mcp-server-pip
+    package: flask-mcp-server
+    source: https://github.com/bashar94/flask-mcp-server
+    publisher: Bashar Bhuiyan
+    publisher_verified: false
+    description: >
+      Lightweight MCP server for Flask — tool discovery, endpoint registration,
+      async support, built-in auth and rate limiting. Early-stage (7 stars).
+    verified_date: 2026-04-10
+
+section_b:
+  - name: Flask
+    package: flask
+    ecosystem: pip
+    source: https://pypi.org/project/flask/
+    publisher: Pallets Projects
+    description: Lightweight Python web framework
+    usage: "from flask import Flask"
+    docs: https://flask.palletsprojects.com/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Flask application patterns
+    slug: flask-patterns-expert
+    why: >
+      No mature MCP tooling. Flask extension ecosystem (Blueprints, factories,
+      Flask-Login, Flask-WTF), testing patterns (test client, app context), and
+      deployment patterns (Gunicorn) are not covered.
+    agent_would_know: >
+      Flask Blueprint organization, application factory pattern, extension
+      initialization ordering, testing with the test client, and production
+      deployment with Gunicorn or Waitress behind a reverse proxy.
+    research_scope:
+      - Blueprint and application factory patterns
+      - Extension initialization and ordering
+      - Testing (test client, context management)
+      - Deployment (Gunicorn/Waitress, reverse proxy)
+    create_command: "@pipeline-orchestrator create a flask-patterns-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      API design, middleware patterns, request lifecycle.
+  - agent: language-python-expert
+    plugin: sdlc-lang-python
+    relevance: >
+      Python code quality, packaging, type checking for Flask apps.
+
+trusted_sources:
+  - url: https://github.com/pallets
+    type: github-org
+  - url: https://flask.palletsprojects.com/
+    type: vendor-docs

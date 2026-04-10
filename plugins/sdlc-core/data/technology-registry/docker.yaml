@@ -1,0 +1,84 @@
+# Docker — Curated technology registry entry
+# Covers: Official Docker Claude Code plugin, SDKs, optimization patterns gap
+
+display_name: Docker
+category: devops
+description: >
+  Container platform for building, shipping, and running applications in
+  isolated environments. Docker Desktop, Docker Engine, Docker Compose, and
+  Docker Hub form the core ecosystem. De facto standard for containerized
+  development and deployment workflows.
+
+section_a:
+  - name: Docker MCP Toolkit (Official Claude Code plugin)
+    type: claude-plugin
+    package: docker-mcp-toolkit
+    source: https://github.com/docker/claude-plugins
+    publisher: Docker Inc.
+    publisher_verified: true
+    description: >
+      Official Docker plugin — integrates Docker Desktop MCP Toolkit with
+      Claude Code. Access to 300+ containerized MCP servers via MCP Gateway.
+      Container isolation, signed image verification. Requires Docker
+      Desktop 4.28+.
+    install_override: |
+      /plugin marketplace add docker/claude-plugins
+      /plugin install docker-mcp-toolkit@docker
+    verified_date: 2026-04-10
+
+section_b:
+  - name: docker (Python SDK)
+    package: docker
+    ecosystem: pip
+    source: https://pypi.org/project/docker/
+    publisher: Docker Inc.
+    description: Official Docker SDK for Python
+    usage: 'import docker; client = docker.from_env()'
+    docs: https://docker-py.readthedocs.io/
+    verified_date: 2026-04-10
+
+  - name: dockerode
+    package: dockerode
+    ecosystem: npm
+    source: https://www.npmjs.com/package/dockerode
+    publisher: apocas (Pedro Dias)
+    description: Docker client for Node.js (de facto standard)
+    usage: 'const Docker = require("dockerode")'
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Docker best practices and optimization
+    slug: docker-optimization-expert
+    why: >
+      No MCP tool provides Dockerfile linting, security scanning (Trivy/Grype),
+      build cache optimization, or multi-service Compose architecture guidance.
+    agent_would_know: >
+      Dockerfile best practices, multi-stage build optimization, container
+      security scanning, BuildKit cache strategies, and Docker Compose
+      patterns for multi-service architectures.
+    research_scope:
+      - Dockerfile best practices and multi-stage builds
+      - Container security scanning
+      - BuildKit and cache optimization
+      - Docker Compose patterns
+      - Registry management and image promotion
+    create_command: "@pipeline-orchestrator create a docker-optimization-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: devops-specialist
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Container orchestration patterns, Dockerfile optimization, multi-stage
+      build strategy.
+  - agent: security-architect
+    plugin: sdlc-team-security
+    relevance: >
+      Container security scanning, image supply chain, runtime security
+      policies.
+
+trusted_sources:
+  - url: https://github.com/docker
+    type: github-org
+  - url: https://docs.docker.com/
+    type: vendor-docs

@@ -1,0 +1,291 @@
+version: "1.0"
+staleness_threshold_days: 180
+
+# --- Alias normalization ---
+# Maps informal/short names to canonical technology keys.
+# Applied before manifest lookup.
+aliases:
+  # Databases
+  mongo: mongodb
+  pg: postgresql
+  postgres: postgresql
+  psql: postgresql
+  mysql2: mysql
+  es: elasticsearch
+  elastic: elasticsearch
+  opensearch: elasticsearch
+  sqlite3: sqlite
+  # Cloud
+  amazon: aws
+  dynamodb: aws
+  s3: aws
+  lambda: aws
+  gcloud: gcp
+  "google cloud": gcp
+  firebase: gcp
+  # Messaging
+  confluent: kafka
+  amqp: rabbitmq
+  "apache flink": flink
+  # Python frameworks
+  fastapi-mcp: fastapi
+  # JS frameworks
+  "express.js": express
+  "next.js": nextjs
+  "react.js": react
+  "vue.js": vue
+  # DevOps
+  k8s: kubernetes
+  kube: kubernetes
+  kubectl: kubernetes
+  helm: kubernetes
+  tf: terraform
+  hcl: terraform
+  # Services
+  gh-actions: github-actions
+
+# --- Detection patterns ---
+# Maps package names, Docker images, and env vars to technology keys.
+# Replaces the hardcoded mappings in setup-team step 5a.
+detection:
+  pip:
+    # Databases
+    pymongo: mongodb
+    motor: mongodb
+    psycopg2: postgresql
+    psycopg2-binary: postgresql
+    psycopg: postgresql
+    asyncpg: postgresql
+    mysql-connector-python: mysql
+    elasticsearch: elasticsearch
+    # Cloud
+    boto3: aws
+    botocore: aws
+    azure-identity: azure
+    azure-storage-blob: azure
+    azure-mgmt-resource: azure
+    google-cloud-storage: gcp
+    google-cloud-bigquery: gcp
+    google-cloud-compute: gcp
+    google-auth: gcp
+    # Cache
+    redis: redis
+    # Messaging
+    confluent-kafka: kafka
+    kafka-python: kafka
+    pika: rabbitmq
+    apache-flink: flink
+    # Python frameworks
+    flask: flask
+    django: django
+    djangorestframework: django
+    fastapi: fastapi
+    uvicorn: fastapi
+    streamlit: streamlit
+    # Services
+    stripe: stripe
+    supabase: supabase
+    # DevOps
+    docker: docker
+    kubernetes: kubernetes
+  npm:
+    # Databases
+    mongoose: mongodb
+    mongodb: mongodb
+    pg: postgresql
+    mysql2: mysql
+    "@elastic/elasticsearch": elasticsearch
+    better-sqlite3: sqlite
+    # Cloud
+    aws-sdk: aws
+    "@aws-sdk/client-s3": aws
+    "@azure/identity": azure
+    "@azure/storage-blob": azure
+    "@google-cloud/storage": gcp
+    "@google-cloud/bigquery": gcp
+    # Cache
+    ioredis: redis
+    redis: redis
+    "@redis/client": redis
+    # Messaging
+    kafkajs: kafka
+    "@confluentinc/kafka-javascript": kafka
+    amqplib: rabbitmq
+    # JS frameworks
+    express: express
+    next: nextjs
+    react: react
+    vue: vue
+    # Services
+    stripe: stripe
+    "@supabase/supabase-js": supabase
+    "@actions/core": github-actions
+    "@actions/github": github-actions
+  docker:
+    "mongo:*": mongodb
+    "postgres:*": postgresql
+    "mysql:*": mysql
+    "elasticsearch:*": elasticsearch
+    "redis:*": redis
+    "rabbitmq:*": rabbitmq
+    "apache/flink:*": flink
+    "confluentinc/cp-kafka:*": kafka
+  env:
+    "MONGO_URI=*": mongodb
+    "MONGO_URL=*": mongodb
+    "MDB_MCP_CONNECTION_STRING=*": mongodb
+    "DATABASE_URL=postgres*": postgresql
+    "MYSQL_HOST=*": mysql
+    "REDIS_URL=*": redis
+    "REDIS_HOST=*": redis
+    "KAFKA_BROKERS=*": kafka
+    "KAFKA_BOOTSTRAP_SERVERS=*": kafka
+    "AMQP_HOST=*": rabbitmq
+    "RABBITMQ_URL=*": rabbitmq
+    "AWS_ACCESS_KEY_ID=*": aws
+    "AWS_REGION=*": aws
+    "AZURE_TENANT_ID=*": azure
+    "AZURE_CLIENT_ID=*": azure
+    "GOOGLE_APPLICATION_CREDENTIALS=*": gcp
+    "STRIPE_SECRET_KEY=*": stripe
+    "SUPABASE_URL=*": supabase
+    "SUPABASE_ACCESS_TOKEN=*": supabase
+  go:
+    "github.com/gin-gonic/gin": go
+    "github.com/labstack/echo": go
+    go.mongodb.org/mongo-driver: mongodb
+    github.com/lib/pq: postgresql
+    github.com/jackc/pgx: postgresql
+    github.com/go-sql-driver/mysql: mysql
+    github.com/go-redis/redis: redis
+    github.com/segmentio/kafka-go: kafka
+    github.com/confluentinc/confluent-kafka-go: kafka
+    github.com/streadway/amqp: rabbitmq
+    github.com/aws/aws-sdk-go-v2: aws
+    cloud.google.com/go: gcp
+  gem:
+    rails: ruby
+    rspec: ruby
+    rubocop: ruby
+    pg: postgresql
+    mysql2: mysql
+    redis: redis
+    bunny: rabbitmq
+    aws-sdk: aws
+    google-cloud: gcp
+    stripe: stripe
+  cargo:
+    tokio: rust
+    axum: rust
+    actix-web: rust
+    diesel: postgresql
+    sqlx: postgresql
+    redis: redis
+    rdkafka: kafka
+    rusoto_core: aws
+    aws-sdk-s3: aws
+
+# --- Technology manifest ---
+# Every technology with a registry file is listed here.
+technologies:
+  # Databases
+  mongodb:
+    file: mongodb.yaml
+    display_name: MongoDB
+  postgresql:
+    file: postgresql.yaml
+    display_name: PostgreSQL
+  mysql:
+    file: mysql.yaml
+    display_name: MySQL
+  elasticsearch:
+    file: elasticsearch.yaml
+    display_name: Elasticsearch
+  sqlite:
+    file: sqlite.yaml
+    display_name: SQLite
+  redis:
+    file: redis.yaml
+    display_name: Redis
+  # Cloud platforms
+  aws:
+    file: aws.yaml
+    display_name: Amazon Web Services
+  azure:
+    file: azure.yaml
+    display_name: Microsoft Azure
+  gcp:
+    file: gcp.yaml
+    display_name: Google Cloud Platform
+  # Messaging & streaming
+  kafka:
+    file: kafka.yaml
+    display_name: Apache Kafka
+  rabbitmq:
+    file: rabbitmq.yaml
+    display_name: RabbitMQ
+  flink:
+    file: flink.yaml
+    display_name: Apache Flink
+  # Python frameworks
+  flask:
+    file: flask.yaml
+    display_name: Flask
+  django:
+    file: django.yaml
+    display_name: Django
+  fastapi:
+    file: fastapi.yaml
+    display_name: FastAPI
+  streamlit:
+    file: streamlit.yaml
+    display_name: Streamlit
+  # JavaScript frameworks
+  express:
+    file: express.yaml
+    display_name: Express.js
+  nextjs:
+    file: nextjs.yaml
+    display_name: Next.js
+  react:
+    file: react.yaml
+    display_name: React
+  vue:
+    file: vue.yaml
+    display_name: Vue.js
+  # Language ecosystems
+  java:
+    file: java.yaml
+    display_name: Java
+  go:
+    file: go.yaml
+    display_name: Go
+  rust:
+    file: rust.yaml
+    display_name: Rust
+  ruby:
+    file: ruby.yaml
+    display_name: Ruby
+  python:
+    file: python.yaml
+    display_name: Python
+  # DevOps & infrastructure
+  docker:
+    file: docker.yaml
+    display_name: Docker
+  kubernetes:
+    file: kubernetes.yaml
+    display_name: Kubernetes
+  terraform:
+    file: terraform.yaml
+    display_name: Terraform
+  # Services
+  stripe:
+    file: stripe.yaml
+    display_name: Stripe
+  supabase:
+    file: supabase.yaml
+    display_name: Supabase
+  github-actions:
+    file: github-actions.yaml
+    display_name: GitHub Actions

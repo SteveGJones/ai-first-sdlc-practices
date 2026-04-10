@@ -1,0 +1,108 @@
+# Google Cloud Platform — Curated technology registry entry
+# Covers: Official MCP servers, Python SDKs, networking/cost gaps
+#
+# GCP also offers 25+ managed remote MCP endpoints at *.googleapis.com/mcp
+# (BigQuery, Spanner, GKE, Cloud SQL, Vertex AI, etc.). These are hosted by
+# Google and require no local installation — configure them as remote MCP
+# endpoints in your Claude Code settings.
+
+display_name: Google Cloud Platform
+category: cloud
+description: >
+  Cloud platform with strengths in data analytics, machine learning, Kubernetes,
+  and serverless. Offers BigQuery, GKE, Cloud Run, Spanner, Vertex AI, and
+  Firebase. Strong open-source ecosystem and competitive pricing.
+
+section_a:
+  - name: gcloud MCP Server (Official)
+    type: mcp-server-npm
+    package: "@google-cloud/gcloud-mcp"
+    source: https://github.com/googleapis/gcloud-mcp
+    publisher: Google
+    publisher_verified: true
+    description: >
+      General-purpose gcloud CLI execution via natural language. Requires
+      gcloud CLI installed.
+    install_override: "npx -y @google-cloud/gcloud-mcp"
+    verified_date: 2026-04-10
+
+  - name: Google Cloud Storage MCP (Official)
+    type: mcp-server-npm
+    package: "@google-cloud/storage-mcp"
+    source: https://github.com/googleapis/gcloud-mcp
+    publisher: Google
+    publisher_verified: true
+    description: >
+      Bucket and object management for GCS with IAM and insights.
+    verified_date: 2026-04-10
+
+  - name: Firebase MCP Server (Official)
+    type: mcp-server-npm
+    package: firebase-tools
+    source: https://github.com/firebase/firebase-tools
+    publisher: Google/Firebase
+    publisher_verified: true
+    description: >
+      Firebase project management, Authentication, Firestore, Data Connect,
+      security rules.
+    install_override: "npx -y firebase-tools@latest mcp"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: google-cloud-storage
+    package: google-cloud-storage
+    ecosystem: pip
+    source: https://pypi.org/project/google-cloud-storage/
+    publisher: Google LLC
+    description: >
+      Official GCS client for Python.
+    usage: "from google.cloud import storage"
+    docs: https://cloud.google.com/python/docs/reference/storage/latest
+    verified_date: 2026-04-10
+
+  - name: google-cloud-bigquery
+    package: google-cloud-bigquery
+    ecosystem: pip
+    source: https://pypi.org/project/google-cloud-bigquery/
+    publisher: Google LLC
+    description: >
+      Official BigQuery client for Python.
+    usage: "from google.cloud import bigquery"
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: GCP networking and cost optimization
+    slug: gcp-architecture-expert
+    why: >
+      No networking (VPC, firewall, Cloud NAT, Cloud Armor), cost/billing, or
+      IaC guidance MCP servers exist.
+    agent_would_know: >
+      GCP VPC design, firewall rules, Cloud Armor WAF configuration, cost
+      optimization strategies, Terraform patterns for GCP.
+    research_scope:
+      - VPC design, firewall rules, Cloud Armor
+      - Cost optimization and billing
+      - Terraform on GCP patterns
+    create_command: "@pipeline-orchestrator create a gcp-architecture-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      End-to-end GCP solution design, service selection, multi-cloud strategy.
+  - agent: observability-specialist
+    plugin: sdlc-team-common
+    relevance: >
+      Cloud Monitoring, Cloud Logging, and OpenTelemetry integration for
+      GCP-hosted applications.
+
+trusted_sources:
+  - url: https://github.com/googleapis
+    type: github-org
+  - url: https://github.com/GoogleCloudPlatform
+    type: github-org
+  - url: https://www.npmjs.com/~google-cloud
+    type: npm-scope
+  - url: https://cloud.google.com/docs
+    type: vendor-docs

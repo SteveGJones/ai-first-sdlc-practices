@@ -1,0 +1,106 @@
+# Microsoft Azure — Curated technology registry entry
+# Covers: Official MCP servers, Python/JS identity SDKs, networking architecture gaps
+
+display_name: Microsoft Azure
+category: cloud
+description: >
+  Enterprise cloud platform with 200+ services spanning compute, databases,
+  AI/ML, DevOps, security, networking, and hybrid infrastructure. Strong
+  enterprise integration with Active Directory, Microsoft 365, and GitHub.
+
+section_a:
+  - name: Azure MCP Server (Official)
+    type: mcp-server-npm
+    package: "@azure/mcp"
+    source: https://github.com/microsoft/mcp
+    publisher: Microsoft
+    publisher_verified: true
+    description: >
+      Unified MCP server for 40+ Azure services — compute, databases, security,
+      monitoring, DevOps, AI/ML, storage, networking. Entra ID authentication.
+    env:
+      - name: AZURE_TENANT_ID
+        description: Azure AD tenant ID
+      - name: AZURE_CLIENT_ID
+        description: Application (client) ID
+      - name: AZURE_CLIENT_SECRET
+        description: Client secret (optional — browser auth used if omitted)
+      - name: AZURE_SUBSCRIPTION_ID
+        description: Azure subscription ID
+    install_override: "npx -y @azure/mcp@latest server start"
+    verified_date: 2026-04-10
+
+  - name: Azure DevOps MCP Server (Official)
+    type: mcp-server-npm
+    package: "@azure-devops/mcp"
+    source: https://github.com/microsoft/azure-devops-mcp
+    publisher: Microsoft
+    publisher_verified: true
+    description: >
+      Azure DevOps — work items, repos, pipelines, wiki, search, test plans,
+      advanced security. Browser-based OAuth on first use.
+    install_override: 'npx -y @azure-devops/mcp "{YourOrgName}"'
+    verified_date: 2026-04-10
+
+section_b:
+  - name: azure-identity
+    package: azure-identity
+    ecosystem: pip
+    source: https://pypi.org/project/azure-identity/
+    publisher: Microsoft
+    description: >
+      Azure authentication library for Python (DefaultAzureCredential).
+    usage: "from azure.identity import DefaultAzureCredential"
+    docs: https://learn.microsoft.com/en-us/python/api/azure-identity/
+    verified_date: 2026-04-10
+
+  - name: "@azure/identity"
+    package: "@azure/identity"
+    ecosystem: npm
+    source: https://www.npmjs.com/package/@azure/identity
+    publisher: Microsoft
+    description: >
+      Azure authentication for JavaScript.
+    usage: 'import { DefaultAzureCredential } from "@azure/identity"'
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Azure networking architecture
+    slug: azure-networking-expert
+    why: >
+      No VNet, NSG, Load Balancer, Front Door, Application Gateway, or DNS
+      tools in the MCP server. Complex networking patterns need architectural
+      guidance.
+    agent_would_know: >
+      Azure VNet design, hub-spoke topology, NSG and firewall rules, load
+      balancing strategies, hybrid connectivity, DNS architecture.
+    research_scope:
+      - VNet design and peering
+      - NSG and firewall rules
+      - Load balancing (ALB, Front Door)
+      - Hybrid connectivity (ExpressRoute, VPN)
+      - DNS architecture
+    create_command: "@pipeline-orchestrator create an azure-networking-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      End-to-end Azure solution design, service selection, cost-performance
+      trade-off analysis.
+  - agent: observability-specialist
+    plugin: sdlc-team-common
+    relevance: >
+      Azure Monitor, Application Insights, and OpenTelemetry integration for
+      Azure-hosted applications.
+
+trusted_sources:
+  - url: https://github.com/Azure
+    type: github-org
+  - url: https://github.com/microsoft
+    type: github-org
+  - url: https://www.npmjs.com/~azure-sdk
+    type: npm-scope
+  - url: https://learn.microsoft.com/en-us/azure/
+    type: vendor-docs

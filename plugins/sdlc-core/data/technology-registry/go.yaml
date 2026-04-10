@@ -1,0 +1,56 @@
+# Go — Curated technology registry entry
+# Covers: Official gopls MCP (Go team), architecture patterns gap
+
+display_name: Go
+category: language
+description: >
+  Statically typed, compiled language designed at Google for simplicity,
+  concurrency, and fast compilation. First-class goroutines and channels,
+  interfaces without inheritance, and a single canonical toolchain. Powers
+  Docker, Kubernetes, Terraform, and most cloud-native infrastructure.
+
+section_a:
+  - name: gopls MCP (Official, Go team)
+    type: mcp-server-binary
+    package: gopls
+    source: https://go.dev/gopls/features/mcp
+    publisher: Go Team (Google)
+    publisher_verified: true
+    description: >
+      Official Go language server MCP — compiler-level analysis, diagnostics,
+      file context, package API, references, rename, search, vulncheck.
+      Read-only. Experimental.
+    install_override: "gopls mcp (included in gopls v0.20.0+)"
+    verified_date: 2026-04-10
+
+# Section B omitted: Go uses go modules, which is in the ecosystem enum, but
+# Go libraries are typically imported directly (no central registry SDK pattern).
+# Detection patterns in _index.yaml handle Go package discovery.
+
+section_c:
+  - topic: Go concurrency and architecture patterns
+    slug: go-patterns-expert
+    why: >
+      gopls MCP provides analysis but not architectural guidance on goroutine
+      patterns, channel design, context propagation, interface design, or
+      module management.
+    agent_would_know: >
+      Goroutine lifecycle management, channel patterns and select statements,
+      context propagation, interface design philosophy, module workspace and
+      vendoring strategies.
+    research_scope:
+      - Goroutine lifecycle and channel patterns
+      - Context propagation and cancellation
+      - Interface design (accept interfaces/return structs)
+      - Module management (workspace, replace, vendoring)
+      - Error handling patterns
+    create_command: "@pipeline-orchestrator create a go-patterns-expert agent"
+    verified_date: 2026-04-10
+
+trusted_sources:
+  - url: https://github.com/golang
+    type: github-org
+  - url: https://go.dev/doc/
+    type: vendor-docs
+  - url: https://pkg.go.dev/
+    type: other

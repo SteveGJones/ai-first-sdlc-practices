@@ -1,0 +1,83 @@
+# RabbitMQ — Curated technology registry entry
+# Covers: Amazon MQ MCP server, Python/Node clients, messaging pattern gaps
+
+display_name: RabbitMQ
+category: messaging
+description: >
+  Open-source message broker implementing AMQP 0-9-1, MQTT, and STOMP protocols.
+  Used for task queues, pub/sub messaging, request/reply patterns, and
+  workload distribution. Supports exchanges, bindings, dead letter queues,
+  priority queues, and federation.
+
+section_a:
+  - name: Amazon MQ RabbitMQ MCP Server
+    type: mcp-server-pip
+    package: amq-mcp-server-rabbitmq
+    source: https://github.com/amazon-mq/mcp-server-rabbitmq
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      RabbitMQ admin MCP — multi-broker support, OAuth auth, FastMCP-based.
+      Works with any RabbitMQ broker.
+    install_override: "uvx amq-mcp-server-rabbitmq@latest --allow-mutative-tools"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: pika
+    package: pika
+    ecosystem: pip
+    source: https://pypi.org/project/pika/
+    publisher: RabbitMQ team
+    description: >
+      Pure Python AMQP 0-9-1 client for RabbitMQ.
+    usage: "import pika"
+    docs: https://pika.readthedocs.io/
+    verified_date: 2026-04-10
+
+  - name: amqplib
+    package: amqplib
+    ecosystem: npm
+    source: https://www.npmjs.com/package/amqplib
+    publisher: amqp-node
+    description: >
+      AMQP 0-9-1 library for Node.js (de facto RabbitMQ client).
+    usage: 'const amqp = require("amqplib")'
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: RabbitMQ messaging patterns
+    slug: rabbitmq-messaging-expert
+    why: >
+      No MCP tool covers complex routing topologies, dead letter exchange
+      config, publisher confirms, queue type selection (classic vs quorum vs
+      stream), or federation.
+    agent_would_know: >
+      Exchange routing topologies, dead letter exchange configuration, publisher
+      confirms, queue type selection, shovel and federation, priority queues.
+    research_scope:
+      - Routing topology design
+      - Dead letter exchange configuration
+      - Publisher confirms and consumer ack patterns
+      - Queue type selection (classic/quorum/stream)
+      - Shovel and federation
+      - Priority and lazy queues
+    create_command: "@pipeline-orchestrator create a rabbitmq-messaging-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Message queue integration patterns, consumer design, error handling,
+      retry and dead letter strategies.
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Messaging architecture design, broker topology, protocol selection,
+      high-availability configuration.
+
+trusted_sources:
+  - url: https://github.com/rabbitmq
+    type: github-org
+  - url: https://www.rabbitmq.com/docs
+    type: vendor-docs
