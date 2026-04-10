@@ -10,6 +10,43 @@ Configure the right agent team for this project by selecting a project type and 
 
 ## Steps
 
+0. **Pre-check: inventory what's already installed**
+
+   Before making any recommendations, check what plugins, agents, and skills are already available — both globally and for this project.
+
+   **0a. Check installed plugins:**
+   - Read `~/.claude/settings.json` → `enabledPlugins` field (global installs)
+   - Read `.claude/settings.json` (project-level) → `enabledPlugins` field (if it exists)
+   - Merge both lists. For each `sdlc-*@ai-first-sdlc` entry: record as installed.
+   - Also check for `sdlc-knowledge-base@ai-first-sdlc` specifically.
+
+   **0b. Check available agents:**
+   - Glob `.claude/agents/**/*.md` (project-level agents)
+   - Note which come from installed plugins vs which are project-local
+
+   **0c. Check available skills:**
+   - List currently registered skills (the set Claude Code can see)
+
+   **0d. Present the pre-check results** to the user before any recommendations:
+
+   ```
+   Current state:
+
+   Installed SDLC plugins:
+     ✓ sdlc-core@ai-first-sdlc (global)
+     ✓ sdlc-team-common@ai-first-sdlc (global)
+     ✗ sdlc-team-fullstack@ai-first-sdlc
+     ✗ sdlc-lang-python@ai-first-sdlc
+     ✗ sdlc-knowledge-base@ai-first-sdlc
+
+   Available agents: N (from installed plugins)
+   Available skills: M
+
+   I'll only recommend what you don't already have.
+   ```
+
+   **0e. Record the pre-check state** for use in later steps — the recommendation output (step 7) will mark already-installed plugins with `✓ (already installed)` instead of install commands, and the install command list (step 8) will exclude them.
+
 1. **Check current team configuration**
 
 Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.json` as a fallback). If it exists, display the current formation and ask if the user wants to reconfigure.
@@ -52,8 +89,15 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    Default to "N". Users who confirm deselection get a note in the configuration so the decision is traceable.
 
 4. **Auto-detect language** by scanning file extensions in the project:
-   - `.py` files dominant → also recommend `sdlc-lang-python`
-   - `.js`/`.ts` files dominant → also recommend `sdlc-lang-javascript`
+   - `.py` files dominant → recommend `sdlc-lang-python`
+   - `.js`/`.ts` files dominant → recommend `sdlc-lang-javascript`
+   - `.go` files dominant → recommend `sdlc-lang-go` (if available in marketplace; otherwise note "Go detected but no `sdlc-lang-go` plugin is currently available")
+   - `.java` files dominant → recommend `sdlc-lang-java` (if available; otherwise note same)
+   - `.rs` files dominant → recommend `sdlc-lang-rust` (if available; otherwise note same)
+   - `.rb` files dominant → note "Ruby detected but no `sdlc-lang-ruby` plugin is currently available"
+   - Multiple languages detected → recommend all matching language plugins; note the dominant one
+
+   Check the pre-check state from step 0: if a language plugin is already installed, mark it `✓ (already installed)` instead of recommending it again.
 
 5. **Scan tech stack and discover 1st-party tools**
 
@@ -203,9 +247,14 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    - When team-common is required by Section C gaps, record `required_by: "section-c-gaps"` in the final `.sdlc/team-config.json` so the dependency is traceable
    - If team-common was already in the user's selection, no block is needed — just note in the final summary that team-common is required (not merely recommended) because of the Section C gaps
 
-6. **Ask about project management and documentation needs:**
+6. **Ask about project support needs:**
    - "Do you need project management support (sprints, delivery tracking)?" → recommend `sdlc-team-pm`
    - "Do you need documentation architecture?" → recommend `sdlc-team-docs`
+   - "Do you need evidence-grounded decisions? (research library, citable findings, knowledge base for the project)" → recommend `sdlc-knowledge-base`
+     - Brief description: "Provides a research-librarian agent that queries a structured knowledge base with citations, an agent-knowledge-updater for ingesting new sources, and skills for ingest/query/lint/index management. Particularly valuable for projects making architectural, transformation, or measurement decisions that benefit from citable evidence."
+     - When NOT to recommend: projects that are throwaway prototypes, routine maintenance, or where decisions don't need citation
+
+   For each of these, check the pre-check state from step 0: if already installed, mark `✓ (already installed)` and don't ask the question.
 
 7. **Present the recommendation** to the user in three sections:
 
@@ -283,11 +332,16 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    === Project Support (optional) ===
    ○ sdlc-team-pm — sprint planning, delivery tracking, retrospectives
    ○ sdlc-team-docs — technical writing, documentation architecture
+   ○ sdlc-knowledge-base — research library, evidence-grounded decisions, citable findings
+
+   [For each item: show ✓ (already installed) from pre-check if applicable, instead of ○]
 
    Install all? [Y/n/customize]
    ```
 
    If the user chooses "customize", allow them to select/deselect individual items from all three sections.
+
+   **Pre-check awareness**: in the SDLC Framework and Project Support sections, mark plugins from step 0's pre-check as `✓ (already installed)` and exclude them from the install command list in step 8. Only plugins NOT already installed get `○` markers and install commands. If everything recommended is already installed, say so: "All recommended plugins are already installed. No new installs needed."
 
 8. **If confirmed, install the plugins.** Tell the user to run:
 
@@ -378,3 +432,39 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    **Fallback**: If `.sdlc/team-config.json` also fails to write for any reason, write to `team-config.json` in the project root and warn the user.
 
 11. **Report** the configured formation and installed plugins.
+
+12. **Post-check: verify what actually landed**
+
+    After the user has (presumably) run the install commands from step 8, re-check what's installed:
+
+    1. Re-read `enabledPlugins` from global + project settings (same as step 0a)
+    2. Compare against what was recommended in step 7 (excluding already-installed plugins from step 0)
+    3. Report:
+
+    ```
+    Post-setup verification:
+
+      ✓ sdlc-team-fullstack@ai-first-sdlc — installed successfully
+      ✗ sdlc-lang-python@ai-first-sdlc — NOT installed
+      ✓ sdlc-knowledge-base@ai-first-sdlc — installed successfully
+
+    2 of 3 recommended plugins installed. 1 still pending.
+    ```
+
+    If any recommendations are still pending, re-present the install commands so the user doesn't have to scroll up:
+
+    ```
+    Still pending:
+      /plugin install sdlc-lang-python@ai-first-sdlc
+    ```
+
+    If ALL recommendations were installed (or were already installed from step 0), report:
+
+    ```
+    All recommended plugins are installed. Setup complete.
+    ```
+
+    **Edge cases**:
+    - If the user didn't run any install commands (exited early), the post-check will show all recommendations as pending. That's correct — it's informational, not a gate.
+    - If the user installed plugins between steps via a different mechanism (e.g., running `/plugin install` manually during setup), the post-check will pick those up.
+    - Only verify plugins the user accepted in step 7 — don't show plugins the user explicitly declined in "customize" mode.
