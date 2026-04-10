@@ -44,8 +44,8 @@ our_agents:
     plugin: sdlc-team-fullstack
     relevance: >
       API design, middleware patterns, request lifecycle.
-  - agent: javascript-standards-enforcer
-    plugin: sdlc-lang-js
+  - agent: language-javascript-expert
+    plugin: sdlc-lang-javascript
     relevance: >
       JavaScript/TypeScript code quality, ESLint, Node.js best practices.
 

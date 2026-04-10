@@ -61,9 +61,9 @@ You are the Pipeline Orchestrator, the unified entry point for the entire agent 
 
    Read `data/technology-registry/_index.yaml`. Normalize the technology name through the `aliases` map (e.g., "postgres" → "postgresql"). Check if the canonical key exists in the `technologies` manifest.
 
-   - **If found**: Read `data/technology-registry/{file}` and extract `section_a`, `section_b`, `section_c`, `our_agents`, `trusted_sources`. Skip steps 3-6 — the registry provides pre-verified, pre-classified data for this technology. Proceed directly to step 7 (classify) using registry data.
+   - **If found**: Read `data/technology-registry/{file}` and extract `section_a`, `section_b`, `section_c`, `our_agents`, `trusted_sources`. Skip steps 3-7 — the registry provides pre-verified, pre-classified data for this technology. Proceed directly to step 8 (classify) using registry data.
 
-   - **If not found**: The technology is not in the registry. Proceed to steps 3-6 (web search discovery) as before.
+   - **If not found**: The technology is not in the registry. Proceed to steps 3-7 (web search discovery) as before.
 
    The registry is additive — if it's missing or the technology isn't in it, the existing web search behavior kicks in unchanged.
 

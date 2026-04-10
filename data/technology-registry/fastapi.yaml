@@ -73,7 +73,7 @@ our_agents:
     plugin: sdlc-team-fullstack
     relevance: >
       API design, dependency injection, async patterns.
-  - agent: python-standards-enforcer
+  - agent: language-python-expert
     plugin: sdlc-lang-python
     relevance: >
       Python code quality, type checking, Pydantic model validation.

@@ -73,7 +73,7 @@ section_c:
 
 our_agents:
   - agent: database-architect
-    plugin: sdlc-team-fullstack
+    plugin: sdlc-team-common
     relevance: >
       Index design, mapping strategy, search architecture.
 

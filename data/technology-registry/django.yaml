@@ -79,7 +79,7 @@ our_agents:
     plugin: sdlc-team-fullstack
     relevance: >
       API design, ORM patterns, migration orchestration.
-  - agent: python-standards-enforcer
+  - agent: language-python-expert
     plugin: sdlc-lang-python
     relevance: >
       Python code quality, packaging, type checking for Django apps.

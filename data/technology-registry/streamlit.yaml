@@ -44,7 +44,7 @@ our_agents:
     plugin: sdlc-team-fullstack
     relevance: >
       Application architecture, data flow patterns.
-  - agent: python-standards-enforcer
+  - agent: language-python-expert
     plugin: sdlc-lang-python
     relevance: >
       Python code quality, packaging, type checking for Streamlit apps.

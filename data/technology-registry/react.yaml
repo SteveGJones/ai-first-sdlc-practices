@@ -66,8 +66,8 @@ our_agents:
     plugin: sdlc-team-fullstack
     relevance: >
       Component architecture, state management, rendering patterns.
-  - agent: javascript-standards-enforcer
-    plugin: sdlc-lang-js
+  - agent: language-javascript-expert
+    plugin: sdlc-lang-javascript
     relevance: >
       JavaScript/TypeScript code quality, ESLint, React best practices.
 
