@@ -190,3 +190,8 @@ sdlc-workflows:
     - source: commands/sdlc-validate.md
     - source: commands/sdlc-synthesise-reviews.md
     - source: commands/sdlc-merge-results.md
+  workflows:
+    - source: workflows/sdlc-parallel-review.yaml
+    - source: workflows/sdlc-feature-development.yaml
+    - source: workflows/sdlc-bulk-refactor.yaml
+    - source: workflows/sdlc-commissioned-pipeline.yaml
