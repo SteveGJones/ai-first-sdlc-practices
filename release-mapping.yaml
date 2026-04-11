@@ -178,7 +178,8 @@ sdlc-knowledge-base:
 sdlc-workflows:
   # Populated as sub-features land (workflows, commands, skills, agents, docker)
   skills: []
-  agents: []
+  agents:
+    - source: agents/delegation/delegation-coordinator.md
   commands:
     - source: commands/sdlc-security-review.md
     - source: commands/sdlc-plan.md

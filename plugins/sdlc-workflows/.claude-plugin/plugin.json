@@ -1,0 +1,9 @@
+{
+  "name": "sdlc-workflows",
+  "version": "0.1.0",
+  "description": "Archon workflow templates for delegated parallel execution of SDLC processes",
+  "author": { "name": "SteveGJones" },
+  "repository": "https://github.com/SteveGJones/ai-first-sdlc-practices",
+  "license": "MIT",
+  "keywords": ["sdlc", "workflows", "parallel", "delegation", "archon", "agents"]
+}
