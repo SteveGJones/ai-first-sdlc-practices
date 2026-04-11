@@ -181,3 +181,12 @@ sdlc-workflows:
   agents: []
   commands:
     - source: commands/sdlc-security-review.md
+    - source: commands/sdlc-plan.md
+    - source: commands/sdlc-implement.md
+    - source: commands/sdlc-architecture-review.md
+    - source: commands/sdlc-performance-review.md
+    - source: commands/sdlc-code-quality-review.md
+    - source: commands/sdlc-test-coverage-review.md
+    - source: commands/sdlc-validate.md
+    - source: commands/sdlc-synthesise-reviews.md
+    - source: commands/sdlc-merge-results.md
