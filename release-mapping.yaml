@@ -177,7 +177,10 @@ sdlc-knowledge-base:
 # Components added incrementally by sub-features of the EPIC.
 sdlc-workflows:
   # Populated as sub-features land (workflows, commands, skills, agents, docker)
-  skills: []
+  skills:
+    - source: skills/workflows-setup/SKILL.md
+    - source: skills/workflows-run/SKILL.md
+    - source: skills/workflows-status/SKILL.md
   agents:
     - source: agents/delegation/delegation-coordinator.md
   commands:
