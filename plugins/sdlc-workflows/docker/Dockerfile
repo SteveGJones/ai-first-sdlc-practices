@@ -24,7 +24,8 @@ ARG INSTALL_PLUGINS_AT_BUILD=false
 # already has a 'node' user at UID 1000)
 RUN useradd -m -s /bin/bash -u 1001 sdlc && \
     mkdir -p /workspace /home/sdlc/.claude /home/sdlc/.archon && \
-    chown -R sdlc:sdlc /workspace /home/sdlc/.claude /home/sdlc/.archon
+    chown -R sdlc:sdlc /workspace /home/sdlc/.claude /home/sdlc/.archon && \
+    chown -R sdlc:sdlc /tmp/claude-agent-sdk-* 2>/dev/null || true
 
 # Copy entrypoint (as root, before USER switch)
 COPY entrypoint.sh /opt/entrypoint.sh
