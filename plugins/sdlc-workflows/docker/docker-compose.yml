@@ -21,8 +21,8 @@ services:
     volumes:
       - sdlc-worker-creds:/home/sdlc/.claude
       - ${PROJECT_PATH:-.}:/workspace
-      - ../workflows:/home/sdlc/.archon/workflows
-      - ../commands:/home/sdlc/.archon/commands
+      - ../workflows:/workspace/.archon/workflows
+      - ../commands:/workspace/.archon/commands
 
 volumes:
   sdlc-worker-creds:

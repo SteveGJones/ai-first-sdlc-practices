@@ -14,6 +14,9 @@ RUN npm install -g @anthropic-ai/claude-code
 RUN curl -fsSL https://archon.diy/install | bash && \
     mv /root/.archon/bin/archon /usr/local/bin/archon || true
 
+# Ralph orchestrator (used by smoke tests and autonomous loops)
+RUN npm install -g @ralph-orchestrator/ralph-cli
+
 # Build-time plugin installation (optional, for production images)
 ARG INSTALL_PLUGINS_AT_BUILD=false
 
