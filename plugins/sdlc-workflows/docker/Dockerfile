@@ -1,3 +1,16 @@
+FROM oven/bun:1.3.11-slim AS archon-deps
+
+# Install Archon from source (not the compiled binary).
+# The compiled Bun binary has a $bunfs extraction issue that prevents
+# the Claude Agent SDK from spawning child processes as a non-root user.
+# Running from source with bun matches Archon's own Docker setup.
+WORKDIR /opt/archon
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 https://github.com/coleam00/Archon.git . && \
+    bun install --frozen-lockfile --linker=hoisted
+
+# ---------------------------------------------------------------------------
 FROM node:22-slim
 
 # System dependencies (matching tests/integration/setup-smoke/Dockerfile)
@@ -7,12 +20,20 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/bin/python3 /usr/bin/python
 
+# Install Bun runtime (needed to run Archon from source)
+RUN curl -fsSL https://bun.sh/install | bash && \
+    ln -sf /root/.bun/bin/bun /usr/local/bin/bun && \
+    ln -sf /root/.bun/bin/bunx /usr/local/bin/bunx
+
 # Claude Code CLI
 RUN npm install -g @anthropic-ai/claude-code
 
-# Archon CLI
-RUN curl -fsSL https://archon.diy/install | bash && \
-    mv /root/.archon/bin/archon /usr/local/bin/archon || true
+# Copy Archon from source build stage
+COPY --from=archon-deps /opt/archon /opt/archon
+
+# Create archon wrapper script that runs from source
+RUN printf '#!/bin/bash\nexec bun run /opt/archon/packages/cli/src/index.ts "$@"\n' > /usr/local/bin/archon && \
+    chmod +x /usr/local/bin/archon
 
 # Ralph orchestrator (used by smoke tests and autonomous loops)
 RUN npm install -g @ralph-orchestrator/ralph-cli
@@ -24,8 +45,7 @@ ARG INSTALL_PLUGINS_AT_BUILD=false
 # already has a 'node' user at UID 1000)
 RUN useradd -m -s /bin/bash -u 1001 sdlc && \
     mkdir -p /workspace /home/sdlc/.claude /home/sdlc/.archon && \
-    chown -R sdlc:sdlc /workspace /home/sdlc/.claude /home/sdlc/.archon && \
-    chown -R sdlc:sdlc /tmp/claude-agent-sdk-* 2>/dev/null || true
+    chown -R sdlc:sdlc /workspace /home/sdlc/.claude /home/sdlc/.archon /opt/archon
 
 # Copy entrypoint (as root, before USER switch)
 COPY entrypoint.sh /opt/entrypoint.sh
