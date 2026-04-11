@@ -20,10 +20,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/bin/python3 /usr/bin/python
 
-# Install Bun runtime (needed to run Archon from source)
-RUN curl -fsSL https://bun.sh/install | bash && \
-    ln -sf /root/.bun/bin/bun /usr/local/bin/bun && \
-    ln -sf /root/.bun/bin/bunx /usr/local/bin/bunx
+# Copy Bun runtime from the deps stage (avoids needing unzip for bun installer)
+COPY --from=archon-deps /usr/local/bin/bun /usr/local/bin/bun
+COPY --from=archon-deps /usr/local/bin/bunx /usr/local/bin/bunx
 
 # Claude Code CLI
 RUN npm install -g @anthropic-ai/claude-code
@@ -32,7 +31,7 @@ RUN npm install -g @anthropic-ai/claude-code
 COPY --from=archon-deps /opt/archon /opt/archon
 
 # Create archon wrapper script that runs from source
-RUN printf '#!/bin/bash\nexec bun run /opt/archon/packages/cli/src/index.ts "$@"\n' > /usr/local/bin/archon && \
+RUN printf '#!/bin/bash\nexec bun run /opt/archon/packages/cli/src/cli.ts "$@"\n' > /usr/local/bin/archon && \
     chmod +x /usr/local/bin/archon
 
 # Ralph orchestrator (used by smoke tests and autonomous loops)
