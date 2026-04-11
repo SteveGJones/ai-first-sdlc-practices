@@ -242,6 +242,54 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
      - Brief description: "Provides a research-librarian agent that queries a structured knowledge base with citations, an agent-knowledge-updater for ingesting new sources, and skills for ingest/query/lint/index management. Particularly valuable for projects making architectural, transformation, or measurement decisions that benefit from citable evidence."
      - When NOT to recommend: projects that are throwaway prototypes, routine maintenance, or where decisions don't need citation
 
+   - "Do you need delegated parallel execution? (multiple agents working concurrently — parallel reviews, bulk refactors, autonomous pipelines)" → recommend `sdlc-workflows`
+
+     **Delegation signal detection (run before asking the question):**
+     Check for signals that suggest the project would benefit from delegation:
+     - Count total lines of code: `find . -name '*.py' -o -name '*.ts' -o -name '*.js' -o -name '*.go' -o -name '*.java' -o -name '*.rs' | head -1000 | xargs wc -l 2>/dev/null | tail -1` — if >50k LOC, signal present
+     - Count independent package manifests: `find . -maxdepth 3 -name 'package.json' -o -name 'requirements.txt' -o -name 'go.mod' -o -name 'Cargo.toml' | wc -l` — if >3, signal present
+     - Check for `.archon/` directory — if present, signal present (already using Archon)
+     - Check for `ralph.yml` or `.ralph/` — if present, signal present (already doing autonomous loops)
+     - Check for `.github/workflows/` or `.gitlab-ci.yml` — if present, weak signal
+     - Check for monorepo signals: multiple top-level directories each with their own package manifest
+
+     **If signals are present**, frame the question proactively:
+
+     ```
+     Your project shows signals that could benefit from delegated parallel
+     execution ({list specific signals found, e.g., "large codebase (52k LOC),
+     multiple services (4 package.json files), CI/CD present"}).
+
+     Delegation lets you run multiple specialist agents in parallel — for
+     example, 5 review agents simultaneously checking security, architecture,
+     performance, code quality, and test coverage.
+
+     This requires Archon (https://archon.diy), an open-source workflow
+     engine that orchestrates Claude Code sessions. It will be installed
+     alongside your SDLC plugins.
+
+     Would you like to enable delegated workflows?
+       (a) Yes — install Archon + sdlc-workflows plugin
+       (b) Not now — I can add this later with /sdlc-workflows:workflows-setup
+       (c) Tell me more — explain what delegation provides
+     ```
+
+     **If user selects (a)**: Add `sdlc-workflows` to the plugin recommendation list. Record `delegation: { enabled: true, archon_recommended: true, signals: [...] }` in the final `.sdlc/team-config.json`.
+
+     **If user selects (c)**: Explain the four use cases:
+     1. Parallel feature development — multiple features implemented concurrently in isolated environments
+     2. Autonomous SDLC pipelines — fire-and-forget commissioned workflows
+     3. Cloud-hosted worker fleet — remote workers dispatched from Slack, GitHub, or web
+     4. Secure sandboxed execution — autonomous agents confined to containers
+     Then re-present the (a)/(b) choice.
+
+     **If user selects (b)** or **signals are absent**: Skip. Record `delegation: { enabled: false }` in team-config.json.
+
+     **Transparency principle**: Every recommendation involving Archon must name it explicitly, link to https://archon.diy, and explain what it does. Archon is never installed silently.
+
+     - Brief description: "Provides Archon workflow templates for parallel review, feature development, bulk refactoring, and commissioned SDLC pipelines. Workers run in Docker containers with full SDLC plugin access. Requires Archon CLI."
+     - When NOT to recommend: single-developer projects with small codebases (<10k LOC) where sequential execution is sufficient, or projects where all work is simple single-file edits
+
    For each of these, check the pre-check state from step 0: if already installed, mark `✓ (already installed)` and don't ask the question.
 
 7. **Present the recommendation** to the user in three sections:
@@ -294,6 +342,16 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
 
    (If no Section B libraries were found:)
    _No project dependencies found for your tech stack._
+
+   === Delegation (Parallel Execution) ===
+   Orchestrated parallel agent workflows via Archon.
+
+   ○ sdlc-workflows — Archon workflow templates for parallel review, feature development, bulk refactor, commissioned pipelines
+     Requires: Archon CLI (https://archon.diy)
+     Install: /plugin install sdlc-workflows@ai-first-sdlc
+     Setup: /sdlc-workflows:workflows-setup (installs Archon, copies workflows)
+
+   (Only shown if user selected delegation in step 6. If skipped, this section is omitted entirely.)
 
    === Section C: Gaps Worth Custom Agents ===
    Topics where no pre-built Claude Code tool exists AND no library alone substitutes for expertise. For each gap, you can commission research + custom agent creation via the pipeline-orchestrator agent (deep-research-agent → synthesis → agent-builder). This skill surfaces the gaps; actual agent creation is invoked separately via `@pipeline-orchestrator`.
@@ -456,3 +514,4 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
     - If the user didn't run any install commands (exited early), the post-check will show all recommendations as pending. That's correct — it's informational, not a gate.
     - If the user installed plugins between steps via a different mechanism (e.g., running `/plugin install` manually during setup), the post-check will pick those up.
     - Only verify plugins the user accepted in step 7 — don't show plugins the user explicitly declined in "customize" mode.
+    - If `sdlc-workflows` was recommended (user selected delegation in step 6), include it in the post-check verification list alongside other recommended plugins.
