@@ -172,3 +172,10 @@ sdlc-knowledge-base:
     - source: skills/kb-validate-citations/SKILL.md
     - source: skills/kb-promote-answer-to-library/SKILL.md
     - source: skills/kb-staleness-check/SKILL.md
+
+# Workflow delegation plugin — Archon integration for parallel agent execution. EPIC #96.
+# Components added incrementally by sub-features of the EPIC.
+sdlc-workflows:
+  # Populated as sub-features land (workflows, commands, skills, agents, docker)
+  skills: []
+  agents: []
