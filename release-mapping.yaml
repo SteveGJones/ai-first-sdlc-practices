@@ -179,3 +179,5 @@ sdlc-workflows:
   # Populated as sub-features land (workflows, commands, skills, agents, docker)
   skills: []
   agents: []
+  commands:
+    - source: commands/sdlc-security-review.md
