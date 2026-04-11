@@ -6,7 +6,7 @@ AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full ins
 
 - **EPIC #97** — Multi-Option Commissioned SDLC. Branch `feature/sdlc-commissioning` has the feature proposal for sub-feature #98 (commissioning infrastructure). Implementation pending. See `docs/feature-proposals/98-sdlc-commissioning-infrastructure.md`.
 - **EPIC #142** — Curated technology registry + plugin recommendation improvements. Sub-features 0-2 merged (#151, #143, #144 — pre/post check, kb recommendation, language detection). Sub-features 3-8 pending (registry schema, population, wiring, maintenance). See issue #142 for the full inventory.
-- **EPIC #96** — Containerized Claude Code workers. Design phase, deferred.
+- **EPIC #96** — Containerised Claude Code workers. `sdlc-workflows` plugin ships Archon workflow templates, command prompts, Docker image, and setup-team delegation detection. See `docs/superpowers/specs/2026-04-10-containerised-delegation-design.md`.
 - **EPIC #105** — sdlc-knowledge-base plugin. **Merged.** Plugin is live and installable. Sub-feature 13 (#118 codebase-index) is future work.
 
 ## Essential Workflow
@@ -83,6 +83,7 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-team-docs` | Technical writer, documentation architect |
 | `sdlc-knowledge-base` | Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint operations. Orthogonal to SDLC option choice. |
 | `sdlc-lang-*` | Language-specific validation and patterns (Python, JS, Go, Java, Rust) |
+| `sdlc-workflows` | Archon workflow templates for delegated parallel execution |
 
 ### Available Skills
 
@@ -96,3 +97,6 @@ Then configure your team: `/sdlc-core:setup-team`
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
 | `/sdlc-knowledge-base:kb-*` | Knowledge base operations (init, ingest, query, lint, rebuild-indexes, validate-citations, promote-answer, staleness-check) — installed by `sdlc-knowledge-base` plugin |
+| `/sdlc-workflows:workflows-setup` | Install Archon + configure SDLC workflows |
+| `/sdlc-workflows:workflows-run` | Execute a named SDLC workflow via Archon |
+| `/sdlc-workflows:workflows-status` | Check running/recent workflow status |
