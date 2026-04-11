@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-DOCKER_DIR="$(cd "$SCRIPT_DIR/../../plugins/sdlc-workflows/docker" && pwd)"
+DOCKER_DIR="$(cd "$SCRIPT_DIR/../../../plugins/sdlc-workflows/docker" && pwd)"
 
 # Ensure base image exists
 if ! docker image inspect sdlc-worker:latest >/dev/null 2>&1; then
