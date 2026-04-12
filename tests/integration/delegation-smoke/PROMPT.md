@@ -8,7 +8,7 @@ Check the following. Report PASS or FAIL for each:
 
 1. Archon CLI is installed: `archon version`
 2. Archon sees the smoke workflow: `archon workflow list` shows `smoke-fix-loop`
-3. SDLC plugins are installed: Check for sdlc-core in installed plugins
+3. Claude Code CLI is available: `claude --version`
 
 If any prerequisite fails, report and stop.
 
@@ -76,7 +76,7 @@ Print a summary:
 === Delegation Smoke Test Results ===
 Check 1 (Archon installed):          PASS/FAIL
 Check 2 (workflow discovered):       PASS/FAIL
-Check 3 (plugins installed):         PASS/FAIL
+Check 3 (Claude Code available):     PASS/FAIL
 Check 4 (workflow completed):        PASS/FAIL
 Check 5 (commits made):             PASS/FAIL
 Check 6 (SQL injection fixed):      PASS/FAIL
