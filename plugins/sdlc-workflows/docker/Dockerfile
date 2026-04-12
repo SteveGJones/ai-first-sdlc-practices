@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.11-slim AS archon-deps
+FROM oven/bun:latest AS archon-deps
 
 # Install Archon from source (not the compiled binary).
 # The compiled Bun binary has a $bunfs extraction issue that prevents
@@ -27,10 +27,19 @@ COPY --from=archon-deps /usr/local/bin/bunx /usr/local/bin/bunx
 # Claude Code CLI
 RUN npm install -g @anthropic-ai/claude-code
 
-# Copy Archon from source build stage
+# Copy Archon source from build stage (dependencies already installed)
 COPY --from=archon-deps /opt/archon /opt/archon
 
-# Create archon wrapper script that runs from source
+# Patch: Force Claude Agent SDK to use 'node' (not 'bun') for spawning
+# the CLI subprocess. Bun 1.3.x on ARM64 has a heap corruption bug
+# (oven-sh/bun#26979) that segfaults when spawning subprocesses. The SDK
+# auto-detects runtime and uses 'bun' when running under Bun. By adding
+# `executable: "node"` to the options, the subprocess runs on Node.js
+# (which is stable) while Archon itself still runs on Bun.
+RUN sed -i 's/pathToClaudeCodeExecutable: cliPath,/pathToClaudeCodeExecutable: cliPath,\n        executable: "node",/' \
+    /opt/archon/packages/core/src/clients/claude.ts
+
+# Create archon wrapper script that runs from source via Bun.
 RUN printf '#!/bin/bash\nexec bun run /opt/archon/packages/cli/src/cli.ts "$@"\n' > /usr/local/bin/archon && \
     chmod +x /usr/local/bin/archon
 

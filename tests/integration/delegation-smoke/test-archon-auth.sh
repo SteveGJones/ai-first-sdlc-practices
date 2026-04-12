@@ -1,24 +1,17 @@
 #!/bin/bash
-# Diagnostic test: Can Archon's SDK spawn a Claude session inside Docker?
-# Tests with .claude.json restored from backup (the SDK may need it).
+# Test: Archon with SDK subprocess forced to Node.js (not Bun).
+# Archon runs on Bun, but the Claude Agent SDK subprocess uses Node.js
+# to avoid the Bun ARM64 segfault (oven-sh/bun#26979).
 set -e
 
-echo "=== Test: Archon chat with .claude.json restored ==="
+echo "=== Test: Archon chat (Bun + Node.js subprocess) ==="
 docker run --rm \
     -v sdlc-smoke-claude-creds:/home/sdlc/.claude \
     --entrypoint /bin/bash \
     sdlc-worker:latest \
     -c '
-        # Restore .claude.json from backup if missing
-        if [ ! -f /home/sdlc/.claude.json ]; then
-            BACKUP=$(ls -t /home/sdlc/.claude/backups/.claude.json.backup.* 2>/dev/null | head -1)
-            if [ -n "$BACKUP" ]; then
-                cp "$BACKUP" /home/sdlc/.claude.json
-                echo "Restored .claude.json from backup: $BACKUP"
-            else
-                echo "WARNING: No .claude.json and no backup found"
-            fi
-        fi
+        BACKUP=$(ls -t /home/sdlc/.claude/backups/.claude.json.backup.* 2>/dev/null | head -1)
+        [ -n "$BACKUP" ] && cp "$BACKUP" /home/sdlc/.claude.json && echo "Restored .claude.json"
 
         cd /tmp
         git init -q testdir && cd testdir
@@ -26,9 +19,13 @@ docker run --rm \
         git config user.name "T"
         git commit -q --allow-empty -m "init"
 
+        echo "Bun: $(bun --version), Node: $(node --version)"
+        echo "Patch check: $(grep -c "executable.*node" /opt/archon/packages/core/src/clients/claude.ts) occurrence(s)"
+        echo ""
         echo "Starting Archon chat..."
-        timeout 90 archon chat "Say exactly ARCHON_OK and nothing else" --no-worktree 2>&1 | tail -10
-        echo "EXIT: $?"
+        timeout 90 archon chat "Say exactly ARCHON_OK and nothing else" --no-worktree 2>&1
+        EXIT=$?
+        echo ""
+        echo "EXIT: $EXIT"
+        [ $EXIT -eq 0 ] && echo "RESULT: SUCCESS" || echo "RESULT: FAILED (exit $EXIT)"
     '
-
-echo "=== Test Complete ==="
