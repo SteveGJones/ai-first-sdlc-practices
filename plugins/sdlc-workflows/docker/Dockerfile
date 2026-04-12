@@ -30,14 +30,25 @@ RUN npm install -g @anthropic-ai/claude-code
 # Copy Archon source from build stage (dependencies already installed)
 COPY --from=archon-deps /opt/archon /opt/archon
 
-# Patch: Force Claude Agent SDK to use 'node' (not 'bun') for spawning
-# the CLI subprocess. Bun 1.3.x on ARM64 has a heap corruption bug
-# (oven-sh/bun#26979) that segfaults when spawning subprocesses. The SDK
-# auto-detects runtime and uses 'bun' when running under Bun. By adding
-# `executable: "node"` to the options, the subprocess runs on Node.js
-# (which is stable) while Archon itself still runs on Bun.
-RUN sed -i 's/pathToClaudeCodeExecutable: cliPath,/pathToClaudeCodeExecutable: cliPath,\n        executable: "node",/' \
-    /opt/archon/packages/core/src/clients/claude.ts
+# ARM64 workaround: Force Claude Agent SDK to use 'node' for subprocess.
+# Bun's child_process stdin pipe handling hangs on ARM64 Linux when the SDK
+# spawns cli.js in stream-json mode. This patch adds `executable: "node"` to
+# Archon's SDK options so the subprocess runs on Node.js (stable on all archs)
+# while Archon itself stays on Bun.
+#
+# This patch is conditional — only applied if Archon hasn't already set
+# executable in the options. When Archon merges the upstream fix
+# (see docs/issues/archon-arm64-sdk-executable.md), this becomes a no-op.
+#
+# Detection: grep for 'executable:' in the options block. If already present,
+# Archon has the fix and we skip the patch.
+RUN if ! grep -q 'executable:' /opt/archon/packages/core/src/clients/claude.ts; then \
+      echo "Applying ARM64 workaround: executable: node"; \
+      sed -i 's/pathToClaudeCodeExecutable: cliPath,/pathToClaudeCodeExecutable: cliPath,\n        executable: "node",/' \
+        /opt/archon/packages/core/src/clients/claude.ts; \
+    else \
+      echo "Archon already sets executable — skipping ARM64 patch"; \
+    fi
 
 # Create archon wrapper script that runs from source via Bun.
 RUN printf '#!/bin/bash\nexec bun run /opt/archon/packages/cli/src/cli.ts "$@"\n' > /usr/local/bin/archon && \
