@@ -13,7 +13,7 @@
 #
 services:
   worker:
-    image: sdlc-worker:latest
+    image: sdlc-worker:base
     environment:
       - ARCHON_WORKFLOW=${ARCHON_WORKFLOW:-}
       - ARCHON_ARGS=${ARCHON_ARGS:-}

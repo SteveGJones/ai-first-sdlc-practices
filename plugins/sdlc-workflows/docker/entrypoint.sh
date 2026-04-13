@@ -11,6 +11,7 @@ if [ -d /home/sdlc/.claude-auth ] && [ "$(ls -A /home/sdlc/.claude-auth 2>/dev/n
     for auth_file in /home/sdlc/.claude-auth/*; do
         if [ -f "$auth_file" ]; then
             cp "$auth_file" /home/sdlc/.claude/"$(basename "$auth_file")"
+            chmod 600 /home/sdlc/.claude/"$(basename "$auth_file")"
         fi
     done
     echo "Auth: credentials loaded from scoped mount"

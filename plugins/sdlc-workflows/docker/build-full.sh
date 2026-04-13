@@ -17,8 +17,17 @@ fi
 PLUGINS_BASENAME="$(basename "$PLUGINS_DIR")"
 
 echo "Building sdlc-worker:full from $PLUGINS_DIR..."
+
+# Create temporary .dockerignore to limit build context
+BUILD_CONTEXT="$PLUGINS_DIR/.."
+echo "*" > "$BUILD_CONTEXT/.dockerignore"
+echo "!$PLUGINS_BASENAME/" >> "$BUILD_CONTEXT/.dockerignore"
+
 docker build -t sdlc-worker:full \
     --build-arg "PLUGINS_DIR=$PLUGINS_BASENAME" \
     -f "$SCRIPT_DIR/Dockerfile.full" \
-    "$PLUGINS_DIR/.."
+    "$BUILD_CONTEXT"
+
+rm -f "$BUILD_CONTEXT/.dockerignore"
+
 echo "Done. Image: sdlc-worker:full"
