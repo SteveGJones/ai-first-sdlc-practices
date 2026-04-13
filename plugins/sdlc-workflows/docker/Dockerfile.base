@@ -57,9 +57,6 @@ RUN printf '#!/bin/bash\nexec bun run /opt/archon/packages/cli/src/cli.ts "$@"\n
 # Ralph orchestrator (used by smoke tests and autonomous loops)
 RUN npm install -g @ralph-orchestrator/ralph-cli
 
-# Build-time plugin installation (optional, for production images)
-ARG INSTALL_PLUGINS_AT_BUILD=false
-
 # Non-root user (UID 1001, matching smoke test convention — node:22-slim
 # already has a 'node' user at UID 1000)
 RUN useradd -m -s /bin/bash -u 1001 sdlc && \
@@ -69,12 +66,6 @@ RUN useradd -m -s /bin/bash -u 1001 sdlc && \
 # Copy entrypoint (as root, before USER switch)
 COPY entrypoint.sh /opt/entrypoint.sh
 RUN chmod +x /opt/entrypoint.sh
-
-# If build-time plugin install is enabled, install as sdlc user
-# This bakes plugins into the image for faster startup
-RUN if [ "$INSTALL_PLUGINS_AT_BUILD" = "true" ]; then \
-      su - sdlc -c "claude --bare -p 'run: /plugin marketplace add SteveGJones/ai-first-sdlc-practices && /plugin install sdlc-core@ai-first-sdlc'" || true; \
-    fi
 
 USER sdlc
 WORKDIR /workspace

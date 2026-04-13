@@ -4,8 +4,8 @@
 # Prerequisites:
 #   1. Build the image: ./build.sh
 #   2. Login (first time): docker run --rm -it \
-#        -v sdlc-worker-creds:/home/sdlc/.claude \
-#        --entrypoint /bin/bash sdlc-worker:latest \
+#        -v sdlc-worker-creds:/home/sdlc/.claude-auth \
+#        --entrypoint /bin/bash sdlc-worker:base \
 #        -c 'claude /login'
 #
 # Usage:
@@ -19,7 +19,7 @@ services:
       - ARCHON_ARGS=${ARCHON_ARGS:-}
       - CLAUDE_PROMPT=${CLAUDE_PROMPT:-}
     volumes:
-      - sdlc-worker-creds:/home/sdlc/.claude
+      - sdlc-worker-creds:/home/sdlc/.claude-auth:ro
       - ${PROJECT_PATH:-.}:/workspace
       - ../workflows:/workspace/.archon/workflows
       - ../commands:/workspace/.archon/commands

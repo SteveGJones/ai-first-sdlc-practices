@@ -6,6 +6,16 @@ echo "=== SDLC Worker Container ==="
 # Step 1: Ensure no API key overrides Max subscription
 unset ANTHROPIC_API_KEY
 
+# Step 1b: Link scoped credential mount to where Claude Code expects it
+if [ -d /home/sdlc/.claude-auth ] && [ "$(ls -A /home/sdlc/.claude-auth 2>/dev/null)" ]; then
+    for auth_file in /home/sdlc/.claude-auth/*; do
+        if [ -f "$auth_file" ]; then
+            cp "$auth_file" /home/sdlc/.claude/"$(basename "$auth_file")"
+        fi
+    done
+    echo "Auth: credentials loaded from scoped mount"
+fi
+
 # Step 2: Verify Claude Code is available
 echo "Claude Code version: $(claude --version 2>/dev/null || echo 'NOT FOUND')"
 echo "Archon version: $(archon --version 2>/dev/null || echo 'NOT FOUND')"
