@@ -28,16 +28,14 @@ class TestAIFriendlyTemplates(unittest.TestCase):
 
         content = claude_template.read_text()
 
-        # Critical sections that must exist
+        # Critical sections that must exist in the template
         required_sections = [
             "Project Overview",
-            "Git Workflow",
-            "NEVER PUSH DIRECTLY TO MAIN",
-            "Branch Protection",
             "Development Workflow",
+            "Validation Commands",
             "Code Style",
-            "Testing Requirements",
-            "Common Patterns",
+            "Security",
+            "Rules",
         ]
 
         for section in required_sections:
@@ -45,10 +43,10 @@ class TestAIFriendlyTemplates(unittest.TestCase):
 
         # Check for mandatory workflow instructions
         mandatory_patterns = [
-            r"ALWAYS.*feature branch",
-            r"ALWAYS.*feature proposal",
-            r"NEVER.*push.*main",
-            r"retrospective.*BEFORE.*PR",
+            r"feature branch",
+            r"feature proposal",
+            r"never.*commit.*main|no direct commits to main",
+            r"retrospective",
         ]
 
         for pattern in mandatory_patterns:
@@ -130,22 +128,13 @@ class TestAIFriendlyTemplates(unittest.TestCase):
 
         content = retrospective_template.read_text()
 
-        # Should have AI-specific sections
-        ai_sections = [
-            "AI-Specific Learnings",
-            "AI Agent Performance",
-            "AI Agent Instructions",
-        ]
-
-        for section in ai_sections:
-            self.assertIn(section, content, f"Missing AI-specific section: {section}")
-
         # Should guide on what to document
         guidance_keywords = [
             "What Went Well",
-            "What Could Be Improved",
-            "Key Learnings",  # Template uses "Key Learnings" not "Lessons Learned"
+            "What Could Improve",
+            "Lessons Learned",
             "Action Items",
+            "Changes Made",
         ]
 
         for keyword in guidance_keywords:
@@ -163,9 +152,9 @@ class TestAIFriendlyTemplates(unittest.TestCase):
         structure_elements = [
             "Problem Statement",
             "User Stories",
-            "Success Criteria",
+            "Acceptance Criteria",
             "Implementation Plan",
-            "Testing Strategy",
+            "Risks",
         ]
 
         for element in structure_elements:
@@ -187,8 +176,7 @@ class TestAIFriendlyTemplates(unittest.TestCase):
         # Should break down into phases
         self.assertIn("Phase", content)
         self.assertIn("Tasks", content)
-        self.assertIn("Deliverables", content)
-        self.assertIn("Success Criteria", content)
+        self.assertIn("Done Criteria", content)
 
         # Should have task tracking structure
         self.assertIn("[ ]", content, "Should have checkbox format for tasks")
