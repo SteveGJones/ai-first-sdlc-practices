@@ -21,6 +21,15 @@ import argparse
 import sys
 from pathlib import Path
 
+_scripts_dir = (
+    Path(__file__).resolve().parent.parent.parent
+    / "plugins"
+    / "sdlc-workflows"
+    / "scripts"
+)
+if str(_scripts_dir) not in sys.path:
+    sys.path.insert(0, str(_scripts_dir))
+
 try:
     import yaml
 except ImportError:
@@ -135,13 +144,14 @@ def load_team_manifests(teams_dir: Path) -> dict[str, dict]:
     return manifests
 
 
-def extract_image_refs(workflow_path: Path) -> list[tuple[str, str, str]]:
-    """Extract (node_id, image_value, team_name) from workflow nodes.
+def extract_image_refs(workflow_path: Path) -> list[tuple[str, str, str, dict]]:
+    """Extract (node_id, image_value, team_name, team_extend) from workflow nodes.
 
     Returns a list of tuples for each node that has an image: field.
     The team_name is extracted from 'sdlc-worker:<team-name>'.
+    The team_extend element is the team_extend dict from the node (empty dict when absent).
     """
-    refs: list[tuple[str, str, str]] = []
+    refs: list[tuple[str, str, str, dict]] = []
     data = _parse_yaml(workflow_path)
     nodes = data.get("nodes", [])
     if not isinstance(nodes, list):
@@ -156,15 +166,21 @@ def extract_image_refs(workflow_path: Path) -> list[tuple[str, str, str]]:
         # Parse sdlc-worker:<team-name>
         if ":" in str(image):
             _, _, team_name = str(image).partition(":")
-            refs.append((str(node_id), str(image), team_name))
+            raw_extend = node.get("team_extend")
+            team_extend = raw_extend if isinstance(raw_extend, dict) else {}
+            refs.append((str(node_id), str(image), team_name, team_extend))
     return refs
 
 
 def validate(
     workflows_dir: Path,
     teams_dir: Path,
+    installed_json: Path | None = None,
 ) -> list[str]:
     """Validate all workflow image references against team manifests.
+
+    When ``installed_json`` is provided, also validates any ``team_extend``
+    agent references against the plugin inventory.
 
     Returns a list of error strings. Empty list means all valid.
     """
@@ -173,13 +189,23 @@ def validate(
     # Load team manifests
     teams = load_team_manifests(teams_dir)
 
+    # Optionally load plugin inventory for team_extend validation
+    inventory: dict | None = None
+    if installed_json is not None and installed_json.exists():
+        try:
+            import team_inventory  # noqa: PLC0415
+
+            inventory = team_inventory.discover_all(installed_json)
+        except ImportError:
+            pass
+
     # Find all workflow YAML files
     if not workflows_dir.is_dir():
         return errors
 
     for wf_path in sorted(workflows_dir.glob("*.yaml")):
         refs = extract_image_refs(wf_path)
-        for node_id, image_value, team_name in refs:
+        for node_id, image_value, team_name, team_extend in refs:
             # sdlc-worker:base is always valid
             if team_name == BASE_IMAGE_TAG:
                 continue
@@ -203,6 +229,34 @@ def validate(
                     f"(inactive/decommissioned teams should not be "
                     f"referenced in workflows)"
                 )
+
+            # Validate team_extend agent references against plugin inventory
+            if inventory is not None and team_extend:
+                agent_refs = team_extend.get("agents", [])
+                if isinstance(agent_refs, list):
+                    for agent_ref in agent_refs:
+                        if not isinstance(agent_ref, str) or ":" not in agent_ref:
+                            continue
+                        plugin_name, _, agent_name = agent_ref.partition(":")
+                        plugin_data = inventory.get(plugin_name)
+                        if plugin_data is None:
+                            errors.append(
+                                f"{wf_path.name}: node '{node_id}' team_extend "
+                                f"references '{agent_ref}' but plugin "
+                                f"'{plugin_name}' is not in the installed "
+                                f"plugin inventory"
+                            )
+                            continue
+                        plugin_agents = [
+                            a["name"] for a in plugin_data.get("agents", [])
+                        ]
+                        if agent_name not in plugin_agents:
+                            errors.append(
+                                f"{wf_path.name}: node '{node_id}' team_extend "
+                                f"references '{agent_ref}' but agent "
+                                f"'{agent_name}' was not found in plugin "
+                                f"'{plugin_name}'"
+                            )
 
     return errors
 

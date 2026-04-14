@@ -178,3 +178,41 @@ def available_but_not_included(
                 })
 
     return {"agents": available_agents}
+
+
+def main() -> None:
+    """CLI entry point — print plugin inventory or available-but-not-included."""
+    import argparse
+
+    import yaml as yaml_mod
+
+    parser = argparse.ArgumentParser(description="Plugin inventory discovery")
+    parser.add_argument(
+        "--installed-json",
+        type=Path,
+        default=Path.home() / ".claude" / "plugins" / "installed_plugins.json",
+    )
+    parser.add_argument(
+        "--team-manifest",
+        type=Path,
+        default=None,
+        help="Show available-but-not-included for a specific team manifest.",
+    )
+    args = parser.parse_args()
+
+    import json as json_mod
+
+    if args.team_manifest:
+        with args.team_manifest.open() as fh:
+            manifest = yaml_mod.safe_load(fh)
+        plugins = [str(p) for p in manifest.get("plugins", [])]
+        agents = [str(a) for a in manifest.get("agents", [])]
+        result = available_but_not_included(args.installed_json, plugins, agents)
+        print(json_mod.dumps(result, indent=2))
+    else:
+        inv = discover_all(args.installed_json)
+        print(json_mod.dumps(inv, indent=2))
+
+
+if __name__ == "__main__":
+    main()

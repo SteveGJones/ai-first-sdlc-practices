@@ -137,3 +137,35 @@ def fleet_report(
         )),
         "teams": teams,
     }
+
+
+def main() -> None:
+    """CLI entry point for teams_status_report."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate fleet status report")
+    parser.add_argument(
+        "--teams-dir", type=Path, default=Path(".archon/teams"),
+    )
+    parser.add_argument(
+        "--workflows-dir", type=Path, default=Path(".archon/workflows"),
+    )
+    parser.add_argument("--json", action="store_true", help="Output as JSON")
+    args = parser.parse_args()
+
+    import json as json_mod
+    report = fleet_report(args.teams_dir, args.workflows_dir)
+    if args.json:
+        print(json_mod.dumps(report, indent=2, default=str))
+    else:
+        print(f"Teams: {report['team_count']}, Workflows: {report['workflow_count']}")
+        for team in report["teams"]:
+            print(
+                f"  {team['name']:30s} {team['status']:10s} "
+                f"{team['agent_count']} agents  {team['skill_count']} skills  "
+                f"{team['staleness']:10s} {team['workflow_count']} wf"
+            )
+
+
+if __name__ == "__main__":
+    main()
