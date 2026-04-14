@@ -5,42 +5,66 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "=== Workforce Smoke Test — Claude Code Login ==="
 echo ""
-echo "This creates a credential volume with ONLY the auth file."
-echo "No plugins, no settings — just the credential token."
+echo "This must be run from an interactive terminal (not from Claude Code)."
+echo "It creates a credential volume for the acceptance test."
 echo ""
 
-# Use the base image (no team plugins needed for login)
+if ! docker info >/dev/null 2>&1; then
+    echo "ERROR: Docker not available."
+    exit 1
+fi
+
 if ! docker image inspect sdlc-worker:base >/dev/null 2>&1; then
     echo "ERROR: sdlc-worker:base not found. Build it first."
     exit 1
 fi
 
-# Create or reuse a credential-only volume
 CRED_VOLUME="sdlc-workforce-smoke-creds"
+SCOPED_VOLUME="sdlc-workforce-smoke-auth"
+
+# Clean start
+docker volume rm "$CRED_VOLUME" 2>/dev/null || true
+docker volume create "$CRED_VOLUME" >/dev/null
 
 echo "Starting interactive login container..."
-echo "Run 'claude /login' inside the container, then exit."
+echo "Authorize in your browser when prompted, then paste the code."
 echo ""
 
 docker run --rm -it \
     -v "${CRED_VOLUME}:/home/sdlc/.claude" \
-    --entrypoint /bin/bash \
+    --entrypoint claude \
     sdlc-worker:base \
-    -c 'claude /login && echo "" && echo "Login complete."'
+    auth login
 
-# Extract only the credential file into a scoped volume
-SCOPED_VOLUME="sdlc-workforce-smoke-auth"
 echo ""
-echo "Extracting credential file to scoped volume..."
+echo "Verifying credentials..."
 
-docker volume create "$SCOPED_VOLUME" >/dev/null 2>&1 || true
+# Quick auth check
+AUTH_CHECK=$(docker run --rm \
+    -v "${CRED_VOLUME}:/home/sdlc/.claude" \
+    --entrypoint claude \
+    sdlc-worker:base \
+    -p "say OK" 2>&1 | head -1)
+
+if echo "$AUTH_CHECK" | grep -qi "OK"; then
+    echo "Auth: OK"
+else
+    echo "Auth check failed: $AUTH_CHECK"
+    echo "Try running this script again."
+    exit 1
+fi
+
+# Extract only the credential file into a scoped volume with correct ownership
+docker volume rm "$SCOPED_VOLUME" 2>/dev/null || true
+docker volume create "$SCOPED_VOLUME" >/dev/null
+
 docker run --rm \
     -v "${CRED_VOLUME}:/source:ro" \
     -v "${SCOPED_VOLUME}:/dest" \
     --entrypoint /bin/sh \
     alpine \
-    -c 'cp /source/.credentials.json /dest/.credentials.json 2>/dev/null && chown 1001:1001 /dest/.credentials.json && chmod 600 /dest/.credentials.json && echo "OK: .credentials.json copied (owned by sdlc)" || echo "WARN: no .credentials.json found"'
+    -c 'cp /source/.credentials.json /dest/.credentials.json && chown 1001:1001 /dest/.credentials.json && chmod 600 /dest/.credentials.json && echo "OK"'
 
 echo ""
-echo "Done. Scoped credential volume: $SCOPED_VOLUME"
+echo "Done. Credentials stored in volume: $SCOPED_VOLUME"
 echo "Run the acceptance test: $SCRIPT_DIR/run-acceptance.sh"
