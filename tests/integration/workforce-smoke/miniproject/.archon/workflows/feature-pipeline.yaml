@@ -1,6 +1,8 @@
 name: feature-pipeline
 description: |
-  Smoke test workflow — two nodes with different team images.
+  Feature development pipeline for the task tracker.
+  Implement node uses the dev team, review node uses the review team.
+  The review node extends with verification-enforcer for extra rigour.
 
 provider: claude
 

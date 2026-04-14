@@ -1,6 +1,8 @@
 schema_version: "1.0"
 name: dev-team
-description: Development team — enforcement and validation only.
+description: >
+  Implementation team for the task tracker project.
+  Handles feature development and validation.
 status: active
 created: "2026-04-10T12:00:00"
 updated: "2026-04-12T12:00:00"
@@ -12,8 +14,10 @@ plugins:
 agents:
   - sdlc-core:verification-enforcer
   - sdlc-core:sdlc-enforcer
+  - local:.archon/agents/project-context.md
 
 skills:
   - sdlc-core:validate
 
-context: []
+context:
+  - CONSTITUTION.md
