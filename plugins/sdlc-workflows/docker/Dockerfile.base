@@ -64,8 +64,12 @@ RUN useradd -m -s /bin/bash -u 1001 sdlc && \
     chown -R sdlc:sdlc /workspace /home/sdlc/.claude /home/sdlc/.archon /opt/archon
 
 # Copy entrypoint (as root, before USER switch)
-COPY entrypoint.sh /opt/entrypoint.sh
+COPY docker/entrypoint.sh /opt/entrypoint.sh
 RUN chmod +x /opt/entrypoint.sh
+
+# SDLC helper scripts (loop workaround, future patches)
+COPY scripts/detect-loop-bug.sh scripts/loop-workaround.sh /opt/sdlc-scripts/
+RUN chmod +x /opt/sdlc-scripts/*.sh
 
 USER sdlc
 WORKDIR /workspace

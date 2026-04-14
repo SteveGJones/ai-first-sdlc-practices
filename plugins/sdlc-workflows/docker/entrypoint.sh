@@ -44,6 +44,23 @@ if [ ! -d .git ]; then
     git commit -m "initial" --allow-empty 2>/dev/null || true
 fi
 
+# Step 4.5: Activate loop signal workaround if needed
+# Conditional — same pattern as the ARM64 fix. Self-deactivating when
+# Archon fixes bug #1126.
+LOOP_WORKAROUND_ACTIVE=false
+if [ -f /opt/sdlc-scripts/detect-loop-bug.sh ]; then
+    if bash /opt/sdlc-scripts/detect-loop-bug.sh >/dev/null 2>&1; then
+        if [ -f /opt/sdlc-scripts/loop-workaround.sh ]; then
+            source /opt/sdlc-scripts/loop-workaround.sh
+            LOOP_WORKAROUND_ACTIVE=true
+            echo "Loop workaround: active"
+            cleanup_sentinel
+        fi
+    else
+        echo "Loop workaround: not needed (bug not detected)"
+    fi
+fi
+
 # Step 5: Execute the assigned work
 # If ARCHON_WORKFLOW is set, run an Archon workflow
 # Otherwise, pass through to Claude Code
