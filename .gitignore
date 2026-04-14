@@ -109,3 +109,6 @@ backups/
 *.bak
 .ralph/
 .worktrees/
+
+# Archon generated build artifacts
+.archon/teams/.generated/
