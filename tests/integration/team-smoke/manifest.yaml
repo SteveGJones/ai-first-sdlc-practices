@@ -1,0 +1,15 @@
+schema_version: "1.0"
+name: smoke-review-team
+description: Minimal team for the Phase 2 smoke test.
+status: active
+
+plugins:
+  - sdlc-core
+
+agents:
+  - sdlc-core:verification-enforcer
+
+skills:
+  - sdlc-core:validate
+
+context: []
