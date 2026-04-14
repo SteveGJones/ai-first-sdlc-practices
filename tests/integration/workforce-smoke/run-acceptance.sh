@@ -92,21 +92,30 @@ echo ""
 # ---------------------------------------------------------------------------
 # Helper: run Claude Code inside a team container with the miniproject
 # ---------------------------------------------------------------------------
-# Mounts:
-#   - scoped credentials at .claude-auth (entrypoint copies to .claude)
-#   - miniproject workspace at /workspace (writable)
-#   - SDLC scripts at /opt/sdlc-scripts (read-only, for post-verification)
+# The credential file must be copied directly into .claude/ because the volume
+# mount at .claude-auth has root ownership and the entrypoint copy may fail.
+# We bypass the entrypoint, copy the credential, then run claude directly.
 run_claude() {
     local image="$1"
-    local prompt="$2"
+    local prompt_file="$2"
     local timeout="${3:-180}"
 
     docker run --rm \
-        -v "${SCOPED_VOLUME}:/home/sdlc/.claude-auth:ro" \
+        -v "${SCOPED_VOLUME}:/home/sdlc/.claude-creds:ro" \
         -v "${WORKSPACE}:/workspace" \
-        -e "CLAUDE_PROMPT=$prompt" \
-        --timeout "$timeout" \
-        "$image" 2>&1
+        -v "${prompt_file}:/tmp/prompt.txt:ro" \
+        --entrypoint /bin/bash \
+        "$image" \
+        -c '
+            cp /home/sdlc/.claude-creds/.credentials.json /home/sdlc/.claude/.credentials.json
+            chmod 600 /home/sdlc/.claude/.credentials.json
+            unset ANTHROPIC_API_KEY
+            if [ ! -d /workspace/.git ]; then
+                cd /workspace && git init -q && git config user.email "test@test.com" && git config user.name "Test" && git add -A && git commit -q -m initial 2>/dev/null || true
+            fi
+            cd /workspace
+            claude --dangerously-skip-permissions -p "$(cat /tmp/prompt.txt)"
+        ' 2>&1
 }
 
 # ---------------------------------------------------------------------------
@@ -114,14 +123,12 @@ run_claude() {
 # ---------------------------------------------------------------------------
 echo "[1/$TOTAL] Auth check inside dev-team"
 AUTH_OUTPUT=$(docker run --rm \
-    -v "${SCOPED_VOLUME}:/home/sdlc/.claude-auth:ro" \
+    -v "${SCOPED_VOLUME}:/home/sdlc/.claude-creds:ro" \
     --entrypoint /bin/bash \
     sdlc-worker:dev-team \
     -c '
-        # Replicate entrypoint auth logic
-        for f in /home/sdlc/.claude-auth/*; do
-            [ -f "$f" ] && cp "$f" /home/sdlc/.claude/"$(basename "$f")" && chmod 600 /home/sdlc/.claude/"$(basename "$f")"
-        done
+        cp /home/sdlc/.claude-creds/.credentials.json /home/sdlc/.claude/.credentials.json
+        chmod 600 /home/sdlc/.claude/.credentials.json
         unset ANTHROPIC_API_KEY
         claude -p "say OK" 2>&1 | head -1
     ' 2>&1) || true
@@ -143,9 +150,11 @@ fi
 echo "[2/$TOTAL] Dev-team implements a feature (this takes ~1-2 min)"
 
 # Init git in the workspace
-(cd "$WORKSPACE" && git init -q && git add -A && git commit -q -m "initial" 2>/dev/null) || true
+(cd "$WORKSPACE" && git init -q && git config user.email "test@test.com" && git config user.name "Test" && git add -A && git commit -q -m "initial" 2>/dev/null) || true
 
-DEV_PROMPT='You are the dev-team implementing a change to a Python task tracker.
+DEV_PROMPT_FILE=$(mktemp "${TMPDIR:-/tmp}/dev-prompt.XXXXXX")
+cat > "$DEV_PROMPT_FILE" <<'PROMPT'
+You are the dev-team implementing a change to a Python task tracker.
 
 Read src/app.py — it has a TaskTracker class with add, complete, list_tasks, pending_count.
 
@@ -156,15 +165,14 @@ Add a "priority" field to tasks:
 
 Edit src/app.py with these changes. Then edit tests/test_app.py to add tests for the priority feature.
 
-After making changes, run the tests:
-  python -m pytest /workspace/tests/test_app.py -v 2>&1 || true
-
-Then commit:
+After making changes, commit:
   cd /workspace && git add -A && git commit -m "feat: add priority field to tasks"
 
-Output DONE when complete.'
+Output DONE when complete.
+PROMPT
 
-DEV_OUTPUT=$(run_claude sdlc-worker:dev-team "$DEV_PROMPT" 300 2>&1) || true
+DEV_OUTPUT=$(run_claude sdlc-worker:dev-team "$DEV_PROMPT_FILE" 300 2>&1) || true
+rm -f "$DEV_PROMPT_FILE"
 
 # Check if a commit was made
 DEV_COMMITS=$(cd "$WORKSPACE" && git log --oneline 2>/dev/null | wc -l | tr -d ' ')
@@ -202,7 +210,9 @@ fi
 # ---------------------------------------------------------------------------
 echo "[4/$TOTAL] Review-team reviews the changes (this takes ~1-2 min)"
 
-REVIEW_PROMPT='You are the review-team performing a code review on a Python task tracker.
+REVIEW_PROMPT_FILE=$(mktemp "${TMPDIR:-/tmp}/review-prompt.XXXXXX")
+cat > "$REVIEW_PROMPT_FILE" <<'PROMPT'
+You are the review-team performing a code review on a Python task tracker.
 
 A developer has just added a "priority" field to the TaskTracker class.
 
@@ -219,9 +229,11 @@ Write your review to /workspace/review-output.md with this structure:
   ## Recommendation
   (approve / request changes)
 
-Output DONE when complete.'
+Output DONE when complete.
+PROMPT
 
-REVIEW_OUTPUT=$(run_claude sdlc-worker:review-team "$REVIEW_PROMPT" 300 2>&1) || true
+REVIEW_OUTPUT=$(run_claude sdlc-worker:review-team "$REVIEW_PROMPT_FILE" 300 2>&1) || true
+rm -f "$REVIEW_PROMPT_FILE"
 
 if [ -f "$WORKSPACE/review-output.md" ]; then
     REVIEW_CONTENT=$(cat "$WORKSPACE/review-output.md")
