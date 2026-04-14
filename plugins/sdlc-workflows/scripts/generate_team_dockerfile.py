@@ -341,8 +341,14 @@ def generate(
     lines.append(f"     {_IMAGE_PLUGINS_ROOT}/installed_plugins.json")
     lines.append("")
 
+    # -- Switch to root for ownership / permission operations -------------------
+    # The base image ends with USER sdlc, so we need root for chmod/chown.
+    lines.append("# Switch to root for file permission operations")
+    lines.append("USER root")
+    lines.append("")
+
     # -- Make plugins read-only ------------------------------------------------
-    lines.append("# Make plugins read-only")
+    lines.append("# Make plugins read-only — prevents runtime plugin installation")
     lines.append(f"RUN chmod -R a-w {_IMAGE_PLUGINS_ROOT}/")
     lines.append("")
 

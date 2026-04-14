@@ -38,20 +38,61 @@ class PluginNotFoundError(Exception):
         super().__init__(f"Plugins not found in installed_plugins.json: {names}")
 
 
-def _load_installed(installed_json: Path) -> dict[str, dict[str, str]]:
-    """Load and return the installed_plugins.json content."""
+def _load_installed(installed_json: Path) -> dict[str, list[dict[str, str]]]:
+    """Load installed_plugins.json and return the plugins mapping.
+
+    The file has two known formats:
+    - v2 (current): ``{"version": 2, "plugins": {"name@marketplace": [{"scope": ..., "installPath": ...}]}}``
+    - v1 (legacy/tests): ``{"name@marketplace": {"name": ..., "installPath": ...}}``
+
+    Returns a normalised dict: ``key -> [{"installPath": ...}]``
+    """
     with installed_json.open() as fh:
-        data: dict[str, dict[str, str]] = json.load(fh)
-    return data
+        raw = json.load(fh)
+
+    if isinstance(raw, dict) and "version" in raw and "plugins" in raw:
+        return raw["plugins"]
+
+    # Legacy / test format: flat dict of key -> entry_dict
+    result: dict[str, list[dict[str, str]]] = {}
+    for key, val in raw.items():
+        if isinstance(val, dict):
+            result[key] = [val]
+        elif isinstance(val, list):
+            result[key] = val
+    return result
+
+
+def _build_name_lookup(
+    plugins: dict[str, list[dict[str, str]]],
+) -> dict[str, Path]:
+    """Build a bare-name -> install path lookup from the plugins dict.
+
+    Keys in installed_plugins.json are ``"name@marketplace"``.
+    This builds a lookup by the bare name (part before ``@``).
+    If multiple entries exist, the first with a valid path wins.
+    """
+    lookup: dict[str, Path] = {}
+    for key, entries in plugins.items():
+        bare_name = key.split("@")[0] if "@" in key else key
+        if bare_name in lookup:
+            continue
+        for entry in entries if isinstance(entries, list) else [entries]:
+            install_path = entry.get("installPath")
+            if install_path:
+                lookup[bare_name] = Path(install_path)
+                break
+    return lookup
 
 
 def resolve(plugin_name: str, installed_json: Path) -> Path | None:
-    """Resolve a single plugin key to its install path.
+    """Resolve a plugin name to its install path.
 
     Parameters
     ----------
     plugin_name:
-        Key in the form ``"<name>@<marketplace>"``.
+        Bare plugin name (e.g. ``"sdlc-core"``) or full key
+        (e.g. ``"sdlc-core@ai-first-sdlc"``).
     installed_json:
         Path to the ``installed_plugins.json`` file.
 
@@ -60,33 +101,32 @@ def resolve(plugin_name: str, installed_json: Path) -> Path | None:
     Path | None
         The resolved directory, or ``None`` if the plugin is not installed.
     """
-    data = _load_installed(installed_json)
-    entry = data.get(plugin_name)
-    if entry is None:
-        return None
-    install_path = entry.get("installPath")
-    if install_path is None:
-        return None
-    return Path(install_path)
+    plugins = _load_installed(installed_json)
+    lookup = _build_name_lookup(plugins)
+
+    # Try bare name first, then full key
+    bare = plugin_name.split("@")[0] if "@" in plugin_name else plugin_name
+    return lookup.get(bare)
 
 
 def resolve_all(
     plugin_names: list[str],
     installed_json: Path,
 ) -> dict[str, Path]:
-    """Resolve multiple plugin keys to their install paths.
+    """Resolve multiple plugin names to their install paths.
 
     Parameters
     ----------
     plugin_names:
-        List of keys in the form ``"<name>@<marketplace>"``.
+        List of bare names (e.g. ``["sdlc-core", "mongodb-plugin"]``)
+        or full keys.
     installed_json:
         Path to the ``installed_plugins.json`` file.
 
     Returns
     -------
     dict[str, Path]
-        Mapping from plugin key to resolved directory.
+        Mapping from plugin name to resolved directory.
 
     Raises
     ------
@@ -96,16 +136,18 @@ def resolve_all(
     if not plugin_names:
         return {}
 
-    data = _load_installed(installed_json)
+    plugins = _load_installed(installed_json)
+    lookup = _build_name_lookup(plugins)
+
     resolved: dict[str, Path] = {}
     missing: list[str] = []
 
     for name in plugin_names:
-        entry = data.get(name)
-        if entry is None or "installPath" not in entry:
-            missing.append(name)
+        bare = name.split("@")[0] if "@" in name else name
+        if bare in lookup:
+            resolved[name] = lookup[bare]
         else:
-            resolved[name] = Path(entry["installPath"])
+            missing.append(name)
 
     if missing:
         raise PluginNotFoundError(missing)

@@ -8,6 +8,8 @@ to block prompt-injection attempts via directive language.
 
 from __future__ import annotations
 
+import sys
+
 import re
 from pathlib import Path
 
@@ -190,3 +192,31 @@ def concatenate(project_claude_path: Path, team_md: str) -> str:
     project_content = project_claude_path.read_text()
     separator = "\n\n---\n\n<!-- BEGIN GENERATED TEAM CONTEXT -->\n\n"
     return project_content.rstrip() + separator + team_md
+
+
+if __name__ == "__main__":
+    import argparse
+
+    try:
+        import yaml
+    except ImportError:
+        print("ERROR: PyYAML not installed. Run: pip install pyyaml", file=sys.stderr)
+        sys.exit(2)
+
+    parser = argparse.ArgumentParser(description="Generate team CLAUDE.md from manifest")
+    parser.add_argument("manifest", type=Path, help="Path to team manifest YAML")
+    parser.add_argument("--output", type=Path, required=True, help="Output path for generated CLAUDE.md")
+    parser.add_argument("--project-claude", type=Path, help="Project CLAUDE.md to concatenate with")
+    args = parser.parse_args()
+
+    with open(args.manifest) as f:
+        manifest_data = yaml.safe_load(f)
+
+    content = generate(manifest_data, {}, {})
+
+    if args.project_claude and args.project_claude.exists():
+        content = concatenate(args.project_claude, content)
+
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(content)
+    print(f"Generated: {args.output}")

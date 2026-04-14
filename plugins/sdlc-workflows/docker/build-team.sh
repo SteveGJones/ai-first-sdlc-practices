@@ -40,6 +40,12 @@ done
 
 mkdir -p "$GENERATED_DIR"
 
+# Generate team CLAUDE.md from manifest
+echo "Generating team CLAUDE.md for $TEAM_NAME..."
+python3 "$PLUGIN_DIR/scripts/generate_team_claude_md.py" \
+    "$MANIFEST" \
+    --output "$GENERATED_DIR/${TEAM_NAME}-CLAUDE.md"
+
 echo "Generating team Dockerfile for $TEAM_NAME..."
 python3 "$PLUGIN_DIR/scripts/generate_team_dockerfile.py" \
     "$MANIFEST" \
