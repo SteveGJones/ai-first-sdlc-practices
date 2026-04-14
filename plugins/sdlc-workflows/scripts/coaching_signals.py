@@ -159,3 +159,54 @@ def analyse_overrides(
             })
 
     return signals
+
+
+def main() -> None:
+    """CLI entry point — run fleet + override analysis and print results."""
+    import argparse
+    import sys as _sys
+
+    _scripts_dir = Path(__file__).resolve().parent
+    if str(_scripts_dir) not in _sys.path:
+        _sys.path.insert(0, str(_scripts_dir))
+    import teams_status_report
+
+    parser = argparse.ArgumentParser(description="Coaching signal analysis")
+    parser.add_argument(
+        "--teams-dir", type=Path, default=Path(".archon/teams"),
+    )
+    parser.add_argument(
+        "--workflows-dir", type=Path, default=Path(".archon/workflows"),
+    )
+    parser.add_argument(
+        "--overrides", type=Path, default=Path(".archon/logs/overrides.jsonl"),
+    )
+    parser.add_argument("--json", action="store_true", help="Output as JSON")
+    args = parser.parse_args()
+
+    report = teams_status_report.fleet_report(args.teams_dir, args.workflows_dir)
+    fleet_result = analyse_fleet(report["teams"])
+    override_result = analyse_overrides(args.overrides)
+
+    combined = {
+        "critical": fleet_result["critical"],
+        "advisory": fleet_result["advisory"],
+        "informational": fleet_result["informational"] + override_result,
+    }
+
+    import json as json_mod
+
+    if args.json:
+        print(json_mod.dumps(combined, indent=2))
+    else:
+        for tier in ("critical", "advisory", "informational"):
+            if combined[tier]:
+                print(f"\n{tier.upper()}:")
+                for signal in combined[tier]:
+                    print(f"  - {signal['message']}")
+        if not any(combined.values()):
+            print("No coaching signals — fleet is healthy.")
+
+
+if __name__ == "__main__":
+    main()
