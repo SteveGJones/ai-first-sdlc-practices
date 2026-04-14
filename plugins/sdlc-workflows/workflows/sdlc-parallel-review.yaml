@@ -1,3 +1,14 @@
+# Per-node team image selection (Phase 2, EPIC #96):
+# Each node's 'image' field specifies which team Docker image to use.
+# Set to your team image name (e.g., sdlc-worker:security-review-team)
+# or leave as sdlc-worker:base for the default toolchain.
+# Requires: SDLC Archon patch (ContainerProvider).
+#
+# Tip: assign each reviewer its own team image for enforcement:
+#   image: sdlc-worker:security-review-team
+#   image: sdlc-worker:architecture-review-team
+#   etc.
+
 name: sdlc-parallel-review
 description: |
   Fan-out parallel review across 5 specialist agents, then synthesise.
@@ -19,31 +30,38 @@ provider: claude
 nodes:
   - id: security-review
     command: sdlc-security-review
+    image: sdlc-worker:base
     context: fresh
     effort: high
 
   - id: architecture-review
     command: sdlc-architecture-review
+    image: sdlc-worker:base
     context: fresh
 
   - id: performance-review
     command: sdlc-performance-review
+    image: sdlc-worker:base
     context: fresh
 
   - id: code-quality-review
     command: sdlc-code-quality-review
+    image: sdlc-worker:base
     context: fresh
 
   - id: test-coverage-review
     command: sdlc-test-coverage-review
+    image: sdlc-worker:base
     context: fresh
 
   - id: validate
     command: sdlc-validate
+    image: sdlc-worker:base
     context: fresh
 
   - id: synthesise
     command: sdlc-synthesise-reviews
+    image: sdlc-worker:base
     depends_on:
       - security-review
       - architecture-review

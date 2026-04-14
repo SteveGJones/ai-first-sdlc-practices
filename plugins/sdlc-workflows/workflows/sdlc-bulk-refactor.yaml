@@ -1,3 +1,9 @@
+# Per-node team image selection (Phase 2, EPIC #96):
+# Each node's 'image' field specifies which team Docker image to use.
+# Set to your team image name (e.g., sdlc-worker:security-review-team)
+# or leave as sdlc-worker:base for the default toolchain.
+# Requires: SDLC Archon patch (ContainerProvider).
+
 name: sdlc-bulk-refactor
 description: |
   File-partitioned parallel refactor across a codebase.
@@ -16,31 +22,37 @@ provider: claude
 nodes:
   - id: plan
     command: sdlc-plan
+    image: sdlc-worker:base
     context: fresh
     model: claude-opus-4-6[1m]
 
   - id: implement-a
     depends_on: [plan]
     command: sdlc-implement
+    image: sdlc-worker:base
     context: fresh
 
   - id: implement-b
     depends_on: [plan]
     command: sdlc-implement
+    image: sdlc-worker:base
     context: fresh
 
   - id: implement-c
     depends_on: [plan]
     command: sdlc-implement
+    image: sdlc-worker:base
     context: fresh
 
   - id: merge
     depends_on: [implement-a, implement-b, implement-c]
     command: sdlc-merge-results
+    image: sdlc-worker:base
     trigger_rule: one_success
     context: fresh
 
   - id: validate
     depends_on: [merge]
     command: sdlc-validate
+    image: sdlc-worker:base
     context: fresh

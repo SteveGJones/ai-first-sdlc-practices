@@ -1,3 +1,9 @@
+# Per-node team image selection (Phase 2, EPIC #96):
+# Each node's 'image' field specifies which team Docker image to use.
+# Set to your team image name (e.g., sdlc-worker:security-review-team)
+# or leave as sdlc-worker:base for the default toolchain.
+# Requires: SDLC Archon patch (ContainerProvider).
+
 name: sdlc-commissioned-pipeline
 description: |
   Full autonomous SDLC pipeline with approval gates.
@@ -24,6 +30,7 @@ provider: claude
 nodes:
   - id: plan
     command: sdlc-plan
+    image: sdlc-worker:base
     context: fresh
     model: claude-opus-4-6[1m]
 
@@ -41,6 +48,7 @@ nodes:
   - id: implement
     depends_on: [approve-plan]
     command: sdlc-implement
+    image: sdlc-worker:base
     context: fresh
     model: claude-opus-4-6[1m]
     loop:
@@ -51,25 +59,30 @@ nodes:
   - id: validate
     depends_on: [implement]
     command: sdlc-validate
+    image: sdlc-worker:base
     context: fresh
 
   - id: security-review
     depends_on: [validate]
     command: sdlc-security-review
+    image: sdlc-worker:base
     context: fresh
 
   - id: architecture-review
     depends_on: [validate]
     command: sdlc-architecture-review
+    image: sdlc-worker:base
     context: fresh
 
   - id: code-quality-review
     depends_on: [validate]
     command: sdlc-code-quality-review
+    image: sdlc-worker:base
     context: fresh
 
   - id: synthesise
     command: sdlc-synthesise-reviews
+    image: sdlc-worker:base
     depends_on: [security-review, architecture-review, code-quality-review]
     trigger_rule: one_success
     context: fresh
@@ -87,6 +100,7 @@ nodes:
 
   - id: create-pr
     depends_on: [approve-review]
+    image: sdlc-worker:base
     prompt: |
       Push the current branch and create a pull request.
 
