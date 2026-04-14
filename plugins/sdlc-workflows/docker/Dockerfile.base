@@ -50,6 +50,14 @@ RUN if ! grep -q 'executable:' /opt/archon/packages/core/src/clients/claude.ts; 
       echo "Archon already sets executable — skipping ARM64 patch"; \
     fi
 
+# SDLC patch: ContainerProvider + per-node image selection.
+# Adds Docker-based isolation so different workflow nodes can run different
+# team images. Conditional — skips if Archon already has the feature.
+# See: https://github.com/coleam00/Archon/issues/1197
+COPY patches/ /opt/sdlc-patches/
+RUN chmod +x /opt/sdlc-patches/apply-patches.sh && \
+    bash /opt/sdlc-patches/apply-patches.sh /opt/archon
+
 # Create archon wrapper script that runs from source via Bun.
 RUN printf '#!/bin/bash\nexec bun run /opt/archon/packages/cli/src/cli.ts "$@"\n' > /usr/local/bin/archon && \
     chmod +x /usr/local/bin/archon
