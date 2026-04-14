@@ -20,6 +20,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/bin/python3 /usr/bin/python
 
+# Python dependencies for SDLC scripts (validation, team management, reporting)
+RUN pip install --no-cache-dir --break-system-packages pyyaml
+
 # Copy Bun runtime from the deps stage (avoids needing unzip for bun installer)
 COPY --from=archon-deps /usr/local/bin/bun /usr/local/bin/bun
 COPY --from=archon-deps /usr/local/bin/bunx /usr/local/bin/bunx

@@ -209,6 +209,49 @@ def _infer_plugins_root(plugin_paths: dict[str, Path]) -> Path:
 # ---------------------------------------------------------------------------
 
 
+def generate_container_installed_json(
+    installed_json: Path,
+    plugins_root: Path,
+    output_path: Path,
+) -> None:
+    """Write a container-specific ``installed_plugins.json``.
+
+    The host file has ``installPath`` values pointing to the host filesystem
+    (e.g. ``/Users/alice/.claude/plugins/cache/...``).  Inside the Docker
+    image, these live under ``/home/sdlc/.claude/plugins/cache/...``.
+
+    This function rewrites every ``installPath`` so that scripts running
+    inside the container can resolve plugin directories.
+    """
+    import json
+
+    with installed_json.open() as fh:
+        raw = json.load(fh)
+
+    def _rewrite(path_str: str) -> str:
+        return _host_to_image_rel(Path(path_str), plugins_root)
+
+    if isinstance(raw, dict) and "version" in raw and "plugins" in raw:
+        for _key, entries in raw["plugins"].items():
+            if isinstance(entries, list):
+                for entry in entries:
+                    if "installPath" in entry:
+                        entry["installPath"] = _rewrite(entry["installPath"])
+            elif isinstance(entries, dict) and "installPath" in entries:
+                entries["installPath"] = _rewrite(entries["installPath"])
+    else:
+        for _key, entry in raw.items():
+            if isinstance(entry, dict) and "installPath" in entry:
+                entry["installPath"] = _rewrite(entry["installPath"])
+            elif isinstance(entry, list):
+                for item in entry:
+                    if isinstance(item, dict) and "installPath" in item:
+                        item["installPath"] = _rewrite(item["installPath"])
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(raw, indent=2) + "\n")
+
+
 def generate(
     manifest_path: Path,
     installed_json: Path,
@@ -333,12 +376,11 @@ def generate(
             lines.append(f"COPY {local_path}/ {_IMAGE_WORKSPACE}/{local_path}/")
         lines.append("")
 
-    # -- Plugin registry -------------------------------------------------------
-    lines.append("# Plugin registry")
-    lines.append(
-        f"COPY --from=plugin-source {_IMAGE_PLUGINS_ROOT}/installed_plugins.json \\"
-    )
-    lines.append(f"     {_IMAGE_PLUGINS_ROOT}/installed_plugins.json")
+    # -- Plugin registry (rewritten for container paths) -------------------------
+    container_json_path = output_path.parent / f"{team_name}-installed_plugins.json"
+    generate_container_installed_json(installed_json, plugins_root, container_json_path)
+    lines.append("# Plugin registry (paths rewritten for container filesystem)")
+    lines.append(f"COPY {container_json_path} {_IMAGE_PLUGINS_ROOT}/installed_plugins.json")
     lines.append("")
 
     # -- Switch to root for ownership / permission operations -------------------

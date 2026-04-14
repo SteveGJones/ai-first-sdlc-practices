@@ -1,0 +1,20 @@
+name: feature-pipeline
+description: |
+  Smoke test workflow — two nodes with different team images.
+
+provider: claude
+
+nodes:
+  - id: implement
+    command: implement
+    image: sdlc-worker:dev-team
+    context: fresh
+
+  - id: review
+    command: review
+    image: sdlc-worker:review-team
+    depends_on: [implement]
+    context: fresh
+    team_extend:
+      agents:
+        - sdlc-core:verification-enforcer
