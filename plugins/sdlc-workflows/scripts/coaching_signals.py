@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+"""Analyse delegation teams for tiered coaching signals.
+
+Signal tiers:
+- **critical** — action required (e.g. referenced team not built)
+- **advisory** — worth reviewing (e.g. stale image, unused team)
+- **informational** — patterns to be aware of (e.g. frequent overrides)
+
+Public API
+----------
+analyse_team(team_data) -> list[dict]
+analyse_fleet(teams) -> dict[str, list[dict]]
+analyse_overrides(log_path, threshold=3) -> list[dict]
+"""
+
+from __future__ import annotations
+
+import json
+from collections import Counter
+from pathlib import Path
+
+
+def analyse_team(team: dict) -> list[dict]:
+    """Produce coaching signals for a single team status dict.
+
+    Parameters
+    ----------
+    team:
+        A dict from ``teams_status_report.fleet_report()["teams"]``.
+
+    Returns
+    -------
+    list[dict]
+        Each signal has ``type``, ``tier``, ``team``, ``message`` keys.
+    """
+    signals: list[dict] = []
+    name = team.get("name", "unknown")
+    stale = team.get("staleness", "current")
+    wf_count = team.get("workflow_count", 0)
+
+    if stale == "not_built" and wf_count > 0:
+        signals.append({
+            "type": "not_built",
+            "tier": "critical",
+            "team": name,
+            "message": (
+                f"{name} is referenced by {wf_count} workflow(s) "
+                "but has no image built"
+            ),
+        })
+    elif stale == "not_built":
+        signals.append({
+            "type": "not_built",
+            "tier": "critical",
+            "team": name,
+            "message": f"{name} has no image built",
+        })
+
+    if stale == "stale":
+        signals.append({
+            "type": "stale_image",
+            "tier": "advisory",
+            "team": name,
+            "message": (
+                f"{name} image is stale (manifest updated "
+                f"{team.get('updated', '?')}, image built "
+                f"{team.get('image_built', '?')})"
+            ),
+        })
+
+    if wf_count == 0 and stale != "not_built":
+        signals.append({
+            "type": "unused_team",
+            "tier": "advisory",
+            "team": name,
+            "message": (
+                f"{name} is not referenced by any workflow — "
+                "consider deleting or assigning to a workflow"
+            ),
+        })
+
+    return signals
+
+
+def analyse_fleet(
+    teams: list[dict],
+) -> dict[str, list[dict]]:
+    """Aggregate coaching signals across all teams.
+
+    Returns ``{"critical": [...], "advisory": [...], "informational": [...]}``.
+    """
+    result: dict[str, list[dict]] = {
+        "critical": [],
+        "advisory": [],
+        "informational": [],
+    }
+
+    for team in teams:
+        for signal in analyse_team(team):
+            tier = signal.get("tier", "informational")
+            result.setdefault(tier, []).append(signal)
+
+    return result
+
+
+def analyse_overrides(
+    log_path: Path,
+    threshold: int = 3,
+) -> list[dict]:
+    """Detect frequently overridden agents from the override log.
+
+    Parameters
+    ----------
+    log_path:
+        Path to ``overrides.jsonl`` (append-only JSONL file).
+    threshold:
+        Minimum number of overrides to trigger a signal.
+
+    Returns
+    -------
+    list[dict]
+        Coaching signals for frequently overridden agents.
+    """
+    if not log_path.exists():
+        return []
+
+    counter: Counter[str] = Counter()
+    teams_for_agent: dict[str, set[str]] = {}
+
+    for line in log_path.read_text().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        agent = entry.get("agent", "")
+        team = entry.get("team", "")
+        if agent:
+            counter[agent] += 1
+            teams_for_agent.setdefault(agent, set()).add(team)
+
+    signals: list[dict] = []
+    for agent, count in counter.items():
+        if count >= threshold:
+            team_names = ", ".join(sorted(teams_for_agent.get(agent, set())))
+            signals.append({
+                "type": "frequent_override",
+                "tier": "informational",
+                "agent": agent,
+                "count": count,
+                "teams": team_names,
+                "message": (
+                    f"{agent} has been added via team_extend {count} times "
+                    f"(on teams: {team_names}) — consider promoting to "
+                    "a standing team member"
+                ),
+            })
+
+    return signals
