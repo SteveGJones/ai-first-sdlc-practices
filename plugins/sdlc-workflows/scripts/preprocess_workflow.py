@@ -57,7 +57,7 @@ def _build_docker_run(
         (
             "docker run --rm"
             f' -v "{workspace}:/workspace"'
-            f" {cred_mount}"
+            f' -v "{cred_mount}"'
             ' -e "CLAUDE_PROMPT=$PROMPT"'
             f" {image}"
         ),

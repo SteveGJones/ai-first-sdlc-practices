@@ -54,7 +54,7 @@ def _try_keychain(work_dir: Path) -> dict | None:
 
         return {
             "tier": "keychain",
-            "mount_args": f"-v {temp_file}:{CONTAINER_CRED_PATH}:ro",
+            "mount_args": f"{temp_file}:{CONTAINER_CRED_PATH}:ro",
             "message": "Credentials from macOS Keychain",
             "cleanup": str(temp_file),
         }
@@ -90,7 +90,7 @@ def _try_volume() -> dict | None:
 
         return {
             "tier": "volume",
-            "mount_args": f"-v {CREDENTIAL_VOLUME}:/home/sdlc/.claude-creds:ro",
+            "mount_args": f"{CREDENTIAL_VOLUME}:/home/sdlc/.claude-creds:ro",
             "message": f"Credentials from Docker volume: {CREDENTIAL_VOLUME}",
             "cleanup": None,
         }
@@ -118,7 +118,7 @@ def _try_config(project_dir: Path) -> dict | None:
 
         return {
             "tier": "config",
-            "mount_args": f"-v {cred_file}:{CONTAINER_CRED_PATH}:ro",
+            "mount_args": f"{cred_file}:{CONTAINER_CRED_PATH}:ro",
             "message": f"Credentials from config: {cred_path}",
             "cleanup": None,
         }
