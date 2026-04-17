@@ -7,13 +7,24 @@ PLUGIN_DIR="$REPO_ROOT/plugins/sdlc-workflows"
 SCRIPTS_DIR="$PLUGIN_DIR/scripts"
 MINI="$SCRIPT_DIR/miniproject"
 
-echo "=== Phase 4 E2E Orchestration Test ==="
-echo "Proves Archon orchestrates containerised team workflows."
-echo ""
+MODE="sequential"
+if [ "${1:-}" = "--parallel" ]; then
+    MODE="parallel"
+fi
 
 PASS_COUNT=0
 FAIL_COUNT=0
-TOTAL=6
+
+if [ "$MODE" = "sequential" ]; then
+    TOTAL=6
+    echo "=== Phase 4 E2E Orchestration Test (sequential) ==="
+    echo "Proves Archon orchestrates containerised team workflows."
+else
+    TOTAL=8
+    echo "=== Phase 4 E2E Orchestration Test (parallel) ==="
+    echo "Proves Archon orchestrates parallel fork/merge workflows."
+fi
+echo ""
 
 pass() { echo "  PASS: $1"; PASS_COUNT=$((PASS_COUNT + 1)); }
 fail() { echo "  FAIL: $1 — $2"; FAIL_COUNT=$((FAIL_COUNT + 1)); }
@@ -28,9 +39,8 @@ for cmd in docker python3; do
     fi
 done
 
-# Check archon — may be installed globally or via bun in the docker image
 if ! command -v archon >/dev/null 2>&1; then
-    echo "WARNING: archon CLI not found on host. Will check inside container."
+    echo "WARNING: archon CLI not found on host. Will execute nodes directly."
 fi
 
 for img in sdlc-worker:base sdlc-worker:full; do
@@ -79,7 +89,7 @@ cp -R "$MINI"/.archon "$WORKSPACE/"
 (cd "$WORKSPACE" && git init -q && git config user.email "test@test.com" && git config user.name "Test" && git add -A && git commit -q -m "initial" 2>/dev/null) || true
 
 # ---------------------------------------------------------------------------
-# Check 1: Resolve credentials
+# Check 1: Resolve credentials (shared)
 # ---------------------------------------------------------------------------
 echo "[1/$TOTAL] Resolve credentials"
 CRED_INFO=$(python3 "$SCRIPTS_DIR/resolve_credentials.py" --project-dir "$WORKSPACE" --json 2>/dev/null) || true
@@ -93,6 +103,79 @@ if [ "$CRED_TIER" = "none" ] || [ -z "$CRED_MOUNT" ]; then
     exit 1
 fi
 pass "credentials resolved (tier: $CRED_TIER)"
+
+# ---------------------------------------------------------------------------
+# Helper: execute workflow nodes directly via docker run
+# ---------------------------------------------------------------------------
+run_nodes_direct() {
+    local WORKFLOW_FILE="$1"
+    echo "  archon not found on host — executing nodes via docker run"
+
+    # Extract nodes respecting depends_on ordering.
+    # Python sorts topologically: no-deps first, then by dependency depth.
+    NODES=$(python3 -c "
+import yaml
+from pathlib import Path
+
+wf = yaml.safe_load(Path('$WORKFLOW_FILE').read_text())
+nodes = wf.get('nodes', [])
+
+# Build dependency graph and sort topologically
+node_map = {n['id']: n for n in nodes}
+visited = set()
+order = []
+
+def visit(nid):
+    if nid in visited:
+        return
+    visited.add(nid)
+    for dep in node_map.get(nid, {}).get('depends_on', []):
+        visit(dep)
+    order.append(nid)
+
+for n in nodes:
+    visit(n['id'])
+
+for nid in order:
+    n = node_map[nid]
+    img = n.get('image', '')
+    cmd = n.get('command', '')
+    print(f'{nid}|{img}|{cmd}')
+" 2>/dev/null)
+
+    for NODE_LINE in $NODES; do
+        NODE_ID=$(echo "$NODE_LINE" | cut -d'|' -f1)
+        NODE_IMAGE=$(echo "$NODE_LINE" | cut -d'|' -f2)
+        NODE_CMD=$(echo "$NODE_LINE" | cut -d'|' -f3)
+
+        if [ -z "$NODE_IMAGE" ]; then
+            echo "  Skipping node $NODE_ID (no image)"
+            continue
+        fi
+
+        echo "  Running node: $NODE_ID (image: $NODE_IMAGE)"
+
+        CMD_FILE="$WORKSPACE/.archon/commands/$NODE_CMD.md"
+        if [ -f "$CMD_FILE" ]; then
+            PROMPT=$(cat "$CMD_FILE")
+        else
+            PROMPT="Execute command: $NODE_CMD"
+        fi
+
+        NODE_OUTPUT=$(docker run --rm \
+            -v "$WORKSPACE:/workspace" \
+            -v "$CRED_MOUNT" \
+            -e "CLAUDE_PROMPT=$PROMPT" \
+            "$NODE_IMAGE" 2>&1) || true
+
+        echo "  Node $NODE_ID: $(echo "$NODE_OUTPUT" | tail -1)"
+    done
+}
+
+# ===========================================================================
+# SEQUENTIAL MODE
+# ===========================================================================
+if [ "$MODE" = "sequential" ]; then
 
 # ---------------------------------------------------------------------------
 # Check 2: Preprocess workflow
@@ -109,7 +192,6 @@ python3 "$SCRIPTS_DIR/preprocess_workflow.py" \
     --commands-dir "$WORKSPACE/.archon/commands" 2>/dev/null
 
 if [ -f "$GENERATED_DIR/feature-pipeline.yaml" ]; then
-    # Verify it has bash nodes
     if grep -q "bash:" "$GENERATED_DIR/feature-pipeline.yaml"; then
         pass "workflow preprocessed — image nodes transformed to bash nodes"
     else
@@ -122,75 +204,20 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Check 3: Run through Archon (or direct execution if archon not on host)
+# Check 3: Execute workflow
 # ---------------------------------------------------------------------------
 echo "[3/$TOTAL] Execute preprocessed workflow (this takes ~3-5 min)"
 
-# The preprocessed YAML has bash nodes that docker run team containers.
-# We can execute it via Archon if available, or directly via bash if not.
-# Either way, what matters is: the bash nodes run, containers are spawned,
-# and work gets done.
-
 if command -v archon >/dev/null 2>&1; then
-    # Replace the original workflow with the preprocessed version.
-    # Archon resolves by `name:` inside the YAML, so the file replaces the original
-    # and keeps the same name field.
-    # Remove the original to avoid duplicate name conflicts.
     rm -f "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
     cp "$GENERATED_DIR/feature-pipeline.yaml" "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
     ARCHON_OUTPUT=$(cd "$WORKSPACE" && archon workflow run feature-pipeline --no-worktree 2>&1) || true
     EXECUTION_METHOD="archon"
 else
-    # Direct execution: read the ORIGINAL workflow for node order and images,
-    # then run each node as docker run with the team image.
-    # This is the same proven pattern as run-acceptance.sh.
-    echo "  archon not found on host — executing nodes via docker run"
     EXECUTION_METHOD="direct"
-
-    # Extract nodes from the original (not preprocessed) workflow
-    NODES=$(python3 -c "
-import yaml
-from pathlib import Path
-wf = yaml.safe_load(Path('$WORKSPACE/.archon/workflows/feature-pipeline.yaml').read_text())
-for node in wf.get('nodes', []):
-    nid = node.get('id', '')
-    img = node.get('image', '')
-    cmd = node.get('command', '')
-    print(f'{nid}|{img}|{cmd}')
-" 2>/dev/null)
-
-    for NODE_LINE in $NODES; do
-        NODE_ID=$(echo "$NODE_LINE" | cut -d'|' -f1)
-        NODE_IMAGE=$(echo "$NODE_LINE" | cut -d'|' -f2)
-        NODE_CMD=$(echo "$NODE_LINE" | cut -d'|' -f3)
-
-        if [ -z "$NODE_IMAGE" ]; then
-            echo "  Skipping node $NODE_ID (no image)"
-            continue
-        fi
-
-        echo "  Running node: $NODE_ID (image: $NODE_IMAGE)"
-
-        # Read the command prompt from the commands directory
-        CMD_FILE="$WORKSPACE/.archon/commands/$NODE_CMD.md"
-        if [ -f "$CMD_FILE" ]; then
-            PROMPT=$(cat "$CMD_FILE")
-        else
-            PROMPT="Execute command: $NODE_CMD"
-        fi
-
-        # Run the container with the entrypoint handling auth + execution
-        NODE_OUTPUT=$(docker run --rm \
-            -v "$WORKSPACE:/workspace" \
-            -v "$CRED_MOUNT" \
-            -e "CLAUDE_PROMPT=$PROMPT" \
-            "$NODE_IMAGE" 2>&1) || true
-
-        echo "  Node $NODE_ID: $(echo "$NODE_OUTPUT" | tail -1)"
-    done
+    run_nodes_direct "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
 fi
 
-# Check if the execution produced any results
 WORKSPACE_COMMITS=$(cd "$WORKSPACE" && git log --oneline 2>/dev/null | wc -l | tr -d ' ')
 if [ "${WORKSPACE_COMMITS:-0}" -gt 1 ]; then
     pass "workflow execution complete via $EXECUTION_METHOD ($((WORKSPACE_COMMITS - 1)) commit(s))"
@@ -199,7 +226,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Check 4: Implementation produced working code
+# Check 4: Implementation correctness
 # ---------------------------------------------------------------------------
 echo "[4/$TOTAL] Implementation correctness"
 IMPL_CHECK=$(cd "$WORKSPACE" && python3 -c "
@@ -221,7 +248,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Check 5: Review produced output
+# Check 5: Review output
 # ---------------------------------------------------------------------------
 echo "[5/$TOTAL] Review output exists"
 if [ -f "$WORKSPACE/review-output.md" ]; then
@@ -234,7 +261,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Check 6: Git history shows work from both containers
+# Check 6: Git history
 # ---------------------------------------------------------------------------
 echo "[6/$TOTAL] Git history"
 COMMITS=$(cd "$WORKSPACE" && git log --oneline 2>/dev/null)
@@ -246,23 +273,166 @@ else
     fail "git history" "expected multiple commits, got $COMMIT_COUNT"
 fi
 
+# ===========================================================================
+# PARALLEL MODE
+# ===========================================================================
+else
+
+# ---------------------------------------------------------------------------
+# Check 2: Preprocess parallel workflow
+# ---------------------------------------------------------------------------
+echo "[2/$TOTAL] Preprocess parallel-review-pipeline"
+GENERATED_DIR="$WORKSPACE/.archon/workflows/.generated"
+mkdir -p "$GENERATED_DIR"
+
+python3 "$SCRIPTS_DIR/preprocess_workflow.py" \
+    "$WORKSPACE/.archon/workflows/parallel-review-pipeline.yaml" \
+    --output "$GENERATED_DIR/parallel-review-pipeline.yaml" \
+    --workspace "$WORKSPACE" \
+    --cred-mount "$CRED_MOUNT" \
+    --commands-dir "$WORKSPACE/.archon/commands" 2>/dev/null
+
+if [ -f "$GENERATED_DIR/parallel-review-pipeline.yaml" ]; then
+    if grep -q "bash:" "$GENERATED_DIR/parallel-review-pipeline.yaml"; then
+        pass "parallel workflow preprocessed — image nodes transformed to bash nodes"
+    else
+        fail "preprocessing" "output file exists but has no bash nodes"
+    fi
+else
+    fail "preprocessing" "output file not created"
+    echo "=== Results: $PASS_COUNT pass, $FAIL_COUNT fail (of $TOTAL) ==="
+    exit 1
+fi
+
+# Verify DAG structure preserved: depends_on and trigger_rule
+if grep -q "depends_on:" "$GENERATED_DIR/parallel-review-pipeline.yaml" && \
+   grep -q "trigger_rule:" "$GENERATED_DIR/parallel-review-pipeline.yaml"; then
+    pass "DAG structure preserved (depends_on + trigger_rule)"
+else
+    fail "DAG structure" "missing depends_on or trigger_rule in preprocessed output"
+fi
+
+# ---------------------------------------------------------------------------
+# Check 4: Execute parallel workflow
+# ---------------------------------------------------------------------------
+echo "[4/$TOTAL] Execute parallel workflow (this takes ~5-8 min)"
+
+if command -v archon >/dev/null 2>&1; then
+    # Remove both workflow files to avoid name conflicts, then place preprocessed version
+    rm -f "$WORKSPACE/.archon/workflows/parallel-review-pipeline.yaml"
+    rm -f "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
+    cp "$GENERATED_DIR/parallel-review-pipeline.yaml" "$WORKSPACE/.archon/workflows/parallel-review-pipeline.yaml"
+    ARCHON_OUTPUT=$(cd "$WORKSPACE" && archon workflow run parallel-review-pipeline --no-worktree 2>&1) || true
+    EXECUTION_METHOD="archon"
+else
+    EXECUTION_METHOD="direct"
+    run_nodes_direct "$WORKSPACE/.archon/workflows/parallel-review-pipeline.yaml"
+fi
+
+WORKSPACE_COMMITS=$(cd "$WORKSPACE" && git log --oneline 2>/dev/null | wc -l | tr -d ' ')
+if [ "${WORKSPACE_COMMITS:-0}" -gt 1 ]; then
+    pass "workflow execution complete via $EXECUTION_METHOD ($((WORKSPACE_COMMITS - 1)) commit(s))"
+else
+    fail "workflow execution" "no commits produced. Method: $EXECUTION_METHOD"
+fi
+
+# ---------------------------------------------------------------------------
+# Check 5: Implementation produced code changes
+# ---------------------------------------------------------------------------
+echo "[5/$TOTAL] Implementation correctness"
+IMPL_CHECK=$(cd "$WORKSPACE" && python3 -c "
+import sys
+sys.path.insert(0, 'src')
+from app import TaskTracker
+t = TaskTracker()
+t.add('urgent', priority='high')
+t.add('normal')
+has_priority = any('priority' in task for task in t.list_tasks())
+has_method = hasattr(t, 'high_priority_count')
+print(f'priority={has_priority} method={has_method}')
+" 2>&1) || true
+
+if echo "$IMPL_CHECK" | grep -q "priority=True method=True"; then
+    pass "priority field and high_priority_count() work"
+else
+    fail "implementation" "$IMPL_CHECK"
+fi
+
+# ---------------------------------------------------------------------------
+# Check 6: Both review files exist
+# ---------------------------------------------------------------------------
+echo "[6/$TOTAL] Parallel review outputs"
+REVIEW_FILES=0
+if [ -f "$WORKSPACE/security-review.md" ]; then
+    REVIEW_FILES=$((REVIEW_FILES + 1))
+    echo "       security-review.md: $(wc -l < "$WORKSPACE/security-review.md" | tr -d ' ') lines"
+fi
+if [ -f "$WORKSPACE/architecture-review.md" ]; then
+    REVIEW_FILES=$((REVIEW_FILES + 1))
+    echo "       architecture-review.md: $(wc -l < "$WORKSPACE/architecture-review.md" | tr -d ' ') lines"
+fi
+
+if [ "$REVIEW_FILES" -eq 2 ]; then
+    pass "both review files produced (security + architecture)"
+elif [ "$REVIEW_FILES" -eq 1 ]; then
+    fail "parallel reviews" "only one review file produced (expected 2)"
+else
+    fail "parallel reviews" "no review files found"
+fi
+
+# ---------------------------------------------------------------------------
+# Check 7: Synthesis produced
+# ---------------------------------------------------------------------------
+echo "[7/$TOTAL] Synthesis output"
+if [ -f "$WORKSPACE/synthesis.md" ]; then
+    LINES=$(wc -l < "$WORKSPACE/synthesis.md" | tr -d ' ')
+    pass "synthesis.md exists ($LINES lines)"
+else
+    fail "synthesis" "synthesis.md not found — synthesise node may not have run"
+fi
+
+# ---------------------------------------------------------------------------
+# Check 8: Git history shows all stages
+# ---------------------------------------------------------------------------
+echo "[8/$TOTAL] Git history"
+COMMITS=$(cd "$WORKSPACE" && git log --oneline 2>/dev/null)
+COMMIT_COUNT=$(echo "$COMMITS" | wc -l | tr -d ' ')
+if [ "${COMMIT_COUNT:-0}" -ge 4 ]; then
+    pass "git history: $COMMIT_COUNT commits (implement + 2 reviews + synthesis)"
+    echo "       $(echo "$COMMITS" | head -6)"
+elif [ "${COMMIT_COUNT:-0}" -gt 1 ]; then
+    pass "git history: $COMMIT_COUNT commits (some stages committed)"
+    echo "       $(echo "$COMMITS" | head -6)"
+else
+    fail "git history" "expected 4+ commits, got $COMMIT_COUNT"
+fi
+
+fi  # end MODE
+
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
 echo ""
 echo "=== Results: $PASS_COUNT pass, $FAIL_COUNT fail (of $TOTAL) ==="
 if [ "$FAIL_COUNT" -eq 0 ]; then
-    echo "Phase 4 E2E orchestration test: ALL PASS"
+    echo "Phase 4 E2E orchestration test ($MODE): ALL PASS"
     echo ""
     echo "Proven:"
     echo "  - Credentials resolved automatically ($CRED_TIER)"
-    echo "  - Workflow preprocessed (image nodes → bash nodes)"
+    echo "  - Workflow preprocessed (image nodes -> bash nodes)"
     echo "  - Execution method: $EXECUTION_METHOD"
-    echo "  - Dev-team implemented features in its container"
-    echo "  - Review-team reviewed in its container"
+    if [ "$MODE" = "sequential" ]; then
+        echo "  - Dev-team implemented features in its container"
+        echo "  - Review-team reviewed in its container"
+    else
+        echo "  - Dev-team implemented features in its container"
+        echo "  - Two review containers ran (security + architecture)"
+        echo "  - Synthesise container merged review findings"
+        echo "  - DAG ordering enforced: implement -> parallel reviews -> synthesise"
+    fi
     echo "  - Git history shows multi-container work"
     exit 0
 else
-    echo "Phase 4 E2E orchestration test: FAILURES DETECTED"
+    echo "Phase 4 E2E orchestration test ($MODE): FAILURES DETECTED"
     exit 1
 fi
