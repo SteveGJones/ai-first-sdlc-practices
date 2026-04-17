@@ -38,47 +38,49 @@ def _build_docker_run(
     image: str,
     workspace: str,
     cred_mount: str,
-    prompt: str,
-    env: dict[str, str] | None = None,
+    prompt_source: str,
 ) -> str:
-    """Build a ``docker run`` command string."""
-    parts = ["docker run --rm"]
-    parts.append(f'-v "{workspace}:/workspace"')
-    parts.append(cred_mount)
-    if env:
-        for key, val in env.items():
-            parts.append(f'-e "{key}={val}"')
-    parts.append(image)
+    """Build a ``docker run`` command string.
 
-    escaped_prompt = prompt.replace("'", "'\\''")
-    parts.append("/bin/bash -c '")
-    parts.append(
-        "cp /home/sdlc/.claude-creds/.credentials.json "
-        "/home/sdlc/.claude/.credentials.json 2>/dev/null; "
-        "chmod 600 /home/sdlc/.claude/.credentials.json 2>/dev/null; "
-        "unset ANTHROPIC_API_KEY; "
-        "cd /workspace; "
-        "if [ ! -d .git ]; then "
-        'git init -q && git config user.email "sdlc@worker" && '
-        'git config user.name "SDLC Worker" && '
-        "git add -A && git commit -q -m initial 2>/dev/null; "
-        "fi; "
-    )
-    parts.append(
-        f"claude --dangerously-skip-permissions -p {shlex.quote(escaped_prompt)}"
-    )
-    parts.append("'")
-    return " ".join(parts)
+    *prompt_source* is a shell expression that produces the prompt text.
+    For command nodes: ``cat /workspace/.archon/commands/X.md``
+    For inline prompts: a heredoc or echo statement.
+    """
+    # Use the container entrypoint which handles:
+    #   - credential setup (from .claude-auth or .claude-creds mount)
+    #   - git init
+    #   - loop workaround
+    #   - CLAUDE_PROMPT execution
+    # We write the prompt to a file and set CLAUDE_PROMPT via env var.
+    lines = [
+        "PROMPT=$(" + prompt_source + ")",
+        (
+            "docker run --rm"
+            f' -v "{workspace}:/workspace"'
+            f" {cred_mount}"
+            ' -e "CLAUDE_PROMPT=$PROMPT"'
+            f" {image}"
+        ),
+    ]
+    return "\n".join(lines)
 
 
-def _resolve_prompt(node: dict, commands_dir: str) -> str:
-    """Resolve the prompt for a node from command file or inline prompt."""
+def _resolve_prompt_source(node: dict, commands_dir: str) -> str:
+    """Return a shell expression that produces the prompt text.
+
+    For command nodes, ``cat`` the command file from the workspace.
+    For inline prompts, ``echo`` the text (writing to a heredoc).
+    """
     if "command" in node:
         command_name = node["command"]
-        return f"$(cat {commands_dir}/{command_name}.md 2>/dev/null || echo 'Execute: {command_name}')"
+        # The command file is inside the HOST workspace (mounted later),
+        # so we cat from the host path.
+        return f"cat {commands_dir}/{command_name}.md"
     if "prompt" in node:
-        return node["prompt"]
-    return "No prompt specified."
+        # Use a heredoc to avoid quoting issues
+        prompt_text = node["prompt"]
+        return f"cat <<'SDLC_PROMPT_EOF'\n{prompt_text}\nSDLC_PROMPT_EOF"
+    return "echo 'No prompt specified.'"
 
 
 def transform_node(
@@ -108,11 +110,12 @@ def transform_node(
         until_signal = loop_config.get("until", "DONE")
         max_iter = loop_config.get("max_iterations", 5)
 
+        prompt_source = f"cat <<'SDLC_PROMPT_EOF'\n{prompt}\nSDLC_PROMPT_EOF"
         docker_cmd = _build_docker_run(
             image=image,
             workspace=workspace,
             cred_mount=cred_mount,
-            prompt=prompt,
+            prompt_source=prompt_source,
         )
 
         result["bash"] = (
@@ -128,12 +131,12 @@ def transform_node(
         )
         return result
 
-    prompt = _resolve_prompt(node, commands_dir)
+    prompt_source = _resolve_prompt_source(node, commands_dir)
     docker_cmd = _build_docker_run(
         image=image,
         workspace=workspace,
         cred_mount=cred_mount,
-        prompt=prompt,
+        prompt_source=prompt_source,
     )
     result["bash"] = docker_cmd
     return result

@@ -8,15 +8,12 @@ provider: claude
 
 nodes:
   - id: implement
-    command: implement
+    command: sdlc-implement
     image: sdlc-worker:dev-team
     context: fresh
 
   - id: review
-    command: review
+    command: sdlc-review
     image: sdlc-worker:review-team
     depends_on: [implement]
     context: fresh
-    team_extend:
-      agents:
-        - sdlc-core:verification-enforcer

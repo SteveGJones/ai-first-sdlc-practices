@@ -154,3 +154,36 @@ def resolve(
         ),
         "cleanup": None,
     }
+
+
+def main() -> None:
+    """CLI entry point — report which credential tier is active."""
+    import argparse
+    import json as json_mod
+    import tempfile
+
+    parser = argparse.ArgumentParser(description="Resolve Claude Code credentials")
+    parser.add_argument("--project-dir", type=Path, default=Path("."))
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args()
+
+    work_dir = Path(tempfile.mkdtemp(prefix="sdlc-cred-"))
+    result = resolve(work_dir, args.project_dir)
+
+    if args.json:
+        print(json_mod.dumps(result, indent=2))
+    else:
+        print(f"Tier: {result['tier']}")
+        print(f"  {result['message']}")
+
+    cleanup_path = result.get("cleanup")
+    if cleanup_path:
+        Path(cleanup_path).unlink(missing_ok=True)
+    try:
+        work_dir.rmdir()
+    except OSError:
+        pass
+
+
+if __name__ == "__main__":
+    main()
