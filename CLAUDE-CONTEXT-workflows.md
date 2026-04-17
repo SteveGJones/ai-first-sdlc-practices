@@ -149,6 +149,8 @@ In `--json` mode, the resolver does NOT clean up temporary files (the caller man
 | `sdlc-worker:full` | ~3.9 GB | Base + all host plugins. Source layer for team COPY --from — not sized or configured for direct execution. |
 | `sdlc-worker:*-team` | ~3.5 GB | Base + manifest-scoped plugin subset. This is what runs. |
 
+Note: Sizes above are approximate (measured before Phase 5 optimizations). Actual sizes should be remeasured after rebuilding with the updated Dockerfile.base (xz-utils removal and Archon .git pruning may reduce base image size).
+
 ### Container Execution
 
 Each container runs with these flags:

@@ -28,7 +28,7 @@ COPY --from=archon-deps /usr/local/bin/bun /usr/local/bin/bun
 COPY --from=archon-deps /usr/local/bin/bunx /usr/local/bin/bunx
 
 # Claude Code CLI
-RUN npm install -g @anthropic-ai/claude-code
+RUN npm install -g @anthropic-ai/claude-code@2.1.107
 
 # Copy Archon source from build stage (dependencies already installed)
 COPY --from=archon-deps /opt/archon /opt/archon
@@ -66,7 +66,11 @@ RUN printf '#!/bin/bash\nexec bun run /opt/archon/packages/cli/src/cli.ts "$@"\n
     chmod +x /usr/local/bin/archon
 
 # Ralph orchestrator (used by smoke tests and autonomous loops)
-RUN npm install -g @ralph-orchestrator/ralph-cli
+RUN npm install -g @ralph-orchestrator/ralph-cli@2.9.2
+
+# Clean up build-only dependencies and artifacts
+RUN apt-get purge -y --auto-remove xz-utils && \
+    rm -rf /var/lib/apt/lists/* /opt/archon/.git
 
 # Non-root user (UID 1001, matching smoke test convention — node:22-slim
 # already has a 'node' user at UID 1000)
@@ -81,6 +85,10 @@ RUN chmod +x /opt/entrypoint.sh
 # SDLC helper scripts (loop workaround, future patches)
 COPY scripts/detect-loop-bug.sh scripts/loop-workaround.sh /opt/sdlc-scripts/
 RUN chmod +x /opt/sdlc-scripts/*.sh
+
+# Health check: verify Claude Code binary is available
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD test -x /usr/local/bin/claude || exit 1
 
 USER sdlc
 WORKDIR /workspace
