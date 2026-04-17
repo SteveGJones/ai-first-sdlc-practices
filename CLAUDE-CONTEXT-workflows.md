@@ -1,0 +1,191 @@
+# CLAUDE-CONTEXT-workflows.md
+
+Containerised Claude Code workers reference. Load this when authoring workflows, creating teams, or debugging container execution.
+
+## Workflow YAML Schema
+
+Workflows live in `.archon/workflows/` and define a DAG of nodes that Archon executes.
+
+```yaml
+name: <workflow-name>           # Required. Archon resolves workflows by this field, not filename.
+description: |                  # Required. Multi-line description of purpose, inputs, outputs.
+  What this workflow does.
+provider: claude                # Required. Always "claude" for Claude Code workflows.
+
+nodes:                          # Required. List of execution nodes.
+  - id: <node-id>              # Required. Unique within workflow. Used in depends_on references.
+    command: <command-name>     # Required (unless prompt: is set). Name of .md file in .archon/commands/ (without .md extension).
+    image: <docker-image>       # Optional. Team Docker image (e.g., sdlc-worker:dev-team). If set, node runs inside this container. If omitted, runs on host.
+    depends_on: [<node-id>, ...]  # Optional. Nodes that must complete before this one starts. Omit for root nodes.
+    trigger_rule: all_success | one_success  # Optional. Default: all_success. When to trigger after dependencies complete.
+    context: fresh              # Optional. "fresh" starts with clean context. Default behaviour.
+    model: <model-id>          # Optional. Override the Claude model for this node (e.g., claude-opus-4-6[1m]).
+    effort: high | medium | low # Optional. Hint for token budget allocation.
+    timeout: <seconds>          # Optional. Per-node timeout in seconds. Passed as CLAUDE_TIMEOUT env var to container. Default: 300.
+    loop:                       # Optional. Repeat this node until a signal is detected.
+      until: <signal-string>    # String to grep for in output to stop the loop.
+      max_iterations: <int>     # Maximum iterations before forced stop. Default: 5.
+      fresh_context: true       # Whether to restart context each iteration.
+    prompt: |                   # Optional. Inline prompt instead of command file. Use command: for anything non-trivial.
+      Inline prompt text.
+```
+
+### DAG Rules
+
+- Nodes with no `depends_on` run first (root layer).
+- Nodes sharing the same dependencies and no dependency on each other run in parallel.
+- `trigger_rule: all_success` (default) requires ALL dependencies to succeed.
+- `trigger_rule: one_success` requires at least ONE dependency to succeed.
+- Archon resolves workflows by the `name:` field, not the filename. The filename can differ from the name.
+
+### Preprocessing
+
+When a workflow has `image:` nodes, the preprocessor (`preprocess_workflow.py`) transforms them before Archon execution:
+
+1. Each `image:` node becomes a bash node with a `docker run` command.
+2. The `command:` field is resolved to a shell expression: `cat .archon/commands/<name>.md`.
+3. The prompt is passed via `CLAUDE_PROMPT` env var (not inline bash — avoids quoting issues).
+4. Preserved fields: `id`, `depends_on`, `trigger_rule`, `when`, `timeout`, `retry`.
+5. Removed fields: `image`, `command`, `context`, `model`, `effort`, `prompt`.
+6. `loop:` nodes become bash for-loops with signal detection.
+7. The preprocessed YAML replaces the original file (Archon resolves by `name:` — must not have duplicates).
+
+## Team Manifest Schema (v1.0)
+
+Team manifests live in `.archon/teams/` and define which plugins, agents, and skills are available inside a team container.
+
+```yaml
+schema_version: "1.0"          # Required. Always "1.0".
+name: <team-name>              # Required. Valid Docker tag component: lowercase, digits, dots, hyphens.
+description: >                 # Optional. What this team does.
+  Human-readable description.
+status: active                 # Required. One of: active, ephemeral, inactive, decommissioned.
+created: "YYYY-MM-DDTHH:MM:SS"  # Optional. ISO timestamp.
+updated: "YYYY-MM-DDTHH:MM:SS"  # Optional. ISO timestamp.
+image_built: "YYYY-MM-DDTHH:MM:SS"  # Optional. When the Docker image was last built.
+
+plugins:                       # Required. List of plugin names to include.
+  - <plugin-name>              # Must exist in installed_plugins.json on the host.
+
+agents:                        # Optional. Specific agents to include from the listed plugins.
+  - <plugin>:<agent>           # Plugin must be in the plugins list above.
+  - local:<path>               # Local agent file (relative to project root). Copied into container.
+
+skills:                        # Optional. Specific skills to include.
+  - <plugin>:<skill>           # Plugin must be in the plugins list above.
+
+context:                       # Optional. Project files to bake into the container.
+  - <filename>                 # Must exist in project root (e.g., CONSTITUTION.md).
+```
+
+### Build Pipeline
+
+1. `validate_team_manifest.py` validates the manifest against the schema.
+2. `generate_team_claude_md.py` generates a team-specific CLAUDE.md with role framing and agent list.
+3. `generate_team_dockerfile.py` generates a Dockerfile that:
+   - Uses `sdlc-worker:full` as a source layer (COPY --from).
+   - Uses `sdlc-worker:base` as the runtime base.
+   - Copies ONLY the listed agent/skill files (additive, no prune).
+   - Copies `installed_plugins.json` with paths rewritten for the container.
+   - Makes plugins read-only (`chmod -R a-w`).
+   - Bakes in the generated team CLAUDE.md.
+4. `build-team.sh` runs the full pipeline: validate → generate CLAUDE.md → generate Dockerfile → docker build.
+
+### Enforcement
+
+Each team container only has access to its listed agents and skills. The `installed_plugins.json` inside the container only references the plugins in the manifest. Claude Code inside the container cannot use agents from plugins not in the manifest — they simply don't exist in the container's filesystem.
+
+## Command Prompt Format
+
+Command prompts live in `.archon/commands/` as Markdown files. The filename (without `.md`) must match the `command:` field in workflow nodes.
+
+### Structure
+
+```markdown
+You are performing <role description> on a <project description> at /workspace.
+
+<Context about what exists in the project — files, structure, current state.>
+
+<Specific task instructions — numbered steps.>
+
+Write your output to /workspace/<output-file>. Use these sections:
+## Section 1
+## Section 2
+
+Then commit: cd /workspace && git add -A && git commit -m "<commit message>"
+```
+
+### Rules
+
+- Always reference `/workspace` as the working directory (that's where the volume mount is).
+- Be specific about output file paths — Claude needs to know exactly where to write.
+- Include a commit instruction — each node should commit its work so the next node sees it.
+- Commit messages should be descriptive (e.g., `"review: security findings"` not `"update"`).
+- Keep prompts focused — one task per command prompt. Complex work should be split across nodes.
+
+## Credential Model
+
+Three-tier fallback resolved by `resolve_credentials.py`:
+
+| Tier | Source | Setup | Best for |
+|------|--------|-------|----------|
+| 1 (Keychain) | macOS Keychain `"Claude Code-credentials"` | Automatic — Claude Code stores here on Mac | Mac developers (zero-config) |
+| 2 (Volume) | Docker volume `sdlc-claude-credentials` | Run `login.sh` | Linux, headless, CI |
+| 3 (Config) | `.archon/credentials.yaml` → `credential_path:` | Manual file creation | Custom/enterprise setups |
+
+The resolver returns `mount_args` — a bare Docker volume spec (e.g., `/path/to/creds.json:/home/sdlc/.claude/.credentials.json:ro`). The caller adds `-v` when constructing the docker run command.
+
+In `--json` mode, the resolver does NOT clean up temporary files (the caller manages the lifecycle). In interactive mode, temp files are cleaned up after display.
+
+## Docker Execution Model
+
+### Image Tiers
+
+| Image | Size | Purpose |
+|-------|------|---------|
+| `sdlc-worker:base` | ~3.5 GB | Toolchain: Node.js 22, Claude Code CLI, Archon, Bun, Python 3, git |
+| `sdlc-worker:full` | ~3.9 GB | Base + all host plugins. Source layer only — not run directly. |
+| `sdlc-worker:*-team` | ~3.5 GB | Base + manifest-scoped plugin subset. This is what runs. |
+
+### Container Execution
+
+Each container runs with these flags:
+
+```
+docker run --rm \
+    --read-only \
+    --tmpfs /tmp:rw,noexec,nosuid \
+    --tmpfs /home/sdlc/.claude:rw,noexec,nosuid \
+    --cap-drop ALL \
+    -v "<workspace>:/workspace" \
+    -v "<credential-mount>" \
+    -e "CLAUDE_PROMPT=<prompt>" \
+    -e "CLAUDE_TIMEOUT=<seconds>" \
+    <image>
+```
+
+- `--read-only`: Container filesystem is read-only. Only `/workspace`, `/tmp`, and `/home/sdlc/.claude` are writable.
+- `--cap-drop ALL`: No Linux capabilities. Containers only run Claude Code and git.
+- `/workspace`: Volume mount to the host project directory. This is where all work happens.
+- Credential mount: Read-only bind mount of credentials to `/home/sdlc/.claude/.credentials.json`.
+- `CLAUDE_PROMPT`: The task for Claude to execute. Set by the preprocessor from command files.
+- `CLAUDE_TIMEOUT`: Seconds before forced exit. Default: 300. Prevents hung containers.
+
+### Entrypoint Flow
+
+1. Unset `ANTHROPIC_API_KEY` (prevents API key override of Max subscription).
+2. Copy credentials from mount points to `~/.claude/` if present.
+3. Verify Claude Code authentication (quick `claude -p "say ok"` test).
+4. Initialize git repo if `/workspace` doesn't have one.
+5. Activate loop workaround if Archon bug #1126 is detected.
+6. Execute: if `ARCHON_WORKFLOW` is set, run Archon; if `CLAUDE_PROMPT` is set, run Claude with timeout; otherwise exit with usage.
+7. On SIGTERM/SIGINT/EXIT: clean up credential temp files, kill child processes.
+
+## Security Model
+
+- **Non-root**: Containers run as `sdlc` user (UID 1001).
+- **Read-only filesystem**: `--read-only` flag. Only `/workspace`, `/tmp`, `/home/sdlc/.claude` are writable via tmpfs/volume.
+- **No capabilities**: `--cap-drop ALL`.
+- **Plugin enforcement**: Team images only contain manifest-listed plugins. Read-only (`chmod -R a-w`).
+- **Credential cleanup**: Entrypoint trap removes `~/.claude/.credentials.json` on exit.
+- **No secrets in images**: Credentials are injected at runtime via volume mounts, never baked into images.
