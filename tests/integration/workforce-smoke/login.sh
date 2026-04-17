@@ -5,9 +5,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "=== Workforce Smoke Test — Claude Code Login ==="
 echo ""
-echo "This must be run from an interactive terminal (not from Claude Code)."
-echo "It creates a credential volume for the acceptance test."
-echo ""
+
+# TTY check
+if [ ! -t 0 ] || [ ! -t 1 ]; then
+    echo "ERROR: This script requires an interactive terminal."
+    echo "Run it directly in a terminal, not via Claude Code or a script."
+    exit 1
+fi
 
 if ! docker info >/dev/null 2>&1; then
     echo "ERROR: Docker not available."
@@ -20,7 +24,7 @@ if ! docker image inspect sdlc-worker:base >/dev/null 2>&1; then
 fi
 
 CRED_VOLUME="sdlc-workforce-smoke-creds"
-SCOPED_VOLUME="sdlc-workforce-smoke-auth"
+SCOPED_VOLUME="sdlc-claude-credentials"
 
 # Clean start
 docker volume rm "$CRED_VOLUME" 2>/dev/null || true
@@ -39,7 +43,6 @@ docker run --rm -it \
 echo ""
 echo "Verifying credentials..."
 
-# Quick auth check
 AUTH_CHECK=$(docker run --rm \
     -v "${CRED_VOLUME}:/home/sdlc/.claude" \
     --entrypoint claude \
@@ -54,7 +57,7 @@ else
     exit 1
 fi
 
-# Extract only the credential file into a scoped volume with correct ownership
+# Extract credential file into the standard scoped volume
 docker volume rm "$SCOPED_VOLUME" 2>/dev/null || true
 docker volume create "$SCOPED_VOLUME" >/dev/null
 
@@ -65,6 +68,10 @@ docker run --rm \
     alpine \
     -c 'cp /source/.credentials.json /dest/.credentials.json && chown 1001:1001 /dest/.credentials.json && chmod 600 /dest/.credentials.json && echo "OK"'
 
+# Clean up the full credential volume (only keep the scoped one)
+docker volume rm "$CRED_VOLUME" 2>/dev/null || true
+
 echo ""
 echo "Done. Credentials stored in volume: $SCOPED_VOLUME"
 echo "Run the acceptance test: $SCRIPT_DIR/run-acceptance.sh"
+echo "Run the E2E test: $SCRIPT_DIR/run-e2e.sh"
