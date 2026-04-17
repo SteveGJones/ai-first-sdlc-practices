@@ -159,7 +159,7 @@ Each container runs with these flags:
 docker run --rm \
     --read-only \
     --tmpfs /tmp:rw,noexec,nosuid \
-    --tmpfs /home/sdlc/.claude:rw,noexec,nosuid \
+    --tmpfs /home/sdlc/.claude:rw,noexec,nosuid,uid=1001,gid=1001 \
     --cap-drop ALL \
     -v "<workspace>:/workspace" \
     -v "<credential-mount>" \

@@ -235,7 +235,7 @@ class TestSecurityFlags:
     def test_docker_run_has_tmpfs_mounts(self) -> None:
         result = self._transform()
         assert "--tmpfs /tmp:rw,noexec,nosuid" in result["bash"]
-        assert "--tmpfs /home/sdlc/.claude:rw,noexec,nosuid" in result["bash"]
+        assert "--tmpfs /home/sdlc/.claude:rw,noexec,nosuid,uid=1001,gid=1001" in result["bash"]
 
     def test_timeout_env_passed(self) -> None:
         node = dict(self._NODE)
