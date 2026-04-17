@@ -4,6 +4,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 PLUGIN_DIR="$REPO_ROOT/plugins/sdlc-workflows"
+SCRIPTS_DIR="$PLUGIN_DIR/scripts"
 MINI="$SCRIPT_DIR/miniproject"
 
 echo "=== Phase 3 Workforce Acceptance Test ==="
@@ -32,20 +33,17 @@ for img in sdlc-worker:base sdlc-worker:full; do
     fi
 done
 
-SCOPED_VOLUME="sdlc-workforce-smoke-auth"
-if ! docker volume inspect "$SCOPED_VOLUME" >/dev/null 2>&1; then
-    echo "Credential volume '$SCOPED_VOLUME' not found."
-    echo "Run: $SCRIPT_DIR/login.sh"
-    exit 1
-fi
+# Resolve credentials using the three-tier fallback (Keychain → volume → config)
+CRED_INFO=$(python3 "$SCRIPTS_DIR/resolve_credentials.py" --project-dir "." --json 2>/dev/null) || true
+CRED_TIER=$(echo "$CRED_INFO" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tier','none'))" 2>/dev/null)
+CRED_MOUNT=$(echo "$CRED_INFO" | python3 -c "import sys,json; print(json.load(sys.stdin).get('mount_args',''))" 2>/dev/null)
 
-# Verify the credential volume has the auth file
-HAS_CREDS=$(docker run --rm -v "${SCOPED_VOLUME}:/data:ro" --entrypoint test alpine -f /data/.credentials.json && echo "yes" || echo "no")
-if [ "$HAS_CREDS" != "yes" ]; then
-    echo "Credential volume exists but has no .credentials.json."
-    echo "Run: $SCRIPT_DIR/login.sh"
+if [ "$CRED_TIER" = "none" ] || [ -z "$CRED_MOUNT" ]; then
+    echo "No credentials available (tier=$CRED_TIER)."
+    echo "Ensure Claude Code is authenticated on this Mac, or run: $SCRIPT_DIR/login.sh"
     exit 1
 fi
+echo "Credentials: tier=$CRED_TIER"
 
 # ---------------------------------------------------------------------------
 # Build team images from miniproject
@@ -92,23 +90,20 @@ echo ""
 # ---------------------------------------------------------------------------
 # Helper: run Claude Code inside a team container with the miniproject
 # ---------------------------------------------------------------------------
-# The credential file must be copied directly into .claude/ because the volume
-# mount at .claude-auth has root ownership and the entrypoint copy may fail.
-# We bypass the entrypoint, copy the credential, then run claude directly.
+# Uses the credential resolver's mount_args to inject credentials directly
+# at the path Claude expects (/home/sdlc/.claude/.credentials.json).
 run_claude() {
     local image="$1"
     local prompt_file="$2"
     local timeout="${3:-180}"
 
     docker run --rm \
-        -v "${SCOPED_VOLUME}:/home/sdlc/.claude-creds:ro" \
+        -v "$CRED_MOUNT" \
         -v "${WORKSPACE}:/workspace" \
         -v "${prompt_file}:/tmp/prompt.txt:ro" \
         --entrypoint /bin/bash \
         "$image" \
         -c '
-            cp /home/sdlc/.claude-creds/.credentials.json /home/sdlc/.claude/.credentials.json
-            chmod 600 /home/sdlc/.claude/.credentials.json
             unset ANTHROPIC_API_KEY
             if [ ! -d /workspace/.git ]; then
                 cd /workspace && git init -q && git config user.email "test@test.com" && git config user.name "Test" && git add -A && git commit -q -m initial 2>/dev/null || true
@@ -123,12 +118,10 @@ run_claude() {
 # ---------------------------------------------------------------------------
 echo "[1/$TOTAL] Auth check inside dev-team"
 AUTH_OUTPUT=$(docker run --rm \
-    -v "${SCOPED_VOLUME}:/home/sdlc/.claude-creds:ro" \
+    -v "$CRED_MOUNT" \
     --entrypoint /bin/bash \
     sdlc-worker:dev-team \
     -c '
-        cp /home/sdlc/.claude-creds/.credentials.json /home/sdlc/.claude/.credentials.json
-        chmod 600 /home/sdlc/.claude/.credentials.json
         unset ANTHROPIC_API_KEY
         claude -p "say OK" 2>&1 | head -1
     ' 2>&1) || true

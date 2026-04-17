@@ -274,14 +274,14 @@ try:
     assert d['team_count'] == 2, f'expected 2 teams, got {d[\"team_count\"]}'
     assert 'dev-team' in teams, 'dev-team missing'
     assert 'review-team' in teams, 'review-team missing'
-    assert d['workflow_count'] == 1, f'expected 1 workflow, got {d[\"workflow_count\"]}'
+    assert d['workflow_count'] == 2, f'expected 2 workflows, got {d[\"workflow_count\"]}'
     print('OK')
 except Exception as e:
     print(f'FAIL: {e}')
 " 2>/dev/null)
 
 if [ "$FLEET_CHECK" = "OK" ]; then
-    pass "fleet report: 2 teams, 1 workflow from miniproject"
+    pass "fleet report: 2 teams, 2 workflows from miniproject"
 else
     fail "fleet report" "$FLEET_CHECK"
 fi
