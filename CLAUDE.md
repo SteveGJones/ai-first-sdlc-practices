@@ -6,7 +6,7 @@ AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full ins
 
 - **EPIC #97** — Multi-Option Commissioned SDLC. Branch `feature/sdlc-commissioning` has the feature proposal for sub-feature #98 (commissioning infrastructure). Implementation pending. See `docs/feature-proposals/98-sdlc-commissioning-infrastructure.md`.
 - **EPIC #142** — Curated technology registry + plugin recommendation improvements. Sub-features 0-2 merged (#151, #143, #144 — pre/post check, kb recommendation, language detection). Sub-features 3-8 pending (registry schema, population, wiring, maintenance). See issue #142 for the full inventory.
-- **EPIC #96** — Containerised Claude Code workers. Phases 1-3 complete, Phase 4 (Archon orchestration) in progress — sequential E2E proven (Archon orchestrates bash-node workflows that docker run team containers). Parallel fork/merge test pending. Branch `feature/96-sdlc-workflows`. See `docs/superpowers/specs/2026-04-16-phase4-archon-orchestration-design.md`.
+- **EPIC #96** — Containerised Claude Code workers. Phases 1-4 complete. Phase 4 (Archon orchestration) proven: sequential E2E 6/6, parallel fork/merge E2E 8/8 — Archon orchestrates bash-node workflows that docker run team containers with per-node enforcement. Phase 5 (production hardening) not started. Branch `feature/96-sdlc-workflows`. See `docs/superpowers/specs/2026-04-16-phase4-archon-orchestration-design.md`.
 - **EPIC #105** — sdlc-knowledge-base plugin. **Merged.** Plugin is live and installable. Sub-feature 13 (#118 codebase-index) is future work.
 
 ## Essential Workflow
