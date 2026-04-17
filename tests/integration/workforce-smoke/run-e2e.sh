@@ -132,9 +132,13 @@ echo "[3/$TOTAL] Execute preprocessed workflow (this takes ~3-5 min)"
 # and work gets done.
 
 if command -v archon >/dev/null 2>&1; then
-    # Copy the generated workflow where archon can find it
-    cp "$GENERATED_DIR/feature-pipeline.yaml" "$WORKSPACE/.archon/workflows/feature-pipeline-containerised.yaml"
-    ARCHON_OUTPUT=$(cd "$WORKSPACE" && archon workflow run feature-pipeline-containerised --no-worktree 2>&1) || true
+    # Replace the original workflow with the preprocessed version.
+    # Archon resolves by `name:` inside the YAML, so the file replaces the original
+    # and keeps the same name field.
+    # Remove the original to avoid duplicate name conflicts.
+    rm -f "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
+    cp "$GENERATED_DIR/feature-pipeline.yaml" "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
+    ARCHON_OUTPUT=$(cd "$WORKSPACE" && archon workflow run feature-pipeline --no-worktree 2>&1) || true
     EXECUTION_METHOD="archon"
 else
     # Direct execution: read the ORIGINAL workflow for node order and images,
