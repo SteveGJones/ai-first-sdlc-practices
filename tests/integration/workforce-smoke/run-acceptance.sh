@@ -108,6 +108,11 @@ run_claude() {
         --entrypoint /bin/bash \
         "$image" \
         -c '
+            # Copy creds from staging path (bypassing entrypoint)
+            if [ -f /home/sdlc/.claude-creds/.credentials.json ]; then
+                cp /home/sdlc/.claude-creds/.credentials.json /home/sdlc/.claude/.credentials.json
+                chmod 600 /home/sdlc/.claude/.credentials.json
+            fi
             unset ANTHROPIC_API_KEY
             if [ ! -d /workspace/.git ]; then
                 cd /workspace && git init -q && git config user.email "test@test.com" && git config user.name "Test" && git add -A && git commit -q -m initial 2>/dev/null || true
@@ -130,6 +135,10 @@ AUTH_OUTPUT=$(docker run --rm \
     --entrypoint /bin/bash \
     sdlc-worker:dev-team \
     -c '
+        if [ -f /home/sdlc/.claude-creds/.credentials.json ]; then
+            cp /home/sdlc/.claude-creds/.credentials.json /home/sdlc/.claude/.credentials.json
+            chmod 600 /home/sdlc/.claude/.credentials.json
+        fi
         unset ANTHROPIC_API_KEY
         claude -p "say OK" 2>&1 | head -1
     ' 2>&1) || true
