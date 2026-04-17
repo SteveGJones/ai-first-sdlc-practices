@@ -203,3 +203,42 @@ class TestFullWorkflowTransform:
             "nodes": [{"id": "a", "command": "test", "image": "x"}],
         }
         assert preprocess_workflow.has_image_nodes(workflow_with) is True
+
+
+class TestSecurityFlags:
+    """Security flags are present in generated docker run commands."""
+
+    _NODE = {
+        "id": "implement",
+        "image": "sdlc-worker:dev-team",
+        "command": "sdlc-implement",
+    }
+    _CRED_MOUNT = "/tmp/c.json:/home/sdlc/.claude/.credentials.json:ro"
+    _COMMANDS_DIR = ".archon/commands"
+
+    def _transform(self, node: dict | None = None) -> dict:
+        return preprocess_workflow.transform_node(
+            node or dict(self._NODE),
+            workspace="/workspace",
+            cred_mount=self._CRED_MOUNT,
+            commands_dir=self._COMMANDS_DIR,
+        )
+
+    def test_docker_run_has_read_only(self) -> None:
+        result = self._transform()
+        assert "--read-only" in result["bash"]
+
+    def test_docker_run_has_cap_drop(self) -> None:
+        result = self._transform()
+        assert "--cap-drop ALL" in result["bash"]
+
+    def test_docker_run_has_tmpfs_mounts(self) -> None:
+        result = self._transform()
+        assert "--tmpfs /tmp:rw,noexec,nosuid" in result["bash"]
+        assert "--tmpfs /home/sdlc/.claude:rw,noexec,nosuid" in result["bash"]
+
+    def test_timeout_env_passed(self) -> None:
+        node = dict(self._NODE)
+        node["timeout"] = 600
+        result = self._transform(node)
+        assert "CLAUDE_TIMEOUT=600" in result["bash"]

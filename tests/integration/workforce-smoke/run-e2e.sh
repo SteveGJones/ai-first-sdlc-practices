@@ -163,6 +163,10 @@ for nid in order:
         fi
 
         NODE_OUTPUT=$(docker run --rm \
+            --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid \
+            --tmpfs /home/sdlc/.claude:rw,noexec,nosuid \
+            --cap-drop ALL \
             -v "$WORKSPACE:/workspace" \
             -v "$CRED_MOUNT" \
             -e "CLAUDE_PROMPT=$PROMPT" \

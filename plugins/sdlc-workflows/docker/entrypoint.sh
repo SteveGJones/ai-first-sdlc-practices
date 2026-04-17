@@ -3,6 +3,14 @@ set -e
 
 echo "=== SDLC Worker Container ==="
 
+cleanup() {
+    echo ""
+    echo "=== Cleanup ==="
+    rm -f /home/sdlc/.claude/.credentials.json
+    kill -- -$$ 2>/dev/null || true
+}
+trap cleanup SIGTERM SIGINT EXIT
+
 # Step 1: Ensure no API key overrides Max subscription
 unset ANTHROPIC_API_KEY
 
@@ -64,14 +72,15 @@ fi
 # Step 5: Execute the assigned work
 # If ARCHON_WORKFLOW is set, run an Archon workflow
 # Otherwise, pass through to Claude Code
+TIMEOUT="${CLAUDE_TIMEOUT:-300}"
 if [ -n "$ARCHON_WORKFLOW" ]; then
     echo "Running Archon workflow: $ARCHON_WORKFLOW"
     echo "Arguments: ${ARCHON_ARGS:-<none>}"
     echo ""
-    archon run "$ARCHON_WORKFLOW" ${ARCHON_ARGS:+"$ARCHON_ARGS"}
+    timeout "$TIMEOUT" archon run "$ARCHON_WORKFLOW" ${ARCHON_ARGS:+"$ARCHON_ARGS"}
 elif [ -n "$CLAUDE_PROMPT" ]; then
     echo "Running Claude Code with prompt..."
-    claude --dangerously-skip-permissions -p "$CLAUDE_PROMPT"
+    timeout "$TIMEOUT" claude --dangerously-skip-permissions -p "$CLAUDE_PROMPT"
 else
     echo "No ARCHON_WORKFLOW or CLAUDE_PROMPT set."
     echo "Usage:"

@@ -21,7 +21,7 @@ nodes:                          # Required. List of execution nodes.
     context: fresh              # Optional. "fresh" starts with clean context. Default behaviour.
     model: <model-id>          # Optional. Override the Claude model for this node (e.g., claude-opus-4-6[1m]).
     effort: high | medium | low # Optional. Hint for token budget allocation.
-    timeout: <seconds>          # Optional. Per-node timeout in seconds. Passed as CLAUDE_TIMEOUT env var to container. Default: 300. *(Requires entrypoint hardening.)*
+    timeout: <seconds>          # Optional. Per-node timeout in seconds. Passed as CLAUDE_TIMEOUT env var to container. Default: 300.
     loop:                       # Optional. Repeat this node until a signal is detected.
       until: <signal-string>    # String to grep for in output to stop the loop.
       max_iterations: <int>     # Maximum iterations before forced stop. Default: 5.
@@ -151,8 +151,6 @@ In `--json` mode, the resolver does NOT clean up temporary files (the caller man
 
 ### Container Execution
 
-Note: Security flags (`--read-only`, `--tmpfs`, `--cap-drop ALL`) are added by the security hardening task and may not yet be active in all code paths.
-
 Each container runs with these flags:
 
 ```
@@ -173,7 +171,7 @@ docker run --rm \
 - `/workspace`: Volume mount to the host project directory. This is where all work happens.
 - Credential mount: Read-only bind mount of credentials to `/home/sdlc/.claude/.credentials.json`.
 - `CLAUDE_PROMPT`: The task for Claude to execute. Set by the preprocessor from command files.
-- `CLAUDE_TIMEOUT`: Seconds before forced exit. Default: 300. Prevents hung containers. *(Requires entrypoint hardening.)*
+- `CLAUDE_TIMEOUT`: Seconds before forced exit. Default: 300. Prevents hung containers.
 
 ### Entrypoint Flow
 
@@ -183,7 +181,7 @@ docker run --rm \
 4. Initialize git repo if `/workspace` doesn't have one.
 5. Activate loop workaround if Archon bug #1126 is detected.
 6. Execute: if `ARCHON_WORKFLOW` is set, run Archon; if `CLAUDE_PROMPT` is set, run Claude with timeout; otherwise exit with usage.
-7. On SIGTERM/SIGINT/EXIT: clean up credential temp files, kill child processes. *(Requires entrypoint hardening — see signal handling task.)*
+7. On SIGTERM/SIGINT/EXIT: clean up credential temp files, kill child processes.
 
 ## Security Model
 

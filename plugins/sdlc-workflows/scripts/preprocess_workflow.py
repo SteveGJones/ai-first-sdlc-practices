@@ -39,6 +39,7 @@ def _build_docker_run(
     workspace: str,
     cred_mount: str,
     prompt_source: str,
+    timeout: int | None = None,
 ) -> str:
     """Build a ``docker run`` command string.
 
@@ -52,13 +53,19 @@ def _build_docker_run(
     #   - loop workaround
     #   - CLAUDE_PROMPT execution
     # We write the prompt to a file and set CLAUDE_PROMPT via env var.
+    timeout_env = f' -e "CLAUDE_TIMEOUT={timeout}"' if timeout is not None else ""
     lines = [
         "PROMPT=$(" + prompt_source + ")",
         (
             "docker run --rm"
+            " --read-only"
+            " --tmpfs /tmp:rw,noexec,nosuid"
+            " --tmpfs /home/sdlc/.claude:rw,noexec,nosuid"
+            " --cap-drop ALL"
             f' -v "{workspace}:/workspace"'
             f' -v "{cred_mount}"'
             ' -e "CLAUDE_PROMPT=$PROMPT"'
+            f"{timeout_env}"
             f" {image}"
         ),
     ]
@@ -116,6 +123,7 @@ def transform_node(
             workspace=workspace,
             cred_mount=cred_mount,
             prompt_source=prompt_source,
+            timeout=node.get("timeout"),
         )
 
         result["bash"] = (
@@ -137,6 +145,7 @@ def transform_node(
         workspace=workspace,
         cred_mount=cred_mount,
         prompt_source=prompt_source,
+        timeout=node.get("timeout"),
     )
     result["bash"] = docker_cmd
     return result
