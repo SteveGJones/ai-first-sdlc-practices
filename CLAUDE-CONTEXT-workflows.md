@@ -133,9 +133,9 @@ Three-tier fallback resolved by `resolve_credentials.py`:
 | 2 (Volume) | Docker volume `sdlc-claude-credentials` | Run `login.sh` | Linux, headless, CI |
 | 3 (Config) | `.archon/credentials.yaml` → `credential_path:` | Manual file creation | Custom/enterprise setups |
 
-The resolver returns `mount_args` — a bare Docker volume spec (e.g., `/path/to/creds.json:/home/sdlc/.claude/.credentials.json:ro`). The caller adds `-v` when constructing the docker run command.
+The resolver returns `mount_args` — a bare Docker volume spec (e.g., `/path/to/creds.json:/home/sdlc/.claude-creds/.credentials.json:ro`). The caller adds `-v` when constructing the docker run command.
 
-For tiers 1 and 3, credentials mount directly to `/home/sdlc/.claude/.credentials.json`. For tier 2 (Docker volume), the volume mounts to `/home/sdlc/.claude-creds` and the entrypoint copies credentials into place.
+All tiers mount credentials to `/home/sdlc/.claude-creds/.credentials.json` (a staging path outside the tmpfs). The entrypoint copies from the staging path to `/home/sdlc/.claude/.credentials.json` at startup. This avoids the tmpfs at `/home/sdlc/.claude` shadowing the credential bind mount.
 
 In `--json` mode, the resolver does NOT clean up temporary files (the caller manages the lifecycle). In interactive mode, temp files are cleaned up after display.
 
@@ -171,7 +171,7 @@ docker run --rm \
 - `--read-only`: Container filesystem is read-only. Only `/workspace`, `/tmp`, and `/home/sdlc/.claude` are writable.
 - `--cap-drop ALL`: No Linux capabilities. Containers only run Claude Code and git.
 - `/workspace`: Volume mount to the host project directory. This is where all work happens.
-- Credential mount: Read-only bind mount of credentials to `/home/sdlc/.claude/.credentials.json`.
+- Credential mount: Read-only bind mount to `/home/sdlc/.claude-creds/.credentials.json`. The entrypoint copies to `~/.claude/` at startup (avoids tmpfs shadowing).
 - `CLAUDE_PROMPT`: The task for Claude to execute. Set by the preprocessor from command files.
 - `CLAUDE_TIMEOUT`: Seconds before forced exit. Default: 300. Prevents hung containers.
 

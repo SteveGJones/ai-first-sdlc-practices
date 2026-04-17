@@ -90,8 +90,8 @@ echo ""
 # ---------------------------------------------------------------------------
 # Helper: run Claude Code inside a team container with the miniproject
 # ---------------------------------------------------------------------------
-# Uses the credential resolver's mount_args to inject credentials directly
-# at the path Claude expects (/home/sdlc/.claude/.credentials.json).
+# Credentials mount to a staging path (/home/sdlc/.claude-creds/) to avoid
+# being shadowed by the tmpfs at /home/sdlc/.claude/. The entrypoint copies them.
 run_claude() {
     local image="$1"
     local prompt_file="$2"

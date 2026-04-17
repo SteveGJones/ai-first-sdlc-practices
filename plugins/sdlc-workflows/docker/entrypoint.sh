@@ -14,7 +14,16 @@ trap cleanup SIGTERM SIGINT EXIT
 # Step 1: Ensure no API key overrides Max subscription
 unset ANTHROPIC_API_KEY
 
-# Step 1b: Link scoped credential mount to where Claude Code expects it
+# Step 1b: Copy credentials from staging mount to where Claude Code expects them.
+# Credentials mount to /home/sdlc/.claude-creds/ (read-only) to avoid being
+# shadowed by the tmpfs at /home/sdlc/.claude/ (writable for runtime state).
+if [ -f /home/sdlc/.claude-creds/.credentials.json ]; then
+    cp /home/sdlc/.claude-creds/.credentials.json /home/sdlc/.claude/.credentials.json
+    chmod 600 /home/sdlc/.claude/.credentials.json
+    echo "Auth: credentials loaded from creds mount"
+fi
+
+# Legacy: also check .claude-auth directory mount (older credential volumes)
 if [ -d /home/sdlc/.claude-auth ] && [ "$(ls -A /home/sdlc/.claude-auth 2>/dev/null)" ]; then
     for auth_file in /home/sdlc/.claude-auth/*; do
         if [ -f "$auth_file" ]; then
@@ -22,7 +31,7 @@ if [ -d /home/sdlc/.claude-auth ] && [ "$(ls -A /home/sdlc/.claude-auth 2>/dev/n
             chmod 600 /home/sdlc/.claude/"$(basename "$auth_file")"
         fi
     done
-    echo "Auth: credentials loaded from scoped mount"
+    echo "Auth: credentials loaded from auth mount"
 fi
 
 # Step 2: Verify Claude Code is available

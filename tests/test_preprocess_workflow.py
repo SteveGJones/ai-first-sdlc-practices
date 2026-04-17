@@ -14,7 +14,7 @@ import plugins_sdlc_workflows_scripts as scripts  # noqa: E402
 preprocess_workflow = scripts.preprocess_workflow
 
 
-CRED_MOUNT = "-v /tmp/creds.json:/home/sdlc/.claude/.credentials.json:ro"
+CRED_MOUNT = "-v /tmp/creds.json:/home/sdlc/.claude-creds/.credentials.json:ro"
 
 
 class TestCommandNodeTransform:
@@ -213,7 +213,7 @@ class TestSecurityFlags:
         "image": "sdlc-worker:dev-team",
         "command": "sdlc-implement",
     }
-    _CRED_MOUNT = "/tmp/c.json:/home/sdlc/.claude/.credentials.json:ro"
+    _CRED_MOUNT = "/tmp/c.json:/home/sdlc/.claude-creds/.credentials.json:ro"
     _COMMANDS_DIR = ".archon/commands"
 
     def _transform(self, node: dict | None = None) -> dict:

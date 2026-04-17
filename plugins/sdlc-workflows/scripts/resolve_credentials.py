@@ -25,7 +25,7 @@ import yaml
 KEYCHAIN_SERVICE = "Claude Code-credentials"
 CREDENTIAL_VOLUME = "sdlc-claude-credentials"
 CONFIG_FILE = ".archon/credentials.yaml"
-CONTAINER_CRED_PATH = "/home/sdlc/.claude/.credentials.json"
+CONTAINER_CRED_PATH = "/home/sdlc/.claude-creds/.credentials.json"
 
 
 def _try_keychain(work_dir: Path) -> dict | None:
