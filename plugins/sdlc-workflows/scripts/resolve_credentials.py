@@ -171,18 +171,21 @@ def main() -> None:
     result = resolve(work_dir, args.project_dir)
 
     if args.json:
+        # When outputting JSON, do NOT clean up temp files — the caller
+        # needs the credential file to still exist for docker volume mounts.
+        # The caller is responsible for cleanup (the path is in result["cleanup"]).
         print(json_mod.dumps(result, indent=2))
     else:
         print(f"Tier: {result['tier']}")
         print(f"  {result['message']}")
-
-    cleanup_path = result.get("cleanup")
-    if cleanup_path:
-        Path(cleanup_path).unlink(missing_ok=True)
-    try:
-        work_dir.rmdir()
-    except OSError:
-        pass
+        # Clean up temp files for interactive usage
+        cleanup_path = result.get("cleanup")
+        if cleanup_path:
+            Path(cleanup_path).unlink(missing_ok=True)
+        try:
+            work_dir.rmdir()
+        except OSError:
+            pass
 
 
 if __name__ == "__main__":
