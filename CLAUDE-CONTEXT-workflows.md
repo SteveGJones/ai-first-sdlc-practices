@@ -21,7 +21,7 @@ nodes:                          # Required. List of execution nodes.
     context: fresh              # Optional. "fresh" starts with clean context. Default behaviour.
     model: <model-id>          # Optional. Override the Claude model for this node (e.g., claude-opus-4-6[1m]).
     effort: high | medium | low # Optional. Hint for token budget allocation.
-    timeout: <seconds>          # Optional. Per-node timeout in seconds. Passed as CLAUDE_TIMEOUT env var to container. Default: 300.
+    timeout: <seconds>          # Optional. Per-node timeout in seconds. Passed as CLAUDE_TIMEOUT env var to container. Default: 300. *(Requires entrypoint hardening.)*
     loop:                       # Optional. Repeat this node until a signal is detected.
       until: <signal-string>    # String to grep for in output to stop the loop.
       max_iterations: <int>     # Maximum iterations before forced stop. Default: 5.
@@ -43,7 +43,7 @@ nodes:                          # Required. List of execution nodes.
 When a workflow has `image:` nodes, the preprocessor (`preprocess_workflow.py`) transforms them before Archon execution:
 
 1. Each `image:` node becomes a bash node with a `docker run` command.
-2. The `command:` field is resolved to a shell expression: `cat .archon/commands/<name>.md`.
+2. The `command:` field is resolved to a shell expression: `cat <commands_dir>/<name>.md` (where `commands_dir` defaults to `.archon/commands` relative to the workspace, but the preprocessor uses the absolute path passed via `--commands-dir`).
 3. The prompt is passed via `CLAUDE_PROMPT` env var (not inline bash — avoids quoting issues).
 4. Preserved fields: `id`, `depends_on`, `trigger_rule`, `when`, `timeout`, `retry`.
 5. Removed fields: `image`, `command`, `context`, `model`, `effort`, `prompt`.
@@ -80,7 +80,7 @@ context:                       # Optional. Project files to bake into the contai
 
 ### Build Pipeline
 
-1. `validate_team_manifest.py` validates the manifest against the schema.
+1. `validate_team_manifest.py` validates the manifest against the schema *(run separately or before build)*.
 2. `generate_team_claude_md.py` generates a team-specific CLAUDE.md with role framing and agent list.
 3. `generate_team_dockerfile.py` generates a Dockerfile that:
    - Uses `sdlc-worker:full` as a source layer (COPY --from).
@@ -135,6 +135,8 @@ Three-tier fallback resolved by `resolve_credentials.py`:
 
 The resolver returns `mount_args` — a bare Docker volume spec (e.g., `/path/to/creds.json:/home/sdlc/.claude/.credentials.json:ro`). The caller adds `-v` when constructing the docker run command.
 
+For tiers 1 and 3, credentials mount directly to `/home/sdlc/.claude/.credentials.json`. For tier 2 (Docker volume), the volume mounts to `/home/sdlc/.claude-creds` and the entrypoint copies credentials into place.
+
 In `--json` mode, the resolver does NOT clean up temporary files (the caller manages the lifecycle). In interactive mode, temp files are cleaned up after display.
 
 ## Docker Execution Model
@@ -144,10 +146,12 @@ In `--json` mode, the resolver does NOT clean up temporary files (the caller man
 | Image | Size | Purpose |
 |-------|------|---------|
 | `sdlc-worker:base` | ~3.5 GB | Toolchain: Node.js 22, Claude Code CLI, Archon, Bun, Python 3, git |
-| `sdlc-worker:full` | ~3.9 GB | Base + all host plugins. Source layer only — not run directly. |
+| `sdlc-worker:full` | ~3.9 GB | Base + all host plugins. Source layer for team COPY --from — not sized or configured for direct execution. |
 | `sdlc-worker:*-team` | ~3.5 GB | Base + manifest-scoped plugin subset. This is what runs. |
 
 ### Container Execution
+
+Note: Security flags (`--read-only`, `--tmpfs`, `--cap-drop ALL`) are added by the security hardening task and may not yet be active in all code paths.
 
 Each container runs with these flags:
 
@@ -169,7 +173,7 @@ docker run --rm \
 - `/workspace`: Volume mount to the host project directory. This is where all work happens.
 - Credential mount: Read-only bind mount of credentials to `/home/sdlc/.claude/.credentials.json`.
 - `CLAUDE_PROMPT`: The task for Claude to execute. Set by the preprocessor from command files.
-- `CLAUDE_TIMEOUT`: Seconds before forced exit. Default: 300. Prevents hung containers.
+- `CLAUDE_TIMEOUT`: Seconds before forced exit. Default: 300. Prevents hung containers. *(Requires entrypoint hardening.)*
 
 ### Entrypoint Flow
 
@@ -179,7 +183,7 @@ docker run --rm \
 4. Initialize git repo if `/workspace` doesn't have one.
 5. Activate loop workaround if Archon bug #1126 is detected.
 6. Execute: if `ARCHON_WORKFLOW` is set, run Archon; if `CLAUDE_PROMPT` is set, run Claude with timeout; otherwise exit with usage.
-7. On SIGTERM/SIGINT/EXIT: clean up credential temp files, kill child processes.
+7. On SIGTERM/SIGINT/EXIT: clean up credential temp files, kill child processes. *(Requires entrypoint hardening — see signal handling task.)*
 
 ## Security Model
 
