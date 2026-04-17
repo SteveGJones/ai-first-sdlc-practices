@@ -137,37 +137,52 @@ if command -v archon >/dev/null 2>&1; then
     ARCHON_OUTPUT=$(cd "$WORKSPACE" && archon workflow run feature-pipeline-containerised --no-worktree 2>&1) || true
     EXECUTION_METHOD="archon"
 else
-    # Fallback: execute the bash nodes sequentially ourselves
-    # This proves the container execution works even without archon on the host
-    echo "  archon not found on host — executing bash nodes directly"
-    ARCHON_OUTPUT=""
+    # Direct execution: read the ORIGINAL workflow for node order and images,
+    # then run each node as docker run with the team image.
+    # This is the same proven pattern as run-acceptance.sh.
+    echo "  archon not found on host — executing nodes via docker run"
     EXECUTION_METHOD="direct"
 
-    # Parse the preprocessed YAML and extract bash nodes in order
+    # Extract nodes from the original (not preprocessed) workflow
     NODES=$(python3 -c "
 import yaml
 from pathlib import Path
-wf = yaml.safe_load(Path('$GENERATED_DIR/feature-pipeline.yaml').read_text())
+wf = yaml.safe_load(Path('$WORKSPACE/.archon/workflows/feature-pipeline.yaml').read_text())
 for node in wf.get('nodes', []):
-    if 'bash' in node:
-        print(node['id'])
+    nid = node.get('id', '')
+    img = node.get('image', '')
+    cmd = node.get('command', '')
+    print(f'{nid}|{img}|{cmd}')
 " 2>/dev/null)
 
-    for NODE_ID in $NODES; do
-        echo "  Running node: $NODE_ID"
-        BASH_CMD=$(python3 -c "
-import yaml
-from pathlib import Path
-wf = yaml.safe_load(Path('$GENERATED_DIR/feature-pipeline.yaml').read_text())
-for node in wf.get('nodes', []):
-    if node.get('id') == '$NODE_ID' and 'bash' in node:
-        print(node['bash'])
-        break
-" 2>/dev/null)
-        if [ -n "$BASH_CMD" ]; then
-            NODE_OUTPUT=$(cd "$WORKSPACE" && eval "$BASH_CMD" 2>&1) || true
-            ARCHON_OUTPUT="${ARCHON_OUTPUT}\n--- Node: $NODE_ID ---\n${NODE_OUTPUT}"
+    for NODE_LINE in $NODES; do
+        NODE_ID=$(echo "$NODE_LINE" | cut -d'|' -f1)
+        NODE_IMAGE=$(echo "$NODE_LINE" | cut -d'|' -f2)
+        NODE_CMD=$(echo "$NODE_LINE" | cut -d'|' -f3)
+
+        if [ -z "$NODE_IMAGE" ]; then
+            echo "  Skipping node $NODE_ID (no image)"
+            continue
         fi
+
+        echo "  Running node: $NODE_ID (image: $NODE_IMAGE)"
+
+        # Read the command prompt from the commands directory
+        CMD_FILE="$WORKSPACE/.archon/commands/$NODE_CMD.md"
+        if [ -f "$CMD_FILE" ]; then
+            PROMPT=$(cat "$CMD_FILE")
+        else
+            PROMPT="Execute command: $NODE_CMD"
+        fi
+
+        # Run the container with the entrypoint handling auth + execution
+        NODE_OUTPUT=$(docker run --rm \
+            -v "$WORKSPACE:/workspace" \
+            -v "$CRED_MOUNT" \
+            -e "CLAUDE_PROMPT=$PROMPT" \
+            "$NODE_IMAGE" 2>&1) || true
+
+        echo "  Node $NODE_ID: $(echo "$NODE_OUTPUT" | tail -1)"
     done
 fi
 
