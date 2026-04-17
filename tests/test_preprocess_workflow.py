@@ -224,18 +224,14 @@ class TestSecurityFlags:
             commands_dir=self._COMMANDS_DIR,
         )
 
-    def test_docker_run_has_read_only(self) -> None:
-        result = self._transform()
-        assert "--read-only" in result["bash"]
-
     def test_docker_run_has_cap_drop(self) -> None:
         result = self._transform()
         assert "--cap-drop ALL" in result["bash"]
 
-    def test_docker_run_has_tmpfs_mounts(self) -> None:
+    def test_docker_run_no_read_only(self) -> None:
+        """--read-only is NOT used (conflicts with Claude Code plugin paths)."""
         result = self._transform()
-        assert "--tmpfs /tmp:rw,noexec,nosuid" in result["bash"]
-        assert "--tmpfs /home/sdlc/.claude:rw,noexec,nosuid,uid=1001,gid=1001" in result["bash"]
+        assert "--read-only" not in result["bash"]
 
     def test_timeout_env_passed(self) -> None:
         node = dict(self._NODE)

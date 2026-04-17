@@ -98,9 +98,6 @@ run_claude() {
     local timeout="${3:-180}"
 
     docker run --rm \
-        --read-only \
-        --tmpfs /tmp:rw,noexec,nosuid \
-        --tmpfs /home/sdlc/.claude:rw,noexec,nosuid,uid=1001,gid=1001 \
         --cap-drop ALL \
         -v "$CRED_MOUNT" \
         -v "${WORKSPACE}:/workspace" \
@@ -127,9 +124,6 @@ run_claude() {
 # ---------------------------------------------------------------------------
 echo "[1/$TOTAL] Auth check inside dev-team"
 AUTH_OUTPUT=$(docker run --rm \
-    --read-only \
-    --tmpfs /tmp:rw,noexec,nosuid \
-    --tmpfs /home/sdlc/.claude:rw,noexec,nosuid,uid=1001,gid=1001 \
     --cap-drop ALL \
     -v "$CRED_MOUNT" \
     --entrypoint /bin/bash \

@@ -58,9 +58,6 @@ def _build_docker_run(
         "PROMPT=$(" + prompt_source + ")",
         (
             "docker run --rm"
-            " --read-only"
-            " --tmpfs /tmp:rw,noexec,nosuid"
-            " --tmpfs /home/sdlc/.claude:rw,noexec,nosuid,uid=1001,gid=1001"
             " --cap-drop ALL"
             f' -v "{workspace}:/workspace"'
             f' -v "{cred_mount}"'

@@ -157,9 +157,6 @@ Each container runs with these flags:
 
 ```
 docker run --rm \
-    --read-only \
-    --tmpfs /tmp:rw,noexec,nosuid \
-    --tmpfs /home/sdlc/.claude:rw,noexec,nosuid,uid=1001,gid=1001 \
     --cap-drop ALL \
     -v "<workspace>:/workspace" \
     -v "<credential-mount>" \
@@ -168,12 +165,13 @@ docker run --rm \
     <image>
 ```
 
-- `--read-only`: Container filesystem is read-only. Only `/workspace`, `/tmp`, and `/home/sdlc/.claude` are writable.
 - `--cap-drop ALL`: No Linux capabilities. Containers only run Claude Code and git.
 - `/workspace`: Volume mount to the host project directory. This is where all work happens.
-- Credential mount: Read-only bind mount to `/home/sdlc/.claude-creds/.credentials.json`. The entrypoint copies to `~/.claude/` at startup (avoids tmpfs shadowing).
+- Credential mount: Read-only bind mount to `/home/sdlc/.claude-creds/.credentials.json`. The entrypoint copies to `~/.claude/` at startup.
 - `CLAUDE_PROMPT`: The task for Claude to execute. Set by the preprocessor from command files.
 - `CLAUDE_TIMEOUT`: Seconds before forced exit. Default: 300. Prevents hung containers.
+
+Note: `--read-only` is NOT used. Claude Code requires a writable `~/.claude/` directory for plugins (baked into the image at build time) and runtime state (sessions, backups, config). Plugin enforcement is handled by `chmod -R a-w` on the plugins directory at build time, not by filesystem-level read-only restrictions.
 
 ### Entrypoint Flow
 
@@ -188,8 +186,9 @@ docker run --rm \
 ## Security Model
 
 - **Non-root**: Containers run as `sdlc` user (UID 1001).
-- **Read-only filesystem**: `--read-only` flag. Only `/workspace`, `/tmp`, `/home/sdlc/.claude` are writable via tmpfs/volume.
-- **No capabilities**: `--cap-drop ALL`.
-- **Plugin enforcement**: Team images only contain manifest-listed plugins. Read-only (`chmod -R a-w`).
+- **No capabilities**: `--cap-drop ALL` — no privilege escalation possible.
+- **Plugin enforcement**: Team images only contain manifest-listed plugins. Plugins are `chmod -R a-w` (read-only via permissions, not filesystem flag).
+- **Credential staging**: Credentials mount to `/home/sdlc/.claude-creds/` (read-only). Entrypoint copies to `~/.claude/` at startup.
 - **Credential cleanup**: Entrypoint trap removes `~/.claude/.credentials.json` on exit.
+- **No secrets in images**: Credentials are injected at runtime via volume mounts, never baked into images.
 - **No secrets in images**: Credentials are injected at runtime via volume mounts, never baked into images.
