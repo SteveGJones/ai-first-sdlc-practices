@@ -232,6 +232,48 @@ Team images: none configured
   Create a team manifest in .archon/teams/ and run /sdlc-workflows:deploy-team
 ```
 
+#### 9h. Credential injection
+
+Check which credential tier is available for containerised workflow execution:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/resolve_credentials.py --project-dir . --json
+```
+
+Parse the JSON output and report:
+
+```
+Credential injection:
+  Tier 1 (Keychain):     OK — Claude Code credentials found
+  Tier 2 (Volume):       SKIP — Keychain succeeded
+  Tier 3 (Config):       SKIP — Keychain succeeded
+  Active tier:           Keychain
+```
+
+Or when Keychain fails:
+
+```
+Credential injection:
+  Tier 1 (Keychain):     FAIL — not macOS or no keychain entry
+  Tier 2 (Volume):       OK — sdlc-claude-credentials volume found
+  Active tier:           Volume
+```
+
+Or when nothing works:
+
+```
+Credential injection:
+  Tier 1 (Keychain):     FAIL — not macOS
+  Tier 2 (Volume):       FAIL — volume not found
+  Tier 3 (Config):       FAIL — .archon/credentials.yaml not found
+  Active tier:           NONE
+
+  Run: tests/integration/workforce-smoke/login.sh
+  Or create: .archon/credentials.yaml with credential_path
+```
+
+Include the active tier in the summary report (step 9g).
+
 #### 9g. Summary report
 
 Combine all checks into a single report:
@@ -244,6 +286,7 @@ Delegation health check:
   ARM64 patch:         applied
   Loop workaround:     active
   Team images:         N/N present (M stale)
+  Credentials:         OK (tier: Keychain)
 
   Ready for delegation.
 ```
@@ -255,6 +298,7 @@ Delegation health check:
   Docker:              NOT AVAILABLE
   ContainerProvider:   not found
   ...
+  Credentials:         NONE
 
   Issues found. Resolve above before running delegated workflows.
 ```
