@@ -23,7 +23,7 @@ if ! docker image inspect sdlc-worker:base >/dev/null 2>&1; then
     exit 1
 fi
 
-CRED_VOLUME="sdlc-workforce-smoke-creds"
+CRED_VOLUME="sdlc-login-temp"
 SCOPED_VOLUME="sdlc-claude-credentials"
 
 # Clean start
@@ -73,5 +73,4 @@ docker volume rm "$CRED_VOLUME" 2>/dev/null || true
 
 echo ""
 echo "Done. Credentials stored in volume: $SCOPED_VOLUME"
-echo "Run the acceptance test: $SCRIPT_DIR/run-acceptance.sh"
-echo "Run the E2E test: $SCRIPT_DIR/run-e2e.sh"
+echo "This volume is automatically detected by the credential resolver (tier 2)."

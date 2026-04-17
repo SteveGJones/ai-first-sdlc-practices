@@ -98,7 +98,7 @@ CRED_MOUNT=$(echo "$CRED_INFO" | python3 -c "import sys,json; print(json.load(sy
 
 if [ "$CRED_TIER" = "none" ] || [ -z "$CRED_MOUNT" ]; then
     fail "credentials" "no credentials available (tier=$CRED_TIER)"
-    echo "Run login.sh first, or ensure Claude Code is authenticated on this Mac."
+    echo "Run $PLUGIN_DIR/scripts/login.sh first, or ensure Claude Code is authenticated on this Mac."
     echo "=== Results: $PASS_COUNT pass, $FAIL_COUNT fail (of $TOTAL) ==="
     exit 1
 fi

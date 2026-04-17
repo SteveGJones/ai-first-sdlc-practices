@@ -40,7 +40,7 @@ CRED_MOUNT=$(echo "$CRED_INFO" | python3 -c "import sys,json; print(json.load(sy
 
 if [ "$CRED_TIER" = "none" ] || [ -z "$CRED_MOUNT" ]; then
     echo "No credentials available (tier=$CRED_TIER)."
-    echo "Ensure Claude Code is authenticated on this Mac, or run: $SCRIPT_DIR/login.sh"
+    echo "Ensure Claude Code is authenticated on this Mac, or run: $PLUGIN_DIR/scripts/login.sh"
     exit 1
 fi
 echo "Credentials: tier=$CRED_TIER"
