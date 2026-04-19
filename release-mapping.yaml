@@ -174,13 +174,19 @@ sdlc-knowledge-base:
     - source: skills/kb-staleness-check/SKILL.md
 
 # Workflow delegation plugin — Archon integration for parallel agent execution. EPIC #96.
-# Components added incrementally by sub-features of the EPIC.
+# Delivered in 5 phases; all skills, scripts, and Docker assets are shipped with
+# the plugin. Docker assets and docs live in the plugin directory directly and
+# ship in-place — they are listed below under `files:` for release completeness
+# and to aid `check-plugin-packaging.py`-style audits (future extension).
 sdlc-workflows:
-  # Populated as sub-features land (workflows, commands, skills, agents, docker)
   skills:
     - source: skills/workflows-setup/SKILL.md
     - source: skills/workflows-run/SKILL.md
     - source: skills/workflows-status/SKILL.md
+    - source: skills/author-workflow/SKILL.md
+    - source: skills/deploy-team/SKILL.md
+    - source: skills/manage-teams/SKILL.md
+    - source: skills/teams-status/SKILL.md
   agents:
     - source: agents/delegation/delegation-coordinator.md
   commands:
@@ -199,3 +205,35 @@ sdlc-workflows:
     - source: workflows/sdlc-feature-development.yaml
     - source: workflows/sdlc-bulk-refactor.yaml
     - source: workflows/sdlc-commissioned-pipeline.yaml
+  scripts:
+    # Authored in-plugin; listed for packaging audit. Ship in-place.
+    - source: plugins/sdlc-workflows/scripts/preprocess_workflow.py
+    - source: plugins/sdlc-workflows/scripts/resolve_credentials.py
+    - source: plugins/sdlc-workflows/scripts/resolve_plugin_paths.py
+    - source: plugins/sdlc-workflows/scripts/generate_team_claude_md.py
+    - source: plugins/sdlc-workflows/scripts/generate_team_dockerfile.py
+    - source: plugins/sdlc-workflows/scripts/validate_team_manifest.py
+    - source: plugins/sdlc-workflows/scripts/coaching_signals.py
+    - source: plugins/sdlc-workflows/scripts/override_logger.py
+    - source: plugins/sdlc-workflows/scripts/team_inventory.py
+    - source: plugins/sdlc-workflows/scripts/teams_status_report.py
+    - source: plugins/sdlc-workflows/scripts/detect-loop-bug.sh
+    - source: plugins/sdlc-workflows/scripts/loop-workaround.sh
+    - source: plugins/sdlc-workflows/scripts/login.sh
+  # The following live in the plugin directory and ship in-place with the plugin.
+  # They are not validated by check-plugin-packaging.py today (no `docker`/`docs`
+  # component type); listed here for release auditability and future validator
+  # extension. See EPIC #96 Phase 5.
+  files:
+    docker:
+      - plugins/sdlc-workflows/docker/Dockerfile.base
+      - plugins/sdlc-workflows/docker/Dockerfile.full
+      - plugins/sdlc-workflows/docker/entrypoint.sh
+      - plugins/sdlc-workflows/docker/build.sh
+      - plugins/sdlc-workflows/docker/build-base.sh
+      - plugins/sdlc-workflows/docker/build-full.sh
+      - plugins/sdlc-workflows/docker/build-team.sh
+      - plugins/sdlc-workflows/docker/docker-compose.yml
+    docs:
+      - plugins/sdlc-workflows/docs/quickstart.md
+      - plugins/sdlc-workflows/docs/troubleshooting.md
