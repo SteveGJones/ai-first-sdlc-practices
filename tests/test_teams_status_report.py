@@ -1,18 +1,10 @@
 #!/usr/bin/env python3
 """Tests for teams_status_report — fleet status data generation."""
 
-import json
-import sys
+from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import patch
 
-import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-import plugins_sdlc_workflows_scripts as scripts  # noqa: E402
-
-teams_status_report = scripts.teams_status_report
+from sdlc_workflows_scripts import teams_status_report
 
 
 def write_manifest(teams_dir: Path, name: str, **overrides: str) -> Path:
@@ -88,6 +80,48 @@ class TestStalenessCheck:
             "name": "team-a",
             "updated": "2026-04-12T12:00:00",
             "image_built": "2026-04-12T12:00:00",
+        }
+        assert teams_status_report.staleness(manifest) == "current"
+
+    def test_stale_when_generated_claude_md_newer_than_image(
+        self, tmp_path: Path
+    ) -> None:
+        """SA-M-5: if the generated team CLAUDE.md has been regenerated
+        (because the project root CLAUDE.md changed) since the last
+        image build, the team image is stale even though the manifest
+        `updated` timestamp hasn't moved."""
+        teams_dir = tmp_path
+        generated = teams_dir / ".generated"
+        generated.mkdir()
+        claude_md = generated / "team-a-CLAUDE.md"
+        claude_md.write_text("# Team A\n")
+        # Force mtime well past the image_built timestamp.
+        future_mtime = datetime(2030, 1, 1, tzinfo=timezone.utc).timestamp()
+        import os
+
+        os.utime(claude_md, (future_mtime, future_mtime))
+
+        manifest_path = teams_dir / "team-a.yaml"
+        manifest_path.write_text("name: team-a\n")
+        manifest = {
+            "name": "team-a",
+            "updated": "2026-04-10T12:00:00",
+            "image_built": "2026-04-10T12:00:00",
+            "_manifest_path": str(manifest_path),
+        }
+        assert teams_status_report.staleness(manifest) == "stale"
+
+    def test_current_when_generated_claude_md_missing(
+        self, tmp_path: Path
+    ) -> None:
+        """No generated CLAUDE.md = fall back to manifest/updated comparison."""
+        manifest_path = tmp_path / "team-a.yaml"
+        manifest_path.write_text("name: team-a\n")
+        manifest = {
+            "name": "team-a",
+            "updated": "2026-04-10T12:00:00",
+            "image_built": "2026-04-12T12:00:00",
+            "_manifest_path": str(manifest_path),
         }
         assert teams_status_report.staleness(manifest) == "current"
 

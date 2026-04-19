@@ -26,7 +26,14 @@ def extract_agent_metadata(file_path: Path) -> Dict[str, Any]:
 
     # Determine category from path
     parts = file_path.parts
-    if "agents" in parts:
+    if "plugins" in parts:
+        # plugins/<plugin-name>/agents/<file>.md — use plugin as category.
+        p_idx = parts.index("plugins")
+        if p_idx + 1 < len(parts):
+            category = f"plugin:{parts[p_idx + 1]}"
+        else:
+            category = "plugin:unknown"
+    elif "agents" in parts:
         idx = parts.index("agents")
         if idx + 1 < len(parts) - 1:
             category = parts[idx + 1]
@@ -132,12 +139,12 @@ def extract_agent_metadata(file_path: Path) -> Dict[str, Any]:
         if "protocol-implementation" not in domains:
             domains.append("protocol-implementation")
 
-    # Use absolute path to avoid relative path issues
-    path_str = str(file_path.absolute())
-    # Convert to relative path for storage
-    if "/ai-first-sdlc-practices/" in path_str:
-        path_str = path_str.split("/ai-first-sdlc-practices/")[-1]
-    else:
+    # Store the path relative to the current working directory (the repo
+    # root when this script is run from the repo). Falls back to the raw
+    # path if the file is outside CWD (unexpected, but defensive).
+    try:
+        path_str = str(file_path.resolve().relative_to(Path.cwd().resolve()))
+    except ValueError:
         path_str = str(file_path)
 
     return {
@@ -169,8 +176,14 @@ def build_catalog():
         "agents": [],
     }
 
-    # Find all agent markdown files
+    # Find all agent markdown files.  Includes top-level `agents/` tree plus
+    # each plugin's `plugins/<name>/agents/` directory, so plugin-bundled
+    # specialists (e.g. sdlc-workflows:delegation-coordinator) show up in the
+    # index.
     agent_files = list(agents_dir.rglob("*.md"))
+    plugins_dir = Path("plugins")
+    if plugins_dir.exists():
+        agent_files.extend(plugins_dir.glob("*/agents/*.md"))
 
     # Filter out README files, templates, and the templates directory
     agent_files = [

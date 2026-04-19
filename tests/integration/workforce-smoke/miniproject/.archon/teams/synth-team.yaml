@@ -1,0 +1,21 @@
+schema_version: "1.0"
+name: synth-team
+description: >
+  Synthesis team — merges parallel review findings into a single
+  recommendation.  Fan-in target with trigger_rule: all_success.
+status: active
+created: "2026-04-17T12:00:00"
+updated: "2026-04-17T12:00:00"
+
+plugins:
+  - sdlc-core
+
+agents:
+  - sdlc-core:code-review-specialist
+  - local:.archon/agents/project-context.md
+
+skills:
+  - sdlc-core:rules
+
+context:
+  - CONSTITUTION.md

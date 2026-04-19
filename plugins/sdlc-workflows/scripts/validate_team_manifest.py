@@ -33,6 +33,7 @@ validate(manifest_path, installed_json=None, project_root=None) -> list[str]
 from __future__ import annotations
 
 import argparse
+import logging
 import re
 import sys
 from pathlib import Path
@@ -46,6 +47,8 @@ if str(_scripts_dir) not in sys.path:
     sys.path.insert(0, str(_scripts_dir))
 
 import resolve_plugin_paths  # noqa: E402
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -88,6 +91,10 @@ def validate(
     if project_root is None:
         project_root = manifest_path.parent
 
+    logger.info(
+        "Team manifest validation start",
+        extra={"manifest_path": str(manifest_path), "has_installed_json": installed_json is not None},
+    )
     errors: list[str] = []
 
     # -- Parse YAML --------------------------------------------------------
@@ -95,8 +102,18 @@ def validate(
         raw = manifest_path.read_text()
         data: Any = yaml.safe_load(raw)
     except yaml.YAMLError as exc:
+        logger.error(
+            "Manifest YAML parse failed",
+            extra={"manifest_path": str(manifest_path), "error": type(exc).__name__},
+            exc_info=True,
+        )
         return [f"YAML parse error: {exc}"]
     except OSError as exc:
+        logger.error(
+            "Manifest read failed",
+            extra={"manifest_path": str(manifest_path), "error": type(exc).__name__},
+            exc_info=True,
+        )
         return [f"Cannot read manifest: {exc}"]
 
     if not isinstance(data, dict):
@@ -146,6 +163,13 @@ def validate(
         try:
             resolve_plugin_paths.resolve_all(plugin_keys, installed_json)
         except resolve_plugin_paths.PluginNotFoundError as exc:
+            logger.warning(
+                "Plugin resolution failed for manifest",
+                extra={
+                    "manifest_path": str(manifest_path),
+                    "missing_count": len(exc.missing),
+                },
+            )
             for missing in exc.missing:
                 errors.append(f"Plugin not installed: {missing}")
 
@@ -155,10 +179,43 @@ def validate(
         errors.append("Field 'agents' must be a list")
         agents_raw = []
 
+    resolved_root = project_root.resolve()
+
+    def _within_project_root(p: Path) -> bool:
+        """Return True iff *p* resolves to a location inside the project.
+
+        CR-M-1: ``local: ../../etc/passwd`` must be rejected.  We
+        resolve to an absolute path first (following symlinks) so
+        adversarial ``..`` segments cannot escape the project tree.
+        """
+        try:
+            resolved = (resolved_root / p).resolve()
+        except (OSError, RuntimeError) as exc:
+            logger.warning(
+                "Path resolution failed during project-root check",
+                extra={"candidate_path": str(p), "error": type(exc).__name__},
+            )
+            return False
+        try:
+            resolved.relative_to(resolved_root)
+        except ValueError:
+            logger.warning(
+                "Path escapes project root (rejected)",
+                extra={"candidate_path": str(p), "resolved": str(resolved)},
+            )
+            return False
+        return True
+
     for agent_ref in agents_raw:
         agent_str = str(agent_ref)
         if agent_str.startswith("local:"):
-            local_path = project_root / agent_str.removeprefix("local:")
+            rel = Path(agent_str.removeprefix("local:"))
+            if not _within_project_root(rel):
+                errors.append(
+                    f"Local agent path escapes project root: {agent_str}"
+                )
+                continue
+            local_path = project_root / rel
             if not local_path.exists():
                 errors.append(f"Local agent file not found: {agent_str}")
         else:
@@ -181,7 +238,13 @@ def validate(
     for skill_ref in skills_raw:
         skill_str = str(skill_ref)
         if skill_str.startswith("local:"):
-            local_path = project_root / skill_str.removeprefix("local:")
+            rel = Path(skill_str.removeprefix("local:"))
+            if not _within_project_root(rel):
+                errors.append(
+                    f"Local skill path escapes project root: {skill_str}"
+                )
+                continue
+            local_path = project_root / rel
             if not local_path.exists():
                 errors.append(f"Local skill file not found: {skill_str}")
         else:
@@ -202,9 +265,32 @@ def validate(
         context_raw = []
 
     for ctx_file in context_raw:
-        ctx_path = project_root / str(ctx_file)
+        rel = Path(str(ctx_file))
+        if not _within_project_root(rel):
+            errors.append(
+                f"Context file path escapes project root: {ctx_file}"
+            )
+            continue
+        ctx_path = project_root / rel
         if not ctx_path.exists():
             errors.append(f"Context file not found: {ctx_file}")
+
+    # -- Reserved forward-compat fields ------------------------------------
+    # SA-M-4: `group:` is reserved for future use (team grouping /
+    # namespacing across a larger fleet).  Accept it today so authors
+    # can declare intent ahead of runtime support; emit a warning
+    # instead of an error so a declaration never blocks a build.
+    if "group" in data:
+        group_value = data["group"]
+        if not isinstance(group_value, str) or not group_value.strip():
+            errors.append(
+                "Field 'group' must be a non-empty string if present"
+            )
+        else:
+            logger.warning(
+                "Reserved field 'group' is accepted but has no runtime effect in v1",
+                extra={"manifest_name": data.get("name"), "group": group_value},
+            )
 
     return errors
 
@@ -216,6 +302,8 @@ def validate(
 
 def main() -> None:
     """CLI entry point for validate_team_manifest."""
+    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logger.info("validate_team_manifest CLI start")
     parser = argparse.ArgumentParser(
         description="Validate a team manifest YAML against the SDLC-workflows schema."
     )
