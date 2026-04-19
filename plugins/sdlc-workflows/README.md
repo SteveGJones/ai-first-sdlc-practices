@@ -17,15 +17,18 @@ container with a manifest-scoped subset of plugins, agents, and skills.
   can execute, injects credential mounts, per-node timeouts, and safety flags.
 - **Credential resolver** — three-tier fallback
   (Keychain → `sdlc-claude-credentials` volume → `.archon/credentials.yaml`).
-- **Archon patches** — small, idempotent source-level patches to Archon for
-  per-node `image:` support and the `ContainerProvider` shim.
+- **No Archon schema patches** — the preprocessor rewrites `image:` nodes
+  into native `bash: docker run` nodes before Archon sees the workflow,
+  so we stay decoupled from upstream Archon schema changes. (An earlier
+  sed-based ContainerProvider patch was removed; it was both wrong and
+  unnecessary once the preprocessor was in place.)
 - **Seven user-invocable skills** (see below).
 
 ## Skills
 
 | Skill | Purpose |
 |-------|---------|
-| `/sdlc-workflows:workflows-setup` | First-time setup: patches Archon, builds base + full images, scaffolds `.archon/` dirs |
+| `/sdlc-workflows:workflows-setup` | First-time setup: installs host Archon, builds base + full images, scaffolds `.archon/` dirs |
 | `/sdlc-workflows:workflows-run <name>` | Execute a workflow by name |
 | `/sdlc-workflows:workflows-status` | Show running / recent workflow runs |
 | `/sdlc-workflows:author-workflow` | Interactive workflow author — generates YAML + command briefs |
@@ -46,7 +49,7 @@ container with a manifest-scoped subset of plugins, agents, and skills.
 # Install the plugin
 /plugin install sdlc-workflows@ai-first-sdlc
 
-# First-time setup — patches Archon, builds base + full images
+# First-time setup — installs host Archon, builds base + full images
 /sdlc-workflows:workflows-setup
 
 # Deploy a team (reads .archon/teams/<name>.yaml)

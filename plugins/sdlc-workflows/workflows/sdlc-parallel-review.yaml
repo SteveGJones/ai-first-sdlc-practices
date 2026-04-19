@@ -2,7 +2,8 @@
 # Each node's 'image' field specifies which team Docker image to use.
 # Set to your team image name (e.g., sdlc-worker:security-review-team)
 # or leave as sdlc-worker:base for the default toolchain.
-# Requires: SDLC Archon patch (ContainerProvider).
+# Image nodes are preprocessed to bash `docker run` nodes before Archon
+# sees the workflow; no Archon schema patch is required.
 #
 # Tip: assign each reviewer its own team image for enforcement:
 #   image: sdlc-worker:security-review-team

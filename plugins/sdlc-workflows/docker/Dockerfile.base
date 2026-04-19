@@ -1,7 +1,15 @@
 # Supply-chain pinning (S-I-4 / D-I-1 / AC-I-9, D-M-6, S-I-5).
 # Upgrade process: bump the ARG default, rebuild base, run smoke tests,
 # commit.  CI can override with --build-arg to validate new candidates.
-ARG BUN_IMAGE_TAG=oven/bun:1.1.42
+#
+# BUN_IMAGE_TAG note: Archon main uses bun.lock (JSON, lockfileVersion 1)
+# which requires Bun >= 1.2.  The old 1.1.42 pin broke on re-builds
+# when Docker Hub republished its tag with a newer Bun binary anyway
+# (supply-chain tag drift, proven by a stale local image reporting
+# "Bun v1.3.12" from an image nominally built on 1.1.42).  Pin to a
+# concrete 1.2.x tag and treat tag drift as a known risk — a digest
+# pin (@sha256:...) is the long-term fix tracked for v2.
+ARG BUN_IMAGE_TAG=oven/bun:1.2.17
 ARG ARCHON_SHA=main
 ARG NODE_IMAGE=node:22-slim
 
@@ -74,17 +82,26 @@ RUN if ! grep -q 'executable:' /opt/archon/packages/core/src/clients/claude.ts; 
       echo "Archon already sets executable — skipping ARM64 patch"; \
     fi
 
-# SDLC patch: ContainerProvider + per-node image selection.
-# Adds Docker-based isolation so different workflow nodes can run different
-# team images. Conditional — skips if Archon already has the feature.
-# See: https://github.com/coleam00/Archon/issues/1197
-COPY patches/ /opt/sdlc-patches/
-RUN chmod +x /opt/sdlc-patches/apply-patches.sh && \
-    bash /opt/sdlc-patches/apply-patches.sh /opt/archon
-
 # Create archon wrapper script that runs from source via Bun.
+#
+# Note on the ContainerProvider patch that used to live here: we do not
+# patch Archon's schema.  The preprocessor in scripts/preprocess_workflow.py
+# rewrites image: nodes into bash: docker-run nodes BEFORE Archon sees the
+# workflow, so Archon only ever processes its own native field set.  The
+# earlier sed-based schema patch was both wrong (matched the first
+# `command:` in the file — a ripgrep sub-schema, not the DAG node schema)
+# and syntactically invalid (TypeScript interface syntax inside a Zod
+# .object() call).  Removing it eliminates an entire class of bugs and
+# keeps our delivery decoupled from any upstream Archon schema churn.
 RUN printf '#!/bin/bash\nexec bun run /opt/archon/packages/cli/src/cli.ts "$@"\n' > /usr/local/bin/archon && \
     chmod +x /usr/local/bin/archon
+
+# Build-time CLI verification (D-M-1 / repair plan phase B2).  A broken
+# archon CLI must fail the image build, never ship silently.  Had this
+# check existed from the start, it would have caught the bugs above at
+# build time instead of letting them reach production images.
+RUN archon --help >/dev/null 2>&1 || (echo "FATAL: archon --help failed in image build" >&2 && exit 1) && \
+    archon workflow --help >/dev/null 2>&1 || (echo "FATAL: archon workflow subcommand broken" >&2 && exit 1)
 
 # Ralph orchestrator (used by smoke tests and autonomous loops)
 RUN npm install -g @ralph-orchestrator/ralph-cli@2.9.2

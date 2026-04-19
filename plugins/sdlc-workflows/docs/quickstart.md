@@ -2,10 +2,33 @@
 
 Get from zero to a working containerised workflow in 5 minutes.
 
+## How this fits together
+
+```
+  you (on host)                           containers (one per node)
+  -------------                           -------------------------
+  /sdlc-workflows:workflows-run my-pipeline
+           │
+           ▼
+  preprocess_workflow.py  ── rewrites image: nodes to bash: docker run
+           │                  (archon never sees image: — it only sees
+           ▼                   its native bash: nodes)
+  archon workflow run my-pipeline
+           │
+           ├── node "implement"  ──►  docker run sdlc-worker:my-team
+           └── node "review"     ──►  docker run sdlc-worker:my-team
+```
+
+The host needs Archon to orchestrate the DAG. Each node's real work
+happens inside an `sdlc-worker:<team>` container — Claude Code,
+plugins, and the team's agents are all baked in.
+
 ## Prerequisites
 
 - **Docker Desktop** running (verify: `docker info`)
 - **Claude Code** authenticated on this machine (verify: `claude -p "say ok"`)
+- **Archon on host PATH** (verify: `archon --help`) — installed by
+  `/sdlc-workflows:workflows-setup`
 - **This repository** cloned with the sdlc-workflows plugin installed
 
 ## Step 1: Build Base Images
@@ -177,10 +200,12 @@ end-to-end smoke test is a working reference implementation:
 tests/integration/workforce-smoke/run-e2e.sh
 ```
 
-It builds base + full + team images, resolves credentials, patches Archon,
-launches team containers through a real workflow (parallel fan-out +
-synthesis), and asserts the expected commits landed in the workspace. Treat
-it as the canonical "how should this look when it works" — when something in
+It builds base + full + team images, resolves credentials, preprocesses
+the workflow (no Archon schema patches — the preprocessor rewrites
+`image:` nodes to `bash: docker run` before Archon sees them), launches
+team containers through a real workflow (parallel fan-out + synthesis),
+and asserts the expected commits landed in the workspace. Treat it as
+the canonical "how should this look when it works" — when something in
 the quickstart diverges, diff against this script.
 
 ## Next Steps
