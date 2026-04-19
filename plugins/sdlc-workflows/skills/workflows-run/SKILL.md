@@ -98,28 +98,89 @@ trap cleanup_credentials EXIT INT TERM
 
 If CRED_TIER is "none", report the error message from the resolver and stop.
 
-2. Create workspace directory:
+2. Create workspace directory with its own git root:
 ```bash
 WORKSPACE=$(mktemp -d "${TMPDIR:-/tmp}/sdlc-run-XXXXXX")
-cp -R . "$WORKSPACE/"
+
+# Extend the credential trap to also remove $WORKSPACE if we bail out
+# before the user chooses what to do with it (step 6). Guarded by
+# SKIP_CLEANUP so explicit "keep workspace" still wins.
+cleanup_workspace_and_credentials() {
+    if [ -z "${SKIP_CLEANUP:-}" ] && [ -n "${WORKSPACE:-}" ] && [ -d "$WORKSPACE" ]; then
+        rm -rf "$WORKSPACE"
+    fi
+    cleanup_credentials
+}
+trap cleanup_workspace_and_credentials EXIT INT TERM
+
+# Copy the project into the workspace, but EXCLUDE the parent .git/
+# (we re-init below), other git worktrees, and heavy or sensitive
+# artefacts. cp -R . copies hidden entries by default, which would
+# otherwise drag the parent's .git/config (inc. core.hooksPath),
+# committed secrets, node_modules, venvs, etc., into the seed.
+rsync -a \
+    --exclude='.git/' \
+    --exclude='.worktrees/' \
+    --exclude='node_modules/' \
+    --exclude='.venv/' \
+    --exclude='__pycache__/' \
+    ./ "$WORKSPACE/"
+
+# Archon resolves cwd to the enclosing git root before discovering
+# .archon/workflows/. Without a fresh git root in the workspace it
+# walks up to the parent repo and fails to find the workflow. Seed
+# a minimal repo so discovery stops inside $WORKSPACE. Disable hooks
+# so a parent repo's pre-commit (e.g. lint gates) cannot block the
+# seed commit.
+(cd "$WORKSPACE" \
+    && git -c core.hooksPath=/dev/null init -q \
+    && git -c core.hooksPath=/dev/null add -A \
+    && git -c core.hooksPath=/dev/null \
+           -c user.email=sdlc-workflows@local \
+           -c user.name=sdlc-workflows \
+           commit -q -m "workflow-seed" >/dev/null)
 ```
 
-3. Preprocess the workflow:
+3. Preprocess the workflow INTO the workspace:
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/preprocess_workflow.py \
-    .archon/workflows/<workflow-name>.yaml \
-    --output .archon/workflows/.generated/<workflow-name>.yaml \
+    "$WORKSPACE/.archon/workflows/<workflow-name>.yaml" \
+    --output "$WORKSPACE/.archon/workflows/.generated/<workflow-name>.yaml" \
     --workspace "$WORKSPACE" \
     --cred-mount "$CRED_MOUNT" \
-    --commands-dir .archon/commands
+    --commands-dir "$WORKSPACE/.archon/commands"
+
+# Archon's workflow discovery recurses into `.archon/workflows/`, which
+# means both the original (with `image:` nodes Archon cannot execute)
+# and the preprocessed (with `bash:` nodes) are loaded keyed by the same
+# filename — readdir order decides which wins. Overwrite the original
+# in the workspace with the preprocessed version to make this
+# deterministic.
+rm -f "$WORKSPACE/.archon/workflows/<workflow-name>.yaml"
+cp "$WORKSPACE/.archon/workflows/.generated/<workflow-name>.yaml" \
+    "$WORKSPACE/.archon/workflows/<workflow-name>.yaml"
 ```
 
-4. Run the preprocessed workflow through Archon:
+4. Run the preprocessed workflow from inside the workspace:
 ```bash
-archon workflow run <workflow-name> --no-worktree
+# Archon 1.x emits a spurious "nested Claude Code detected" warning
+# when CLAUDECODE=1 is in the env, and that warning path can suppress
+# workflow discovery. Unset the CC handshake vars before the call.
+(cd "$WORKSPACE" \
+    && env -u CLAUDECODE -u CLAUDE_CODE_SSE_PORT -u CLAUDE_CODE_IPC_FD \
+           archon workflow run <workflow-name> --no-worktree)
 ```
 
-Note: `--no-worktree` is used because workspace isolation is managed by the containers, not by Archon's worktree provider. The preprocessed YAML is placed in `.archon/workflows/.generated/` and Archon discovers it automatically.
+Notes:
+- `--no-worktree` — workspace isolation is managed by the containers,
+  not by Archon's worktree provider.
+- The `cd "$WORKSPACE"` is load-bearing: Archon resolves cwd to the
+  enclosing git root before looking for `.archon/workflows/`. The fresh
+  git in step 2 is what stops that walk.
+- The SSE dashboard stream on `archon serve` only observes runs
+  launched through the server; CLI-launched runs write to SQLite but
+  do not appear in the SSE stream. Use `workflows-status` (REST or
+  SQLite) for CLI runs.
 
 5. Report artefacts — BEFORE cleanup:
 
@@ -194,17 +255,20 @@ done
 [ -n "${SKIP_CLEANUP:-}" ] || rm -rf "$WORKSPACE"
 ```
 
-**If option 2 — keep:** print the path, skip the `rm -rf`.
+**If option 2 — keep:** print the path and set `SKIP_CLEANUP=1`
+so the exit trap does not destroy the workspace.
 
 **If option 3 — discard:** `rm -rf "$WORKSPACE"`.
 
 In all three cases:
 ```bash
-rm -f .archon/workflows/.generated/<workflow-name>.yaml
-# CRED_CLEANUP is removed automatically by the trap installed in step 1,
-# so no explicit rm is needed here — but it is harmless to re-run:
-cleanup_credentials
+# Credential file + any workspace we chose to discard are removed by
+# the trap installed in step 2. Re-running is harmless:
+cleanup_workspace_and_credentials
 ```
+Note: the preprocessed YAML lives inside $WORKSPACE, so it goes
+away with the workspace (option 3 or a failed run). Options 1 and 2
+preserve the workspace intentionally.
 
 **If NATIVE (no image: nodes):**
 
