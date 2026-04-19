@@ -221,6 +221,7 @@ sdlc-workflows:
     - source: plugins/sdlc-workflows/scripts/loop-workaround.sh
     - source: plugins/sdlc-workflows/scripts/login.sh
     - source: plugins/sdlc-workflows/scripts/sse_stream_follow.py
+    - source: plugins/sdlc-workflows/scripts/workflows_status_query.py
   # The following live in the plugin directory and ship in-place with the plugin.
   # They are not validated by check-plugin-packaging.py today (no `docker`/`docs`
   # component type); listed here for release auditability and future validator
