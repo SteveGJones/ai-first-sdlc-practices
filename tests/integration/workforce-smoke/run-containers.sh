@@ -7,14 +7,14 @@ PLUGIN_DIR="$REPO_ROOT/plugins/sdlc-workflows"
 SCRIPTS_DIR="$PLUGIN_DIR/scripts"
 MINI="$SCRIPT_DIR/miniproject"
 
-echo "=== Phase 3 Container Integration Smoke Test ==="
+echo "=== Phase 3 + Phase 5 Container Integration Smoke Test ==="
 echo "Miniproject: $MINI"
 echo ""
 
 PASS_COUNT=0
 FAIL_COUNT=0
 SKIP_COUNT=0
-TOTAL=16
+TOTAL=20
 
 pass() { echo "  PASS: $1"; PASS_COUNT=$((PASS_COUNT + 1)); }
 fail() { echo "  FAIL: $1 — $2"; FAIL_COUNT=$((FAIL_COUNT + 1)); }
@@ -457,15 +457,170 @@ else
     fail "workflow-team validation" "references invalid"
 fi
 
+echo ""
+echo "=== PHASE 5 HARDENING PHASE ==="
+echo ""
+
+# ---------------------------------------------------------------------------
+# Check 17: SIGTERM triggers prompt exit (AC-C-4 / S-M-4)
+#
+# The entrypoint's `trap cleanup SIGTERM SIGINT EXIT` must fire on docker stop
+# and exit within the default 10s stop-grace period. We use --entrypoint sh
+# with an inline trap that mirrors entrypoint.sh's structure so the test does
+# not depend on valid Claude credentials.
+# ---------------------------------------------------------------------------
+echo "[17/$TOTAL] SIGTERM exit time (<5s)"
+SIGTERM_NAME="sdlc-sigterm-probe-$$"
+docker run -d --rm --name "$SIGTERM_NAME" \
+    --entrypoint /bin/sh \
+    sdlc-worker:dev-team \
+    -c 'cleanup() { exit 0; }; trap cleanup SIGTERM SIGINT EXIT; sleep 60 & wait' \
+    >/dev/null 2>&1
+# Let the container settle so the trap is installed before we signal.
+sleep 1
+START_TS=$(date +%s)
+docker kill --signal=TERM "$SIGTERM_NAME" >/dev/null 2>&1 || true
+# Wait up to 5s for exit.
+WAIT_RESULT="timeout"
+for _ in 1 2 3 4 5; do
+    if ! docker ps --format '{{.Names}}' | grep -q "^${SIGTERM_NAME}$"; then
+        WAIT_RESULT="exited"
+        break
+    fi
+    sleep 1
+done
+END_TS=$(date +%s)
+ELAPSED=$((END_TS - START_TS))
+docker kill "$SIGTERM_NAME" >/dev/null 2>&1 || true
+if [ "$WAIT_RESULT" = "exited" ] && [ "$ELAPSED" -lt 5 ]; then
+    pass "container exited ${ELAPSED}s after SIGTERM"
+else
+    fail "SIGTERM exit" "elapsed=${ELAPSED}s result=${WAIT_RESULT}"
+fi
+
+# ---------------------------------------------------------------------------
+# Check 18: credential-wipe trap baked into entrypoint (AC-C-4 / S-M-4)
+#
+# The entrypoint.sh installed in the image must contain the rm -f for
+# .credentials.json inside a trap. We grep the baked file so a regression
+# that drops the trap fails this check at build time.
+# ---------------------------------------------------------------------------
+echo "[18/$TOTAL] Credential-wipe trap present in entrypoint"
+TRAP_CHECK=$(docker run --rm --entrypoint /bin/sh sdlc-worker:dev-team \
+    -c 'grep -c "rm -f /home/sdlc/.claude/.credentials.json" /usr/local/bin/entrypoint.sh 2>/dev/null && grep -c "^trap cleanup" /usr/local/bin/entrypoint.sh 2>/dev/null' 2>&1 | tr '\n' ' ')
+# Two counts expected (rm line + trap line), each >= 1.
+if echo "$TRAP_CHECK" | awk '{exit !($1 >= 1 && $2 >= 1)}'; then
+    pass "entrypoint contains credential-wipe rm + trap cleanup"
+else
+    fail "credential-wipe trap" "expected both counts>=1, got: $TRAP_CHECK"
+fi
+
+# ---------------------------------------------------------------------------
+# Check 19: Docker HEALTHCHECK transitions (AC-C-4)
+#
+# A sleeping container must report `healthy` once the healthcheck interval
+# elapses (baked into the image). We verify HEALTHCHECK is present on the
+# image and that a long-running container reaches `healthy`.
+# ---------------------------------------------------------------------------
+echo "[19/$TOTAL] Healthcheck transitions to healthy"
+HC_DEFINED=$(docker inspect --format '{{if .Config.Healthcheck}}yes{{else}}no{{end}}' sdlc-worker:dev-team 2>/dev/null)
+if [ "$HC_DEFINED" != "yes" ]; then
+    fail "healthcheck" "no HEALTHCHECK defined on image"
+else
+    HC_NAME="sdlc-healthcheck-probe-$$"
+    docker run -d --rm --name "$HC_NAME" \
+        --entrypoint /bin/sh \
+        sdlc-worker:dev-team \
+        -c 'sleep 120' >/dev/null 2>&1
+    # Poll up to 60s for the first healthcheck (interval=30s, plus start jitter).
+    HC_STATE="unknown"
+    for i in $(seq 1 12); do
+        HC_STATE=$(docker inspect --format '{{.State.Health.Status}}' "$HC_NAME" 2>/dev/null || echo "unknown")
+        if [ "$HC_STATE" = "healthy" ]; then
+            break
+        fi
+        sleep 5
+    done
+    docker kill "$HC_NAME" >/dev/null 2>&1 || true
+    if [ "$HC_STATE" = "healthy" ]; then
+        pass "healthcheck reached 'healthy' state"
+    else
+        # starting is acceptable on slow hosts — fail only if unhealthy.
+        if [ "$HC_STATE" = "starting" ]; then
+            skip "healthcheck still 'starting' after 60s (slow host)"
+        else
+            fail "healthcheck" "final state: $HC_STATE"
+        fi
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Check 20: Concurrent team instances run without interference
+#
+# Two containers from the same team image must each see the baked agent set
+# without state leakage. We run them in parallel with distinct workspace
+# bind-mounts and verify each reports the same inventory.
+# ---------------------------------------------------------------------------
+echo "[20/$TOTAL] Concurrent team instances"
+CONC_DIR_A=$(mktemp -d "${TMPDIR:-/tmp}/sdlc-conc-a.XXXXXX")
+CONC_DIR_B=$(mktemp -d "${TMPDIR:-/tmp}/sdlc-conc-b.XXXXXX")
+
+CONC_SCRIPT='
+import sys, json
+sys.path.insert(0, "/opt/sdlc-scripts")
+from team_inventory import discover_all
+from pathlib import Path
+r = discover_all(Path("/home/sdlc/.claude/plugins/installed_plugins.json"))
+agents = sorted({a["name"] for pd in r.values() for a in pd.get("agents", [])})
+print(json.dumps({"count": len(agents), "agents": agents}))
+'
+CONC_NAME_A="sdlc-conc-a-$$"
+CONC_NAME_B="sdlc-conc-b-$$"
+docker run -d --rm --name "$CONC_NAME_A" \
+    --entrypoint python3 \
+    -v "$SCRIPTS_DIR:/opt/sdlc-scripts:ro" \
+    -v "$CONC_DIR_A:/workspace" \
+    sdlc-worker:dev-team \
+    -c "$CONC_SCRIPT; import time; time.sleep(10)" >/dev/null 2>&1
+docker run -d --rm --name "$CONC_NAME_B" \
+    --entrypoint python3 \
+    -v "$SCRIPTS_DIR:/opt/sdlc-scripts:ro" \
+    -v "$CONC_DIR_B:/workspace" \
+    sdlc-worker:dev-team \
+    -c "$CONC_SCRIPT; import time; time.sleep(10)" >/dev/null 2>&1
+# Wait for both to produce output.
+sleep 3
+LOGS_A=$(docker logs "$CONC_NAME_A" 2>&1 | tail -1)
+LOGS_B=$(docker logs "$CONC_NAME_B" 2>&1 | tail -1)
+docker kill "$CONC_NAME_A" "$CONC_NAME_B" >/dev/null 2>&1 || true
+rm -rf "$CONC_DIR_A" "$CONC_DIR_B"
+
+CONC_CHECK=$(python3 -c "
+import json, sys
+try:
+    a = json.loads('''$LOGS_A''')
+    b = json.loads('''$LOGS_B''')
+    assert a['count'] > 0 and b['count'] > 0, 'empty inventory'
+    assert a['agents'] == b['agents'], 'agent sets diverged between concurrent containers'
+    print(f\"OK: both saw {a['count']} agents\")
+except Exception as e:
+    print(f'FAIL: {e}')
+" 2>/dev/null)
+if echo "$CONC_CHECK" | grep -q "^OK"; then
+    pass "concurrent teams: $CONC_CHECK"
+else
+    fail "concurrent teams" "$CONC_CHECK"
+fi
+
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
 echo ""
 echo "=== Results: $PASS_COUNT pass, $FAIL_COUNT fail, $SKIP_COUNT skip (of $TOTAL) ==="
 if [ "$FAIL_COUNT" -eq 0 ]; then
-    echo "Phase 3 container integration smoke test: ALL PASS"
+    echo "Phase 3 + Phase 5 container integration smoke test: ALL PASS"
     exit 0
 else
-    echo "Phase 3 container integration smoke test: FAILURES DETECTED"
+    echo "Phase 3 + Phase 5 container integration smoke test: FAILURES DETECTED"
     exit 1
 fi

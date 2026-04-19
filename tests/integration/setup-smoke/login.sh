@@ -33,7 +33,10 @@ unset ANTHROPIC_API_KEY
 # Run interactive container as the sdlc user with named volume mounted at /home/sdlc/.claude
 # (The Dockerfile creates the sdlc user with UID 1000. Login must run as this user
 # so credentials get the right ownership for run.sh, which also runs as sdlc.)
+# S-M-2: drop capabilities; OAuth flow needs no Linux caps.
 docker run --rm -it \
+    --cap-drop ALL \
+    --security-opt no-new-privileges \
     -v sdlc-smoke-claude-creds:/home/sdlc/.claude \
     --entrypoint /bin/bash \
     sdlc-smoke-base:latest \

@@ -14,7 +14,11 @@ echo "Starting interactive login container..."
 echo "Run 'claude /login' inside the container."
 echo ""
 
+# S-M-2: drop capabilities; `claude /login` opens an OAuth flow that does not
+# need any Linux capabilities.
 docker run --rm -it \
+    --cap-drop ALL \
+    --security-opt no-new-privileges \
     -v sdlc-smoke-claude-creds:/home/sdlc/.claude \
     --entrypoint /bin/bash \
     sdlc-worker:latest \

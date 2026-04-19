@@ -31,7 +31,10 @@ echo "Auth: Claude Code Max subscription (from named volume)"
 echo "Plugins: installed from public GitHub during test"
 echo ""
 
+# S-M-2: drop capabilities to match hardened production docker runs.
 docker run --rm \
+    --cap-drop ALL \
+    --security-opt no-new-privileges \
     -v sdlc-smoke-claude-creds:/home/sdlc/.claude \
     -v "$SCRIPT_DIR/PROMPT.md:/workspace/PROMPT.md:ro" \
     -v "$SCRIPT_DIR/ralph.yml:/workspace/ralph.yml:ro" \

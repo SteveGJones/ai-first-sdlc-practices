@@ -18,8 +18,11 @@ Exit codes:
 """
 
 import argparse
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 _scripts_dir = (
     Path(__file__).resolve().parent.parent.parent
@@ -228,6 +231,21 @@ def validate(
                     f"'{team_name}' which has status '{status}' "
                     f"(inactive/decommissioned teams should not be "
                     f"referenced in workflows)"
+                )
+
+            # team_extend has NO runtime injection in v1 — this is a
+            # schema-validation-only field until a future phase wires it
+            # into the team image build. Warn so authors don't rely on
+            # the agents appearing in the container at runtime.
+            if team_extend:
+                logger.warning(
+                    "team_extend has no runtime effect in v1 — see "
+                    "CLAUDE-CONTEXT-workflows.md -> team_extend status in v1. "
+                    "Validated statically; currently a silent no-op at runtime.",
+                    extra={
+                        "workflow": wf_path.name,
+                        "node_id": node_id,
+                    },
                 )
 
             # Validate team_extend agent references against plugin inventory

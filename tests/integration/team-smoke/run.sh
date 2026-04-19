@@ -113,7 +113,10 @@ fi
 echo "[7/$TOTAL] Plugins directory is read-only"
 if [ "$DOCKER_AVAILABLE" = "true" ] && \
    docker image inspect sdlc-worker:smoke-review-team >/dev/null 2>&1; then
-    RO_CHECK=$(docker run --rm --entrypoint /bin/bash sdlc-worker:smoke-review-team \
+    # S-M-2: --cap-drop + no-new-privileges match hardened production docker runs.
+    RO_CHECK=$(docker run --rm \
+        --cap-drop ALL --security-opt no-new-privileges \
+        --entrypoint /bin/bash sdlc-worker:smoke-review-team \
         -c "touch /home/sdlc/.claude/plugins/test-write" 2>&1 || true)
     if echo "$RO_CHECK" | grep -qi "read-only\|permission denied\|cannot touch"; then
         pass "plugins directory is read-only"

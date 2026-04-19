@@ -46,34 +46,20 @@ fi
 echo "Credentials: tier=$CRED_TIER"
 
 # ---------------------------------------------------------------------------
-# Build team images from miniproject
+# Build team images from miniproject — setup archon backup via shared lib
 # ---------------------------------------------------------------------------
-TEAMS_DIR="$REPO_ROOT/.archon/teams"
-AGENTS_DIR="$REPO_ROOT/.archon/agents"
-BACKUP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/workforce-accept-backup.XXXXXX")
-mkdir -p "$TEAMS_DIR" "$AGENTS_DIR" "$BACKUP_DIR/teams" "$BACKUP_DIR/agents"
-if ls "$TEAMS_DIR"/*.yaml >/dev/null 2>&1; then
-    cp "$TEAMS_DIR"/*.yaml "$BACKUP_DIR/teams/" 2>/dev/null || true
-fi
-if ls "$AGENTS_DIR"/*.md >/dev/null 2>&1; then
-    cp "$AGENTS_DIR"/*.md "$BACKUP_DIR/agents/" 2>/dev/null || true
-fi
+# shellcheck disable=SC1091
+source "$(dirname "$0")/_lib.sh"
+
+archon_backup_setup "workforce-accept"
 
 # Writable workspace for the acceptance test
 WORKSPACE=$(mktemp -d "${TMPDIR:-/tmp}/workforce-accept-ws.XXXXXX")
 cp -R "$MINI"/* "$MINI"/.archon "$WORKSPACE/"
 
 cleanup() {
-    rm -f "$TEAMS_DIR"/dev-team.yaml "$TEAMS_DIR"/review-team.yaml
-    rm -f "$AGENTS_DIR"/project-context.md
-    rm -rf "$TEAMS_DIR/.generated/dev-team"* "$TEAMS_DIR/.generated/review-team"*
-    if ls "$BACKUP_DIR/teams/"*.yaml >/dev/null 2>&1; then
-        cp "$BACKUP_DIR/teams/"*.yaml "$TEAMS_DIR/" 2>/dev/null || true
-    fi
-    if ls "$BACKUP_DIR/agents/"*.md >/dev/null 2>&1; then
-        cp "$BACKUP_DIR/agents/"*.md "$AGENTS_DIR/" 2>/dev/null || true
-    fi
-    rm -rf "$BACKUP_DIR" "$WORKSPACE"
+    archon_backup_cleanup
+    rm -rf "$WORKSPACE"
     docker rmi sdlc-worker:dev-team sdlc-worker:review-team 2>/dev/null || true
 }
 trap cleanup EXIT

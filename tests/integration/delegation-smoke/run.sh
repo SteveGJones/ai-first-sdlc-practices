@@ -27,7 +27,10 @@ echo "=== Running SDLC Delegation Smoke Test ==="
 echo "Auth: Claude Code Max subscription (from named volume)"
 echo ""
 
+# S-M-2: drop capabilities to match hardened production docker runs.
 docker run --rm \
+    --cap-drop ALL \
+    --security-opt no-new-privileges \
     -v sdlc-smoke-claude-creds:/home/sdlc/.claude \
     delegation-smoke-base:latest
 

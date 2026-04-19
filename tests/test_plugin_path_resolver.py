@@ -2,17 +2,11 @@
 """Tests for resolve_plugin_paths — plugin name to filesystem path resolution."""
 
 import json
-import sys
 from pathlib import Path
 
 import pytest
 
-# Insert repo root so the import shim is importable
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-import plugins_sdlc_workflows_scripts as scripts  # noqa: E402
-
-resolve_plugin_paths = scripts.resolve_plugin_paths
+from sdlc_workflows_scripts import resolve_plugin_paths
 
 
 # ---------------------------------------------------------------------------

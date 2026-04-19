@@ -2,18 +2,12 @@
 """Tests for validate_team_manifest — team manifest schema validation."""
 
 import json
-import sys
 import textwrap
 from pathlib import Path
 
 import pytest
 
-# Insert repo root so the import shim is importable
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-import plugins_sdlc_workflows_scripts as scripts  # noqa: E402
-
-validate_team_manifest = scripts.validate_team_manifest
+from sdlc_workflows_scripts import validate_team_manifest
 
 
 # ---------------------------------------------------------------------------
@@ -439,6 +433,62 @@ class TestLocalPaths:
         local_errors = [e for e in errors if "local" in e.lower() and "custom" in e]
         assert local_errors == []
 
+    def test_local_agent_path_traversal_rejected(self, tmp_path: Path) -> None:
+        """CR-M-1: ``local: ../../etc/passwd`` must be rejected."""
+        manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
+        content = textwrap.dedent("""\
+            schema_version: "1.0"
+            name: test-team
+            status: active
+            plugins:
+              - sdlc-core@ai-first-sdlc
+            agents:
+              - local:../../etc/passwd
+        """)
+        manifest_path.write_text(content)
+        errors = validate_team_manifest.validate(
+            manifest_path, installed_json, project_root
+        )
+        assert any(
+            "escapes project root" in e for e in errors
+        ), f"Expected path-traversal rejection, got: {errors}"
+
+    def test_local_skill_path_traversal_rejected(self, tmp_path: Path) -> None:
+        """CR-M-1: path traversal also rejected for skills."""
+        manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
+        content = textwrap.dedent("""\
+            schema_version: "1.0"
+            name: test-team
+            status: active
+            plugins:
+              - sdlc-core@ai-first-sdlc
+            skills:
+              - local:../secrets/private
+        """)
+        manifest_path.write_text(content)
+        errors = validate_team_manifest.validate(
+            manifest_path, installed_json, project_root
+        )
+        assert any("escapes project root" in e for e in errors)
+
+    def test_context_path_traversal_rejected(self, tmp_path: Path) -> None:
+        """CR-M-1: context files also validated for traversal."""
+        manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
+        content = textwrap.dedent("""\
+            schema_version: "1.0"
+            name: test-team
+            status: active
+            plugins:
+              - sdlc-core@ai-first-sdlc
+            context:
+              - ../../../../etc/shadow
+        """)
+        manifest_path.write_text(content)
+        errors = validate_team_manifest.validate(
+            manifest_path, installed_json, project_root
+        )
+        assert any("escapes project root" in e for e in errors)
+
 
 # ---------------------------------------------------------------------------
 # Context file existence
@@ -483,6 +533,63 @@ class TestContextFiles:
         )
         context_errors = [e for e in errors if "context" in e.lower() and "CLAUDE.md" in e]
         assert context_errors == []
+
+
+# ---------------------------------------------------------------------------
+# Reserved forward-compat fields (SA-M-4)
+# ---------------------------------------------------------------------------
+
+
+class TestReservedFields:
+    """The ``group:`` field is reserved for future use: accepted, no runtime effect."""
+
+    def test_group_string_accepted_without_error(self, tmp_path: Path) -> None:
+        manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
+        content = textwrap.dedent("""\
+            schema_version: "1.0"
+            name: test-team
+            status: active
+            plugins:
+              - sdlc-core@ai-first-sdlc
+            group: platform-engineering
+        """)
+        manifest_path.write_text(content)
+        errors = validate_team_manifest.validate(
+            manifest_path, installed_json, project_root
+        )
+        assert errors == []
+
+    def test_group_empty_string_rejected(self, tmp_path: Path) -> None:
+        manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
+        content = textwrap.dedent("""\
+            schema_version: "1.0"
+            name: test-team
+            status: active
+            plugins:
+              - sdlc-core@ai-first-sdlc
+            group: "   "
+        """)
+        manifest_path.write_text(content)
+        errors = validate_team_manifest.validate(
+            manifest_path, installed_json, project_root
+        )
+        assert any("group" in e.lower() for e in errors)
+
+    def test_group_non_string_rejected(self, tmp_path: Path) -> None:
+        manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
+        content = textwrap.dedent("""\
+            schema_version: "1.0"
+            name: test-team
+            status: active
+            plugins:
+              - sdlc-core@ai-first-sdlc
+            group: 42
+        """)
+        manifest_path.write_text(content)
+        errors = validate_team_manifest.validate(
+            manifest_path, installed_json, project_root
+        )
+        assert any("group" in e.lower() for e in errors)
 
 
 # ---------------------------------------------------------------------------

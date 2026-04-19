@@ -1,17 +1,9 @@
 #!/usr/bin/env python3
 """Tests for coaching_signals — tiered coaching signal analysis."""
 
-import json
-import sys
 from pathlib import Path
 
-import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-import plugins_sdlc_workflows_scripts as scripts  # noqa: E402
-
-coaching_signals = scripts.coaching_signals
+from sdlc_workflows_scripts import coaching_signals
 
 
 class TestSignalTiers:

@@ -51,25 +51,17 @@ for img in sdlc-worker:base sdlc-worker:full; do
 done
 
 # ---------------------------------------------------------------------------
-# Build team images
+# Build team images — setup archon backup + workspace via shared lib
 # ---------------------------------------------------------------------------
-TEAMS_DIR="$REPO_ROOT/.archon/teams"
-AGENTS_DIR="$REPO_ROOT/.archon/agents"
-BACKUP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/e2e-backup.XXXXXX")
-mkdir -p "$TEAMS_DIR" "$AGENTS_DIR" "$BACKUP_DIR/teams" "$BACKUP_DIR/agents"
+# shellcheck disable=SC1091
+source "$(dirname "$0")/_lib.sh"
 
-ls "$TEAMS_DIR"/*.yaml >/dev/null 2>&1 && cp "$TEAMS_DIR"/*.yaml "$BACKUP_DIR/teams/" || true
-ls "$AGENTS_DIR"/*.md >/dev/null 2>&1 && cp "$AGENTS_DIR"/*.md "$BACKUP_DIR/agents/" || true
-
+archon_backup_setup "e2e"
 WORKSPACE=$(mktemp -d "${TMPDIR:-/tmp}/e2e-workspace.XXXXXX")
 
 cleanup() {
-    rm -f "$TEAMS_DIR"/dev-team.yaml "$TEAMS_DIR"/review-team.yaml
-    rm -f "$AGENTS_DIR"/project-context.md
-    rm -rf "$TEAMS_DIR/.generated/dev-team"* "$TEAMS_DIR/.generated/review-team"*
-    ls "$BACKUP_DIR/teams/"*.yaml >/dev/null 2>&1 && cp "$BACKUP_DIR/teams/"*.yaml "$TEAMS_DIR/" || true
-    ls "$BACKUP_DIR/agents/"*.md >/dev/null 2>&1 && cp "$BACKUP_DIR/agents/"*.md "$AGENTS_DIR/" || true
-    rm -rf "$BACKUP_DIR" "$WORKSPACE"
+    archon_backup_cleanup
+    rm -rf "$WORKSPACE"
     docker rmi sdlc-worker:dev-team sdlc-worker:review-team 2>/dev/null || true
 }
 trap cleanup EXIT

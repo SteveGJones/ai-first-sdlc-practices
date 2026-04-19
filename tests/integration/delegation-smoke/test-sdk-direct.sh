@@ -11,8 +11,11 @@ docker build --platform linux/amd64 -t sdlc-worker:amd64 . 2>&1 | tail -5
 
 echo ""
 echo "Running Archon chat test..."
+# S-M-2: drop capabilities to match hardened production docker runs.
 docker run --rm \
     --platform linux/amd64 \
+    --cap-drop ALL \
+    --security-opt no-new-privileges \
     -v sdlc-smoke-claude-creds:/home/sdlc/.claude \
     --entrypoint /bin/bash \
     sdlc-worker:amd64 \

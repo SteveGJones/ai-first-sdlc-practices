@@ -5,7 +5,11 @@
 set -e
 
 echo "=== Test: Archon chat (Bun + Node.js subprocess) ==="
+# S-M-2: Phase 1/2 harnesses drop capabilities to match the hardening
+# applied by preprocess_workflow.py's generated production docker runs.
 docker run --rm \
+    --cap-drop ALL \
+    --security-opt no-new-privileges \
     -v sdlc-smoke-claude-creds:/home/sdlc/.claude \
     --entrypoint /bin/bash \
     sdlc-worker:latest \

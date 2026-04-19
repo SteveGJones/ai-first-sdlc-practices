@@ -2,16 +2,9 @@
 """Tests for team_inventory — plugin agent and skill discovery."""
 
 import json
-import sys
 from pathlib import Path
 
-import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-import plugins_sdlc_workflows_scripts as scripts  # noqa: E402
-
-team_inventory = scripts.team_inventory
+from sdlc_workflows_scripts import team_inventory
 
 
 class TestDiscoverPluginAgents:
