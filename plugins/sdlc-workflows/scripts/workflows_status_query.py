@@ -76,9 +76,30 @@ def fetch_via_rest(base_url: str, timeout: float) -> list[dict] | None:
 def fetch_run_detail_via_rest(
     base_url: str, run_id: str, timeout: float
 ) -> dict | None:
-    """Fetch one run's detail via REST; None if unreachable."""
+    """Fetch one run's detail via REST; None if unreachable.
+
+    Normalises Archon's wrapped response shape (``{"run": {...}, "events":
+    [...]}``) into a single flat dict with ``events`` merged in, matching the
+    ``fetch_run_detail_via_sqlite`` contract expected by ``format_run_detail``.
+    """
     url = f"{base_url.rstrip('/')}/api/workflows/runs/{run_id}"
-    return _http_get_json(url, timeout=timeout)  # type: ignore[return-value]
+    data = _http_get_json(url, timeout=timeout)
+    if data is None:
+        return None
+    # Wrapper shape: {"run": {...}, "events": [...]}. Disambiguate from a
+    # (hypothetical) flat payload that happens to contain a "run" field by
+    # also checking that "id" is absent at the top level — format_run_detail
+    # requires id at the top level, so this is the clean discriminator.
+    if (
+        isinstance(data, dict)
+        and "run" in data
+        and "id" not in data
+        and isinstance(data["run"], dict)
+    ):
+        merged = dict(data["run"])
+        merged["events"] = data.get("events", [])
+        return merged
+    return data  # type: ignore[return-value]
 
 
 # ---------------------------------------------------------------------------

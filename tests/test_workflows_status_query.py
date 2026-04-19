@@ -252,6 +252,41 @@ def test_rest_run_detail(monkeypatch):
     assert detail["id"] == "r1"
 
 
+def test_rest_run_detail_wrapped_in_run_key(monkeypatch):
+    # Real Archon API shape: {"run": {...}, "events": [...]}. The script must
+    # unwrap so format_run_detail sees a flat dict with events merged in.
+    payload = json.dumps(
+        {
+            "run": {
+                "id": "r2",
+                "workflow_name": "feature-pipeline",
+                "status": "completed",
+                "started_at": "2026-04-19 23:29:01",
+                "completed_at": "2026-04-19 23:30:37",
+                "working_path": "/tmp/ws",
+            },
+            "events": [
+                {"event_type": "workflow_started", "created_at": "2026-04-19 23:29:01"},
+                {"event_type": "node_started", "step_name": "implement", "created_at": "2026-04-19 23:29:01"},
+            ],
+        }
+    )
+    with patch.object(
+        wsq.urllib.request,
+        "urlopen",
+        return_value=_FakeResp(200, payload.encode()),
+    ):
+        detail = wsq.fetch_run_detail_via_rest(
+            "http://localhost:3090", "r2", timeout=1.0
+        )
+    assert detail is not None
+    assert detail["id"] == "r2"
+    assert detail["workflow_name"] == "feature-pipeline"
+    assert detail["status"] == "completed"
+    assert len(detail["events"]) == 2
+    assert detail["events"][0]["event_type"] == "workflow_started"
+
+
 # ---------------------------------------------------------------------------
 # CLI entry: main() dispatches correctly
 # ---------------------------------------------------------------------------
