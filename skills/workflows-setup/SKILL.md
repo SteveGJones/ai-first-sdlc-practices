@@ -1,33 +1,89 @@
 ---
 name: workflows-setup
-description: Install Archon, configure SDLC workflows, and optionally build the Docker image. Run once after installing sdlc-workflows plugin.
+description: Install Archon, build the sdlc-worker Docker images, and configure SDLC workflows. Run once after installing the sdlc-workflows plugin.
 disable-model-invocation: false
 argument-hint: "[--with-docker | --workflows-only | --health-check]"
 ---
 
 # Set Up SDLC Delegated Workflows
 
-Install Archon, copy SDLC workflow templates and command prompts into the project, and optionally build the sdlc-worker Docker image.
+Install Archon, build the `sdlc-worker:base` + `sdlc-worker:full`
+Docker images, and copy SDLC workflow templates and command prompts
+into the project.
 
 ## Arguments
 
-- `--with-docker` — Install Archon + copy workflows + build Docker image (full setup)
-- `--workflows-only` (default) — Install Archon + copy workflows (no Docker build)
-- `--health-check` — Run delegation health check only (skip setup steps)
+- *(no argument)* or `--with-docker` (default) — full setup:
+  host Archon + workflows + Docker images. Recommended — this is
+  the state in which `/sdlc-workflows:workflows-run` will actually
+  work.
+- `--workflows-only` — host Archon + workflows, **no Docker build**.
+  Only use this when you know you already have `sdlc-worker:base`
+  and `:full` from an earlier setup; a fresh project that picks
+  this will see `workflows-run` fail at the first node with
+  "image not found".
+- `--health-check` — run diagnostic checks only (skip steps 1-8).
 
-When `--health-check` is passed, skip steps 1-8 and go directly to step 9.
+When `--health-check` is passed, skip steps 1-8 and go directly to
+step 9.
+
+Default behaviour (no args) is `--with-docker` so a first-time
+user ends up in a working state without having to know which flags
+to pass.
 
 ## Steps
 
 ### 1. Check if Archon is already installed
 
-Run `archon --version 2>/dev/null`.
+The upstream installer (`curl -fsSL https://archon.diy/install | bash`)
+drops the binary at `~/.bun/bin/archon` because Archon is a Bun
+runtime app. On macOS this directory is **not on the default shell
+PATH** — so the binary exists but `command -v archon` returns nothing
+unless the user already has `~/.bun/bin` on PATH.
 
-If Archon is installed, report:
+Detect both cases, because "not on PATH" is very different from "not
+installed" (running the installer again is wasted work):
+
+```bash
+if command -v archon >/dev/null 2>&1; then
+    ARCHON_STATUS=on-path
+    ARCHON_BIN=$(command -v archon)
+elif [ -x "$HOME/.bun/bin/archon" ]; then
+    ARCHON_STATUS=installed-not-on-path
+    ARCHON_BIN="$HOME/.bun/bin/archon"
+else
+    ARCHON_STATUS=missing
+fi
 ```
-Archon is already installed (version X.Y.Z).
+
+**If `on-path`:** report and skip to step 3:
 ```
-Skip to step 3.
+Archon is already installed and on PATH (version X.Y.Z).
+```
+
+**If `installed-not-on-path`:** the binary exists but won't be found
+by `/sdlc-workflows:workflows-run`. Do NOT re-run the installer —
+that's wasted work. Tell the user explicitly and have them choose:
+
+```
+Archon is already installed at ~/.bun/bin/archon but that directory
+is NOT on your PATH. /sdlc-workflows:workflows-run will fail to
+find it unless you do ONE of the following:
+
+  (a) Add ~/.bun/bin to your shell PATH (permanent fix — recommended):
+        echo 'export BUN_INSTALL="$HOME/.bun"' >> ~/.zshrc
+        echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> ~/.zshrc
+        # then open a new terminal
+
+  (b) Run this session with a prefixed PATH (one-shot):
+        export PATH="$HOME/.bun/bin:$PATH"
+
+Which would you like?
+```
+
+Do NOT edit the user's shell init files without confirmation.
+
+**If `missing`:** proceed to step 2.
 
 ### 2. Install Archon
 
@@ -35,6 +91,7 @@ If Archon is not installed, inform the user and install:
 
 ```
 Archon is not installed. Installing from https://archon.diy...
+This will drop the binary at ~/.bun/bin/archon.
 ```
 
 Run the installer:
@@ -42,16 +99,49 @@ Run the installer:
 curl -fsSL https://archon.diy/install | bash
 ```
 
-Verify installation:
+Verify installation — in that order, both forms must be tried because
+the installer typically puts entries in `~/.zshrc` / `~/.bashrc` that
+do not take effect until a new shell is spawned:
+
 ```bash
-archon --version
+if command -v archon >/dev/null 2>&1; then
+    archon --version
+    POST_INSTALL_STATE=on-path
+elif [ -x "$HOME/.bun/bin/archon" ]; then
+    "$HOME/.bun/bin/archon" --version
+    POST_INSTALL_STATE=installed-not-on-path
+else
+    POST_INSTALL_STATE=installer-failed
+fi
 ```
 
-If installation fails, report the error and suggest manual installation:
+**If `on-path`:** all good, proceed.
+
+**If `installed-not-on-path`:** this is the common case right after a
+fresh install — the installer added the PATH entry to the shell init
+file but the current shell hasn't reloaded it. Tell the user
+explicitly:
+
+```
+Archon installed at ~/.bun/bin/archon (version X.Y.Z).
+
+IMPORTANT: the installer added ~/.bun/bin to your shell PATH, but the
+change only takes effect in NEW shells. To use archon immediately in
+THIS session, run:
+
+  export PATH="$HOME/.bun/bin:$PATH"
+
+Or open a new terminal. /sdlc-workflows:workflows-run will fail with
+"archon not found" until you do one of these.
+```
+
+**If `installer-failed`:** report the error and suggest manual
+installation:
+
 ```
 Archon installation failed. Please install manually:
   macOS/Linux: curl -fsSL https://archon.diy/install | bash
-  Homebrew: brew install coleam00/archon/archon
+  Homebrew:    brew install coleam00/archon/archon
   See: https://archon.diy for other options
 
 Then re-run this skill.
@@ -111,43 +201,112 @@ Archon workflow discovery:
   found: sdlc-commissioned-pipeline
 ```
 
-### 7. Optionally build Docker image (--with-docker only)
+### 7. Build Docker images (--with-docker only)
 
 If `--with-docker` argument was provided:
 
 Check if Docker is available:
 ```bash
-docker --version 2>/dev/null
+docker --version 2>/dev/null && docker info >/dev/null 2>&1
 ```
 
 If Docker is not available:
 ```
-Docker is not installed. Skipping Docker image build.
-The Docker image is optional — Archon works with worktree isolation
-without Docker. To build the image later:
-  cd ${CLAUDE_PLUGIN_ROOT}/docker && bash build.sh
+Docker is not installed or not running. Skipping Docker image build.
+
+IMPORTANT: the sdlc-workflows delivery is container-based. Every
+workflow node runs inside sdlc-worker:<team> containers. Without
+the images, /sdlc-workflows:workflows-run will fail at the first
+node.
+
+To finish setup later:
+  1. Install and start Docker Desktop: https://docker.com/products/docker-desktop
+  2. Re-run: /sdlc-workflows:workflows-setup --with-docker
 ```
 
-If Docker is available, build the image:
+If Docker is available, build the base and full images:
 ```bash
-cd ${CLAUDE_PLUGIN_ROOT}/docker && bash build.sh
+bash ${CLAUDE_PLUGIN_ROOT}/docker/build-base.sh
+bash ${CLAUDE_PLUGIN_ROOT}/docker/build-full.sh
 ```
 
-Report result.
+The base build includes a CLI verification step — a broken archon
+inside the image fails the build immediately (repair plan phase B2).
+Report the final image sizes so the user can sanity-check:
+
+```bash
+docker image inspect sdlc-worker:base --format '{{.Size}}' | \
+  awk '{printf "sdlc-worker:base  %.1f GB\n", $1/1024/1024/1024}'
+docker image inspect sdlc-worker:full --format '{{.Size}}' | \
+  awk '{printf "sdlc-worker:full  %.1f GB\n", $1/1024/1024/1024}'
+```
+
+Then verify end-to-end that the runtime archon inside the image
+also works (defence in depth — the build-time check plus this
+runtime check together ensure a released image is never broken):
+
+```bash
+docker run --rm --entrypoint archon sdlc-worker:base --help \
+  >/dev/null 2>&1 && echo OK || echo FAIL
+```
+
+If FAIL, the image is corrupt — report to the user and ask them
+to rebuild.
 
 ### 8. Report next steps
 
+Before telling the user setup is done, verify the three things
+`workflows-run` will actually need, so the "next steps" list is
+honest:
+
+```bash
+# a. Host archon reachable
+archon --version >/dev/null 2>&1 && echo HOST_ARCHON=ok || echo HOST_ARCHON=missing
+
+# b. Base image present and its archon CLI works
+if docker image inspect sdlc-worker:base >/dev/null 2>&1 && \
+   docker run --rm --entrypoint archon sdlc-worker:base --help >/dev/null 2>&1; then
+    echo BASE_IMAGE=ok
+else
+    echo BASE_IMAGE=missing-or-broken
+fi
+
+# c. Workflows visible
+test -d .archon/workflows && \
+   ls .archon/workflows/sdlc-*.yaml >/dev/null 2>&1 && \
+   echo WORKFLOWS=ok || echo WORKFLOWS=missing
 ```
-SDLC delegated workflows are configured.
+
+If all three report `ok`, tell the user:
+
+```
+SDLC delegated workflows are configured and verified.
 
 Next steps:
-  1. Run a parallel review: /sdlc-workflows:workflows-run sdlc-parallel-review
-  2. View available workflows: archon workflow list
-  3. Customise workflows: edit .archon/workflows/sdlc-*.yaml
-  4. Build Docker image (if not done): see plugin docker/ directory
+  1. Run a parallel review:
+       /sdlc-workflows:workflows-run sdlc-parallel-review
+  2. View available workflows:
+       archon workflow list
+  3. Customise workflows:
+       edit .archon/workflows/sdlc-*.yaml
+  4. Re-check health anytime:
+       /sdlc-workflows:workflows-setup --health-check
 
 For the full design, see:
   docs/superpowers/specs/2026-04-10-containerised-delegation-design.md
+```
+
+If any check failed, tell the user exactly what to fix — do NOT
+leave them to discover the broken state via a failing workflow
+run. Example:
+
+```
+SDLC setup is incomplete:
+  HOST_ARCHON:  missing    → re-run this skill without --workflows-only
+  BASE_IMAGE:   missing    → /sdlc-workflows:workflows-setup --with-docker
+  WORKFLOWS:    ok
+
+Resolve the above before running /sdlc-workflows:workflows-run.
 ```
 
 ### 9. Delegation health check
@@ -157,10 +316,25 @@ Run a comprehensive health check to verify all delegation infrastructure is read
 #### 9a. Archon status
 
 ```bash
-archon --version 2>/dev/null
+if command -v archon >/dev/null 2>&1; then
+    archon --version
+    echo "Archon: OK (on PATH at $(command -v archon))"
+elif [ -x "$HOME/.bun/bin/archon" ]; then
+    "$HOME/.bun/bin/archon" --version
+    echo "Archon: INSTALLED BUT NOT ON PATH"
+    echo "  Binary: $HOME/.bun/bin/archon"
+    echo "  Fix:    export PATH=\"\$HOME/.bun/bin:\$PATH\""
+    echo "          (persist in ~/.zshrc for future shells)"
+else
+    echo "Archon: NOT INSTALLED"
+    echo "  Fix:    re-run /sdlc-workflows:workflows-setup (step 2)"
+fi
 ```
 
-Report version. If not found, refer back to step 2 (install Archon).
+Include the "installed but not on PATH" state in the final summary —
+it is the most common failure mode right after a fresh install, and
+silencing it sets the user up for "archon not found" the next time
+they try to run a workflow.
 
 #### 9b. Docker connectivity
 
@@ -175,18 +349,33 @@ Docker: NOT AVAILABLE
   Install Docker Desktop: https://docker.com/products/docker-desktop
 ```
 
-#### 9c. SDLC patches status
+#### 9c. Image CLI health
 
-Check if the SDLC Archon patches (ContainerProvider + per-node image) are applied:
+We do NOT patch Archon's schema. The preprocessor
+(`preprocess_workflow.py`) rewrites `image:` nodes into
+`bash: docker run ...` nodes before Archon ever sees the workflow,
+so Archon only processes its native field set. The earlier
+sed-based ContainerProvider patch was both wrong (wrong insertion
+point) and unnecessary — it has been removed (repair plan phase B).
+
+What we DO verify: that the archon CLI inside
+`sdlc-worker:base` actually runs. A broken install would silently
+degrade the super-smoke to direct-docker-run mode without archon,
+which is how earlier "all green" runs hid real regressions. The
+image build itself now fails if `archon --help` does not work, and
+this check is the runtime counterpart.
 
 ```bash
-# Check for ContainerProvider in the Archon image
-docker run --rm sdlc-worker:base test -f /opt/archon/packages/isolation/src/providers/container.ts 2>/dev/null
+docker run --rm --entrypoint archon sdlc-worker:base --help \
+  >/dev/null 2>&1 && echo OK || echo FAIL
+docker run --rm --entrypoint archon sdlc-worker:base workflow --help \
+  >/dev/null 2>&1 && echo OK || echo FAIL
 ```
 
 Report:
 ```
-ContainerProvider patch: applied | not found
+Archon CLI in image:  OK | FAIL (rebuild sdlc-worker:base)
+Archon workflow CMD:  OK | FAIL (rebuild sdlc-worker:base)
 ```
 
 #### 9d. ARM64 patch status
@@ -280,9 +469,9 @@ Combine all checks into a single report:
 
 ```
 Delegation health check:
-  Archon:              OK (v0.4.2)
+  Archon (host):       OK (v0.4.2)
   Docker:              OK
-  ContainerProvider:   applied
+  Archon CLI in image: OK
   ARM64 patch:         applied
   Loop workaround:     active
   Team images:         N/N present (M stale)
@@ -294,9 +483,9 @@ Delegation health check:
 Or if issues found:
 ```
 Delegation health check:
-  Archon:              OK (v0.4.2)
+  Archon (host):       OK (v0.4.2)
   Docker:              NOT AVAILABLE
-  ContainerProvider:   not found
+  Archon CLI in image: FAIL (rebuild sdlc-worker:base)
   ...
   Credentials:         NONE
 
@@ -308,4 +497,7 @@ Delegation health check:
 This skill is safe to run multiple times. On second invocation:
 - Archon already installed: skipped
 - Existing workflow files: not overwritten
-- Docker image: rebuilt if requested
+- Docker image: rebuilt if requested — note that since the default is
+  now `--with-docker`, a re-run with no args will rebuild the images.
+  Pass `--workflows-only` to skip the Docker step when you only want
+  to refresh the workflow YAML copies.
