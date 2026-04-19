@@ -48,6 +48,19 @@ Behaviour matrix:
 If neither is available (fresh machine, no Archon state yet), the script
 returns `(no workflow runs found)` cleanly — this is not an error.
 
+**Important — SSE stream vs this skill:** `archon serve` only observes
+runs *launched through the server*. Workflows started by the CLI
+(`archon workflow run …` inside `/sdlc-workflows:workflows-run`) write
+to the same SQLite DB but do **not** appear in the SSE dashboard
+stream. Use this skill (REST or SQLite) for CLI-launched runs. If a
+run is missing from `sse_stream_follow.py`, that is not a bug — it is
+how Archon's server handles CLI-launched runs in 1.x.
+
+**Prefix matching on `--run-id`:** the `--recent` table only prints
+the first 8 characters of each id. The helper accepts any unique
+prefix — no need to look up the full 32-char UUID. If two runs share
+a prefix you will get an "ambiguous" error; paste more characters.
+
 ### 2. Present results
 
 Default output is a table:
