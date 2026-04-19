@@ -16,8 +16,11 @@ analyse_overrides(log_path, threshold=3) -> list[dict]
 from __future__ import annotations
 
 import json
+import logging
 from collections import Counter
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def analyse_team(team: dict) -> list[dict]:
@@ -37,6 +40,10 @@ def analyse_team(team: dict) -> list[dict]:
     name = team.get("name", "unknown")
     stale = team.get("staleness", "current")
     wf_count = team.get("workflow_count", 0)
+    logger.debug(
+        "Analysing team for coaching signals",
+        extra={"team": name, "staleness": stale, "workflow_count": wf_count},
+    )
 
     if stale == "not_built" and wf_count > 0:
         signals.append({
@@ -89,6 +96,7 @@ def analyse_fleet(
 
     Returns ``{"critical": [...], "advisory": [...], "informational": [...]}``.
     """
+    logger.info("Analysing fleet coaching signals", extra={"team_count": len(teams)})
     result: dict[str, list[dict]] = {
         "critical": [],
         "advisory": [],
@@ -121,11 +129,16 @@ def analyse_overrides(
     list[dict]
         Coaching signals for frequently overridden agents.
     """
+    logger.info(
+        "Analysing override log",
+        extra={"log_path": str(log_path), "threshold": threshold},
+    )
     if not log_path.exists():
         return []
 
     counter: Counter[str] = Counter()
     teams_for_agent: dict[str, set[str]] = {}
+    malformed = 0
 
     for line in log_path.read_text().splitlines():
         line = line.strip()
@@ -134,6 +147,11 @@ def analyse_overrides(
         try:
             entry = json.loads(line)
         except json.JSONDecodeError:
+            logger.warning(
+                "Skipping malformed override log line",
+                extra={"log_path": str(log_path)},
+            )
+            malformed += 1
             continue
         agent = entry.get("agent", "")
         team = entry.get("team", "")
@@ -144,6 +162,10 @@ def analyse_overrides(
     signals: list[dict] = []
     for agent, count in counter.items():
         if count >= threshold:
+            logger.info(
+                "Override threshold crossed",
+                extra={"agent": agent, "count": count, "threshold": threshold},
+            )
             team_names = ", ".join(sorted(teams_for_agent.get(agent, set())))
             signals.append({
                 "type": "frequent_override",
@@ -165,6 +187,9 @@ def main() -> None:
     """CLI entry point — run fleet + override analysis and print results."""
     import argparse
     import sys as _sys
+
+    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logger.info("coaching_signals CLI start")
 
     _scripts_dir = Path(__file__).resolve().parent
     if str(_scripts_dir) not in _sys.path:

@@ -20,7 +20,10 @@ resolve_all(plugin_names, installed_json) -> dict[str, Path]
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class PluginNotFoundError(Exception):
@@ -101,6 +104,10 @@ def resolve(plugin_name: str, installed_json: Path) -> Path | None:
     Path | None
         The resolved directory, or ``None`` if the plugin is not installed.
     """
+    logger.debug(
+        "Resolving plugin path",
+        extra={"plugin_name": plugin_name, "installed_json": str(installed_json)},
+    )
     plugins = _load_installed(installed_json)
     lookup = _build_name_lookup(plugins)
 
@@ -136,6 +143,10 @@ def resolve_all(
     if not plugin_names:
         return {}
 
+    logger.info(
+        "Resolving plugin paths (bulk)",
+        extra={"plugin_count": len(plugin_names), "installed_json": str(installed_json)},
+    )
     plugins = _load_installed(installed_json)
     lookup = _build_name_lookup(plugins)
 

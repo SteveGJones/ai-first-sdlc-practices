@@ -17,6 +17,7 @@ available_but_not_included(installed_json, team_plugins, team_agents) -> dict
 from __future__ import annotations
 
 import json
+import logging
 import re
 import sys
 from pathlib import Path
@@ -26,7 +27,7 @@ _scripts_dir = Path(__file__).resolve().parent
 if str(_scripts_dir) not in sys.path:
     sys.path.insert(0, str(_scripts_dir))
 
-import resolve_plugin_paths  # noqa: E402
+logger = logging.getLogger(__name__)
 
 _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---", re.DOTALL)
 
@@ -49,6 +50,7 @@ def discover_plugin_agents(plugin_path: Path) -> list[dict[str, str]]:
 
     Returns a list of dicts with ``name`` and ``description`` keys.
     """
+    logger.debug("Discovering agents", extra={"plugin_path": str(plugin_path)})
     agents_dir = plugin_path / "agents"
     if not agents_dir.is_dir():
         return []
@@ -60,6 +62,10 @@ def discover_plugin_agents(plugin_path: Path) -> list[dict[str, str]]:
         name = fm.get("name", md_file.stem)
         description = fm.get("description", "")
         agents.append({"name": name, "description": description})
+    logger.debug(
+        "Plugin agent discovery complete",
+        extra={"plugin_path": str(plugin_path), "count": len(agents)},
+    )
     return agents
 
 
@@ -69,6 +75,7 @@ def discover_plugin_skills(plugin_path: Path) -> list[dict[str, str]]:
     A valid skill is a subdirectory containing ``SKILL.md``.
     Returns a list of dicts with ``name`` and ``description`` keys.
     """
+    logger.debug("Discovering skills", extra={"plugin_path": str(plugin_path)})
     skills_dir = plugin_path / "skills"
     if not skills_dir.is_dir():
         return []
@@ -82,6 +89,10 @@ def discover_plugin_skills(plugin_path: Path) -> list[dict[str, str]]:
             name = fm.get("name", child.name)
             description = fm.get("description", "")
             skills.append({"name": name, "description": description})
+    logger.debug(
+        "Plugin skill discovery complete",
+        extra={"plugin_path": str(plugin_path), "count": len(skills)},
+    )
     return skills
 
 
@@ -101,6 +112,10 @@ def discover_all(
         ``{plugin_name: {"agents": [...], "skills": [...]}}``
         Plugins whose install path doesn't exist are silently skipped.
     """
+    logger.info(
+        "Building plugin inventory",
+        extra={"installed_json": str(installed_json)},
+    )
     with installed_json.open() as fh:
         raw = json.load(fh)
 
@@ -157,6 +172,10 @@ def available_but_not_included(
     dict
         ``{"agents": [{"qualified": "plugin:agent", "description": "..."}]}``
     """
+    logger.debug(
+        "Computing available-but-not-included set",
+        extra={"team_plugins_count": len(team_plugins), "team_agents_count": len(team_agents)},
+    )
     inventory = discover_all(installed_json)
 
     included_agents: set[str] = set()
@@ -186,6 +205,8 @@ def main() -> None:
 
     import yaml as yaml_mod
 
+    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logger.info("team_inventory CLI start")
     parser = argparse.ArgumentParser(description="Plugin inventory discovery")
     parser.add_argument(
         "--installed-json",

@@ -17,6 +17,7 @@ Reads a team manifest YAML, resolves plugin install paths via
 from __future__ import annotations
 
 import argparse
+import logging
 import sys
 from pathlib import Path
 
@@ -28,6 +29,8 @@ if str(_scripts_dir) not in sys.path:
     sys.path.insert(0, str(_scripts_dir))
 
 import resolve_plugin_paths  # noqa: E402
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -63,6 +66,10 @@ def find_agent_file(plugin_path: Path, agent_name: str) -> Path | None:
     """
     agents_dir = plugin_path / "agents"
     if not agents_dir.is_dir():
+        logger.debug(
+            "Agent-file lookup: plugin has no agents directory",
+            extra={"plugin_path": str(plugin_path)},
+        )
         return None
 
     # Direct match first
@@ -76,6 +83,10 @@ def find_agent_file(plugin_path: Path, agent_name: str) -> Path | None:
         if child.name.lower() == lower_name and child.is_file():
             return child
 
+    logger.info(
+        "Agent file not found in plugin",
+        extra={"plugin_path": str(plugin_path), "agent_name": agent_name},
+    )
     return None
 
 
@@ -96,6 +107,10 @@ def find_skill_dir(plugin_path: Path, skill_name: str) -> Path | None:
     """
     skills_dir = plugin_path / "skills"
     if not skills_dir.is_dir():
+        logger.debug(
+            "Skill-dir lookup: plugin has no skills directory",
+            extra={"plugin_path": str(plugin_path)},
+        )
         return None
 
     candidate = skills_dir / skill_name
@@ -109,6 +124,10 @@ def find_skill_dir(plugin_path: Path, skill_name: str) -> Path | None:
             if (child / "SKILL.md").exists():
                 return child
 
+    logger.info(
+        "Skill dir not found in plugin",
+        extra={"plugin_path": str(plugin_path), "skill_name": skill_name},
+    )
     return None
 
 
@@ -225,6 +244,10 @@ def generate_container_installed_json(
     """
     import json
 
+    logger.info(
+        "Rewriting installed_plugins.json for container",
+        extra={"source": str(installed_json), "output": str(output_path)},
+    )
     with installed_json.open() as fh:
         raw = json.load(fh)
 
@@ -280,6 +303,18 @@ def generate(
         manifest: dict[str, object] = yaml.safe_load(fh)
 
     team_name: str = str(manifest.get("name", "unnamed-team"))
+    logger.info(
+        "Generating team Dockerfile",
+        extra={
+            "team_name": team_name,
+            "manifest_path": str(manifest_path),
+            "output_path": str(output_path),
+        },
+    )
+    logger.warning(
+        "Team image build — security-relevant event",
+        extra={"team_name": team_name, "event": "dockerfile_generate_start"},
+    )
     plugin_keys: list[str] = [str(p) for p in manifest.get("plugins", [])]  # type: ignore[union-attr]
     agent_refs: list[str] = list(manifest.get("agents", []) or [])  # type: ignore[arg-type]
     skill_refs: list[str] = list(manifest.get("skills", []) or [])  # type: ignore[arg-type]
@@ -394,6 +429,26 @@ def generate(
     lines.append(f"RUN chmod -R a-w {_IMAGE_PLUGINS_ROOT}/")
     lines.append("")
 
+    # -- Lock down user-level agents/ and skills/ (S-I-2) -----------------------
+    # Claude Code treats ~/.claude/agents/ and ~/.claude/skills/ as
+    # user-scoped agent/skill roots.  If a prompt (or a compromised
+    # process inside the container) can write new agent or skill
+    # definitions here at runtime, those definitions become active on
+    # the very next tool-invocation cycle.  Pre-create and lock the
+    # directories so the container cannot inject user-level agents or
+    # skills at runtime.  Combined with --cap-drop ALL and
+    # --security-opt no-new-privileges on docker run, this removes
+    # the primary runtime agent-injection surface.
+    lines.append(
+        "# Lock user-level agent/skill directories (defense in depth)"
+    )
+    lines.append(
+        "RUN mkdir -p /home/sdlc/.claude/agents /home/sdlc/.claude/skills \\\n"
+        "    && chmod -R a-w /home/sdlc/.claude/agents "
+        "/home/sdlc/.claude/skills"
+    )
+    lines.append("")
+
     # -- Team CLAUDE.md --------------------------------------------------------
     lines.append("# Team CLAUDE.md")
     # The build context is the project root, so reference the CLAUDE.md
@@ -424,6 +479,8 @@ def generate(
 
 def main() -> None:
     """CLI entry point for generate_team_dockerfile."""
+    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logger.info("generate_team_dockerfile CLI start")
     parser = argparse.ArgumentParser(
         description="Generate a team-specific Dockerfile from a team manifest."
     )

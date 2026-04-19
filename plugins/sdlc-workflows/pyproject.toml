@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdlc-workflows-scripts"
+version = "0.1.0"
+description = "Internal utility scripts for the sdlc-workflows plugin (test importability)."
+requires-python = ">=3.10"
+dependencies = [
+  "pyyaml",
+]
+
+[tool.setuptools]
+packages = ["sdlc_workflows_scripts"]
+
+[tool.setuptools.package-dir]
+sdlc_workflows_scripts = "scripts"
