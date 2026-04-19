@@ -97,7 +97,9 @@ Then configure your team: `/sdlc-core:setup-team`
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
 | `/sdlc-knowledge-base:kb-*` | Knowledge base operations (init, ingest, query, lint, rebuild-indexes, validate-citations, promote-answer, staleness-check) — installed by `sdlc-knowledge-base` plugin |
-| `/sdlc-workflows:workflows-setup` | Install Archon + configure SDLC workflows |
+| `/sdlc-workflows:workflows-setup` | First-time setup: install Archon, apply patches, build base + full images |
+| `/sdlc-workflows:deploy-team` | Build a team image from a manifest YAML |
+| `/sdlc-workflows:author-workflow` | Interactive workflow author — generates workflow YAML + command briefs |
 | `/sdlc-workflows:workflows-run` | Execute a named SDLC workflow via Archon |
 | `/sdlc-workflows:workflows-status` | Check running/recent workflow status |
 | `/sdlc-workflows:manage-teams` | Guided coaching for team lifecycle (create, update, delete, review, plan-task) |

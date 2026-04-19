@@ -232,7 +232,7 @@ Team images: none configured
   Create a team manifest in .archon/teams/ and run /sdlc-workflows:deploy-team
 ```
 
-#### 9h. Credential injection
+#### 9g. Credential injection
 
 Check which credential tier is available for containerised workflow execution:
 
@@ -272,9 +272,9 @@ Credential injection:
   Or create: .archon/credentials.yaml with credential_path
 ```
 
-Include the active tier in the summary report (step 9g).
+Include the active tier in the summary report (step 9h).
 
-#### 9g. Summary report
+#### 9h. Summary report
 
 Combine all checks into a single report:
 

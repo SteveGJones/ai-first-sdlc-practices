@@ -28,7 +28,21 @@ nodes:                          # Required. List of execution nodes.
       fresh_context: true       # Whether to restart context each iteration.
     prompt: |                   # Optional. Inline prompt instead of command file. Use command: for anything non-trivial.
       Inline prompt text.
+    team_extend:                # Optional. List of qualified agent names to add to the team for this node.
+      - sdlc-team-security:security-architect
+      - sdlc-team-common:api-architect
 ```
+
+> **`team_extend` status in v1:** the field is schema-validated (entries
+> must be qualified `plugin:agent` references that resolve to installed
+> plugins), but the **runtime injection mechanism is deferred to a
+> future phase**. In v1 the field is a **silent no-op at runtime** —
+> the team container is built from the team manifest only; extended
+> agents are *not* actually made available to Claude inside the
+> container. The validator logs a warning when the field is non-empty
+> so authors discover this at validation time, not by surprise at
+> runtime. Use team_extend today only as a forward-compatible
+> declaration of intent.
 
 ### DAG Rules
 
@@ -38,6 +52,43 @@ nodes:                          # Required. List of execution nodes.
 - `trigger_rule: one_success` requires at least ONE dependency to succeed.
 - Archon resolves workflows by the `name:` field, not the filename. The filename can differ from the name.
 
+### Parallel Execution Semantics (v1)
+
+**Contract — shared workspace, last-writer-wins.** When two or more nodes
+share a parent via `depends_on` (a *fan-out*), Archon may execute them
+concurrently. In v1 those parallel nodes **share the same host workspace
+mount** — the same directory is bind-mounted into every container:
+
+```
+-v "<host-workspace>:/workspace"   # same <host-workspace> for every branch
+```
+
+Consequences:
+
+- Writes to the **same path** from parallel branches race; the last
+  writer wins and intervening state may be lost.
+- Writes to **disjoint paths** (e.g. each branch writes
+  `review-<id>.md`) are safe.
+- Reads of files created *before* the fan-out are always safe.
+
+**Preprocessor behaviour.** `preprocess_workflow.py` detects fan-out
+topologies and emits a structured warning log (one per parent with
+2+ children). The warning cites this section so workflow authors get
+feedback at preprocess time, not after a race manifests at runtime.
+
+**Design for isolation in v1.** Workflow authors should:
+
+1. Make each parallel branch write to a **branch-scoped path** using
+   the node id: `output/<node-id>.md`, `logs/<node-id>.log`, etc.
+2. Reserve shared filenames (e.g. `report.md`, `summary.txt`) for the
+   sequential merge/synthesis node that runs *after* the fan-in.
+3. Avoid in-place edits to files read by sibling branches.
+
+**Future work.** Full branch-merge workspace isolation — per-branch
+overlay directories with a structured merge on fan-in — is tracked for
+v2. The v1 contract is deliberately conservative and explicitly
+surfaced, not silently assumed.
+
 ### Preprocessing
 
 When a workflow has `image:` nodes, the preprocessor (`preprocess_workflow.py`) transforms them before Archon execution:
@@ -46,9 +97,10 @@ When a workflow has `image:` nodes, the preprocessor (`preprocess_workflow.py`) 
 2. The `command:` field is resolved to a shell expression: `cat <commands_dir>/<name>.md` (where `commands_dir` defaults to `.archon/commands` relative to the workspace, but the preprocessor uses the absolute path passed via `--commands-dir`).
 3. The prompt is passed via `CLAUDE_PROMPT` env var (not inline bash — avoids quoting issues).
 4. Preserved fields: `id`, `depends_on`, `trigger_rule`, `when`, `timeout`, `retry`.
-5. Removed fields: `image`, `command`, `context`, `model`, `effort`, `prompt`.
-6. `loop:` nodes become bash for-loops with signal detection.
-7. The preprocessed YAML replaces the original file (Archon resolves by `name:` — must not have duplicates).
+5. `model:` is extracted into `-e CLAUDE_MODEL=<value>`; the container entrypoint forwards it to `claude --model`.
+6. Removed fields: `image`, `command`, `context`, `effort`, `prompt`.
+7. `loop:` nodes become bash for-loops with signal detection.
+8. The preprocessed YAML replaces the original file (Archon resolves by `name:` — must not have duplicates).
 
 ## Team Manifest Schema (v1.0)
 
@@ -76,6 +128,11 @@ skills:                        # Optional. Specific skills to include.
 
 context:                       # Optional. Project files to bake into the container.
   - <filename>                 # Must exist in project root (e.g., CONSTITUTION.md).
+
+group: <group-name>            # Optional (reserved). Forward-compatible team-grouping label
+                               # for future fleet-wide operations. Accepted by the validator
+                               # but has NO runtime effect in v1 — the validator emits a
+                               # warning when set. Safe to declare today as intent.
 ```
 
 ### Build Pipeline
@@ -191,4 +248,26 @@ Note: `--read-only` is NOT used. Claude Code requires a writable `~/.claude/` di
 - **Credential staging**: Credentials mount to `/home/sdlc/.claude-creds/` (read-only). Entrypoint copies to `~/.claude/` at startup.
 - **Credential cleanup**: Entrypoint trap removes `~/.claude/.credentials.json` on exit.
 - **No secrets in images**: Credentials are injected at runtime via volume mounts, never baked into images.
-- **No secrets in images**: Credentials are injected at runtime via volume mounts, never baked into images.
+
+## Skills
+
+The `sdlc-workflows` plugin ships seven user-invocable skills. Each is the canonical entry point for the listed task — prefer them over bespoke commands.
+
+| Skill | Invoke with | When to use |
+|-------|-------------|-------------|
+| workflows-setup | `/sdlc-workflows:workflows-setup` | First-time install: patches Archon, builds base/full images, scaffolds `.archon/` dirs |
+| workflows-run | `/sdlc-workflows:workflows-run <name>` | Execute a workflow by name — preprocesses `image:` nodes, resolves credentials, delegates to Archon |
+| workflows-status | `/sdlc-workflows:workflows-status` | Inspect running/recent workflow runs (containers, exit codes, durations) |
+| author-workflow | `/sdlc-workflows:author-workflow` | Create a new workflow YAML + its command `.md` briefs interactively |
+| deploy-team | `/sdlc-workflows:deploy-team <name>` | Validate a team manifest, generate its Dockerfile and CLAUDE.md, build the team image |
+| manage-teams | `/sdlc-workflows:manage-teams` | Lifecycle coaching for teams: create / update / deactivate / review / plan-task |
+| teams-status | `/sdlc-workflows:teams-status` | Fleet report: roster, staleness, coaching signals, workflow usage |
+
+## Further Reading
+
+- **Quickstart** — `plugins/sdlc-workflows/docs/quickstart.md` — first-run flow for a developer getting containers going end-to-end.
+- **Troubleshooting** — `plugins/sdlc-workflows/docs/troubleshooting.md` — symptom → cause → fix table for auth, container, workflow, image-build, and credential errors.
+- **Phase 4 design spec** — `docs/superpowers/specs/2026-04-16-phase4-archon-orchestration-design.md` — rationale for bash-node preprocessing and the three-tier credential resolver.
+- **Phase 5 design spec** — `docs/superpowers/specs/2026-04-17-phase5-production-hardening-design.md` — security hardening scope, the `--read-only` deviation, signal handling, healthcheck.
+- **Reference implementation** — `tests/integration/workforce-smoke/run-e2e.sh` — a working parallel-review run against a miniproject fixture. Copy-paste friendly.
+- **Plugin README** — `plugins/sdlc-workflows/README.md` — plugin-scoped surface listing and Apple Silicon ARM64 notes.

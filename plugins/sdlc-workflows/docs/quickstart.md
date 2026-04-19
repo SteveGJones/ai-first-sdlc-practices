@@ -120,15 +120,21 @@ Or use the CLI directly:
 CRED_JSON=$(python3 plugins/sdlc-workflows/scripts/resolve_credentials.py --json)
 CRED_MOUNT=$(echo "$CRED_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['mount_args'])")
 
-# Preprocess workflow (transforms image: nodes to docker run commands)
+# Preprocess workflow (transforms image: nodes to docker run commands).
+# Writes the preprocessed copy to .generated/ -- the source YAML is never
+# overwritten, so the run is idempotent (repeat safely).
+mkdir -p .archon/workflows/.generated
 python3 plugins/sdlc-workflows/scripts/preprocess_workflow.py \
     .archon/workflows/my-pipeline.yaml \
-    --output .archon/workflows/my-pipeline.yaml \
+    --output .archon/workflows/.generated/my-pipeline.yaml \
     --workspace "$(pwd)" \
     --cred-mount "$CRED_MOUNT" \
     --commands-dir "$(pwd)/.archon/commands"
 
-# Run via Archon
+# Run via Archon. Archon resolves workflows by the `name:` field and
+# scans `.archon/workflows/.generated/` for preprocessed copies — the
+# source YAML under `.archon/workflows/` is left untouched, so repeat
+# runs are idempotent.
 archon workflow run my-pipeline --no-worktree
 ```
 
@@ -161,6 +167,21 @@ Instead of writing workflow YAML by hand, ask Claude Code:
 ```
 
 This interactive skill asks what you want to build, generates the workflow YAML, command prompts, and validates everything.
+
+## Reference Implementation
+
+Want to see every step above wired together and actually executed? The
+end-to-end smoke test is a working reference implementation:
+
+```
+tests/integration/workforce-smoke/run-e2e.sh
+```
+
+It builds base + full + team images, resolves credentials, patches Archon,
+launches team containers through a real workflow (parallel fan-out +
+synthesis), and asserts the expected commits landed in the workspace. Treat
+it as the canonical "how should this look when it works" — when something in
+the quickstart diverges, diff against this script.
 
 ## Next Steps
 

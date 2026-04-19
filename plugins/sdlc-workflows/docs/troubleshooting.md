@@ -40,19 +40,21 @@ docker logs <container-id>  # Check output
 - If CLAUDE_TIMEOUT is set (default 300s), the container auto-exits after that duration.
 - To increase timeout for long-running tasks, set `timeout: 600` on the workflow node.
 
-### `read-only file system` error
+### `Permission denied` writing agents, skills, or plugins
 
-**Cause:** Container attempting to write outside allowed paths.
+**Cause:** The image locks `/home/sdlc/.claude/agents/`, `/home/sdlc/.claude/skills/`, and `/home/sdlc/.claude/plugins/` to read-only via `chmod -R a-w` at build time (S-I-2). A runtime prompt or tool cannot drop new agent/skill/plugin definitions.
 
-**Allowed writable paths:**
-- `/workspace` (volume mount — project files)
-- `/tmp` (tmpfs — temporary files)
-- `/home/sdlc/.claude` (tmpfs — Claude runtime state)
+**This is intentional.** It removes the primary runtime agent-injection surface. Combined with `--cap-drop ALL` and `--security-opt no-new-privileges` on `docker run`, the container has no legitimate reason to write user-level agent definitions.
 
-**Fixes:**
-- Ensure your command prompt writes to `/workspace/`, not elsewhere.
-- If a tool needs to write to a custom path, it must be under `/workspace` or `/tmp`.
-- Check the entrypoint — `npm install -g` and similar commands will fail on read-only filesystem (they should be done at image build time, not runtime).
+**Note:** `--read-only` is **not** applied to the root filesystem. Claude Code needs writable paths under `~/.claude/` for plugin runtime state, so the root filesystem is left writable and the specific attack surfaces are chmod'd instead.
+
+**If you need to extend the team:**
+- Add the agent/skill to the team manifest (`.archon/teams/<team>.yaml`) and rebuild the team image.
+- Place local agents/skills under the project tree and reference them with `local:<path>` in the manifest.
+- **Do not** attempt to work around the chmod lock at runtime — that is the control point this feature exists to enforce.
+
+**If you see permission errors from Claude Code itself** (e.g. unable to write cache files):
+- Report these — the baseline permissions are expected to leave Claude Code's runtime-state paths writable. A regression in the Dockerfile generator may have over-locked.
 
 ### Exit code 124 (timeout)
 
@@ -105,6 +107,89 @@ archon workflow list  # Shows available workflows
 - Check the command prompt — be explicit about the output file path (e.g., `/workspace/security-review.md`, not just "write a review").
 - If git lock contention: the containers write different files, so minor timing differences usually resolve this naturally.
 
+### Stale team image — container runs outdated plugins/agents
+
+**Cause:** The team manifest was updated (new plugins, agents, skills, or a
+bumped plugin version) but the team image was not rebuilt. Containers launch
+with whatever was baked in last time the image was built.
+
+**Diagnosis:**
+```bash
+# When was the team image last built?
+docker image inspect sdlc-worker:<team>-team --format '{{.Created}}'
+
+# When was the manifest last modified?
+yq '.updated' .archon/teams/<team>.yaml
+ls -l .archon/teams/<team>.yaml
+```
+
+If the manifest is newer than the image, the image is stale.
+
+**Fixes:**
+- Rebuild: `bash plugins/sdlc-workflows/docker/build-team.sh <team>` (or
+  `/sdlc-workflows:deploy-team <team>`).
+- Check `/sdlc-workflows:teams-status` — it flags stale images by comparing
+  `image_built` in the manifest against the image creation timestamp.
+- After a `build-full.sh` run (e.g. after upgrading a plugin on the host),
+  rebuild every team image that depends on that plugin.
+
+### `unhealthy` container (Phase 5 healthcheck)
+
+**Cause:** Docker's HEALTHCHECK runs `claude -p 'say ok'` every 30s. If three
+consecutive probes fail (≈90s), the container is marked `unhealthy`. Common
+triggers: credential staging failed, network unreachable, Claude CLI missing
+from PATH, or CLAUDE_TIMEOUT killed Claude mid-request.
+
+**Diagnosis:**
+```bash
+docker inspect --format '{{json .State.Health}}' <container-id> | jq
+docker logs <container-id> 2>&1 | tail -50
+```
+
+The `Health` block shows each probe's exit code and stderr — look at the most
+recent `FailingStreak` entries.
+
+**Fixes:**
+- Credential issue (`authentication_error` in probe stderr): see the
+  Authentication Errors section above.
+- Network unreachable: verify the host has outbound HTTPS to
+  `api.anthropic.com`; containers inherit the host network stack.
+- CLAUDE_TIMEOUT too aggressive: probes share the workload's `claude` calls —
+  if the workload hogs CPU, probes may time out. Increase `timeout:` on the
+  node or split the command into smaller nodes.
+- The probe itself failing but Claude is otherwise fine: `docker exec` in and
+  run `claude -p 'say ok'` manually to see the real error.
+
+### Credential staging failure — `tmpfs shadow` symptom
+
+**Cause:** The entrypoint copies the mounted credential file from
+`/home/sdlc/.claude-creds/` into `/home/sdlc/.claude/.credentials.json`
+before launching Claude. This two-step indirection exists because a bind
+mount onto `.credentials.json` gets shadowed by Claude Code's own tmpfs
+mount of `~/.claude/` — the credentials would exist on the host bind but be
+invisible to Claude inside the container.
+
+**Symptoms:** `authentication_error` even though `resolve_credentials.py`
+reports a valid tier, and the host file at `mount_args` source path is
+readable and valid.
+
+**Diagnosis:**
+```bash
+docker exec <container-id> ls -l /home/sdlc/.claude-creds/
+docker exec <container-id> ls -l /home/sdlc/.claude/.credentials.json
+docker exec <container-id> cat /home/sdlc/.claude/.credentials.json | jq .claudeAiOauth.expiresAt
+```
+
+**Fixes:**
+- Verify the mount source: `docker inspect <container-id> | jq '.[].Mounts'`
+  — the staging bind must land under `/home/sdlc/.claude-creds/`, not directly
+  at `/home/sdlc/.claude/.credentials.json`.
+- Check ownership: `/home/sdlc/.claude/` must be writable by UID 1001 so the
+  entrypoint copy succeeds. A stricter UID or `--read-only` on the root FS
+  will break this (intentionally not used — see design spec).
+- If `expiresAt` is in the past: re-run `login.sh` (for the volume tier) or
+  re-authenticate Claude Code (for the Keychain tier).
+
 ## Image Build Errors
 
 ### `sdlc-worker:full is a source image`
@@ -144,3 +229,19 @@ archon workflow list  # Shows available workflows
 **Cause:** The credential file path contains spaces.
 
 **Fix:** Check `resolve_credentials.py --json` output. Move credential files to a path without spaces.
+
+---
+
+## See Also
+
+- **`CLAUDE-CONTEXT-workflows.md`** (repo root) — canonical schema reference
+  for workflow YAML, team manifests, command prompts, security model, and
+  credential model. Load this first when authoring or debugging workflows.
+- **`plugins/sdlc-workflows/docs/quickstart.md`** — first-run walkthrough with
+  expected output at each step. If a step here fails, the quickstart shows
+  what success looks like for comparison.
+- **`docs/superpowers/specs/2026-04-17-phase5-production-hardening-design.md`**
+  — the authoritative design document for security, healthcheck, signal
+  handling, and the `--read-only` deviation.
+- **`docs/superpowers/specs/2026-04-16-phase4-archon-orchestration-design.md`**
+  — bash-node preprocessing and credential resolver internals.
