@@ -122,6 +122,169 @@ class TestNoImagePassthrough:
 
 
 class TestLoopNodeTransform:
+    def test_multistage_loop_becomes_bash_loop_with_per_stage_docker_runs(
+        self,
+    ) -> None:
+        """loop.stages with different images per stage becomes a bash for-loop
+        that invokes each stage's image in sequence per iteration."""
+        node = {
+            "id": "design-dev-review",
+            "loop": {
+                "stages": [
+                    {
+                        "id": "design",
+                        "image": "sdlc-worker:design-team",
+                        "prompt": "Design the feature.",
+                    },
+                    {
+                        "id": "implement",
+                        "image": "sdlc-worker:dev-team",
+                        "prompt": "Implement the design.",
+                    },
+                    {
+                        "id": "review",
+                        "image": "sdlc-worker:review-team",
+                        "prompt": (
+                            "Review. If acceptable, output: READY_TO_SHIP"
+                        ),
+                    },
+                ],
+                "until": "READY_TO_SHIP",
+                "max_iterations": 4,
+            },
+        }
+        result = preprocess_workflow.transform_node(
+            node,
+            workspace="/workspace",
+            cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+        assert "bash" in result
+        assert "loop" not in result
+        bash = result["bash"]
+        # Outer iteration loop
+        assert "for i in $(seq 1 4)" in bash
+        # Each stage's image appears in a docker run command
+        assert "sdlc-worker:design-team" in bash
+        assert "sdlc-worker:dev-team" in bash
+        assert "sdlc-worker:review-team" in bash
+        # Signal check uses the configured until:
+        assert "READY_TO_SHIP" in bash
+        # Per-stage output capture variables
+        assert "STAGE_1_OUT=" in bash
+        assert "STAGE_2_OUT=" in bash
+        assert "STAGE_3_OUT=" in bash
+        # Loop-complete message
+        assert "LOOP_COMPLETE" in bash
+        # Top-level image is not required — node had none
+        # (the preserved-fields path only copies fields that are present)
+        assert "image" not in result
+
+    def test_multistage_loop_preserves_depends_on_and_trigger_rule(self) -> None:
+        node = {
+            "id": "cycle",
+            "depends_on": ["setup"],
+            "trigger_rule": "all_success",
+            "loop": {
+                "stages": [
+                    {"image": "a:1", "prompt": "go"},
+                    {"image": "b:1", "prompt": "done"},
+                ],
+                "until": "ok",
+                "max_iterations": 2,
+            },
+        }
+        result = preprocess_workflow.transform_node(
+            node,
+            workspace="/workspace",
+            cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+        assert result["depends_on"] == ["setup"]
+        assert result["trigger_rule"] == "all_success"
+
+    def test_multistage_loop_rejects_missing_image_on_stage(self) -> None:
+        node = {
+            "id": "broken",
+            "loop": {
+                "stages": [
+                    {"prompt": "no image here"},
+                ],
+                "until": "ok",
+                "max_iterations": 2,
+            },
+        }
+        try:
+            preprocess_workflow.transform_node(
+                node,
+                workspace="/workspace",
+                cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        except ValueError as exc:
+            assert "missing required field: image" in str(exc)
+        else:
+            raise AssertionError(
+                "Expected ValueError for stage missing image"
+            )
+
+    def test_multistage_loop_rejects_empty_stages_list(self) -> None:
+        node = {
+            "id": "broken",
+            "loop": {
+                "stages": [],
+                "until": "ok",
+                "max_iterations": 2,
+            },
+        }
+        try:
+            preprocess_workflow.transform_node(
+                node,
+                workspace="/workspace",
+                cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        except ValueError as exc:
+            assert "non-empty list" in str(exc)
+        else:
+            raise AssertionError("Expected ValueError for empty stages")
+
+    def test_multistage_loop_rejects_non_positive_max_iterations(self) -> None:
+        node = {
+            "id": "broken",
+            "loop": {
+                "stages": [{"image": "a:1", "prompt": "x"}],
+                "max_iterations": 0,
+            },
+        }
+        try:
+            preprocess_workflow.transform_node(
+                node,
+                workspace="/workspace",
+                cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        except ValueError as exc:
+            assert ">= 1" in str(exc)
+        else:
+            raise AssertionError("Expected ValueError for max_iterations=0")
+
+    def test_has_image_nodes_detects_multistage_loop_without_top_image(
+        self,
+    ) -> None:
+        workflow = {
+            "nodes": [
+                {
+                    "id": "cycle",
+                    "loop": {
+                        "stages": [{"image": "a:1", "prompt": "x"}],
+                        "max_iterations": 2,
+                    },
+                },
+            ],
+        }
+        assert preprocess_workflow.has_image_nodes(workflow) is True
+
     def test_loop_image_becomes_bash_loop(self) -> None:
         node = {
             "id": "implement",
@@ -546,3 +709,197 @@ class TestParallelWorkspaceContract:
         assert not any(
             "share the mounted workspace" in rec.message for rec in caplog.records
         )
+
+
+class TestParallelGitWriteGuardrail:
+    """Phase G4: refuse to preprocess workflows whose parallel branches
+    commit to the shared /workspace/.git index.
+
+    Surfaces the single-writer hazard exposed during Phase A bring-up
+    (fork-a + fork-b racing on .git/index.lock) at preprocessing time
+    with an actionable error message pointing at the per-node-subdir
+    pattern.
+    """
+
+    @staticmethod
+    def _parallel_workflow_with_prompts(a_prompt: str, b_prompt: str) -> dict:
+        return {
+            "name": "t",
+            "nodes": [
+                {"id": "seed", "image": "sdlc-worker:dev", "prompt": "hi"},
+                {
+                    "id": "fork-a", "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"], "prompt": a_prompt,
+                },
+                {
+                    "id": "fork-b", "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"], "prompt": b_prompt,
+                },
+                {
+                    "id": "join", "image": "sdlc-worker:dev",
+                    "depends_on": ["fork-a", "fork-b"],
+                    "prompt": "cd /workspace && git add -A && git commit -m merge",
+                },
+            ],
+        }
+
+    def test_rejects_parallel_git_commit(self) -> None:
+        import pytest
+        wf = self._parallel_workflow_with_prompts(
+            "cd /workspace && git add -A && git commit -m a",
+            "write /workspace/reports/fork-b/out.md",
+        )
+        with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
+            preprocess_workflow.transform_workflow(
+                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        ids = {nid for nid, _ in exc_info.value.offenders}
+        assert ids == {"fork-a"}
+
+    def test_rejects_multiple_offenders(self) -> None:
+        import pytest
+        wf = self._parallel_workflow_with_prompts(
+            "cd /workspace && git commit -m a",
+            "cd /workspace && git add -A && git commit -m b",
+        )
+        with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
+            preprocess_workflow.transform_workflow(
+                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        ids = {nid for nid, _ in exc_info.value.offenders}
+        assert ids == {"fork-a", "fork-b"}
+
+    def test_allows_fan_in_commit(self) -> None:
+        """The join node may commit — it runs alone after fan-in."""
+        wf = self._parallel_workflow_with_prompts(
+            "write /workspace/reports/fork-a/out.md",
+            "write /workspace/reports/fork-b/out.md",
+        )
+        # join has `git add -A && git commit -m merge` but is not parallel
+        preprocess_workflow.transform_workflow(
+            wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+
+    def test_sequential_chain_may_commit(self) -> None:
+        """No fan-out ⇒ guardrail silent even if every node commits."""
+        wf = {
+            "nodes": [
+                {"id": "a", "image": "sdlc-worker:dev",
+                 "prompt": "cd /workspace && git commit -m a"},
+                {"id": "b", "image": "sdlc-worker:dev", "depends_on": ["a"],
+                 "prompt": "cd /workspace && git commit -m b"},
+            ],
+        }
+        preprocess_workflow.transform_workflow(
+            wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+
+    def test_error_message_cites_pattern_doc(self) -> None:
+        import pytest
+        wf = self._parallel_workflow_with_prompts(
+            "git add -A && git commit -m a",
+            "hi",
+        )
+        with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
+            preprocess_workflow.transform_workflow(
+                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        msg = str(exc_info.value)
+        assert "per-node subdirectory" in msg
+        assert "CLAUDE-CONTEXT-workflows.md" in msg
+
+    def test_scans_command_files_when_root_provided(self, tmp_path) -> None:
+        import pytest
+        cmds = tmp_path / ".archon/commands"
+        cmds.mkdir(parents=True)
+        (cmds / "racey.md").write_text(
+            "Do work, then cd /workspace && git commit -m x\n"
+        )
+        (cmds / "safe.md").write_text(
+            "Write to /workspace/reports/b/out.md; DO NOT commit.\n"
+        )
+        wf = {
+            "nodes": [
+                {"id": "seed", "image": "sdlc-worker:dev", "prompt": "hi"},
+                {"id": "a", "image": "sdlc-worker:dev",
+                 "depends_on": ["seed"], "command": "racey"},
+                {"id": "b", "image": "sdlc-worker:dev",
+                 "depends_on": ["seed"], "command": "safe"},
+                {"id": "join", "image": "sdlc-worker:dev",
+                 "depends_on": ["a", "b"], "prompt": "merge"},
+            ],
+        }
+        with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
+            preprocess_workflow.transform_workflow(
+                wf, workspace=str(tmp_path), cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands", commands_root=cmds,
+            )
+        ids = {nid for nid, _ in exc_info.value.offenders}
+        assert ids == {"a"}
+
+    def test_missing_command_file_does_not_crash(self, tmp_path) -> None:
+        """Command file absent ⇒ guardrail skips silently (soft fail).
+
+        Workflows may be authored outside our tree and the brief file
+        may live at a runtime-only path.  Missing files must not crash
+        preprocessing — the runtime container will fail loudly if the
+        file is actually absent at exec time.
+        """
+        cmds = tmp_path / ".archon/commands"
+        cmds.mkdir(parents=True)
+        wf = {
+            "nodes": [
+                {"id": "seed", "image": "sdlc-worker:dev", "prompt": "hi"},
+                {"id": "a", "image": "sdlc-worker:dev",
+                 "depends_on": ["seed"], "command": "does-not-exist"},
+                {"id": "b", "image": "sdlc-worker:dev",
+                 "depends_on": ["seed"], "command": "also-absent"},
+            ],
+        }
+        # Should not raise
+        preprocess_workflow.transform_workflow(
+            wf, workspace=str(tmp_path), cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands", commands_root=cmds,
+        )
+
+    def test_detects_git_push(self) -> None:
+        import pytest
+        wf = self._parallel_workflow_with_prompts(
+            "git push origin HEAD",
+            "hi",
+        )
+        with pytest.raises(preprocess_workflow.ParallelGitWriteError):
+            preprocess_workflow.transform_workflow(
+                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+
+    def test_loop_prompt_is_scanned(self) -> None:
+        import pytest
+        wf = {
+            "nodes": [
+                {"id": "seed", "image": "sdlc-worker:dev", "prompt": "hi"},
+                {
+                    "id": "fork-a", "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"],
+                    "loop": {"prompt": "cd /workspace && git commit -m x",
+                             "until": "DONE", "max_iterations": 3},
+                },
+                {
+                    "id": "fork-b", "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"], "prompt": "hi",
+                },
+            ],
+        }
+        with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
+            preprocess_workflow.transform_workflow(
+                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        ids = {nid for nid, _ in exc_info.value.offenders}
+        assert ids == {"fork-a"}

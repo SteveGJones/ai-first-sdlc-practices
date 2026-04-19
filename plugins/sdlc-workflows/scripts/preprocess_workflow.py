@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import copy
 import logging
+import re
 import secrets
 import shlex
 from pathlib import Path
@@ -28,6 +29,19 @@ logger = logging.getLogger(__name__)
 _PRESERVED_FIELDS = {
     "id", "depends_on", "trigger_rule", "when", "timeout", "retry",
 }
+
+# Patterns that indicate a command brief writes to the shared workspace
+# git index from a parallel branch — the single-writer hazard surfaced
+# during Phase A bring-up (archon fork-a + fork-b racing on
+# /workspace/.git/index.lock).  Parallel branches MUST write to
+# per-node subdirectories and let a downstream fan-in node produce the
+# single commit.  See CLAUDE-CONTEXT-workflows.md -> Parallel Execution
+# Semantics -> Per-node subdirectory pattern.
+_GIT_WRITE_PATTERNS = (
+    re.compile(r"\bgit\s+commit\b"),
+    re.compile(r"\bgit\s+add\b"),
+    re.compile(r"\bgit\s+push\b"),
+)
 
 # Resource defaults baked into every generated `docker run` command.
 # Override knob lives in the team manifest (future) — v1 is fixed.
@@ -64,12 +78,147 @@ def _detect_fan_outs(workflow: dict) -> dict[str, list[str]]:
     return {parent: kids for parent, kids in children.items() if len(kids) >= 2}
 
 
+def _collect_parallel_branch_ids(workflow: dict) -> set[str]:
+    """Return the set of node ids that run as parallel branches.
+
+    A node is a parallel branch if it shares a fan-out parent with at
+    least one sibling.  These nodes all run concurrently against the
+    same mounted /workspace, so writes to the shared git index race.
+    """
+    fan_outs = _detect_fan_outs(workflow)
+    parallel: set[str] = set()
+    for children in fan_outs.values():
+        parallel.update(children)
+    return parallel
+
+
+def _brief_text_for_node(
+    node: dict,
+    commands_dir: str,
+    commands_root: Path | None,
+) -> str | None:
+    """Return the prompt text a node will execute, or None if unknown.
+
+    Inline ``prompt:`` and ``loop.prompt`` values are returned directly.
+    For ``command:`` nodes, the matching file under *commands_root* is
+    read.  If the file cannot be located we return None so the guardrail
+    can surface a soft warning instead of crashing preprocessing —
+    workflows are authored outside our tree and the file may live at a
+    runtime-only path.
+    """
+    if "prompt" in node:
+        return str(node["prompt"])
+    if "loop" in node and isinstance(node["loop"], dict):
+        loop_prompt = node["loop"].get("prompt")
+        if loop_prompt:
+            return str(loop_prompt)
+        # Multi-stage loop: concatenate every stage's inline prompt and
+        # every locatable stage command brief.  The G4 check then sees
+        # git-write verbs from ANY stage, which is what we want —
+        # stages run sequentially inside the loop node, but the loop
+        # node itself may be a parallel branch at the DAG level, and a
+        # git-write in any of its stages is still a race.
+        stages = node["loop"].get("stages")
+        if isinstance(stages, list):
+            parts: list[str] = []
+            for stage in stages:
+                if not isinstance(stage, dict):
+                    continue
+                if "prompt" in stage:
+                    parts.append(str(stage["prompt"]))
+                elif "command" in stage and commands_root is not None:
+                    cand = commands_root / f"{stage['command']}.md"
+                    if cand.is_file():
+                        try:
+                            parts.append(cand.read_text(encoding="utf-8"))
+                        except OSError:
+                            continue
+            if parts:
+                return "\n".join(parts)
+    if "command" in node and commands_root is not None:
+        candidate = commands_root / f"{node['command']}.md"
+        if candidate.is_file():
+            try:
+                return candidate.read_text(encoding="utf-8")
+            except OSError:
+                return None
+    return None
+
+
+def _scan_parallel_git_writes(
+    workflow: dict,
+    commands_dir: str,
+    commands_root: Path | None,
+) -> list[tuple[str, str]]:
+    """Return [(node_id, matched_pattern), ...] for parallel git writers.
+
+    Only nodes that (a) run as a parallel branch AND (b) have a brief
+    whose text contains a git-write verb are reported.  Fan-in nodes
+    (``trigger_rule: one_success`` or similar with multiple
+    ``depends_on`` but no siblings) are not parallel branches and may
+    commit freely — that is the documented pattern.
+    """
+    parallel_ids = _collect_parallel_branch_ids(workflow)
+    if not parallel_ids:
+        return []
+
+    offenders: list[tuple[str, str]] = []
+    for node in workflow.get("nodes", []):
+        node_id = str(node.get("id", ""))
+        if node_id not in parallel_ids:
+            continue
+        text = _brief_text_for_node(node, commands_dir, commands_root)
+        if text is None:
+            continue
+        for pattern in _GIT_WRITE_PATTERNS:
+            match = pattern.search(text)
+            if match:
+                offenders.append((node_id, match.group(0)))
+                break
+    return offenders
+
+
+class ParallelGitWriteError(ValueError):
+    """Raised when a parallel branch attempts a git-index write.
+
+    Carries the offending (node_id, matched_token) pairs so callers
+    (CI, tests) can surface structured diagnostics rather than parsing
+    the message string.
+    """
+
+    def __init__(self, offenders: list[tuple[str, str]]) -> None:
+        self.offenders = offenders
+        details = "\n".join(
+            f"  - node '{nid}' contains '{tok}'" for nid, tok in offenders
+        )
+        super().__init__(
+            "Parallel branches must not write to /workspace/.git — "
+            "concurrent commits race on .git/index.lock and silently "
+            "drop work.  Offending nodes:\n"
+            f"{details}\n"
+            "Fix: have each parallel branch write its output to a "
+            "per-node subdirectory (e.g. /workspace/reports/<node-id>/) "
+            "without committing, then let the downstream fan-in node "
+            "produce the single commit.  See CLAUDE-CONTEXT-workflows.md "
+            "-> Parallel Execution Semantics."
+        )
+
+
 def has_image_nodes(workflow: dict) -> bool:
-    """Return True if any node in the workflow has an ``image:`` field."""
+    """Return True if any node in the workflow needs preprocessing.
+
+    A node needs preprocessing if it has a top-level ``image:`` field
+    (single-image node, with or without single-image ``loop:``) **or** if
+    it has ``loop.stages:`` (multi-stage loop — images live on each
+    stage, not on the node itself).
+    """
     node_count = len(workflow.get("nodes", []))
     logger.debug("Checking workflow for image nodes", extra={"node_count": node_count})
     for node in workflow.get("nodes", []):
         if "image" in node:
+            return True
+        loop_cfg = node.get("loop")
+        if isinstance(loop_cfg, dict) and "stages" in loop_cfg:
             return True
     return False
 
@@ -156,6 +305,106 @@ def _resolve_prompt_source(node: dict, commands_dir: str) -> str:
     return "echo 'No prompt specified.'"
 
 
+def _transform_multistage_loop(
+    node: dict,
+    workspace: str,
+    cred_mount: str,
+    commands_dir: str,
+) -> dict:
+    """Transform a node whose ``loop:`` carries a ``stages:`` list.
+
+    Each stage has its own ``image:`` and ``command:`` / ``prompt:``.
+    Stages run sequentially inside one iteration; if any stage's
+    output contains the ``until:`` signal, the entire loop terminates
+    early.  This is the natural shape for multi-team cycles like
+    ``designer → developer → reviewer → designer …`` — Archon still
+    sees one DAG node, state flows through the shared workspace,
+    and signal detection is our own ``grep`` (same pattern as the
+    single-image loop, which already sidesteps upstream Archon
+    loop-completion bugs).
+    """
+    loop_config = node["loop"]
+    stages = loop_config.get("stages")
+    if not isinstance(stages, list) or not stages:
+        raise ValueError(
+            f"loop.stages must be a non-empty list (node {node.get('id')!r})"
+        )
+
+    until_signal = str(loop_config.get("until", "DONE"))
+    try:
+        max_iter = int(loop_config.get("max_iterations", 5))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"loop.max_iterations must be an integer (node {node.get('id')!r})"
+        ) from exc
+    if max_iter < 1:
+        raise ValueError(
+            f"loop.max_iterations must be >= 1 (node {node.get('id')!r})"
+        )
+
+    result: dict = {}
+    for field in _PRESERVED_FIELDS:
+        if field in node:
+            result[field] = node[field]
+
+    logger.info(
+        "Transforming multi-stage loop node",
+        extra={
+            "node_id": node.get("id"),
+            "stage_count": len(stages),
+            "max_iterations": max_iter,
+        },
+    )
+
+    signal_q = shlex.quote(until_signal)
+    bash_lines: list[str] = [f"for i in $(seq 1 {max_iter}); do"]
+    bash_lines.append(f'  echo "=== Iteration $i/{max_iter} ==="')
+
+    for idx, stage in enumerate(stages):
+        if not isinstance(stage, dict):
+            raise ValueError(
+                f"loop.stages[{idx}] in node {node.get('id')!r} must be a mapping"
+            )
+        if "image" not in stage:
+            raise ValueError(
+                f"loop.stages[{idx}] in node {node.get('id')!r} "
+                "missing required field: image"
+            )
+        stage_id = str(stage.get("id", f"s{idx + 1}"))
+        stage_image = stage["image"]
+        stage_prompt_source = _resolve_prompt_source(stage, commands_dir)
+        docker_cmd = _build_docker_run(
+            image=stage_image,
+            workspace=workspace,
+            cred_mount=cred_mount,
+            prompt_source=stage_prompt_source,
+            timeout=stage.get("timeout") or node.get("timeout"),
+            model=stage.get("model") or node.get("model"),
+        )
+        var_name = f"STAGE_{idx + 1}_OUT"
+        stage_label = shlex.quote(f"--- stage {stage_id} ({stage_image}) ---")
+        bash_lines.append(f"  echo {stage_label}")
+        # Capture each stage's stdout so we can scan for the until: signal.
+        # The PROMPT=... assignment in docker_cmd stays local to the $()
+        # subshell by virtue of running inside it.
+        bash_lines.append(f"  {var_name}=$(")
+        for sub in docker_cmd.split("\n"):
+            bash_lines.append(f"    {sub}")
+        bash_lines.append("  )")
+        bash_lines.append(f'  echo "${var_name}"')
+        bash_lines.append(f'  if echo "${var_name}" | grep -q {signal_q}; then')
+        bash_lines.append(
+            f'    echo "LOOP_COMPLETE: signal detected in stage '
+            f'{stage_id} of iteration $i"'
+        )
+        bash_lines.append("    break")
+        bash_lines.append("  fi")
+
+    bash_lines.append("done")
+    result["bash"] = "\n".join(bash_lines)
+    return result
+
+
 def transform_node(
     node: dict,
     workspace: str,
@@ -164,9 +413,17 @@ def transform_node(
 ) -> dict:
     """Transform a single workflow node.
 
-    If the node has ``image:``, returns a bash node with ``docker run``.
-    Otherwise returns the node unchanged.
+    Dispatches to a multi-stage loop transformer when the node carries
+    ``loop.stages:``; otherwise transforms single-image nodes (with or
+    without single-image ``loop:``) into a bash ``docker run``.  Nodes
+    with neither ``image:`` nor ``loop.stages:`` pass through unchanged.
     """
+    loop_cfg = node.get("loop")
+    if isinstance(loop_cfg, dict) and "stages" in loop_cfg:
+        return _transform_multistage_loop(
+            node, workspace, cred_mount, commands_dir
+        )
+
     if "image" not in node:
         return node
 
@@ -229,8 +486,19 @@ def transform_workflow(
     workspace: str,
     cred_mount: str,
     commands_dir: str,
+    commands_root: Path | None = None,
 ) -> dict:
-    """Transform an entire workflow, converting image nodes to bash nodes."""
+    """Transform an entire workflow, converting image nodes to bash nodes.
+
+    If *commands_root* is provided, parallel-branch command briefs are
+    scanned for git-index writes (``git commit``/``git add``/
+    ``git push``).  Any hits raise :class:`ParallelGitWriteError`
+    before any docker-run bash is emitted — the author must switch the
+    branch to the per-node-subdirectory pattern.  Without
+    *commands_root* the scan still runs over inline ``prompt:`` and
+    ``loop.prompt`` text, but command-file nodes are skipped silently
+    because the files are not reachable from preprocessing context.
+    """
     node_count = len(workflow.get("nodes", []))
     logger.info(
         "Transforming workflow",
@@ -244,6 +512,13 @@ def transform_workflow(
             "See CLAUDE-CONTEXT-workflows.md -> Parallel Execution Semantics.",
             extra={"fan_out_points": fan_outs},
         )
+    offenders = _scan_parallel_git_writes(workflow, commands_dir, commands_root)
+    if offenders:
+        logger.error(
+            "Refusing to preprocess workflow with parallel git-index writers",
+            extra={"offenders": offenders},
+        )
+        raise ParallelGitWriteError(offenders)
     result = copy.deepcopy(workflow)
     result["nodes"] = [
         transform_node(node, workspace, cred_mount, commands_dir)
@@ -259,7 +534,14 @@ def preprocess(
     cred_mount: str,
     commands_dir: str = ".archon/commands",
 ) -> Path:
-    """Read a workflow YAML, transform image nodes, write the result."""
+    """Read a workflow YAML, transform image nodes, write the result.
+
+    The guardrail resolves command briefs from
+    ``<workspace>/<commands_dir>`` so parallel branches whose briefs
+    contain ``git commit``/``git add``/``git push`` are rejected with
+    a structured :class:`ParallelGitWriteError` before any bash is
+    generated.
+    """
     logger.info(
         "Preprocessing workflow",
         extra={"input": str(input_path), "output": str(output_path)},
@@ -267,7 +549,14 @@ def preprocess(
     with input_path.open() as fh:
         workflow = yaml.safe_load(fh)
 
-    transformed = transform_workflow(workflow, workspace, cred_mount, commands_dir)
+    commands_root = Path(workspace) / commands_dir
+    transformed = transform_workflow(
+        workflow,
+        workspace,
+        cred_mount,
+        commands_dir,
+        commands_root=commands_root,
+    )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w") as fh:
@@ -292,9 +581,15 @@ def main() -> None:
     parser.add_argument("--commands-dir", default=".archon/commands")
     args = parser.parse_args()
 
-    result = preprocess(
-        args.input, args.output, args.workspace, args.cred_mount, args.commands_dir,
-    )
+    try:
+        result = preprocess(
+            args.input, args.output, args.workspace, args.cred_mount, args.commands_dir,
+        )
+    except ParallelGitWriteError as exc:
+        # Exit code 3 distinguishes guardrail rejection from generic
+        # argparse (2) or OS (1) errors so CI can gate on it.
+        print(f"preprocess_workflow: {exc}", file=__import__("sys").stderr)
+        raise SystemExit(3) from exc
     print(f"Preprocessed: {result}")
 
 

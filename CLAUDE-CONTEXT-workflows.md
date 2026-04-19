@@ -22,10 +22,20 @@ nodes:                          # Required. List of execution nodes.
     model: <model-id>          # Optional. Override the Claude model for this node (e.g., claude-opus-4-6[1m]).
     effort: high | medium | low # Optional. Hint for token budget allocation.
     timeout: <seconds>          # Optional. Per-node timeout in seconds. Passed as CLAUDE_TIMEOUT env var to container. Default: 300.
-    loop:                       # Optional. Repeat this node until a signal is detected.
+    loop:                       # Optional. Repeat until a signal is detected.
       until: <signal-string>    # String to grep for in output to stop the loop.
       max_iterations: <int>     # Maximum iterations before forced stop. Default: 5.
       fresh_context: true       # Whether to restart context each iteration.
+      prompt: <text>            # Optional. Inline prompt used by every iteration
+                                # (single-image loops only).
+      stages:                   # Optional. Multi-stage loop — each iteration runs
+        - id: <stage-id>        # every stage in sequence inside ONE loop node.
+          image: <docker-image> # Per-stage image (REQUIRED when stages: is used —
+          command: <cmd-name>   # the node-level image: is ignored).
+          prompt: <text>        # Each stage: command OR prompt (same rules as nodes).
+          timeout: <seconds>    # Optional. Falls back to the node's timeout.
+          model: <model-id>     # Optional. Falls back to the node's model.
+        # (see the "Cycles" section below for the full pattern)
     prompt: |                   # Optional. Inline prompt instead of command file. Use command: for anything non-trivial.
       Inline prompt text.
     team_extend:                # Optional. List of qualified agent names to add to the team for this node.
@@ -76,10 +86,74 @@ topologies and emits a structured warning log (one per parent with
 2+ children). The warning cites this section so workflow authors get
 feedback at preprocess time, not after a race manifests at runtime.
 
-**Design for isolation in v1.** Workflow authors should:
+#### The git-index single-writer rule
+
+The workspace is a git repository. Its `.git/index` is a
+**single-writer resource**: concurrent `git add` / `git commit` /
+`git push` from parallel branches race on `.git/index.lock` and the
+loser's work is silently dropped. This is not a theoretical hazard —
+it surfaced during Phase A bring-up (fork-a and fork-b both trying to
+commit, fork-b's commit lost to `fatal: Unable to create '.git/index.lock'`).
+
+**Rule.** Parallel branches MUST NOT run `git add`, `git commit`, or
+`git push`. Only nodes that run alone (the initial node, fan-in
+nodes, sequential chain nodes) may write to the git index.
+
+**Enforcement.** `preprocess_workflow.py` refuses to emit bash for any
+workflow whose parallel-branch command brief contains
+`git commit` / `git add` / `git push`. The error
+(`ParallelGitWriteError`, exit code 3) lists the offending nodes and
+points at this section. This is a build-time failure, not a runtime
+surprise.
+
+#### Per-node subdirectory pattern (the documented fix)
+
+When you need parallel branches to produce artefacts that a later
+node consumes, use **per-node subdirectories** plus a **single
+fan-in commit**:
+
+```yaml
+nodes:
+  - id: review-a
+    depends_on: [plan]
+    command: sdlc-review-a         # writes /workspace/reports/review-a/review.md
+                                   # no git add/commit
+
+  - id: review-b
+    depends_on: [plan]
+    command: sdlc-review-b         # writes /workspace/reports/review-b/review.md
+                                   # no git add/commit
+
+  - id: synthesise
+    depends_on: [review-a, review-b]
+    command: sdlc-synthesise       # reads /workspace/reports/*/review.md
+                                   # then: git add -A && git commit -m "reviews + synthesis"
+```
+
+Inside each parallel command brief, tell the model explicitly:
+
+> This node runs in parallel with other reviewers. Do NOT commit —
+> the workspace git index is a single-writer resource and concurrent
+> committers race on `.git/index.lock`. Write your findings to
+> your own subdirectory:
+>
+>     mkdir -p /workspace/reports/<your-node-id>
+>     # write review to /workspace/reports/<your-node-id>/review.md
+>
+> The downstream synthesise node reads every `reports/*/review.md`
+> and produces the single commit covering all reviews.
+
+The fan-in command brief does the single commit:
+
+```
+cd /workspace && git add -A && git commit -m "reviews + synthesis"
+```
+
+**Design for isolation in v1 (general rule).** Even for non-git
+writes, workflow authors should:
 
 1. Make each parallel branch write to a **branch-scoped path** using
-   the node id: `output/<node-id>.md`, `logs/<node-id>.log`, etc.
+   the node id: `reports/<node-id>/`, `logs/<node-id>.log`, etc.
 2. Reserve shared filenames (e.g. `report.md`, `summary.txt`) for the
    sequential merge/synthesis node that runs *after* the fan-in.
 3. Avoid in-place edits to files read by sibling branches.
@@ -262,6 +336,191 @@ The `sdlc-workflows` plugin ships seven user-invocable skills. Each is the canon
 | deploy-team | `/sdlc-workflows:deploy-team <name>` | Validate a team manifest, generate its Dockerfile and CLAUDE.md, build the team image |
 | manage-teams | `/sdlc-workflows:manage-teams` | Lifecycle coaching for teams: create / update / deactivate / review / plan-task |
 | teams-status | `/sdlc-workflows:teams-status` | Fleet report: roster, staleness, coaching signals, workflow usage |
+
+## Long-Running Workflows, Cycles, and Monitoring
+
+The workforce is built around the Archon DAG executor, which shapes what
+is easy, what requires work, and what is not possible without an outer
+driver.
+
+### Long-running nodes
+
+Nodes can run for hours if the task requires it. There is **no
+wall-clock ceiling imposed by Archon or by the preprocessor** — only
+the per-node timeout.
+
+```yaml
+- id: big-refactor
+  command: implement
+  image: sdlc-worker:dev-team
+  timeout: 7200     # 2 hours; forwarded as CLAUDE_TIMEOUT into the container
+```
+
+The default `timeout:` is 300 s (5 min), which is right for smoke tests
+and wrong for real work. Authors of long-running workflows **must** set
+it explicitly on every long node — there is no inherited default beyond
+the 5-min safety net.
+
+Cost is linear in runtime: a 2-hour node running Opus burns real
+tokens. There is no built-in cost meter in v1 (see *Monitoring gaps*
+below).
+
+### Multi-stage pipelines (linear, no cycling)
+
+A `designer → developer → reviewer → qa` pipeline is just a longer
+linear DAG. It is a natural fit for Archon and already proven by
+Phase C (parallel fan-out with synthesise fan-in).
+
+```yaml
+nodes:
+  - { id: design,   command: design,    image: sdlc-worker:design-team }
+  - { id: develop,  command: implement, image: sdlc-worker:dev-team,
+      depends_on: [design] }
+  - { id: review,   command: review,    image: sdlc-worker:review-team,
+      depends_on: [develop] }
+  - { id: qa,       command: qa,        image: sdlc-worker:qa-team,
+      depends_on: [review] }
+```
+
+### Cycles — three options, pick the one that matches your problem
+
+Archon executes a **directed acyclic graph**. A single workflow cannot
+express `designer → dev → review → designer` as a literal cycle in the
+DAG. Three workable patterns, in rising order of cost:
+
+**1. Multi-stage `loop.stages:` (primary pattern).** The cleanest way to
+do `designer → developer → reviewer → designer …` is a single loop
+node with a `stages:` list. Our preprocessor generates a bash
+`for`-loop that runs each stage's `docker run` sequentially per
+iteration, checks the `until:` signal on each stage's output, and
+breaks when found or `max_iterations` is reached.
+
+```yaml
+- id: build-review-cycle
+  loop:
+    stages:
+      - id: design
+        image: sdlc-worker:design-team
+        command: sdlc-design
+      - id: develop
+        image: sdlc-worker:dev-team
+        command: sdlc-implement
+      - id: review
+        image: sdlc-worker:review-team
+        command: sdlc-review   # brief ends with: output READY_TO_SHIP on approval
+    until: "READY_TO_SHIP"
+    max_iterations: 10
+```
+
+Why this is the primary pattern:
+
+- One DAG node — Archon sees it as a single unit with normal `depends_on` / `trigger_rule` semantics.
+- State flows naturally through the shared workspace — each stage commits, the next stage sees the commits.
+- Signal detection is ours (our `grep`, not Archon's native `loop:`) so upstream Archon loop-completion bugs never surface.
+- Different specialist containers per stage — unlike single-image `loop:`, the whole point is preserved.
+
+**2. Per-node single-image `loop:`.** When only one team is needed — "keep refining this artefact until a signal appears" — use the simpler form. Archon still sees a bash for-loop; all iterations reuse the same image.
+
+```yaml
+- id: refine
+  command: refine
+  image: sdlc-worker:dev-team
+  loop:
+    until: "READY_FOR_REVIEW"
+    max_iterations: 10
+```
+
+**3. Unrolled iterations in the DAG.** When iteration count is fixed and small, just author the nodes by hand (`design-v1 → dev-v1 → review-v1 → design-v2 → …`). Every iteration is fully visible in the DAG. Use when you specifically want per-iteration branching or fan-out.
+
+| Shape of your problem | Use |
+|---|---|
+| Multi-team cycle, signal-driven termination | **Multi-stage `loop.stages:`** |
+| Refine one artefact with one team | Per-node single-image `loop:` |
+| Fixed small iteration count with per-iter branching | Unrolled iterations |
+
+Outer-loop wrappers (re-invoking `archon workflow run`) are no longer
+necessary for the common case — they remain possible if a workflow
+needs to survive process death between iterations, but plain
+`loop.stages:` covers the "run attended cycles for hours" use case.
+
+### Monitoring — what Archon provides
+
+Archon's CLI is only the surface layer. `archon serve` starts a full
+HTTP server with a REST API and Server-Sent Events streaming — this
+is the observability foundation worth building on.
+
+| Surface | Endpoint / location | Use for |
+|---|---|---|
+| Workflow status (CLI) | `archon workflow status` | "What's currently running?" at a glance |
+| Worktree inventory (CLI) | `archon isolation list` | Per-run worktrees / environments |
+| **REST API — runs list** | `GET /api/workflows/runs` | List all runs (historical + active) |
+| **REST API — run detail** | `GET /api/workflows/runs/{runId}` | Full state of a specific run |
+| **REST API — dashboard** | `GET /api/dashboard/runs` | Enriched view used by the web UI |
+| **Run control** | `POST /api/workflows/runs/{runId}/{cancel,resume,abandon,approve,reject}` | Programmatic lifecycle control |
+| **SSE — dashboard stream** | `GET /api/stream/__dashboard__` | Multiplexed live stream of ALL workflow events |
+| **SSE — conversation stream** | `GET /api/stream/{conversationId}` | Per-run event stream |
+| Web UI | `archon serve` — downloads web UI on first run | Local dashboard (built on the API above) |
+| State DB | `~/.archon/archon.db` (SQLite) | Direct historical queries if the API is insufficient |
+| Structured logs | pino JSON on stdout | Ship to Loki / ELK / Splunk |
+| Resume | `archon workflow run <name> --resume` | Pick up the most recent failed run |
+
+The **SSE dashboard stream** is the key primitive for live monitoring
+— one subscription surfaces every node start/complete/fail event
+across every run in real time. Anything else (metrics exporters, live
+terminal feedback, dashboards) can be built on top of it.
+
+### Monitoring — what we add on top
+
+The preprocessor wraps node execution in `docker run`, so the standard
+Docker observability surface applies:
+
+- `docker events --since <epoch>` — lifecycle events for every node container. Survives `--rm` removal. We already rely on this for E2E test verification.
+- `docker logs -f <container>` — live output from a currently-running node.
+- `docker stats` — CPU/memory per container.
+
+The `workflows-status` skill is the intended entry point — it
+combines `archon workflow status` with Docker-level visibility.
+
+### Monitoring gaps (v1 — tracked for a follow-up PR)
+
+These are real limitations of the current experience, not defects:
+
+1. **No `/metrics` endpoint.** Archon exposes a REST API + SSE stream but not Prometheus format. A small exporter that subscribes to `/api/stream/__dashboard__` (live events) + `docker events` (container lifecycle) and emits Prometheus metrics is the planned follow-up. All required data is already exposed by `archon serve` — no upstream changes needed.
+2. **`workflows-run` does not consume the SSE stream.** `workflows-run` redirects Archon's stdout to a log file so preprocessing errors aren't lost; it does not yet subscribe to `/api/stream/__dashboard__` to show live per-node progress. Manual workaround: `tail -f` the archon log, or `docker logs -f <node-container>` for the node's own output. Consuming the SSE stream is part of the monitoring follow-up.
+3. **No cost meter.** Claude API spend per node/workflow is not tracked anywhere — it has to come from Claude's own usage reporting. A future exporter could estimate from token-count logs if Claude Code emits them.
+4. **No interrupt test coverage.** Ctrl-C at the Archon CLI level has not been shakedown-tested against our containerised runs. Containers themselves handle SIGTERM cleanly (entrypoint trap) but the Archon → container signal path is unproven.
+5. **No long-run soak test.** The E2E test runs nodes that complete in seconds. A deliberate slow-node test (≥20 min per node, multi-cycle) would shake out credential expiry, resource leaks, and workspace corruption. Small script, large confidence boost.
+
+The "observability" follow-up PR should bundle at least items 1 + 2 (Prometheus exporter + live streaming). Items 3-5 are optional additions once the data plane exists.
+
+### Recommended follow-up issue
+
+> **feat(workflows): Prometheus/Grafana monitoring for long-running workforce runs**
+>
+> **Data sources (already present in Archon — no upstream changes required):**
+> - `archon serve` HTTP API: `GET /api/workflows/runs`, `GET /api/dashboard/runs`, `GET /api/workflows/runs/{id}`
+> - SSE stream: `GET /api/stream/__dashboard__` — live per-node events across all runs
+> - Docker events: `docker events` for per-team container lifecycle
+>
+> **Scope:**
+> 1. New package `plugins/sdlc-workflows/exporter/` — a small Node/Python process that
+>    (a) subscribes to `/api/stream/__dashboard__`,
+>    (b) polls `/api/dashboard/runs` for initial state on startup,
+>    (c) subscribes to `docker events` for node-container lifecycle,
+>    (d) exposes Prometheus metrics at `:9100/metrics`:
+>      - `sdlc_workflow_runs_active{workflow=…}`
+>      - `sdlc_workflow_run_duration_seconds_bucket{workflow=…,status=…}`
+>      - `sdlc_workflow_node_duration_seconds_bucket{workflow=…,node=…,team=…}`
+>      - `sdlc_team_container_starts_total{team=…}`
+>      - `sdlc_team_container_failures_total{team=…}`
+> 2. Sample Grafana dashboard JSON in `plugins/sdlc-workflows/dashboards/workforce.json`.
+> 3. Live streaming in `workflows-run` — subscribe to the SSE dashboard stream while Archon is running and print per-node `start`/`complete`/`fail` events to the user's terminal. Does not replace the log file (preprocessing errors still land there), adds human-readable progress on top.
+> 4. Optional: `sdlc-workflows:workflows-watch <runId>` — a skill that subscribes to the per-run SSE stream for an already-running workflow, for when the user launched something long and wants to reattach later.
+>
+> **Out of scope for the first monitoring PR (defer to follow-ups):**
+> - Cost / token metering (needs Claude API usage data, not Archon's)
+> - OTLP exporter (start with Prometheus; add OTLP if users ask)
+> - Alert rule packs (ship dashboard only; let teams write their own alerts)
 
 ## Further Reading
 

@@ -178,6 +178,24 @@ Workflow created:
   Teams: <list>
   Commands: <list of .md files>
 
-To build team images:   bash plugins/sdlc-workflows/docker/build-team.sh <team>
+To build team images:    /sdlc-workflows:deploy-team --name <team>
 To run the workflow:     /sdlc-workflows:workflows-run <name>
 ```
+
+## Designing long-running or cyclical workflows
+
+Authors regularly want pipelines like `designer → developer → reviewer
+→ designer …` running for hours or days. Before choosing a shape, ask
+the user these questions and design accordingly:
+
+1. **How long will each node actually take?** Real implementation or review work is often 20-60 min, not the 5-min default. Set `timeout: <seconds>` explicitly on every long node — the default 300 s cuts real work off at the knees.
+2. **Is the iteration count known up front?** If yes (e.g. "three review rounds"), unroll as distinct nodes (`review-v1`, `review-v2`, `review-v3`). If no (open-ended "until approved"), the workflow alone cannot express it — you will need an outer-loop wrapper that re-invokes `archon workflow run` until a signal is detected.
+3. **Does the cycle need different specialists each pass?** If yes, unrolled iterations or an outer loop are the only options — a single `loop:` node keeps one team running the whole cycle.
+4. **Does the user want live feedback during long nodes?** Flag the monitoring gap — `workflows-run` does not stream live output in v1. They will need a second terminal with `docker logs -f` or `tail -f` the archon log.
+5. **Is the token cost acceptable?** A 30-min node × 4 stages × 5 iterations on Opus can run to serious dollars. Warn the user before shipping the workflow.
+
+Full discussion of each option (per-node `loop:`, unrolled iterations,
+outer-loop wrapper) and the current monitoring surface is in
+*Long-Running Workflows, Cycles, and Monitoring* in
+`CLAUDE-CONTEXT-workflows.md`. Read that section whenever the user's
+pipeline is non-trivial.
