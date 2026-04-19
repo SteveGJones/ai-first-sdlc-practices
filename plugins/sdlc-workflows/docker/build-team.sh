@@ -46,6 +46,18 @@ python3 "$PLUGIN_DIR/scripts/generate_team_claude_md.py" \
     "$MANIFEST" \
     --output "$GENERATED_DIR/${TEAM_NAME}-CLAUDE.md"
 
+# S-M-5: emit SHA-256 of the generated team CLAUDE.md so audit trails
+# can pin exactly which instructions were baked into which image tag.
+# shasum is ubiquitous on macOS; sha256sum is GNU.  Fall back gracefully.
+if command -v shasum >/dev/null 2>&1; then
+    TEAM_CLAUDE_SHA=$(shasum -a 256 "$GENERATED_DIR/${TEAM_NAME}-CLAUDE.md" | awk '{print $1}')
+elif command -v sha256sum >/dev/null 2>&1; then
+    TEAM_CLAUDE_SHA=$(sha256sum "$GENERATED_DIR/${TEAM_NAME}-CLAUDE.md" | awk '{print $1}')
+else
+    TEAM_CLAUDE_SHA="unknown"
+fi
+echo "Team CLAUDE.md SHA-256: $TEAM_CLAUDE_SHA"
+
 echo "Generating team Dockerfile for $TEAM_NAME..."
 python3 "$PLUGIN_DIR/scripts/generate_team_dockerfile.py" \
     "$MANIFEST" \

@@ -33,6 +33,13 @@ if [ -f "$NODE_SCHEMA" ]; then
         # Add image?: string field after the command field in the schema
         sed -i 's/command:/command:\n  image?: string;  \/\/ Docker image for container isolation (SDLC patch)/' \
             "$NODE_SCHEMA"
+        # D-M-1: verify the edit landed.  Silent sed failure (mismatched
+        # BRE vs ERE, file moved, sed variant quirk) would otherwise leave
+        # a broken image but an apparently-successful build.
+        if ! grep -q 'image?: string' "$NODE_SCHEMA"; then
+            echo "ERROR: Patch 2 failed to apply — 'image?: string' not found in $NODE_SCHEMA after sed."
+            exit 1
+        fi
     fi
 else
     echo "[2/3] Node schema: SKIP (file not found at $NODE_SCHEMA)"
@@ -48,6 +55,11 @@ if [ -f "$EXECUTOR" ]; then
         # Add import at top of file
         sed -i '1i\import { ContainerProvider } from "../isolation/src/providers/container";  // SDLC patch' \
             "$EXECUTOR"
+        # D-M-1: verify the edit landed.
+        if ! grep -q 'ContainerProvider' "$EXECUTOR"; then
+            echo "ERROR: Patch 3 failed to apply — 'ContainerProvider' import not found in $EXECUTOR after sed."
+            exit 1
+        fi
     fi
 else
     echo "[3/3] Executor: SKIP (file not found at $EXECUTOR)"

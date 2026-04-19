@@ -1,17 +1,38 @@
-FROM oven/bun:latest AS archon-deps
+# Supply-chain pinning (S-I-4 / D-I-1 / AC-I-9, D-M-6, S-I-5).
+# Upgrade process: bump the ARG default, rebuild base, run smoke tests,
+# commit.  CI can override with --build-arg to validate new candidates.
+ARG BUN_IMAGE_TAG=oven/bun:1.1.42
+ARG ARCHON_SHA=main
+ARG NODE_IMAGE=node:22-slim
+
+FROM ${BUN_IMAGE_TAG} AS archon-deps
 
 # Install Archon from source (not the compiled binary).
 # The compiled Bun binary has a $bunfs extraction issue that prevents
 # the Claude Agent SDK from spawning child processes as a non-root user.
 # Running from source with bun matches Archon's own Docker setup.
+ARG ARCHON_SHA
 WORKDIR /opt/archon
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && \
     rm -rf /var/lib/apt/lists/*
-RUN git clone --depth 1 https://github.com/coleam00/Archon.git . && \
+# Pin to an explicit SHA when ARCHON_SHA is a real commit ref; fall
+# back to a branch tip for local/dev builds.  CI / release builds MUST
+# pass a concrete 40-char SHA via --build-arg ARCHON_SHA=<sha>.
+RUN git clone https://github.com/coleam00/Archon.git . && \
+    git checkout "${ARCHON_SHA}" && \
+    git rev-parse HEAD > /opt/archon-sha && \
     bun install --frozen-lockfile --linker=hoisted
 
 # ---------------------------------------------------------------------------
-FROM node:22-slim
+# Release process: resolve ${NODE_IMAGE} to an @sha256:... digest and
+# update the default above to lock against image-registry drift.
+FROM ${NODE_IMAGE}
+ARG ARCHON_SHA
+
+# Record supply-chain pins as OCI labels so `docker inspect` surfaces
+# exactly which upstream SHA built this image.
+LABEL org.sdlc.archon.sha="${ARCHON_SHA}"
+LABEL org.sdlc.base-image="${NODE_IMAGE}"
 
 # System dependencies (matching tests/integration/setup-smoke/Dockerfile)
 RUN apt-get update && \
@@ -87,8 +108,11 @@ COPY scripts/detect-loop-bug.sh scripts/loop-workaround.sh /opt/sdlc-scripts/
 RUN chmod +x /opt/sdlc-scripts/*.sh
 
 # Health check: verify Claude Code binary is available
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD test -x /usr/local/bin/claude || exit 1
+# S-M-8: exercise the binary (not just its presence bit) so a corrupted
+# install, a missing node runtime, or a broken PATH is surfaced as
+# `unhealthy` rather than silently blowing up at first workload call.
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD claude --version >/dev/null 2>&1 || exit 1
 
 USER sdlc
 WORKDIR /workspace

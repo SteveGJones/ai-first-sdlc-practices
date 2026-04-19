@@ -7,6 +7,12 @@ cleanup() {
     echo ""
     echo "=== Cleanup ==="
     rm -f /home/sdlc/.claude/.credentials.json
+    # Signal the entire process group (PGID == this script's PID, because
+    # bash is PID 1 under docker's default init). This catches claude,
+    # archon, python, and any grandchildren they spawned — a plain
+    # `kill $pid` would leave them orphaned and block container exit.
+    # `|| true` swallows "No such process" on the race where children
+    # already exited cleanly.
     kill -- -$$ 2>/dev/null || true
 }
 trap cleanup SIGTERM SIGINT EXIT
@@ -23,15 +29,49 @@ if [ -f /home/sdlc/.claude-creds/.credentials.json ]; then
     echo "Auth: credentials loaded from creds mount"
 fi
 
-# Legacy: also check .claude-auth directory mount (older credential volumes)
-if [ -d /home/sdlc/.claude-auth ] && [ "$(ls -A /home/sdlc/.claude-auth 2>/dev/null)" ]; then
-    for auth_file in /home/sdlc/.claude-auth/*; do
-        if [ -f "$auth_file" ]; then
-            cp "$auth_file" /home/sdlc/.claude/"$(basename "$auth_file")"
-            chmod 600 /home/sdlc/.claude/"$(basename "$auth_file")"
-        fi
-    done
+# Legacy: .claude-auth directory mount.
+# S-I-7: copy ONLY .credentials.json, never arbitrary files from the
+# auth mount.  The older volume layout sometimes contained shell rc
+# files and configuration that should not be trusted wholesale.
+if [ -f /home/sdlc/.claude-auth/.credentials.json ]; then
+    cp /home/sdlc/.claude-auth/.credentials.json /home/sdlc/.claude/.credentials.json
+    chmod 600 /home/sdlc/.claude/.credentials.json
     echo "Auth: credentials loaded from auth mount"
+fi
+
+# Step 1c: Credential freshness probe (S-M-6 / AC-I-8).
+# Parse the credentials file and emit a specific diagnostic if the
+# OAuth token is already expired or within five minutes of expiry.
+# Doing this before `claude -p "say ok"` means the failure message is
+# precise ("token expired at X") instead of a generic
+# "authentication_error" that surfaces much later.
+if [ -f /home/sdlc/.claude/.credentials.json ]; then
+    python3 - <<'PY'
+import json, sys, time
+from pathlib import Path
+p = Path("/home/sdlc/.claude/.credentials.json")
+try:
+    data = json.loads(p.read_text())
+except Exception:
+    sys.exit(0)
+oauth = data.get("claudeAiOauth") or {}
+expires_at = oauth.get("expiresAt")
+if not isinstance(expires_at, (int, float)):
+    sys.exit(0)
+remaining = expires_at / 1000.0 - time.time()
+if remaining <= 0:
+    print(f"Auth: CREDENTIALS EXPIRED — token lifetime ended {-int(remaining)}s ago.",
+          file=sys.stderr)
+    print("      Run `claude /login` on the host and retry.", file=sys.stderr)
+    sys.exit(2)
+if remaining < 300:
+    print(f"Auth: credentials expire in {int(remaining)}s — consider `claude /login` now.",
+          file=sys.stderr)
+PY
+    freshness_rc=$?
+    if [ "$freshness_rc" -eq 2 ]; then
+        exit 2
+    fi
 fi
 
 # Step 2: Verify Claude Code is available
@@ -82,14 +122,31 @@ fi
 # If ARCHON_WORKFLOW is set, run an Archon workflow
 # Otherwise, pass through to Claude Code
 TIMEOUT="${CLAUDE_TIMEOUT:-300}"
+
+# If CLAUDE_MODEL is set by the workflow node, forward it to Claude as --model.
+MODEL_ARGS=()
+if [ -n "$CLAUDE_MODEL" ]; then
+    MODEL_ARGS=(--model "$CLAUDE_MODEL")
+    echo "Model override: $CLAUDE_MODEL"
+fi
+
 if [ -n "$ARCHON_WORKFLOW" ]; then
     echo "Running Archon workflow: $ARCHON_WORKFLOW"
     echo "Arguments: ${ARCHON_ARGS:-<none>}"
     echo ""
-    timeout "$TIMEOUT" archon run "$ARCHON_WORKFLOW" ${ARCHON_ARGS:+"$ARCHON_ARGS"}
+    # ARCHON_ARGS contract (D-M-4): a whitespace-separated string that
+    # gets word-split once into argv. The unquoted expansion below is
+    # intentional — the workflow author is responsible for keeping
+    # arguments simple (no embedded spaces or shell metachars). If a
+    # multi-token arg with embedded whitespace is ever needed, it must
+    # be passed via the workflow YAML's `env:` block as a dedicated
+    # single-purpose variable, not overloaded into ARCHON_ARGS.
+    #
+    # shellcheck disable=SC2086 # intentional word-splitting
+    timeout "$TIMEOUT" archon run "$ARCHON_WORKFLOW" ${ARCHON_ARGS}
 elif [ -n "$CLAUDE_PROMPT" ]; then
     echo "Running Claude Code with prompt..."
-    timeout "$TIMEOUT" claude --dangerously-skip-permissions -p "$CLAUDE_PROMPT"
+    timeout "$TIMEOUT" claude --dangerously-skip-permissions "${MODEL_ARGS[@]}" -p "$CLAUDE_PROMPT"
 else
     echo "No ARCHON_WORKFLOW or CLAUDE_PROMPT set."
     echo "Usage:"
