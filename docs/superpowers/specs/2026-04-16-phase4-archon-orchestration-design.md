@@ -111,9 +111,52 @@ The `container-provider.ts`, node schema patch, and executor import patch (from 
 Phase 4 is four things:
 
 1. **Workflow preprocessor** — transforms `image:` nodes into bash nodes that `docker run` team containers
-2. **Hybrid workspace management** — shared volume for sequential, git branch/merge for parallel
+2. **Shared-volume workspace management (v1)** — sequential and parallel branches all bind-mount the same host workspace into `/workspace`. See "Parallel execution semantics (v1 contract)" below. Per-branch overlay isolation with structured fan-in merge is deferred to v2.
 3. **Credential injection** — three-tier fallback (Keychain → volume → config), automated by preprocessor
 4. **End-to-end Archon proof** — run the miniproject workflow through Archon with team containers
+
+### Parallel execution semantics (v1 contract)
+
+**Shared workspace, last-writer-wins.** When two or more nodes share a
+parent via `depends_on`, they run in parallel against the *same*
+bind-mounted host workspace. Overlapping writes race; disjoint writes
+(e.g. branch-scoped filenames `output/<node-id>.md`) are safe.
+
+**Preprocessor signal.** `preprocess_workflow.transform_workflow` calls
+`_detect_fan_outs` and emits a structured `logger.warning` citing this
+contract when a fan-out is present. Workflow authors get a build-time
+signal rather than a runtime surprise.
+
+**Why v1 ships with the shared-workspace contract.** A full branch-merge
+implementation requires (a) per-branch overlay directories, (b) topology
+analysis for nested parallelism, (c) conflict-aware merge nodes injected
+at every fan-in. That is tracked for v2. Documenting the v1 contract
+precisely — and surfacing it through the preprocessor — is the
+conservative correct choice.
+
+**Authoring pattern for safe parallel fan-out in v1.**
+
+```yaml
+nodes:
+  - id: plan
+    image: sdlc-worker:dev-team
+    command: plan
+  - id: review-security
+    image: sdlc-worker:security-team
+    command: review
+    depends_on: [plan]
+    # writes output/review-security.md -- no collision
+  - id: review-perf
+    image: sdlc-worker:perf-team
+    command: review
+    depends_on: [plan]
+    # writes output/review-perf.md -- no collision
+  - id: synthesise
+    image: sdlc-worker:dev-team
+    command: synthesise
+    depends_on: [review-security, review-perf]
+    # sequential -- may write report.md safely
+```
 
 Phase 4 is NOT:
 - Workflow authoring (creating custom workflow YAMLs)
