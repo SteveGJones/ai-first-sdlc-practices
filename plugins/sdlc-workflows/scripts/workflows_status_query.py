@@ -138,6 +138,39 @@ def fetch_via_sqlite(running_only: bool, limit: int | None) -> list[dict]:
         conn.close()
 
 
+def resolve_run_id_prefix(prefix: str) -> tuple[str | None, str | None]:
+    """Resolve a run-id prefix to a full id against SQLite.
+
+    Archon run ids are 32-char hex UUIDs; ``--recent`` prints only the first
+    8 characters, so users naturally paste that short form into ``--run-id``.
+    Resolution rules:
+    - exactly one id starts with the prefix → ``(full_id, None)``
+    - more than one match                    → ``(None, "ambiguous: …")``
+    - zero matches                           → ``(None, "no run matches …")``
+    - archon.db absent                       → ``(None, "archon.db not found …")``
+
+    Kept separate from the REST path so it works even when ``archon serve``
+    isn't running (the common first-time-user case). Callers on the REST
+    path still benefit: resolve here, pass the full id to the REST detail
+    endpoint.
+    """
+    conn = _open_db()
+    if conn is None:
+        return None, f"archon.db not found at {ARCHON_DB_PATH}"
+    try:
+        rows = conn.execute(
+            "SELECT id FROM remote_agent_workflow_runs WHERE id LIKE ? LIMIT 2",
+            (prefix + "%",),
+        ).fetchall()
+        if not rows:
+            return None, f"no run matches prefix {prefix!r}"
+        if len(rows) > 1:
+            return None, f"prefix {prefix!r} is ambiguous (matches multiple runs)"
+        return rows[0][0], None
+    finally:
+        conn.close()
+
+
 def fetch_run_detail_via_sqlite(run_id: str) -> dict | None:
     conn = _open_db()
     if conn is None:
@@ -245,14 +278,30 @@ def main() -> int:
 
     # Single-run detail path.
     if args.run_id:
+        # Resolve prefix → full id via SQLite. --recent prints 8-char prefixes,
+        # so users naturally paste those into --run-id. Skip if the argument
+        # is already 32 hex chars (no point in an extra DB round-trip).
+        resolved_id = args.run_id
+        if not (len(args.run_id) == 32 and all(c in "0123456789abcdef" for c in args.run_id.lower())):
+            full_id, err = resolve_run_id_prefix(args.run_id)
+            if full_id is not None:
+                resolved_id = full_id
+            elif err and ("ambiguous" in err or "archon.db not found" in err):
+                # Ambiguous prefix or missing DB — tell the user exactly
+                # why rather than emitting a generic "not found".
+                print(err, file=sys.stderr)
+                return 1
+            # else (no match, err startswith "no run matches"): fall through;
+            # fetch_*_via_* will emit the standard "Run <id> not found".
+
         detail = None
         source = "sqlite"
         if not args.no_rest:
-            detail = fetch_run_detail_via_rest(args.url, args.run_id, args.timeout)
+            detail = fetch_run_detail_via_rest(args.url, resolved_id, args.timeout)
             if detail is not None:
                 source = "rest"
         if detail is None:
-            detail = fetch_run_detail_via_sqlite(args.run_id)
+            detail = fetch_run_detail_via_sqlite(resolved_id)
         if detail is None:
             print(f"Run {args.run_id} not found.", file=sys.stderr)
             return 1

@@ -123,7 +123,9 @@ def _build_test_db(tmp_path: Path) -> Path:
             ('run-b', 'conv-2', 'wf-b', '', 'running',   1,
              '2026-04-19 12:10:00', '2026-04-19 12:11:00'),
             ('run-c', 'conv-3', 'wf-a', '', 'completed', 2,
-             '2026-04-18 09:00:00', '2026-04-18 09:04:00');
+             '2026-04-18 09:00:00', '2026-04-18 09:04:00'),
+            ('abcd1234deadbeefcafe5678feedface', 'conv-4', 'wf-a', '',
+             'completed', 4, '2026-04-19 13:00:00', '2026-04-19 13:10:00');
         INSERT INTO remote_agent_workflow_events
             (id, workflow_run_id, event_type, step_index, step_name, created_at)
         VALUES
@@ -142,7 +144,13 @@ def test_sqlite_fetch_all_sorted_by_started(tmp_path, monkeypatch):
     monkeypatch.setattr(wsq, "ARCHON_DB_PATH", db)
     runs = wsq.fetch_via_sqlite(running_only=False, limit=None)
     ids = [r["id"] for r in runs]
-    assert ids == ["run-b", "run-a", "run-c"]  # newest first
+    # The 'abcd…' row has started_at '2026-04-19 13:00:00', newest.
+    assert ids == [
+        "abcd1234deadbeefcafe5678feedface",
+        "run-b",
+        "run-a",
+        "run-c",
+    ]
 
 
 def test_sqlite_running_only_filters(tmp_path, monkeypatch):
@@ -157,7 +165,7 @@ def test_sqlite_limit_applies(tmp_path, monkeypatch):
     monkeypatch.setattr(wsq, "ARCHON_DB_PATH", db)
     runs = wsq.fetch_via_sqlite(running_only=False, limit=2)
     assert len(runs) == 2
-    assert runs[0]["id"] == "run-b"
+    assert runs[0]["id"] == "abcd1234deadbeefcafe5678feedface"
 
 
 def test_sqlite_run_detail_includes_events(tmp_path, monkeypatch):
@@ -180,6 +188,50 @@ def test_sqlite_unknown_run_returns_none(tmp_path, monkeypatch):
     db = _build_test_db(tmp_path)
     monkeypatch.setattr(wsq, "ARCHON_DB_PATH", db)
     assert wsq.fetch_run_detail_via_sqlite("nonexistent") is None
+
+
+def test_resolve_run_id_prefix_unique_match(tmp_path, monkeypatch):
+    # The fixture has a 32-char hex id 'abcd1234deadbeefcafe5678feedface'.
+    # An 8-char prefix 'abcd1234' uniquely matches it — the common case:
+    # user sees 8-char id in --recent and wants to paste into --run-id.
+    db = _build_test_db(tmp_path)
+    monkeypatch.setattr(wsq, "ARCHON_DB_PATH", db)
+    full_id, err = wsq.resolve_run_id_prefix("abcd1234")
+    assert err is None
+    assert full_id == "abcd1234deadbeefcafe5678feedface"
+
+
+def test_resolve_run_id_prefix_ambiguous(tmp_path, monkeypatch):
+    # Prefix 'run-' matches run-a, run-b, run-c.
+    db = _build_test_db(tmp_path)
+    monkeypatch.setattr(wsq, "ARCHON_DB_PATH", db)
+    full_id, err = wsq.resolve_run_id_prefix("run-")
+    assert full_id is None
+    assert err is not None
+    assert "ambiguous" in err.lower() or "matches" in err.lower()
+
+
+def test_resolve_run_id_prefix_no_match(tmp_path, monkeypatch):
+    db = _build_test_db(tmp_path)
+    monkeypatch.setattr(wsq, "ARCHON_DB_PATH", db)
+    full_id, err = wsq.resolve_run_id_prefix("zzz")
+    assert full_id is None
+    assert err is not None
+
+
+def test_main_run_id_prefix_resolves_to_full_id(tmp_path, monkeypatch, capsys):
+    # Integration: --run-id with a prefix argument should resolve to a
+    # full id before fetching detail. Without prefix resolution main()
+    # would print "Run nope not found" and exit 1; with it, main() must
+    # find 'run-a' from the 5-char prefix 'run-a' and print detail.
+    db = _build_test_db(tmp_path)
+    monkeypatch.setattr(wsq, "ARCHON_DB_PATH", db)
+    monkeypatch.setattr(sys, "argv", ["prog", "--run-id", "run-a", "--no-rest"])
+    rc = wsq.main()
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "run-a" in out
+    assert "node_started" in out
 
 
 # ---------------------------------------------------------------------------

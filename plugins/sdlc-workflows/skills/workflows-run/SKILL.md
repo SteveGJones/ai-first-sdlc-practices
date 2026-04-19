@@ -113,17 +113,40 @@ cleanup_workspace_and_credentials() {
 }
 trap cleanup_workspace_and_credentials EXIT INT TERM
 
-# Copy the project into the workspace, but EXCLUDE the parent .git/
-# (we re-init below), other git worktrees, and heavy or sensitive
-# artefacts. cp -R . copies hidden entries by default, which would
-# otherwise drag the parent's .git/config (inc. core.hooksPath),
-# committed secrets, node_modules, venvs, etc., into the seed.
+# Copy the project into the workspace, but EXCLUDE:
+#   - parent .git/ (we re-init below, and would otherwise inherit
+#     core.hooksPath, refs, and any committed secrets)
+#   - other git worktrees
+#   - heavy artefacts (node_modules, venvs, __pycache__)
+#   - developer secrets that live alongside a project but are NOT
+#     part of what the container should see: SSH keys, AWS creds,
+#     npm/pip tokens, Docker config, shell login files, etc.
+# Prompt-injection inside the container could otherwise read any of
+# these and exfiltrate via tool calls. Keep this list STRICT.
 rsync -a \
     --exclude='.git/' \
     --exclude='.worktrees/' \
     --exclude='node_modules/' \
     --exclude='.venv/' \
+    --exclude='venv/' \
     --exclude='__pycache__/' \
+    --exclude='.env' \
+    --exclude='.env.*' \
+    --exclude='.envrc' \
+    --exclude='.ssh/' \
+    --exclude='.aws/' \
+    --exclude='.gcp/' \
+    --exclude='.azure/' \
+    --exclude='.kube/' \
+    --exclude='.docker/' \
+    --exclude='.npmrc' \
+    --exclude='.netrc' \
+    --exclude='.pypirc' \
+    --exclude='.gnupg/' \
+    --exclude='.keychain/' \
+    --exclude='.*_history' \
+    --exclude='secrets/' \
+    --exclude='credentials/' \
     ./ "$WORKSPACE/"
 
 # Archon resolves cwd to the enclosing git root before discovering
