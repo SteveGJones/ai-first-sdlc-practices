@@ -19,8 +19,18 @@
 # or credentials beyond docker access.
 #
 # Usage:
-#   bash run-full-formation.sh            # structural-only (default)
-#   bash run-full-formation.sh --execute  # structural + real execution
+#   bash run-full-formation.sh                     # structural-only (default)
+#   bash run-full-formation.sh --execute           # structural + archon-or-direct
+#   bash run-full-formation.sh --execute-archon    # strict: archon required,
+#                                                  # fallback disallowed
+#   bash run-full-formation.sh --execute-direct    # skip archon; direct docker run
+#
+# The unadorned --execute flag preserves the historical "try archon,
+# fall back to direct" behaviour for local iteration.  Release gates
+# and CI MUST use --execute-archon so a missing / broken archon
+# surfaces as a test failure instead of a silent bypass (Phase C of
+# the repair plan — hardening the harness so the super-smoke can't
+# lie about what it proved).
 
 set -e
 
@@ -31,9 +41,27 @@ SCRIPTS_DIR="$PLUGIN_DIR/scripts"
 MINI="$SCRIPT_DIR/miniproject"
 
 EXECUTE=0
-if [ "${1:-}" = "--execute" ]; then
-    EXECUTE=1
-fi
+EXECUTE_MODE="none"  # none | auto | archon | direct
+case "${1:-}" in
+    --execute)
+        EXECUTE=1
+        EXECUTE_MODE="auto"
+        ;;
+    --execute-archon)
+        EXECUTE=1
+        EXECUTE_MODE="archon"
+        ;;
+    --execute-direct)
+        EXECUTE=1
+        EXECUTE_MODE="direct"
+        ;;
+    "")
+        ;;
+    *)
+        echo "ERROR: unknown flag '$1' (expected --execute|--execute-archon|--execute-direct)" >&2
+        exit 2
+        ;;
+esac
 
 PASS_COUNT=0
 FAIL_COUNT=0
@@ -306,16 +334,58 @@ if [ "$EXECUTE" -eq 1 ]; then
             --commands-dir "$WORKSPACE/.archon/commands" 2>/dev/null
 
         echo "[$((PASS_COUNT + FAIL_COUNT + 1))/$TOTAL] Execute full-formation-pipeline"
-        if command -v archon >/dev/null 2>&1; then
+
+        # Decide execution method up front and report it explicitly.
+        # This is the pass/fail bar for --execute-archon mode (repair
+        # plan phase C): a missing archon CLI or a failing archon run
+        # must surface as FAIL, not a silent bypass.
+        HAVE_ARCHON=0
+        command -v archon >/dev/null 2>&1 && HAVE_ARCHON=1
+
+        case "$EXECUTE_MODE" in
+            archon)
+                if [ "$HAVE_ARCHON" -ne 1 ]; then
+                    fail "execute" "archon not on PATH but --execute-archon was requested"
+                    EXECUTION_METHOD="missing"
+                else
+                    EXECUTION_METHOD="archon"
+                fi
+                ;;
+            direct)
+                EXECUTION_METHOD="direct"
+                ;;
+            auto)
+                if [ "$HAVE_ARCHON" -eq 1 ]; then
+                    EXECUTION_METHOD="archon"
+                else
+                    EXECUTION_METHOD="direct"
+                fi
+                ;;
+            *)
+                EXECUTION_METHOD="unknown"
+                ;;
+        esac
+        echo "    EXECUTION_METHOD=$EXECUTION_METHOD"
+
+        if [ "$EXECUTION_METHOD" = "archon" ]; then
             rm -f "$WORKSPACE/.archon/workflows/full-formation-pipeline.yaml"
             cp "$GEN" "$WORKSPACE/.archon/workflows/full-formation-pipeline.yaml"
-            (cd "$WORKSPACE" && archon workflow run full-formation-pipeline \
-                --no-worktree >/dev/null 2>&1) || true
-        else
+            # Capture stderr so a broken archon CLI (e.g. sed-corrupted
+            # dag-node.ts) surfaces loudly instead of being swallowed
+            # by a silent `|| true`.
+            ARCHON_LOG=$(mktemp)
+            if ! (cd "$WORKSPACE" && archon workflow run full-formation-pipeline \
+                    --no-worktree >"$ARCHON_LOG" 2>&1); then
+                fail "execute" "archon workflow run exited non-zero — see $ARCHON_LOG"
+                tail -20 "$ARCHON_LOG" | sed 's/^/      /'
+            fi
+        elif [ "$EXECUTION_METHOD" = "direct" ]; then
             # Direct execution: run every preprocessed bash: node in
             # topological order.  This proves the generated docker run
-            # commands execute end-to-end without an archon CLI on host.
-            echo "    archon not on host — executing preprocessed bash nodes directly"
+            # commands execute end-to-end without an archon CLI on host
+            # but does NOT prove archon itself works — use
+            # --execute-archon for that.
+            echo "    direct mode: executing preprocessed bash nodes without archon"
             python3 <<PYEOF
 import subprocess
 import sys
@@ -380,6 +450,9 @@ fi
 # ---------------------------------------------------------------------------
 echo ""
 echo "=== Results: $PASS_COUNT pass, $FAIL_COUNT fail (of $TOTAL) ==="
+if [ "$EXECUTE" -eq 1 ]; then
+    echo "    EXECUTION_METHOD=${EXECUTION_METHOD:-unknown}  (mode=$EXECUTE_MODE)"
+fi
 if [ "$FAIL_COUNT" -eq 0 ]; then
     echo "§7.4 Full-formation super-smoke: ALL PASS"
     exit 0

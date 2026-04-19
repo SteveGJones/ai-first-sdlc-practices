@@ -1,4 +1,21 @@
 #!/bin/bash
+# Phase 4 E2E orchestration test — proves REAL delegation to per-team
+# containers end-to-end.
+#
+# Defaults to --archon-only: archon must be on PATH and must execute
+# the preprocessed workflow successfully. Silent fallback to direct
+# docker-run is a release-gate hazard (earlier runs went "all green"
+# while archon was broken or entirely missing), so the default is
+# strict. Local iteration can opt out with --allow-fallback.
+#
+# Usage:
+#   bash run-e2e.sh                                # sequential, archon-only (strict)
+#   bash run-e2e.sh --parallel                     # parallel, archon-only (strict)
+#   bash run-e2e.sh [--parallel] --allow-fallback  # try archon, fall back to direct
+#   bash run-e2e.sh [--parallel] --direct-only     # skip archon entirely
+#
+# The order of positional + execution-mode flags is flexible.
+
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -8,22 +25,40 @@ SCRIPTS_DIR="$PLUGIN_DIR/scripts"
 MINI="$SCRIPT_DIR/miniproject"
 
 MODE="sequential"
-if [ "${1:-}" = "--parallel" ]; then
-    MODE="parallel"
-fi
+EXECUTE_MODE="archon"  # archon | auto | direct
+for arg in "$@"; do
+    case "$arg" in
+        --parallel)       MODE="parallel" ;;
+        --archon-only)    EXECUTE_MODE="archon" ;;
+        --allow-fallback) EXECUTE_MODE="auto" ;;
+        --direct-only)    EXECUTE_MODE="direct" ;;
+        "") ;;
+        *)
+            echo "ERROR: unknown flag '$arg'" >&2
+            echo "Usage: $0 [--parallel] [--archon-only|--allow-fallback|--direct-only]" >&2
+            exit 2
+            ;;
+    esac
+done
+
+# Timestamp BEFORE any work — used later to bound docker ps lookups to
+# just the containers this test run produced, so the per-team
+# verification cannot be poisoned by an earlier session's leftovers.
+TEST_START_EPOCH=$(date +%s)
 
 PASS_COUNT=0
 FAIL_COUNT=0
 
 if [ "$MODE" = "sequential" ]; then
-    TOTAL=6
+    TOTAL=8   # 6 existing + 2 per-team container-ran assertions
     echo "=== Phase 4 E2E Orchestration Test (sequential) ==="
     echo "Proves Archon orchestrates containerised team workflows."
 else
-    TOTAL=8
+    TOTAL=10  # 8 existing + 2 per-team container-ran assertions
     echo "=== Phase 4 E2E Orchestration Test (parallel) ==="
     echo "Proves Archon orchestrates parallel fork/merge workflows."
 fi
+echo "Execute mode: $EXECUTE_MODE"
 echo ""
 
 pass() { echo "  PASS: $1"; PASS_COUNT=$((PASS_COUNT + 1)); }
@@ -39,9 +74,31 @@ for cmd in docker python3; do
     fi
 done
 
-if ! command -v archon >/dev/null 2>&1; then
-    echo "WARNING: archon CLI not found on host. Will execute nodes directly."
-fi
+HAVE_ARCHON=0
+command -v archon >/dev/null 2>&1 && HAVE_ARCHON=1
+
+case "$EXECUTE_MODE" in
+    archon)
+        if [ "$HAVE_ARCHON" -ne 1 ]; then
+            echo "ERROR: archon CLI not on PATH but --archon-only was requested."
+            echo "       Install archon (https://archon.diy) or re-run with"
+            echo "       --allow-fallback (local iteration) / --direct-only."
+            exit 1
+        fi
+        ;;
+    direct)
+        # Direct-only explicitly chosen; never call archon.
+        HAVE_ARCHON=0
+        ;;
+    auto)
+        if [ "$HAVE_ARCHON" -ne 1 ]; then
+            echo "WARNING: archon CLI not found on host — --allow-fallback is"
+            echo "         in effect, so the test will execute nodes directly."
+            echo "         This proves per-container delegation but NOT Archon"
+            echo "         orchestration. Do not use this mode as a release gate."
+        fi
+        ;;
+esac
 
 for img in sdlc-worker:base sdlc-worker:full; do
     if ! docker image inspect "$img" >/dev/null 2>&1; then
@@ -154,15 +211,57 @@ for nid in order:
             PROMPT="Execute command: $NODE_CMD"
         fi
 
+        # Capture the container's rc so a failed node surfaces as a
+        # test failure rather than a silent pass (pre-Phase-C had
+        # `|| true` here which made every "green" run a lie when the
+        # container exited non-zero).
+        NODE_RC=0
         NODE_OUTPUT=$(docker run --rm \
             --cap-drop ALL \
             -v "$WORKSPACE:/workspace" \
             -v "$CRED_MOUNT" \
             -e "CLAUDE_PROMPT=$PROMPT" \
-            "$NODE_IMAGE" 2>&1) || true
+            "$NODE_IMAGE" 2>&1) || NODE_RC=$?
 
-        echo "  Node $NODE_ID: $(echo "$NODE_OUTPUT" | tail -1)"
+        if [ "$NODE_RC" -ne 0 ]; then
+            fail "node $NODE_ID (direct)" "container exited $NODE_RC"
+            echo "$NODE_OUTPUT" | tail -10 | sed 's/^/      /'
+        else
+            echo "  Node $NODE_ID: $(echo "$NODE_OUTPUT" | tail -1)"
+        fi
     done
+}
+
+# ---------------------------------------------------------------------------
+# Helper: assert a given team image actually ran a container since the
+# test started. Without this the test proves "some containers ran and
+# some commits were produced" — it does NOT prove each TEAM ran in
+# ITS OWN container. With multi-team delegation being the whole point
+# of the delivery, this assertion closes the gap.
+# ---------------------------------------------------------------------------
+assert_team_ran() {
+    local IMAGE="$1"
+    local LABEL="$2"
+    # We run containers with --rm, so `docker ps -a` can't see them
+    # after exit. `docker events --since <epoch>` does surface them:
+    # the event log retains lifecycle events even for removed
+    # containers. Filter by image=<tag> and event=create.
+    local NOW
+    NOW=$(date +%s)
+    local COUNT
+    COUNT=$(docker events \
+        --since "$TEST_START_EPOCH" \
+        --until "$NOW" \
+        --filter "type=container" \
+        --filter "event=create" \
+        --filter "image=$IMAGE" \
+        --format '{{.Actor.Attributes.image}}' 2>/dev/null | wc -l | tr -d ' ')
+    COUNT=${COUNT:-0}
+    if [ "$COUNT" -gt 0 ]; then
+        pass "$LABEL actually ran a container ($IMAGE, $COUNT invocation(s))"
+    else
+        fail "$LABEL" "no container from $IMAGE was observed since test start"
+    fi
 }
 
 # ===========================================================================
@@ -201,11 +300,18 @@ fi
 # ---------------------------------------------------------------------------
 echo "[3/$TOTAL] Execute preprocessed workflow (this takes ~3-5 min)"
 
-if command -v archon >/dev/null 2>&1; then
+if [ "$HAVE_ARCHON" -eq 1 ] && [ "$EXECUTE_MODE" != "direct" ]; then
     rm -f "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
     cp "$GENERATED_DIR/feature-pipeline.yaml" "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
-    ARCHON_OUTPUT=$(cd "$WORKSPACE" && archon workflow run feature-pipeline --no-worktree 2>&1) || true
     EXECUTION_METHOD="archon"
+    # Capture stderr: a broken archon CLI must surface loudly, not be
+    # swallowed by `|| true`. Earlier runs hid regressions this way.
+    ARCHON_LOG=$(mktemp)
+    if ! (cd "$WORKSPACE" && archon workflow run feature-pipeline \
+            --no-worktree >"$ARCHON_LOG" 2>&1); then
+        fail "archon execution" "archon workflow run exited non-zero — see $ARCHON_LOG"
+        tail -20 "$ARCHON_LOG" | sed 's/^/      /'
+    fi
 else
     EXECUTION_METHOD="direct"
     run_nodes_direct "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
@@ -266,6 +372,15 @@ else
     fail "git history" "expected multiple commits, got $COMMIT_COUNT"
 fi
 
+# ---------------------------------------------------------------------------
+# Checks 7-8: Per-team container-ran assertions (REAL multi-team proof)
+# ---------------------------------------------------------------------------
+echo "[7/$TOTAL] dev-team container actually ran"
+assert_team_ran "sdlc-worker:dev-team" "dev-team"
+
+echo "[8/$TOTAL] review-team container actually ran"
+assert_team_ran "sdlc-worker:review-team" "review-team"
+
 # ===========================================================================
 # PARALLEL MODE
 # ===========================================================================
@@ -310,13 +425,18 @@ fi
 # ---------------------------------------------------------------------------
 echo "[4/$TOTAL] Execute parallel workflow (this takes ~5-8 min)"
 
-if command -v archon >/dev/null 2>&1; then
+if [ "$HAVE_ARCHON" -eq 1 ] && [ "$EXECUTE_MODE" != "direct" ]; then
     # Remove both workflow files to avoid name conflicts, then place preprocessed version
     rm -f "$WORKSPACE/.archon/workflows/parallel-review-pipeline.yaml"
     rm -f "$WORKSPACE/.archon/workflows/feature-pipeline.yaml"
     cp "$GENERATED_DIR/parallel-review-pipeline.yaml" "$WORKSPACE/.archon/workflows/parallel-review-pipeline.yaml"
-    ARCHON_OUTPUT=$(cd "$WORKSPACE" && archon workflow run parallel-review-pipeline --no-worktree 2>&1) || true
     EXECUTION_METHOD="archon"
+    ARCHON_LOG=$(mktemp)
+    if ! (cd "$WORKSPACE" && archon workflow run parallel-review-pipeline \
+            --no-worktree >"$ARCHON_LOG" 2>&1); then
+        fail "archon execution" "archon workflow run exited non-zero — see $ARCHON_LOG"
+        tail -20 "$ARCHON_LOG" | sed 's/^/      /'
+    fi
 else
     EXECUTION_METHOD="direct"
     run_nodes_direct "$WORKSPACE/.archon/workflows/parallel-review-pipeline.yaml"
@@ -352,25 +472,29 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Check 6: Both review files exist
+# Check 6: Both reviewer reports exist
+#
+# Reviewers write to /workspace/reports/<subdir>/review.md per the G4
+# parallel-git-write guardrail (parallel nodes must not commit —
+# synthesise does the single fan-in commit). This check counts those
+# per-reviewer files rather than expecting top-level *.md files.
 # ---------------------------------------------------------------------------
-echo "[6/$TOTAL] Parallel review outputs"
+echo "[6/$TOTAL] Parallel reviewer reports"
 REVIEW_FILES=0
-if [ -f "$WORKSPACE/security-review.md" ]; then
-    REVIEW_FILES=$((REVIEW_FILES + 1))
-    echo "       security-review.md: $(wc -l < "$WORKSPACE/security-review.md" | tr -d ' ') lines"
-fi
-if [ -f "$WORKSPACE/architecture-review.md" ]; then
-    REVIEW_FILES=$((REVIEW_FILES + 1))
-    echo "       architecture-review.md: $(wc -l < "$WORKSPACE/architecture-review.md" | tr -d ' ') lines"
+if [ -d "$WORKSPACE/reports" ]; then
+    # shellcheck disable=SC2044
+    for r in $(find "$WORKSPACE/reports" -mindepth 2 -name 'review.md' 2>/dev/null); do
+        REVIEW_FILES=$((REVIEW_FILES + 1))
+        echo "       $(basename "$(dirname "$r")")/review.md: $(wc -l < "$r" | tr -d ' ') lines"
+    done
 fi
 
-if [ "$REVIEW_FILES" -eq 2 ]; then
-    pass "both review files produced (security + architecture)"
+if [ "$REVIEW_FILES" -ge 2 ]; then
+    pass "both reviewer reports produced ($REVIEW_FILES under /workspace/reports/*/)"
 elif [ "$REVIEW_FILES" -eq 1 ]; then
-    fail "parallel reviews" "only one review file produced (expected 2)"
+    fail "parallel reviews" "only one reviewer report produced (expected >=2)"
 else
-    fail "parallel reviews" "no review files found"
+    fail "parallel reviews" "no reviewer reports found under /workspace/reports/*/review.md"
 fi
 
 # ---------------------------------------------------------------------------
@@ -400,6 +524,25 @@ else
     fail "git history" "expected 4+ commits, got $COMMIT_COUNT"
 fi
 
+# ---------------------------------------------------------------------------
+# Checks 9-10: Per-team container-ran assertions (REAL multi-team proof)
+#
+# Parallel workflow uses two distinct team images across 4 nodes:
+#   implement    -> dev-team
+#   security     -> review-team  (parallel branch)
+#   architecture -> review-team  (parallel branch)
+#   synthesise   -> dev-team
+# So we expect >=1 dev-team invocation AND >=2 review-team invocations.
+# The raw assertion only enforces >=1; the extra review-team count is
+# sanity-printed but not asserted (keeps assertion count stable and
+# aligned with sequential mode).
+# ---------------------------------------------------------------------------
+echo "[9/$TOTAL] dev-team container actually ran"
+assert_team_ran "sdlc-worker:dev-team" "dev-team"
+
+echo "[10/$TOTAL] review-team container actually ran (expect >=2)"
+assert_team_ran "sdlc-worker:review-team" "review-team"
+
 fi  # end MODE
 
 # ---------------------------------------------------------------------------
@@ -407,6 +550,7 @@ fi  # end MODE
 # ---------------------------------------------------------------------------
 echo ""
 echo "=== Results: $PASS_COUNT pass, $FAIL_COUNT fail (of $TOTAL) ==="
+echo "    EXECUTE_MODE=$EXECUTE_MODE  EXECUTION_METHOD=${EXECUTION_METHOD:-unknown}"
 if [ "$FAIL_COUNT" -eq 0 ]; then
     echo "Phase 4 E2E orchestration test ($MODE): ALL PASS"
     echo ""
@@ -415,12 +559,11 @@ if [ "$FAIL_COUNT" -eq 0 ]; then
     echo "  - Workflow preprocessed (image nodes -> bash nodes)"
     echo "  - Execution method: $EXECUTION_METHOD"
     if [ "$MODE" = "sequential" ]; then
-        echo "  - Dev-team implemented features in its container"
-        echo "  - Review-team reviewed in its container"
+        echo "  - Dev-team ran in its own container (verified via docker events)"
+        echo "  - Review-team ran in its own container (verified via docker events)"
     else
-        echo "  - Dev-team implemented features in its container"
-        echo "  - Two review containers ran (security + architecture)"
-        echo "  - Synthesise container merged review findings"
+        echo "  - Dev-team ran in its own container (implement + synthesise)"
+        echo "  - Review-team ran in its own container (security + architecture, parallel)"
         echo "  - DAG ordering enforced: implement -> parallel reviews -> synthesise"
     fi
     echo "  - Git history shows multi-container work"
