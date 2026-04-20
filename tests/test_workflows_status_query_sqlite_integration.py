@@ -274,3 +274,71 @@ def test_missing_db_reports_no_runs_cleanly(tmp_path: Path) -> None:
     )
     assert r.returncode == 0, r.stderr
     assert "no workflow runs" in r.stdout.lower()
+
+
+class TestSchemaProbe:
+    """Schema probe — PRAGMA table_info guard against Archon migration drift."""
+
+    def test_valid_schema_emits_no_warning(self, archon_home: Path) -> None:
+        """Normal Archon schema → no schema warning on stderr."""
+        r = _run(archon_home, "--recent", "5")
+        assert r.returncode == 0
+        assert "schema" not in r.stderr.lower()
+
+    def test_missing_column_emits_warning(self, tmp_path: Path) -> None:
+        """Drop a column from the runs table → script emits a diagnostic warning
+        on stderr but does NOT crash — graceful degradation, not hard failure."""
+        db_path = tmp_path / "archon.db"
+        conn = sqlite3.connect(db_path)
+        # Create a runs table missing 'working_path'
+        conn.executescript("""
+            CREATE TABLE remote_agent_workflow_runs (
+                id TEXT PRIMARY KEY,
+                conversation_id TEXT,
+                workflow_name TEXT,
+                status TEXT,
+                current_step_index INTEGER,
+                started_at TEXT,
+                completed_at TEXT,
+                last_activity_at TEXT
+            );
+            CREATE TABLE remote_agent_workflow_events (
+                id TEXT PRIMARY KEY,
+                workflow_run_id TEXT,
+                event_type TEXT,
+                step_index INTEGER,
+                step_name TEXT,
+                data TEXT,
+                created_at TEXT
+            );
+        """)
+        conn.close()
+        r = _run(tmp_path, "--recent", "5")
+        # Must be our diagnostic, not a raw traceback
+        assert r.returncode == 0, f"should not crash: {r.stderr}"
+        assert "schema" in r.stderr.lower()
+        assert "working_path" in r.stderr.lower()
+        assert "Traceback" not in r.stderr
+
+    def test_missing_table_emits_warning(self, tmp_path: Path) -> None:
+        """Database exists but table is entirely absent → diagnostic, not crash."""
+        db_path = tmp_path / "archon.db"
+        conn = sqlite3.connect(db_path)
+        # Only create the events table
+        conn.executescript("""
+            CREATE TABLE remote_agent_workflow_events (
+                id TEXT PRIMARY KEY,
+                workflow_run_id TEXT,
+                event_type TEXT,
+                step_index INTEGER,
+                step_name TEXT,
+                data TEXT,
+                created_at TEXT
+            );
+        """)
+        conn.close()
+        r = _run(tmp_path, "--recent", "5")
+        # Must be our diagnostic, not a raw crash
+        assert r.returncode == 0, f"should not crash: {r.stderr}"
+        assert "remote_agent_workflow_runs" in r.stderr
+        assert "Traceback" not in r.stderr

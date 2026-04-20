@@ -107,16 +107,75 @@ def fetch_run_detail_via_rest(
 # ---------------------------------------------------------------------------
 
 
-def _open_db() -> sqlite3.Connection | None:
+_EXPECTED_RUNS_COLUMNS = {
+    "id", "conversation_id", "workflow_name", "status",
+    "current_step_index", "started_at", "completed_at",
+    "last_activity_at", "working_path",
+}
+_EXPECTED_EVENTS_COLUMNS = {
+    "workflow_run_id", "event_type", "step_index", "step_name",
+    "data", "created_at",
+}
+
+
+def _validate_schema(conn: sqlite3.Connection) -> list[str]:
+    """Check Archon DB schema via PRAGMA table_info; return warning lines.
+
+    Returns an empty list when the schema matches expectations.  Each
+    warning is a human-readable line suitable for stderr.  The caller
+    decides whether to continue (graceful degradation) or bail out.
+    """
+    warnings: list[str] = []
+    for table, expected_cols in [
+        ("remote_agent_workflow_runs", _EXPECTED_RUNS_COLUMNS),
+        ("remote_agent_workflow_events", _EXPECTED_EVENTS_COLUMNS),
+    ]:
+        try:
+            rows = conn.execute(f"PRAGMA table_info({table})").fetchall()
+        except sqlite3.OperationalError:
+            warnings.append(
+                f"WARNING: table '{table}' not found in archon.db — "
+                f"Archon schema may have changed. "
+                f"workflows-status results may be incomplete."
+            )
+            continue
+        if not rows:
+            warnings.append(
+                f"WARNING: table '{table}' not found in archon.db — "
+                f"Archon schema may have changed. "
+                f"workflows-status results may be incomplete."
+            )
+            continue
+        actual_cols = {row[1] for row in rows}
+        missing = expected_cols - actual_cols
+        if missing:
+            warnings.append(
+                f"WARNING: archon.db schema drift — table '{table}' "
+                f"is missing columns: {', '.join(sorted(missing))}. "
+                f"Archon may have been upgraded. "
+                f"workflows-status results may be incomplete."
+            )
+    return warnings
+
+
+def _open_db() -> tuple[sqlite3.Connection | None, list[str]]:
+    """Open the Archon SQLite DB read-only, returning (conn, schema_warnings).
+
+    Returns (None, []) when the DB file does not exist (fresh machine).
+    """
     if not ARCHON_DB_PATH.exists():
-        return None
+        return None, []
     # URI + mode=ro keeps this strictly read-only even if the DB lock slips.
     uri = f"file:{ARCHON_DB_PATH}?mode=ro"
-    return sqlite3.connect(uri, uri=True, timeout=2.0)
+    conn = sqlite3.connect(uri, uri=True, timeout=2.0)
+    warnings = _validate_schema(conn)
+    return conn, warnings
 
 
 def fetch_via_sqlite(running_only: bool, limit: int | None) -> list[dict]:
-    conn = _open_db()
+    conn, schema_warnings = _open_db()
+    for w in schema_warnings:
+        print(w, file=sys.stderr)
     if conn is None:
         return []
     try:
@@ -134,6 +193,9 @@ def fetch_via_sqlite(running_only: bool, limit: int | None) -> list[dict]:
             sql += f" LIMIT {int(limit)}"
         rows = conn.execute(sql).fetchall()
         return [dict(r) for r in rows]
+    except sqlite3.OperationalError:
+        # Schema probe already warned; return empty for graceful degradation.
+        return []
     finally:
         conn.close()
 
@@ -154,7 +216,9 @@ def resolve_run_id_prefix(prefix: str) -> tuple[str | None, str | None]:
     path still benefit: resolve here, pass the full id to the REST detail
     endpoint.
     """
-    conn = _open_db()
+    conn, schema_warnings = _open_db()
+    for w in schema_warnings:
+        print(w, file=sys.stderr)
     if conn is None:
         return None, f"archon.db not found at {ARCHON_DB_PATH}"
     try:
@@ -172,7 +236,9 @@ def resolve_run_id_prefix(prefix: str) -> tuple[str | None, str | None]:
 
 
 def fetch_run_detail_via_sqlite(run_id: str) -> dict | None:
-    conn = _open_db()
+    conn, schema_warnings = _open_db()
+    for w in schema_warnings:
+        print(w, file=sys.stderr)
     if conn is None:
         return None
     try:
