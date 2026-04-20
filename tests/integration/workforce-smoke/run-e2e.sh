@@ -26,16 +26,18 @@ MINI="$SCRIPT_DIR/miniproject"
 
 MODE="sequential"
 EXECUTE_MODE="archon"  # archon | auto | direct
+LIVE_MONITORING=0       # set by --live-monitoring: spin up archon serve and hit REST + UI
 for arg in "$@"; do
     case "$arg" in
-        --parallel)       MODE="parallel" ;;
-        --archon-only)    EXECUTE_MODE="archon" ;;
-        --allow-fallback) EXECUTE_MODE="auto" ;;
-        --direct-only)    EXECUTE_MODE="direct" ;;
+        --parallel)         MODE="parallel" ;;
+        --archon-only)      EXECUTE_MODE="archon" ;;
+        --allow-fallback)   EXECUTE_MODE="auto" ;;
+        --direct-only)      EXECUTE_MODE="direct" ;;
+        --live-monitoring)  LIVE_MONITORING=1 ;;
         "") ;;
         *)
             echo "ERROR: unknown flag '$arg'" >&2
-            echo "Usage: $0 [--parallel] [--archon-only|--allow-fallback|--direct-only]" >&2
+            echo "Usage: $0 [--parallel] [--archon-only|--allow-fallback|--direct-only] [--live-monitoring]" >&2
             exit 2
             ;;
     esac
@@ -57,6 +59,22 @@ else
     TOTAL=10  # 8 existing + 2 per-team container-ran assertions
     echo "=== Phase 4 E2E Orchestration Test (parallel) ==="
     echo "Proves Archon orchestrates parallel fork/merge workflows."
+fi
+
+# Monitoring assertions run only when we actually exercised archon
+# (so there's a real run in the SQLite DB for workflows-status to find).
+# Cheap CLI-level checks are always added; the expensive "live" set
+# (archon serve + REST + UI) is opt-in via --live-monitoring because
+# serve is a daemon with first-run UI-download side effects.
+MONITORING_ENABLED=0
+if [ "$EXECUTE_MODE" = "archon" ] || [ "$EXECUTE_MODE" = "auto" ]; then
+    if command -v archon >/dev/null 2>&1; then
+        MONITORING_ENABLED=1
+        TOTAL=$((TOTAL + 4))  # 4 cheap monitoring assertions
+        if [ "$LIVE_MONITORING" -eq 1 ]; then
+            TOTAL=$((TOTAL + 3))  # +3 for archon serve + REST + UI
+        fi
+    fi
 fi
 echo "Execute mode: $EXECUTE_MODE"
 echo ""
@@ -544,6 +562,121 @@ echo "[10/$TOTAL] review-team container actually ran (expect >=2)"
 assert_team_ran "sdlc-worker:review-team" "review-team"
 
 fi  # end MODE
+
+# ---------------------------------------------------------------------------
+# Monitoring surfaces — prove the skills/docs work against the run we just did
+#
+# We've documented Archon-native monitoring (CLI snapshot, web UI,
+# workflows-status skill, --resume). These assertions exercise each surface
+# against the REAL workflow run that just completed, so the PR cannot claim
+# "Archon monitoring works" without proof.
+#
+# The non-LIVE block stays cheap: SQLite queries + CLI snapshot, no daemon.
+# --live-monitoring adds the archon-serve REST + web-UI probes on demand.
+# ---------------------------------------------------------------------------
+if [ "$MONITORING_ENABLED" -eq 1 ]; then
+    NEXT=$((PASS_COUNT + FAIL_COUNT + 1))
+
+    # Pull the run-id of the run we just launched. workflows-status SQLite
+    # ordering is by started_at DESC, so the top row is ours.
+    RUN_ID_FULL=$(python3 "$SCRIPTS_DIR/workflows_status_query.py" --no-rest --recent 1 --json 2>/dev/null \
+        | python3 -c "import sys,json; d=json.load(sys.stdin); print((d.get('runs') or [{}])[0].get('id',''))" 2>/dev/null)
+    RUN_ID_PREFIX="${RUN_ID_FULL:0:8}"
+
+    echo "[$NEXT/$TOTAL] Monitoring: workflows-status --recent lists the just-completed run"
+    STATUS_OUT=$(python3 "$SCRIPTS_DIR/workflows_status_query.py" --no-rest --recent 5 2>&1) || true
+    if [ -n "$RUN_ID_PREFIX" ] && echo "$STATUS_OUT" | grep -q "$RUN_ID_PREFIX"; then
+        pass "workflows-status --recent surfaces this run ($RUN_ID_PREFIX)"
+    else
+        fail "workflows-status --recent" "run-id prefix '$RUN_ID_PREFIX' not found in output"
+    fi
+    NEXT=$((NEXT + 1))
+
+    echo "[$NEXT/$TOTAL] Monitoring: workflows-status --run-id <prefix> returns detail + events"
+    DETAIL_OUT=$(python3 "$SCRIPTS_DIR/workflows_status_query.py" --no-rest --run-id "$RUN_ID_PREFIX" 2>&1) || true
+    if echo "$DETAIL_OUT" | grep -q "^Run:" && echo "$DETAIL_OUT" | grep -q "^Events:"; then
+        pass "workflows-status --run-id returns full detail (Run + Events blocks)"
+    else
+        fail "workflows-status --run-id" "expected 'Run:' and 'Events:' headers, got: $(echo "$DETAIL_OUT" | head -3)"
+    fi
+    NEXT=$((NEXT + 1))
+
+    echo "[$NEXT/$TOTAL] Monitoring: archon workflow status (CLI snapshot) exits cleanly"
+    if (cd "$WORKSPACE" && archon workflow status >/dev/null 2>&1); then
+        pass "archon workflow status exits 0"
+    else
+        fail "archon workflow status" "non-zero exit — CLI snapshot broken"
+    fi
+    NEXT=$((NEXT + 1))
+
+    echo "[$NEXT/$TOTAL] Monitoring: archon isolation list exits cleanly"
+    if (cd "$WORKSPACE" && archon isolation list >/dev/null 2>&1); then
+        pass "archon isolation list exits 0"
+    else
+        fail "archon isolation list" "non-zero exit — worktree inventory broken"
+    fi
+    NEXT=$((NEXT + 1))
+
+    if [ "$LIVE_MONITORING" -eq 1 ]; then
+        # Pick a non-default port so we don't collide with a developer's
+        # already-running archon serve. Tear down on every exit path.
+        ARCHON_SERVE_PORT=3099
+        ARCHON_SERVE_LOG=$(mktemp)
+        ARCHON_SERVE_PID=""
+
+        stop_archon_serve() {
+            if [ -n "$ARCHON_SERVE_PID" ] && kill -0 "$ARCHON_SERVE_PID" 2>/dev/null; then
+                kill "$ARCHON_SERVE_PID" 2>/dev/null || true
+                wait "$ARCHON_SERVE_PID" 2>/dev/null || true
+            fi
+        }
+        trap 'cleanup; stop_archon_serve' EXIT
+
+        echo "[$NEXT/$TOTAL] Monitoring (LIVE): archon serve starts and answers on :$ARCHON_SERVE_PORT"
+        (cd "$WORKSPACE" && archon serve --port "$ARCHON_SERVE_PORT" >"$ARCHON_SERVE_LOG" 2>&1) &
+        ARCHON_SERVE_PID=$!
+        # Wait up to 30s for the server to accept connections.
+        SERVE_READY=0
+        for _ in $(seq 1 30); do
+            if curl -fsS "http://localhost:$ARCHON_SERVE_PORT/api/workflows/runs" >/dev/null 2>&1; then
+                SERVE_READY=1
+                break
+            fi
+            sleep 1
+        done
+        if [ "$SERVE_READY" -eq 1 ]; then
+            pass "archon serve answers REST within 30s"
+        else
+            fail "archon serve" "did not accept connections within 30s — see $ARCHON_SERVE_LOG"
+            tail -10 "$ARCHON_SERVE_LOG" | sed 's/^/      /'
+        fi
+        NEXT=$((NEXT + 1))
+
+        echo "[$NEXT/$TOTAL] Monitoring (LIVE): REST /api/workflows/runs returns the run"
+        REST_PAYLOAD=$(curl -fsS "http://localhost:$ARCHON_SERVE_PORT/api/workflows/runs" 2>/dev/null || echo "")
+        if [ -n "$RUN_ID_FULL" ] && echo "$REST_PAYLOAD" | grep -q "$RUN_ID_FULL"; then
+            pass "REST returns the just-completed run (full id in payload)"
+        else
+            fail "REST runs list" "run-id '$RUN_ID_FULL' not in REST payload"
+        fi
+        NEXT=$((NEXT + 1))
+
+        echo "[$NEXT/$TOTAL] Monitoring (LIVE): web UI returns HTML on /"
+        # First request may download the UI bundle — give it a larger timeout.
+        UI_OUT=$(curl -fsS --max-time 60 "http://localhost:$ARCHON_SERVE_PORT/" 2>/dev/null || echo "")
+        # We don't require a specific title — just that something HTML-ish comes back,
+        # proving the UI static assets are being served. A pure JSON or empty
+        # response would mean the bundled UI is missing.
+        if echo "$UI_OUT" | grep -qiE "<!doctype html|<html"; then
+            pass "web UI serves HTML on http://localhost:$ARCHON_SERVE_PORT/"
+        else
+            fail "web UI" "did not receive HTML from /; got: $(echo "$UI_OUT" | head -c 200)"
+        fi
+        NEXT=$((NEXT + 1))
+
+        stop_archon_serve
+    fi
+fi
 
 # ---------------------------------------------------------------------------
 # Report
