@@ -27,6 +27,7 @@ nodes:
   context: fresh
   timeout: 1800000
   model: claude-opus-4-6[1m]
+  budget: 5.0
 - id: implement-a
   depends_on:
   - plan
@@ -34,6 +35,7 @@ nodes:
   image: sdlc-worker:base
   context: fresh
   timeout: 1800000
+  budget: 5.0
 - id: implement-b
   depends_on:
   - plan
@@ -41,6 +43,7 @@ nodes:
   image: sdlc-worker:base
   context: fresh
   timeout: 1800000
+  budget: 5.0
 - id: implement-c
   depends_on:
   - plan
@@ -48,6 +51,7 @@ nodes:
   image: sdlc-worker:base
   context: fresh
   timeout: 1800000
+  budget: 5.0
 - id: merge
   depends_on:
   - implement-a
@@ -58,6 +62,7 @@ nodes:
   trigger_rule: one_success
   context: fresh
   timeout: 1800000
+  budget: 5.0
 - id: validate
   depends_on:
   - merge
@@ -65,3 +70,4 @@ nodes:
   image: sdlc-worker:base
   context: fresh
   timeout: 300000
+  budget: 1.0

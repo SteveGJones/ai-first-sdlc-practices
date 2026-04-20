@@ -15,31 +15,37 @@ nodes:
   context: fresh
   effort: high
   timeout: 600000
+  budget: 2.0
 - id: architecture-review
   command: sdlc-architecture-review
   image: sdlc-worker:base
   context: fresh
   timeout: 600000
+  budget: 2.0
 - id: performance-review
   command: sdlc-performance-review
   image: sdlc-worker:base
   context: fresh
   timeout: 600000
+  budget: 2.0
 - id: code-quality-review
   command: sdlc-code-quality-review
   image: sdlc-worker:base
   context: fresh
   timeout: 600000
+  budget: 2.0
 - id: test-coverage-review
   command: sdlc-test-coverage-review
   image: sdlc-worker:base
   context: fresh
   timeout: 600000
+  budget: 2.0
 - id: validate
   command: sdlc-validate
   image: sdlc-worker:base
   context: fresh
   timeout: 300000
+  budget: 1.0
 - id: synthesise
   command: sdlc-synthesise-reviews
   image: sdlc-worker:base
@@ -53,3 +59,4 @@ nodes:
   trigger_rule: one_success
   context: fresh
   timeout: 600000
+  budget: 3.0

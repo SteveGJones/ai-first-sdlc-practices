@@ -42,6 +42,7 @@ nodes:
   context: fresh
   timeout: 1800000
   model: claude-opus-4-6[1m]
+  budget: 5.0
 - id: approve-plan
   depends_on:
   - plan
@@ -58,6 +59,7 @@ nodes:
       '
     timeout: 86400
   timeout: 1800000
+  budget: 5.0
 - id: implement
   depends_on:
   - approve-plan
@@ -70,6 +72,7 @@ nodes:
     until: ALL_TASKS_COMPLETE
     max_iterations: 15
     fresh_context: true
+  budget: 5.0
 - id: validate
   depends_on:
   - implement
@@ -77,6 +80,7 @@ nodes:
   image: sdlc-worker:base
   context: fresh
   timeout: 300000
+  budget: 1.0
 - id: security-review
   depends_on:
   - validate
@@ -84,6 +88,7 @@ nodes:
   image: sdlc-worker:base
   context: fresh
   timeout: 600000
+  budget: 2.0
 - id: architecture-review
   depends_on:
   - validate
@@ -91,6 +96,7 @@ nodes:
   image: sdlc-worker:base
   context: fresh
   timeout: 600000
+  budget: 2.0
 - id: code-quality-review
   depends_on:
   - validate
@@ -98,6 +104,7 @@ nodes:
   image: sdlc-worker:base
   context: fresh
   timeout: 600000
+  budget: 2.0
 - id: synthesise
   command: sdlc-synthesise-reviews
   image: sdlc-worker:base
@@ -108,6 +115,7 @@ nodes:
   trigger_rule: one_success
   context: fresh
   timeout: 600000
+  budget: 3.0
 - id: approve-review
   depends_on:
   - synthesise
@@ -124,6 +132,7 @@ nodes:
       '
     timeout: 86400
   timeout: 300000
+  budget: 1.0
 - id: create-pr
   depends_on:
   - approve-review
@@ -155,3 +164,4 @@ nodes:
     '
   context: fresh
   timeout: 300000
+  budget: 1.0
