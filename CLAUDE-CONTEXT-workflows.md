@@ -534,6 +534,23 @@ The "observability" follow-up PR should bundle at least items 1 + 2 (Prometheus 
 > - OTLP exporter (start with Prometheus; add OTLP if users ask)
 > - Alert rule packs (ship dashboard only; let teams write their own alerts)
 
+## Archon Coupling Points
+
+The plugin depends on specific Archon behaviours.  This table is the
+canonical reference for what we rely on, what breaks if it changes, and
+the current mitigation.  Reviewed and verified against Archon v0.3.6
+(SHA `6be5c61`, pinned in `Dockerfile.base`).
+
+| Coupling Point | Risk | What Breaks | Mitigation |
+|---|---|---|---|
+| `bash:` node type in workflow YAML | GREEN | Archon renames/drops `bash:` → preprocessor output rejected. Failure is immediate and loud. | `bash:` is a documented first-class node type. Low risk. |
+| SQLite schema (`remote_agent_workflow_runs`, `remote_agent_workflow_events`) | AMBER | Column rename/drop → `workflows-status` returns empty or raises. | `PRAGMA table_info` schema probe on startup emits a diagnostic warning instead of a silent empty result. 3 integration tests lock the expected columns. |
+| REST API shape (`/api/workflows/runs`) | AMBER | Wrapper shape change → detail rows blank. Falls back to SQLite. | Discriminating assertion on the REST wrapper; SQLite fallback is the primary path for CLI-launched runs. |
+| Archon binary PATH (`~/.bun/bin/archon`) | GREEN | Install location changes → "not installed" error. | Skills distinguish "not installed" from "installed but not on PATH" and give the user a fix. |
+
+When Archon is upgraded, re-run `tests/test_workflows_status_query_sqlite_integration.py`
+to catch schema drift before it reaches users.
+
 ## Further Reading
 
 - **Quickstart** — `plugins/sdlc-workflows/docs/quickstart.md` — first-run flow for a developer getting containers going end-to-end.
