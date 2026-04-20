@@ -135,5 +135,5 @@ Then configure your team: `/sdlc-core:setup-team`
 | `/sdlc-workflows:author-workflow` | Interactive workflow author — generates workflow YAML + command briefs |
 | `/sdlc-workflows:workflows-run` | Execute a named SDLC workflow via Archon |
 | `/sdlc-workflows:workflows-status` | Check running/recent workflow status |
-| `/sdlc-workflows:manage-teams` | Guided coaching for team lifecycle (create, update, delete, review, plan-task) |
+| `/sdlc-workflows:manage-teams` | Guided coaching for team lifecycle (create, update, delete, review) |
 | `/sdlc-workflows:teams-status` | Fleet visibility — team roster, staleness, workflow usage, coaching signals |

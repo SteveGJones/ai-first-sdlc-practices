@@ -1,21 +1,105 @@
 ---
 name: author-workflow
-description: Create a new containerised workflow — generates workflow YAML, command prompts, and validates team references.
+description: Pick an existing workflow for a task or author a new one — recommends workflow + team formation, or generates a fresh workflow YAML with command prompts and team validation.
 disable-model-invocation: false
-argument-hint: "[workflow description]"
+argument-hint: "--for-task \"<description>\" | --new [description]"
 ---
 
 # Author Workflow
 
-Create a new containerised team workflow. This skill generates the workflow YAML, command prompt files, and validates everything against existing teams.
+This skill owns workflow + team-formation decisions for a task. Use it
+both when the user has a concrete task ("add OAuth2 auth") and needs a
+recommendation, and when they want to build a brand-new workflow.
+
+## Modes (pass exactly one flag)
+
+Argument autocomplete does not show flag variants, so the mode menu is
+always in the body — pick one before proceeding.
+
+- `--for-task "<description>"` — **start here when the user describes
+  a task, not a pipeline.** Recommend which existing workflow fits and
+  which teams should be on which nodes; fall back to `--new` only if
+  nothing fits. No files written unless you actually author a workflow.
+- `--new [description]` — **start here when the user wants a pipeline
+  that does not yet exist.** Guided authoring: DAG design, workflow
+  YAML, command prompts, validation, commit.
+
+If invoked with no flag and no clear signal, ask the user which mode
+fits. Defaulting silently to `--new` has the user author a workflow
+when an existing one would have done the job.
 
 ## Context
 
-Load `CLAUDE-CONTEXT-workflows.md` before proceeding — it contains the workflow YAML schema, team manifest schema, command prompt format, and all validation rules.
+Load `CLAUDE-CONTEXT-workflows.md` before either mode proceeds — it
+contains the workflow YAML schema, team manifest schema, command
+prompt format, and all validation rules.
 
-## Steps
+## Mode: `--for-task "<description>"`
 
-### 0. Load the schema reference
+### Step 1: Analyse the task
+
+Read the task description. List current teams and workflows:
+
+```bash
+ls .archon/teams/*.yaml 2>/dev/null
+ls .archon/workflows/*.yaml 2>/dev/null
+```
+
+For each existing workflow, extract its purpose (the `description:`
+field) and its node list (the `nodes:` array). For each team, extract
+its agent roster.
+
+### Step 2: Recommend a formation
+
+Recommend a workflow + team-to-node mapping. Worked example:
+
+```
+Task: "Add OAuth2 authentication to the API"
+
+Recommended formation:
+
+  Workflow: sdlc-feature-development
+
+  Node          Team                     Notes
+  ──────────── ──────────────────────── ────────────────────
+  plan          general-purpose          architecture + planning
+  implement     dev-team-python          primary dev team
+  validate      dev-team-python          validation pipeline
+  security      security-review-team     auth = security-sensitive
+  architecture  general-purpose          architecture review
+  quality       general-purpose          code quality review
+  synthesise    general-purpose          unified summary
+
+  This task involves authentication, so I've included the
+  security-review-team on the security review node.
+
+  (a) Accept and run this now
+  (b) Modify — change team assignments
+  (c) Show alternative workflow templates
+  (d) No existing workflow fits — switch to --new mode
+  (e) Skip — I'll assign teams myself
+```
+
+### Step 3: Offer to run
+
+If the user picks (a), hand off directly:
+
+```
+/sdlc-workflows:workflows-run <workflow-name>
+```
+
+No file is written — this recommendation flow exists to route the user
+to the right existing workflow, not to persist task plans. The git
+commit of the run itself (via `workflows-run`) captures the record.
+
+If (b), loop back to step 2 with the adjusted mapping. If (c), list the
+available workflows and restart step 2 against the chosen one. If (d),
+switch to `--new` mode below with the task description carried through.
+If (e), end the skill.
+
+## Mode: `--new [description]`
+
+### Step 0. Load the schema reference
 
 Do not rely on memory. Explicitly read the canonical schema reference before
 drafting any YAML:

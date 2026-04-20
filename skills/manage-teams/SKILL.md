@@ -1,8 +1,8 @@
 ---
 name: manage-teams
-description: Guided coaching for delegation team lifecycle — create, update, delete, review, and plan task formations. The primary interface for team management.
+description: Guided coaching for delegation team lifecycle — create, update, delete, or review the workforce. The primary interface for team management.
 disable-model-invocation: false
-argument-hint: "--create | --update <team> | --delete <team> | --review | --plan-task <description>"
+argument-hint: "--create | --update <team> | --delete <team> | --review"
 ---
 
 # Manage Delegation Teams
@@ -10,13 +10,21 @@ argument-hint: "--create | --update <team> | --delete <team> | --review | --plan
 Guided Q&A coaching for team lifecycle management. Follows the same
 interactive pattern as `/sdlc-core:setup-team`.
 
-## Arguments
+## Modes (pass exactly one flag)
 
-- `--create` — create a new team with guided coaching
-- `--update <team>` — update an existing team
+This skill has four modes. Argument autocomplete does not show flag
+variants, so the mode menu is always in the body — pick one before
+proceeding.
+
+- `--create` — create a new team with guided coaching (default choice
+  when the user says "I need a team")
+- `--update <team>` — update an existing team's roster or description
 - `--delete <team>` — delete a team (removes manifest + image)
-- `--review` — review the entire delegation workforce with coaching signals
-- `--plan-task "<description>"` — recommend a workflow + team formation for a task
+- `--review` — audit the entire delegation workforce with coaching signals
+
+For task-to-workflow recommendation ("I have a task, which workflow and
+team formation should I use?") use `/sdlc-workflows:author-workflow
+--for-task "<description>"` — that skill owns workflow+formation planning.
 
 ## Lifecycle Model
 
@@ -289,83 +297,10 @@ Delegation workforce review:
     (d) Skip for now
 ```
 
-## Mode: `--plan-task "<description>"`
+<!-- --plan-task mode removed on 2026-04-19 v1 scope review. The
+recommendation flow (analyse task, recommend workflow + team formation,
+offer to run) now lives in /sdlc-workflows:author-workflow --for-task,
+where workflow+formation planning already belongs. The previous mode
+also wrote a .archon/tasks/<slug>.yaml file that had no consumer. See
+reviews/2026-04-19-v1-scope-critical-goal.md §4.4. -->
 
-### Step 1: Analyse the task
-
-Read the task description and the current roster (all manifests in `.archon/teams/`).
-
-### Step 2: Recommend a formation
-
-Recommend a workflow template + which teams map to which nodes:
-
-```
-Task: "Add OAuth2 authentication to the API"
-
-Recommended formation:
-
-  Workflow: sdlc-feature-development
-
-  Node          Team                     Notes
-  ──────────── ──────────────────────── ────────────────────
-  plan          general-purpose          architecture + planning
-  implement     dev-team-python          primary dev team
-  validate      dev-team-python          validation pipeline
-  security      security-review-team     auth = security-sensitive
-  architecture  general-purpose          architecture review
-  quality       general-purpose          code quality review
-  synthesise    general-purpose          unified summary
-
-  This task involves authentication, so I've included the
-  security-review-team for the security review node.
-
-  (a) Accept this formation
-  (b) Modify — change team assignments
-  (c) Show alternative workflow templates
-  (d) Skip — I'll assign teams myself
-```
-
-### Step 3: Record the task plan
-
-If accepted, write to `.archon/tasks/<slug>.yaml`:
-
-```yaml
-task: add-oauth2-authentication
-created: 2026-04-14T10:00:00Z
-workflow: sdlc-feature-development
-formation:
-  - node: plan
-    team: general-purpose
-  - node: implement
-    team: dev-team-python
-  - node: validate
-    team: dev-team-python
-  - node: security-review
-    team: security-review-team
-  - node: architecture-review
-    team: general-purpose
-  - node: code-quality-review
-    team: general-purpose
-  - node: synthesise
-    team: general-purpose
-```
-
-```bash
-mkdir -p .archon/tasks
-```
-
-### Step 4: Offer to run
-
-```
-Task plan saved: .archon/tasks/add-oauth2-authentication.yaml
-
-Run this workflow now?
-  (a) Yes — /sdlc-workflows:workflows-run sdlc-feature-development
-  (b) Not yet
-  (c) None of the existing workflows fit — author a new one with
-      /sdlc-workflows:author-workflow
-```
-
-If the user chooses (c), hand off to `/sdlc-workflows:author-workflow` with
-the task description as the argument. That skill will generate the workflow
-YAML and command prompts and validate team references.
