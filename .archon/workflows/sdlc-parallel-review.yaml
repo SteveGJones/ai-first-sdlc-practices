@@ -1,74 +1,55 @@
-# Per-node team image selection (Phase 2, EPIC #96):
-# Each node's 'image' field specifies which team Docker image to use.
-# Set to your team image name (e.g., sdlc-worker:security-review-team)
-# or leave as sdlc-worker:base for the default toolchain.
-# Image nodes are preprocessed to bash `docker run` nodes before Archon
-# sees the workflow; no Archon schema patch is required.
-#
-# Tip: assign each reviewer its own team image for enforcement:
-#   image: sdlc-worker:security-review-team
-#   image: sdlc-worker:architecture-review-team
-#   etc.
-
 name: sdlc-parallel-review
-description: |
-  Fan-out parallel review across 5 specialist agents, then synthesise.
-  Use when: PR ready for comprehensive review before merge.
-  Input: A branch with changes to review (current worktree branch vs main).
-  Output: Unified review summary with severity-ranked findings.
-
-  Workflow:
-  1. Five specialist reviewers run in parallel (security, architecture,
-     performance, code quality, test coverage)
-  2. Validation runs as a deterministic check
-  3. A synthesiser merges all findings into a unified review
-
-  Each reviewer operates in a fresh context with SDLC plugins installed,
-  using the appropriate specialist agent.
-
+description: "Fan-out parallel review across 5 specialist agents, then synthesise.\n\
+  Use when: PR ready for comprehensive review before merge.\nInput: A branch with\
+  \ changes to review (current worktree branch vs main).\nOutput: Unified review summary\
+  \ with severity-ranked findings.\n\nWorkflow:\n1. Five specialist reviewers run\
+  \ in parallel (security, architecture,\n   performance, code quality, test coverage)\n\
+  2. Validation runs as a deterministic check\n3. A synthesiser merges all findings\
+  \ into a unified review\n\nEach reviewer operates in a fresh context with SDLC plugins\
+  \ installed,\nusing the appropriate specialist agent.\n"
 provider: claude
-
 nodes:
-  - id: security-review
-    command: sdlc-security-review
-    image: sdlc-worker:base
-    context: fresh
-    effort: high
-
-  - id: architecture-review
-    command: sdlc-architecture-review
-    image: sdlc-worker:base
-    context: fresh
-
-  - id: performance-review
-    command: sdlc-performance-review
-    image: sdlc-worker:base
-    context: fresh
-
-  - id: code-quality-review
-    command: sdlc-code-quality-review
-    image: sdlc-worker:base
-    context: fresh
-
-  - id: test-coverage-review
-    command: sdlc-test-coverage-review
-    image: sdlc-worker:base
-    context: fresh
-
-  - id: validate
-    command: sdlc-validate
-    image: sdlc-worker:base
-    context: fresh
-
-  - id: synthesise
-    command: sdlc-synthesise-reviews
-    image: sdlc-worker:base
-    depends_on:
-      - security-review
-      - architecture-review
-      - performance-review
-      - code-quality-review
-      - test-coverage-review
-      - validate
-    trigger_rule: one_success
-    context: fresh
+- id: security-review
+  command: sdlc-security-review
+  image: sdlc-worker:base
+  context: fresh
+  effort: high
+  timeout: 600000
+- id: architecture-review
+  command: sdlc-architecture-review
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 600000
+- id: performance-review
+  command: sdlc-performance-review
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 600000
+- id: code-quality-review
+  command: sdlc-code-quality-review
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 600000
+- id: test-coverage-review
+  command: sdlc-test-coverage-review
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 600000
+- id: validate
+  command: sdlc-validate
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 300000
+- id: synthesise
+  command: sdlc-synthesise-reviews
+  image: sdlc-worker:base
+  depends_on:
+  - security-review
+  - architecture-review
+  - performance-review
+  - code-quality-review
+  - test-coverage-review
+  - validate
+  trigger_rule: one_success
+  context: fresh
+  timeout: 600000
