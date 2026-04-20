@@ -77,6 +77,45 @@ print('NEEDS_PREPROCESSING' if has_images else 'NATIVE')
 
 **If NEEDS_PREPROCESSING:**
 
+0. Pre-flight image check. Extract every distinct `image:` value from
+   the workflow and verify each exists locally via `docker image
+   inspect`. Fail fast with a build hint before we do the expensive
+   rsync + seed-commit setup — otherwise the user waits, then sees a
+   mid-run docker error from a single node.
+
+```bash
+MISSING_IMAGES=$(python3 -c "
+import yaml
+from pathlib import Path
+wf = yaml.safe_load(Path('.archon/workflows/<workflow-name>.yaml').read_text())
+images = sorted({n['image'] for n in wf.get('nodes', []) if 'image' in n})
+for img in images:
+    print(img)
+" | while read -r img; do
+    [ -z "$img" ] && continue
+    if ! docker image inspect "$img" >/dev/null 2>&1; then
+        echo "$img"
+    fi
+done)
+
+if [ -n "$MISSING_IMAGES" ]; then
+    echo "Workflow references team images that are not built:"
+    echo "$MISSING_IMAGES" | sed 's/^/  - /'
+    echo ""
+    echo "Build the missing images before running:"
+    echo "  • For a team image (sdlc-worker:<team-name>):"
+    echo "        /sdlc-workflows:deploy-team <team-name>"
+    echo "  • For sdlc-worker:base or sdlc-worker:full:"
+    echo "        /sdlc-workflows:workflows-setup --with-docker"
+    exit 1
+fi
+```
+
+This check is deliberate: we do NOT silently auto-build the missing
+image. Building a team image requires a manifest the user authored.
+Building `base`/`full` is the setup skill's job. Either way, the user
+makes the call, not us.
+
 1. Resolve credentials:
 ```bash
 CRED_INFO=$(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/resolve_credentials.py --project-dir . --json)
