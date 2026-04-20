@@ -163,7 +163,7 @@ trap cleanup_workspace_and_credentials EXIT INT TERM
 # Prompt-injection inside the container could otherwise read any of
 # these and exfiltrate via tool calls. Keep this list STRICT.
 rsync -a \
-    --exclude='.git/' \
+    --exclude='.git' \
     --exclude='.worktrees/' \
     --exclude='node_modules/' \
     --exclude='.venv/' \
