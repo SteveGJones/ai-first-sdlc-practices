@@ -162,6 +162,12 @@ rsync -a \
            -c user.email=sdlc-workflows@local \
            -c user.name=sdlc-workflows \
            commit -q -m "workflow-seed" >/dev/null)
+
+# Capture the seed SHA as our "before" reference. Step 5's diff and
+# step 6's cherry-pick compare against this — NOT against any
+# `git -C .` lookup, which inside a `cd "$WORKSPACE"` subshell would
+# collapse to the workspace HEAD itself and report zero commits.
+SEED_SHA=$(cd "$WORKSPACE" && git rev-parse HEAD)
 ```
 
 3. Preprocess the workflow INTO the workspace:
@@ -216,12 +222,12 @@ echo ""
 echo "=== Workflow artefacts ==="
 echo "Workspace: $WORKSPACE"
 echo ""
-echo "--- New commits in workspace (vs your checkout) ---"
-(cd "$WORKSPACE" && git log --oneline "$(git -C . rev-parse HEAD)..HEAD" 2>/dev/null) \
-    || echo "(no commits beyond your current HEAD)"
+echo "--- New commits in workspace (vs seed) ---"
+(cd "$WORKSPACE" && git log --oneline "$SEED_SHA..HEAD") \
+    || echo "(no commits beyond the seed)"
 echo ""
 echo "--- New or modified files ---"
-(cd "$WORKSPACE" && git diff --name-status "$(git -C . rev-parse HEAD)" HEAD 2>/dev/null) \
+(cd "$WORKSPACE" && git diff --stat "$SEED_SHA" HEAD) \
     || echo "(no diff available)"
 echo ""
 ```
@@ -251,7 +257,7 @@ explicitly:
 
 ```bash
 COMMITS=$(cd "$WORKSPACE" && git log --reverse --format=%H \
-    "$(git -C . rev-parse HEAD)..HEAD" 2>/dev/null)
+    "$SEED_SHA..HEAD" 2>/dev/null)
 for sha in $COMMITS; do
     # Apply the commit's diff to our index + working tree.
     if ! (cd "$WORKSPACE" && git format-patch -1 --stdout "$sha") \
