@@ -928,6 +928,33 @@ class TestParallelGitWriteGuardrail:
         assert ids == {"fork-a"}
 
 
+class TestBudgetCap:
+    """Tier 1 spiral detection: budget: field → CLAUDE_MAX_BUDGET env var."""
+
+    _CRED_MOUNT = "/tmp/c.json:/home/sdlc/.claude-creds/.credentials.json:ro"
+
+    def _transform(self, node: dict) -> dict:
+        return preprocess_workflow.transform_node(
+            node, workspace="/ws", cred_mount=self._CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+
+    def test_budget_passed_as_env_var(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:base", "prompt": "hi", "budget": 2.0}
+        result = self._transform(node)
+        assert "CLAUDE_MAX_BUDGET=2.0" in result["bash"]
+
+    def test_no_budget_means_no_env_var(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:base", "prompt": "hi"}
+        result = self._transform(node)
+        assert "CLAUDE_MAX_BUDGET" not in result["bash"]
+
+    def test_budget_integer(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:base", "prompt": "hi", "budget": 5}
+        result = self._transform(node)
+        assert "CLAUDE_MAX_BUDGET=5" in result["bash"]
+
+
 class TestImageTagAllowlist:
     """U-1: reject image names that don't match the sdlc-worker: prefix.
 

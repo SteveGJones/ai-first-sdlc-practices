@@ -27,7 +27,7 @@ import yaml
 logger = logging.getLogger(__name__)
 
 _PRESERVED_FIELDS = {
-    "id", "depends_on", "trigger_rule", "when", "timeout", "retry",
+    "id", "depends_on", "trigger_rule", "when", "timeout", "retry", "budget",
 }
 
 # Patterns that indicate a command brief writes to the shared workspace
@@ -257,6 +257,7 @@ def _build_docker_run(
     prompt_source: str,
     timeout: int | None = None,
     model: str | None = None,
+    budget: float | int | None = None,
 ) -> str:
     """Build a ``docker run`` command string.
 
@@ -294,6 +295,14 @@ def _build_docker_run(
     model_env = (
         f" -e {shlex.quote(f'CLAUDE_MODEL={model}')}" if model else ""
     )
+    # Tier 1 spiral detection: cost-based cap.  If the model loops and
+    # burns tokens without progress, the budget kills it before the time
+    # cap fires.  Passed as env var; entrypoint forwards to --max-budget-usd.
+    budget_env = (
+        f" -e {shlex.quote(f'CLAUDE_MAX_BUDGET={budget}')}"
+        if budget is not None
+        else ""
+    )
     workspace_mount = shlex.quote(f"{workspace}:/workspace")
     cred_mount_q = shlex.quote(cred_mount)
     image_q = shlex.quote(image)
@@ -309,6 +318,7 @@ def _build_docker_run(
             ' -e "CLAUDE_PROMPT=$PROMPT"'
             f"{timeout_env}"
             f"{model_env}"
+            f"{budget_env}"
             f" {image_q}"
         ),
     ]
@@ -415,6 +425,7 @@ def _transform_multistage_loop(
             prompt_source=stage_prompt_source,
             timeout=stage.get("timeout") or node.get("timeout"),
             model=stage.get("model") or node.get("model"),
+            budget=stage.get("budget") or node.get("budget"),
         )
         var_name = f"STAGE_{idx + 1}_OUT"
         stage_label = shlex.quote(f"--- stage {stage_id} ({stage_image}) ---")
@@ -489,6 +500,7 @@ def transform_node(
             prompt_source=prompt_source,
             timeout=node.get("timeout"),
             model=node.get("model"),
+            budget=node.get("budget"),
         )
 
         result["bash"] = (
@@ -512,6 +524,7 @@ def transform_node(
         prompt_source=prompt_source,
         timeout=node.get("timeout"),
         model=node.get("model"),
+        budget=node.get("budget"),
     )
     result["bash"] = docker_cmd
     return result
