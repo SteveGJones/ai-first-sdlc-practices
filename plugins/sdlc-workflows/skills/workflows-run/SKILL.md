@@ -211,6 +211,38 @@ Notes:
   do not appear in the SSE stream. Use `workflows-status` (REST or
   SQLite) for CLI runs.
 
+**While it runs — tell the user where to watch:**
+
+Archon ships the monitoring surfaces; our job is to name them.
+Emit this block to the user as soon as `archon workflow run` is
+launched so they know how to observe without asking:
+
+```
+Workflow launched. Monitoring surfaces (Archon-native):
+
+  • Live per-node lines in this terminal
+        "[node] Started" / "[node] Completed (duration)" on stderr.
+
+  • Archon web UI
+        archon serve          # in another terminal
+        open http://localhost:3090
+      Full dashboard with every run, every node, every event.
+      (First run downloads the UI; subsequent runs start instantly.)
+
+  • CLI snapshot (no server needed)
+        archon workflow status            # what's live right now
+        archon isolation list             # per-run worktrees
+        /sdlc-workflows:workflows-status  # REST + SQLite, works either way
+
+  • Container-level detail
+        docker ps --filter name=sdlc-worker
+        docker logs -f <container-id>
+```
+
+If the run fails part-way, Archon supports resumption:
+`archon workflow run <name> --resume` picks up the most recent
+failed run from where it stopped.
+
 5. Report artefacts — BEFORE cleanup:
 
 The containers commit to the temp workspace's git. If we cleaned

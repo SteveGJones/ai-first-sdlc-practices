@@ -75,12 +75,17 @@ a1b2c3d4   parallel-review-pipeline       running      2026-04-19 20:30:02  2
 
 Report to the user:
 - The source row (REST vs SQLite) — if SQLite, hint that starting
-  `archon serve` in another terminal would give live event data.
+  `archon serve` in another terminal gives live event data **and
+  opens the Archon web UI at http://localhost:3090**, which
+  visualises every run, every node, every event.
 - The table as-is, or summarise the top 5 with bullet points if the
   user asked for a narrative.
 - For `--run-id`, the detail block shows per-node `node_started` /
   `node_completed` / `node_failed` events in order — highlight any
   failures.
+- If any listed run is `failed`, remind the user that
+  `archon workflow run <name> --resume` picks up the most recent
+  failed run from where it stopped.
 
 ### 3. Companion skills
 

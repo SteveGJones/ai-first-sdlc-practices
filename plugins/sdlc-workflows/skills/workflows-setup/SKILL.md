@@ -291,6 +291,11 @@ Next steps:
        edit .archon/workflows/sdlc-*.yaml
   4. Re-check health anytime:
        /sdlc-workflows:workflows-setup --health-check
+  5. Watch workflows run (Archon-native monitoring):
+       archon workflow status            # live CLI snapshot
+       archon serve                       # start web UI on :3090
+       open http://localhost:3090         # full dashboard
+       /sdlc-workflows:workflows-status   # REST + SQLite, works either way
 
 For the full design, see:
   docs/superpowers/specs/2026-04-10-containerised-delegation-design.md

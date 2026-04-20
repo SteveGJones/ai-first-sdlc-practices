@@ -161,6 +161,56 @@ python3 plugins/sdlc-workflows/scripts/preprocess_workflow.py \
 archon workflow run my-pipeline --no-worktree
 ```
 
+## Step 4.5: Watch It Run (Archon-native monitoring)
+
+Archon ships four monitoring surfaces — use whichever fits. None
+require anything beyond what `workflows-setup` already installed.
+
+**Live per-node output** — already in your terminal:
+
+```
+[implement] Started
+[implement] Completed (2m 14s)
+[review]    Started
+[review]    Completed (46s)
+```
+
+**Archon web UI** — the richest view:
+
+```bash
+archon serve          # in another terminal
+open http://localhost:3090
+```
+
+First run downloads the UI (Archon bundles it); subsequent `archon
+serve` calls start in seconds. The dashboard lists every run,
+per-node events, durations, status, and the raw logs.
+
+**CLI snapshot** — no server needed:
+
+```bash
+archon workflow status         # what's live right now
+archon isolation list          # per-run worktrees / environments
+/sdlc-workflows:workflows-status --recent 10
+/sdlc-workflows:workflows-status --run-id <prefix>   # full event log
+```
+
+`workflows-status` works whether `archon serve` is up (uses REST) or
+not (falls back to the SQLite state DB).
+
+**Container-level detail** — for what Claude printed inside a node:
+
+```bash
+docker ps --filter name=sdlc-worker
+docker logs -f <container-id>
+```
+
+**Recovery from a failed run:**
+
+```bash
+archon workflow run my-pipeline --resume    # pick up where it failed
+```
+
 ## Step 5: Verify Results
 
 ```bash
