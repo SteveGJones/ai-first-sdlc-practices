@@ -47,6 +47,26 @@ def test_format_table_renders_columns():
     assert "2026-04-19 12:34:56" in out
 
 
+def test_format_table_footer_hints_run_id_usage():
+    """The 8-char id in the table is usable as a unique-prefix via --run-id.
+
+    Without an explicit hint, users conclude --run-id demands the full UUID
+    and the tool looks broken. See reviews/2026-04-19-phase-f-observability-specialist.md B1.
+    """
+    runs = [
+        {
+            "id": "abc123deadbeef",
+            "workflow_name": "wf",
+            "status": "running",
+            "current_step_index": 0,
+            "started_at": "2026-04-19 12:34:56",
+        }
+    ]
+    out = wsq.format_table(runs)
+    assert "--run-id" in out
+    assert "prefix" in out.lower()
+
+
 def test_format_run_detail_includes_events():
     run = {
         "id": "r1",

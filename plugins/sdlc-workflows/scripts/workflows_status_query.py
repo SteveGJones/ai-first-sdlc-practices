@@ -224,6 +224,11 @@ def format_table(runs: list[dict]) -> str:
             f"{(r.get('started_at') or '')[:19]:<20} "
             f"{str(r.get('current_step_index') if r.get('current_step_index') is not None else ''):<5}"
         )
+    lines.append("")
+    lines.append(
+        "RUN ID above is an 8-char prefix; "
+        "--run-id accepts any unique prefix (paste more chars if ambiguous)."
+    )
     return "\n".join(lines)
 
 

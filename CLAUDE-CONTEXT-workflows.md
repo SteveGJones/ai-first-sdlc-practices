@@ -445,6 +445,16 @@ needs to survive process death between iterations, but plain
 
 ### Monitoring — what Archon provides
 
+> **SSE vs CLI — read this first.** The SSE dashboard stream
+> (`/api/stream/__dashboard__`) only observes runs launched *through*
+> `archon serve`'s HTTP API. Runs started by the CLI
+> (`archon workflow run …`, which is what `/sdlc-workflows:workflows-run`
+> invokes by default) write to `~/.archon/archon.db` but do **not**
+> appear in the SSE stream. `/sdlc-workflows:workflows-status` reads
+> both REST and SQLite, so it works for either launch path; the SSE
+> helper (`sse_stream_follow.py`) is only useful for server-launched
+> runs. This is how Archon 1.x behaves — not a bug on our side.
+
 Archon's CLI is only the surface layer. `archon serve` starts a full
 HTTP server with a REST API and Server-Sent Events streaming — this
 is the observability foundation worth building on.
