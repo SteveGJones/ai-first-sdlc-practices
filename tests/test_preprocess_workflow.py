@@ -388,11 +388,34 @@ class TestSecurityFlags:
         result = self._transform()
         assert "--read-only" not in result["bash"]
 
-    def test_timeout_env_passed(self) -> None:
+    def test_timeout_env_computed_with_save_window(self) -> None:
+        """CLAUDE_TIMEOUT = (archon_timeout_ms / 1000) - 60s save window."""
         node = dict(self._NODE)
-        node["timeout"] = 600
+        node["timeout"] = 600000  # 10 min in ms
         result = self._transform(node)
-        assert "CLAUDE_TIMEOUT=600" in result["bash"]
+        # 600000ms = 600s, minus 60s save window = 540s
+        assert "CLAUDE_TIMEOUT=540" in result["bash"]
+
+    def test_timeout_save_window_has_floor(self) -> None:
+        """CLAUDE_TIMEOUT never goes below 60s even for short Archon timeouts."""
+        node = dict(self._NODE)
+        node["timeout"] = 30000  # 30s in ms — save window would make it negative
+        result = self._transform(node)
+        assert "CLAUDE_TIMEOUT=60" in result["bash"]
+
+    def test_timeout_5min_node(self) -> None:
+        node = dict(self._NODE)
+        node["timeout"] = 300000  # 5 min
+        result = self._transform(node)
+        # 300s - 60s = 240s
+        assert "CLAUDE_TIMEOUT=240" in result["bash"]
+
+    def test_no_timeout_means_no_env_var(self) -> None:
+        """No timeout field → no CLAUDE_TIMEOUT env (entrypoint uses its default)."""
+        node = dict(self._NODE)
+        # no timeout key
+        result = self._transform(node)
+        assert "CLAUDE_TIMEOUT" not in result["bash"]
 
     def test_docker_run_has_no_new_privileges(self) -> None:
         """--security-opt no-new-privileges is always present (S-M-1)."""

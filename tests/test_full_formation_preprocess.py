@@ -47,7 +47,8 @@ def test_all_four_team_images_referenced() -> None:
 def test_timeout_override_propagates_to_implement() -> None:
     wf = _preprocessed()
     implement = next(n for n in wf["nodes"] if n["id"] == "implement")
-    assert "CLAUDE_TIMEOUT=600" in implement["bash"]
+    # 600000ms = 600s, minus 60s save window = 540s
+    assert "CLAUDE_TIMEOUT=540" in implement["bash"]
 
 
 def test_model_override_propagates_to_every_image_node() -> None:

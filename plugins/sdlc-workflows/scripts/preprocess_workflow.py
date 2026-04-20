@@ -279,11 +279,18 @@ def _build_docker_run(
     # metacharacters without breaking the generated bash (S-I-6 / CR-I-2
     # / SA-I-1).  shlex.quote leaves simple paths unwrapped and
     # single-quotes anything with metacharacters.
-    timeout_env = (
-        f" -e {shlex.quote(f'CLAUDE_TIMEOUT={timeout}')}"
-        if timeout is not None
-        else ""
-    )
+    # Tiered termination: CLAUDE_TIMEOUT (inner, seconds) must be LOWER
+    # than Archon's bash node timeout (outer, milliseconds) to create a
+    # "save window".  Claude gets SIGTERM from the inner timeout and has
+    # ~60s to write partial output before Archon kills the container.
+    # Floor: never below 60s (always give Claude time to write something).
+    _SAVE_WINDOW_SECONDS = 60
+    _FLOOR_SECONDS = 60
+    if timeout is not None:
+        inner_seconds = max(_FLOOR_SECONDS, int(timeout / 1000) - _SAVE_WINDOW_SECONDS)
+        timeout_env = f" -e {shlex.quote(f'CLAUDE_TIMEOUT={inner_seconds}')}"
+    else:
+        timeout_env = ""
     model_env = (
         f" -e {shlex.quote(f'CLAUDE_MODEL={model}')}" if model else ""
     )
