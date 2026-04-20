@@ -281,7 +281,15 @@ the user these questions and design accordingly:
 2. **Is the iteration count known up front?** If yes (e.g. "three review rounds"), unroll as distinct nodes (`review-v1`, `review-v2`, `review-v3`). If no (open-ended "until approved"), the workflow alone cannot express it — you will need an outer-loop wrapper that re-invokes `archon workflow run` until a signal is detected.
 3. **Does the cycle need different specialists each pass?** If yes, unrolled iterations or an outer loop are the only options — a single `loop:` node keeps one team running the whole cycle.
 4. **Does the user want live feedback during long nodes?** Flag the monitoring gap — `workflows-run` does not stream live output in v1. They will need a second terminal with `docker logs -f` or `tail -f` the archon log.
-5. **Is the token cost acceptable?** A 30-min node × 4 stages × 5 iterations on Opus can run to serious dollars. Warn the user before shipping the workflow.
+5. **Is the token cost acceptable?** A 30-min node × 4 stages × 5 iterations on Opus can run to serious dollars. Warn the user before shipping the workflow. Set `budget:` on each node to cap cost if the model spirals.
+6. **Tiered termination — always set both `timeout:` and `budget:`.** Three independent kill mechanisms protect against both runaway work and lost output:
+   - **Tier 1: Budget** (`budget: 2.0`) — kills if the model burns >$2 of tokens (spiral detection)
+   - **Tier 2: Inner timeout** (computed automatically: timeout_ms/1000 - 60s) — Claude gets SIGTERM, writes partial output
+   - **Tier 3: Outer timeout** (`timeout: 600000`) — hard kill if inner timeout failed
+   
+   The save window (60s between tier 2 and 3) means partial output survives.
+   Command prompts instruct agents to write findings incrementally to
+   `/workspace/reports/<node-id>/findings.md`.
 
 Full discussion of each option (per-node `loop:`, unrolled iterations,
 outer-loop wrapper) and the current monitoring surface is in

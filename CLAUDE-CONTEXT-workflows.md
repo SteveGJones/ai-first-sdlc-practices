@@ -321,6 +321,36 @@ Note: `--read-only` is NOT used. Claude Code requires a writable `~/.claude/` di
 6. Execute: if `ARCHON_WORKFLOW` is set, run Archon; if `CLAUDE_PROMPT` is set, run Claude with timeout; otherwise exit with usage.
 7. On SIGTERM/SIGINT/EXIT: clean up credential temp files, kill child processes.
 
+## Tiered Termination Model
+
+Three independent kill mechanisms prevent both runaway work and lost output:
+
+| Tier | Mechanism | Catches | YAML Field | Default |
+|---|---|---|---|---|
+| 1. **Budget** | `--max-budget-usd` via `CLAUDE_MAX_BUDGET` env | Model spiralling / burning tokens without progress | `budget: 2.0` (dollars) | No cap |
+| 2. **Inner timeout** | `timeout $CLAUDE_TIMEOUT claude ...` in entrypoint | Work exceeding expected duration — Claude gets SIGTERM, can write partial output | Computed: `(timeout_ms / 1000) - 60` | 300s |
+| 3. **Outer timeout** | Archon bash node `timeout:` (milliseconds) | Container hung, inner timeout failed | `timeout: 600000` (ms) | 120000 (2 min) |
+
+**Save window**: Tier 2 fires 60 seconds before Tier 3. Claude gets
+SIGTERM and has a window to write partial results to `/workspace/reports/`
+before Archon kills the container. The floor is 60s — Claude always gets
+at least one minute of work time even on short nodes.
+
+**Incremental output**: Command prompts instruct agents to write findings
+to `/workspace/reports/<node-id>/findings.md` after each phase, not hold
+everything until the end. If any tier fires, partial output is on disk.
+The synthesise node checks these files as a fallback when Archon
+variables are empty (reviewer timed out).
+
+**Recommended values for workflow authoring:**
+
+| Node type | `timeout:` (ms) | `budget:` ($) |
+|---|---|---|
+| Review / synthesis | 600000 (10 min) | 2.0 |
+| Validation | 300000 (5 min) | 1.0 |
+| Implementation / planning | 1800000 (30 min) | 5.0 |
+| Long-running cycles | 3600000 (1 hr) | 10.0 |
+
 ## Security Model
 
 - **Non-root**: Containers run as `sdlc` user (UID 1001).
