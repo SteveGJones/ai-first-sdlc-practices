@@ -21,7 +21,9 @@ nodes:                          # Required. List of execution nodes.
     context: fresh              # Optional. "fresh" starts with clean context. Default behaviour.
     model: <model-id>          # Optional. Override the Claude model for this node (e.g., claude-opus-4-6[1m]).
     effort: high | medium | low # Optional. Hint for token budget allocation.
-    timeout: <seconds>          # Optional. Per-node timeout in seconds. Passed as CLAUDE_TIMEOUT env var to container. Default: 300.
+    timeout: <milliseconds>      # Optional. Per-node timeout in MILLISECONDS. Default: 120000 (2 min).
+                                # Use: 600000 (10 min) for reviews, 1800000 (30 min) for implementation.
+                                # Also passed as CLAUDE_TIMEOUT (seconds) env var to container.
     loop:                       # Optional. Repeat until a signal is detected.
       until: <signal-string>    # String to grep for in output to stop the loop.
       max_iterations: <int>     # Maximum iterations before forced stop. Default: 5.
@@ -33,7 +35,7 @@ nodes:                          # Required. List of execution nodes.
           image: <docker-image> # Per-stage image (REQUIRED when stages: is used —
           command: <cmd-name>   # the node-level image: is ignored).
           prompt: <text>        # Each stage: command OR prompt (same rules as nodes).
-          timeout: <seconds>    # Optional. Falls back to the node's timeout.
+          timeout: <milliseconds> # Optional. Falls back to the node's timeout.
           model: <model-id>     # Optional. Falls back to the node's model.
         # (see the "Cycles" section below for the full pattern)
     prompt: |                   # Optional. Inline prompt instead of command file. Use command: for anything non-trivial.
@@ -42,6 +44,11 @@ nodes:                          # Required. List of execution nodes.
       - sdlc-team-security:security-architect
       - sdlc-team-common:api-architect
 ```
+
+> **Schema strictness:** Archon rejects unknown fields on nodes.
+> Adding non-standard fields (e.g. `name:`, `label:`) causes the
+> workflow to fail validation and breaks the web UI graph renderer.
+> Only use the fields listed above.
 
 > **`team_extend` status in v1:** the field is schema-validated (entries
 > must be qualified `plugin:agent` references that resolve to installed

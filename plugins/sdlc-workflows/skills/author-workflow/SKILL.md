@@ -173,7 +173,12 @@ Create `.archon/workflows/<name>.yaml` following the schema in CLAUDE-CONTEXT-wo
 - `provider: claude` always
 - Each node needs: `id`, `command`, `image`, and `depends_on` where applicable
 - Use `trigger_rule: all_success` (default) unless the user specifies otherwise
-- Add `timeout:` to long-running nodes (default 300s is fine for most)
+- **`timeout:` is in milliseconds.** Archon's default is 120000ms (2 min) —
+  too short for real work. Set explicitly on every node:
+  review/synthesis `600000` (10 min), validation `300000` (5 min),
+  implementation/planning `1800000` (30 min)
+- Do not add non-standard fields to nodes (e.g. `name:`, `label:`) —
+  Archon's schema is strict and unknown fields break the graph renderer
 
 Starter template (copy, rename, adjust):
 
@@ -272,7 +277,7 @@ Authors regularly want pipelines like `designer → developer → reviewer
 → designer …` running for hours or days. Before choosing a shape, ask
 the user these questions and design accordingly:
 
-1. **How long will each node actually take?** Real implementation or review work is often 20-60 min, not the 5-min default. Set `timeout: <seconds>` explicitly on every long node — the default 300 s cuts real work off at the knees.
+1. **How long will each node actually take?** Real implementation or review work is often 20-60 min, not the 2-min default. Set `timeout:` **in milliseconds** explicitly on every node — Archon's default is 120000ms (2 min) which kills real work. Use `600000` (10 min) for reviews, `1800000` (30 min) for implementation. Proven by dogfood: security-review on a 170-file repo took 1m44s and would have been killed at the 2-min default.
 2. **Is the iteration count known up front?** If yes (e.g. "three review rounds"), unroll as distinct nodes (`review-v1`, `review-v2`, `review-v3`). If no (open-ended "until approved"), the workflow alone cannot express it — you will need an outer-loop wrapper that re-invokes `archon workflow run` until a signal is detected.
 3. **Does the cycle need different specialists each pass?** If yes, unrolled iterations or an outer loop are the only options — a single `loop:` node keeps one team running the whole cycle.
 4. **Does the user want live feedback during long nodes?** Flag the monitoring gap — `workflows-run` does not stream live output in v1. They will need a second terminal with `docker logs -f` or `tail -f` the archon log.
