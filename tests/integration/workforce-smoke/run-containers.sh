@@ -81,10 +81,13 @@ if ls "$AGENTS_DIR"/*.md >/dev/null 2>&1; then
 fi
 
 cleanup() {
-    # Restore original state
-    rm -f "$TEAMS_DIR"/dev-team.yaml "$TEAMS_DIR"/review-team.yaml
+    # Restore original state — wipe any miniproject team yaml we copied in
+    # (the miniproject fixture ships 5 teams) plus generated build dirs.
+    for tname in dev-team review-team planner-team qa-team synth-team; do
+        rm -f "$TEAMS_DIR/$tname.yaml"
+        rm -rf "$TEAMS_DIR/.generated/$tname"*
+    done
     rm -f "$AGENTS_DIR"/project-context.md
-    rm -rf "$TEAMS_DIR/.generated/dev-team"* "$TEAMS_DIR/.generated/review-team"*
     if ls "$BACKUP_DIR/teams/"*.yaml >/dev/null 2>&1; then
         cp "$BACKUP_DIR/teams/"*.yaml "$TEAMS_DIR/" 2>/dev/null || true
     fi
@@ -96,9 +99,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Copy miniproject manifests and local agents into the repo's .archon/
-cp "$MINI/.archon/teams/dev-team.yaml" "$TEAMS_DIR/"
-cp "$MINI/.archon/teams/review-team.yaml" "$TEAMS_DIR/"
+# Copy all miniproject manifests and local agents into the repo's .archon/
+# so workflow-team validation (check 16) can resolve every image: reference.
+# The miniproject carries 5 teams (dev, review, planner, qa, synth) because
+# full-formation-pipeline.yaml references all of them; a partial copy makes
+# the host-side validator flag the unresolved teams as invalid.
+cp "$MINI/.archon/teams/"*.yaml "$TEAMS_DIR/"
 cp "$MINI/.archon/agents/project-context.md" "$AGENTS_DIR/"
 
 echo "=== BUILD PHASE ==="
@@ -271,17 +277,19 @@ import sys, json
 try:
     d = json.load(sys.stdin)
     teams = {t['name'] for t in d['teams']}
-    assert d['team_count'] == 2, f'expected 2 teams, got {d[\"team_count\"]}'
+    # Miniproject fixture ships 5 teams + 3 workflows; the fleet report
+    # must see all of them so full-formation-pipeline can resolve.
+    assert d['team_count'] == 5, f'expected 5 teams, got {d[\"team_count\"]}'
     assert 'dev-team' in teams, 'dev-team missing'
     assert 'review-team' in teams, 'review-team missing'
-    assert d['workflow_count'] == 2, f'expected 2 workflows, got {d[\"workflow_count\"]}'
+    assert d['workflow_count'] == 3, f'expected 3 workflows, got {d[\"workflow_count\"]}'
     print('OK')
 except Exception as e:
     print(f'FAIL: {e}')
 " 2>/dev/null)
 
 if [ "$FLEET_CHECK" = "OK" ]; then
-    pass "fleet report: 2 teams, 2 workflows from miniproject"
+    pass "fleet report: 5 teams, 3 workflows from miniproject"
 else
     fail "fleet report" "$FLEET_CHECK"
 fi
@@ -471,8 +479,12 @@ echo ""
 # ---------------------------------------------------------------------------
 echo "[17/$TOTAL] SIGTERM exit time (<5s)"
 SIGTERM_NAME="sdlc-sigterm-probe-$$"
+# Use bash not /bin/sh — /bin/sh is dash in this image, and dash's
+# `wait` builtin is not interrupted by signals, so the trap never fires.
+# The real entrypoint.sh is a bash script, so bash here mirrors real
+# behaviour.
 docker run -d --rm --name "$SIGTERM_NAME" \
-    --entrypoint /bin/sh \
+    --entrypoint /usr/bin/bash \
     sdlc-worker:dev-team \
     -c 'cleanup() { exit 0; }; trap cleanup SIGTERM SIGINT EXIT; sleep 60 & wait' \
     >/dev/null 2>&1
@@ -480,7 +492,9 @@ docker run -d --rm --name "$SIGTERM_NAME" \
 sleep 1
 START_TS=$(date +%s)
 docker kill --signal=TERM "$SIGTERM_NAME" >/dev/null 2>&1 || true
-# Wait up to 5s for exit.
+# Wait up to 5s for exit (cleanup() is trivial — rm -f + group kill —
+# so should complete well under 1s; a 5s budget leaves headroom without
+# hiding a regression in the 5–10s band before Docker's SIGKILL).
 WAIT_RESULT="timeout"
 for _ in 1 2 3 4 5; do
     if ! docker ps --format '{{.Names}}' | grep -q "^${SIGTERM_NAME}$"; then
@@ -507,7 +521,7 @@ fi
 # ---------------------------------------------------------------------------
 echo "[18/$TOTAL] Credential-wipe trap present in entrypoint"
 TRAP_CHECK=$(docker run --rm --entrypoint /bin/sh sdlc-worker:dev-team \
-    -c 'grep -c "rm -f /home/sdlc/.claude/.credentials.json" /usr/local/bin/entrypoint.sh 2>/dev/null && grep -c "^trap cleanup" /usr/local/bin/entrypoint.sh 2>/dev/null' 2>&1 | tr '\n' ' ')
+    -c 'grep -c "rm -f /home/sdlc/.claude/.credentials.json" /opt/entrypoint.sh 2>/dev/null && grep -c "^trap cleanup" /opt/entrypoint.sh 2>/dev/null' 2>&1 | tr '\n' ' ')
 # Two counts expected (rm line + trap line), each >= 1.
 if echo "$TRAP_CHECK" | awk '{exit !($1 >= 1 && $2 >= 1)}'; then
     pass "entrypoint contains credential-wipe rm + trap cleanup"
@@ -565,14 +579,19 @@ echo "[20/$TOTAL] Concurrent team instances"
 CONC_DIR_A=$(mktemp -d "${TMPDIR:-/tmp}/sdlc-conc-a.XXXXXX")
 CONC_DIR_B=$(mktemp -d "${TMPDIR:-/tmp}/sdlc-conc-b.XXXXXX")
 
+# Inline the sleep into the python script itself — bash-level concatenation
+# via `"$CONC_SCRIPT; import time; ..."` produced invalid python because
+# CONC_SCRIPT ends with a newline so the trailing `;` became a line-start
+# token (SyntaxError).
 CONC_SCRIPT='
-import sys, json
+import sys, json, time
 sys.path.insert(0, "/opt/sdlc-scripts")
 from team_inventory import discover_all
 from pathlib import Path
 r = discover_all(Path("/home/sdlc/.claude/plugins/installed_plugins.json"))
 agents = sorted({a["name"] for pd in r.values() for a in pd.get("agents", [])})
-print(json.dumps({"count": len(agents), "agents": agents}))
+print(json.dumps({"count": len(agents), "agents": agents}), flush=True)
+time.sleep(10)
 '
 CONC_NAME_A="sdlc-conc-a-$$"
 CONC_NAME_B="sdlc-conc-b-$$"
@@ -581,13 +600,13 @@ docker run -d --rm --name "$CONC_NAME_A" \
     -v "$SCRIPTS_DIR:/opt/sdlc-scripts:ro" \
     -v "$CONC_DIR_A:/workspace" \
     sdlc-worker:dev-team \
-    -c "$CONC_SCRIPT; import time; time.sleep(10)" >/dev/null 2>&1
+    -c "$CONC_SCRIPT" >/dev/null 2>&1
 docker run -d --rm --name "$CONC_NAME_B" \
     --entrypoint python3 \
     -v "$SCRIPTS_DIR:/opt/sdlc-scripts:ro" \
     -v "$CONC_DIR_B:/workspace" \
     sdlc-worker:dev-team \
-    -c "$CONC_SCRIPT; import time; time.sleep(10)" >/dev/null 2>&1
+    -c "$CONC_SCRIPT" >/dev/null 2>&1
 # Wait for both to produce output.
 sleep 3
 LOGS_A=$(docker logs "$CONC_NAME_A" 2>&1 | tail -1)
