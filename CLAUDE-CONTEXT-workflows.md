@@ -351,6 +351,29 @@ variables are empty (reviewer timed out).
 | Implementation / planning | 1800000 (30 min) | 5.0 |
 | Long-running cycles | 3600000 (1 hr) | 10.0 |
 
+**Empirical data (dogfood on this repo, 170+ files):**
+
+| Node | Normal run ($2 budget) | $0.01 budget (spiral test) |
+|---|---|---|
+| security-review | 2m8s | 15.5s (killed by budget) |
+| architecture-review | 2m10s | 15.3s (killed by budget) |
+| synthesise | 6m8s | — (never reached) |
+
+The budget cap fires after one API round-trip (~15s) when set absurdly low.
+At $2, reviews complete normally in 1.5-2.5 min. A spiralling model would
+be killed after ~$2 of token burn regardless of how much wall time remains
+on the outer timeout — this is why budget is the primary spiral defence and
+the outer timeout can be generous (10-30 min) without fear.
+
+**Diagnosing which tier fired:**
+
+| Symptom | Tier | Fix |
+|---|---|---|
+| Node exit code 1, output includes partial findings | Tier 1 (budget) | Raise `budget:` if work was legitimate |
+| Node exit code 124 (timeout utility), partial output on disk | Tier 2 (inner timeout) | Raise `timeout:` — work needs more time |
+| Archon reports "timed out after Nms", SIGPIPE, no output | Tier 3 (outer timeout) | Something hung — check Docker logs |
+| Node completed successfully | No tier fired | Working as intended |
+
 ## Security Model
 
 - **Non-root**: Containers run as `sdlc` user (UID 1001).
@@ -362,7 +385,7 @@ variables are empty (reviewer timed out).
 
 ## Skills
 
-The `sdlc-workflows` plugin ships seven user-invocable skills. Each is the canonical entry point for the listed task — prefer them over bespoke commands.
+The `sdlc-workflows` plugin ships six user-invocable skills. Each is the canonical entry point for the listed task — prefer them over bespoke commands.
 
 | Skill | Invoke with | When to use |
 |-------|-------------|-------------|

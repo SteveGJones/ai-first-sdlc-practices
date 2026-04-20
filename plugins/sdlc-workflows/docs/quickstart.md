@@ -258,6 +258,22 @@ and asserts the expected commits landed in the workspace. Treat it as
 the canonical "how should this look when it works" — when something in
 the quickstart diverges, diff against this script.
 
+## Tiered Termination (important)
+
+Every workflow node has three kill mechanisms to prevent both runaway
+work and lost output:
+
+1. **Budget cap** (`budget: 2.0`) — kills if model burns >$2 of tokens
+   (spiral detection). Primary defence against loops.
+2. **Inner timeout** (automatic) — SIGTERM to Claude 60s before hard
+   kill. Partial output written to `/workspace/reports/`.
+3. **Outer timeout** (`timeout: 600000`) — hard kill backstop (ms).
+
+Always set both `timeout:` and `budget:` on every node. The bundled
+workflows ship with recommended values. See "Tiered Termination Model"
+in `CLAUDE-CONTEXT-workflows.md` for the full reference with empirical
+data.
+
 ## Next Steps
 
 - Read `CLAUDE-CONTEXT-workflows.md` for the full schema reference
