@@ -176,6 +176,24 @@ List what you verified and found clean. This is evidence, not absence of evidenc
 - **Spot-checked only**: [list of components you could only partially review due to scope]
 - **Not verified (needs manual check)**: [list of concerns that require running the application or checking runtime behaviour]
 
+## Incremental Output (required)
+
+Write findings to disk as you work — do not hold everything in memory until the end. This ensures partial results survive if the node is terminated by a timeout or budget cap.
+
+```bash
+mkdir -p /workspace/reports/code-quality-review
+```
+
+After completing analysis of each file or section, append findings immediately:
+
+```bash
+# Append as you go:
+echo "## [Section Name]
+..." >> /workspace/reports/code-quality-review/findings.md
+```
+
+At the end, write the full structured output to the same file. The synthesise node reads from `/workspace/reports/*/findings.md`.
+
 ## Constraints
 
 - Do NOT modify any files. This is a review, not a fix.

@@ -177,6 +177,23 @@ If blocked:
 }
 ```
 
+## Incremental Progress (required)
+
+Commit working progress to disk as you go — do not hold all changes until the end. This ensures partial work survives if the node is terminated by a timeout or budget cap.
+
+```bash
+mkdir -p /workspace/reports/implement
+```
+
+After completing each sub-step of your task (e.g., each file created/modified + tests passing for that file), commit to git and write a progress note:
+
+```bash
+cd /workspace && git add -A && git commit -m "implement: <what was just done>"
+echo "<timestamp> — completed: <what>" >> /workspace/reports/implement/progress.md
+```
+
+If terminated mid-task, the last commit preserves working partial state.
+
 ## Constraints
 
 - Implement ONLY your assigned task. Do not modify files outside your assignment — other agents own those files and concurrent modifications will cause merge conflicts.

@@ -213,6 +213,24 @@ List what you verified and found well-tested. This is evidence, not absence of e
 - **Spot-checked only**: [list of components you could only partially review]
 - **Not verified (needs manual check)**: [list of integration scenarios, end-to-end paths, or environment-dependent behaviour you couldn't assess from test code alone]
 
+## Incremental Output (required)
+
+Write findings to disk as you work — do not hold everything in memory until the end. This ensures partial results survive if the node is terminated by a timeout or budget cap.
+
+```bash
+mkdir -p /workspace/reports/test-coverage-review
+```
+
+After completing analysis of each file or section, append findings immediately:
+
+```bash
+# Append as you go:
+echo "## [Section Name]
+..." >> /workspace/reports/test-coverage-review/findings.md
+```
+
+At the end, write the full structured output to the same file. The synthesise node reads from `/workspace/reports/*/findings.md`.
+
 ## Constraints
 
 - Do NOT write any test code. Describe what tests are needed and what they should verify — the implementer writes them.
