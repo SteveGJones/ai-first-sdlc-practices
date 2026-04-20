@@ -334,8 +334,7 @@ The `sdlc-workflows` plugin ships seven user-invocable skills. Each is the canon
 | workflows-status | `/sdlc-workflows:workflows-status` | Inspect running/recent workflow runs (containers, exit codes, durations) |
 | author-workflow | `/sdlc-workflows:author-workflow --for-task "<desc>" \| --new` | Recommend an existing workflow + team formation for a task, or author a new one |
 | deploy-team | `/sdlc-workflows:deploy-team <name>` | Validate a team manifest, generate its Dockerfile and CLAUDE.md, build the team image |
-| manage-teams | `/sdlc-workflows:manage-teams` | Lifecycle coaching for teams: create / update / delete / review |
-| teams-status | `/sdlc-workflows:teams-status` | Fleet report: roster, staleness, coaching signals, workflow usage |
+| manage-teams | `/sdlc-workflows:manage-teams` | Lifecycle coaching for teams: create / update / delete / review. `--review` gives the fleet report (roster, staleness, coaching signals, workflow usage); `--review --team <name>` gives single-team detail |
 
 ## Long-Running Workflows, Cycles, and Monitoring
 

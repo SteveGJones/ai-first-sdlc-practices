@@ -261,6 +261,7 @@ the quickstart diverges, diff against this script.
 ## Next Steps
 
 - Read `CLAUDE-CONTEXT-workflows.md` for the full schema reference
-- Use `/sdlc-workflows:manage-teams` to manage team lifecycle
-- Use `/sdlc-workflows:teams-status` for fleet visibility
+- Use `/sdlc-workflows:manage-teams` to manage team lifecycle, and
+  `/sdlc-workflows:manage-teams --review` for fleet visibility
+  (add `--team <name>` for a single-team detail view)
 - See `plugins/sdlc-workflows/docs/troubleshooting.md` if something goes wrong

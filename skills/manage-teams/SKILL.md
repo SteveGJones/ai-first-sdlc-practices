@@ -1,8 +1,8 @@
 ---
 name: manage-teams
-description: Guided coaching for delegation team lifecycle — create, update, delete, or review the workforce. The primary interface for team management.
+description: Guided coaching for delegation team lifecycle — create, update, delete, or review the workforce. The primary interface for team management and fleet-level visibility.
 disable-model-invocation: false
-argument-hint: "--create | --update <team> | --delete <team> | --review"
+argument-hint: "--create | --update <team> | --delete <team> | --review [--team <name>]"
 ---
 
 # Manage Delegation Teams
@@ -20,7 +20,9 @@ proceeding.
   when the user says "I need a team")
 - `--update <team>` — update an existing team's roster or description
 - `--delete <team>` — delete a team (removes manifest + image)
-- `--review` — audit the entire delegation workforce with coaching signals
+- `--review` — audit the entire delegation workforce (fleet table,
+  staleness, workflow usage, coaching signals). Add `--team <name>`
+  for a single-team detail view.
 
 For task-to-workflow recommendation ("I have a task, which workflow and
 team formation should I use?") use `/sdlc-workflows:author-workflow
@@ -81,7 +83,7 @@ You have N team(s) but only M workflow(s). Consider whether you need
 another team — more teams means more images to build and maintain.
 
   (a) Create the team anyway
-  (b) Show me my current teams first (/sdlc-workflows:teams-status)
+  (b) Show me my current teams first (/sdlc-workflows:manage-teams --review)
 ```
 
 ### Step 2: Team purpose
@@ -264,38 +266,132 @@ docker rmi sdlc-worker:<team> 2>/dev/null || true
 
 ## Mode: `--review`
 
-### Step 1: Run fleet analysis
+Fleet-level visibility and guided resolution. Runs the underlying
+status report and coaching-signal analysis, then offers actions on
+anything worth fixing. With `--team <name>`, shows a single team in
+detail instead of the fleet view.
 
-Run fleet report and coaching signals:
+### Step 1: Load team data
 
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/teams_status_report.py \
-    --teams-dir .archon/teams --workflows-dir .archon/workflows --json
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/coaching_signals.py \
-    --teams-dir .archon/teams --workflows-dir .archon/workflows \
-    --overrides .archon/logs/overrides.jsonl --json
+    --teams-dir .archon/teams --workflows-dir .archon/workflows
 ```
 
-### Step 2: Present coaching observations
+If no manifests exist:
 
 ```
-Delegation workforce review:
-
-  Your project has 4 active teams and 3 workflows.
-
-  Observations:
-    1. dev-team-python — image is stale (manifest updated 3 days
-       after last build)
-    2. test-team — not referenced by any workflow. Delete or assign?
-    3. sec:security-architect was extended via team_extend 5 times
-       on dev-team — consider adding to the standing team.
-
-  Would you like to address any of these?
-    (a) Rebuild stale images
-    (b) Delete unused test-team
-    (c) Add security-architect to dev-team-python
-    (d) Skip for now
+No delegation teams configured.
+Create a team: /sdlc-workflows:manage-teams --create
 ```
+
+### Step 2: Fleet view (no `--team` argument)
+
+Display a summary table of all teams:
+
+```
+Delegation workforce: N teams, M workflows
+
+  Team                        Status   Agents  Skills  Image     Workflows
+  ─────────────────────────── ──────── ─────── ─────── ───────── ─────────
+  security-review-team        active   3       2       current   2
+  dev-team-python             active   4       6       stale     3
+  test-team                   active   1       2       not built 0
+```
+
+### Step 3: Coaching signals
+
+After the table, display tiered coaching signals:
+
+**Critical** (action required):
+```
+  ✗ test-team has no image built
+```
+
+**Advisory** (worth reviewing):
+```
+  ! dev-team-python image is stale (manifest updated 2026-04-12, image built 2026-04-10)
+  ! test-team is not referenced by any workflow
+```
+
+**Informational** (patterns):
+```
+  ℹ sec:security-architect has been added via team_extend 5 times — consider promoting
+```
+
+Read override signals from `.archon/logs/overrides.jsonl` if it exists.
+
+### Step 4: Plugin environment changes
+
+Check whether any installed plugins have been updated since the last
+full image build, by comparing plugin directory modification times
+against the full image build timestamp.
+
+```
+  Plugin environment changes:
+    + mongodb-plugin updated since last full image build
+```
+
+### Step 5: Single-team detail (`--team <name>`)
+
+When invoked with `--team <name>`, read `.archon/teams/<name>.yaml` and
+display:
+
+```
+Team: security-review-team
+  Status:      active
+  Updated:     2026-04-12
+  Image built: 2026-04-12 (current)
+
+  Plugins (3):
+    sdlc-core, sdlc-team-security, sdlc-team-common
+
+  Agents (3):
+    sdlc-team-security:security-architect
+    sdlc-team-security:compliance-auditor
+    sdlc-team-common:solution-architect
+
+  Skills (2):
+    sdlc-core:validate
+    sdlc-core:rules
+
+  Context:
+    CONSTITUTION.md, CLAUDE-CONTEXT-security.md
+
+  Used by workflows:
+    sdlc-parallel-review.yaml → node: security-review
+    sdlc-commissioned-pipeline.yaml → node: security-gate
+
+  Available but not included (from installed plugins):
+    sdlc-team-security:data-privacy-officer
+    sdlc-team-security:enforcement-strategy-advisor
+```
+
+Use `team_inventory.py` to compute the "available but not included" section:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/team_inventory.py \
+    --installed-json ~/.claude/plugins/installed_plugins.json \
+    --team-manifest .archon/teams/<name>.yaml
+```
+
+### Step 6: Offer guided resolution (fleet view only)
+
+After the fleet table, signals, and plugin-environment section, offer
+actions on what the signals flagged:
+
+```
+Would you like to address any of these?
+  (a) Rebuild stale images
+  (b) Delete unused test-team
+  (c) Add security-architect to dev-team-python
+  (d) Skip for now
+```
+
+Selecting (a) hands off to `/sdlc-workflows:deploy-team`; (b) hands off
+to `/sdlc-workflows:manage-teams --delete`; (c) hands off to
+`/sdlc-workflows:manage-teams --update`. Each keeps the user in the
+same coaching loop instead of silently mutating state.
 
 <!-- --plan-task mode removed on 2026-04-19 v1 scope review. The
 recommendation flow (analyse task, recommend workflow + team formation,

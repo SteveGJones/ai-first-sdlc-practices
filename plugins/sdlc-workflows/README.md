@@ -22,7 +22,7 @@ container with a manifest-scoped subset of plugins, agents, and skills.
   so we stay decoupled from upstream Archon schema changes. (An earlier
   sed-based ContainerProvider patch was removed; it was both wrong and
   unnecessary once the preprocessor was in place.)
-- **Seven user-invocable skills** (see below).
+- **Six user-invocable skills** (see below).
 
 ## Skills
 
@@ -33,8 +33,7 @@ container with a manifest-scoped subset of plugins, agents, and skills.
 | `/sdlc-workflows:workflows-status` | Show running / recent workflow runs |
 | `/sdlc-workflows:author-workflow` | Recommend an existing workflow + team formation for a task (`--for-task "<desc>"`) or author a new one (`--new`) |
 | `/sdlc-workflows:deploy-team <name>` | Build a team image from a manifest |
-| `/sdlc-workflows:manage-teams` | Team lifecycle coaching (create / update / delete / review) |
-| `/sdlc-workflows:teams-status` | Fleet report — team roster, staleness, coaching signals |
+| `/sdlc-workflows:manage-teams` | Team lifecycle coaching (create / update / delete / review — fleet report with coaching signals, plus `--team <name>` for single-team detail) |
 
 ## Prerequisites
 

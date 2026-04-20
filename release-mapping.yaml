@@ -186,7 +186,6 @@ sdlc-workflows:
     - source: skills/author-workflow/SKILL.md
     - source: skills/deploy-team/SKILL.md
     - source: skills/manage-teams/SKILL.md
-    - source: skills/teams-status/SKILL.md
   agents:
     - source: agents/delegation/delegation-coordinator.md
   commands:

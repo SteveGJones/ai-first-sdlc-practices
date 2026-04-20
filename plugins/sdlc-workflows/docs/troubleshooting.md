@@ -162,8 +162,8 @@ If the manifest is newer than the image, the image is stale.
 **Fixes:**
 - Rebuild: `bash plugins/sdlc-workflows/docker/build-team.sh <team>` (or
   `/sdlc-workflows:deploy-team <team>`).
-- Check `/sdlc-workflows:teams-status` — it flags stale images by comparing
-  `image_built` in the manifest against the image creation timestamp.
+- Check `/sdlc-workflows:manage-teams --review` — it flags stale images by
+  comparing `image_built` in the manifest against the image creation timestamp.
 - After a `build-full.sh` run (e.g. after upgrading a plugin on the host),
   rebuild every team image that depends on that plugin.
 
