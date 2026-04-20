@@ -187,8 +187,8 @@ class TestLoopNodeTransform:
             "trigger_rule": "all_success",
             "loop": {
                 "stages": [
-                    {"image": "a:1", "prompt": "go"},
-                    {"image": "b:1", "prompt": "done"},
+                    {"image": "sdlc-worker:a", "prompt": "go"},
+                    {"image": "sdlc-worker:b", "prompt": "done"},
                 ],
                 "until": "ok",
                 "max_iterations": 2,
@@ -253,7 +253,7 @@ class TestLoopNodeTransform:
         node = {
             "id": "broken",
             "loop": {
-                "stages": [{"image": "a:1", "prompt": "x"}],
+                "stages": [{"image": "sdlc-worker:a", "prompt": "x"}],
                 "max_iterations": 0,
             },
         }
@@ -277,7 +277,7 @@ class TestLoopNodeTransform:
                 {
                     "id": "cycle",
                     "loop": {
-                        "stages": [{"image": "a:1", "prompt": "x"}],
+                        "stages": [{"image": "sdlc-worker:a", "prompt": "x"}],
                         "max_iterations": 2,
                     },
                 },
@@ -355,7 +355,7 @@ class TestFullWorkflowTransform:
 
         workflow_with = {
             "name": "with-images",
-            "nodes": [{"id": "a", "command": "test", "image": "x"}],
+            "nodes": [{"id": "a", "command": "test", "image": "sdlc-worker:x"}],
         }
         assert preprocess_workflow.has_image_nodes(workflow_with) is True
 
@@ -903,3 +903,101 @@ class TestParallelGitWriteGuardrail:
             )
         ids = {nid for nid, _ in exc_info.value.offenders}
         assert ids == {"fork-a"}
+
+
+class TestImageTagAllowlist:
+    """U-1: reject image names that don't match the sdlc-worker: prefix.
+
+    A workflow YAML with ``image: evil.example.com/foo`` would become
+    ``docker run evil.example.com/foo`` with credentials mounted and
+    the user's source tree at /workspace.  The allowlist prevents this.
+    """
+
+    def test_sdlc_worker_base_accepted(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:base", "prompt": "hi"}
+        result = preprocess_workflow.transform_node(
+            node, workspace="/ws", cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+        assert "bash" in result
+
+    def test_sdlc_worker_team_name_accepted(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:security-review-team", "prompt": "hi"}
+        result = preprocess_workflow.transform_node(
+            node, workspace="/ws", cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+        assert "sdlc-worker:security-review-team" in result["bash"]
+
+    def test_sdlc_worker_full_accepted(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:full", "prompt": "hi"}
+        result = preprocess_workflow.transform_node(
+            node, workspace="/ws", cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+        assert "bash" in result
+
+    def test_arbitrary_registry_rejected(self) -> None:
+        import pytest
+        node = {"id": "n", "image": "evil.example.com/pwn:latest", "prompt": "hi"}
+        with pytest.raises(preprocess_workflow.UnsafeImageError) as exc_info:
+            preprocess_workflow.transform_node(
+                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        assert "evil.example.com/pwn:latest" in str(exc_info.value)
+        assert "sdlc-worker:" in str(exc_info.value)
+
+    def test_bare_image_name_rejected(self) -> None:
+        import pytest
+        node = {"id": "n", "image": "ubuntu:latest", "prompt": "hi"}
+        with pytest.raises(preprocess_workflow.UnsafeImageError):
+            preprocess_workflow.transform_node(
+                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+
+    def test_multistage_loop_validates_stage_images(self) -> None:
+        import pytest
+        node = {
+            "id": "loop",
+            "loop": {
+                "stages": [
+                    {"id": "ok", "image": "sdlc-worker:dev-team", "prompt": "hi"},
+                    {"id": "bad", "image": "malicious:thing", "prompt": "hi"},
+                ],
+                "until": "DONE",
+                "max_iterations": 2,
+            },
+        }
+        with pytest.raises(preprocess_workflow.UnsafeImageError) as exc_info:
+            preprocess_workflow.transform_node(
+                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        assert "malicious:thing" in str(exc_info.value)
+
+    def test_workflow_level_rejects_bad_image(self) -> None:
+        import pytest
+        wf = {
+            "name": "test",
+            "nodes": [
+                {"id": "ok", "image": "sdlc-worker:base", "prompt": "hi"},
+                {"id": "bad", "image": "registry.io/exploit", "prompt": "hi"},
+            ],
+        }
+        with pytest.raises(preprocess_workflow.UnsafeImageError):
+            preprocess_workflow.transform_workflow(
+                wf, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+
+    def test_error_message_suggests_prefix(self) -> None:
+        import pytest
+        node = {"id": "n", "image": "nginx:latest", "prompt": "hi"}
+        with pytest.raises(preprocess_workflow.UnsafeImageError) as exc_info:
+            preprocess_workflow.transform_node(
+                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        assert "sdlc-worker:" in str(exc_info.value)

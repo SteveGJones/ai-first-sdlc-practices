@@ -43,6 +43,33 @@ _GIT_WRITE_PATTERNS = (
     re.compile(r"\bgit\s+push\b"),
 )
 
+# Image-tag allowlist (U-1).  Only images matching this prefix may be
+# used in workflow nodes.  A malicious YAML with ``image: evil.com/x``
+# would otherwise become ``docker run evil.com/x`` with credentials
+# mounted and the user's source tree at /workspace.
+_ALLOWED_IMAGE_PREFIX = "sdlc-worker:"
+
+
+class UnsafeImageError(ValueError):
+    """Raised when a workflow node references an image outside the allowlist."""
+
+    def __init__(self, image: str, node_id: str | None = None) -> None:
+        self.image = image
+        self.node_id = node_id
+        loc = f" (node {node_id!r})" if node_id else ""
+        super().__init__(
+            f"Image {image!r}{loc} is not in the allowlist. "
+            f"Only images matching the prefix '{_ALLOWED_IMAGE_PREFIX}' "
+            f"are permitted (e.g. sdlc-worker:base, sdlc-worker:dev-team). "
+            f"Build a team image with /sdlc-workflows:deploy-team."
+        )
+
+
+def _validate_image_tag(image: str, node_id: str | None = None) -> None:
+    """Raise :class:`UnsafeImageError` if *image* is not in the allowlist."""
+    if not image.startswith(_ALLOWED_IMAGE_PREFIX):
+        raise UnsafeImageError(image, node_id)
+
 # Resource defaults baked into every generated `docker run` command.
 # Override knob lives in the team manifest (future) — v1 is fixed.
 _DEFAULT_MEMORY = "4g"
@@ -372,6 +399,7 @@ def _transform_multistage_loop(
             )
         stage_id = str(stage.get("id", f"s{idx + 1}"))
         stage_image = stage["image"]
+        _validate_image_tag(stage_image, f"{node.get('id')}.stages[{idx}]")
         stage_prompt_source = _resolve_prompt_source(stage, commands_dir)
         docker_cmd = _build_docker_run(
             image=stage_image,
@@ -428,6 +456,7 @@ def transform_node(
         return node
 
     image = node["image"]
+    _validate_image_tag(image, node.get("id"))
     logger.info(
         "Transforming image node to bash docker-run",
         extra={"node_id": node.get("id"), "image": image},

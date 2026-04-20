@@ -301,6 +301,21 @@ echo "--- New or modified files ---"
 (cd "$WORKSPACE" && git diff --stat "$SEED_SHA" HEAD) \
     || echo "(no diff available)"
 echo ""
+
+# U-5: Fan-in overlap warning.  When two or more commits in the
+# workspace touched the same file, the last writer's version won
+# silently.  Show a warning so the user knows what was overridden
+# before they cherry-pick.  This is a soft warning, not a hard fail.
+OVERLAP=$(cd "$WORKSPACE" && \
+    git log --name-only --format="" "$SEED_SHA..HEAD" 2>/dev/null \
+    | sort | uniq -d)
+if [ -n "$OVERLAP" ]; then
+    echo "⚠  Fan-in overlap: the following files were modified by"
+    echo "   multiple workflow nodes. The last writer's version won."
+    echo "   Review the diff before cherry-picking."
+    echo "$OVERLAP" | sed 's/^/     /'
+    echo ""
+fi
 ```
 
 6. Offer the user three choices — NEVER silently discard work:

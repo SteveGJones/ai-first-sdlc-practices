@@ -10,7 +10,9 @@
 # concrete 1.2.x tag and treat tag drift as a known risk — a digest
 # pin (@sha256:...) is the long-term fix tracked for v2.
 ARG BUN_IMAGE_TAG=oven/bun:1.2.17
-ARG ARCHON_SHA=main
+# Pinned to the Archon main SHA verified during EPIC #96 development.
+# Override at build time: --build-arg ARCHON_SHA=<40-char-hex>
+ARG ARCHON_SHA=6be5c61620890dadc20500e8219a02b64f5c3060
 ARG NODE_IMAGE=node:22-slim
 
 FROM ${BUN_IMAGE_TAG} AS archon-deps
@@ -23,9 +25,13 @@ ARG ARCHON_SHA
 WORKDIR /opt/archon
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && \
     rm -rf /var/lib/apt/lists/*
-# Pin to an explicit SHA when ARCHON_SHA is a real commit ref; fall
-# back to a branch tip for local/dev builds.  CI / release builds MUST
-# pass a concrete 40-char SHA via --build-arg ARCHON_SHA=<sha>.
+# Validate that ARCHON_SHA looks like a 40-char hex commit hash.
+# Branch names (e.g. "main") are rejected — they make the build
+# non-reproducible and the PR claim "verified against v0.3.6" dishonest.
+RUN echo "${ARCHON_SHA}" | grep -qE '^[0-9a-f]{40}$' || \
+    (echo "ERROR: ARCHON_SHA must be a 40-char hex commit hash, got '${ARCHON_SHA}'." \
+     && echo "Resolve it: git ls-remote https://github.com/coleam00/Archon.git HEAD | cut -f1" \
+     && exit 1)
 RUN git clone https://github.com/coleam00/Archon.git . && \
     git checkout "${ARCHON_SHA}" && \
     git rev-parse HEAD > /opt/archon-sha && \
