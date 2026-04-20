@@ -40,7 +40,7 @@ nodes:
   command: sdlc-plan
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 1800000
   model: claude-opus-4-6[1m]
 - id: approve-plan
   depends_on:
@@ -57,14 +57,14 @@ nodes:
 
       '
     timeout: 86400
-  timeout: 300
+  timeout: 1800000
 - id: implement
   depends_on:
   - approve-plan
   command: sdlc-implement
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 1800000
   model: claude-opus-4-6[1m]
   loop:
     until: ALL_TASKS_COMPLETE
@@ -76,28 +76,28 @@ nodes:
   command: sdlc-validate
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 300000
 - id: security-review
   depends_on:
   - validate
   command: sdlc-security-review
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 600000
 - id: architecture-review
   depends_on:
   - validate
   command: sdlc-architecture-review
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 600000
 - id: code-quality-review
   depends_on:
   - validate
   command: sdlc-code-quality-review
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 600000
 - id: synthesise
   command: sdlc-synthesise-reviews
   image: sdlc-worker:base
@@ -107,7 +107,7 @@ nodes:
   - code-quality-review
   trigger_rule: one_success
   context: fresh
-  timeout: 300
+  timeout: 600000
 - id: approve-review
   depends_on:
   - synthesise
@@ -123,7 +123,7 @@ nodes:
 
       '
     timeout: 86400
-  timeout: 300
+  timeout: 300000
 - id: create-pr
   depends_on:
   - approve-review
@@ -154,4 +154,4 @@ nodes:
 
     '
   context: fresh
-  timeout: 300
+  timeout: 300000

@@ -25,7 +25,7 @@ nodes:
   command: sdlc-plan
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 1800000
   model: claude-opus-4-6[1m]
 - id: implement-a
   depends_on:
@@ -33,21 +33,21 @@ nodes:
   command: sdlc-implement
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 1800000
 - id: implement-b
   depends_on:
   - plan
   command: sdlc-implement
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 1800000
 - id: implement-c
   depends_on:
   - plan
   command: sdlc-implement
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 1800000
 - id: merge
   depends_on:
   - implement-a
@@ -57,11 +57,11 @@ nodes:
   image: sdlc-worker:base
   trigger_rule: one_success
   context: fresh
-  timeout: 300
+  timeout: 1800000
 - id: validate
   depends_on:
   - merge
   command: sdlc-validate
   image: sdlc-worker:base
   context: fresh
-  timeout: 300
+  timeout: 300000
