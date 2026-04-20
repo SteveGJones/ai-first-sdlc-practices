@@ -75,6 +75,40 @@ docker logs <container-id>  # Check output
 
 ## Workflow Errors
 
+### `archon: command not found` / `archon not on PATH`
+
+**Cause:** The `archon` CLI is not on PATH.
+
+**Diagnosis:**
+```bash
+which archon                    # empty → not installed or not on PATH
+ls ~/.archon/archon.db          # present → Archon was installed here before
+```
+
+**Fixes:**
+- **Not installed:** `/sdlc-workflows:workflows-setup` installs it, or run the
+  upstream installer directly:
+  ```bash
+  curl -fsSL https://archon.diy/install | bash
+  ```
+- **Installed but not on PATH:** check the installer's target directory and
+  add it to your shell rc (`~/.zshrc`, `~/.bashrc`). `workflows-setup`
+  distinguishes "installed-not-on-PATH" from "not-installed-at-all" in its
+  diagnostic output.
+- **Local iteration without Archon:** `/sdlc-workflows:workflows-run` and the
+  integration smoke suites default to strict-Archon mode, but the smoke
+  suites accept `--direct-only` to skip the orchestrator and drive the
+  workflow preprocessor + credential resolver + containers directly:
+  ```bash
+  bash tests/integration/workforce-smoke/run-e2e.sh --direct-only
+  bash tests/integration/workforce-smoke/run-e2e.sh --parallel --direct-only
+  ```
+  This exercises everything this plugin owns end-to-end; only the Archon
+  scheduling step is bypassed. Use `--allow-fallback` to try Archon first
+  and only drop to direct mode if Archon is missing. Note that
+  `/sdlc-workflows:workflows-status` still works — its REST + SQLite
+  fallback needs neither `archon serve` nor the CLI.
+
 ### `workflow not found`
 
 **Cause:** Archon can't find the workflow by name.
