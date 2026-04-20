@@ -48,13 +48,15 @@ Behaviour matrix:
 If neither is available (fresh machine, no Archon state yet), the script
 returns `(no workflow runs found)` cleanly — this is not an error.
 
-**Important — SSE stream vs this skill:** `archon serve` only observes
-runs *launched through the server*. Workflows started by the CLI
-(`archon workflow run …` inside `/sdlc-workflows:workflows-run`) write
-to the same SQLite DB but do **not** appear in the SSE dashboard
-stream. Use this skill (REST or SQLite) for CLI-launched runs. If a
-run is missing from `sse_stream_follow.py`, that is not a bug — it is
-how Archon's server handles CLI-launched runs in 1.x.
+**Important — Archon UI clickthrough is degraded for CLI-launched runs.**
+`archon serve` only renders the rich UI (DAG graph, conversation thread,
+live events) for workflows *launched through the server*. Workflows
+started by `/sdlc-workflows:workflows-run` use the CLI path — they write
+to the same SQLite DB and show up in `archon workflow status` and in
+this skill, but the web UI's per-run detail pages will render empty for
+them. This is how Archon 1.x scopes the server — not a bug on our side.
+For CLI-launched runs use this skill (REST or SQLite), the CLI's own
+stderr stream, or `docker logs -f`.
 
 **Prefix matching on `--run-id`:** the `--recent` table only prints
 the first 8 characters of each id. The helper accepts any unique
@@ -90,5 +92,5 @@ Report to the user:
 ### 3. Companion skills
 
 - `/sdlc-workflows:workflows-run <name>` — launch a new workflow.
-- Live event following during a run: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/sse_stream_follow.py` (requires `archon serve`).
-- `docker ps --filter name=sdlc-worker` — the currently-running node containers behind any preprocessed workflow.
+- Live per-node output during a run: the CLI streams every node's stderr to your terminal as `[node-name] <line>`. No extra helper needed.
+- `docker ps --filter name=sdlc-worker` and `docker logs -f <container>` — the currently-running node containers behind any preprocessed workflow.

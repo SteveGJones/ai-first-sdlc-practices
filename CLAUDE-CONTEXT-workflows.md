@@ -445,15 +445,18 @@ needs to survive process death between iterations, but plain
 
 ### Monitoring — what Archon provides
 
-> **SSE vs CLI — read this first.** The SSE dashboard stream
-> (`/api/stream/__dashboard__`) only observes runs launched *through*
-> `archon serve`'s HTTP API. Runs started by the CLI
-> (`archon workflow run …`, which is what `/sdlc-workflows:workflows-run`
-> invokes by default) write to `~/.archon/archon.db` but do **not**
-> appear in the SSE stream. `/sdlc-workflows:workflows-status` reads
-> both REST and SQLite, so it works for either launch path; the SSE
-> helper (`sse_stream_follow.py`) is only useful for server-launched
-> runs. This is how Archon 1.x behaves — not a bug on our side.
+> **Archon UI clickthrough is degraded for CLI-launched runs — read
+> this first.** `archon serve`'s rich per-run views (DAG graph,
+> conversation thread, live SSE dashboard at `/api/stream/__dashboard__`)
+> only render for workflows launched *through* the HTTP API. Runs
+> started by the CLI (`archon workflow run …`, which is what
+> `/sdlc-workflows:workflows-run` invokes by default) write to
+> `~/.archon/archon.db` and are listed by `archon workflow status`,
+> but their UI detail pages and the SSE dashboard stay empty.
+> `/sdlc-workflows:workflows-status` reads both REST and SQLite, so it
+> works for either launch path and is the authoritative view for CLI
+> runs. Use `docker logs -f <container>` for per-node detail. This is
+> how Archon 1.x scopes the server — not a bug on our side.
 
 Archon's CLI is only the surface layer. `archon serve` starts a full
 HTTP server with a REST API and Server-Sent Events streaming — this
@@ -496,7 +499,7 @@ combines `archon workflow status` with Docker-level visibility.
 These are real limitations of the current experience, not defects:
 
 1. **No `/metrics` endpoint.** Archon exposes a REST API + SSE stream but not Prometheus format. A small exporter that subscribes to `/api/stream/__dashboard__` (live events) + `docker events` (container lifecycle) and emits Prometheus metrics is the planned follow-up. All required data is already exposed by `archon serve` — no upstream changes needed.
-2. **`workflows-run` does not auto-subscribe to the SSE stream.** `archon workflow run` already streams per-node events to stderr (`[node] Started`, `[node] Completed (duration)`), so `workflows-run` shows live progress by default — no redirect. For structured events (required by a Prometheus exporter, or a separate watch terminal), we ship `plugins/sdlc-workflows/scripts/sse_stream_follow.py`, which subscribes to `/api/stream/__dashboard__` when `archon serve` is running and pretty-prints one line per event. It is not invoked automatically because CLI-mode runs (our default) do not start the HTTP server; the exporter follow-up will choose when to auto-launch `archon serve`.
+2. **No structured-event stream for CLI-launched runs.** `archon workflow run` already streams per-node events to stderr (`[node] Started`, `[node] Completed (duration)`), so `workflows-run` shows live progress by default. What we do *not* have — because `archon serve`'s SSE stream only covers server-launched runs — is a structured-event feed that a metrics exporter or a separate watch terminal can consume for our default CLI launch path. The observability follow-up will choose the approach: either `workflows-run --server` (co-launch `archon serve` + `archon workflow run` so SSE becomes available), or a polling exporter against the SQLite schema.
 3. **No cost meter.** Claude API spend per node/workflow is not tracked anywhere — it has to come from Claude's own usage reporting. A future exporter could estimate from token-count logs if Claude Code emits them.
 4. **No interrupt test coverage.** Ctrl-C at the Archon CLI level has not been shakedown-tested against our containerised runs. Containers themselves handle SIGTERM cleanly (entrypoint trap) but the Archon → container signal path is unproven.
 5. **No long-run soak test.** The E2E test runs nodes that complete in seconds. A deliberate slow-node test (≥20 min per node, multi-cycle) would shake out credential expiry, resource leaks, and workspace corruption. Small script, large confidence boost.
@@ -524,7 +527,7 @@ The "observability" follow-up PR should bundle at least items 1 + 2 (Prometheus 
 >      - `sdlc_team_container_starts_total{team=…}`
 >      - `sdlc_team_container_failures_total{team=…}`
 > 2. Sample Grafana dashboard JSON in `plugins/sdlc-workflows/dashboards/workforce.json`.
-> 3. Live streaming in `workflows-run` — the current CLI path already emits per-node events to stderr; the follow-up adds a **server mode** (`workflows-run --server`) that launches `archon serve` + `archon workflow run` in concert so SSE is available without a second terminal. `sse_stream_follow.py` is the client library that server-mode would call directly; for now it is a user-facing helper for anyone running `archon serve` manually.
+> 3. Live streaming in `workflows-run` — the current CLI path already emits per-node events to stderr; the follow-up adds a **server mode** (`workflows-run --server`) that launches `archon serve` + `archon workflow run` in concert so SSE is available without a second terminal, or equivalently a SQLite-polling exporter if server mode proves too heavy. Either way the client helper is written when the server mode lands — we are not shipping an orphan consumer helper ahead of it.
 > 4. Optional: `sdlc-workflows:workflows-watch <runId>` — a skill that subscribes to the per-run SSE stream for an already-running workflow, for when the user launched something long and wants to reattach later.
 >
 > **Out of scope for the first monitoring PR (defer to follow-ups):**

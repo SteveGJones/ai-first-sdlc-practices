@@ -360,11 +360,5 @@ user is running iterative designer→dev→review cycles:
 - **Per-node timeout**: each long node must set `timeout: <seconds>` in its YAML. The default 300 s (5 min) is almost always wrong for real work.
 - **Live progress during a long node**: `archon workflow run` emits per-node `[name] Started` / `[name] Completed (duration)` lines to stderr as they happen — no redirect needed to see them. For tool-level detail inside a node, add `--verbose` and pass it through to archon. For the container's own output (whatever the AI is printing), open a second terminal and run `docker logs -f $(docker ps -q --filter name=sdlc-worker --latest)`.
 - **Cycles (designer → dev → review → designer …)**: use `loop.stages:` — see *Long-Running Workflows, Cycles, and Monitoring* in `CLAUDE-CONTEXT-workflows.md` for the primary pattern, with unrolled iterations as a fallback for fixed small counts.
-- **Monitoring via the Archon server**: if the user is running `archon serve` in another terminal, they can subscribe to the SSE dashboard stream for structured events across every run:
-  ```bash
-  python3 ${CLAUDE_PLUGIN_ROOT}/scripts/sse_stream_follow.py \
-      --url http://localhost:3090
-  ```
-  Add `--run-id <id>` to follow a single run, or `--json` for machine-readable output. This is the foundation for the planned Prometheus/Grafana exporter; without `archon serve` it simply fails fast with a clear message.
-- **Monitoring surfaces** (any combination): `archon workflow status` (what's live), `archon isolation list` (per-run worktrees), `docker events --since <epoch>` (node lifecycle), `docker stats` (resource use).
+- **Monitoring surfaces** (any combination): the CLI's own stderr stream (shown automatically), `/sdlc-workflows:workflows-status` for historical + REST-backed detail, `archon workflow status` (what's live), `archon isolation list` (per-run worktrees), `docker logs -f <container>` (per-node output), `docker events --since <epoch>` (node lifecycle), `docker stats` (resource use). The Archon web UI (`archon serve` on http://localhost:3090) renders the rich per-run graph only for runs launched through the server — CLI-launched runs show up in listing but the detail pages render empty. Use `workflows-status` and `docker logs` for CLI runs.
 - **Cost**: there is no cost meter in v1 — a multi-hour cyclical run on Opus will burn meaningful tokens. Flag this to the user before launching.
