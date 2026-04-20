@@ -336,6 +336,12 @@ SIGTERM and has a window to write partial results to `/workspace/reports/`
 before Archon kills the container. The floor is 60s — Claude always gets
 at least one minute of work time even on short nodes.
 
+**Always set `timeout:` explicitly.** If omitted, Archon defaults to
+120000ms (2 min) but the entrypoint defaults CLAUDE_TIMEOUT to 300s
+(5 min) — the outer kill fires BEFORE the inner timeout, eliminating
+the save window entirely. Every `image:` node MUST have an explicit
+`timeout:` to keep the tiers in order.
+
 **Incremental output**: Command prompts instruct agents to write findings
 to `/workspace/reports/<node-id>/findings.md` after each phase, not hold
 everything until the end. If any tier fires, partial output is on disk.
@@ -412,7 +418,7 @@ the per-node timeout.
 - id: big-refactor
   command: implement
   image: sdlc-worker:dev-team
-  timeout: 7200     # 2 hours; forwarded as CLAUDE_TIMEOUT into the container
+  timeout: 7200000  # 2 hours (ms); inner CLAUDE_TIMEOUT computed as 7140s
 ```
 
 The default `timeout:` is 300 s (5 min), which is right for smoke tests

@@ -503,12 +503,13 @@ def transform_node(
             budget=node.get("budget"),
         )
 
+        signal_q = shlex.quote(str(until_signal))
         result["bash"] = (
             f"for i in $(seq 1 {max_iter}); do\n"
             f"  echo \"Iteration $i/{max_iter}\"\n"
             f"  OUTPUT=$({docker_cmd})\n"
             f"  echo \"$OUTPUT\"\n"
-            f"  if echo \"$OUTPUT\" | grep -q \"{until_signal}\"; then\n"
+            f"  if echo \"$OUTPUT\" | grep -q {signal_q}; then\n"
             f"    echo \"LOOP_COMPLETE: signal detected at iteration $i\"\n"
             f"    break\n"
             f"  fi\n"
