@@ -200,7 +200,7 @@ def validate(
 
             inventory = team_inventory.discover_all(installed_json)
         except ImportError:
-            pass
+            pass  # team_inventory not on sys.path — skip plugin-aware validation.
 
     # Find all workflow YAML files
     if not workflows_dir.is_dir():

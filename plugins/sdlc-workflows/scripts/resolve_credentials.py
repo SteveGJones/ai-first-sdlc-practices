@@ -287,7 +287,7 @@ def main() -> None:
         try:
             work_dir.rmdir()
         except OSError:
-            pass
+            pass  # Directory not empty or already removed — benign on cleanup.
 
 
 if __name__ == "__main__":
