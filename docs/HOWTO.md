@@ -1,136 +1,42 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
-
-- [AI-First SDLC Framework - HOWTO Guide](#ai-first-sdlc-framework---howto-guide)
-  - [Table of Contents](#table-of-contents)
-  - [Quick Start](#quick-start)
-    - [1. Initial Setup (5 minutes)](#1-initial-setup-5-minutes)
-      - [Smart Setup (Recommended)](#smart-setup-recommended)
-      - [Manual Setup (Alternative)](#manual-setup-alternative)
-    - [2. Create Your First Feature](#2-create-your-first-feature)
-  - [Core Workflow](#core-workflow)
-    - [The AI-First Development Cycle](#the-ai-first-development-cycle)
-    - [Step-by-Step Process](#step-by-step-process)
-      - [1. Start a New Feature](#1-start-a-new-feature)
-      - [2. Plan Your Implementation](#2-plan-your-implementation)
-      - [3. Develop with Progress Tracking](#3-develop-with-progress-tracking)
-      - [4. Create Retrospective (REQUIRED Before PR)](#4-create-retrospective-required-before-pr)
-      - [5. Validate Your Work](#5-validate-your-work)
-      - [6. Create Pull Request](#6-create-pull-request)
-  - [Prompting Claude for AI-First SDLC](#prompting-claude-for-ai-first-sdlc)
-    - [Initial Setup Prompt](#initial-setup-prompt)
-    - [Development Session Prompt](#development-session-prompt)
-    - [Quick Prompt (Experienced Users)](#quick-prompt-experienced-users)
-  - [For AI Agents](#for-ai-agents)
-    - [Understanding CLAUDE.md](#understanding-claudemd)
-    - [AI Agent Workflow](#ai-agent-workflow)
-      - [Session Start](#session-start)
-      - [During Development](#during-development)
-      - [Session End](#session-end)
-    - [Context Preservation Between Sessions](#context-preservation-between-sessions)
-  - [For Human Developers](#for-human-developers)
-    - [Collaborating with AI Agents](#collaborating-with-ai-agents)
-      - [Setting Expectations](#setting-expectations)
-      - [Code Review Process](#code-review-process)
-    - [Managing AI Development Sessions](#managing-ai-development-sessions)
-      - [Preparing for AI Work](#preparing-for-ai-work)
-      - [After AI Session](#after-ai-session)
-  - [Tool Usage Guide](#tool-usage-guide)
-    - [1. Branch Protection Setup](#1-branch-protection-setup)
-    - [2. Progress Tracker](#2-progress-tracker)
-    - [3. Context Manager](#3-context-manager)
-    - [4. Validation Pipeline](#4-validation-pipeline)
-    - [5. Feature Proposal Checker](#5-feature-proposal-checker)
-  - [Common Scenarios](#common-scenarios)
-    - [Scenario 1: Starting a New Feature (Human)](#scenario-1-starting-a-new-feature-human)
-    - [Scenario 2: AI Agent Continuing Work](#scenario-2-ai-agent-continuing-work)
-    - [Scenario 3: Multi-Session Feature Development](#scenario-3-multi-session-feature-development)
-    - [Scenario 4: Handling Blockers](#scenario-4-handling-blockers)
-  - [Troubleshooting](#troubleshooting)
-    - [Common Issues](#common-issues)
-      - ["Direct commits to main branch are forbidden!"](#direct-commits-to-main-branch-are-forbidden)
-      - ["No feature proposal found for branch"](#no-feature-proposal-found-for-branch)
-      - ["Context not found"](#context-not-found)
-      - [Pre-commit hooks failing](#pre-commit-hooks-failing)
-    - [Getting Help](#getting-help)
-    - [Best Practices](#best-practices)
-  - [Advanced Usage](#advanced-usage)
-    - [Custom Validation Checks](#custom-validation-checks)
-    - [Automated Context Switching](#automated-context-switching)
-    - [CI/CD Integration](#cicd-integration)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # AI-First SDLC Framework - HOWTO Guide
 
-This guide explains how to use the AI-First SDLC Framework in your daily development workflow, whether you're an AI agent or a human developer.
-
-## Table of Contents
-
-1. [Quick Start](#quick-start)
-2. [Core Workflow](#core-workflow)
-3. [For AI Agents](#for-ai-agents)
-4. [For Human Developers](#for-human-developers)
-5. [Tool Usage Guide](#tool-usage-guide)
-6. [Common Scenarios](#common-scenarios)
-7. [Troubleshooting](#troubleshooting)
-
----
+This guide explains how to use the AI-First SDLC Framework in your daily development workflow using the plugin ecosystem.
 
 ## Quick Start
 
-### 1. Initial Setup (5 minutes)
-
-#### Smart Setup (Recommended)
-```bash
-# Download and run smart setup (no cloning needed)
-curl -sSL https://raw.githubusercontent.com/SteveGJones/ai-first-sdlc-practices/main/setup-smart.py > setup-smart.py
-python setup-smart.py "building a todo app with React and Node.js"
-```
-
-#### Manual Setup (Alternative)
-```bash
-# Clone the framework
-git clone https://github.com/SteveGJones/ai-first-sdlc-practices.git
-
-# Copy templates to your project
-cd your-project
-cp ai-first-sdlc-practices/templates/* .
-
-# Set up branch protection
-python ai-first-sdlc-practices/tools/automation/setup-branch-protection-gh.py
-```
-
-### 2. Create Your First Feature
+### 1. Install the Core Plugin (2 minutes)
 
 ```bash
-# Create a feature branch
-git checkout -b feature/user-authentication
-
-# Create a feature proposal
-cp docs/feature-proposals/template-feature-proposal.md \
-   docs/feature-proposals/01-user-authentication.md
-
-# Edit the proposal with your feature details
-# Make sure to set: Target Branch: `feature/user-authentication`
-
-# Start tracking your work
-python tools/progress-tracker.py add "Design authentication flow"
-python tools/progress-tracker.py add "Implement login endpoint"
-python tools/progress-tracker.py add "Add session management"
+# Add the marketplace and install sdlc-core
+/plugin marketplace add SteveGJones/ai-first-sdlc-practices
+/plugin install sdlc-core@ai-first-sdlc
 ```
+
+### 2. Configure Your Team
+
+```bash
+/sdlc-core:setup-team
+```
+
+This interviews you about your project type and installs the matching team plugins. For example, a full-stack web app gets `sdlc-core`, `sdlc-team-common`, and `sdlc-team-fullstack`.
+
+### 3. Create Your First Feature
+
+```bash
+/sdlc-core:new-feature 1 user-authentication "User Authentication System"
+```
+
+This creates:
+- A feature proposal at `docs/feature-proposals/01-user-authentication.md`
+- A retrospective at `retrospectives/01-user-authentication.md`
+- A feature branch `feature/user-authentication`
 
 ---
 
 ## Core Workflow
 
-### The AI-First Development Cycle
-
 ```
-1. Feature Proposal → 2. Implementation Plan → 3. Development → 4. Retrospective → 5. Pull Request
-     ↑                                                                                      ↓
-     └────────────────────────── Continuous Improvement ←──────────────────────────────────┘
+specify → architect → implement → review → ship
 ```
 
 ### Step-by-Step Process
@@ -138,536 +44,241 @@ python tools/progress-tracker.py add "Add session management"
 #### 1. Start a New Feature
 
 ```bash
-# Always create a feature branch
-git checkout -b feature/your-feature-name
-
-# Create and fill out a feature proposal
-cp docs/feature-proposals/template-feature-proposal.md \
-   docs/feature-proposals/XX-your-feature.md
+/sdlc-core:new-feature <number> <name> "<title>"
 ```
 
-#### 2. Plan Your Implementation
+Edit the generated feature proposal with your requirements, acceptance criteria, and risks.
+
+#### 2. Architect Your Solution
+
+Use specialist agents from your installed team plugins. Claude Code automatically invokes the right agents based on your request:
+
+- "Design the database schema" — invokes `database-architect`
+- "Review the API design" — invokes `api-architect`
+- "Check for security concerns" — invokes `security-architect`
+
+#### 3. Implement with Continuous Validation
+
+Write code and validate continuously:
 
 ```bash
-# Create an implementation plan
-cp plan/template-implementation-plan.md \
-   plan/your-feature-implementation.md
-
-# Add tasks to track
-python tools/progress-tracker.py add "Task 1" --priority high
-python tools/progress-tracker.py add "Task 2" --priority medium
+/sdlc-core:validate --syntax      # After writing code
+/sdlc-core:validate --quick       # Before commits
 ```
 
-#### 3. Develop with Progress Tracking
+The validation pipeline checks:
+1. **Python AST syntax** — parse all .py files
+2. **Ruff syntax errors** — fast syntax-level lint
+3. **Ruff full lint** — complete ruff linting
+4. **Ruff format check** — formatting compliance
+5. **Technical debt scan** — no TODOs, FIXMEs, commented code, `any` types
+6. **Test execution** — pytest
+7. **Import smoke test** — no missing imports
+8. **Type checking** — mypy strict typing
+9. **Security scan** — bandit vulnerability detection
+10. **Smoke test** — app starts and responds
+
+#### 4. Commit Your Work
 
 ```bash
-# Mark task as in progress
-python tools/progress-tracker.py update <task-id> in_progress
-
-# After completing
-python tools/progress-tracker.py update <task-id> completed
-
-# Save context before switching tasks
-python tools/context-manager.py handoff \
-  --completed "Implemented login endpoint" \
-  --current "Working on session management" \
-  --next "Add password reset" "Write tests"
+/sdlc-core:commit
 ```
 
-#### 4. Create Retrospective (REQUIRED Before PR)
+This runs validation before committing. If checks fail, fix the issues and try again.
+
+#### 5. Complete the Retrospective
+
+Before creating a PR, fill out the retrospective that was generated with your feature:
+
+```
+retrospectives/<number>-<name>.md
+```
+
+Document what went well, what could improve, and lessons learned.
+
+#### 6. Create a Pull Request
 
 ```bash
-# Create retrospective document
-cp retrospectives/template-retrospective.md \
-   retrospectives/your-feature-retrospective.md
-
-# Edit with your lessons learned
-vim retrospectives/your-feature-retrospective.md
-
-# Commit the retrospective
-git add retrospectives/your-feature-retrospective.md
-git commit -m "docs: add retrospective for feature implementation"
-```
-
-**Important**: PRs without retrospectives will be rejected by validation!
-
-#### 5. Validate Your Work
-
-```bash
-# Run the validation pipeline
-python tools/validate-pipeline.py
-
-# Run specific checks
-python tools/validate-pipeline.py --checks branch proposal tests retrospective
-
-# Export results for CI
-python tools/validate-pipeline.py --export json --output validation.json
-```
-
-#### 6. Create Pull Request
-
-```bash
-# Push your branch
-git push -u origin feature/your-feature-name
-
-# Create PR using gh CLI (if available)
-gh pr create --title "feat: your feature name" \
-  --body "Summary of changes. See retrospective: retrospectives/your-feature-retrospective.md"
-
-# Or create PR on your platform's web interface
-```
-
-**Note**: The retrospective MUST be complete before creating the PR!
-
----
-
-## Prompting Claude for AI-First SDLC
-
-### Initial Setup Prompt
-When starting a new project, use this prompt:
-
-```
-Set up a new [technology] project for [purpose] using the AI-First SDLC framework from https://github.com/SteveGJones/ai-first-sdlc-practices.
-
-Download and run: python setup-smart.py "[project purpose]"
-
-Then read CLAUDE.md and run the repository health check to verify main branch protection is enabled.
-```
-
-### Development Session Prompt
-For ongoing development work:
-
-```
-Please read and follow CLAUDE.md in the project root.
-
-CRITICAL FIRST STEPS:
-1. Run the repository health check to verify main branch protection
-2. Confirm you're not on the main branch
-3. Review current feature proposals and retrospectives
-
-If main branch protection is missing, run: python tools/setup-branch-protection-gh.py
-```
-
-### Quick Prompt (Experienced Users)
-```
-Follow CLAUDE.md. Run health check first. Never push to main.
+/sdlc-core:validate --pre-push    # Full 10-check validation
+/sdlc-core:pr                     # Creates the PR with validation results
 ```
 
 ---
 
-## For AI Agents
+## Using Specialist Agents
 
-### Understanding CLAUDE.md
+Agents are invoked automatically by Claude Code when their expertise is needed. You can also request them directly:
 
-The `CLAUDE.md` file is your primary instruction set. It contains:
+### Architecture and Design
 
-1. **Project Context**: What you're building and why
-2. **Critical Rules**: What you must NEVER do (e.g., push to main)
-3. **Development Workflow**: Step-by-step processes to follow
-4. **Command Mappings**: Preferred commands for common tasks
+- "Use the solution-architect agent to design the system" — `sdlc-team-common`
+- "Have the database-architect review the schema" — `sdlc-team-common`
+- "Get a performance review from the performance-engineer" — `sdlc-team-common`
 
-### AI Agent Workflow
+### Code Review
 
-#### Session Start
-```bash
-# CRITICAL: Run repository health check from CLAUDE.md
-git branch --show-current  # Should NOT be "main"
-gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts' 2>/dev/null
+- "Review this code for quality" — `code-review-specialist` (sdlc-core)
+- "Verify this meets the requirements" — `critical-goal-reviewer` (sdlc-core)
+- "Check docs-code fidelity" — `verification-enforcer` (sdlc-core)
 
-# If protection missing, set it up:
-# python tools/setup-branch-protection-gh.py
+### Domain-Specific
 
-# Load previous context
-python tools/context-manager.py load
+- "Design the frontend component" — `frontend-architect` (sdlc-team-fullstack)
+- "Review the API contract" — `api-architect` (sdlc-team-fullstack)
+- "Audit for security vulnerabilities" — `security-architect` (sdlc-team-security)
+- "Design the ML pipeline" — `ai-solution-architect` (sdlc-team-ai)
 
-# Check current progress
-python tools/progress-tracker.py list --status in_progress
+### Research
 
-# Validate environment
-python tools/validate-pipeline.py
-```
+- "Research best practices for X" — `deep-research-agent` (sdlc-team-common)
 
-#### During Development
-```bash
-# Before making changes
-python tools/progress-tracker.py update <task-id> in_progress
-
-# Track decisions
-python tools/context-manager.py save work \
-  --data '{"decision": "Use JWT for auth", "rationale": "Stateless and scalable"}'
-
-# Create implementation snapshot
-python tools/context-manager.py snapshot "authentication" "phase-1" \
-  --files "src/auth.py" "tests/test_auth.py"
-```
-
-#### Session End
-```bash
-# Create handoff document
-python tools/context-manager.py handoff \
-  --completed "Login endpoint" "Session management" \
-  --current "Working on password reset flow" \
-  --next "Email integration" "Rate limiting" \
-  --blocker "SMTP config missing:High:Need email server details" \
-  --notes "Authentication flow 80% complete. See tests/test_auth.py for examples."
-```
-
-### Context Preservation Between Sessions
-
-When resuming work:
-
-```bash
-# List available contexts
-python tools/context-manager.py list
-
-# Load specific session
-python tools/context-manager.py load <session-id>
-
-# Continue from handoff
-cat HANDOFF_<session-id>.md
-```
+See each plugin's README for the full list of agents and their capabilities.
 
 ---
 
-## For Human Developers
+## Plugin Management
 
-### Collaborating with AI Agents
-
-#### Setting Expectations
-
-1. **Create Clear Feature Proposals**: AI agents rely on well-defined proposals
-2. **Maintain CLAUDE.md**: Keep AI instructions up-to-date
-3. **Review Handoff Documents**: Understand what the AI was working on
-
-#### Code Review Process
+### Installing Additional Plugins
 
 ```bash
-# Check AI agent's progress
-python tools/progress-tracker.py report
+# Install a specific plugin
+/plugin install sdlc-team-security@ai-first-sdlc
 
-# Review validation status
-python tools/validate-pipeline.py --export markdown --output review.md
-
-# Check commit compliance
-git log --oneline -10
+# Re-run setup-team to get recommendations
+/sdlc-core:setup-team
 ```
 
-### Managing AI Development Sessions
+### Available Plugins
 
-#### Preparing for AI Work
+See the [full plugin table in README.md](../README.md#available-plugins) for all 12 plugins with agent and skill counts.
+
+### Clearing Plugin Cache
+
+If plugins seem outdated after an update:
+
 ```bash
-# Set up clear task list
-python tools/progress-tracker.py add "Implement user profile API" --priority high
-python tools/progress-tracker.py add "Add profile picture upload" --priority medium
-
-# Create feature proposal with specific requirements
-vim docs/feature-proposals/user-profiles.md
+rm -rf ~/.claude/plugins/cache/ai-first-sdlc/
 ```
 
-#### After AI Session
-```bash
-# Review what was done
-python tools/progress-tracker.py list --status completed
-
-# Check for any blockers
-python tools/progress-tracker.py list --status blocked
-
-# Run validation
-python tools/validate-pipeline.py
-```
+Then restart Claude Code and reinstall.
 
 ---
 
-## Tool Usage Guide
+## The Rules
 
-### 1. Branch Protection Setup
+All rules are in [CONSTITUTION.md](../CONSTITUTION.md) — 11 articles covering:
 
-```bash
-# Auto-detect and configure
-python tools/setup-branch-protection.py
-
-# Specific platform
-python tools/setup-branch-protection.py --platform github --repo owner/repo
-
-# Dry run to see configuration
-python tools/setup-branch-protection.py --dry-run
-```
-
-### 2. Progress Tracker
-
-```bash
-# Add tasks
-python tools/progress-tracker.py add "Implement feature X" --priority high
-
-# Update status
-python tools/progress-tracker.py update abc123 in_progress
-python tools/progress-tracker.py update abc123 completed
-
-# List tasks
-python tools/progress-tracker.py list
-python tools/progress-tracker.py list --status pending --branch feature/auth
-
-# Generate report
-python tools/progress-tracker.py report --output status.md
-```
-
-### 3. Context Manager
-
-```bash
-# Save work context
-python tools/context-manager.py save work --data '{"current_focus": "authentication"}'
-
-# Create handoff
-python tools/context-manager.py handoff \
-  --completed "Task 1" "Task 2" \
-  --current "Task 3" \
-  --next "Task 4" "Task 5"
-
-# Create snapshot
-python tools/context-manager.py snapshot "feature-name" "phase-1" \
-  --files "src/main.py" "tests/test_main.py"
-
-# List contexts
-python tools/context-manager.py list --type handoff --limit 5
-```
-
-### 4. Validation Pipeline
-
-```bash
-# Run all checks
-python tools/validate-pipeline.py
-
-# Specific checks
-python tools/validate-pipeline.py --checks branch proposal tests
-
-# CI mode (exits with error code)
-python tools/validate-pipeline.py --ci
-
-# Export results
-python tools/validate-pipeline.py --export json --output results.json
-```
-
-### 5. Feature Proposal Checker
-
-```bash
-# Run manually
-python tools/check-feature-proposal.py
-
-# Automatically runs as pre-commit hook
-git commit -m "feat: add user profiles"
-```
+1. Git workflow (feature branches, never commit to main)
+2. Documentation (proposals required before implementation)
+3. Architecture (design before code)
+4. Code quality (no TODOs, no `any` types, no commented code)
+5. Validation (10-check pipeline)
+6. Agent collaboration (use specialist agents)
+7. Logging (10 mandatory logging points for app code)
+8. Security (no secrets in code, no PII in logs)
+9. Self-review (verify before claiming done)
+10. Verification (runtime proof required)
+11. Progressive levels (Prototype → Production → Enterprise)
 
 ---
 
 ## Common Scenarios
 
-### Scenario 1: Starting a New Feature (Human)
+### Starting a New Project
 
 ```bash
-# 1. Create feature branch
-git checkout -b feature/payment-integration
+# 1. Install and configure
+/plugin marketplace add SteveGJones/ai-first-sdlc-practices
+/plugin install sdlc-core@ai-first-sdlc
+/sdlc-core:setup-team
 
-# 2. Create proposal
-cp docs/feature-proposals/template-feature-proposal.md \
-   docs/feature-proposals/payment-integration.md
-vim docs/feature-proposals/payment-integration.md
+# 2. Optionally set up CI
+/sdlc-core:setup-ci
 
-# 3. Set up tasks for AI
-python tools/progress-tracker.py add "Research payment providers" --priority high
-python tools/progress-tracker.py add "Design payment flow" --priority high
-python tools/progress-tracker.py add "Implement Stripe integration" --priority medium
-
-# 4. Commit proposal
-git add docs/feature-proposals/payment-integration.md
-git commit -m "feat: add payment integration proposal"
+# 3. Start your first feature
+/sdlc-core:new-feature 1 initial-setup "Project Initial Setup"
 ```
 
-### Scenario 2: AI Agent Continuing Work
+### Adding a Knowledge Base
 
 ```bash
-# 1. Load context
-python tools/context-manager.py load
-
-# 2. Check tasks
-python tools/progress-tracker.py list --status pending
-
-# 3. Start work
-python tools/progress-tracker.py update abc123 in_progress
-
-# 4. ... do implementation work ...
-
-# 5. Complete task
-python tools/progress-tracker.py update abc123 completed
-
-# 6. Create handoff before ending session
-python tools/context-manager.py handoff \
-  --completed "Stripe integration" \
-  --current "Testing payment flow" \
-  --next "Add PayPal support"
+/plugin install sdlc-knowledge-base@ai-first-sdlc
+/sdlc-knowledge-base:kb-init
+/sdlc-knowledge-base:kb-query "What does research say about X?"
 ```
 
-### Scenario 3: Multi-Session Feature Development
+### Setting Up Containerised Workflows
 
 ```bash
-# Session 1: Planning
-git checkout -b feature/analytics
-cp docs/feature-proposals/template-feature-proposal.md \
-   docs/feature-proposals/analytics.md
-# ... edit proposal ...
-python tools/context-manager.py handoff \
-  --completed "Created feature proposal" \
-  --next "Design database schema" "Create API endpoints"
-
-# Session 2: Backend
-python tools/context-manager.py load <session-1-id>
-python tools/progress-tracker.py update <task-id> in_progress
-# ... implement backend ...
-python tools/context-manager.py handoff \
-  --completed "Database schema" "API endpoints" \
-  --next "Frontend dashboard" "Add charts"
-
-# Session 3: Frontend
-python tools/context-manager.py load <session-2-id>
-# ... implement frontend ...
-```
-
-### Scenario 4: Handling Blockers
-
-```bash
-# Mark task as blocked
-python tools/progress-tracker.py update <task-id> blocked \
-  --blocked-by "Waiting for API credentials"
-
-# Document in handoff
-python tools/context-manager.py handoff \
-  --current "Payment integration" \
-  --blocker "API credentials:High:Need production Stripe keys from DevOps" \
-  --blocker "SSL cert:Medium:Payment page requires HTTPS"
+/plugin install sdlc-workflows@ai-first-sdlc
+/sdlc-workflows:workflows-setup
+/sdlc-workflows:deploy-team dev-team
+/sdlc-workflows:workflows-run sdlc-parallel-review
 ```
 
 ---
 
 ## Troubleshooting
 
-### Common Issues
+### "Skill not found"
 
-#### "Direct commits to main branch are forbidden!"
+The plugin providing the skill is not installed. Check with:
+
 ```bash
-# You're on main branch, create a feature branch
-git checkout -b feature/your-feature
+/plugin list
 ```
 
-#### "No feature proposal found for branch"
+Then install the missing plugin.
+
+### Validation failures
+
+Run validation with verbose output to see what failed:
+
 ```bash
-# Create a proposal
-cp docs/feature-proposals/template-feature-proposal.md \
-   docs/feature-proposals/your-feature.md
-# Edit it to include: Target Branch: `feature/your-feature`
+/sdlc-core:validate --pre-push
 ```
 
-#### "Context not found"
-```bash
-# List available contexts
-python tools/context-manager.py list
+Each check reports what passed, failed, and was skipped (with install instructions for missing tools).
 
-# Check session history
-ls -la .ai-context/history/
+### Plugin cache issues
+
+```bash
+rm -rf ~/.claude/plugins/cache/ai-first-sdlc/
 ```
 
-#### Pre-commit hooks failing
-```bash
-# Update hooks
-pre-commit autoupdate
+Restart Claude Code, then reinstall plugins.
 
-# Run manually to see specific errors
+### `.claude/` write protection
+
+Claude Code blocks writes to `.claude/` in project directories. This is a platform security feature. Plugin installation and project-scoped memory both use workarounds. See [issue #81](https://github.com/SteveGJones/ai-first-sdlc-practices/issues/81).
+
+### Pre-commit hooks failing
+
+```bash
+# Run hooks manually to see specific errors
 pre-commit run --all-files
 
-# Skip hooks temporarily (NOT RECOMMENDED)
-git commit --no-verify -m "emergency fix"
-```
-
-### Getting Help
-
-1. **Check Validation**: `python tools/validate-pipeline.py`
-2. **Review Templates**: Look at files in `templates/` directory
-3. **Read AI Instructions**: Check your `CLAUDE.md` file
-4. **View Examples**: See `examples/` directory
-
-### Best Practices
-
-1. **Always work in feature branches**
-2. **Create proposals before implementation**
-3. **Track progress continuously**
-4. **Save context before switching tasks**
-5. **Run validation before commits**
-6. **Create handoffs at session end**
-7. **Document blockers immediately**
-8. **Review retrospectives regularly**
-
----
-
-## Advanced Usage
-
-### Custom Validation Checks
-
-Add to `.ai-sdlc.json`:
-```json
-{
-  "validation": {
-    "custom_checks": [
-      {
-        "name": "security_scan",
-        "command": "security-scanner --strict",
-        "required": true
-      }
-    ]
-  }
-}
-```
-
-### Automated Context Switching
-
-```bash
-# Save current feature context
-python tools/context-manager.py save work \
-  --data '{"feature": "authentication", "branch": "feature/auth"}'
-
-# Switch to hotfix
-git checkout -b hotfix/security-patch
-
-# ... fix issue ...
-
-# Return to feature
-git checkout feature/auth
-python tools/context-manager.py load
-```
-
-### CI/CD Integration
-
-```yaml
-# .github/workflows/ai-sdlc.yml
-name: AI-First SDLC Validation
-on: [push, pull_request]
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pre-commit install
-
-      - name: Run validation
-        run: python tools/validate-pipeline.py --ci
-
-      - name: Check feature proposal
-        run: python tools/check-feature-proposal.py
+# Check what hooks are configured
+cat .pre-commit-config.yaml
 ```
 
 ---
 
-This HOWTO guide provides practical examples of using the AI-First SDLC Framework. For more details on specific tools, see their individual documentation in the `tools/` directory.
+## Best Practices
+
+1. **Always work in feature branches** — never commit to main
+2. **Create proposals before implementation** — design first
+3. **Validate continuously** — `--syntax` after writing, `--quick` before commits
+4. **Use specialist agents** — they catch issues you might miss
+5. **Complete retrospectives** — required before PR creation
+6. **Run pre-push validation** — the full 10-check pipeline before PRs
+
+---
+
+## Further Reading
+
+- [README.md](../README.md) — Project overview and setup
+- [CONSTITUTION.md](../CONSTITUTION.md) — All rules (11 articles)
+- [QUICK-REFERENCE.md](QUICK-REFERENCE.md) — Command cheat sheet
+- [PLUGIN-CONSUMER-GUIDE.md](PLUGIN-CONSUMER-GUIDE.md) — How the plugin ecosystem works
+- [AGENT-INDEX.md](../AGENT-INDEX.md) — Full catalog of all agents

@@ -31,7 +31,7 @@ That's the minimal flow. The starter pack ships with three example library files
 | `research-librarian` | Stateless retrieval-and-synthesis. Reads the shelf-index, identifies the 2-4 most relevant library files for a query, deep-reads only those, returns structured evidence with citations. **Read-only.** | Sonnet (for command-line tool use) |
 | `agent-knowledge-updater` | Proactively integrates new sources into the library. Reads a source, classifies it, identifies which existing files it touches, makes surgical updates or creates new files, updates the shelf-index, appends to log.md. **The only agent with write access to the library.** Opinionated about what belongs. | Sonnet |
 
-### Skills (10)
+### Skills (8)
 
 | Skill | Purpose |
 |---|---|

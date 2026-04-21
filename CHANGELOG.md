@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Plugin READMEs**: All 12 plugins now have README.md with agent tables, skill tables, usage guidance, and "when to use" sections (#160)
+- **Plugin Consumer Guide**: New `docs/PLUGIN-CONSUMER-GUIDE.md` explaining how plugins, agents, skills, and validation work for end users
+- **Prerequisites section** in README.md (Claude Code, Python 3.10+, Git, optional Docker/gh)
+
+### Changed
+- **README.md**: Expanded plugin table to 12 entries with agent/skill counts, expanded skills section to 22 skills across 3 plugins, expanded agents section with per-plugin breakdown, linked CHANGELOG.md
+- **CLAUDE.md**: EPIC #96 marked merged, agent count corrected to 56 across 12 plugins, added rules skill to skills table
+- **docs/HOWTO.md**: Complete rewrite from legacy setup-smart.py workflow to plugin/skill-based workflow
+- **docs/QUICK-REFERENCE.md**: Complete rewrite with all 22 skills, correct tool paths, validation pipeline check names
+- **AGENT-INDEX.md**: Regenerated from current plugin + source structure with explanatory note on 128 source vs 56 published agents
+- **docs/README.md**: Added redirect notice to root README, fixed broken archive link
+
+### Fixed
+- **sdlc-knowledge-base README**: Corrected "Skills (10)" to "Skills (8)" (pre-existing error)
+- **sdlc-team-security README**: Fixed wrong plugin attribution for database-architect (was sdlc-team-fullstack, corrected to sdlc-team-common)
+
+### Deprecated
+- 19 legacy docs moved to `docs/archive/` (START-HERE.md, quick-start.md, Billy Wright coaching docs, and other pre-plugin content)
+
 ## [1.8.0] - 2026-02-10
 
 ### Added

@@ -1,379 +1,195 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
-
-- [AI-First SDLC - Quick Reference Card](#ai-first-sdlc---quick-reference-card)
-  - [🚀 Essential Commands](#-essential-commands)
-    - [Starting Work (Zero Technical Debt Workflow)](#starting-work-zero-technical-debt-workflow)
-    - [During Development](#during-development)
-    - [Ending Session](#ending-session)
-  - [📋 Progress Tracking](#-progress-tracking)
-  - [💾 Context Management](#-context-management)
-  - [✅ Validation](#-validation)
-  - [🚫 Zero Technical Debt Commands](#-zero-technical-debt-commands)
-  - [🛡️ Branch Protection](#-branch-protection)
-  - [📝 Templates](#-templates)
-    - [Feature Proposal](#feature-proposal)
-    - [Task Format](#task-format)
-  - [🔄 Workflow States](#-workflow-states)
-    - [Task Status Flow](#task-status-flow)
-    - [Branch Naming](#branch-naming)
-  - [⚡ Common Workflows](#-common-workflows)
-    - [New Feature (Human)](#new-feature-human)
-    - [Continue Work (AI)](#continue-work-ai)
-    - [Quick Validation](#quick-validation)
-  - [🚫 Things to NEVER Do](#-things-to-never-do)
-  - [🆘 Quick Fixes](#-quick-fixes)
-    - [On wrong branch?](#on-wrong-branch)
-    - [Forgot proposal?](#forgot-proposal)
-    - [Lost context?](#lost-context)
-  - [📊 Status Icons](#-status-icons)
-  - [🔗 Integration](#-integration)
-    - [Pre-commit Hook](#pre-commit-hook)
-    - [Authentication Setup](#authentication-setup)
-  - [🔧 CI/CD Integration](#-cicd-integration)
-    - [GitHub Actions](#github-actions)
-    - [GitLab CI](#gitlab-ci)
-    - [Jenkins](#jenkins)
-    - [Azure DevOps](#azure-devops)
-    - [CircleCI](#circleci)
-    - [Common CI Commands](#common-ci-commands)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # AI-First SDLC - Quick Reference Card
 
-## 🚀 Essential Commands
+## Essential Skills
 
-### Starting Work (Zero Technical Debt Workflow)
+### Starting Work
 ```bash
-# 1. Create feature branch
-git checkout -b feature/name
-
-# 2. Create architecture documents FIRST (mandatory)
-# Create all 6 documents in templates/architecture/
-# - requirements-traceability-matrix.md
-# - what-if-analysis.md
-# - architecture-decision-record.md
-# - system-invariants.md
-# - integration-design.md
-# - failure-mode-analysis.md
-
-# 3. Validate architecture before coding
-python tools/validation/validate-architecture.py --strict
-
-# 4. Only then proceed with tasks
-python tools/automation/progress-tracker.py list
-python tools/automation/context-manager.py load
+/sdlc-core:setup-team                                  # First-time team setup
+/sdlc-core:new-feature <num> <name> "<title>"          # Create feature + branch
 ```
 
 ### During Development
 ```bash
-python tools/progress-tracker.py update <id> in_progress  # Start task
-python tools/progress-tracker.py update <id> completed    # Complete task
-python tools/validate-pipeline.py                         # Validate work
+/sdlc-core:validate --syntax                           # After writing code
+/sdlc-core:validate --quick                            # Before commits
 ```
 
-### Ending Session
+### Shipping
 ```bash
-python tools/context-manager.py handoff \
-  --completed "Task 1" \
-  --current "Task 2" \
-  --next "Task 3"
-```
-
----
-
-## 📋 Progress Tracking
-
-```bash
-# Add tasks
-progress-tracker.py add "Task description" --priority high
-
-# Update status
-progress-tracker.py update <id> in_progress|completed|blocked
-
-# List tasks
-progress-tracker.py list [--status pending|in_progress|completed|blocked]
-
-# Generate report
-progress-tracker.py report [--output report.md]
+/sdlc-core:commit                                      # Validated commit
+/sdlc-core:validate --pre-push                         # Full 10-check validation
+/sdlc-core:pr                                          # Create PR
 ```
 
 ---
 
-## 💾 Context Management
+## All Skills by Plugin
+
+### sdlc-core (always installed)
+
+| Skill | Purpose |
+|-------|---------|
+| `/sdlc-core:validate` | Run validation (`--syntax`, `--quick`, `--pre-push`) |
+| `/sdlc-core:new-feature` | Create feature proposal, retrospective, branch |
+| `/sdlc-core:commit` | Validated commit with test execution |
+| `/sdlc-core:pr` | Full validation + PR creation |
+| `/sdlc-core:setup-team` | Configure team formation |
+| `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
+| `/sdlc-core:release-plugin` | Package source into plugins |
+| `/sdlc-core:rules` | SDLC compliance rules and standards |
+
+### sdlc-knowledge-base
+
+| Skill | Purpose |
+|-------|---------|
+| `/sdlc-knowledge-base:kb-init` | Initialise knowledge base |
+| `/sdlc-knowledge-base:kb-ingest <source>` | Integrate new source |
+| `/sdlc-knowledge-base:kb-query "<question>"` | Query library for evidence |
+| `/sdlc-knowledge-base:kb-lint` | Six-check health report |
+| `/sdlc-knowledge-base:kb-rebuild-indexes` | Rebuild shelf-index |
+| `/sdlc-knowledge-base:kb-validate-citations` | Check citation accuracy |
+| `/sdlc-knowledge-base:kb-promote-answer-to-library` | File query result as library page |
+| `/sdlc-knowledge-base:kb-staleness-check` | Check for shelf-index drift |
+
+### sdlc-workflows
+
+| Skill | Purpose |
+|-------|---------|
+| `/sdlc-workflows:workflows-setup` | Install Archon, build images |
+| `/sdlc-workflows:workflows-run <name>` | Execute workflow |
+| `/sdlc-workflows:workflows-status` | Show running/recent workflows |
+| `/sdlc-workflows:author-workflow` | Recommend or create workflows |
+| `/sdlc-workflows:deploy-team <name>` | Build team image from manifest |
+| `/sdlc-workflows:manage-teams` | Team lifecycle coaching |
+
+---
+
+## Validation Pipeline (10 Checks)
 
 ```bash
-# Save work context
-context-manager.py save work --data '{"key": "value"}'
+/sdlc-core:validate --pre-push    # Runs all 10
+```
 
-# Create handoff
-context-manager.py handoff \
-  --completed "Done 1" "Done 2" \
-  --current "Doing now" \
-  --next "Todo 1" "Todo 2" \
-  --blocker "Issue:Impact:Resolution"
+| # | Check | What it validates |
+|---|-------|-------------------|
+| 1 | Python AST syntax | Parse all .py files |
+| 2 | Ruff syntax errors | Fast syntax-level lint |
+| 3 | Ruff full lint | Complete ruff linting |
+| 4 | Ruff format check | Formatting compliance |
+| 5 | Technical debt scan | No TODOs, FIXMEs, commented code, `any` types |
+| 6 | Test execution | pytest |
+| 7 | Import smoke test | No missing imports |
+| 8 | Type checking | mypy strict typing |
+| 9 | Security scan | bandit vulnerability detection |
+| 10 | Smoke test | App starts and responds |
 
-# Create snapshot
-context-manager.py snapshot "feature" "phase" --files file1.py file2.py
-
-# List contexts
-context-manager.py list [--type handoff|work|snapshot]
+For framework development (this repo), use the direct scripts:
+```bash
+python tools/validation/local-validation.py --syntax      # After writing code
+python tools/validation/local-validation.py --quick        # Before commits
+python tools/validation/local-validation.py --pre-push     # Before PR
 ```
 
 ---
 
-## ✅ Validation
+## Direct Validators (Framework Development)
 
 ```bash
-# Run all checks
-validate-pipeline.py
-
-# Specific checks
-validate-pipeline.py --checks branch proposal tests architecture technical-debt type-safety
-
-# Export results
-validate-pipeline.py --export json|markdown --output file
-
-# CI mode
-validate-pipeline.py --ci
-
-# Architecture validation (Zero Technical Debt)
-validate-architecture.py --strict
-
-# Technical debt detection
-check-technical-debt.py --threshold 0
-check-technical-debt.py --format json --output debt-report.json
-
-# Check feature proposal
-check-feature-proposal.py --branch feature/branch-name
-```
-
----
-
-## 🚫 Zero Technical Debt Commands
-
-```bash
-# Architecture validation (run BEFORE writing any code)
-python tools/validation/validate-architecture.py --strict
-
-# Technical debt detection (zero tolerance)
 python tools/validation/check-technical-debt.py --threshold 0
-
-# Type safety validation
-python tools/validation/validate-pipeline.py --checks type-safety
-
-# Full Zero Technical Debt validation
-python tools/validation/validate-pipeline.py --checks architecture technical-debt type-safety
-
-# Generate debt report
-python tools/validation/check-technical-debt.py \
-  --format json \
-  --output debt-report.json
+python tools/validation/check-logging-compliance.py . --threshold 0
+python tools/validation/validate-architecture.py --strict
+python tools/validation/check-broken-references.py
+python tools/validation/check-plugin-packaging.py
 ```
 
 ---
 
-## 🛡️ Branch Protection
+## Branch Naming
 
-```bash
-# Recommended: Using GitHub CLI (secure)
-setup-branch-protection-gh.py
-
-# Alternative: Using token
-setup-branch-protection.py --platform github --repo owner/repo --token TOKEN
-
-# Dry run
-setup-branch-protection-gh.py --dry-run
+```
+feature/<name>     # New features
+fix/<name>         # Bug fixes
+docs/<name>        # Documentation changes
 ```
 
 ---
 
-## 📝 Templates
+## Common Workflows
 
-### Feature Proposal
-```markdown
-Target Branch: `feature/branch-name`
-## Motivation
-Why this feature is needed
-
-## Proposed Solution
-What we'll build
-
-## Success Criteria
-How we'll know it works
+### New Project Setup
+```bash
+/plugin marketplace add SteveGJones/ai-first-sdlc-practices
+/plugin install sdlc-core@ai-first-sdlc
+/sdlc-core:setup-team
+/sdlc-core:setup-ci
+/sdlc-core:new-feature 1 initial-setup "Project Setup"
 ```
 
-### Task Format
+### Add Knowledge Base
 ```bash
-"[Component] Action to take"
-# Examples:
-"[API] Implement user authentication endpoint"
-"[Frontend] Create login form with validation"
-"[Database] Add user sessions table"
+/plugin install sdlc-knowledge-base@ai-first-sdlc
+/sdlc-knowledge-base:kb-init
+```
+
+### Add Containerised Workflows
+```bash
+/plugin install sdlc-workflows@ai-first-sdlc
+/sdlc-workflows:workflows-setup
+```
+
+### Install All Plugins
+```bash
+/plugin install sdlc-core@ai-first-sdlc
+/plugin install sdlc-team-common@ai-first-sdlc
+/plugin install sdlc-team-fullstack@ai-first-sdlc
+/plugin install sdlc-team-ai@ai-first-sdlc
+/plugin install sdlc-team-cloud@ai-first-sdlc
+/plugin install sdlc-team-security@ai-first-sdlc
+/plugin install sdlc-team-pm@ai-first-sdlc
+/plugin install sdlc-team-docs@ai-first-sdlc
+/plugin install sdlc-lang-python@ai-first-sdlc
+/plugin install sdlc-lang-javascript@ai-first-sdlc
+/plugin install sdlc-knowledge-base@ai-first-sdlc
+/plugin install sdlc-workflows@ai-first-sdlc
 ```
 
 ---
 
-## 🔄 Workflow States
+## Things to NEVER Do
 
-### Task Status Flow
-```
-pending → in_progress → completed
-         ↘           ↗
-            blocked
+1. Push to main directly
+2. Skip feature proposals
+3. Leave TODOs, FIXMEs, or commented-out code
+4. Use `any` types
+5. Ship without running `--pre-push` validation
+6. Log secrets or PII
+
+---
+
+## Quick Fixes
+
+**Plugin not found?**
+```bash
+/plugin list                                    # Check installed plugins
+/plugin install <plugin>@ai-first-sdlc         # Install missing plugin
 ```
 
-### Branch Naming
+**Plugin cache stale?**
+```bash
+rm -rf ~/.claude/plugins/cache/ai-first-sdlc/  # Clear cache
 ```
-feature/description    # New features
-fix/issue-description  # Bug fixes
-enhancement/details    # Improvements
+
+**On wrong branch?**
+```bash
+git stash && git checkout -b feature/correct-name && git stash pop
 ```
 
 ---
 
-## ⚡ Common Workflows
+## Further Reading
 
-### New Feature (Human)
-```bash
-git checkout -b feature/name
-cp docs/feature-proposals/template-* docs/feature-proposals/01-name.md
-# Edit proposal with Target Branch
-git add . && git commit -m "feat: add feature proposal"
-```
-
-### Continue Work (AI)
-```bash
-context-manager.py load
-progress-tracker.py list --status in_progress
-# ... work ...
-context-manager.py handoff --completed "X" --next "Y"
-```
-
-### Quick Validation
-```bash
-validate-pipeline.py --checks branch proposal
-```
-
----
-
-## 🚫 Things to NEVER Do
-
-1. ❌ `git push origin main` - Never push to main directly
-2. ❌ Skip feature proposals - Always document intent first
-3. ❌ Leave tasks in_progress - Update status before switching
-4. ❌ End session without handoff - Always preserve context
-
----
-
-## 🆘 Quick Fixes
-
-### On wrong branch?
-```bash
-git stash
-git checkout -b feature/correct-name
-git stash pop
-```
-
-### Forgot proposal?
-```bash
-cp docs/feature-proposals/template-* docs/feature-proposals/retroactive.md
-# Add: Target Branch: `current-branch-name`
-```
-
-### Lost context?
-```bash
-context-manager.py list --limit 10
-git log --oneline -20
-```
-
----
-
-## 📊 Status Icons
-
-- ✅ Completed
-- 🚧 In Progress
-- ⏸️ Pending
-- 🚫 Blocked
-- ⚠️ Warning
-- ❌ Error
-
----
-
-## 🔗 Integration
-
-### Pre-commit Hook
-```bash
-pre-commit install        # Set up hooks
-pre-commit run --all     # Run manually
-git commit --no-verify   # Emergency bypass
-```
-
-### Authentication Setup
-```bash
-# Recommended (most secure):
-gh auth login             # GitHub CLI authentication
-
-# Alternative (less secure):
-export GITHUB_TOKEN=xxx   # For branch protection
-export GITLAB_TOKEN=xxx   # For GitLab
-export BITBUCKET_TOKEN=xxx # For Bitbucket
-```
-
----
-
-## 🔧 CI/CD Integration
-
-### GitHub Actions
-```bash
-# Add to: .github/workflows/ai-sdlc.yml
-# Runs on: push, pull_request
-# See: examples/ci-cd/.github/workflows/
-```
-
-### GitLab CI
-```bash
-# Add to: .gitlab-ci.yml
-# Stages: validate, quality
-# See: examples/ci-cd/gitlab/
-```
-
-### Jenkins
-```bash
-# Add to: Jenkinsfile
-# Type: Declarative Pipeline
-# See: examples/ci-cd/jenkins/
-```
-
-### Azure DevOps
-```bash
-# Add to: azure-pipelines.yml
-# Stages: Validate, Reporting
-# See: examples/ci-cd/azure-devops/
-```
-
-### CircleCI
-```bash
-# Add to: .circleci/config.yml
-# Workflows: ai-first-sdlc
-# See: examples/ci-cd/circleci/
-```
-
-### Common CI Commands
-```bash
-# CI mode (proper exit codes)
-validate-pipeline.py --ci
-
-# Specific checks for CI
-validate-pipeline.py --check tests --ci
-validate-pipeline.py --check security --ci
-
-# Export for CI artifacts
-validate-pipeline.py --ci --format json > report.json
-```
-
----
-
-**Remember**: When in doubt, run `validate-pipeline.py`!
+- [README.md](../README.md) — Project overview
+- [HOWTO.md](HOWTO.md) — Comprehensive usage guide
+- [PLUGIN-CONSUMER-GUIDE.md](PLUGIN-CONSUMER-GUIDE.md) — How the plugin ecosystem works
+- [CONSTITUTION.md](../CONSTITUTION.md) — All rules (11 articles)
+- [AGENT-INDEX.md](../AGENT-INDEX.md) — Full agent catalog

@@ -3,6 +3,7 @@
 **Table of Contents**
 
 - [AI-First SDLC Practices](#ai-first-sdlc-practices)
+  - [Prerequisites](#prerequisites)
   - [Setup](#setup)
     - [Plugin Install (Recommended)](#plugin-install-recommended)
     - [Available Plugins](#available-plugins)
@@ -29,7 +30,15 @@
 
 # AI-First SDLC Practices
 
-A framework for integrating AI agents as primary developers while maintaining quality and process compliance. Provides specialist agents, validation tools, enforcement rules, and workflow skills for zero-technical-debt development.
+A framework for integrating AI agents as primary developers while maintaining quality and process compliance. Ships 56 specialist agents across 12 plugins covering AI/ML, full-stack, cloud, security, project management, documentation, and containerised delegation. Automates the specify-architect-implement-review workflow with skills that enforce zero technical debt from day one.
+
+## Prerequisites
+
+- [Claude Code](https://claude.ai/claude-code) CLI (the host application for all plugins)
+- Python 3.10+ (validation tools and scripts)
+- Git
+- Optional: [GitHub CLI](https://cli.github.com/) (`gh`) for PR-related features
+- Optional: Docker (for `sdlc-workflows` containerised delegation)
 
 ## Setup
 
@@ -63,30 +72,59 @@ This presents project types (Full-stack, AI/ML, Cloud, API, Security, Custom) an
 
 ### Available Plugins
 
-| Plugin | Description |
-|--------|-------------|
-| `sdlc-core` | Rules, validators, enforcement, workflows (always install) |
-| `sdlc-team-common` | Cross-cutting architects, researchers, performance engineers |
-| `sdlc-team-ai` | AI/ML specialists — architects, prompt engineers, RAG designers |
-| `sdlc-team-fullstack` | Frontend, backend, API, DevOps architects |
-| `sdlc-team-cloud` | Cloud, container, SRE specialists |
-| `sdlc-team-security` | Security, compliance, privacy specialists |
-| `sdlc-team-pm` | Agile coach, delivery manager, progress tracking |
-| `sdlc-team-docs` | Technical writer, documentation architect |
-| `sdlc-lang-python` | Python-specific validation, patterns, expert agent |
-| `sdlc-lang-javascript` | JavaScript/TypeScript validation and patterns |
+| Plugin | Agents | Skills | Description |
+|--------|--------|--------|-------------|
+| [`sdlc-core`](plugins/sdlc-core/README.md) | 4 | 8 | Rules, validators, enforcement, workflows (always install) |
+| [`sdlc-team-common`](plugins/sdlc-team-common/README.md) | 8 | — | Cross-cutting architects, researchers, performance engineers |
+| [`sdlc-team-ai`](plugins/sdlc-team-ai/README.md) | 14 | — | AI/ML specialists — architects, prompt engineers, RAG designers |
+| [`sdlc-team-fullstack`](plugins/sdlc-team-fullstack/README.md) | 10 | — | Frontend, backend, API, DevOps architects |
+| [`sdlc-team-cloud`](plugins/sdlc-team-cloud/README.md) | 3 | — | Cloud, container, SRE specialists |
+| [`sdlc-team-security`](plugins/sdlc-team-security/README.md) | 5 | — | Security, compliance, privacy specialists |
+| [`sdlc-team-pm`](plugins/sdlc-team-pm/README.md) | 5 | — | Agile coach, delivery manager, progress tracking |
+| [`sdlc-team-docs`](plugins/sdlc-team-docs/README.md) | 2 | — | Technical writer, documentation architect |
+| [`sdlc-lang-python`](plugins/sdlc-lang-python/README.md) | 1 | — | Python-specific validation, patterns, expert agent |
+| [`sdlc-lang-javascript`](plugins/sdlc-lang-javascript/README.md) | 1 | — | JavaScript/TypeScript validation and patterns |
+| [`sdlc-knowledge-base`](plugins/sdlc-knowledge-base/README.md) | 2 | 8 | Filesystem-based knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint |
+| [`sdlc-workflows`](plugins/sdlc-workflows/README.md) | 1 | 6 | Containerised delegation — Archon-orchestrated DAG workflows in isolated Docker containers |
 
 ### Available Skills
 
+**sdlc-core** (always installed):
+
 | Skill | Description |
 |-------|-------------|
-| `/sdlc-core:validate` | Run validation pipeline (--syntax, --quick, --pre-push) |
+| `/sdlc-core:validate` | Run validation pipeline (`--syntax`, `--quick`, `--pre-push`) |
 | `/sdlc-core:new-feature` | Create feature proposal, retrospective, and branch |
 | `/sdlc-core:commit` | Validated commit with test execution |
 | `/sdlc-core:pr` | Full validation + PR creation |
 | `/sdlc-core:setup-team` | Configure team formation for your project |
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
+| `/sdlc-core:rules` | AI-First SDLC compliance rules and standards |
+
+**sdlc-knowledge-base** (install for evidence-grounded projects):
+
+| Skill | Description |
+|-------|-------------|
+| `/sdlc-knowledge-base:kb-init` | Initialise knowledge base with optional starter pack |
+| `/sdlc-knowledge-base:kb-ingest` | Integrate a new source into the library |
+| `/sdlc-knowledge-base:kb-query` | Query the library with structured evidence retrieval |
+| `/sdlc-knowledge-base:kb-lint` | Six-check health report on library quality |
+| `/sdlc-knowledge-base:kb-rebuild-indexes` | Hash-based incremental rebuild of shelf-index |
+| `/sdlc-knowledge-base:kb-validate-citations` | Spot citation hallucinations (DOI/arXiv validation) |
+| `/sdlc-knowledge-base:kb-promote-answer-to-library` | File a query result as a new library page |
+| `/sdlc-knowledge-base:kb-staleness-check` | Check for shelf-index drift (wire into pre-push hooks) |
+
+**sdlc-workflows** (install for containerised delegation):
+
+| Skill | Description |
+|-------|-------------|
+| `/sdlc-workflows:workflows-setup` | First-time setup: install Archon, build images, scaffold dirs |
+| `/sdlc-workflows:workflows-run` | Execute a workflow by name |
+| `/sdlc-workflows:workflows-status` | Show running/recent workflow runs |
+| `/sdlc-workflows:author-workflow` | Recommend or author a workflow for a task |
+| `/sdlc-workflows:deploy-team` | Build a team image from a manifest |
+| `/sdlc-workflows:manage-teams` | Team lifecycle coaching and fleet reporting |
 
 ### Agent-Based Setup (Pre-release / Development)
 
@@ -141,7 +179,9 @@ The validation pipeline runs up to 10 checks: syntax, lint, format, technical de
 
 ### Agents
 
-The framework provides 50+ specialist agents across 10 categories. Key agents in `sdlc-core`:
+The framework provides 56 specialist agents across 12 plugins. Each plugin's README lists its agents in detail.
+
+**sdlc-core** (4 agents — always installed):
 
 | Agent | Role |
 |-------|------|
@@ -149,6 +189,24 @@ The framework provides 50+ specialist agents across 10 categories. Key agents in
 | `critical-goal-reviewer` | Requirements verification and gap analysis |
 | `code-review-specialist` | Code quality, security (OWASP), patterns |
 | `verification-enforcer` | Docs-code fidelity, test coverage, runtime proof |
+
+**Team plugins** (52 agents across 11 plugins):
+
+| Plugin | Agents | Highlights |
+|--------|--------|------------|
+| `sdlc-team-ai` | 14 | Prompt engineer, RAG designer, MCP architect, orchestration architect, context engineer |
+| `sdlc-team-fullstack` | 10 | Frontend/backend/API/mobile architects, DevOps, UX-UI, data architect |
+| `sdlc-team-common` | 8 | Solution architect, database architect, performance engineer, deep-research agent |
+| `sdlc-team-security` | 5 | Security architect, compliance auditor, data privacy officer |
+| `sdlc-team-pm` | 5 | Agile coach, delivery manager, retrospective miner |
+| `sdlc-team-cloud` | 3 | Cloud architect, container specialist, SRE specialist |
+| `sdlc-team-docs` | 2 | Technical writer, documentation architect |
+| `sdlc-knowledge-base` | 2 | Research librarian, knowledge updater |
+| `sdlc-lang-python` | 1 | Python language expert |
+| `sdlc-lang-javascript` | 1 | JavaScript/TypeScript language expert |
+| `sdlc-workflows` | 1 | Delegation coordinator |
+
+See [AGENT-INDEX.md](AGENT-INDEX.md) for the full catalog with detailed descriptions.
 
 ## Documentation
 
@@ -159,6 +217,9 @@ The framework provides 50+ specialist agents across 10 categories. Key agents in
 | [CLAUDE.md](CLAUDE.md) | Gateway file — concise entry point for Claude Code |
 | [docs/HOWTO.md](docs/HOWTO.md) | Comprehensive usage guide |
 | [docs/QUICK-REFERENCE.md](docs/QUICK-REFERENCE.md) | Command cheat sheet |
+| [docs/PLUGIN-CONSUMER-GUIDE.md](docs/PLUGIN-CONSUMER-GUIDE.md) | How the plugin ecosystem works for end users |
+| [CHANGELOG.md](CHANGELOG.md) | Version history and release notes |
+| [CLAUDE-CONTEXT-workflows.md](CLAUDE-CONTEXT-workflows.md) | Containerised delegation reference (team manifests, workflows, Docker) |
 
 ### Agent Development
 
@@ -211,7 +272,7 @@ This repo dogfoods its own practices. Key development conventions:
 - Plugin source lives in `skills/`, `agents/`, `tools/` — packaged to `plugins/` via `release-mapping.yaml`
 - Run `/sdlc-core:release-plugin` to package source into plugins
 
-### Current Version: 1.8.0
+### Current Version: [1.8.0](CHANGELOG.md)
 
 ## Contributing
 

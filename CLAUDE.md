@@ -6,7 +6,7 @@ AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full ins
 
 - **EPIC #97** — Multi-Option Commissioned SDLC. Branch `feature/sdlc-commissioning` has the feature proposal for sub-feature #98 (commissioning infrastructure). Implementation pending. See `docs/feature-proposals/98-sdlc-commissioning-infrastructure.md`.
 - **EPIC #142** — Curated technology registry + plugin recommendation improvements. Sub-features 0-2 merged (#151, #143, #144 — pre/post check, kb recommendation, language detection). Sub-features 3-8 pending (registry schema, population, wiring, maintenance). See issue #142 for the full inventory.
-- **EPIC #96** — Containerised Claude Code workers. **All 5 phases + Tier-1 monitoring/cycles complete; PR drafting (Phase F) in progress.** ~94 commits on `feature/96-sdlc-workflows`. Delivers: three-tier Docker image model, team manifests with per-node agent enforcement, Archon workflow orchestration (sequential + parallel), bash-node preprocessing, three-tier credential fallback, security hardening (cap-drop, signal handling, timeout, healthcheck), `loop.stages:` multi-stage cycle primitive (designer→dev→review), SSE dashboard follower helper, REST+SQLite-backed `workflows-status` skill, and full documentation suite (CLAUDE-CONTEXT-workflows.md, quickstart, author-workflow skill, troubleshooting). 261 unit tests pass. Phase F = rewrite PR body + open PR. Requirements spec: `docs/superpowers/specs/2026-04-19-phase-f-pr-open-requirements.md`. CI/CD automation deferred to separate issue.
+- **EPIC #96** — Containerised Claude Code workers. **Merged.** Plugin `sdlc-workflows` is live and installable. CI/CD automation deferred to separate issue.
 - **EPIC #105** — sdlc-knowledge-base plugin. **Merged.** Plugin is live and installable. Sub-feature 13 (#118 codebase-index) is future work.
 
 ## Working in this repo — dogfood the skills we ship
@@ -89,7 +89,7 @@ Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
 - CONSTITUTION.md — all rules (11 articles, progressive levels)
 - CLAUDE-CONTEXT-logging.md — logging standards
 - CLAUDE-CONTEXT-architecture.md — architecture docs
-- AGENT-INDEX.md — 50+ specialist agents across 10 plugins
+- AGENT-INDEX.md — 56 specialist agents across 12 plugins
 
 ## Plugin Installation (Recommended)
 
@@ -115,8 +115,9 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-team-pm` | Agile coach, delivery manager, tracking (5 agents) |
 | `sdlc-team-docs` | Technical writer, documentation architect |
 | `sdlc-knowledge-base` | Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint operations. Orthogonal to SDLC option choice. |
-| `sdlc-lang-*` | Language-specific validation and patterns (Python, JS, Go, Java, Rust) |
-| `sdlc-workflows` | Archon workflow templates for delegated parallel execution |
+| `sdlc-lang-python` | Python language expert agent |
+| `sdlc-lang-javascript` | JavaScript/TypeScript language expert agent |
+| `sdlc-workflows` | Containerised delegation — Archon-orchestrated DAG workflows in isolated Docker containers (6 skills) |
 
 ### Available Skills
 
@@ -129,6 +130,7 @@ Then configure your team: `/sdlc-core:setup-team`
 | `/sdlc-core:setup-team` | Configure team formation |
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
+| `/sdlc-core:rules` | AI-First SDLC compliance rules and standards |
 | `/sdlc-knowledge-base:kb-*` | Knowledge base operations (init, ingest, query, lint, rebuild-indexes, validate-citations, promote-answer, staleness-check) — installed by `sdlc-knowledge-base` plugin |
 | `/sdlc-workflows:workflows-setup` | First-time setup: install Archon, build sdlc-worker base + full Docker images, scaffold `.archon/` dirs |
 | `/sdlc-workflows:deploy-team` | Build a team image from a manifest YAML |
