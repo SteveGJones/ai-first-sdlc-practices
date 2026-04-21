@@ -110,5 +110,10 @@ backups/
 .ralph/
 .worktrees/
 
+# Session artifacts (generated during development, not committed)
+memory/
+reviews/
+agent_prompts/
+
 # Archon generated build artifacts
 .archon/teams/.generated/
