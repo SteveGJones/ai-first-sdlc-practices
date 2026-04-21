@@ -1,6 +1,8 @@
 # Agent Catalog Index
-*Generated: 2026-04-18T17:44:14.914890*
-*Total Agents: 128*
+*Generated: 2026-04-21T05:56:05.745671*
+*Total Agents: 128 (source directory) | 56 published in plugins*
+
+> **Note:** This catalog indexes all agent files in the `agents/` source directory (128 agents across development categories) AND the `plugins/*/agents/` directories (56 agents packaged into the 12 published plugins). Many source agents appear in both the source category and a plugin category. The 56 agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
 
 ## Agents by Category
 
