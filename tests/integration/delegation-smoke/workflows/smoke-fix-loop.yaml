@@ -1,0 +1,152 @@
+name: smoke-fix-loop
+description: |
+  Full delegation smoke test: fix code, review, iterate until clean.
+  Proves Archon can drive autonomous fix-review loops, not just reviews.
+
+  1. Implement fixes for known issues (SQL injection, input validation, test gaps)
+  2. Run parallel reviews (structure + test coverage)
+  3. Synthesise findings — if issues remain, loop back to fix
+  4. Max 3 iterations — either clean or stops
+
+provider: claude
+
+nodes:
+  - id: fix-and-review
+    model: claude-sonnet-4-6
+    context: fresh
+    loop:
+      prompt: |
+        # Fix-Review Iteration
+
+        You are working on a small Flask application at /workspace that has
+        known issues. Your job is to fix the code AND improve test coverage,
+        then verify your work.
+
+        ## Step 1: Read the current state
+
+        Read all source and test files:
+        - src/app.py
+        - tests/test_app.py
+
+        Also check if there's a review from a previous iteration:
+        ```bash
+        cat /tmp/last-review.md 2>/dev/null || echo "First iteration — no previous review"
+        ```
+
+        ## Step 2: Fix the code
+
+        Fix these categories of issues in src/app.py:
+        - SQL injection (use parameterised queries, not f-strings)
+        - Input validation (check for missing/invalid JSON fields)
+        - Error handling (return proper HTTP error codes)
+        - Database connection management (use context managers)
+        - Security (no debug=True in production code)
+
+        If a previous review flagged specific issues, fix those too.
+
+        ## Step 3: Improve test coverage
+
+        Update tests/test_app.py to cover:
+        - All three endpoints (GET, POST, DELETE)
+        - Error cases (missing fields, invalid input)
+        - The SQL injection fix (verify parameterised queries work)
+        - Edge cases (delete nonexistent user, empty results)
+
+        ## Step 4: Run the reviews
+
+        After fixing, perform two reviews yourself:
+
+        **Structure review**: Check src/app.py for remaining issues:
+        - Any SQL injection remaining?
+        - Input validation present and correct?
+        - Error handling returning proper status codes?
+        - Connection management using context managers?
+        - No debug=True?
+
+        **Test coverage review**: Check tests/test_app.py for gaps:
+        - All endpoints tested?
+        - Error paths tested?
+        - Edge cases covered?
+
+        ## Step 5: Write review results
+
+        Write your combined review to /tmp/last-review.md so the next
+        iteration can see it.
+
+        ## Step 6: Commit your changes
+
+        ```bash
+        cd /workspace
+        git add -A
+        git diff --cached --stat
+        git commit -m "fix: iteration N — address review findings"
+        ```
+
+        ## Step 7: Decide if done
+
+        If BOTH reviews pass with zero issues found, output:
+        ```
+        <COMPLETE>ALL_CLEAN</COMPLETE>
+        ```
+
+        If issues remain, output a summary of what's left. The loop will
+        run another iteration with fresh context.
+
+        ## Constraints
+
+        - Use Sonnet-level reasoning — be thorough but efficient
+        - Fix ALL issues you can find, not just one per iteration
+        - Write real tests that actually verify behaviour
+        - Do not skip any step
+      until: ALL_CLEAN
+      max_iterations: 3
+      fresh_context: true
+
+  - id: final-report
+    depends_on: [fix-and-review]
+    model: claude-sonnet-4-6
+    context: fresh
+    prompt: |
+      # Final Report
+
+      The fix-review loop has completed. Generate a final report.
+
+      ## Read the state
+
+      ```bash
+      cd /workspace
+      git log --oneline
+      cat /tmp/last-review.md
+      git diff HEAD~$(git rev-list --count HEAD) -- src/app.py | head -100
+      ```
+
+      ## Report
+
+      Output a JSON object:
+      ```json
+      {
+        "iterations_completed": <number>,
+        "issues_fixed": [<list of issues that were fixed>],
+        "issues_remaining": [<list of issues still present, if any>],
+        "tests_added": <number of new test functions>,
+        "clean": <boolean — true if all reviews passed>
+      }
+      ```
+    output_format:
+      type: object
+      properties:
+        iterations_completed:
+          type: number
+        issues_fixed:
+          type: array
+          items:
+            type: string
+        issues_remaining:
+          type: array
+          items:
+            type: string
+        tests_added:
+          type: number
+        clean:
+          type: boolean
+      required: [iterations_completed, issues_fixed, issues_remaining, tests_added, clean]

@@ -1,0 +1,57 @@
+name: sdlc-feature-development
+description: |
+  End-to-end feature development pipeline.
+  Use when: Starting a new feature from a spec, issue, or idea.
+  Input: Feature description or path to spec/issue.
+  Output: Implemented feature with passing tests and completed review.
+
+  Workflow:
+  1. Plan: create implementation plan with file assignments
+  2. Implement: loop until tests pass (fresh context each iteration)
+  3. Validate: full SDLC validation pipeline
+  4. Review: parallel specialist review (security, architecture, quality)
+  5. Synthesise: unified review summary
+
+provider: claude
+
+nodes:
+  - id: plan
+    command: sdlc-plan
+    context: fresh
+    model: claude-opus-4-6[1m]
+
+  - id: implement
+    depends_on: [plan]
+    command: sdlc-implement
+    context: fresh
+    model: claude-opus-4-6[1m]
+    loop:
+      until: ALL_TASKS_COMPLETE
+      max_iterations: 10
+      fresh_context: true
+
+  - id: validate
+    depends_on: [implement]
+    command: sdlc-validate
+    context: fresh
+
+  - id: security-review
+    depends_on: [validate]
+    command: sdlc-security-review
+    context: fresh
+
+  - id: architecture-review
+    depends_on: [validate]
+    command: sdlc-architecture-review
+    context: fresh
+
+  - id: code-quality-review
+    depends_on: [validate]
+    command: sdlc-code-quality-review
+    context: fresh
+
+  - id: synthesise
+    command: sdlc-synthesise-reviews
+    depends_on: [security-review, architecture-review, code-quality-review]
+    trigger_rule: one_success
+    context: fresh

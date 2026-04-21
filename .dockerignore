@@ -1,0 +1,52 @@
+# Project-root .dockerignore.
+#
+# Consumed by `plugins/sdlc-workflows/docker/build-team.sh`, which uses the
+# repo root as the build context (it needs `.archon/teams/` and the generated
+# team CLAUDE.md from there). Keep this list conservative — if a future build
+# needs one of these paths, allowlist it with `!path/` below the exclusion.
+
+# VCS metadata and worktrees
+.git/
+.worktrees/
+.gitignore
+
+# Session-local build artifacts and caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+.venv/
+venv/
+
+# Editor / OS noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Local/ephemeral working directories
+tmp/
+./tmp/
+node_modules/
+
+# SDLC narrative artifacts — not needed inside containers
+retrospectives/
+reviews/
+docs/superpowers/plans/
+docs/superpowers/specs/
+
+# Test suites — containers do not run the host project's own tests
+tests/
+
+# Agent prompts and campaign drafts
+agent_prompts/
+
+# Build outputs
+dist/
+build/
+*.egg-info/

@@ -1,0 +1,11 @@
+name: team-smoke-test
+description: |
+  Phase 2 smoke test — verifies per-node team image enforcement.
+
+provider: claude
+
+nodes:
+  - id: team-check
+    command: smoke-review
+    image: sdlc-worker:smoke-review-team
+    context: fresh

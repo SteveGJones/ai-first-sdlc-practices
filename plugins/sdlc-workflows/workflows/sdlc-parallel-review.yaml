@@ -1,0 +1,62 @@
+name: sdlc-parallel-review
+description: "Fan-out parallel review across 5 specialist agents, then synthesise.\n\
+  Use when: PR ready for comprehensive review before merge.\nInput: A branch with\
+  \ changes to review (current worktree branch vs main).\nOutput: Unified review summary\
+  \ with severity-ranked findings.\n\nWorkflow:\n1. Five specialist reviewers run\
+  \ in parallel (security, architecture,\n   performance, code quality, test coverage)\n\
+  2. Validation runs as a deterministic check\n3. A synthesiser merges all findings\
+  \ into a unified review\n\nEach reviewer operates in a fresh context with SDLC plugins\
+  \ installed,\nusing the appropriate specialist agent.\n"
+provider: claude
+nodes:
+- id: security-review
+  command: sdlc-security-review
+  image: sdlc-worker:base
+  context: fresh
+  effort: high
+  timeout: 600000
+  budget: 2.0
+- id: architecture-review
+  command: sdlc-architecture-review
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 600000
+  budget: 2.0
+- id: performance-review
+  command: sdlc-performance-review
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 600000
+  budget: 2.0
+- id: code-quality-review
+  command: sdlc-code-quality-review
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 600000
+  budget: 2.0
+- id: test-coverage-review
+  command: sdlc-test-coverage-review
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 600000
+  budget: 2.0
+- id: validate
+  command: sdlc-validate
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 300000
+  budget: 1.0
+- id: synthesise
+  command: sdlc-synthesise-reviews
+  image: sdlc-worker:base
+  depends_on:
+  - security-review
+  - architecture-review
+  - performance-review
+  - code-quality-review
+  - test-coverage-review
+  - validate
+  trigger_rule: one_success
+  context: fresh
+  timeout: 600000
+  budget: 3.0

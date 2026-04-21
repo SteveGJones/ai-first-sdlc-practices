@@ -1,0 +1,33 @@
+# Plugin-level .dockerignore.
+#
+# Consumed by `docker/build-base.sh`, which uses this directory
+# (`plugins/sdlc-workflows/`) as the build context. Dockerfile.base only
+# needs: patches/, docker/entrypoint.sh, scripts/detect-loop-bug.sh,
+# scripts/loop-workaround.sh. Everything else is wasted context — exclude
+# to keep builds fast and reproducible.
+#
+# Allowlist the two loop-workaround scripts inside scripts/ by excluding
+# the directory then re-including them explicitly.
+
+agents/
+commands/
+docs/
+skills/
+workflows/
+README.md
+pyproject.toml
+
+# Exclude scripts/ wholesale then allowlist the two files that
+# Dockerfile.base actually COPYs.
+scripts/*
+!scripts/detect-loop-bug.sh
+!scripts/loop-workaround.sh
+
+# Caches and editor noise that occasionally leak in during dev iteration
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.DS_Store

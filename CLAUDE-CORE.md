@@ -138,6 +138,7 @@ Load additional context based on task:
 | Agent catalog | AGENT-INDEX.md |
 | Quality standards | AGENTIC-TEAM-STANDARDS.md |
 | Progressive levels | CLAUDE-CONTEXT-levels.md |
+| Containerised workflows | CLAUDE-CONTEXT-workflows.md |
 
 ## Quality Standards
 

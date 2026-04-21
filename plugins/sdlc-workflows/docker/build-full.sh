@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGINS_DIR="${CLAUDE_PLUGINS_DIR:-$HOME/.claude/plugins}"
+
+if [ ! -d "$PLUGINS_DIR" ]; then
+    echo "ERROR: Plugin directory not found: $PLUGINS_DIR"
+    echo "Set CLAUDE_PLUGINS_DIR if plugins are in a non-standard location."
+    exit 1
+fi
+
+if ! docker image inspect sdlc-worker:base >/dev/null 2>&1; then
+    echo "Base image not found. Building it first..."
+    bash "$SCRIPT_DIR/build-base.sh"
+fi
+
+PLUGINS_BASENAME="$(basename "$PLUGINS_DIR")"
+
+echo "Building sdlc-worker:full from $PLUGINS_DIR..."
+
+# Create temporary .dockerignore to limit build context
+BUILD_CONTEXT="$PLUGINS_DIR/.."
+echo "*" > "$BUILD_CONTEXT/.dockerignore"
+echo "!$PLUGINS_BASENAME/" >> "$BUILD_CONTEXT/.dockerignore"
+
+docker build -t sdlc-worker:full \
+    --build-arg "PLUGINS_DIR=$PLUGINS_BASENAME" \
+    -f "$SCRIPT_DIR/Dockerfile.full" \
+    "$BUILD_CONTEXT"
+
+rm -f "$BUILD_CONTEXT/.dockerignore"
+
+echo "Done. Image: sdlc-worker:full"

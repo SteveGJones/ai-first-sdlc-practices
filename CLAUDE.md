@@ -6,8 +6,41 @@ AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full ins
 
 - **EPIC #97** — Multi-Option Commissioned SDLC. Branch `feature/sdlc-commissioning` has the feature proposal for sub-feature #98 (commissioning infrastructure). Implementation pending. See `docs/feature-proposals/98-sdlc-commissioning-infrastructure.md`.
 - **EPIC #142** — Curated technology registry + plugin recommendation improvements. Sub-features 0-2 merged (#151, #143, #144 — pre/post check, kb recommendation, language detection). Sub-features 3-8 pending (registry schema, population, wiring, maintenance). See issue #142 for the full inventory.
-- **EPIC #96** — Containerized Claude Code workers. Design phase, deferred.
+- **EPIC #96** — Containerised Claude Code workers. **All 5 phases + Tier-1 monitoring/cycles complete; PR drafting (Phase F) in progress.** ~94 commits on `feature/96-sdlc-workflows`. Delivers: three-tier Docker image model, team manifests with per-node agent enforcement, Archon workflow orchestration (sequential + parallel), bash-node preprocessing, three-tier credential fallback, security hardening (cap-drop, signal handling, timeout, healthcheck), `loop.stages:` multi-stage cycle primitive (designer→dev→review), SSE dashboard follower helper, REST+SQLite-backed `workflows-status` skill, and full documentation suite (CLAUDE-CONTEXT-workflows.md, quickstart, author-workflow skill, troubleshooting). 261 unit tests pass. Phase F = rewrite PR body + open PR. Requirements spec: `docs/superpowers/specs/2026-04-19-phase-f-pr-open-requirements.md`. CI/CD automation deferred to separate issue.
 - **EPIC #105** — sdlc-knowledge-base plugin. **Merged.** Plugin is live and installable. Sub-feature 13 (#118 codebase-index) is future work.
+
+## Working in this repo — dogfood the skills we ship
+
+This repo *is* the plugin family. When working here, treat the skills
+and agents we ship as tools in your toolbox, not output artefacts:
+
+- **Before scope decisions** → invoke `superpowers:brainstorming`.
+  Do this especially when a task description might be wrong ("SSE
+  live streaming in workflows-run" turned out to be mis-scoped on
+  2026-04-19 because the CLI already streams to stderr).
+- **Before multi-file implementation** → invoke
+  `superpowers:writing-plans-and-specs` or the `Plan` subagent.
+- **When writing new code with tests** → invoke
+  `superpowers:test-driven-development`. Tests first, not after.
+- **After any logical chunk lands** → invoke
+  `superpowers:code-reviewer` or `sdlc-core:code-review-specialist`
+  on the commit before moving on.
+- **Independent subtasks (different files, different subsystems)** →
+  dispatch them in parallel via `superpowers:dispatching-parallel-agents`.
+  Don't serialise work that shares nothing.
+- **Design-level decisions** → dispatch to specialist agents:
+  - `sdlc-team-common:solution-architect` for architecture choices
+  - `sdlc-team-fullstack:backend-architect` for data-layer decisions
+  - `sdlc-team-common:observability-specialist` for monitoring design
+  - `sdlc-team-security:security-architect` for auth/secrets/hardening
+- **Dogfood the shipping skills** — if you just wrote
+  `/sdlc-workflows:workflows-status`, actually invoke it on this
+  session's runs before claiming it works. Same for every skill in
+  the plugin family.
+
+If this list feels long, that's the point: these tools exist so we
+don't keep making the same mistakes, and we only know they work if
+we use them ourselves.
 
 ## Essential Workflow
 
@@ -83,6 +116,7 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-team-docs` | Technical writer, documentation architect |
 | `sdlc-knowledge-base` | Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint operations. Orthogonal to SDLC option choice. |
 | `sdlc-lang-*` | Language-specific validation and patterns (Python, JS, Go, Java, Rust) |
+| `sdlc-workflows` | Archon workflow templates for delegated parallel execution |
 
 ### Available Skills
 
@@ -96,3 +130,9 @@ Then configure your team: `/sdlc-core:setup-team`
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
 | `/sdlc-knowledge-base:kb-*` | Knowledge base operations (init, ingest, query, lint, rebuild-indexes, validate-citations, promote-answer, staleness-check) — installed by `sdlc-knowledge-base` plugin |
+| `/sdlc-workflows:workflows-setup` | First-time setup: install Archon, build sdlc-worker base + full Docker images, scaffold `.archon/` dirs |
+| `/sdlc-workflows:deploy-team` | Build a team image from a manifest YAML |
+| `/sdlc-workflows:author-workflow` | Interactive workflow author — generates workflow YAML + command briefs |
+| `/sdlc-workflows:workflows-run` | Execute a named SDLC workflow via Archon |
+| `/sdlc-workflows:workflows-status` | Check running/recent workflow status |
+| `/sdlc-workflows:manage-teams` | Guided coaching for team lifecycle (create, update, delete, review — fleet and single-team views) |

@@ -1,0 +1,73 @@
+name: sdlc-bulk-refactor
+description: 'File-partitioned parallel refactor across a codebase.
+
+  Use when: Large refactor, migration, or bulk change spanning many files.
+
+  Input: Refactor description with scope (e.g., "rename all X to Y in src/").
+
+  Output: Refactored code with passing tests, merged cleanly.
+
+
+  Workflow:
+
+  1. Plan: decompose into non-overlapping file sets (file-level partitioning)
+
+  2. Implement A/B/C: parallel workers, each assigned a file set
+
+  3. Merge: sequential git merge of all worker branches
+
+  4. Validate: full SDLC validation pipeline
+
+  '
+provider: claude
+nodes:
+- id: plan
+  command: sdlc-plan
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 1800000
+  model: claude-opus-4-6[1m]
+  budget: 5.0
+- id: implement-a
+  depends_on:
+  - plan
+  command: sdlc-implement
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 1800000
+  budget: 5.0
+- id: implement-b
+  depends_on:
+  - plan
+  command: sdlc-implement
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 1800000
+  budget: 5.0
+- id: implement-c
+  depends_on:
+  - plan
+  command: sdlc-implement
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 1800000
+  budget: 5.0
+- id: merge
+  depends_on:
+  - implement-a
+  - implement-b
+  - implement-c
+  command: sdlc-merge-results
+  image: sdlc-worker:base
+  trigger_rule: one_success
+  context: fresh
+  timeout: 1800000
+  budget: 5.0
+- id: validate
+  depends_on:
+  - merge
+  command: sdlc-validate
+  image: sdlc-worker:base
+  context: fresh
+  timeout: 300000
+  budget: 1.0
