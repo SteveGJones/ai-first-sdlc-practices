@@ -1,21 +1,105 @@
 ---
 name: author-workflow
-description: Create a new containerised workflow — generates workflow YAML, command prompts, and validates team references.
+description: Pick an existing workflow for a task or author a new one — recommends workflow + team formation, or generates a fresh workflow YAML with command prompts and team validation.
 disable-model-invocation: false
-argument-hint: "[workflow description]"
+argument-hint: "--for-task \"<description>\" | --new [description]"
 ---
 
 # Author Workflow
 
-Create a new containerised team workflow. This skill generates the workflow YAML, command prompt files, and validates everything against existing teams.
+This skill owns workflow + team-formation decisions for a task. Use it
+both when the user has a concrete task ("add OAuth2 auth") and needs a
+recommendation, and when they want to build a brand-new workflow.
+
+## Modes (pass exactly one flag)
+
+Argument autocomplete does not show flag variants, so the mode menu is
+always in the body — pick one before proceeding.
+
+- `--for-task "<description>"` — **start here when the user describes
+  a task, not a pipeline.** Recommend which existing workflow fits and
+  which teams should be on which nodes; fall back to `--new` only if
+  nothing fits. No files written unless you actually author a workflow.
+- `--new [description]` — **start here when the user wants a pipeline
+  that does not yet exist.** Guided authoring: DAG design, workflow
+  YAML, command prompts, validation, commit.
+
+If invoked with no flag and no clear signal, ask the user which mode
+fits. Defaulting silently to `--new` has the user author a workflow
+when an existing one would have done the job.
 
 ## Context
 
-Load `CLAUDE-CONTEXT-workflows.md` before proceeding — it contains the workflow YAML schema, team manifest schema, command prompt format, and all validation rules.
+Load `CLAUDE-CONTEXT-workflows.md` before either mode proceeds — it
+contains the workflow YAML schema, team manifest schema, command
+prompt format, and all validation rules.
 
-## Steps
+## Mode: `--for-task "<description>"`
 
-### 0. Load the schema reference
+### Step 1: Analyse the task
+
+Read the task description. List current teams and workflows:
+
+```bash
+ls .archon/teams/*.yaml 2>/dev/null
+ls .archon/workflows/*.yaml 2>/dev/null
+```
+
+For each existing workflow, extract its purpose (the `description:`
+field) and its node list (the `nodes:` array). For each team, extract
+its agent roster.
+
+### Step 2: Recommend a formation
+
+Recommend a workflow + team-to-node mapping. Worked example:
+
+```
+Task: "Add OAuth2 authentication to the API"
+
+Recommended formation:
+
+  Workflow: sdlc-feature-development
+
+  Node          Team                     Notes
+  ──────────── ──────────────────────── ────────────────────
+  plan          general-purpose          architecture + planning
+  implement     dev-team-python          primary dev team
+  validate      dev-team-python          validation pipeline
+  security      security-review-team     auth = security-sensitive
+  architecture  general-purpose          architecture review
+  quality       general-purpose          code quality review
+  synthesise    general-purpose          unified summary
+
+  This task involves authentication, so I've included the
+  security-review-team on the security review node.
+
+  (a) Accept and run this now
+  (b) Modify — change team assignments
+  (c) Show alternative workflow templates
+  (d) No existing workflow fits — switch to --new mode
+  (e) Skip — I'll assign teams myself
+```
+
+### Step 3: Offer to run
+
+If the user picks (a), hand off directly:
+
+```
+/sdlc-workflows:workflows-run <workflow-name>
+```
+
+No file is written — this recommendation flow exists to route the user
+to the right existing workflow, not to persist task plans. The git
+commit of the run itself (via `workflows-run`) captures the record.
+
+If (b), loop back to step 2 with the adjusted mapping. If (c), list the
+available workflows and restart step 2 against the chosen one. If (d),
+switch to `--new` mode below with the task description carried through.
+If (e), end the skill.
+
+## Mode: `--new [description]`
+
+### Step 0. Load the schema reference
 
 Do not rely on memory. Explicitly read the canonical schema reference before
 drafting any YAML:
@@ -89,7 +173,12 @@ Create `.archon/workflows/<name>.yaml` following the schema in CLAUDE-CONTEXT-wo
 - `provider: claude` always
 - Each node needs: `id`, `command`, `image`, and `depends_on` where applicable
 - Use `trigger_rule: all_success` (default) unless the user specifies otherwise
-- Add `timeout:` to long-running nodes (default 300s is fine for most)
+- **`timeout:` is in milliseconds.** Archon's default is 120000ms (2 min) —
+  too short for real work. Set explicitly on every node:
+  review/synthesis `600000` (10 min), validation `300000` (5 min),
+  implementation/planning `1800000` (30 min)
+- Do not add non-standard fields to nodes (e.g. `name:`, `label:`) —
+  Archon's schema is strict and unknown fields break the graph renderer
 
 Starter template (copy, rename, adjust):
 
@@ -188,11 +277,19 @@ Authors regularly want pipelines like `designer → developer → reviewer
 → designer …` running for hours or days. Before choosing a shape, ask
 the user these questions and design accordingly:
 
-1. **How long will each node actually take?** Real implementation or review work is often 20-60 min, not the 5-min default. Set `timeout: <seconds>` explicitly on every long node — the default 300 s cuts real work off at the knees.
+1. **How long will each node actually take?** Real implementation or review work is often 20-60 min, not the 2-min default. Set `timeout:` **in milliseconds** explicitly on every node — Archon's default is 120000ms (2 min) which kills real work. Use `600000` (10 min) for reviews, `1800000` (30 min) for implementation. Proven by dogfood: security-review on a 170-file repo took 1m44s and would have been killed at the 2-min default.
 2. **Is the iteration count known up front?** If yes (e.g. "three review rounds"), unroll as distinct nodes (`review-v1`, `review-v2`, `review-v3`). If no (open-ended "until approved"), the workflow alone cannot express it — you will need an outer-loop wrapper that re-invokes `archon workflow run` until a signal is detected.
 3. **Does the cycle need different specialists each pass?** If yes, unrolled iterations or an outer loop are the only options — a single `loop:` node keeps one team running the whole cycle.
 4. **Does the user want live feedback during long nodes?** Flag the monitoring gap — `workflows-run` does not stream live output in v1. They will need a second terminal with `docker logs -f` or `tail -f` the archon log.
-5. **Is the token cost acceptable?** A 30-min node × 4 stages × 5 iterations on Opus can run to serious dollars. Warn the user before shipping the workflow.
+5. **Is the token cost acceptable?** A 30-min node × 4 stages × 5 iterations on Opus can run to serious dollars. Warn the user before shipping the workflow. Set `budget:` on each node to cap cost if the model spirals.
+6. **Tiered termination — always set both `timeout:` and `budget:`.** Three independent kill mechanisms protect against both runaway work and lost output:
+   - **Tier 1: Budget** (`budget: 2.0`) — kills if the model burns >$2 of tokens (spiral detection)
+   - **Tier 2: Inner timeout** (computed automatically: timeout_ms/1000 - 60s) — Claude gets SIGTERM, writes partial output
+   - **Tier 3: Outer timeout** (`timeout: 600000`) — hard kill if inner timeout failed
+   
+   The save window (60s between tier 2 and 3) means partial output survives.
+   Command prompts instruct agents to write findings incrementally to
+   `/workspace/reports/<node-id>/findings.md`.
 
 Full discussion of each option (per-node `loop:`, unrolled iterations,
 outer-loop wrapper) and the current monitoring surface is in

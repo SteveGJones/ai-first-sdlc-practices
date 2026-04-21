@@ -130,6 +130,13 @@ if [ -n "$CLAUDE_MODEL" ]; then
     echo "Model override: $CLAUDE_MODEL"
 fi
 
+# Tier 1 spiral detection: cost-based cap via --max-budget-usd.
+BUDGET_ARGS=()
+if [ -n "$CLAUDE_MAX_BUDGET" ]; then
+    BUDGET_ARGS=(--max-budget-usd "$CLAUDE_MAX_BUDGET")
+    echo "Budget cap: \$$CLAUDE_MAX_BUDGET"
+fi
+
 if [ -n "$ARCHON_WORKFLOW" ]; then
     echo "Running Archon workflow: $ARCHON_WORKFLOW"
     echo "Arguments: ${ARCHON_ARGS:-<none>}"
@@ -146,7 +153,7 @@ if [ -n "$ARCHON_WORKFLOW" ]; then
     timeout "$TIMEOUT" archon run "$ARCHON_WORKFLOW" ${ARCHON_ARGS}
 elif [ -n "$CLAUDE_PROMPT" ]; then
     echo "Running Claude Code with prompt..."
-    timeout "$TIMEOUT" claude --dangerously-skip-permissions "${MODEL_ARGS[@]}" -p "$CLAUDE_PROMPT"
+    timeout "$TIMEOUT" claude --dangerously-skip-permissions "${MODEL_ARGS[@]}" "${BUDGET_ARGS[@]}" -p "$CLAUDE_PROMPT"
 else
     echo "No ARCHON_WORKFLOW or CLAUDE_PROMPT set."
     echo "Usage:"

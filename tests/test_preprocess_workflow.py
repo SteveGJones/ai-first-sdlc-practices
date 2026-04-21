@@ -187,8 +187,8 @@ class TestLoopNodeTransform:
             "trigger_rule": "all_success",
             "loop": {
                 "stages": [
-                    {"image": "a:1", "prompt": "go"},
-                    {"image": "b:1", "prompt": "done"},
+                    {"image": "sdlc-worker:a", "prompt": "go"},
+                    {"image": "sdlc-worker:b", "prompt": "done"},
                 ],
                 "until": "ok",
                 "max_iterations": 2,
@@ -253,7 +253,7 @@ class TestLoopNodeTransform:
         node = {
             "id": "broken",
             "loop": {
-                "stages": [{"image": "a:1", "prompt": "x"}],
+                "stages": [{"image": "sdlc-worker:a", "prompt": "x"}],
                 "max_iterations": 0,
             },
         }
@@ -277,7 +277,7 @@ class TestLoopNodeTransform:
                 {
                     "id": "cycle",
                     "loop": {
-                        "stages": [{"image": "a:1", "prompt": "x"}],
+                        "stages": [{"image": "sdlc-worker:a", "prompt": "x"}],
                         "max_iterations": 2,
                     },
                 },
@@ -355,7 +355,7 @@ class TestFullWorkflowTransform:
 
         workflow_with = {
             "name": "with-images",
-            "nodes": [{"id": "a", "command": "test", "image": "x"}],
+            "nodes": [{"id": "a", "command": "test", "image": "sdlc-worker:x"}],
         }
         assert preprocess_workflow.has_image_nodes(workflow_with) is True
 
@@ -388,11 +388,34 @@ class TestSecurityFlags:
         result = self._transform()
         assert "--read-only" not in result["bash"]
 
-    def test_timeout_env_passed(self) -> None:
+    def test_timeout_env_computed_with_save_window(self) -> None:
+        """CLAUDE_TIMEOUT = (archon_timeout_ms / 1000) - 60s save window."""
         node = dict(self._NODE)
-        node["timeout"] = 600
+        node["timeout"] = 600000  # 10 min in ms
         result = self._transform(node)
-        assert "CLAUDE_TIMEOUT=600" in result["bash"]
+        # 600000ms = 600s, minus 60s save window = 540s
+        assert "CLAUDE_TIMEOUT=540" in result["bash"]
+
+    def test_timeout_save_window_has_floor(self) -> None:
+        """CLAUDE_TIMEOUT never goes below 60s even for short Archon timeouts."""
+        node = dict(self._NODE)
+        node["timeout"] = 30000  # 30s in ms — save window would make it negative
+        result = self._transform(node)
+        assert "CLAUDE_TIMEOUT=60" in result["bash"]
+
+    def test_timeout_5min_node(self) -> None:
+        node = dict(self._NODE)
+        node["timeout"] = 300000  # 5 min
+        result = self._transform(node)
+        # 300s - 60s = 240s
+        assert "CLAUDE_TIMEOUT=240" in result["bash"]
+
+    def test_no_timeout_means_no_env_var(self) -> None:
+        """No timeout field → no CLAUDE_TIMEOUT env (entrypoint uses its default)."""
+        node = dict(self._NODE)
+        # no timeout key
+        result = self._transform(node)
+        assert "CLAUDE_TIMEOUT" not in result["bash"]
 
     def test_docker_run_has_no_new_privileges(self) -> None:
         """--security-opt no-new-privileges is always present (S-M-1)."""
@@ -903,3 +926,128 @@ class TestParallelGitWriteGuardrail:
             )
         ids = {nid for nid, _ in exc_info.value.offenders}
         assert ids == {"fork-a"}
+
+
+class TestBudgetCap:
+    """Tier 1 spiral detection: budget: field → CLAUDE_MAX_BUDGET env var."""
+
+    _CRED_MOUNT = "/tmp/c.json:/home/sdlc/.claude-creds/.credentials.json:ro"
+
+    def _transform(self, node: dict) -> dict:
+        return preprocess_workflow.transform_node(
+            node, workspace="/ws", cred_mount=self._CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+
+    def test_budget_passed_as_env_var(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:base", "prompt": "hi", "budget": 2.0}
+        result = self._transform(node)
+        assert "CLAUDE_MAX_BUDGET=2.0" in result["bash"]
+
+    def test_no_budget_means_no_env_var(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:base", "prompt": "hi"}
+        result = self._transform(node)
+        assert "CLAUDE_MAX_BUDGET" not in result["bash"]
+
+    def test_budget_integer(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:base", "prompt": "hi", "budget": 5}
+        result = self._transform(node)
+        assert "CLAUDE_MAX_BUDGET=5" in result["bash"]
+
+
+class TestImageTagAllowlist:
+    """U-1: reject image names that don't match the sdlc-worker: prefix.
+
+    A workflow YAML with ``image: evil.example.com/foo`` would become
+    ``docker run evil.example.com/foo`` with credentials mounted and
+    the user's source tree at /workspace.  The allowlist prevents this.
+    """
+
+    def test_sdlc_worker_base_accepted(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:base", "prompt": "hi"}
+        result = preprocess_workflow.transform_node(
+            node, workspace="/ws", cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+        assert "bash" in result
+
+    def test_sdlc_worker_team_name_accepted(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:security-review-team", "prompt": "hi"}
+        result = preprocess_workflow.transform_node(
+            node, workspace="/ws", cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+        assert "sdlc-worker:security-review-team" in result["bash"]
+
+    def test_sdlc_worker_full_accepted(self) -> None:
+        node = {"id": "n", "image": "sdlc-worker:full", "prompt": "hi"}
+        result = preprocess_workflow.transform_node(
+            node, workspace="/ws", cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+        )
+        assert "bash" in result
+
+    def test_arbitrary_registry_rejected(self) -> None:
+        import pytest
+        node = {"id": "n", "image": "evil.example.com/pwn:latest", "prompt": "hi"}
+        with pytest.raises(preprocess_workflow.UnsafeImageError) as exc_info:
+            preprocess_workflow.transform_node(
+                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        assert "evil.example.com/pwn:latest" in str(exc_info.value)
+        assert "sdlc-worker:" in str(exc_info.value)
+
+    def test_bare_image_name_rejected(self) -> None:
+        import pytest
+        node = {"id": "n", "image": "ubuntu:latest", "prompt": "hi"}
+        with pytest.raises(preprocess_workflow.UnsafeImageError):
+            preprocess_workflow.transform_node(
+                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+
+    def test_multistage_loop_validates_stage_images(self) -> None:
+        import pytest
+        node = {
+            "id": "loop",
+            "loop": {
+                "stages": [
+                    {"id": "ok", "image": "sdlc-worker:dev-team", "prompt": "hi"},
+                    {"id": "bad", "image": "malicious:thing", "prompt": "hi"},
+                ],
+                "until": "DONE",
+                "max_iterations": 2,
+            },
+        }
+        with pytest.raises(preprocess_workflow.UnsafeImageError) as exc_info:
+            preprocess_workflow.transform_node(
+                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        assert "malicious:thing" in str(exc_info.value)
+
+    def test_workflow_level_rejects_bad_image(self) -> None:
+        import pytest
+        wf = {
+            "name": "test",
+            "nodes": [
+                {"id": "ok", "image": "sdlc-worker:base", "prompt": "hi"},
+                {"id": "bad", "image": "registry.io/exploit", "prompt": "hi"},
+            ],
+        }
+        with pytest.raises(preprocess_workflow.UnsafeImageError):
+            preprocess_workflow.transform_workflow(
+                wf, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+
+    def test_error_message_suggests_prefix(self) -> None:
+        import pytest
+        node = {"id": "n", "image": "nginx:latest", "prompt": "hi"}
+        with pytest.raises(preprocess_workflow.UnsafeImageError) as exc_info:
+            preprocess_workflow.transform_node(
+                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+            )
+        assert "sdlc-worker:" in str(exc_info.value)

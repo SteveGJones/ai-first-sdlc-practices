@@ -162,8 +162,8 @@ If the manifest is newer than the image, the image is stale.
 **Fixes:**
 - Rebuild: `bash plugins/sdlc-workflows/docker/build-team.sh <team>` (or
   `/sdlc-workflows:deploy-team <team>`).
-- Check `/sdlc-workflows:teams-status` — it flags stale images by comparing
-  `image_built` in the manifest against the image creation timestamp.
+- Check `/sdlc-workflows:manage-teams --review` — it flags stale images by
+  comparing `image_built` in the manifest against the image creation timestamp.
 - After a `build-full.sh` run (e.g. after upgrading a plugin on the host),
   rebuild every team image that depends on that plugin.
 
@@ -223,6 +223,68 @@ docker exec <container-id> cat /home/sdlc/.claude/.credentials.json | jq .claude
   will break this (intentionally not used — see design spec).
 - If `expiresAt` is in the past: re-run `login.sh` (for the volume tier) or
   re-authenticate Claude Code (for the Keychain tier).
+
+## Tiered Termination Failures
+
+### Node killed by budget cap (tier 1)
+
+**Symptom:** Node exits with code 1, partial findings may be on disk at
+`/workspace/reports/<node-id>/findings.md`. Container output includes
+"Budget cap: $X" at startup.
+
+**Cause:** The model spent more than `budget:` dollars on API calls. This
+is the primary spiral defence — a model looping unproductively burns
+tokens and hits the cap.
+
+**Diagnosis:**
+```bash
+# Check the node's exit in workflows-status
+/sdlc-workflows:workflows-status --run-id <id>
+# Look at what partial output was produced
+ls <workspace>/reports/*/
+```
+
+**Fixes:**
+- If the work was legitimate and needed more tokens: raise `budget:` on
+  that node (e.g. from $2 to $5).
+- If the model was spiralling: the budget cap worked correctly. Refine the
+  command prompt to be more focused, or split the work into smaller nodes.
+
+### Node killed by inner timeout (tier 2)
+
+**Symptom:** Node exits with code 124 (GNU timeout), partial output on
+disk. The node ran for `CLAUDE_TIMEOUT` seconds (visible in the
+entrypoint echo).
+
+**Cause:** Work took longer than the computed inner timeout
+(`timeout_ms / 1000 - 60`). This is the save window mechanism — Claude
+got SIGTERM and had 60s to write before Archon would hard-kill.
+
+**Fix:** Raise `timeout:` on the node (in ms). The inner timeout
+auto-adjusts.
+
+### Node killed by outer timeout (tier 3)
+
+**Symptom:** Archon reports "timed out after Nms", signal SIGPIPE. No
+partial output (hard kill, no grace period).
+
+**Cause:** Both the inner timeout and the save window failed — the
+container hung completely (e.g. Docker daemon issue, network loss,
+Claude CLI deadlock).
+
+**Fix:** Check `docker logs <container-id>` for the last output before
+the kill. If Claude was working but slow, raise the timeout. If the
+container was truly hung, investigate Docker health and network.
+
+### Budget cap not firing (entrypoint too old)
+
+**Symptom:** `CLAUDE_MAX_BUDGET` env var is passed to the container but
+the node runs to completion regardless of cost.
+
+**Cause:** The Docker image was built before the budget logic was added
+to `entrypoint.sh`. The container runs the baked-in entrypoint.
+
+**Fix:** Rebuild the base image: `bash plugins/sdlc-workflows/docker/build-base.sh`
 
 ## Image Build Errors
 

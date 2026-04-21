@@ -27,7 +27,7 @@ import yaml
 logger = logging.getLogger(__name__)
 
 _PRESERVED_FIELDS = {
-    "id", "depends_on", "trigger_rule", "when", "timeout", "retry",
+    "id", "depends_on", "trigger_rule", "when", "timeout", "retry", "budget",
 }
 
 # Patterns that indicate a command brief writes to the shared workspace
@@ -42,6 +42,33 @@ _GIT_WRITE_PATTERNS = (
     re.compile(r"\bgit\s+add\b"),
     re.compile(r"\bgit\s+push\b"),
 )
+
+# Image-tag allowlist (U-1).  Only images matching this prefix may be
+# used in workflow nodes.  A malicious YAML with ``image: evil.com/x``
+# would otherwise become ``docker run evil.com/x`` with credentials
+# mounted and the user's source tree at /workspace.
+_ALLOWED_IMAGE_PREFIX = "sdlc-worker:"
+
+
+class UnsafeImageError(ValueError):
+    """Raised when a workflow node references an image outside the allowlist."""
+
+    def __init__(self, image: str, node_id: str | None = None) -> None:
+        self.image = image
+        self.node_id = node_id
+        loc = f" (node {node_id!r})" if node_id else ""
+        super().__init__(
+            f"Image {image!r}{loc} is not in the allowlist. "
+            f"Only images matching the prefix '{_ALLOWED_IMAGE_PREFIX}' "
+            f"are permitted (e.g. sdlc-worker:base, sdlc-worker:dev-team). "
+            f"Build a team image with /sdlc-workflows:deploy-team."
+        )
+
+
+def _validate_image_tag(image: str, node_id: str | None = None) -> None:
+    """Raise :class:`UnsafeImageError` if *image* is not in the allowlist."""
+    if not image.startswith(_ALLOWED_IMAGE_PREFIX):
+        raise UnsafeImageError(image, node_id)
 
 # Resource defaults baked into every generated `docker run` command.
 # Override knob lives in the team manifest (future) — v1 is fixed.
@@ -230,6 +257,7 @@ def _build_docker_run(
     prompt_source: str,
     timeout: int | None = None,
     model: str | None = None,
+    budget: float | int | None = None,
 ) -> str:
     """Build a ``docker run`` command string.
 
@@ -252,13 +280,28 @@ def _build_docker_run(
     # metacharacters without breaking the generated bash (S-I-6 / CR-I-2
     # / SA-I-1).  shlex.quote leaves simple paths unwrapped and
     # single-quotes anything with metacharacters.
-    timeout_env = (
-        f" -e {shlex.quote(f'CLAUDE_TIMEOUT={timeout}')}"
-        if timeout is not None
-        else ""
-    )
+    # Tiered termination: CLAUDE_TIMEOUT (inner, seconds) must be LOWER
+    # than Archon's bash node timeout (outer, milliseconds) to create a
+    # "save window".  Claude gets SIGTERM from the inner timeout and has
+    # ~60s to write partial output before Archon kills the container.
+    # Floor: never below 60s (always give Claude time to write something).
+    _SAVE_WINDOW_SECONDS = 60
+    _FLOOR_SECONDS = 60
+    if timeout is not None:
+        inner_seconds = max(_FLOOR_SECONDS, int(timeout / 1000) - _SAVE_WINDOW_SECONDS)
+        timeout_env = f" -e {shlex.quote(f'CLAUDE_TIMEOUT={inner_seconds}')}"
+    else:
+        timeout_env = ""
     model_env = (
         f" -e {shlex.quote(f'CLAUDE_MODEL={model}')}" if model else ""
+    )
+    # Tier 1 spiral detection: cost-based cap.  If the model loops and
+    # burns tokens without progress, the budget kills it before the time
+    # cap fires.  Passed as env var; entrypoint forwards to --max-budget-usd.
+    budget_env = (
+        f" -e {shlex.quote(f'CLAUDE_MAX_BUDGET={budget}')}"
+        if budget is not None
+        else ""
     )
     workspace_mount = shlex.quote(f"{workspace}:/workspace")
     cred_mount_q = shlex.quote(cred_mount)
@@ -275,6 +318,7 @@ def _build_docker_run(
             ' -e "CLAUDE_PROMPT=$PROMPT"'
             f"{timeout_env}"
             f"{model_env}"
+            f"{budget_env}"
             f" {image_q}"
         ),
     ]
@@ -372,6 +416,7 @@ def _transform_multistage_loop(
             )
         stage_id = str(stage.get("id", f"s{idx + 1}"))
         stage_image = stage["image"]
+        _validate_image_tag(stage_image, f"{node.get('id')}.stages[{idx}]")
         stage_prompt_source = _resolve_prompt_source(stage, commands_dir)
         docker_cmd = _build_docker_run(
             image=stage_image,
@@ -380,6 +425,7 @@ def _transform_multistage_loop(
             prompt_source=stage_prompt_source,
             timeout=stage.get("timeout") or node.get("timeout"),
             model=stage.get("model") or node.get("model"),
+            budget=stage.get("budget") or node.get("budget"),
         )
         var_name = f"STAGE_{idx + 1}_OUT"
         stage_label = shlex.quote(f"--- stage {stage_id} ({stage_image}) ---")
@@ -428,6 +474,7 @@ def transform_node(
         return node
 
     image = node["image"]
+    _validate_image_tag(image, node.get("id"))
     logger.info(
         "Transforming image node to bash docker-run",
         extra={"node_id": node.get("id"), "image": image},
@@ -453,14 +500,16 @@ def transform_node(
             prompt_source=prompt_source,
             timeout=node.get("timeout"),
             model=node.get("model"),
+            budget=node.get("budget"),
         )
 
+        signal_q = shlex.quote(str(until_signal))
         result["bash"] = (
             f"for i in $(seq 1 {max_iter}); do\n"
             f"  echo \"Iteration $i/{max_iter}\"\n"
             f"  OUTPUT=$({docker_cmd})\n"
             f"  echo \"$OUTPUT\"\n"
-            f"  if echo \"$OUTPUT\" | grep -q \"{until_signal}\"; then\n"
+            f"  if echo \"$OUTPUT\" | grep -q {signal_q}; then\n"
             f"    echo \"LOOP_COMPLETE: signal detected at iteration $i\"\n"
             f"    break\n"
             f"  fi\n"
@@ -476,6 +525,7 @@ def transform_node(
         prompt_source=prompt_source,
         timeout=node.get("timeout"),
         model=node.get("model"),
+        budget=node.get("budget"),
     )
     result["bash"] = docker_cmd
     return result

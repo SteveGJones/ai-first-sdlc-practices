@@ -87,17 +87,26 @@ Do NOT edit the user's shell init files without confirmation.
 
 ### 2. Install Archon
 
-If Archon is not installed, inform the user and install:
+If Archon is not installed, inform the user and install. **Prefer Homebrew**
+— the compiled binary supports `archon serve` (web UI + REST API). The
+`curl` source installer produces a shell-script wrapper that cannot serve.
 
 ```
-Archon is not installed. Installing from https://archon.diy...
-This will drop the binary at ~/.bun/bin/archon.
+Archon is not installed. Installing...
 ```
 
-Run the installer:
+**macOS (recommended):**
+```bash
+brew install coleam00/archon/archon
+```
+
+**Fallback (Linux, or if brew unavailable):**
 ```bash
 curl -fsSL https://archon.diy/install | bash
 ```
+Note: the curl installer drops a shell-script wrapper at `~/.bun/bin/archon`
+that does not support `archon serve`. Workflow execution works, but the
+web UI and REST API will not be available.
 
 Verify installation — in that order, both forms must be tried because
 the installer typically puts entries in `~/.zshrc` / `~/.bashrc` that

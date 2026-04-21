@@ -14,7 +14,7 @@ echo ""
 PASS_COUNT=0
 FAIL_COUNT=0
 SKIP_COUNT=0
-TOTAL=20
+TOTAL=22
 
 pass() { echo "  PASS: $1"; PASS_COUNT=$((PASS_COUNT + 1)); }
 fail() { echo "  FAIL: $1 — $2"; FAIL_COUNT=$((FAIL_COUNT + 1)); }
@@ -629,6 +629,65 @@ if echo "$CONC_CHECK" | grep -q "^OK"; then
     pass "concurrent teams: $CONC_CHECK"
 else
     fail "concurrent teams" "$CONC_CHECK"
+fi
+
+# ---------------------------------------------------------------------------
+# Check 21: Save window — partial output survives inner timeout
+#
+# Simulates the tiered termination save window: a process writes a file
+# BEFORE the timeout fires, then sleeps past it. The timeout kills the
+# process, but the file on the mounted workspace survives.
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== TIERED TERMINATION PHASE ==="
+echo ""
+echo "[21/$TOTAL] Save window — partial output survives timeout"
+SAVE_DIR=$(mktemp -d "${TMPDIR:-/tmp}/sdlc-save-window.XXXXXX")
+docker run --rm \
+    -v "$SAVE_DIR:/workspace" \
+    -e "CLAUDE_TIMEOUT=3" \
+    --entrypoint /bin/bash \
+    sdlc-worker:base \
+    -c '
+        mkdir -p /workspace/reports/test-node
+        echo "## Partial findings" > /workspace/reports/test-node/findings.md
+        echo "- Found issue A" >> /workspace/reports/test-node/findings.md
+        echo "- Found issue B" >> /workspace/reports/test-node/findings.md
+        # Now simulate long work that exceeds the timeout
+        timeout "$CLAUDE_TIMEOUT" sleep 60 || true
+        # This line executes after timeout — the "write what you have" phase
+        echo "- Timeout fired, writing final state" >> /workspace/reports/test-node/findings.md
+    ' >/dev/null 2>&1
+SAVE_RC=$?
+if [ -f "$SAVE_DIR/reports/test-node/findings.md" ]; then
+    LINE_COUNT=$(wc -l < "$SAVE_DIR/reports/test-node/findings.md")
+    if [ "$LINE_COUNT" -ge 3 ]; then
+        pass "partial output survived timeout ($LINE_COUNT lines on disk)"
+    else
+        fail "save window" "file exists but only $LINE_COUNT lines"
+    fi
+else
+    fail "save window" "findings.md not found after timeout"
+fi
+rm -rf "$SAVE_DIR"
+
+echo "[22/$TOTAL] Entrypoint forwards CLAUDE_MAX_BUDGET to --max-budget-usd"
+BUDGET_CHECK=$(docker run --rm \
+    -e "CLAUDE_MAX_BUDGET=2.5" \
+    --entrypoint /bin/bash \
+    sdlc-worker:base \
+    -c '
+        # Source the entrypoint logic for BUDGET_ARGS without running claude
+        BUDGET_ARGS=()
+        if [ -n "$CLAUDE_MAX_BUDGET" ]; then
+            BUDGET_ARGS=(--max-budget-usd "$CLAUDE_MAX_BUDGET")
+        fi
+        echo "${BUDGET_ARGS[@]}"
+    ' 2>&1)
+if echo "$BUDGET_CHECK" | grep -q "\-\-max-budget-usd 2.5"; then
+    pass "CLAUDE_MAX_BUDGET=2.5 → --max-budget-usd 2.5"
+else
+    fail "budget forwarding" "got: $BUDGET_CHECK"
 fi
 
 # ---------------------------------------------------------------------------

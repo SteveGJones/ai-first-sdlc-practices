@@ -17,7 +17,7 @@ nodes:
     command: sdlc-implement
     image: sdlc-worker:dev-team
     depends_on: [plan]
-    timeout: 600
+    timeout: 600000
     model: claude-sonnet-4-6
 
   - id: qa-security

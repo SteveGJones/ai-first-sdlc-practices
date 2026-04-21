@@ -128,9 +128,10 @@ fixture and record outputs:
    mode works.
 3. `/sdlc-workflows:workflows-run` against an existing workflow —
    prove end-to-end.
-4. `python3 plugins/sdlc-workflows/scripts/sse_stream_follow.py` —
-   prove it fails cleanly when `archon serve` is not running and
-   streams correctly when it is.
+4. (removed — `sse_stream_follow.py` cut on 2026-04-19 v1 scope review;
+   CLI-launched runs do not emit SSE events, so the helper had no
+   function in our shipping shape. See
+   `reviews/2026-04-19-v1-scope-observability.md`.)
 
 If any of these misbehave, fix *before* opening the PR.
 

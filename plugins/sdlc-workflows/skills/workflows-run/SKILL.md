@@ -77,6 +77,45 @@ print('NEEDS_PREPROCESSING' if has_images else 'NATIVE')
 
 **If NEEDS_PREPROCESSING:**
 
+0. Pre-flight image check. Extract every distinct `image:` value from
+   the workflow and verify each exists locally via `docker image
+   inspect`. Fail fast with a build hint before we do the expensive
+   rsync + seed-commit setup — otherwise the user waits, then sees a
+   mid-run docker error from a single node.
+
+```bash
+MISSING_IMAGES=$(python3 -c "
+import yaml
+from pathlib import Path
+wf = yaml.safe_load(Path('.archon/workflows/<workflow-name>.yaml').read_text())
+images = sorted({n['image'] for n in wf.get('nodes', []) if 'image' in n})
+for img in images:
+    print(img)
+" | while read -r img; do
+    [ -z "$img" ] && continue
+    if ! docker image inspect "$img" >/dev/null 2>&1; then
+        echo "$img"
+    fi
+done)
+
+if [ -n "$MISSING_IMAGES" ]; then
+    echo "Workflow references team images that are not built:"
+    echo "$MISSING_IMAGES" | sed 's/^/  - /'
+    echo ""
+    echo "Build the missing images before running:"
+    echo "  • For a team image (sdlc-worker:<team-name>):"
+    echo "        /sdlc-workflows:deploy-team <team-name>"
+    echo "  • For sdlc-worker:base or sdlc-worker:full:"
+    echo "        /sdlc-workflows:workflows-setup --with-docker"
+    exit 1
+fi
+```
+
+This check is deliberate: we do NOT silently auto-build the missing
+image. Building a team image requires a manifest the user authored.
+Building `base`/`full` is the setup skill's job. Either way, the user
+makes the call, not us.
+
 1. Resolve credentials:
 ```bash
 CRED_INFO=$(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/resolve_credentials.py --project-dir . --json)
@@ -124,7 +163,7 @@ trap cleanup_workspace_and_credentials EXIT INT TERM
 # Prompt-injection inside the container could otherwise read any of
 # these and exfiltrate via tool calls. Keep this list STRICT.
 rsync -a \
-    --exclude='.git/' \
+    --exclude='.git' \
     --exclude='.worktrees/' \
     --exclude='node_modules/' \
     --exclude='.venv/' \
@@ -262,6 +301,21 @@ echo "--- New or modified files ---"
 (cd "$WORKSPACE" && git diff --stat "$SEED_SHA" HEAD) \
     || echo "(no diff available)"
 echo ""
+
+# U-5: Fan-in overlap warning.  When two or more commits in the
+# workspace touched the same file, the last writer's version won
+# silently.  Show a warning so the user knows what was overridden
+# before they cherry-pick.  This is a soft warning, not a hard fail.
+OVERLAP=$(cd "$WORKSPACE" && \
+    git log --name-only --format="" "$SEED_SHA..HEAD" 2>/dev/null \
+    | sort | uniq -d)
+if [ -n "$OVERLAP" ]; then
+    echo "⚠  Fan-in overlap: the following files were modified by"
+    echo "   multiple workflow nodes. The last writer's version won."
+    echo "   Review the diff before cherry-picking."
+    echo "$OVERLAP" | sed 's/^/     /'
+    echo ""
+fi
 ```
 
 6. Offer the user three choices — NEVER silently discard work:
@@ -360,11 +414,5 @@ user is running iterative designer→dev→review cycles:
 - **Per-node timeout**: each long node must set `timeout: <seconds>` in its YAML. The default 300 s (5 min) is almost always wrong for real work.
 - **Live progress during a long node**: `archon workflow run` emits per-node `[name] Started` / `[name] Completed (duration)` lines to stderr as they happen — no redirect needed to see them. For tool-level detail inside a node, add `--verbose` and pass it through to archon. For the container's own output (whatever the AI is printing), open a second terminal and run `docker logs -f $(docker ps -q --filter name=sdlc-worker --latest)`.
 - **Cycles (designer → dev → review → designer …)**: use `loop.stages:` — see *Long-Running Workflows, Cycles, and Monitoring* in `CLAUDE-CONTEXT-workflows.md` for the primary pattern, with unrolled iterations as a fallback for fixed small counts.
-- **Monitoring via the Archon server**: if the user is running `archon serve` in another terminal, they can subscribe to the SSE dashboard stream for structured events across every run:
-  ```bash
-  python3 ${CLAUDE_PLUGIN_ROOT}/scripts/sse_stream_follow.py \
-      --url http://localhost:3090
-  ```
-  Add `--run-id <id>` to follow a single run, or `--json` for machine-readable output. This is the foundation for the planned Prometheus/Grafana exporter; without `archon serve` it simply fails fast with a clear message.
-- **Monitoring surfaces** (any combination): `archon workflow status` (what's live), `archon isolation list` (per-run worktrees), `docker events --since <epoch>` (node lifecycle), `docker stats` (resource use).
+- **Monitoring surfaces** (any combination): the CLI's own stderr stream (shown automatically), `/sdlc-workflows:workflows-status` for historical + REST-backed detail, `archon workflow status` (what's live), `archon isolation list` (per-run worktrees), `docker logs -f <container>` (per-node output), `docker events --since <epoch>` (node lifecycle), `docker stats` (resource use). The Archon web UI (`archon serve` on http://localhost:3090) renders the rich per-run graph only for runs launched through the server — CLI-launched runs show up in listing but the detail pages render empty. Use `workflows-status` and `docker logs` for CLI runs.
 - **Cost**: there is no cost meter in v1 — a multi-hour cyclical run on Opus will burn meaningful tokens. Flag this to the user before launching.

@@ -21,7 +21,9 @@ nodes:                          # Required. List of execution nodes.
     context: fresh              # Optional. "fresh" starts with clean context. Default behaviour.
     model: <model-id>          # Optional. Override the Claude model for this node (e.g., claude-opus-4-6[1m]).
     effort: high | medium | low # Optional. Hint for token budget allocation.
-    timeout: <seconds>          # Optional. Per-node timeout in seconds. Passed as CLAUDE_TIMEOUT env var to container. Default: 300.
+    timeout: <milliseconds>      # Optional. Per-node timeout in MILLISECONDS. Default: 120000 (2 min).
+                                # Use: 600000 (10 min) for reviews, 1800000 (30 min) for implementation.
+                                # Also passed as CLAUDE_TIMEOUT (seconds) env var to container.
     loop:                       # Optional. Repeat until a signal is detected.
       until: <signal-string>    # String to grep for in output to stop the loop.
       max_iterations: <int>     # Maximum iterations before forced stop. Default: 5.
@@ -33,7 +35,7 @@ nodes:                          # Required. List of execution nodes.
           image: <docker-image> # Per-stage image (REQUIRED when stages: is used —
           command: <cmd-name>   # the node-level image: is ignored).
           prompt: <text>        # Each stage: command OR prompt (same rules as nodes).
-          timeout: <seconds>    # Optional. Falls back to the node's timeout.
+          timeout: <milliseconds> # Optional. Falls back to the node's timeout.
           model: <model-id>     # Optional. Falls back to the node's model.
         # (see the "Cycles" section below for the full pattern)
     prompt: |                   # Optional. Inline prompt instead of command file. Use command: for anything non-trivial.
@@ -42,6 +44,11 @@ nodes:                          # Required. List of execution nodes.
       - sdlc-team-security:security-architect
       - sdlc-team-common:api-architect
 ```
+
+> **Schema strictness:** Archon rejects unknown fields on nodes.
+> Adding non-standard fields (e.g. `name:`, `label:`) causes the
+> workflow to fail validation and breaks the web UI graph renderer.
+> Only use the fields listed above.
 
 > **`team_extend` status in v1:** the field is schema-validated (entries
 > must be qualified `plugin:agent` references that resolve to installed
@@ -314,6 +321,65 @@ Note: `--read-only` is NOT used. Claude Code requires a writable `~/.claude/` di
 6. Execute: if `ARCHON_WORKFLOW` is set, run Archon; if `CLAUDE_PROMPT` is set, run Claude with timeout; otherwise exit with usage.
 7. On SIGTERM/SIGINT/EXIT: clean up credential temp files, kill child processes.
 
+## Tiered Termination Model
+
+Three independent kill mechanisms prevent both runaway work and lost output:
+
+| Tier | Mechanism | Catches | YAML Field | Default |
+|---|---|---|---|---|
+| 1. **Budget** | `--max-budget-usd` via `CLAUDE_MAX_BUDGET` env | Model spiralling / burning tokens without progress | `budget: 2.0` (dollars) | No cap |
+| 2. **Inner timeout** | `timeout $CLAUDE_TIMEOUT claude ...` in entrypoint | Work exceeding expected duration — Claude gets SIGTERM, can write partial output | Computed: `(timeout_ms / 1000) - 60` | 300s |
+| 3. **Outer timeout** | Archon bash node `timeout:` (milliseconds) | Container hung, inner timeout failed | `timeout: 600000` (ms) | 120000 (2 min) |
+
+**Save window**: Tier 2 fires 60 seconds before Tier 3. Claude gets
+SIGTERM and has a window to write partial results to `/workspace/reports/`
+before Archon kills the container. The floor is 60s — Claude always gets
+at least one minute of work time even on short nodes.
+
+**Always set `timeout:` explicitly.** If omitted, Archon defaults to
+120000ms (2 min) but the entrypoint defaults CLAUDE_TIMEOUT to 300s
+(5 min) — the outer kill fires BEFORE the inner timeout, eliminating
+the save window entirely. Every `image:` node MUST have an explicit
+`timeout:` to keep the tiers in order.
+
+**Incremental output**: Command prompts instruct agents to write findings
+to `/workspace/reports/<node-id>/findings.md` after each phase, not hold
+everything until the end. If any tier fires, partial output is on disk.
+The synthesise node checks these files as a fallback when Archon
+variables are empty (reviewer timed out).
+
+**Recommended values for workflow authoring:**
+
+| Node type | `timeout:` (ms) | `budget:` ($) |
+|---|---|---|
+| Review / synthesis | 600000 (10 min) | 2.0 |
+| Validation | 300000 (5 min) | 1.0 |
+| Implementation / planning | 1800000 (30 min) | 5.0 |
+| Long-running cycles | 3600000 (1 hr) | 10.0 |
+
+**Empirical data (dogfood on this repo, 170+ files):**
+
+| Node | Normal run ($2 budget) | $0.01 budget (spiral test) |
+|---|---|---|
+| security-review | 2m8s | 15.5s (killed by budget) |
+| architecture-review | 2m10s | 15.3s (killed by budget) |
+| synthesise | 6m8s | — (never reached) |
+
+The budget cap fires after one API round-trip (~15s) when set absurdly low.
+At $2, reviews complete normally in 1.5-2.5 min. A spiralling model would
+be killed after ~$2 of token burn regardless of how much wall time remains
+on the outer timeout — this is why budget is the primary spiral defence and
+the outer timeout can be generous (10-30 min) without fear.
+
+**Diagnosing which tier fired:**
+
+| Symptom | Tier | Fix |
+|---|---|---|
+| Node exit code 1, output includes partial findings | Tier 1 (budget) | Raise `budget:` if work was legitimate |
+| Node exit code 124 (timeout utility), partial output on disk | Tier 2 (inner timeout) | Raise `timeout:` — work needs more time |
+| Archon reports "timed out after Nms", SIGPIPE, no output | Tier 3 (outer timeout) | Something hung — check Docker logs |
+| Node completed successfully | No tier fired | Working as intended |
+
 ## Security Model
 
 - **Non-root**: Containers run as `sdlc` user (UID 1001).
@@ -325,17 +391,16 @@ Note: `--read-only` is NOT used. Claude Code requires a writable `~/.claude/` di
 
 ## Skills
 
-The `sdlc-workflows` plugin ships seven user-invocable skills. Each is the canonical entry point for the listed task — prefer them over bespoke commands.
+The `sdlc-workflows` plugin ships six user-invocable skills. Each is the canonical entry point for the listed task — prefer them over bespoke commands.
 
 | Skill | Invoke with | When to use |
 |-------|-------------|-------------|
 | workflows-setup | `/sdlc-workflows:workflows-setup` | First-time install: patches Archon, builds base/full images, scaffolds `.archon/` dirs |
 | workflows-run | `/sdlc-workflows:workflows-run <name>` | Execute a workflow by name — preprocesses `image:` nodes, resolves credentials, delegates to Archon |
 | workflows-status | `/sdlc-workflows:workflows-status` | Inspect running/recent workflow runs (containers, exit codes, durations) |
-| author-workflow | `/sdlc-workflows:author-workflow` | Create a new workflow YAML + its command `.md` briefs interactively |
+| author-workflow | `/sdlc-workflows:author-workflow --for-task "<desc>" \| --new` | Recommend an existing workflow + team formation for a task, or author a new one |
 | deploy-team | `/sdlc-workflows:deploy-team <name>` | Validate a team manifest, generate its Dockerfile and CLAUDE.md, build the team image |
-| manage-teams | `/sdlc-workflows:manage-teams` | Lifecycle coaching for teams: create / update / deactivate / review / plan-task |
-| teams-status | `/sdlc-workflows:teams-status` | Fleet report: roster, staleness, coaching signals, workflow usage |
+| manage-teams | `/sdlc-workflows:manage-teams` | Lifecycle coaching for teams: create / update / delete / review. `--review` gives the fleet report (roster, staleness, coaching signals, workflow usage); `--review --team <name>` gives single-team detail |
 
 ## Long-Running Workflows, Cycles, and Monitoring
 
@@ -353,7 +418,7 @@ the per-node timeout.
 - id: big-refactor
   command: implement
   image: sdlc-worker:dev-team
-  timeout: 7200     # 2 hours; forwarded as CLAUDE_TIMEOUT into the container
+  timeout: 7200000  # 2 hours (ms); inner CLAUDE_TIMEOUT computed as 7140s
 ```
 
 The default `timeout:` is 300 s (5 min), which is right for smoke tests
@@ -445,15 +510,18 @@ needs to survive process death between iterations, but plain
 
 ### Monitoring — what Archon provides
 
-> **SSE vs CLI — read this first.** The SSE dashboard stream
-> (`/api/stream/__dashboard__`) only observes runs launched *through*
-> `archon serve`'s HTTP API. Runs started by the CLI
-> (`archon workflow run …`, which is what `/sdlc-workflows:workflows-run`
-> invokes by default) write to `~/.archon/archon.db` but do **not**
-> appear in the SSE stream. `/sdlc-workflows:workflows-status` reads
-> both REST and SQLite, so it works for either launch path; the SSE
-> helper (`sse_stream_follow.py`) is only useful for server-launched
-> runs. This is how Archon 1.x behaves — not a bug on our side.
+> **Archon UI clickthrough is degraded for CLI-launched runs — read
+> this first.** `archon serve`'s rich per-run views (DAG graph,
+> conversation thread, live SSE dashboard at `/api/stream/__dashboard__`)
+> only render for workflows launched *through* the HTTP API. Runs
+> started by the CLI (`archon workflow run …`, which is what
+> `/sdlc-workflows:workflows-run` invokes by default) write to
+> `~/.archon/archon.db` and are listed by `archon workflow status`,
+> but their UI detail pages and the SSE dashboard stay empty.
+> `/sdlc-workflows:workflows-status` reads both REST and SQLite, so it
+> works for either launch path and is the authoritative view for CLI
+> runs. Use `docker logs -f <container>` for per-node detail. This is
+> how Archon 1.x scopes the server — not a bug on our side.
 
 Archon's CLI is only the surface layer. `archon serve` starts a full
 HTTP server with a REST API and Server-Sent Events streaming — this
@@ -496,7 +564,7 @@ combines `archon workflow status` with Docker-level visibility.
 These are real limitations of the current experience, not defects:
 
 1. **No `/metrics` endpoint.** Archon exposes a REST API + SSE stream but not Prometheus format. A small exporter that subscribes to `/api/stream/__dashboard__` (live events) + `docker events` (container lifecycle) and emits Prometheus metrics is the planned follow-up. All required data is already exposed by `archon serve` — no upstream changes needed.
-2. **`workflows-run` does not auto-subscribe to the SSE stream.** `archon workflow run` already streams per-node events to stderr (`[node] Started`, `[node] Completed (duration)`), so `workflows-run` shows live progress by default — no redirect. For structured events (required by a Prometheus exporter, or a separate watch terminal), we ship `plugins/sdlc-workflows/scripts/sse_stream_follow.py`, which subscribes to `/api/stream/__dashboard__` when `archon serve` is running and pretty-prints one line per event. It is not invoked automatically because CLI-mode runs (our default) do not start the HTTP server; the exporter follow-up will choose when to auto-launch `archon serve`.
+2. **No structured-event stream for CLI-launched runs.** `archon workflow run` already streams per-node events to stderr (`[node] Started`, `[node] Completed (duration)`), so `workflows-run` shows live progress by default. What we do *not* have — because `archon serve`'s SSE stream only covers server-launched runs — is a structured-event feed that a metrics exporter or a separate watch terminal can consume for our default CLI launch path. The observability follow-up will choose the approach: either `workflows-run --server` (co-launch `archon serve` + `archon workflow run` so SSE becomes available), or a polling exporter against the SQLite schema.
 3. **No cost meter.** Claude API spend per node/workflow is not tracked anywhere — it has to come from Claude's own usage reporting. A future exporter could estimate from token-count logs if Claude Code emits them.
 4. **No interrupt test coverage.** Ctrl-C at the Archon CLI level has not been shakedown-tested against our containerised runs. Containers themselves handle SIGTERM cleanly (entrypoint trap) but the Archon → container signal path is unproven.
 5. **No long-run soak test.** The E2E test runs nodes that complete in seconds. A deliberate slow-node test (≥20 min per node, multi-cycle) would shake out credential expiry, resource leaks, and workspace corruption. Small script, large confidence boost.
@@ -524,13 +592,30 @@ The "observability" follow-up PR should bundle at least items 1 + 2 (Prometheus 
 >      - `sdlc_team_container_starts_total{team=…}`
 >      - `sdlc_team_container_failures_total{team=…}`
 > 2. Sample Grafana dashboard JSON in `plugins/sdlc-workflows/dashboards/workforce.json`.
-> 3. Live streaming in `workflows-run` — the current CLI path already emits per-node events to stderr; the follow-up adds a **server mode** (`workflows-run --server`) that launches `archon serve` + `archon workflow run` in concert so SSE is available without a second terminal. `sse_stream_follow.py` is the client library that server-mode would call directly; for now it is a user-facing helper for anyone running `archon serve` manually.
+> 3. Live streaming in `workflows-run` — the current CLI path already emits per-node events to stderr; the follow-up adds a **server mode** (`workflows-run --server`) that launches `archon serve` + `archon workflow run` in concert so SSE is available without a second terminal, or equivalently a SQLite-polling exporter if server mode proves too heavy. Either way the client helper is written when the server mode lands — we are not shipping an orphan consumer helper ahead of it.
 > 4. Optional: `sdlc-workflows:workflows-watch <runId>` — a skill that subscribes to the per-run SSE stream for an already-running workflow, for when the user launched something long and wants to reattach later.
 >
 > **Out of scope for the first monitoring PR (defer to follow-ups):**
 > - Cost / token metering (needs Claude API usage data, not Archon's)
 > - OTLP exporter (start with Prometheus; add OTLP if users ask)
 > - Alert rule packs (ship dashboard only; let teams write their own alerts)
+
+## Archon Coupling Points
+
+The plugin depends on specific Archon behaviours.  This table is the
+canonical reference for what we rely on, what breaks if it changes, and
+the current mitigation.  Reviewed and verified against Archon v0.3.6
+(SHA `6be5c61`, pinned in `Dockerfile.base`).
+
+| Coupling Point | Risk | What Breaks | Mitigation |
+|---|---|---|---|
+| `bash:` node type in workflow YAML | GREEN | Archon renames/drops `bash:` → preprocessor output rejected. Failure is immediate and loud. | `bash:` is a documented first-class node type. Low risk. |
+| SQLite schema (`remote_agent_workflow_runs`, `remote_agent_workflow_events`) | AMBER | Column rename/drop → `workflows-status` returns empty or raises. | `PRAGMA table_info` schema probe on startup emits a diagnostic warning instead of a silent empty result. 3 integration tests lock the expected columns. |
+| REST API shape (`/api/workflows/runs`) | AMBER | Wrapper shape change → detail rows blank. Falls back to SQLite. | Discriminating assertion on the REST wrapper; SQLite fallback is the primary path for CLI-launched runs. |
+| Archon binary PATH (`~/.bun/bin/archon`) | GREEN | Install location changes → "not installed" error. | Skills distinguish "not installed" from "installed but not on PATH" and give the user a fix. |
+
+When Archon is upgraded, re-run `tests/test_workflows_status_query_sqlite_integration.py`
+to catch schema drift before it reaches users.
 
 ## Further Reading
 

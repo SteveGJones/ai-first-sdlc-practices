@@ -186,7 +186,6 @@ sdlc-workflows:
     - source: skills/author-workflow/SKILL.md
     - source: skills/deploy-team/SKILL.md
     - source: skills/manage-teams/SKILL.md
-    - source: skills/teams-status/SKILL.md
   agents:
     - source: agents/delegation/delegation-coordinator.md
   commands:
@@ -220,7 +219,6 @@ sdlc-workflows:
     - source: plugins/sdlc-workflows/scripts/detect-loop-bug.sh
     - source: plugins/sdlc-workflows/scripts/loop-workaround.sh
     - source: plugins/sdlc-workflows/scripts/login.sh
-    - source: plugins/sdlc-workflows/scripts/sse_stream_follow.py
     - source: plugins/sdlc-workflows/scripts/workflows_status_query.py
   # The following live in the plugin directory and ship in-place with the plugin.
   # They are not validated by check-plugin-packaging.py today (no `docker`/`docs`
