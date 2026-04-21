@@ -1,7 +1,7 @@
 {
   "name": "sdlc-workflows",
   "version": "0.1.0",
-  "description": "Archon workflow templates for delegated parallel execution of SDLC processes",
+  "description": "Containerised delegated execution for the AI-First SDLC — Archon orchestrates DAG workflows where each node runs in an isolated Docker container with team-scoped plugins, agents, and skills. Includes tiered termination (budget + timeout), 4 bundled workflows, and 6 skills.",
   "author": { "name": "SteveGJones" },
   "repository": "https://github.com/SteveGJones/ai-first-sdlc-practices",
   "license": "MIT",
