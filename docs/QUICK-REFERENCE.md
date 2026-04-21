@@ -1,3 +1,30 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC - Quick Reference Card](#ai-first-sdlc---quick-reference-card)
+  - [Essential Skills](#essential-skills)
+    - [Starting Work](#starting-work)
+    - [During Development](#during-development)
+    - [Shipping](#shipping)
+  - [All Skills by Plugin](#all-skills-by-plugin)
+    - [sdlc-core (always installed)](#sdlc-core-always-installed)
+    - [sdlc-knowledge-base](#sdlc-knowledge-base)
+    - [sdlc-workflows](#sdlc-workflows)
+  - [Validation Pipeline (10 Checks)](#validation-pipeline-10-checks)
+  - [Direct Validators (Framework Development)](#direct-validators-framework-development)
+  - [Branch Naming](#branch-naming)
+  - [Common Workflows](#common-workflows)
+    - [New Project Setup](#new-project-setup)
+    - [Add Knowledge Base](#add-knowledge-base)
+    - [Add Containerised Workflows](#add-containerised-workflows)
+    - [Install All Plugins](#install-all-plugins)
+  - [Things to NEVER Do](#things-to-never-do)
+  - [Quick Fixes](#quick-fixes)
+  - [Further Reading](#further-reading)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC - Quick Reference Card
 
 ## Essential Skills

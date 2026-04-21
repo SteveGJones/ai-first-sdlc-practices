@@ -1,3 +1,34 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Plugin Consumer Guide](#plugin-consumer-guide)
+  - [What the plugins provide](#what-the-plugins-provide)
+    - [Skills (slash commands)](#skills-slash-commands)
+    - [Agents (specialist roles)](#agents-specialist-roles)
+    - [Rules and enforcement](#rules-and-enforcement)
+  - [Installation](#installation)
+    - [Step 1: Add the marketplace](#step-1-add-the-marketplace)
+    - [Step 2: Install the core plugin](#step-2-install-the-core-plugin)
+    - [Step 3: Configure your team](#step-3-configure-your-team)
+  - [Which plugins to install](#which-plugins-to-install)
+    - [Always install](#always-install)
+    - [Recommended for most projects](#recommended-for-most-projects)
+    - [By project type](#by-project-type)
+    - [Optional](#optional)
+  - [Daily workflow](#daily-workflow)
+  - [Customisation](#customisation)
+    - [Adding or removing plugins](#adding-or-removing-plugins)
+    - [Plugin cache](#plugin-cache)
+  - [Troubleshooting](#troubleshooting)
+    - [Skill not found](#skill-not-found)
+    - [Validation fails](#validation-fails)
+    - [Agent not responding](#agent-not-responding)
+    - [`.claude/` write protection](#claude-write-protection)
+  - [Further reading](#further-reading)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Plugin Consumer Guide
 
 This guide explains how the AI-First SDLC plugin ecosystem works for end users. If you've installed the plugins and want to understand what you've got, start here.

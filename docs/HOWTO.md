@@ -1,3 +1,45 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [AI-First SDLC Framework - HOWTO Guide](#ai-first-sdlc-framework---howto-guide)
+  - [Quick Start](#quick-start)
+    - [1. Install the Core Plugin (2 minutes)](#1-install-the-core-plugin-2-minutes)
+    - [2. Configure Your Team](#2-configure-your-team)
+    - [3. Create Your First Feature](#3-create-your-first-feature)
+  - [Core Workflow](#core-workflow)
+    - [Step-by-Step Process](#step-by-step-process)
+      - [1. Start a New Feature](#1-start-a-new-feature)
+      - [2. Architect Your Solution](#2-architect-your-solution)
+      - [3. Implement with Continuous Validation](#3-implement-with-continuous-validation)
+      - [4. Commit Your Work](#4-commit-your-work)
+      - [5. Complete the Retrospective](#5-complete-the-retrospective)
+      - [6. Create a Pull Request](#6-create-a-pull-request)
+  - [Using Specialist Agents](#using-specialist-agents)
+    - [Architecture and Design](#architecture-and-design)
+    - [Code Review](#code-review)
+    - [Domain-Specific](#domain-specific)
+    - [Research](#research)
+  - [Plugin Management](#plugin-management)
+    - [Installing Additional Plugins](#installing-additional-plugins)
+    - [Available Plugins](#available-plugins)
+    - [Clearing Plugin Cache](#clearing-plugin-cache)
+  - [The Rules](#the-rules)
+  - [Common Scenarios](#common-scenarios)
+    - [Starting a New Project](#starting-a-new-project)
+    - [Adding a Knowledge Base](#adding-a-knowledge-base)
+    - [Setting Up Containerised Workflows](#setting-up-containerised-workflows)
+  - [Troubleshooting](#troubleshooting)
+    - ["Skill not found"](#skill-not-found)
+    - [Validation failures](#validation-failures)
+    - [Plugin cache issues](#plugin-cache-issues)
+    - [`.claude/` write protection](#claude-write-protection)
+    - [Pre-commit hooks failing](#pre-commit-hooks-failing)
+  - [Best Practices](#best-practices)
+  - [Further Reading](#further-reading)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # AI-First SDLC Framework - HOWTO Guide
 
 This guide explains how to use the AI-First SDLC Framework in your daily development workflow using the plugin ecosystem.
