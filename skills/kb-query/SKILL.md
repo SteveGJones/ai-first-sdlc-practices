@@ -204,13 +204,99 @@ The orchestrator helper is the preferred approach for consistency.
 
 Same behaviour as before — dispatch `kb-promote-answer-to-library` with the answer. Promotion writes only to the **local** library; external libraries are read-only from this project.
 
-### 6. Synthesis (phase C, #169 — not in phase A)
+### 6. Cross-library synthesis (when the question calls for it)
 
-Not implemented in phase A. If the query is a synthesis query ("build me the case for", "how should we think about"), return the retrieval output and print a note:
+After Step 5, decide whether to run synthesis. The orchestrator's
+`run_synthesis_query` handles the decision and the dispatch:
 
-> Note: cross-library synthesis is coming in phase C (#169). This query returned per-source findings; you can draw connections between them manually.
+```bash
+python3 -c "
+from sdlc_knowledge_base_scripts.orchestrator import (
+    run_synthesis_query,
+    format_synthesis_prompt,
+    is_synthesis_query,
+    RetrievalQueryResult,
+)
+from sdlc_knowledge_base_scripts.priming import PrimingBundle
+from sdlc_knowledge_base_scripts.registry import LibrarySource
+import json
 
-Phase C replaces this note with a real synthesis step.
+# Reconstruct the retrieval result, sources, and per-source findings collected in Steps 3-5
+retrieval = RetrievalQueryResult(
+    combined_output='<combined retrieval output from Step 5>',
+    sources_with_findings=['<list of source names that returned findings>'],
+)
+sources = [
+    LibrarySource(name='<source.name>', type='filesystem', path='<source.path>'),
+    # ... one entry per dispatched source
+]
+per_source = {
+    '<source.name>': '<raw librarian output for that source>',
+    # ... one entry per source that returned findings
+}
+priming_data = json.loads('<priming_bundle_json_from_step_2>')
+priming = PrimingBundle(
+    question=priming_data['question'],
+    local_kb_config_excerpt=priming_data['local_kb_config_excerpt'],
+    local_shelf_index_terms=priming_data['local_shelf_index_terms'],
+)
+
+# is_synthesis_query handles the heuristic check; run_synthesis_query decides
+# whether to actually dispatch (it will skip if <2 sources have findings)
+def synthesis_dispatcher(prompt):
+    # In the real skill, this wraps the Agent tool: dispatch one
+    # research-librarian invocation with the synthesis prompt as input.
+    raise NotImplementedError('replace with Agent tool dispatch in the skill body')
+
+result = run_synthesis_query(
+    question='<the user question>',
+    retrieval=retrieval,
+    priming=priming,
+    sources=sources,
+    synthesis_dispatcher=synthesis_dispatcher,
+    per_source_findings=per_source,
+)
+print(result.combined_output)
+"
+```
+
+In the actual skill flow, replace the `synthesis_dispatcher` placeholder with the
+**Agent tool** invocation: when `is_synthesis_query(question)` returns True AND at
+least 2 sources have findings, dispatch ONE more `research-librarian` call with the
+synthesis prompt as its input. Otherwise, skip — the orchestrator detects this and
+returns the retrieval output unchanged.
+
+The dispatched synthesis prompt looks like:
+
+```
+MODE: SYNTHESISE-ACROSS-SOURCES
+PRIMING_CONTEXT:
+{
+  "local_kb_config_excerpt": "...",
+  "local_shelf_index_terms": [...]
+}
+
+Question: <the user question>
+
+Per-source findings (your only source of facts — do not read any files):
+
+--- [local] ---
+<local librarian's findings>
+
+--- [corp-semi] ---
+<corp-semi librarian's findings>
+
+Produce a single connected argument that addresses the question, drawing on
+the findings above. Use the synthesis output format (Claim / Supporting
+evidence / Caveats / Programme application).
+
+MANDATORY: every claim in the Supporting evidence list must carry an inline
+[<handle>] tag identifying which source library it came from ...
+```
+
+The librarian agent's prompt has a section "Synthesise-across-sources mode" describing how to consume this; the orchestrator's `format_synthesis_prompt` produces it; the skill, agent prompt, and orchestrator stay in lockstep on the format.
+
+After the synthesis call returns, the orchestrator runs `check_synthesis_attribution` (with `valid_handles` drawn from the dispatch sources) on the librarian's output. If any supporting-evidence claim lacks an inline `[handle]` tag, or the bracketed token is not in the source whitelist (e.g., `[TODO]`, `[0]`), the synthesis is aborted: the retrieval output is preserved and an explanatory error block is appended. The user always sees something they can act on.
 
 ## What this skill does NOT do
 
@@ -220,7 +306,7 @@ Phase C replaces this note with a real synthesis step.
 - It does not lint the library — that's `/sdlc-knowledge-base:kb-lint` (local only in v1)
 - It does not write to external libraries — they are strictly read-only from the querying project's perspective
 - It does not blend findings without attribution — every finding carries its source library handle, enforced by structural post-check
-- It does not synthesise across libraries in phase A — that arrives in phase C (#169)
+- It does not synthesise across libraries when fewer than 2 sources have findings — the orchestrator skips synthesis and returns the retrieval output unchanged
 
 ## Examples
 
@@ -236,7 +322,7 @@ Expected response: structured findings with DORA citations, sample sizes, thresh
 /sdlc-knowledge-base:kb-query "Build me the case for adopting trunk-based development"
 ```
 
-Expected response: per-source findings from all activated libraries, with a note that cross-library synthesis arrives in phase C (#169).
+Expected response: per-source findings from all activated libraries, then a cross-library synthesis section (Claim / Supporting evidence / Caveats / Programme application) drawn from both sources.
 
 **Query with promotion:**
 ```
