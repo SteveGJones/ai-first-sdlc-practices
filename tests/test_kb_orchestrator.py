@@ -205,3 +205,69 @@ def test_format_dispatch_prompt_json_is_valid() -> None:
     parsed = json.loads(match.group(1))
     assert parsed["local_kb_config_excerpt"] == "line1\nline2"
     assert parsed["local_shelf_index_terms"] == ["term-with-hyphen", "term with space"]
+
+
+def test_orchestrator_passes_priming_bundle_to_dispatcher(tmp_path: Path) -> None:
+    """Priming bundle built from a real project's local state must flow intact
+    to each dispatcher invocation, with all fields preserved."""
+    # Build a fake project directory with CLAUDE.md and a local library/_shelf-index.md
+    proj_dir = tmp_path / "proj"
+    proj_dir.mkdir()
+    (proj_dir / "CLAUDE.md").write_text(
+        "# CLAUDE.md\n\n"
+        "## Knowledge Base\n\n"
+        "This project uses the knowledge base for semiconductor research.\n"
+    )
+    local_lib = proj_dir / "library"
+    local_lib.mkdir()
+    (local_lib / "_shelf-index.md").write_text(
+        "# Shelf Index\n\n"
+        "## 1. local-topic.md\n"
+        "**Terms:** semiconductor, brazilian-fab, alpha\n"
+    )
+
+    # Use the real priming builder, not a mock
+    from sdlc_knowledge_base_scripts.priming import build_priming_bundle
+    priming = build_priming_bundle(question="what about EUV", project_dir=proj_dir)
+
+    # Verify the builder did its job
+    assert "semiconductor research" in priming.local_kb_config_excerpt
+    assert set(priming.local_shelf_index_terms) >= {"semiconductor", "brazilian-fab", "alpha"}
+
+    # Capture every DispatchRequest the orchestrator passes to the dispatcher
+    captured: list[DispatchRequest] = []
+
+    def capturing_dispatcher(req: DispatchRequest) -> str:
+        captured.append(req)
+        return (
+            f"### {req.source.name} finding\n"
+            f"**Finding**: ok.\n"
+            f"**Source library**: {req.source.name}\n"
+        )
+
+    sources = [
+        LibrarySource(name="local", type="filesystem", path=str(local_lib)),
+        LibrarySource(name="corp", type="filesystem", path=str(tmp_path / "corp" / "library")),
+    ]
+    # Make corp a real dir so the source preflight passes
+    (tmp_path / "corp" / "library").mkdir(parents=True)
+
+    result = run_retrieval_query(
+        question="what about EUV",
+        sources=sources,
+        priming=priming,
+        dispatcher=capturing_dispatcher,
+    )
+
+    # Both sources should have been dispatched with the SAME priming bundle
+    assert len(captured) == 2
+    for req in captured:
+        assert req.priming is priming, (
+            f"Dispatcher received a different priming bundle for source {req.source.name}"
+        )
+        assert req.priming.local_kb_config_excerpt == priming.local_kb_config_excerpt
+        assert req.priming.local_shelf_index_terms == priming.local_shelf_index_terms
+
+    # And the result should still be well-formed
+    assert "local finding" in result.combined_output
+    assert "corp finding" in result.combined_output
