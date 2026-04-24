@@ -198,6 +198,85 @@ def run_retrieval_query(
     )
 
 
+def format_synthesis_prompt(
+    question: str,
+    priming: Optional[PrimingBundle],
+    per_source_findings: dict[str, str],
+) -> str:
+    """Render the dispatch message for the synthesis-across-sources pass.
+
+    Unlike format_dispatch_prompt (per-source retrieval), this is a single
+    dispatch that receives all per-source retrieval findings as input. The
+    librarian must produce a connected argument with inline [handle] tags
+    on every supporting-evidence claim — and cannot re-read files (the
+    findings are its only ground truth, which is what makes attribution
+    structurally guaranteed).
+
+    Output structure:
+        MODE: SYNTHESISE-ACROSS-SOURCES
+        PRIMING_CONTEXT: <json>     (only when priming is provided)
+
+        Question: <question>
+
+        Per-source findings (your only source of facts):
+        --- [<handle>] ---
+        <findings text>
+        --- [<other handle>] ---
+        <findings text>
+        ...
+
+        <synthesis instructions>
+    """
+    lines: list[str] = []
+    lines.append("MODE: SYNTHESISE-ACROSS-SOURCES")
+    if priming is not None:
+        priming_json = _json.dumps(
+            {
+                "local_kb_config_excerpt": priming.local_kb_config_excerpt,
+                "local_shelf_index_terms": priming.local_shelf_index_terms,
+            },
+            indent=2,
+        )
+        lines.append("PRIMING_CONTEXT:")
+        lines.append(priming_json)
+    lines.append("")
+    lines.append(f"Question: {question}")
+    lines.append("")
+    lines.append("Per-source findings (your only source of facts — do not read any files):")
+    lines.append("")
+    for handle, findings in per_source_findings.items():
+        lines.append(f"--- [{handle}] ---")
+        lines.append(findings.rstrip())
+        lines.append("")
+    lines.append(
+        "Produce a single connected argument that addresses the question, drawing on "
+        "the findings above. Use the synthesis output format (Claim / Supporting "
+        "evidence / Caveats / Programme application)."
+    )
+    lines.append("")
+    lines.append(
+        "MANDATORY: every claim in the Supporting evidence list must carry an inline "
+        "[<handle>] tag identifying which source library it came from (e.g., "
+        "'1. EUV reticle requires ≤45% RH — [corp-semi] EUV-operations.md'). The "
+        "structural attribution post-check will abort the synthesis if any "
+        "supporting-evidence item lacks an inline handle. Untagged claims are dropped."
+    )
+    lines.append("")
+    lines.append(
+        "When findings span multiple libraries, the Caveats section MUST explicitly "
+        "name the cross-library span — for example: 'This synthesis draws on local "
+        "and corp-semi libraries; the corp-semi findings are from a different "
+        "regional context.'"
+    )
+    lines.append("")
+    lines.append(
+        "You do not have file-reading tools in this mode. The findings above are "
+        "your only source of ground truth. Do not invent citations, statistics, or "
+        "claims that aren't traceable to one of the per-source findings."
+    )
+    return "\n".join(lines)
+
+
 def _ordered_source_list(sources: list[LibrarySource]) -> list[LibrarySource]:
     """Return sources in render order: local first, then alphabetical by name."""
     local = [s for s in sources if s.name == "local"]

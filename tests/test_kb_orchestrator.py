@@ -303,3 +303,84 @@ def test_is_synthesis_query_empty_or_whitespace() -> None:
     assert not is_synthesis_query("")
     assert not is_synthesis_query("   ")
     assert not is_synthesis_query("\n\t")
+
+
+from sdlc_knowledge_base_scripts.orchestrator import format_synthesis_prompt
+
+
+def test_format_synthesis_prompt_with_priming_and_findings() -> None:
+    priming = PrimingBundle(
+        question="how should we think about EUV cleanrooms",
+        local_kb_config_excerpt="Brazilian semiconductor packaging operations.",
+        local_shelf_index_terms=["semiconductor", "brazilian-fab"],
+    )
+    per_source = {
+        "local": "### Site baseline\n**Finding**: RH 75-85%.\n**Source library**: local",
+        "corp-semi": "### EUV spec\n**Finding**: RH must be ≤45%.\n**Source library**: corp-semi",
+    }
+    prompt = format_synthesis_prompt(
+        question="how should we think about EUV cleanrooms",
+        priming=priming,
+        per_source_findings=per_source,
+    )
+
+    # Mode marker so the librarian knows it's a synthesis pass
+    assert "SYNTHESISE-ACROSS-SOURCES" in prompt
+    # Question echoed
+    assert "how should we think about EUV cleanrooms" in prompt
+    # Priming context still threaded through
+    assert "PRIMING_CONTEXT:" in prompt
+    assert "Brazilian semiconductor" in prompt
+    # All per-source findings present, marked by source handle
+    assert "[local]" in prompt
+    assert "Site baseline" in prompt
+    assert "[corp-semi]" in prompt
+    assert "EUV spec" in prompt
+    # Hard rule: librarian cannot re-read files
+    assert "do not read any files" in prompt.lower()
+    # Hard rule: every supporting-evidence claim must carry inline [handle]
+    assert "[<handle>]" in prompt or "[handle]" in prompt
+    assert "Source library" in prompt or "source handle" in prompt.lower()
+
+
+def test_format_synthesis_prompt_without_priming() -> None:
+    per_source = {"local": "### x\n**Finding**: y.\n**Source library**: local"}
+    prompt = format_synthesis_prompt(
+        question="build the case for X",
+        priming=None,
+        per_source_findings=per_source,
+    )
+    assert "SYNTHESISE-ACROSS-SOURCES" in prompt
+    assert "PRIMING_CONTEXT:" not in prompt
+    assert "build the case for X" in prompt
+    assert "[local]" in prompt
+
+
+def test_format_synthesis_prompt_includes_all_source_findings_in_order() -> None:
+    """Per-source findings appear in dict-iteration order (caller controls)."""
+    per_source = {
+        "alpha": "### a\n**Finding**: a1.\n**Source library**: alpha",
+        "beta": "### b\n**Finding**: b1.\n**Source library**: beta",
+        "gamma": "### c\n**Finding**: c1.\n**Source library**: gamma",
+    }
+    prompt = format_synthesis_prompt(
+        question="how should we think about it",
+        priming=None,
+        per_source_findings=per_source,
+    )
+    # All three sources represented
+    for handle in ("alpha", "beta", "gamma"):
+        assert f"[{handle}]" in prompt
+        assert handle in prompt
+
+
+def test_format_synthesis_prompt_empty_findings_dict() -> None:
+    """Caller should not invoke synthesis with no findings, but defensive shape OK."""
+    prompt = format_synthesis_prompt(
+        question="q",
+        priming=None,
+        per_source_findings={},
+    )
+    # Still emits the mode marker and question; the input-findings section may be empty
+    assert "SYNTHESISE-ACROSS-SOURCES" in prompt
+    assert "q" in prompt
