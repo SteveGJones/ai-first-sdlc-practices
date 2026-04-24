@@ -1,7 +1,12 @@
 """Unit tests for sdlc_knowledge_base_scripts.registry."""
 import json
 from pathlib import Path
-from sdlc_knowledge_base_scripts.registry import load_global_registry, GlobalRegistry
+from sdlc_knowledge_base_scripts.registry import (
+    load_global_registry,
+    GlobalRegistry,
+    load_project_activation,
+    ProjectActivation,
+)
 
 
 def test_load_global_registry_happy(tmp_path: Path) -> None:
@@ -110,3 +115,89 @@ def test_load_global_registry_entry_missing_name(tmp_path: Path) -> None:
     result = load_global_registry(registry_file)
     assert [lib.name for lib in result.libraries] == ["ok"]
     assert any("name" in w.lower() and "missing" in w.lower() for w in result.warnings)
+
+
+# ---------------------------------------------------------------------------
+# I1: version-field coercion — global registry
+# ---------------------------------------------------------------------------
+
+def test_load_global_registry_string_version_coerced(tmp_path: Path) -> None:
+    """String "1" should coerce to int 1 with a warning rather than tripping the unknown-version path."""
+    registry_file = tmp_path / "global-libraries.json"
+    registry_file.write_text(json.dumps({
+        "version": "1",
+        "libraries": [{"name": "foo", "type": "filesystem", "path": "/tmp/foo"}],
+    }))
+    result = load_global_registry(registry_file)
+    assert result.version == 1
+    assert len(result.libraries) == 1
+    assert any("integer" in w.lower() for w in result.warnings)
+
+
+# ---------------------------------------------------------------------------
+# I2: unknown library type — global registry
+# ---------------------------------------------------------------------------
+
+def test_load_global_registry_unknown_type_skipped(tmp_path: Path) -> None:
+    """An entry with an unknown 'type' value must be skipped with a warning."""
+    registry_file = tmp_path / "global-libraries.json"
+    registry_file.write_text(json.dumps({
+        "version": 1,
+        "libraries": [
+            {"name": "bad", "type": "s3-bucket", "path": "/tmp/bad"},
+            {"name": "ok", "type": "filesystem", "path": "/tmp/ok"},
+        ],
+    }))
+    result = load_global_registry(registry_file)
+    assert [lib.name for lib in result.libraries] == ["ok"]
+    assert any("unknown type" in w.lower() for w in result.warnings)
+
+
+# ---------------------------------------------------------------------------
+# Plan-specified: load_project_activation
+# ---------------------------------------------------------------------------
+
+def test_load_project_activation_happy(tmp_path: Path) -> None:
+    activation_file = tmp_path / "libraries.json"
+    activation_file.write_text(json.dumps({
+        "version": 1,
+        "activated_sources": ["corporate-semi", "corporate-health"],
+    }))
+    result = load_project_activation(activation_file)
+    assert isinstance(result, ProjectActivation)
+    assert result.version == 1
+    assert result.activated_sources == ["corporate-semi", "corporate-health"]
+    assert result.warnings == []
+
+
+def test_load_project_activation_missing_file(tmp_path: Path) -> None:
+    activation_file = tmp_path / "libraries.json"
+    result = load_project_activation(activation_file)
+    assert result.activated_sources == []
+    assert result.warnings == []
+
+
+def test_load_project_activation_malformed(tmp_path: Path) -> None:
+    activation_file = tmp_path / "libraries.json"
+    activation_file.write_text("not json at all")
+    result = load_project_activation(activation_file)
+    assert result.activated_sources == []
+    assert len(result.warnings) == 1
+    assert "malformed" in result.warnings[0].lower()
+
+
+# ---------------------------------------------------------------------------
+# I1: version-field coercion — project activation
+# ---------------------------------------------------------------------------
+
+def test_load_project_activation_string_version_coerced(tmp_path: Path) -> None:
+    """String "1" should coerce to int 1 with a warning rather than tripping the unknown-version path."""
+    activation_file = tmp_path / "libraries.json"
+    activation_file.write_text(json.dumps({
+        "version": "1",
+        "activated_sources": ["lib-a"],
+    }))
+    result = load_project_activation(activation_file)
+    assert result.version == 1
+    assert result.activated_sources == ["lib-a"]
+    assert any("integer" in w.lower() for w in result.warnings)

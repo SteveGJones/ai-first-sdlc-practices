@@ -12,6 +12,8 @@ from typing import Optional
 
 CURRENT_REGISTRY_VERSION = 1
 
+KNOWN_LIBRARY_TYPES = {"filesystem", "remote-agent"}
+
 
 @dataclass(frozen=True)
 class LibrarySource:
@@ -55,7 +57,22 @@ def load_global_registry(path: Path) -> GlobalRegistry:
         )
 
     warnings: list[str] = []
-    version = data.get("version", CURRENT_REGISTRY_VERSION)
+
+    raw_version = data.get("version", CURRENT_REGISTRY_VERSION)
+    try:
+        version = int(raw_version)
+    except (TypeError, ValueError):
+        warnings.append(
+            f"version field must be an integer, got {type(raw_version).__name__}; "
+            f"treating as {CURRENT_REGISTRY_VERSION}."
+        )
+        version = CURRENT_REGISTRY_VERSION
+    else:
+        if not isinstance(raw_version, int):
+            warnings.append(
+                f"version field must be an integer, got {type(raw_version).__name__}; "
+                f"treating as {version}."
+            )
     if version != CURRENT_REGISTRY_VERSION:
         warnings.append(
             f"Global registry version {version} is unknown (expected {CURRENT_REGISTRY_VERSION}); "
@@ -79,14 +96,76 @@ def load_global_registry(path: Path) -> GlobalRegistry:
         if name in seen_names:
             warnings.append(f"Duplicate library name '{name}'; first occurrence wins.")
             continue
+        raw_type = entry.get("type", "filesystem")
+        if raw_type not in KNOWN_LIBRARY_TYPES:
+            warnings.append(f"Library '{name}' has unknown type '{raw_type}'; skipping.")
+            continue
         seen_names.add(name)
         libraries.append(
             LibrarySource(
                 name=name,
-                type=entry.get("type", "filesystem"),
+                type=raw_type,
                 path=entry.get("path"),
                 description=entry.get("description"),
             )
         )
 
     return GlobalRegistry(version=version, libraries=libraries, warnings=warnings)
+
+
+@dataclass
+class ProjectActivation:
+    version: int = CURRENT_REGISTRY_VERSION
+    activated_sources: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+
+def load_project_activation(path: Path) -> ProjectActivation:
+    """Load project-level activation from .sdlc/libraries.json.
+
+    Missing file is normal (local-only). Malformed JSON produces a
+    warning and empty activation. Unknown names are validated later
+    against the global registry, not here.
+    """
+    if not path.exists():
+        return ProjectActivation(activated_sources=[])
+
+    try:
+        data = json.loads(path.read_text())
+    except json.JSONDecodeError as exc:
+        return ProjectActivation(
+            activated_sources=[],
+            warnings=[f"Project activation at {path} is malformed: {exc}. No external libraries activated."],
+        )
+
+    warnings: list[str] = []
+
+    raw_version = data.get("version", CURRENT_REGISTRY_VERSION)
+    try:
+        version = int(raw_version)
+    except (TypeError, ValueError):
+        warnings.append(
+            f"version field must be an integer, got {type(raw_version).__name__}; "
+            f"treating as {CURRENT_REGISTRY_VERSION}."
+        )
+        version = CURRENT_REGISTRY_VERSION
+    else:
+        if not isinstance(raw_version, int):
+            warnings.append(
+                f"version field must be an integer, got {type(raw_version).__name__}; "
+                f"treating as {version}."
+            )
+    if version != CURRENT_REGISTRY_VERSION:
+        warnings.append(
+            f"Project activation version {version} is unknown (expected {CURRENT_REGISTRY_VERSION})."
+        )
+
+    sources = data.get("activated_sources", [])
+    if not isinstance(sources, list):
+        return ProjectActivation(
+            version=version,
+            activated_sources=[],
+            warnings=warnings + [f"'activated_sources' must be a list, got {type(sources).__name__}."],
+        )
+
+    return ProjectActivation(version=version, activated_sources=list(sources), warnings=warnings)
