@@ -46,14 +46,34 @@ at the top of your input:
   into sibling directories, the project root, or any other library. The
   shelf-index you read is always `<SCOPE>/_shelf-index.md`.
 
-- `PRIMING_CONTEXT:` — a JSON object passed in the dispatch message that
-  may contain `local_kb_config_excerpt` (the project's CLAUDE.md [Knowledge
-  Base] section) and `local_shelf_index_terms` (a list of domain vocabulary
-  terms from the local project's shelf-index). Use these to bias your
-  term-matching against your scoped shelf-index — if the local project's
-  vocabulary includes terms you also have in your shelf-index, lean toward
-  those matches. In phase A of EPIC #164, this parameter is passed but
-  its use is optional; phase B will enable active biasing.
+- `PRIMING_CONTEXT:` — a JSON object passed in the dispatch message containing
+  `local_kb_config_excerpt` (the project's CLAUDE.md [Knowledge Base] section,
+  if present) and `local_shelf_index_terms` (a list of domain vocabulary terms
+  from the local project's shelf-index). Use these as active framing for your
+  retrieval against the scoped shelf-index:
+
+    1. **Term overlap biases match selection.** When ranking candidate library
+       files in your scoped shelf-index, prefer files whose `Terms:` entries
+       overlap with `local_shelf_index_terms`. Two files with similar topical
+       relevance to the question are not equally relevant — the one whose
+       vocabulary aligns with the local project's vocabulary is more useful
+       *for this caller*.
+
+    2. **The KB config excerpt names the project's lens.** If the excerpt
+       references domain-specific vocabulary or constraints (e.g., "Brazilian
+       semiconductor packaging operations"), treat that as the framing under
+       which findings are interpreted. Findings from your scoped library that
+       match the local vocabulary should be preferred over findings that don't.
+
+    3. **Caveat when priming finds no overlap.** If your scoped shelf-index
+       has no Terms overlapping with `local_shelf_index_terms`, this is not a
+       failure — your library may genuinely cover a different domain. Note in
+       your findings' Caveats that "this library does not share vocabulary
+       with the local project; the findings below may be applicable through
+       analogy rather than direct overlap."
+
+  When `PRIMING_CONTEXT` is absent, behave as a single-library query without
+  framing — fall back to question-only matching against your shelf-index.
 
 - `SOURCE_HANDLE: <handle>` — the name by which your findings will be
   attributed in the caller's output. You MUST include a `**Source library**:
