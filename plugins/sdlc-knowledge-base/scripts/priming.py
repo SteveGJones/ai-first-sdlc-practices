@@ -1,0 +1,76 @@
+"""Priming bundle construction for cross-library kb-query.
+
+Phase A scaffold (EPIC #164 sub-1, #167). Phase B (sub-2, #168) activates
+the priming by passing this bundle to external librarian invocations.
+"""
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class PrimingBundle:
+    """Context passed to external librarians to frame their query.
+
+    Fully consumed by external librarian prompts in phase B. In phase A,
+    this bundle is built and passed through but the librarian prompt
+    does not yet act on it.
+    """
+    question: str
+    local_kb_config_excerpt: str = ""
+    local_shelf_index_terms: list[str] = field(default_factory=list)
+
+
+def build_priming_bundle(question: str, project_dir: Path) -> PrimingBundle:
+    """Build the priming bundle from the project's local state.
+
+    Missing CLAUDE.md → empty excerpt. Missing [Knowledge Base] section →
+    empty excerpt. Missing library/ or shelf-index → empty terms list.
+    """
+    claude_md_path = project_dir / "CLAUDE.md"
+    excerpt = _extract_kb_section(claude_md_path) if claude_md_path.exists() else ""
+
+    shelf_index_path = project_dir / "library" / "_shelf-index.md"
+    terms = _extract_shelf_index_terms(shelf_index_path) if shelf_index_path.exists() else []
+
+    return PrimingBundle(
+        question=question,
+        local_kb_config_excerpt=excerpt,
+        local_shelf_index_terms=terms,
+    )
+
+
+def _extract_kb_section(claude_md_path: Path) -> str:
+    """Extract the [Knowledge Base] section from CLAUDE.md.
+
+    Matches '## Knowledge Base' (heading) through the next H2 heading or EOF.
+    Returns the section body (text after the heading), or empty string.
+    """
+    content = claude_md_path.read_text()
+    match = re.search(
+        r"^##\s+Knowledge Base\s*\n(.*?)(?=\n##\s+|\Z)",
+        content,
+        re.MULTILINE | re.DOTALL,
+    )
+    if not match:
+        return ""
+    return match.group(1).strip()
+
+
+def _extract_shelf_index_terms(shelf_index_path: Path) -> list[str]:
+    """Extract the union of Terms: across all shelf-index entries.
+
+    Each entry has a '**Terms:** ...' line. Return deduplicated, order-preserving.
+    """
+    content = shelf_index_path.read_text()
+    seen: set[str] = set()
+    result: list[str] = []
+    for match in re.finditer(r"\*\*Terms:\*\*\s+(.+?)(?=\n|$)", content):
+        raw_terms = match.group(1)
+        for term in (t.strip() for t in raw_terms.split(",")):
+            if term and term not in seen:
+                seen.add(term)
+                result.append(term)
+    return result
