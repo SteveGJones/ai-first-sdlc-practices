@@ -1,6 +1,5 @@
 """Unit tests for sdlc_knowledge_base_scripts.registry."""
 import json
-import pytest
 from pathlib import Path
 from sdlc_knowledge_base_scripts.registry import load_global_registry, GlobalRegistry
 
@@ -70,3 +69,44 @@ def test_load_global_registry_duplicate_names(tmp_path: Path) -> None:
     assert len(result.libraries) == 1
     assert result.libraries[0].path == "/tmp/a"
     assert any("duplicate" in w.lower() for w in result.warnings)
+
+
+def test_load_global_registry_top_level_not_dict(tmp_path: Path) -> None:
+    registry_file = tmp_path / "global-libraries.json"
+    registry_file.write_text("[]")
+    result = load_global_registry(registry_file)
+    assert result.libraries == []
+    assert any("must be a JSON object" in w for w in result.warnings)
+
+
+def test_load_global_registry_libraries_not_a_list(tmp_path: Path) -> None:
+    registry_file = tmp_path / "global-libraries.json"
+    registry_file.write_text(json.dumps({"version": 1, "libraries": "oops"}))
+    result = load_global_registry(registry_file)
+    assert result.libraries == []
+    assert any("must be a list" in w for w in result.warnings)
+
+
+def test_load_global_registry_entry_not_a_dict(tmp_path: Path) -> None:
+    registry_file = tmp_path / "global-libraries.json"
+    registry_file.write_text(json.dumps({
+        "version": 1,
+        "libraries": ["just a string", {"name": "ok", "type": "filesystem"}],
+    }))
+    result = load_global_registry(registry_file)
+    assert [lib.name for lib in result.libraries] == ["ok"]
+    assert any("not an object" in w for w in result.warnings)
+
+
+def test_load_global_registry_entry_missing_name(tmp_path: Path) -> None:
+    registry_file = tmp_path / "global-libraries.json"
+    registry_file.write_text(json.dumps({
+        "version": 1,
+        "libraries": [
+            {"type": "filesystem", "path": "/tmp/nameless"},
+            {"name": "ok", "type": "filesystem"},
+        ],
+    }))
+    result = load_global_registry(registry_file)
+    assert [lib.name for lib in result.libraries] == ["ok"]
+    assert any("name" in w.lower() and "missing" in w.lower() for w in result.warnings)

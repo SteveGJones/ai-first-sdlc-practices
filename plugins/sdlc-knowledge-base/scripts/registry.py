@@ -48,6 +48,12 @@ def load_global_registry(path: Path) -> GlobalRegistry:
             warnings=[f"Global registry at {path} is malformed: {exc}. External libraries unavailable."],
         )
 
+    if not isinstance(data, dict):
+        return GlobalRegistry(
+            libraries=[],
+            warnings=[f"Global registry at {path} must be a JSON object; got {type(data).__name__}. External libraries unavailable."],
+        )
+
     warnings: list[str] = []
     version = data.get("version", CURRENT_REGISTRY_VERSION)
     if version != CURRENT_REGISTRY_VERSION:
@@ -57,9 +63,15 @@ def load_global_registry(path: Path) -> GlobalRegistry:
         )
 
     raw_libraries = data.get("libraries", [])
+    if not isinstance(raw_libraries, list):
+        warnings.append(f"'libraries' in {path} must be a list; ignoring.")
+        raw_libraries = []
     seen_names: set[str] = set()
     libraries: list[LibrarySource] = []
     for entry in raw_libraries:
+        if not isinstance(entry, dict):
+            warnings.append("Library entry is not an object; skipping.")
+            continue
         name = entry.get("name")
         if not name:
             warnings.append("Library entry missing 'name' field; skipping.")
