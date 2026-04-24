@@ -13,7 +13,7 @@ from typing import Callable, Optional
 
 import json as _json
 
-from .attribution import check_retrieval_attribution
+from .attribution import check_retrieval_attribution, check_synthesis_attribution
 from .priming import PrimingBundle
 from .registry import LibrarySource
 
@@ -275,6 +275,123 @@ def format_synthesis_prompt(
         "claims that aren't traceable to one of the per-source findings."
     )
     return "\n".join(lines)
+
+
+@dataclass
+class SynthesisQueryResult:
+    """Outcome of an attempted synthesis pass on retrieval results.
+
+    When `synthesis_attempted` is False, the question was not classified as
+    synthesis or there were too few sources to synthesise across; the
+    retrieval output is returned unchanged in `combined_output`.
+
+    When `synthesis_attempted` is True and `synthesis_succeeded` is True,
+    `combined_output` contains the synthesis answer (which already has
+    inline source-handle attribution validated by the post-check).
+
+    When `synthesis_attempted` is True and `synthesis_succeeded` is False,
+    something failed (attribution missing, dispatcher error). The retrieval
+    output is preserved in `combined_output` with an appended error block;
+    `fallback_reason` names what went wrong.
+    """
+    combined_output: str
+    synthesis_attempted: bool
+    synthesis_succeeded: bool
+    attribution_warnings: list[str] = field(default_factory=list)
+    fallback_reason: Optional[str] = None
+
+
+SynthesisDispatcher = Callable[[str], str]
+
+
+def run_synthesis_query(
+    question: str,
+    retrieval: RetrievalQueryResult,
+    priming: Optional[PrimingBundle],
+    sources: list[LibrarySource],
+    synthesis_dispatcher: SynthesisDispatcher,
+    per_source_findings: dict[str, str],
+) -> SynthesisQueryResult:
+    """Optionally extend retrieval with cross-library synthesis.
+
+    Synthesis runs only when:
+      1. The question is classified as synthesis (is_synthesis_query)
+      2. At least 2 sources returned findings (otherwise there's nothing
+         to synthesise across)
+
+    On success the synthesis output replaces the retrieval body. On any
+    failure (attribution check, dispatcher exception) the retrieval body
+    is preserved and an explanatory error block is appended.
+    """
+    if not is_synthesis_query(question):
+        return SynthesisQueryResult(
+            combined_output=retrieval.combined_output,
+            synthesis_attempted=False,
+            synthesis_succeeded=False,
+            fallback_reason="question is not a synthesis query",
+        )
+
+    if len(retrieval.sources_with_findings) < 2:
+        return SynthesisQueryResult(
+            combined_output=retrieval.combined_output,
+            synthesis_attempted=False,
+            synthesis_succeeded=False,
+            fallback_reason="single source has findings — nothing to synthesise across",
+        )
+
+    prompt = format_synthesis_prompt(
+        question=question,
+        priming=priming,
+        per_source_findings=per_source_findings,
+    )
+
+    try:
+        synthesis_output = synthesis_dispatcher(prompt)
+    except Exception as exc:
+        error_block = (
+            f"\n\n---\n\n"
+            f"**Synthesis aborted:** dispatcher failed: {exc}.\n"
+            f"Per-source findings above are complete; synthesis was not produced.\n"
+        )
+        return SynthesisQueryResult(
+            combined_output=retrieval.combined_output + error_block,
+            synthesis_attempted=True,
+            synthesis_succeeded=False,
+            fallback_reason=str(exc),
+        )
+
+    valid_handles = {s.name for s in sources}
+    check = check_synthesis_attribution(synthesis_output, valid_handles=valid_handles)
+    if not check.passed:
+        error_block = (
+            f"\n\n---\n\n"
+            f"**Synthesis aborted:** attribution post-check failed. "
+            f"{len(check.untagged_claims)} supporting-evidence "
+            f"claim(s) lacked an inline source-handle tag and were not safe to "
+            f"publish. Per-source findings above remain valid; you can draw "
+            f"connections manually.\n"
+        )
+        return SynthesisQueryResult(
+            combined_output=retrieval.combined_output + error_block,
+            synthesis_attempted=True,
+            synthesis_succeeded=False,
+            attribution_warnings=check.untagged_claims,
+            fallback_reason="attribution post-check failed",
+        )
+
+    # Success: combine retrieval header with synthesis body
+    combined = (
+        retrieval.combined_output
+        + "\n\n---\n\n"
+        + "## Cross-library synthesis\n\n"
+        + synthesis_output.rstrip()
+        + "\n"
+    )
+    return SynthesisQueryResult(
+        combined_output=combined,
+        synthesis_attempted=True,
+        synthesis_succeeded=True,
+    )
 
 
 def _ordered_source_list(sources: list[LibrarySource]) -> list[LibrarySource]:

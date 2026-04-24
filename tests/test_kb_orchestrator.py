@@ -384,3 +384,216 @@ def test_format_synthesis_prompt_empty_findings_dict() -> None:
     # Still emits the mode marker and question; the input-findings section may be empty
     assert "SYNTHESISE-ACROSS-SOURCES" in prompt
     assert "q" in prompt
+
+
+from sdlc_knowledge_base_scripts.orchestrator import (
+    run_synthesis_query,
+    SynthesisQueryResult,
+)
+
+
+def _good_synthesis_output() -> str:
+    return (
+        "### EUV cleanroom under regional constraints\n\n"
+        "**Claim**: Tropical sites need multi-stage dehumidification.\n\n"
+        "**Supporting evidence**:\n"
+        "1. EUV reticle requires ≤45% RH — [corp-semi] EUV-operations.md\n"
+        "2. Brazilian ambient RH 75-85% — [local] site-baseline.md\n\n"
+        "**Caveats**: This synthesis draws on local and corp-semi libraries.\n"
+    )
+
+
+def test_run_synthesis_query_skipped_when_question_is_retrieval(tmp_path: Path) -> None:
+    """A non-synthesis question should not trigger a synthesis call."""
+    retrieval = RetrievalQueryResult(
+        combined_output="header\n## [local] Findings\n### x\n**Source library**: local",
+        sources_with_findings=["local", "corp-semi"],
+    )
+    sources = [
+        LibrarySource(name="local", type="filesystem", path="/x"),
+        LibrarySource(name="corp-semi", type="filesystem", path="/y"),
+    ]
+
+    dispatcher_calls: list[str] = []
+    def synthesis_dispatcher(prompt: str) -> str:
+        dispatcher_calls.append(prompt)
+        return _good_synthesis_output()
+
+    result = run_synthesis_query(
+        question="what does the research say about cycle time",
+        retrieval=retrieval,
+        priming=None,
+        sources=sources,
+        synthesis_dispatcher=synthesis_dispatcher,
+        per_source_findings={"local": "x", "corp-semi": "y"},
+    )
+    assert isinstance(result, SynthesisQueryResult)
+    assert result.synthesis_attempted is False
+    assert result.synthesis_succeeded is False
+    assert dispatcher_calls == []  # no synthesis dispatch happened
+    # Combined output is the retrieval output unchanged
+    assert result.combined_output == retrieval.combined_output
+
+
+def test_run_synthesis_query_skipped_with_only_one_source_with_findings(tmp_path: Path) -> None:
+    """Synthesis is only useful when findings span multiple sources."""
+    retrieval = RetrievalQueryResult(
+        combined_output="solo content",
+        sources_with_findings=["local"],
+    )
+    sources = [LibrarySource(name="local", type="filesystem", path="/x")]
+
+    def synthesis_dispatcher(prompt: str) -> str:
+        return _good_synthesis_output()
+
+    result = run_synthesis_query(
+        question="how should we think about cycle time",  # synthesis question
+        retrieval=retrieval,
+        priming=None,
+        sources=sources,
+        synthesis_dispatcher=synthesis_dispatcher,
+        per_source_findings={"local": "x"},
+    )
+    assert result.synthesis_attempted is False
+    assert result.synthesis_succeeded is False
+    assert "single source" in (result.fallback_reason or "").lower()
+
+
+def test_run_synthesis_query_succeeds_with_well_formed_output() -> None:
+    retrieval = RetrievalQueryResult(
+        combined_output="retrieval output",
+        sources_with_findings=["local", "corp-semi"],
+    )
+    sources = [
+        LibrarySource(name="local", type="filesystem", path="/x"),
+        LibrarySource(name="corp-semi", type="filesystem", path="/y"),
+    ]
+    captured: list[str] = []
+    def synthesis_dispatcher(prompt: str) -> str:
+        captured.append(prompt)
+        return _good_synthesis_output()
+
+    result = run_synthesis_query(
+        question="how should we think about EUV cleanrooms",
+        retrieval=retrieval,
+        priming=None,
+        sources=sources,
+        synthesis_dispatcher=synthesis_dispatcher,
+        per_source_findings={
+            "local": "site finding",
+            "corp-semi": "EUV finding",
+        },
+    )
+    assert result.synthesis_attempted is True
+    assert result.synthesis_succeeded is True
+    assert result.attribution_warnings == []
+    # The good synthesis text should appear in the combined output
+    assert "EUV cleanroom under regional constraints" in result.combined_output
+    # Should mention both source handles
+    assert "[corp-semi]" in result.combined_output
+    assert "[local]" in result.combined_output
+    # Dispatcher was called once with the synthesis prompt
+    assert len(captured) == 1
+    assert "SYNTHESISE-ACROSS-SOURCES" in captured[0]
+
+
+def test_run_synthesis_query_falls_back_when_attribution_check_fails() -> None:
+    retrieval = RetrievalQueryResult(
+        combined_output="retrieval output",
+        sources_with_findings=["local", "corp"],
+    )
+    sources = [
+        LibrarySource(name="local", type="filesystem", path="/x"),
+        LibrarySource(name="corp", type="filesystem", path="/y"),
+    ]
+
+    bad_synthesis = (
+        "### Argument\n\n"
+        "**Claim**: Something.\n\n"
+        "**Supporting evidence**:\n"
+        "1. Untagged claim with no inline handle\n"
+        "2. Another untagged claim\n\n"
+        "**Caveats**: None.\n"
+    )
+
+    def synthesis_dispatcher(prompt: str) -> str:
+        return bad_synthesis
+
+    result = run_synthesis_query(
+        question="how should we think about it",
+        retrieval=retrieval,
+        priming=None,
+        sources=sources,
+        synthesis_dispatcher=synthesis_dispatcher,
+        per_source_findings={"local": "x", "corp": "y"},
+    )
+    assert result.synthesis_attempted is True
+    assert result.synthesis_succeeded is False
+    assert len(result.attribution_warnings) >= 1
+    # Combined output should be retrieval output PLUS an error block, NOT the bad synthesis
+    assert "retrieval output" in result.combined_output
+    assert "Untagged claim" not in result.combined_output
+    assert "Synthesis aborted" in result.combined_output or "synthesis failed" in result.combined_output.lower()
+
+
+def test_run_synthesis_query_falls_back_when_dispatcher_raises() -> None:
+    retrieval = RetrievalQueryResult(
+        combined_output="retrieval output",
+        sources_with_findings=["local", "corp"],
+    )
+    sources = [
+        LibrarySource(name="local", type="filesystem", path="/x"),
+        LibrarySource(name="corp", type="filesystem", path="/y"),
+    ]
+
+    def synthesis_dispatcher(prompt: str) -> str:
+        raise RuntimeError("agent timeout")
+
+    result = run_synthesis_query(
+        question="how should we think about it",
+        retrieval=retrieval,
+        priming=None,
+        sources=sources,
+        synthesis_dispatcher=synthesis_dispatcher,
+        per_source_findings={"local": "x", "corp": "y"},
+    )
+    assert result.synthesis_attempted is True
+    assert result.synthesis_succeeded is False
+    assert "agent timeout" in (result.fallback_reason or "")
+    # Retrieval output preserved
+    assert "retrieval output" in result.combined_output
+
+
+def test_run_synthesis_query_uses_valid_handles_from_sources() -> None:
+    """Synthesis check should reject [TODO]-style bogus handles even when phrased as inline tags."""
+    retrieval = RetrievalQueryResult(
+        combined_output="retrieval output",
+        sources_with_findings=["local", "corp"],
+    )
+    sources = [
+        LibrarySource(name="local", type="filesystem", path="/x"),
+        LibrarySource(name="corp", type="filesystem", path="/y"),
+    ]
+    bogus_synthesis = (
+        "### Argument\n\n"
+        "**Claim**: X.\n\n"
+        "**Supporting evidence**:\n"
+        "1. Looks valid — [TODO] not a real handle\n"
+        "2. Also bogus — [citation-needed] also not real\n\n"
+        "**Caveats**: None.\n"
+    )
+
+    def synthesis_dispatcher(prompt: str) -> str:
+        return bogus_synthesis
+
+    result = run_synthesis_query(
+        question="how should we think about it",
+        retrieval=retrieval,
+        priming=None,
+        sources=sources,
+        synthesis_dispatcher=synthesis_dispatcher,
+        per_source_findings={"local": "x", "corp": "y"},
+    )
+    # Bogus handles fail the whitelist; synthesis aborts
+    assert result.synthesis_succeeded is False
+    assert len(result.attribution_warnings) == 2
