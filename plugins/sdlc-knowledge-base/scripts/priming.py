@@ -56,7 +56,11 @@ def _extract_kb_section(claude_md_path: Path) -> str:
     )
     if not match:
         return ""
-    return match.group(1).strip()
+    body = match.group(1).strip()
+    # Defence against regex walking past an empty section into the next heading
+    if body.startswith("##"):
+        return ""
+    return body
 
 
 def _extract_shelf_index_terms(shelf_index_path: Path) -> list[str]:
@@ -67,8 +71,10 @@ def _extract_shelf_index_terms(shelf_index_path: Path) -> list[str]:
     content = shelf_index_path.read_text()
     seen: set[str] = set()
     result: list[str] = []
-    for match in re.finditer(r"\*\*Terms:\*\*\s+(.+?)(?=\n|$)", content):
+    for match in re.finditer(r"^\*\*Terms:\*\*[ \t]*(.*?)(?=\n|$)", content, re.MULTILINE):
         raw_terms = match.group(1)
+        if not raw_terms.strip():
+            continue  # empty Terms line, skip
         for term in (t.strip() for t in raw_terms.split(",")):
             if term and term not in seen:
                 seen.add(term)
