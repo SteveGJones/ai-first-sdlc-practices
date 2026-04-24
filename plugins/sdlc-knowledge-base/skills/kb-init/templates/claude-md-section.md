@@ -171,36 +171,6 @@ Add any project-specific vocabulary or conventions here. Examples:
 
 *(Customise this section as the project evolves. The librarian and updater will read it and adapt their behaviour.)*
 
-### External libraries (cross-library query)
-
-This project can query one or more external knowledge bases alongside its own. External libraries ("corporate asset libraries") are registered once in the user-scope registry and activated per-project.
-
-**To register an external library** (once, per library per machine):
-
-```
-/sdlc-knowledge-base:kb-register-library <handle> <absolute-path-to-library-dir> [description]
-```
-
-This appends an entry to `~/.sdlc/global-libraries.json`. Hand-editing that file is also supported — see the plugin's README.
-
-**To activate a registered library in this project**, add its handle to `.sdlc/libraries.json`:
-
-```json
-{
-  "version": 1,
-  "activated_sources": ["corporate-semiconductor"]
-}
-```
-
-When at least one external library is activated, every `kb-query` invocation dispatches the librarian against each activated source in parallel. Results are attributed (`[local]`, `[corporate-semiconductor]`, etc.) and the local library's context primes the external queries.
-
-**What lives where:**
-
-- Handle + filesystem path + description: `~/.sdlc/global-libraries.json` (user-scope — never committed to this repo)
-- Activation list (handles only): `.sdlc/libraries.json` (project-scope — safe to commit)
-
-**Confidentiality:** hard isolation between concurrent confidential engagements is not enforced by the plugin. If two engagements must not share findings, keep them in separate repositories. Each repo's `.sdlc/libraries.json` activates only the appropriate handles.
-
 ### When NOT to use the knowledge base
 
 - For decisions where evidence isn't needed (routine maintenance, simple bug fixes)

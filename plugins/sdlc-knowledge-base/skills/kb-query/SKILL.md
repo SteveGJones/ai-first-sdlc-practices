@@ -22,150 +22,53 @@ Optional flag:
 
 ## Preflight
 
+- Verify the project has a knowledge base configured.
+- Verify the shelf-index exists at the configured path. If not, recommend running `/sdlc-knowledge-base:kb-rebuild-indexes` first.
 - Verify the `research-librarian` agent is available.
-- Library availability and shelf-index presence are checked in Step 1 via the registry resolver — no manual path checks needed here.
 
 ## Steps
 
-### 1. Preflight — load the dispatch list
+### 1. Dispatch the research-librarian
 
-Run the registry resolver helper to determine which sources to dispatch against:
+Invoke the `research-librarian` agent with the question. The librarian's workflow is fixed:
 
-```bash
-python3 -c "
-from pathlib import Path
-from sdlc_knowledge_base_scripts.registry import load_global_registry, load_project_activation, resolve_dispatch_list
-import json, os
+1. Read the shelf-index fresh
+2. Match the question against terms, facts, links
+3. Identify the 2-4 most relevant library files
+4. Deep-read only those files
+5. Return structured evidence
 
-global_reg = load_global_registry(Path(os.path.expanduser('~/.sdlc/global-libraries.json')))
-activation = load_project_activation(Path('.sdlc/libraries.json'))
-dispatch = resolve_dispatch_list(global_reg, activation, Path('library'))
+The librarian will use one of two output formats automatically based on the question type:
 
-print(json.dumps({
-  'sources': [{'name': s.name, 'path': s.path} for s in dispatch.sources],
-  'warnings': global_reg.warnings + activation.warnings + dispatch.warnings,
-  'is_empty_error': dispatch.is_empty_error,
-}, indent=2))
-"
-```
+- **Retrieval format** for "what does X say" — specific findings, one per topic, with `Finding`, `Source`, `Threshold`, `Library file`, `Programme link` fields
+- **Synthesis format** for "build the case" or "how should we think about" — connected argument with `Claim`, `Supporting evidence`, `Caveats`, `Programme application`
 
-If `is_empty_error` is true, print:
+### 2. If the librarian says "the library has no evidence on this"
 
-> No knowledge base available. Run `/sdlc-knowledge-base:kb-init` to create a local library, or register and activate an external library with `/sdlc-knowledge-base:kb-register-library`.
+This is the librarian's anti-hallucination behaviour. Don't override it. Print the librarian's response, which will typically include:
 
-and stop.
+- Confirmation that no relevant files were found
+- The closest related entries (if any)
+- A recommended next step (commission research via `kb-ingest`, or query an external research engine)
 
-Print all warnings from the helper to stderr (not to user-facing output).
+Do not paraphrase, expand, or invent content to fill the gap.
 
-### 2. Build the priming bundle
+### 3. If the librarian asks a clarifying question
 
-```bash
-python3 -c "
-from pathlib import Path
-from sdlc_knowledge_base_scripts.priming import build_priming_bundle
-import json
+The librarian will ask one clarifying question maximum when a query is too vague. Pass the question through to the user, get their answer, re-invoke the librarian with the clarification.
 
-bundle = build_priming_bundle(question='<the user question>', project_dir=Path('.'))
-print(json.dumps({
-  'question': bundle.question,
-  'local_kb_config_excerpt': bundle.local_kb_config_excerpt,
-  'local_shelf_index_terms': bundle.local_shelf_index_terms,
-}, indent=2))
-"
-```
+### 4. If `--promote-to-library` was specified
 
-In phase A, the bundle is built but the librarian's use of it is not yet active (phase B, #168 enables that). Passing it through now means phase B is a librarian-prompt change only, not a skill rewrite.
+After the librarian returns its answer, dispatch `kb-promote-answer-to-library` with the answer as input. The promote skill files it as a new library page with provenance tracking (the source library files the librarian read) and rebuilds the shelf-index.
 
-### 3. Dispatch `research-librarian` for every source — in parallel
-
-Use the **Agent tool** to invoke the `research-librarian` agent *once per source* in the dispatch list. Issue ALL invocations in a SINGLE message (Claude's parallel tool-call capability). Each invocation's prompt has this exact structure:
-
-```
-SCOPE: <source.path>
-SOURCE_HANDLE: <source.name>
-PRIMING_CONTEXT: <json-dump-of-priming-bundle>
-
-Question: <the user question>
-
-Read the shelf-index at <source.path>/_shelf-index.md, identify the 2-4 most
-relevant library files for the question, deep-read only those, and return
-findings in the retrieval format. Every finding block must include a
-**Source library**: <source.name> line (see your agent prompt).
-
-Do not read any files outside <source.path>. Do not emit --- horizontal rules
-inside a finding block (they are treated as structural separators by the
-post-check tokenizer).
-```
-
-### 4. Collect per-source outputs and run attribution post-check
-
-Each librarian returns its findings (or "no evidence on this topic" if the scoped library has nothing, or an error). Collect each source's output, keyed by source.name.
-
-Then run the orchestrator to apply per-source attribution post-check and render the combined output:
-
-```bash
-python3 -c "
-# The orchestrator is designed to take a dispatcher callable. In this
-# skill, you have already dispatched via the Agent tool and have the
-# outputs in hand. Call the pure-Python post-processing directly.
-from sdlc_knowledge_base_scripts.orchestrator import run_retrieval_query, DispatchRequest
-from sdlc_knowledge_base_scripts.registry import LibrarySource
-
-# Reconstruct sources from the dispatch list (step 1) and build a
-# pass-through dispatcher that returns the already-collected outputs.
-collected = {
-    'local': '<output from local librarian>',
-    'corporate-semi': '<output from corporate-semi librarian>',
-    # ... one entry per source
-}
-
-def pass_through(req: DispatchRequest) -> str:
-    return collected[req.source.name]
-
-sources = [
-    LibrarySource(name='local', type='filesystem', path='<path>'),
-    # ... one entry per activated source
-]
-
-result = run_retrieval_query(
-    question='<the user question>',
-    sources=sources,
-    priming=None,  # phase A: bundle built but not yet used by librarian
-    dispatcher=pass_through,
-)
-print(result.combined_output)
-"
-```
-
-Alternatively, assemble the combined output manually by:
-- Writing a header with `**Sources queried:**`, `**Sources with findings:**`, `**Sources that failed:**` lines
-- For each source in order (local first, externals alphabetical), wrap its output in a `## [source-name] Findings` section
-- Joining with `\n\n---\n\n` separators
-- Calling `check_retrieval_attribution` per-source to drop any untagged findings
-
-The orchestrator helper is the preferred approach for consistency.
-
-### 5. If the `--promote-to-library` flag was specified
-
-Same behaviour as before — dispatch `kb-promote-answer-to-library` with the answer. Promotion writes only to the **local** library; external libraries are read-only from this project.
-
-### 6. Synthesis (phase C, #169 — not in phase A)
-
-Not implemented in phase A. If the query is a synthesis query ("build me the case for", "how should we think about"), return the retrieval output and print a note:
-
-> Note: cross-library synthesis is coming in phase C (#169). This query returned per-source findings; you can draw connections between them manually.
-
-Phase C replaces this note with a real synthesis step.
+Otherwise, the answer is returned to the user and not stored anywhere.
 
 ## What this skill does NOT do
 
 - It does not modify library files — the librarian is read-only
-- It does not invent answers when no library has evidence
-- It does not ingest new sources — that's `/sdlc-knowledge-base:kb-ingest` (local only in v1)
-- It does not lint the library — that's `/sdlc-knowledge-base:kb-lint` (local only in v1)
-- It does not write to external libraries — they are strictly read-only from the querying project's perspective
-- It does not blend findings without attribution — every finding carries its source library handle, enforced by structural post-check
-- It does not synthesise across libraries in phase A — that arrives in phase C (#169)
+- It does not invent answers when the library lacks evidence
+- It does not ingest new sources — that's `/sdlc-knowledge-base:kb-ingest`
+- It does not lint the library — that's `/sdlc-knowledge-base:kb-lint`
 
 ## Examples
 
@@ -181,21 +84,14 @@ Expected response: structured findings with DORA citations, sample sizes, thresh
 /sdlc-knowledge-base:kb-query "Build me the case for adopting trunk-based development"
 ```
 
-Expected response: per-source findings from all activated libraries, with a note that cross-library synthesis arrives in phase C (#169).
+Expected response: a connected argument citing trunk-based-development.md, dora-metrics.md, continuous-delivery-evidence.md, with caveats and the programme application.
 
 **Query with promotion:**
 ```
 /sdlc-knowledge-base:kb-query "How do DORA metrics interact with SAFe-style PI planning?" --promote-to-library
 ```
 
-Expected: the librarian answers; the answer is then filed back into the **local** library as a new file (likely `dora-vs-safe-pi.md`) with provenance pointing at the source files the librarian read.
-
-**Multi-source query (two activated libraries):**
-```
-/sdlc-knowledge-base:kb-query "What patterns exist for platform engineering team topologies?"
-```
-
-Expected: two parallel `research-librarian` invocations — one scoped to `library/`, one scoped to the activated external path. Output rendered with `## [local] Findings` and `## [corporate-platform] Findings` sections, joined by `---` separators, with `**Sources queried: 2 | Sources with findings: 2**` header.
+Expected: the librarian answers; the answer is then filed back into the library as a new file (likely `dora-vs-safe-pi.md`) with provenance pointing at the source files the librarian read.
 
 **Out-of-scope query:**
 ```
@@ -210,6 +106,3 @@ Expected response: "The library has no evidence on this. The closest entries are
 - **Shelf-index missing** — run `/sdlc-knowledge-base:kb-rebuild-indexes` first
 - **Plugin not installed** — install `sdlc-knowledge-base@ai-first-sdlc`
 - **Library is empty** — no library files exist yet. Add raw sources to `library/raw/` and run `/sdlc-knowledge-base:kb-ingest` to populate the library.
-- **No sources available** — no local library + no activated external libraries. Run `/sdlc-knowledge-base:kb-init` or activate a library in `.sdlc/libraries.json`.
-- **External source path unmounted** — the query proceeds with other sources; the failed source appears as a marker in the output.
-- **External source missing shelf-index** — same as above; run `/sdlc-knowledge-base:kb-rebuild-indexes` in the external library.

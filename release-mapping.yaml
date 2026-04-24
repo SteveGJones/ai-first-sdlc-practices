@@ -172,6 +172,15 @@ sdlc-knowledge-base:
     - source: skills/kb-validate-citations/SKILL.md
     - source: skills/kb-promote-answer-to-library/SKILL.md
     - source: skills/kb-staleness-check/SKILL.md
+    - source: plugins/sdlc-knowledge-base/skills/kb-register-library/SKILL.md
+  scripts:
+    # Authored in-plugin; listed for packaging audit. Ship in-place.
+    - source: plugins/sdlc-knowledge-base/scripts/__init__.py
+    - source: plugins/sdlc-knowledge-base/scripts/registry.py
+    - source: plugins/sdlc-knowledge-base/scripts/priming.py
+    - source: plugins/sdlc-knowledge-base/scripts/attribution.py
+    - source: plugins/sdlc-knowledge-base/scripts/format_version.py
+    - source: plugins/sdlc-knowledge-base/scripts/orchestrator.py
 
 # Workflow delegation plugin — Archon integration for parallel agent execution. EPIC #96.
 # Delivered in 5 phases; all skills, scripts, and Docker assets are shipped with
