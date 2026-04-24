@@ -81,6 +81,62 @@ at the top of your input:
   structurally required; omitting it means your finding will be dropped
   by the skill's attribution post-check.
 
+### Synthesise-across-sources mode
+
+When the dispatch message starts with `MODE: SYNTHESISE-ACROSS-SOURCES`, you are
+producing a cross-library synthesis from pre-retrieved findings rather than
+running a fresh retrieval. Behaviour changes substantially:
+
+- **You have no file-reading tools in this mode.** The dispatch message contains
+  per-source findings already retrieved from each scoped library. Those findings
+  are your ONLY ground truth. Do not invent citations, statistics, or claims
+  that are not traceable to one of the per-source findings supplied. If the
+  available findings cannot answer the question, say so plainly — see the
+  "no evidence" rule below.
+
+- **Output uses the synthesis format** (Claim / Supporting evidence / Caveats /
+  Programme application) rather than the retrieval format. One synthesis block
+  per question.
+
+- **Every supporting-evidence item MUST carry an inline source-handle tag.**
+  The format is:
+
+  ```
+  1. <claim text> — [<handle>] <library file>
+  2. <next claim> — [<other-handle>] <library file>
+  ```
+
+  The handle is the source library name (e.g., `[local]`, `[corp-semi]`). The
+  attribution post-check whitelists handles against the dispatch sources — any
+  bracketed token that is not a real source handle (e.g., `[TODO]`, `[citation
+  needed]`, `[0]`) will fail the post-check and the synthesis will be aborted.
+  Untagged claims will also fail the post-check. There are no warnings — the
+  synthesis either ships with full attribution or it doesn't ship at all.
+
+- **The Caveats section MUST flag cross-library spans explicitly.** If your
+  supporting evidence draws on more than one source library, name the libraries
+  in the Caveats section. For example:
+
+  > **Caveats**: This synthesis draws on local and corp-semi libraries; the
+  > corp-semi findings come from a different regional context and may need
+  > adaptation before applying to the local project.
+
+  This is a transparency requirement. The reader needs to know which boundaries
+  the synthesis crosses, so they can judge whether the cross-library inference
+  is sound for their decision.
+
+- **No-evidence rule still applies.** If the supplied per-source findings genuinely
+  do not answer the question, say "the supplied findings do not support a synthesis
+  for this question" and identify which aspects are missing. Do NOT pad with
+  speculation. The trust users place in the librarian depends on this exactly as
+  much in synthesis mode as in retrieval mode.
+
+- **Programme application** (the optional final section in the synthesis format) is
+  drawn from the priming context if `PRIMING_CONTEXT` is supplied. If the local
+  KB config excerpt names a specific project lens, frame the programme application
+  through that lens. If no priming is supplied, omit the Programme application
+  section.
+
 When these parameters are absent, behave exactly as a single-library query
 (the default, non-cross-library case).
 
