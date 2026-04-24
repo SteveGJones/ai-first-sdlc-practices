@@ -11,9 +11,62 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
+import json as _json
+
 from .attribution import check_retrieval_attribution
 from .priming import PrimingBundle
 from .registry import LibrarySource
+
+
+def format_dispatch_prompt(
+    source: LibrarySource,
+    question: str,
+    priming: Optional[PrimingBundle],
+) -> str:
+    """Render the dispatch message a research-librarian invocation should receive.
+
+    Output structure per librarian agent prompt spec:
+        SCOPE: <source.path>
+        SOURCE_HANDLE: <source.name>
+        PRIMING_CONTEXT: <json>     (only when priming is provided)
+
+        Question: <question>
+
+        <closing instruction lines>
+
+    The librarian's prompt extension (see agents/knowledge-base/research-librarian.md)
+    documents the expected structure and the active-biasing semantics that consume
+    PRIMING_CONTEXT.
+    """
+    lines: list[str] = []
+    lines.append(f"SCOPE: {source.path}")
+    lines.append(f"SOURCE_HANDLE: {source.name}")
+    if priming is not None:
+        priming_json = _json.dumps(
+            {
+                "local_kb_config_excerpt": priming.local_kb_config_excerpt,
+                "local_shelf_index_terms": priming.local_shelf_index_terms,
+            },
+            indent=2,
+        )
+        lines.append("PRIMING_CONTEXT:")
+        lines.append(priming_json)
+    lines.append("")
+    lines.append(f"Question: {question}")
+    lines.append("")
+    lines.append(
+        f"Read the shelf-index at {source.path}/_shelf-index.md, identify the 2-4 "
+        "most relevant library files for the question, deep-read only those, and "
+        "return findings in the retrieval format. Every finding block must include "
+        f"a **Source library**: {source.name} line (see your agent prompt)."
+    )
+    lines.append("")
+    lines.append(
+        f"Do not read any files outside {source.path}. Do not emit --- horizontal "
+        "rules inside a finding block (they are treated as structural separators "
+        "by the post-check tokenizer)."
+    )
+    return "\n".join(lines)
 
 
 @dataclass
