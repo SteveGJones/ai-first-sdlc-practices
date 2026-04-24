@@ -18,6 +18,34 @@ from .priming import PrimingBundle
 from .registry import LibrarySource
 
 
+_SYNTHESIS_PHRASES = (
+    "build me the case",
+    "build the case",
+    "how should we think",
+    "synthesise",
+    "synthesize",
+)
+
+
+def is_synthesis_query(question: str) -> bool:
+    """Heuristic: does this question call for synthesis rather than retrieval?
+
+    Synthesis queries ask for a connected argument across multiple findings.
+    Retrieval queries ask for specific facts. The distinction matters because
+    synthesis requires a separate librarian call with all retrieval findings
+    as input, plus mandatory inline source attribution on every claim.
+
+    Conservative — false negatives (synthesis treated as retrieval) yield
+    per-source findings the user can connect manually. False positives
+    (retrieval treated as synthesis) waste a librarian call and produce a
+    less specific answer.
+    """
+    if not question or not question.strip():
+        return False
+    lower = question.lower()
+    return any(phrase in lower for phrase in _SYNTHESIS_PHRASES)
+
+
 def format_dispatch_prompt(
     source: LibrarySource,
     question: str,

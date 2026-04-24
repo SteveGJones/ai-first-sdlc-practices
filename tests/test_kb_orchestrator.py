@@ -271,3 +271,35 @@ def test_orchestrator_passes_priming_bundle_to_dispatcher(tmp_path: Path) -> Non
     # And the result should still be well-formed
     assert "local finding" in result.combined_output
     assert "corp finding" in result.combined_output
+
+
+from sdlc_knowledge_base_scripts.orchestrator import is_synthesis_query
+
+
+def test_is_synthesis_query_build_the_case() -> None:
+    assert is_synthesis_query("build me the case for trunk-based development")
+    assert is_synthesis_query("Build the case for adopting BDD")
+    assert is_synthesis_query("BUILD ME THE CASE FOR TLA+")  # case-insensitive
+
+
+def test_is_synthesis_query_how_should_we_think() -> None:
+    assert is_synthesis_query("how should we think about cycle time?")
+    assert is_synthesis_query("How should we think about EUV cleanrooms")
+
+
+def test_is_synthesis_query_synthesise_phrases() -> None:
+    assert is_synthesis_query("synthesise the evidence on TDD effectiveness")
+    assert is_synthesis_query("synthesize what we know about DORA metrics")
+
+
+def test_is_synthesis_query_retrieval_questions_return_false() -> None:
+    assert not is_synthesis_query("what does our research say about cycle time")
+    assert not is_synthesis_query("what is the deployment frequency threshold")
+    assert not is_synthesis_query("list the evidence for TDD")
+    assert not is_synthesis_query("show me the citations for trunk-based development")
+
+
+def test_is_synthesis_query_empty_or_whitespace() -> None:
+    assert not is_synthesis_query("")
+    assert not is_synthesis_query("   ")
+    assert not is_synthesis_query("\n\t")
