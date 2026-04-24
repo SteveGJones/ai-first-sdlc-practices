@@ -4,6 +4,7 @@ from pathlib import Path
 from sdlc_knowledge_base_scripts.registry import (
     load_global_registry,
     GlobalRegistry,
+    LibrarySource,
     load_project_activation,
     ProjectActivation,
 )
@@ -209,3 +210,89 @@ def test_load_project_activation_top_level_not_dict(tmp_path: Path) -> None:
     result = load_project_activation(activation_file)
     assert result.activated_sources == []
     assert any("must be a JSON object" in w for w in result.warnings)
+
+
+# ---------------------------------------------------------------------------
+# Task 4: resolve_dispatch_list
+# ---------------------------------------------------------------------------
+
+from sdlc_knowledge_base_scripts.registry import resolve_dispatch_list, DispatchList
+
+
+def _make_global(libraries: list[LibrarySource]) -> GlobalRegistry:
+    return GlobalRegistry(libraries=libraries)
+
+
+def _make_activation(names: list[str]) -> ProjectActivation:
+    return ProjectActivation(activated_sources=names)
+
+
+def test_resolve_happy_path(tmp_path: Path) -> None:
+    local_lib = tmp_path / "library"
+    local_lib.mkdir()
+    (local_lib / "_shelf-index.md").write_text("# Shelf Index\n")
+
+    gr = _make_global([
+        LibrarySource(name="corp-semi", type="filesystem", path="/tmp/corp-semi/library"),
+    ])
+    pa = _make_activation(["corp-semi"])
+
+    result = resolve_dispatch_list(gr, pa, project_library_path=local_lib)
+    assert isinstance(result, DispatchList)
+    assert len(result.sources) == 2  # local + corp-semi
+    assert result.sources[0].name == "local"
+    assert result.sources[0].path == str(local_lib)
+    assert result.sources[1].name == "corp-semi"
+    assert result.warnings == []
+
+
+def test_resolve_unknown_activation_name(tmp_path: Path) -> None:
+    local_lib = tmp_path / "library"
+    local_lib.mkdir()
+    (local_lib / "_shelf-index.md").write_text("# Shelf Index\n")
+
+    gr = _make_global([])
+    pa = _make_activation(["nonexistent"])
+
+    result = resolve_dispatch_list(gr, pa, project_library_path=local_lib)
+    assert len(result.sources) == 1  # only local
+    assert any("nonexistent" in w for w in result.warnings)
+
+
+def test_resolve_remote_agent_type_skipped(tmp_path: Path) -> None:
+    local_lib = tmp_path / "library"
+    local_lib.mkdir()
+    (local_lib / "_shelf-index.md").write_text("# Shelf Index\n")
+
+    gr = _make_global([
+        LibrarySource(name="corp-remote", type="remote-agent", path=None),
+    ])
+    pa = _make_activation(["corp-remote"])
+
+    result = resolve_dispatch_list(gr, pa, project_library_path=local_lib)
+    assert len(result.sources) == 1  # only local
+    assert any("remote-agent" in w for w in result.warnings)
+
+
+def test_resolve_no_local_library_with_externals(tmp_path: Path) -> None:
+    missing_local = tmp_path / "library"
+
+    gr = _make_global([
+        LibrarySource(name="corp-semi", type="filesystem", path="/tmp/corp-semi/library"),
+    ])
+    pa = _make_activation(["corp-semi"])
+
+    result = resolve_dispatch_list(gr, pa, project_library_path=missing_local)
+    assert len(result.sources) == 1  # only corp-semi, no local
+    assert result.sources[0].name == "corp-semi"
+
+
+def test_resolve_empty_dispatch_list(tmp_path: Path) -> None:
+    missing_local = tmp_path / "library"
+
+    gr = _make_global([])
+    pa = _make_activation([])
+
+    result = resolve_dispatch_list(gr, pa, project_library_path=missing_local)
+    assert result.sources == []
+    assert result.is_empty_error is True

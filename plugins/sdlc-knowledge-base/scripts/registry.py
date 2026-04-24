@@ -172,3 +172,61 @@ def load_project_activation(path: Path) -> ProjectActivation:
         )
 
     return ProjectActivation(version=version, activated_sources=list(sources), warnings=warnings)
+
+
+@dataclass
+class DispatchList:
+    """Result of resolving activated sources into a dispatch list."""
+    sources: list[LibrarySource] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    is_empty_error: bool = False  # True when no local + no externals → user-facing error
+
+
+def resolve_dispatch_list(
+    global_registry: GlobalRegistry,
+    activation: ProjectActivation,
+    project_library_path: Path,
+) -> DispatchList:
+    """Resolve activated source names against the global registry.
+
+    Prepends an implicit `local` source when project_library_path exists.
+    Skips unknown names with warnings. Skips remote-agent types with
+    warnings (deferred to future EPIC). Returns is_empty_error=True when
+    no sources resolve at all (callers should emit the kb-init recommendation).
+    """
+    warnings: list[str] = []
+    sources: list[LibrarySource] = []
+
+    # Implicit local source if library directory exists
+    if project_library_path.exists() and project_library_path.is_dir():
+        sources.append(
+            LibrarySource(name="local", type="filesystem", path=str(project_library_path))
+        )
+
+    # Index global registry by name
+    by_name = {lib.name: lib for lib in global_registry.libraries}
+
+    for name in activation.activated_sources:
+        entry = by_name.get(name)
+        if entry is None:
+            warnings.append(
+                f"Activated source '{name}' not found in global registry. Skipping."
+            )
+            continue
+        if entry.type == "remote-agent":
+            warnings.append(
+                f"Source '{name}' is type 'remote-agent' (planned for future release). Skipping."
+            )
+            continue
+        if entry.type != "filesystem":
+            warnings.append(
+                f"Source '{name}' has unknown type '{entry.type}'. Skipping."
+            )
+            continue
+        sources.append(entry)
+
+    return DispatchList(
+        sources=sources,
+        warnings=warnings,
+        is_empty_error=(len(sources) == 0),
+    )
