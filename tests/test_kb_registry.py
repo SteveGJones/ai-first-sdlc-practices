@@ -201,3 +201,11 @@ def test_load_project_activation_string_version_coerced(tmp_path: Path) -> None:
     assert result.version == 1
     assert result.activated_sources == ["lib-a"]
     assert any("integer" in w.lower() for w in result.warnings)
+
+
+def test_load_project_activation_top_level_not_dict(tmp_path: Path) -> None:
+    activation_file = tmp_path / "libraries.json"
+    activation_file.write_text("[]")
+    result = load_project_activation(activation_file)
+    assert result.activated_sources == []
+    assert any("must be a JSON object" in w for w in result.warnings)

@@ -15,6 +15,29 @@ CURRENT_REGISTRY_VERSION = 1
 KNOWN_LIBRARY_TYPES = {"filesystem", "remote-agent"}
 
 
+def _coerce_version(raw_version: object, context_label: str, warnings: list[str]) -> int:
+    """Coerce raw_version to int, appending a warning for non-int inputs.
+
+    Returns CURRENT_REGISTRY_VERSION as a fallback for non-coercible values.
+    Emits a warning when the type isn't int (including string-coerced ints
+    like "1"), so callers can see when the schema is being loose.
+    """
+    try:
+        version = int(raw_version)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        warnings.append(
+            f"{context_label}: version field must be an integer, got {type(raw_version).__name__}; "
+            f"treating as {CURRENT_REGISTRY_VERSION}."
+        )
+        return CURRENT_REGISTRY_VERSION
+    if not isinstance(raw_version, int):
+        warnings.append(
+            f"{context_label}: version field must be an integer, got {type(raw_version).__name__}; "
+            f"treating as {version}."
+        )
+    return version
+
+
 @dataclass(frozen=True)
 class LibrarySource:
     """A library the skill can dispatch a librarian against."""
@@ -59,20 +82,7 @@ def load_global_registry(path: Path) -> GlobalRegistry:
     warnings: list[str] = []
 
     raw_version = data.get("version", CURRENT_REGISTRY_VERSION)
-    try:
-        version = int(raw_version)
-    except (TypeError, ValueError):
-        warnings.append(
-            f"version field must be an integer, got {type(raw_version).__name__}; "
-            f"treating as {CURRENT_REGISTRY_VERSION}."
-        )
-        version = CURRENT_REGISTRY_VERSION
-    else:
-        if not isinstance(raw_version, int):
-            warnings.append(
-                f"version field must be an integer, got {type(raw_version).__name__}; "
-                f"treating as {version}."
-            )
+    version = _coerce_version(raw_version, "Global registry", warnings)
     if version != CURRENT_REGISTRY_VERSION:
         warnings.append(
             f"Global registry version {version} is unknown (expected {CURRENT_REGISTRY_VERSION}); "
@@ -138,23 +148,16 @@ def load_project_activation(path: Path) -> ProjectActivation:
             warnings=[f"Project activation at {path} is malformed: {exc}. No external libraries activated."],
         )
 
+    if not isinstance(data, dict):
+        return ProjectActivation(
+            activated_sources=[],
+            warnings=[f"Project activation at {path} must be a JSON object; got {type(data).__name__}. No external libraries activated."],
+        )
+
     warnings: list[str] = []
 
     raw_version = data.get("version", CURRENT_REGISTRY_VERSION)
-    try:
-        version = int(raw_version)
-    except (TypeError, ValueError):
-        warnings.append(
-            f"version field must be an integer, got {type(raw_version).__name__}; "
-            f"treating as {CURRENT_REGISTRY_VERSION}."
-        )
-        version = CURRENT_REGISTRY_VERSION
-    else:
-        if not isinstance(raw_version, int):
-            warnings.append(
-                f"version field must be an integer, got {type(raw_version).__name__}; "
-                f"treating as {version}."
-            )
+    version = _coerce_version(raw_version, "Project activation", warnings)
     if version != CURRENT_REGISTRY_VERSION:
         warnings.append(
             f"Project activation version {version} is unknown (expected {CURRENT_REGISTRY_VERSION})."
