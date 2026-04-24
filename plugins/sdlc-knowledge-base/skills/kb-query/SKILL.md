@@ -74,28 +74,73 @@ print(json.dumps({
 "
 ```
 
-In phase A, the bundle is built but the librarian's use of it is not yet active (phase B, #168 enables that). Passing it through now means phase B is a librarian-prompt change only, not a skill rewrite.
+The bundle's contents flow into each librarian dispatch via `format_dispatch_prompt`
+in Step 3. The librarian uses `local_shelf_index_terms` to bias term-matching against
+its scoped shelf-index, and `local_kb_config_excerpt` to frame findings in the local
+project's lens (see the librarian agent's `PRIMING_CONTEXT` documentation).
 
-### 3. Dispatch `research-librarian` for every source — in parallel
+### 3. Format and dispatch one librarian per source — in parallel
 
-Use the **Agent tool** to invoke the `research-librarian` agent *once per source* in the dispatch list. Issue ALL invocations in a SINGLE message (Claude's parallel tool-call capability). Each invocation's prompt has this exact structure:
+For each source in the dispatch list, render the librarian prompt via the orchestrator's
+helper (it produces the exact `SCOPE: / SOURCE_HANDLE: / PRIMING_CONTEXT:` shape the
+librarian expects):
+
+```bash
+python3 -c "
+from pathlib import Path
+from sdlc_knowledge_base_scripts.orchestrator import format_dispatch_prompt
+from sdlc_knowledge_base_scripts.priming import PrimingBundle
+from sdlc_knowledge_base_scripts.registry import LibrarySource
+import json
+
+# Reconstruct the priming bundle from the JSON produced in Step 2
+priming_data = json.loads('<priming_bundle_json_from_step_2>')
+priming = PrimingBundle(
+    question=priming_data['question'],
+    local_kb_config_excerpt=priming_data['local_kb_config_excerpt'],
+    local_shelf_index_terms=priming_data['local_shelf_index_terms'],
+)
+
+source = LibrarySource(name='<source.name>', type='filesystem', path='<source.path>')
+prompt = format_dispatch_prompt(
+    source=source,
+    question='<the user question>',
+    priming=priming,
+)
+print(prompt)
+"
+```
+
+Then use the **Agent tool** to invoke the `research-librarian` agent *once per source* in
+the dispatch list. Issue ALL invocations in a SINGLE message so they run in parallel
+(Claude's parallel tool-call capability). Pass each source's rendered prompt as the
+agent's input.
+
+The rendered prompt structure looks like:
 
 ```
 SCOPE: <source.path>
 SOURCE_HANDLE: <source.name>
-PRIMING_CONTEXT: <json-dump-of-priming-bundle>
+PRIMING_CONTEXT:
+{
+  "local_kb_config_excerpt": "...",
+  "local_shelf_index_terms": [...]
+}
 
 Question: <the user question>
 
-Read the shelf-index at <source.path>/_shelf-index.md, identify the 2-4 most
-relevant library files for the question, deep-read only those, and return
-findings in the retrieval format. Every finding block must include a
-**Source library**: <source.name> line (see your agent prompt).
+Read the shelf-index at <source.path>/_shelf-index.md, identify the 2-4
+most relevant library files for the question, deep-read only those, and
+return findings in the retrieval format. Every finding block must include
+a **Source library**: <source.name> line (see your agent prompt).
 
-Do not read any files outside <source.path>. Do not emit --- horizontal rules
-inside a finding block (they are treated as structural separators by the
-post-check tokenizer).
+Do not read any files outside <source.path>. Do not emit --- horizontal
+rules inside a finding block (they are treated as structural separators
+by the post-check tokenizer).
 ```
+
+The librarian agent's prompt spec defines how it consumes `PRIMING_CONTEXT` — the orchestrator
+helper, the librarian prompt, and this skill stay in lockstep on the format.
 
 ### 4. Collect per-source outputs and run attribution post-check
 
