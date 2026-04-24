@@ -210,6 +210,21 @@ def test_synthesis_valid_handles_accepts_whitelisted() -> None:
     assert result.passed is True
 
 
+def test_retrieval_preamble_is_dropped() -> None:
+    """Preamble before the first block is not attributed and must be dropped."""
+    output = """Here is some preamble commentary about the query.
+This text has no attribution and must not survive.
+
+### First finding
+**Source library**: local
+Body of the finding.
+"""
+    result = check_retrieval_attribution(output)
+    assert "preamble commentary" not in result.cleaned_output
+    assert "### First finding" in result.cleaned_output
+    assert result.dropped_blocks == []  # no blocks were dropped, just preamble stripped
+
+
 def test_synthesis_multiline_evidence_item_handles_handle_on_continuation() -> None:
     """An evidence item that wraps to the next line, with the [handle] on the
     continuation, must not be reported as untagged."""

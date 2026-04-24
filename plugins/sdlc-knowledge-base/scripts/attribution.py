@@ -47,11 +47,15 @@ def check_retrieval_attribution(output: str) -> RetrievalCheckResult:
     Uses a line-wise tokenizer. A block starts at a line whose first three
     non-whitespace characters are '### ' (not inside a fenced code block)
     and ends at the next such line, OR at a '---' horizontal rule line,
-    OR at end of input. Content between the end of a block and the start
-    of the next block is NOT considered part of either block.
+    OR at end of input.
+
+    Content outside any '### ' block is dropped. This includes preamble
+    before the first block, inter-block bleeds, separator lines, and
+    post-last-block trailers. Attribution survives only inside properly-
+    structured blocks.
 
     Blocks whose lines do not contain a case-insensitive "**Source library**:"
-    (or trivial typo variants) are dropped from cleaned_output. Dropped
+    (or trivial typo variants) are also dropped from cleaned_output. Dropped
     block titles are recorded for debugging.
 
     Empty or tag-free input returns passed=True with the input unchanged.
@@ -64,21 +68,11 @@ def check_retrieval_attribution(output: str) -> RetrievalCheckResult:
 
     kept: list[str] = []
     dropped: list[str] = []
-    seen_block = False
-    last_block_index = -1
-    for idx, token in enumerate(tokens):
-        if token.kind == "block":
-            seen_block = True
-            last_block_index = idx
 
-    # Second pass: determine which tokens to keep.
-    # - Pre-block "between" tokens (preamble before any block): kept.
-    # - "between" tokens after a block has been seen: dropped (inter-block or
-    #   trailer unattributed content — confidentiality invariant §7.1).
-    # - "separator" tokens: kept only when adjacent to blocks (structural
-    #   separators between findings); after the last block they are dropped too.
-    # - "block" tokens: kept if attributed, dropped otherwise.
-    for idx, token in enumerate(tokens):
+    # Only block tokens with valid attribution are kept.
+    # Everything else (preamble, inter-block content, separators, trailers)
+    # is dropped — it has no attribution and must not reach the caller (§7.1).
+    for token in tokens:
         if token.kind == "block":
             block_text = "".join(token.lines)
             if _SOURCE_LIBRARY_RE.search(block_text):
@@ -87,17 +81,6 @@ def check_retrieval_attribution(output: str) -> RetrievalCheckResult:
                 # Record the heading line (stripped) for debuggability
                 title = token.lines[0].lstrip("# ").rstrip("\n").strip()
                 dropped.append(title)
-        elif token.kind == "between":
-            if not seen_block:
-                # Preamble — before any block started; safe to keep.
-                kept.append("".join(token.lines))
-            # Inter-block and post-block "between" content is silently dropped.
-            # It has no attribution and must not reach the caller.
-        else:  # separator "---" line
-            # Keep separators that appear before the last block (structural
-            # dividers between findings). Drop separators after all blocks end.
-            if idx <= last_block_index:
-                kept.append("".join(token.lines))
 
     return RetrievalCheckResult(
         passed=(len(dropped) == 0),
