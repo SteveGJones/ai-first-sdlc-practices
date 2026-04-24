@@ -4,12 +4,16 @@ The one invariant that must never silently fail: every finding and every
 synthesis claim has a source library handle tag. This is a hard invariant
 enforced by the skill before returning output to the user.
 
+Implementation uses a line-wise tokenizer (not regex on markdown) to avoid
+boundary bugs with --- separators, subheadings, and fenced code blocks.
+
 Phase A of EPIC #164 — see spec §7.1.
 """
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from typing import Optional
 
 
 @dataclass
@@ -25,72 +29,234 @@ class SynthesisCheckResult:
     untagged_claims: list[str] = field(default_factory=list)
 
 
-# A retrieval finding block starts with "### " and is terminated by the next
-# "### " or "---" or EOF. Each block must contain "**Source library**:".
-_FINDING_BLOCK_RE = re.compile(
-    r"(###\s+[^\n]+\n(?:(?!###\s+|^---\s*$).|\n)*)",
-    re.MULTILINE,
+# Typo-tolerant Source library attribution detector.
+# Accepts case-insensitive, colon-inside-or-outside-asterisks variants
+# so that a single-character template typo doesn't silently drop findings.
+_SOURCE_LIBRARY_RE = re.compile(
+    r"\*\*\s*source\s+library\s*[:*]+\s*",
+    re.IGNORECASE,
 )
 
-# In synthesis output, a supporting evidence item is a numbered or bulleted
-# line under a "**Supporting evidence**:" heading. Each must contain "[<handle>]".
-_SUPPORTING_EVIDENCE_SECTION_RE = re.compile(
-    r"\*\*Supporting evidence\*\*:\s*\n((?:\s*[\d\-\*][\.\)]?\s+.+\n?)+)",
-    re.MULTILINE,
-)
-_EVIDENCE_ITEM_RE = re.compile(r"^\s*[\d\-\*][\.\)]?\s+(.+)$", re.MULTILINE)
-_HANDLE_TAG_RE = re.compile(r"\[[\w-]+\]")
+# Bracketed handle token: [alpha-num-and-hyphens]
+_HANDLE_TAG_RE = re.compile(r"\[([\w-]+)\]")
 
 
 def check_retrieval_attribution(output: str) -> RetrievalCheckResult:
-    """Verify every '### ' finding block has a '**Source library**:' tag.
+    """Verify every '### ' finding block has a Source library attribution.
 
-    Blocks without the tag are dropped from cleaned_output and returned in
-    dropped_blocks for logging. Empty or tag-free input returns passed=True.
+    Uses a line-wise tokenizer. A block starts at a line whose first three
+    non-whitespace characters are '### ' (not inside a fenced code block)
+    and ends at the next such line, OR at a '---' horizontal rule line,
+    OR at end of input. Content between the end of a block and the start
+    of the next block is NOT considered part of either block.
+
+    Blocks whose lines do not contain a case-insensitive "**Source library**:"
+    (or trivial typo variants) are dropped from cleaned_output. Dropped
+    block titles are recorded for debugging.
+
+    Empty or tag-free input returns passed=True with the input unchanged.
     """
     if not output.strip():
         return RetrievalCheckResult(passed=True, cleaned_output=output)
 
-    kept_parts: list[str] = []
+    lines = output.splitlines(keepends=True)
+    tokens = _tokenize_retrieval(lines)
+
+    kept: list[str] = []
     dropped: list[str] = []
-    last_end = 0
-    for match in _FINDING_BLOCK_RE.finditer(output):
-        block_text = match.group(1)
-        start, end = match.span(1)
-        # Keep everything between blocks (headers, separators)
-        kept_parts.append(output[last_end:start])
-        if "**Source library**:" in block_text:
-            kept_parts.append(block_text)
-        else:
-            # Summarise the first line (the '### ' title) for the dropped log
-            first_line = block_text.splitlines()[0].lstrip("# ").strip()
-            dropped.append(first_line)
-        last_end = end
-    kept_parts.append(output[last_end:])
-    cleaned = "".join(kept_parts)
+    seen_block = False
+    last_block_index = -1
+    for idx, token in enumerate(tokens):
+        if token.kind == "block":
+            seen_block = True
+            last_block_index = idx
+
+    # Second pass: determine which tokens to keep.
+    # - Pre-block "between" tokens (preamble before any block): kept.
+    # - "between" tokens after a block has been seen: dropped (inter-block or
+    #   trailer unattributed content — confidentiality invariant §7.1).
+    # - "separator" tokens: kept only when adjacent to blocks (structural
+    #   separators between findings); after the last block they are dropped too.
+    # - "block" tokens: kept if attributed, dropped otherwise.
+    for idx, token in enumerate(tokens):
+        if token.kind == "block":
+            block_text = "".join(token.lines)
+            if _SOURCE_LIBRARY_RE.search(block_text):
+                kept.append(block_text)
+            else:
+                # Record the heading line (stripped) for debuggability
+                title = token.lines[0].lstrip("# ").rstrip("\n").strip()
+                dropped.append(title)
+        elif token.kind == "between":
+            if not seen_block:
+                # Preamble — before any block started; safe to keep.
+                kept.append("".join(token.lines))
+            # Inter-block and post-block "between" content is silently dropped.
+            # It has no attribution and must not reach the caller.
+        else:  # separator "---" line
+            # Keep separators that appear before the last block (structural
+            # dividers between findings). Drop separators after all blocks end.
+            if idx <= last_block_index:
+                kept.append("".join(token.lines))
 
     return RetrievalCheckResult(
         passed=(len(dropped) == 0),
-        cleaned_output=cleaned,
+        cleaned_output="".join(kept),
         dropped_blocks=dropped,
     )
 
 
-def check_synthesis_attribution(output: str) -> SynthesisCheckResult:
-    """Verify every supporting-evidence item has an inline [handle] tag.
+@dataclass
+class _Token:
+    kind: str  # "block" | "between" | "separator"
+    lines: list[str]
+
+
+def _tokenize_retrieval(lines: list[str]) -> list[_Token]:
+    """Split a retrieval output into block / between / separator tokens.
+
+    A block is a run of lines starting with a '### ' heading line,
+    ending just before the next '### ' heading line, or a '---' line,
+    or end of input. Lines inside fenced code blocks (``` fences) are
+    always treated as "between" content and never start a block.
+    """
+    tokens: list[_Token] = []
+    current_kind: Optional[str] = None
+    current_lines: list[str] = []
+    in_fence = False
+
+    def flush() -> None:
+        nonlocal current_kind, current_lines
+        if current_lines:
+            tokens.append(_Token(kind=current_kind or "between", lines=current_lines))
+        current_kind = None
+        current_lines = []
+
+    for line in lines:
+        stripped = line.rstrip("\n").rstrip("\r")
+        if stripped.lstrip().startswith("```"):
+            in_fence = not in_fence
+            # Fence lines belong to whatever section they started in
+            if current_kind is None:
+                current_kind = "between"
+            current_lines.append(line)
+            continue
+
+        if in_fence:
+            if current_kind is None:
+                current_kind = "between"
+            current_lines.append(line)
+            continue
+
+        # Separator line "---" terminates any current block
+        if stripped.strip() == "---":
+            flush()
+            tokens.append(_Token(kind="separator", lines=[line]))
+            continue
+
+        # Heading line "### " (exactly three hashes + space) starts a new block
+        # "#### " (four or more) is NOT a new block.
+        if stripped.startswith("### ") and not stripped.startswith("#### "):
+            flush()
+            current_kind = "block"
+            current_lines.append(line)
+            continue
+
+        # Otherwise append to current token
+        if current_kind is None:
+            current_kind = "between"
+        current_lines.append(line)
+
+    flush()
+    return tokens
+
+
+def check_synthesis_attribution(
+    output: str,
+    valid_handles: Optional[set[str]] = None,
+) -> SynthesisCheckResult:
+    """Verify every supporting-evidence item has a valid [handle] attribution.
+
+    If valid_handles is provided, bracketed tokens must be in the set; tokens
+    like [0], [TODO], [citation-needed] are rejected. If valid_handles is
+    None (phase-A callers that don't yet pass the registry), any [word-token]
+    is accepted — callers should upgrade to the validated form as soon as
+    the registry is available.
+
+    Multi-line evidence items (claim wrapping across lines) are handled by
+    consuming continuation lines until the next numbered/bulleted item start
+    or the end of the evidence section.
 
     Any untagged item causes passed=False; the caller is expected to abort
-    the synthesis and return the retrieval-only output with an error block.
+    the synthesis and return retrieval-only output with an error block.
     """
     untagged: list[str] = []
-    for section_match in _SUPPORTING_EVIDENCE_SECTION_RE.finditer(output):
-        section_body = section_match.group(1)
-        for item_match in _EVIDENCE_ITEM_RE.finditer(section_body):
-            item_text = item_match.group(1).strip()
-            if not _HANDLE_TAG_RE.search(item_text):
-                untagged.append(item_text)
+    lines = output.splitlines()
+    i = 0
+    in_evidence = False
+    current_item: list[str] = []
+
+    def check_current() -> None:
+        if not current_item:
+            return
+        item_text = " ".join(s.strip() for s in current_item).strip()
+        if not _has_valid_handle(item_text, valid_handles):
+            untagged.append(item_text)
+
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+
+        if stripped.startswith("**Supporting evidence**"):
+            in_evidence = True
+            i += 1
+            continue
+
+        if in_evidence:
+            # Other ** sections (e.g. **Caveats**) end the evidence section
+            if stripped.startswith("**") and not stripped.startswith("**Supporting evidence**"):
+                check_current()
+                current_item = []
+                in_evidence = False
+                continue
+
+            # An item start line: begins with a number, dash, or asterisk marker
+            if _is_item_start(stripped):
+                check_current()
+                current_item = [_strip_item_marker(stripped)]
+            elif stripped and current_item:
+                # Continuation of the current item
+                current_item.append(stripped)
+            # Blank lines inside evidence don't end the item; they're just whitespace
+
+        i += 1
+
+    if in_evidence:
+        check_current()
 
     return SynthesisCheckResult(
         passed=(len(untagged) == 0),
         untagged_claims=untagged,
     )
+
+
+_ITEM_MARKER_RE = re.compile(r"^(\d+[\.\)]|[\-\*])\s+")
+
+
+def _is_item_start(stripped_line: str) -> bool:
+    return bool(_ITEM_MARKER_RE.match(stripped_line))
+
+
+def _strip_item_marker(stripped_line: str) -> str:
+    return _ITEM_MARKER_RE.sub("", stripped_line, count=1)
+
+
+def _has_valid_handle(item_text: str, valid_handles: Optional[set[str]]) -> bool:
+    matches = _HANDLE_TAG_RE.findall(item_text)
+    if not matches:
+        return False
+    if valid_handles is None:
+        # Permissive mode: any bracketed word-token is accepted.
+        # Callers without a registry reference use this.
+        return True
+    return any(h in valid_handles for h in matches)
