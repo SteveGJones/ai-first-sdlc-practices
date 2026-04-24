@@ -1,7 +1,9 @@
 """Priming bundle construction for cross-library kb-query.
 
-Phase A scaffold (EPIC #164 sub-1, #167). Phase B (sub-2, #168) activates
-the priming by passing this bundle to external librarian invocations.
+Phase B of EPIC #164 (sub-2, #168). The bundle is consumed by external
+librarian invocations via orchestrator.format_dispatch_prompt — see the
+research-librarian agent's PRIMING_CONTEXT documentation for how the
+librarian uses these fields to bias term-matching and frame findings.
 """
 from __future__ import annotations
 
@@ -14,9 +16,14 @@ from pathlib import Path
 class PrimingBundle:
     """Context passed to external librarians to frame their query.
 
-    Fully consumed by external librarian prompts in phase B. In phase A,
-    this bundle is built and passed through but the librarian prompt
-    does not yet act on it.
+    Consumed by `orchestrator.format_dispatch_prompt` and rendered into
+    the librarian's PRIMING_CONTEXT JSON block. The librarian uses:
+
+    - `local_kb_config_excerpt` — to interpret findings under the project's
+      lens (e.g., "Brazilian semiconductor packaging operations")
+    - `local_shelf_index_terms` — to bias term-matching against its scoped
+      shelf-index, preferring files whose Terms overlap with the local
+      project's vocabulary
     """
     question: str
     local_kb_config_excerpt: str = ""

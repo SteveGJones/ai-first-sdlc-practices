@@ -154,7 +154,9 @@ python3 -c "
 # skill, you have already dispatched via the Agent tool and have the
 # outputs in hand. Call the pure-Python post-processing directly.
 from sdlc_knowledge_base_scripts.orchestrator import run_retrieval_query, DispatchRequest
+from sdlc_knowledge_base_scripts.priming import PrimingBundle
 from sdlc_knowledge_base_scripts.registry import LibrarySource
+import json
 
 # Reconstruct sources from the dispatch list (step 1) and build a
 # pass-through dispatcher that returns the already-collected outputs.
@@ -172,10 +174,18 @@ sources = [
     # ... one entry per activated source
 ]
 
+# Reconstruct from Step 2's JSON output if not already in scope
+priming_data = json.loads('<priming_bundle_json_from_step_2>')
+priming = PrimingBundle(
+    question=priming_data['question'],
+    local_kb_config_excerpt=priming_data['local_kb_config_excerpt'],
+    local_shelf_index_terms=priming_data['local_shelf_index_terms'],
+)
+
 result = run_retrieval_query(
     question='<the user question>',
     sources=sources,
-    priming=None,  # phase A: bundle built but not yet used by librarian
+    priming=priming,  # built in Step 2, formatted into each dispatch by Step 3
     dispatcher=pass_through,
 )
 print(result.combined_output)
