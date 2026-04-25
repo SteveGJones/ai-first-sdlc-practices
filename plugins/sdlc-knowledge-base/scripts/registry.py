@@ -294,13 +294,17 @@ def resolve_dispatch_list(
     warnings: list[str] = []
     sources: list[LibrarySource] = []
 
-    # Implicit local source if library directory exists
+    # Implicit local source if library directory exists — validate same as external sources
     if project_library_path.exists() and project_library_path.is_dir():
-        sources.append(
-            LibrarySource(
-                name="local", type="filesystem", path=str(project_library_path)
+        ok, reason = validate_library_path(project_library_path)
+        if ok:
+            sources.append(
+                LibrarySource(
+                    name="local", type="filesystem", path=str(project_library_path)
+                )
             )
-        )
+        else:
+            warnings.append(f"Local library: {reason}; skipping.")
 
     # Index global registry by name
     by_name = {lib.name: lib for lib in global_registry.libraries}

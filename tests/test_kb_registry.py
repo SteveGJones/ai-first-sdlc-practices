@@ -418,11 +418,14 @@ def test_validate_library_path_no_shelf_index(tmp_path: Path) -> None:
 
 
 def test_validate_library_path_denylist_ssh(tmp_path: Path) -> None:
-    fake_ssh = Path("/Users/test/.ssh")
+    # Create a real directory whose name contains a denylisted fragment so the
+    # test reaches the denylist branch rather than the "does not exist" branch.
+    fake_ssh = tmp_path / ".ssh"
+    fake_ssh.mkdir()
+    (fake_ssh / "_shelf-index.md").write_text("# Shelf\n")
     ok, reason = validate_library_path(fake_ssh)
     assert ok is False
-    # Either path doesn't exist OR denylist match — both acceptable verdicts
-    assert ".ssh" in reason or "denylist" in reason.lower() or "does not exist" in reason.lower()
+    assert ".ssh" in reason  # denylist branch exercised, not "does not exist"
 
 
 # ---------------------------------------------------------------------------
@@ -449,3 +452,20 @@ def test_resolve_dispatch_skips_invalid_path_with_warning(tmp_path: Path) -> Non
         "bad-corp" in w and ("does not exist" in w or "invalid" in w.lower())
         for w in result.warnings
     )
+
+
+def test_resolve_local_source_validates_path(tmp_path: Path) -> None:
+    """Local source should also go through validate_library_path, not just .exists() and .is_dir()."""
+    # Make a local library directory inside a denylisted-named parent
+    bad_parent = tmp_path / ".aws"
+    bad_parent.mkdir()
+    local_lib = bad_parent / "library"
+    local_lib.mkdir()
+    (local_lib / "_shelf-index.md").write_text("# Shelf\n")
+
+    gr = _make_global([])
+    pa = _make_activation([])
+    result = resolve_dispatch_list(gr, pa, project_library_path=local_lib)
+    # Local should be skipped because resolved path contains /.aws/ denylist fragment
+    assert not any(s.name == "local" for s in result.sources)
+    assert any("denylist" in w.lower() or ".aws" in w for w in result.warnings)
