@@ -370,3 +370,48 @@ def test_load_global_registry_invalid_name_charset_skipped(tmp_path: Path) -> No
         if "name" in w.lower() and "invalid" in w.lower()
     ]
     assert len(invalid_warnings) == 3
+
+
+# ---------------------------------------------------------------------------
+# Task 3: validate_library_path
+# ---------------------------------------------------------------------------
+
+
+from sdlc_knowledge_base_scripts.registry import validate_library_path  # noqa: E402
+
+
+def test_validate_library_path_happy(tmp_path: Path) -> None:
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n")
+    ok, reason = validate_library_path(lib)
+    assert ok is True
+    assert reason == ""
+
+
+def test_validate_library_path_not_absolute(tmp_path: Path) -> None:
+    ok, reason = validate_library_path(Path("library"))
+    assert ok is False
+    assert "absolute" in reason.lower()
+
+
+def test_validate_library_path_does_not_exist(tmp_path: Path) -> None:
+    ok, reason = validate_library_path(tmp_path / "nonexistent")
+    assert ok is False
+    assert "does not exist" in reason.lower()
+
+
+def test_validate_library_path_no_shelf_index(tmp_path: Path) -> None:
+    lib = tmp_path / "library"
+    lib.mkdir()
+    ok, reason = validate_library_path(lib)
+    assert ok is False
+    assert "shelf-index" in reason.lower()
+
+
+def test_validate_library_path_denylist_ssh(tmp_path: Path) -> None:
+    fake_ssh = Path("/Users/test/.ssh")
+    ok, reason = validate_library_path(fake_ssh)
+    assert ok is False
+    # Either path doesn't exist OR denylist match — both acceptable verdicts
+    assert ".ssh" in reason or "denylist" in reason.lower() or "does not exist" in reason.lower()

@@ -229,6 +229,56 @@ class DispatchList:
     )
 
 
+_PATH_DENYLIST_FRAGMENTS = (
+    "/.ssh",
+    "/.gnupg",
+    "/.aws",
+    "/etc/",
+    "/.git",
+    "/.git/",
+)
+
+
+def validate_library_path(path: Path) -> tuple[bool, str]:
+    """Validate a library path is safe to dispatch a librarian against.
+
+    Returns (True, "") if valid, (False, "reason") if not. Checks:
+    - Path is absolute
+    - Path exists and is a directory
+    - Path contains a `_shelf-index.md` file
+    - Resolved path does not contain any denylisted fragment
+
+    The denylist is conservative — fragments that should never be a valid
+    library directory. Symlinks are resolved before the check.
+    """
+    if not path.is_absolute():
+        return False, f"path '{path}' must be absolute"
+
+    if not path.exists():
+        return False, f"path '{path}' does not exist"
+
+    if not path.is_dir():
+        return False, f"path '{path}' is not a directory"
+
+    try:
+        resolved = path.resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        return False, f"path '{path}' could not be resolved: {exc}"
+
+    resolved_str = str(resolved)
+    for fragment in _PATH_DENYLIST_FRAGMENTS:
+        if fragment in resolved_str:
+            return False, (
+                f"path '{path}' resolves to '{resolved}' which contains "
+                f"denylisted fragment '{fragment}'"
+            )
+
+    if not (resolved / "_shelf-index.md").exists():
+        return False, f"path '{path}' has no _shelf-index.md"
+
+    return True, ""
+
+
 def resolve_dispatch_list(
     global_registry: GlobalRegistry,
     activation: ProjectActivation,
