@@ -350,3 +350,23 @@ def test_resolve_empty_dispatch_list(tmp_path: Path) -> None:
     result = resolve_dispatch_list(gr, pa, project_library_path=missing_local)
     assert result.sources == []
     assert result.is_empty_error is True
+
+
+def test_load_global_registry_invalid_name_charset_skipped(tmp_path: Path) -> None:
+    registry_file = tmp_path / "global-libraries.json"
+    registry_file.write_text(json.dumps({
+        "version": 1,
+        "libraries": [
+            {"name": "Valid-Name", "type": "filesystem", "path": "/x"},
+            {"name": "with spaces", "type": "filesystem", "path": "/y"},
+            {"name": "with;semi", "type": "filesystem", "path": "/z"},
+            {"name": "good-name", "type": "filesystem", "path": "/ok"},
+        ],
+    }))
+    result = load_global_registry(registry_file)
+    assert [lib.name for lib in result.libraries] == ["good-name"]
+    invalid_warnings = [
+        w for w in result.warnings
+        if "name" in w.lower() and "invalid" in w.lower()
+    ]
+    assert len(invalid_warnings) == 3

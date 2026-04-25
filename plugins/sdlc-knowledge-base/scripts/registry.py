@@ -6,6 +6,7 @@ docs/superpowers/specs/2026-04-24-cross-library-kb-query-design.md.
 from __future__ import annotations
 
 import json
+import re as _re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -14,6 +15,18 @@ from typing import Optional
 CURRENT_REGISTRY_VERSION = 1
 
 KNOWN_LIBRARY_TYPES = {"filesystem", "remote-agent"}
+
+_VALID_NAME_RE = _re.compile(r"^[a-z][a-z0-9-]*$")
+
+
+def _is_valid_library_name(name: str) -> bool:
+    """Library handles must match ^[a-z][a-z0-9-]*$.
+
+    Aligns with the synthesis attribution check's _HANDLE_TAG_RE = `[\\w-]+`.
+    Rejected: starts with digit, contains uppercase, contains spaces,
+    contains shell-quoting / markdown directives.
+    """
+    return bool(_VALID_NAME_RE.match(name))
 
 
 def _coerce_version(
@@ -115,6 +128,12 @@ def load_global_registry(path: Path) -> GlobalRegistry:
         name = entry.get("name")
         if not name:
             warnings.append("Library entry missing 'name' field; skipping.")
+            continue
+        if not _is_valid_library_name(name):
+            warnings.append(
+                f"Library name '{name}' invalid "
+                "(must match ^[a-z][a-z0-9-]*$); skipping."
+            )
             continue
         if name in seen_names:
             warnings.append(f"Duplicate library name '{name}'; first occurrence wins.")

@@ -19,6 +19,7 @@ Add an external knowledge base to the user-scope global registry so it can be ac
 
 - Verify the registry file's parent directory exists. Create `~/.sdlc/` if missing.
 - If `~/.sdlc/global-libraries.json` exists, load and validate it.
+- Validate `<name>` matches `^[a-z][a-z0-9-]*$` (lowercase letters, digits, hyphens; must start with a letter). If not, error with: "Library handle must match ^[a-z][a-z0-9-]*$ — found '<name>'. Choose a different name."
 - If the chosen `<name>` is already registered, error out with the existing entry's path shown; recommend a different name or manual JSON edit.
 
 ## Steps
