@@ -138,7 +138,8 @@ Detail text under the subsection.
 
 
 def test_retrieval_fenced_code_with_hash_headings_is_preserved() -> None:
-    """Lines starting with ### inside a fenced code block must not be read as block boundaries."""
+    """Lines starting with ### inside a fenced code block must not be
+    read as block boundaries."""
     output = """### Real block
 **Source library**: corp
 

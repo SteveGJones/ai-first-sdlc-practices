@@ -1,6 +1,7 @@
 """Registry loading and activation resolution for cross-library kb-query.
 
-Phase A of EPIC #164 — see docs/superpowers/specs/2026-04-24-cross-library-kb-query-design.md.
+Phase A of EPIC #164 — see
+docs/superpowers/specs/2026-04-24-cross-library-kb-query-design.md.
 """
 from __future__ import annotations
 
@@ -15,7 +16,9 @@ CURRENT_REGISTRY_VERSION = 1
 KNOWN_LIBRARY_TYPES = {"filesystem", "remote-agent"}
 
 
-def _coerce_version(raw_version: object, context_label: str, warnings: list[str]) -> int:
+def _coerce_version(
+    raw_version: object, context_label: str, warnings: list[str]
+) -> int:
     """Coerce raw_version to int, appending a warning for non-int inputs.
 
     Returns CURRENT_REGISTRY_VERSION as a fallback for non-coercible values.
@@ -26,13 +29,15 @@ def _coerce_version(raw_version: object, context_label: str, warnings: list[str]
         version = int(raw_version)  # type: ignore[arg-type]
     except (TypeError, ValueError):
         warnings.append(
-            f"{context_label}: version field must be an integer, got {type(raw_version).__name__}; "
+            f"{context_label}: version field must be an integer, "
+            f"got {type(raw_version).__name__}; "
             f"treating as {CURRENT_REGISTRY_VERSION}."
         )
         return CURRENT_REGISTRY_VERSION
     if not isinstance(raw_version, int):
         warnings.append(
-            f"{context_label}: version field must be an integer, got {type(raw_version).__name__}; "
+            f"{context_label}: version field must be an integer, "
+            f"got {type(raw_version).__name__}; "
             f"treating as {version}."
         )
     return version
@@ -41,6 +46,7 @@ def _coerce_version(raw_version: object, context_label: str, warnings: list[str]
 @dataclass(frozen=True)
 class LibrarySource:
     """A library the skill can dispatch a librarian against."""
+
     name: str
     type: str  # "filesystem" or "remote-agent"
     path: Optional[str] = None
@@ -70,13 +76,19 @@ def load_global_registry(path: Path) -> GlobalRegistry:
     except json.JSONDecodeError as exc:
         return GlobalRegistry(
             libraries=[],
-            warnings=[f"Global registry at {path} is malformed: {exc}. External libraries unavailable."],
+            warnings=[
+                f"Global registry at {path} is malformed: {exc}. "
+                "External libraries unavailable."
+            ],
         )
 
     if not isinstance(data, dict):
         return GlobalRegistry(
             libraries=[],
-            warnings=[f"Global registry at {path} must be a JSON object; got {type(data).__name__}. External libraries unavailable."],
+            warnings=[
+                f"Global registry at {path} must be a JSON object; "
+                f"got {type(data).__name__}. External libraries unavailable."
+            ],
         )
 
     warnings: list[str] = []
@@ -85,7 +97,8 @@ def load_global_registry(path: Path) -> GlobalRegistry:
     version = _coerce_version(raw_version, "Global registry", warnings)
     if version != CURRENT_REGISTRY_VERSION:
         warnings.append(
-            f"Global registry version {version} is unknown (expected {CURRENT_REGISTRY_VERSION}); "
+            f"Global registry version {version} is unknown "
+            f"(expected {CURRENT_REGISTRY_VERSION}); "
             "attempting best-effort load."
         )
 
@@ -108,7 +121,9 @@ def load_global_registry(path: Path) -> GlobalRegistry:
             continue
         raw_type = entry.get("type", "filesystem")
         if raw_type not in KNOWN_LIBRARY_TYPES:
-            warnings.append(f"Library '{name}' has unknown type '{raw_type}'; skipping.")
+            warnings.append(
+                f"Library '{name}' has unknown type '{raw_type}'; skipping."
+            )
             continue
         seen_names.add(name)
         libraries.append(
@@ -145,13 +160,19 @@ def load_project_activation(path: Path) -> ProjectActivation:
     except json.JSONDecodeError as exc:
         return ProjectActivation(
             activated_sources=[],
-            warnings=[f"Project activation at {path} is malformed: {exc}. No external libraries activated."],
+            warnings=[
+                f"Project activation at {path} is malformed: {exc}. "
+                "No external libraries activated."
+            ],
         )
 
     if not isinstance(data, dict):
         return ProjectActivation(
             activated_sources=[],
-            warnings=[f"Project activation at {path} must be a JSON object; got {type(data).__name__}. No external libraries activated."],
+            warnings=[
+                f"Project activation at {path} must be a JSON object; "
+                f"got {type(data).__name__}. No external libraries activated."
+            ],
         )
 
     warnings: list[str] = []
@@ -160,7 +181,8 @@ def load_project_activation(path: Path) -> ProjectActivation:
     version = _coerce_version(raw_version, "Project activation", warnings)
     if version != CURRENT_REGISTRY_VERSION:
         warnings.append(
-            f"Project activation version {version} is unknown (expected {CURRENT_REGISTRY_VERSION})."
+            f"Project activation version {version} is unknown "
+            f"(expected {CURRENT_REGISTRY_VERSION})."
         )
 
     sources = data.get("activated_sources", [])
@@ -168,18 +190,24 @@ def load_project_activation(path: Path) -> ProjectActivation:
         return ProjectActivation(
             version=version,
             activated_sources=[],
-            warnings=warnings + [f"'activated_sources' must be a list, got {type(sources).__name__}."],
+            warnings=warnings
+            + [f"'activated_sources' must be a list, got {type(sources).__name__}."],
         )
 
-    return ProjectActivation(version=version, activated_sources=list(sources), warnings=warnings)
+    return ProjectActivation(
+        version=version, activated_sources=list(sources), warnings=warnings
+    )
 
 
 @dataclass
 class DispatchList:
     """Result of resolving activated sources into a dispatch list."""
+
     sources: list[LibrarySource] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
-    is_empty_error: bool = False  # True when no local + no externals → user-facing error
+    is_empty_error: bool = (
+        False  # True when no local + no externals → user-facing error
+    )
 
 
 def resolve_dispatch_list(
@@ -200,7 +228,9 @@ def resolve_dispatch_list(
     # Implicit local source if library directory exists
     if project_library_path.exists() and project_library_path.is_dir():
         sources.append(
-            LibrarySource(name="local", type="filesystem", path=str(project_library_path))
+            LibrarySource(
+                name="local", type="filesystem", path=str(project_library_path)
+            )
         )
 
     # Index global registry by name
@@ -215,7 +245,8 @@ def resolve_dispatch_list(
             continue
         if entry.type == "remote-agent":
             warnings.append(
-                f"Source '{name}' is type 'remote-agent' (planned for future release). Skipping."
+                f"Source '{name}' is type 'remote-agent' "
+                "(planned for future release). Skipping."
             )
             continue
         if entry.type != "filesystem":

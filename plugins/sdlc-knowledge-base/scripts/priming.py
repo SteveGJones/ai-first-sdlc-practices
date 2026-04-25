@@ -25,6 +25,7 @@ class PrimingBundle:
       shelf-index, preferring files whose Terms overlap with the local
       project's vocabulary
     """
+
     question: str
     local_kb_config_excerpt: str = ""
     local_shelf_index_terms: list[str] = field(default_factory=list)
@@ -40,7 +41,11 @@ def build_priming_bundle(question: str, project_dir: Path) -> PrimingBundle:
     excerpt = _extract_kb_section(claude_md_path) if claude_md_path.exists() else ""
 
     shelf_index_path = project_dir / "library" / "_shelf-index.md"
-    terms = _extract_shelf_index_terms(shelf_index_path) if shelf_index_path.exists() else []
+    terms = (
+        _extract_shelf_index_terms(shelf_index_path)
+        if shelf_index_path.exists()
+        else []
+    )
 
     return PrimingBundle(
         question=question,
@@ -78,7 +83,9 @@ def _extract_shelf_index_terms(shelf_index_path: Path) -> list[str]:
     content = shelf_index_path.read_text()
     seen: set[str] = set()
     result: list[str] = []
-    for match in re.finditer(r"^\*\*Terms:\*\*[ \t]*(.*?)(?=\n|$)", content, re.MULTILINE):
+    for match in re.finditer(
+        r"^\*\*Terms:\*\*[ \t]*(.*?)(?=\n|$)", content, re.MULTILINE
+    ):
         raw_terms = match.group(1)
         if not raw_terms.strip():
             continue  # empty Terms line, skip

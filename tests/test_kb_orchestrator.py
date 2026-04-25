@@ -3,15 +3,21 @@
 Uses a mock dispatcher to exercise the full flow without real Agent tool calls.
 """
 import json
+import re
 from pathlib import Path
+
 from sdlc_knowledge_base_scripts.orchestrator import (
-    run_retrieval_query,
-    RetrievalQueryResult,
     DispatchRequest,
+    RetrievalQueryResult,
+    SynthesisQueryResult,
     format_dispatch_prompt,
+    format_synthesis_prompt,
+    is_synthesis_query,
+    run_retrieval_query,
+    run_synthesis_query,
 )
+from sdlc_knowledge_base_scripts.priming import PrimingBundle, build_priming_bundle
 from sdlc_knowledge_base_scripts.registry import LibrarySource
-from sdlc_knowledge_base_scripts.priming import PrimingBundle
 
 
 def _make_fixture_library(root: Path, name: str, shelf_content: str) -> Path:
@@ -22,10 +28,15 @@ def _make_fixture_library(root: Path, name: str, shelf_content: str) -> Path:
 
 
 def test_orchestrator_dispatches_to_all_sources(tmp_path: Path) -> None:
-    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
-    corp_lib = _make_fixture_library(tmp_path, "corp", "<!-- format_version: 1 -->\n# Shelf\n")
+    local_lib = _make_fixture_library(
+        tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n"
+    )
+    corp_lib = _make_fixture_library(
+        tmp_path, "corp", "<!-- format_version: 1 -->\n# Shelf\n"
+    )
 
     dispatched: list[DispatchRequest] = []
+
     def mock_dispatch(req: DispatchRequest) -> str:
         dispatched.append(req)
         return (
@@ -54,7 +65,9 @@ def test_orchestrator_dispatches_to_all_sources(tmp_path: Path) -> None:
 
 
 def test_orchestrator_source_failure_becomes_marker(tmp_path: Path) -> None:
-    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
+    local_lib = _make_fixture_library(
+        tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n"
+    )
 
     def mock_dispatch(req: DispatchRequest) -> str:
         if req.source.name == "corp":
@@ -67,7 +80,9 @@ def test_orchestrator_source_failure_becomes_marker(tmp_path: Path) -> None:
 
     sources = [
         LibrarySource(name="local", type="filesystem", path=str(local_lib)),
-        LibrarySource(name="corp", type="filesystem", path=str(tmp_path / "nonexistent")),
+        LibrarySource(
+            name="corp", type="filesystem", path=str(tmp_path / "nonexistent")
+        ),
     ]
     result = run_retrieval_query(
         question="q",
@@ -82,7 +97,9 @@ def test_orchestrator_source_failure_becomes_marker(tmp_path: Path) -> None:
 
 
 def test_orchestrator_no_evidence_marker(tmp_path: Path) -> None:
-    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
+    local_lib = _make_fixture_library(
+        tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n"
+    )
 
     def mock_dispatch(req: DispatchRequest) -> str:
         # Librarian's anti-hallucination response
@@ -101,7 +118,9 @@ def test_orchestrator_no_evidence_marker(tmp_path: Path) -> None:
 
 
 def test_orchestrator_attribution_check_drops_untagged(tmp_path: Path) -> None:
-    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
+    local_lib = _make_fixture_library(
+        tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n"
+    )
 
     def mock_dispatch(req: DispatchRequest) -> str:
         # Return one tagged and one untagged finding
@@ -125,12 +144,19 @@ def test_orchestrator_attribution_check_drops_untagged(tmp_path: Path) -> None:
     assert len(result.attribution_warnings) == 1
 
 
-def test_orchestrator_output_ordering_local_first_externals_alpha(tmp_path: Path) -> None:
-    libs = {n: _make_fixture_library(tmp_path, n, "<!-- format_version: 1 -->\n# Shelf\n")
-            for n in ("proj", "zebra", "alpha", "mango")}
+def test_orchestrator_output_ordering_local_first_externals_alpha(
+    tmp_path: Path,
+) -> None:
+    libs = {
+        n: _make_fixture_library(tmp_path, n, "<!-- format_version: 1 -->\n# Shelf\n")
+        for n in ("proj", "zebra", "alpha", "mango")
+    }
 
     def mock_dispatch(req: DispatchRequest) -> str:
-        return (f"### {req.source.name}\n**Finding**: x.\n**Source library**: {req.source.name}\n")
+        return (
+            f"### {req.source.name}\n**Finding**: x.\n"
+            f"**Source library**: {req.source.name}\n"
+        )
 
     sources = [
         LibrarySource(name="local", type="filesystem", path=str(libs["proj"])),
@@ -139,21 +165,33 @@ def test_orchestrator_output_ordering_local_first_externals_alpha(tmp_path: Path
         LibrarySource(name="mango", type="filesystem", path=str(libs["mango"])),
     ]
     result = run_retrieval_query(
-        question="q", sources=sources, priming=None, dispatcher=mock_dispatch,
+        question="q",
+        sources=sources,
+        priming=None,
+        dispatcher=mock_dispatch,
     )
     # local must appear before alpha, alpha before mango, mango before zebra
     out = result.combined_output
-    assert out.index("### local") < out.index("### alpha") < out.index("### mango") < out.index("### zebra")
+    assert (
+        out.index("### local")
+        < out.index("### alpha")
+        < out.index("### mango")
+        < out.index("### zebra")
+    )
 
 
 def test_format_dispatch_prompt_with_full_priming() -> None:
     source = LibrarySource(name="corp-semi", type="filesystem", path="/lib/corp-semi")
     priming = PrimingBundle(
         question="what about EUV cleanroom",
-        local_kb_config_excerpt="This project uses the knowledge base for semiconductor research.",
+        local_kb_config_excerpt=(
+            "This project uses the knowledge base for semiconductor research."
+        ),
         local_shelf_index_terms=["semiconductor", "brazilian-fab", "alpha"],
     )
-    prompt = format_dispatch_prompt(source=source, question="what about EUV cleanroom", priming=priming)
+    prompt = format_dispatch_prompt(
+        source=source, question="what about EUV cleanroom", priming=priming
+    )
 
     assert "SCOPE: /lib/corp-semi" in prompt
     assert "SOURCE_HANDLE: corp-semi" in prompt
@@ -192,7 +230,6 @@ def test_format_dispatch_prompt_with_empty_priming_bundle() -> None:
 
 
 def test_format_dispatch_prompt_json_is_valid() -> None:
-    import re
     source = LibrarySource(name="x", type="filesystem", path="/x")
     priming = PrimingBundle(
         question="q",
@@ -227,12 +264,15 @@ def test_orchestrator_passes_priming_bundle_to_dispatcher(tmp_path: Path) -> Non
     )
 
     # Use the real priming builder, not a mock
-    from sdlc_knowledge_base_scripts.priming import build_priming_bundle
     priming = build_priming_bundle(question="what about EUV", project_dir=proj_dir)
 
     # Verify the builder did its job
     assert "semiconductor research" in priming.local_kb_config_excerpt
-    assert set(priming.local_shelf_index_terms) >= {"semiconductor", "brazilian-fab", "alpha"}
+    assert set(priming.local_shelf_index_terms) >= {
+        "semiconductor",
+        "brazilian-fab",
+        "alpha",
+    }
 
     # Capture every DispatchRequest the orchestrator passes to the dispatcher
     captured: list[DispatchRequest] = []
@@ -247,7 +287,9 @@ def test_orchestrator_passes_priming_bundle_to_dispatcher(tmp_path: Path) -> Non
 
     sources = [
         LibrarySource(name="local", type="filesystem", path=str(local_lib)),
-        LibrarySource(name="corp", type="filesystem", path=str(tmp_path / "corp" / "library")),
+        LibrarySource(
+            name="corp", type="filesystem", path=str(tmp_path / "corp" / "library")
+        ),
     ]
     # Make corp a real dir so the source preflight passes
     (tmp_path / "corp" / "library").mkdir(parents=True)
@@ -263,7 +305,8 @@ def test_orchestrator_passes_priming_bundle_to_dispatcher(tmp_path: Path) -> Non
     assert len(captured) == 2
     for req in captured:
         assert req.priming is priming, (
-            f"Dispatcher received a different priming bundle for source {req.source.name}"
+            f"Dispatcher received a different priming bundle "
+            f"for source {req.source.name}"
         )
         assert req.priming.local_kb_config_excerpt == priming.local_kb_config_excerpt
         assert req.priming.local_shelf_index_terms == priming.local_shelf_index_terms
@@ -271,9 +314,6 @@ def test_orchestrator_passes_priming_bundle_to_dispatcher(tmp_path: Path) -> Non
     # And the result should still be well-formed
     assert "local finding" in result.combined_output
     assert "corp finding" in result.combined_output
-
-
-from sdlc_knowledge_base_scripts.orchestrator import is_synthesis_query
 
 
 def test_is_synthesis_query_build_the_case() -> None:
@@ -305,9 +345,6 @@ def test_is_synthesis_query_empty_or_whitespace() -> None:
     assert not is_synthesis_query("\n\t")
 
 
-from sdlc_knowledge_base_scripts.orchestrator import format_synthesis_prompt
-
-
 def test_format_synthesis_prompt_with_priming_and_findings() -> None:
     priming = PrimingBundle(
         question="how should we think about EUV cleanrooms",
@@ -315,8 +352,12 @@ def test_format_synthesis_prompt_with_priming_and_findings() -> None:
         local_shelf_index_terms=["semiconductor", "brazilian-fab"],
     )
     per_source = {
-        "local": "### Site baseline\n**Finding**: RH 75-85%.\n**Source library**: local",
-        "corp-semi": "### EUV spec\n**Finding**: RH must be ≤45%.\n**Source library**: corp-semi",
+        "local": (
+            "### Site baseline\n**Finding**: RH 75-85%.\n**Source library**: local"
+        ),
+        "corp-semi": (
+            "### EUV spec\n**Finding**: RH must be ≤45%.\n**Source library**: corp-semi"
+        ),
     }
     prompt = format_synthesis_prompt(
         question="how should we think about EUV cleanrooms",
@@ -386,12 +427,6 @@ def test_format_synthesis_prompt_empty_findings_dict() -> None:
     assert "q" in prompt
 
 
-from sdlc_knowledge_base_scripts.orchestrator import (
-    run_synthesis_query,
-    SynthesisQueryResult,
-)
-
-
 def _good_synthesis_output() -> str:
     return (
         "### EUV cleanroom under regional constraints\n\n"
@@ -415,6 +450,7 @@ def test_run_synthesis_query_skipped_when_question_is_retrieval(tmp_path: Path) 
     ]
 
     dispatcher_calls: list[str] = []
+
     def synthesis_dispatcher(prompt: str) -> str:
         dispatcher_calls.append(prompt)
         return _good_synthesis_output()
@@ -435,7 +471,9 @@ def test_run_synthesis_query_skipped_when_question_is_retrieval(tmp_path: Path) 
     assert result.combined_output == retrieval.combined_output
 
 
-def test_run_synthesis_query_skipped_with_only_one_source_with_findings(tmp_path: Path) -> None:
+def test_run_synthesis_query_skipped_with_only_one_source_with_findings(
+    tmp_path: Path,
+) -> None:
     """Synthesis is only useful when findings span multiple sources."""
     retrieval = RetrievalQueryResult(
         combined_output="solo content",
@@ -469,6 +507,7 @@ def test_run_synthesis_query_succeeds_with_well_formed_output() -> None:
         LibrarySource(name="corp-semi", type="filesystem", path="/y"),
     ]
     captured: list[str] = []
+
     def synthesis_dispatcher(prompt: str) -> str:
         captured.append(prompt)
         return _good_synthesis_output()
@@ -530,10 +569,13 @@ def test_run_synthesis_query_falls_back_when_attribution_check_fails() -> None:
     assert result.synthesis_attempted is True
     assert result.synthesis_succeeded is False
     assert len(result.attribution_warnings) >= 1
-    # Combined output should be retrieval output PLUS an error block, NOT the bad synthesis
+    # Combined output: retrieval output PLUS an error block, NOT the bad synthesis
     assert "retrieval output" in result.combined_output
     assert "Untagged claim" not in result.combined_output
-    assert "Synthesis aborted" in result.combined_output or "synthesis failed" in result.combined_output.lower()
+    assert (
+        "Synthesis aborted" in result.combined_output
+        or "synthesis failed" in result.combined_output.lower()
+    )
 
 
 def test_run_synthesis_query_falls_back_when_dispatcher_raises() -> None:
@@ -565,7 +607,8 @@ def test_run_synthesis_query_falls_back_when_dispatcher_raises() -> None:
 
 
 def test_run_synthesis_query_uses_valid_handles_from_sources() -> None:
-    """Synthesis check should reject [TODO]-style bogus handles even when phrased as inline tags."""
+    """Synthesis check should reject [TODO]-style bogus handles even
+    when phrased as inline tags."""
     retrieval = RetrievalQueryResult(
         combined_output="retrieval output",
         sources_with_findings=["local", "corp"],

@@ -100,6 +100,7 @@ def format_dispatch_prompt(
 @dataclass
 class DispatchRequest:
     """One librarian invocation request — what the dispatcher receives."""
+
     source: LibrarySource
     question: str
     priming: Optional[PrimingBundle] = None
@@ -169,20 +170,23 @@ def run_retrieval_query(
 
         if cleaned.strip() and "### " in cleaned:
             sources_with_findings.append(source.name)
-            per_source_sections[source.name] = (
-                f"## [{source.name}] Findings\n\n{cleaned}\n"
-            )
+            per_source_sections[
+                source.name
+            ] = f"## [{source.name}] Findings\n\n{cleaned}\n"
         else:
             # All findings from this source were dropped by attribution check
             no_evidence.append(source.name)
             per_source_sections[source.name] = (
                 f"## [{source.name}] — no valid findings after attribution check\n\n"
-                f"[{source.name}] library had findings but none passed attribution check.\n"
+                f"[{source.name}] library had findings but none passed "
+                "attribution check.\n"
             )
 
     # Render ordered output: local first, then externals alphabetical
     ordered = _ordered_source_list(sources)
-    ordered_sections = [per_source_sections[s.name] for s in ordered if s.name in per_source_sections]
+    ordered_sections = [
+        per_source_sections[s.name] for s in ordered if s.name in per_source_sections
+    ]
     body = "\n\n---\n\n".join(ordered_sections)
 
     # Header summarising what ran
@@ -242,7 +246,9 @@ def format_synthesis_prompt(
     lines.append("")
     lines.append(f"Question: {question}")
     lines.append("")
-    lines.append("Per-source findings (your only source of facts — do not read any files):")
+    lines.append(
+        "Per-source findings (your only source of facts — do not read any files):"
+    )
     lines.append("")
     for handle, findings in per_source_findings.items():
         lines.append(f"--- [{handle}] ---")
@@ -294,6 +300,7 @@ class SynthesisQueryResult:
     output is preserved in `combined_output` with an appended error block;
     `fallback_reason` names what went wrong.
     """
+
     combined_output: str
     synthesis_attempted: bool
     synthesis_succeeded: bool
@@ -412,10 +419,13 @@ def _render_header(
         "# Knowledge Base Query Results",
         "",
         f"**Sources queried:** {', '.join(all_names)}",
-        f"**Sources with findings:** {', '.join(with_findings) if with_findings else '(none)'}",
+        f"**Sources with findings:** "
+        f"{', '.join(with_findings) if with_findings else '(none)'}",
     ]
     if no_evidence:
-        lines.append(f"**Sources with no evidence on this topic:** {', '.join(no_evidence)}")
+        lines.append(
+            f"**Sources with no evidence on this topic:** {', '.join(no_evidence)}"
+        )
     if failed:
         lines.append(f"**Sources that failed:** {', '.join(failed)}")
     return "\n".join(lines)

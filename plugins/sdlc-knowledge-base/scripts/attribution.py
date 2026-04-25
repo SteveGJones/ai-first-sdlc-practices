@@ -197,7 +197,9 @@ def check_synthesis_attribution(
 
         if in_evidence:
             # Other ** sections (e.g. **Caveats**) end the evidence section
-            if stripped.startswith("**") and not stripped.startswith("**Supporting evidence**"):
+            if stripped.startswith("**") and not stripped.startswith(
+                "**Supporting evidence**"
+            ):
                 check_current()
                 current_item = []
                 in_evidence = False

@@ -33,7 +33,13 @@ def test_priming_bundle_happy(tmp_path: Path) -> None:
     assert result.question == "what do we know about alpha"
     assert "This project uses the knowledge base." in result.local_kb_config_excerpt
     assert "Next section" not in result.local_kb_config_excerpt
-    assert result.local_shelf_index_terms == ["alpha", "beta", "gamma", "delta", "epsilon"]
+    assert result.local_shelf_index_terms == [
+        "alpha",
+        "beta",
+        "gamma",
+        "delta",
+        "epsilon",
+    ]
 
 
 def test_priming_bundle_missing_claude_md(tmp_path: Path) -> None:

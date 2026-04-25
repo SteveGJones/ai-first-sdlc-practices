@@ -2,27 +2,33 @@
 import json
 from pathlib import Path
 from sdlc_knowledge_base_scripts.registry import (
-    load_global_registry,
+    DispatchList,
     GlobalRegistry,
     LibrarySource,
-    load_project_activation,
     ProjectActivation,
+    load_global_registry,
+    load_project_activation,
+    resolve_dispatch_list,
 )
 
 
 def test_load_global_registry_happy(tmp_path: Path) -> None:
     registry_file = tmp_path / "global-libraries.json"
-    registry_file.write_text(json.dumps({
-        "version": 1,
-        "libraries": [
+    registry_file.write_text(
+        json.dumps(
             {
-                "name": "corporate-semi",
-                "type": "filesystem",
-                "path": "/tmp/corp-semi/library",
-                "description": "Semiconductor findings",
+                "version": 1,
+                "libraries": [
+                    {
+                        "name": "corporate-semi",
+                        "type": "filesystem",
+                        "path": "/tmp/corp-semi/library",
+                        "description": "Semiconductor findings",
+                    }
+                ],
             }
-        ],
-    }))
+        )
+    )
     result = load_global_registry(registry_file)
     assert isinstance(result, GlobalRegistry)
     assert result.version == 1
@@ -51,12 +57,16 @@ def test_load_global_registry_malformed_json(tmp_path: Path) -> None:
 
 def test_load_global_registry_unknown_version(tmp_path: Path) -> None:
     registry_file = tmp_path / "global-libraries.json"
-    registry_file.write_text(json.dumps({
-        "version": 99,
-        "libraries": [
-            {"name": "foo", "type": "filesystem", "path": "/tmp/foo"}
-        ],
-    }))
+    registry_file.write_text(
+        json.dumps(
+            {
+                "version": 99,
+                "libraries": [
+                    {"name": "foo", "type": "filesystem", "path": "/tmp/foo"}
+                ],
+            }
+        )
+    )
     result = load_global_registry(registry_file)
     assert len(result.libraries) == 1
     assert any("version" in w.lower() for w in result.warnings)
@@ -64,13 +74,17 @@ def test_load_global_registry_unknown_version(tmp_path: Path) -> None:
 
 def test_load_global_registry_duplicate_names(tmp_path: Path) -> None:
     registry_file = tmp_path / "global-libraries.json"
-    registry_file.write_text(json.dumps({
-        "version": 1,
-        "libraries": [
-            {"name": "dup", "type": "filesystem", "path": "/tmp/a"},
-            {"name": "dup", "type": "filesystem", "path": "/tmp/b"},
-        ],
-    }))
+    registry_file.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "libraries": [
+                    {"name": "dup", "type": "filesystem", "path": "/tmp/a"},
+                    {"name": "dup", "type": "filesystem", "path": "/tmp/b"},
+                ],
+            }
+        )
+    )
     result = load_global_registry(registry_file)
     assert len(result.libraries) == 1
     assert result.libraries[0].path == "/tmp/a"
@@ -95,10 +109,14 @@ def test_load_global_registry_libraries_not_a_list(tmp_path: Path) -> None:
 
 def test_load_global_registry_entry_not_a_dict(tmp_path: Path) -> None:
     registry_file = tmp_path / "global-libraries.json"
-    registry_file.write_text(json.dumps({
-        "version": 1,
-        "libraries": ["just a string", {"name": "ok", "type": "filesystem"}],
-    }))
+    registry_file.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "libraries": ["just a string", {"name": "ok", "type": "filesystem"}],
+            }
+        )
+    )
     result = load_global_registry(registry_file)
     assert [lib.name for lib in result.libraries] == ["ok"]
     assert any("not an object" in w for w in result.warnings)
@@ -106,13 +124,17 @@ def test_load_global_registry_entry_not_a_dict(tmp_path: Path) -> None:
 
 def test_load_global_registry_entry_missing_name(tmp_path: Path) -> None:
     registry_file = tmp_path / "global-libraries.json"
-    registry_file.write_text(json.dumps({
-        "version": 1,
-        "libraries": [
-            {"type": "filesystem", "path": "/tmp/nameless"},
-            {"name": "ok", "type": "filesystem"},
-        ],
-    }))
+    registry_file.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "libraries": [
+                    {"type": "filesystem", "path": "/tmp/nameless"},
+                    {"name": "ok", "type": "filesystem"},
+                ],
+            }
+        )
+    )
     result = load_global_registry(registry_file)
     assert [lib.name for lib in result.libraries] == ["ok"]
     assert any("name" in w.lower() and "missing" in w.lower() for w in result.warnings)
@@ -122,13 +144,21 @@ def test_load_global_registry_entry_missing_name(tmp_path: Path) -> None:
 # I1: version-field coercion — global registry
 # ---------------------------------------------------------------------------
 
+
 def test_load_global_registry_string_version_coerced(tmp_path: Path) -> None:
-    """String "1" should coerce to int 1 with a warning rather than tripping the unknown-version path."""
+    """String "1" should coerce to int 1 with a warning rather than
+    tripping the unknown-version path."""
     registry_file = tmp_path / "global-libraries.json"
-    registry_file.write_text(json.dumps({
-        "version": "1",
-        "libraries": [{"name": "foo", "type": "filesystem", "path": "/tmp/foo"}],
-    }))
+    registry_file.write_text(
+        json.dumps(
+            {
+                "version": "1",
+                "libraries": [
+                    {"name": "foo", "type": "filesystem", "path": "/tmp/foo"}
+                ],
+            }
+        )
+    )
     result = load_global_registry(registry_file)
     assert result.version == 1
     assert len(result.libraries) == 1
@@ -139,16 +169,21 @@ def test_load_global_registry_string_version_coerced(tmp_path: Path) -> None:
 # I2: unknown library type — global registry
 # ---------------------------------------------------------------------------
 
+
 def test_load_global_registry_unknown_type_skipped(tmp_path: Path) -> None:
     """An entry with an unknown 'type' value must be skipped with a warning."""
     registry_file = tmp_path / "global-libraries.json"
-    registry_file.write_text(json.dumps({
-        "version": 1,
-        "libraries": [
-            {"name": "bad", "type": "s3-bucket", "path": "/tmp/bad"},
-            {"name": "ok", "type": "filesystem", "path": "/tmp/ok"},
-        ],
-    }))
+    registry_file.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "libraries": [
+                    {"name": "bad", "type": "s3-bucket", "path": "/tmp/bad"},
+                    {"name": "ok", "type": "filesystem", "path": "/tmp/ok"},
+                ],
+            }
+        )
+    )
     result = load_global_registry(registry_file)
     assert [lib.name for lib in result.libraries] == ["ok"]
     assert any("unknown type" in w.lower() for w in result.warnings)
@@ -158,12 +193,17 @@ def test_load_global_registry_unknown_type_skipped(tmp_path: Path) -> None:
 # Plan-specified: load_project_activation
 # ---------------------------------------------------------------------------
 
+
 def test_load_project_activation_happy(tmp_path: Path) -> None:
     activation_file = tmp_path / "libraries.json"
-    activation_file.write_text(json.dumps({
-        "version": 1,
-        "activated_sources": ["corporate-semi", "corporate-health"],
-    }))
+    activation_file.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "activated_sources": ["corporate-semi", "corporate-health"],
+            }
+        )
+    )
     result = load_project_activation(activation_file)
     assert isinstance(result, ProjectActivation)
     assert result.version == 1
@@ -191,13 +231,19 @@ def test_load_project_activation_malformed(tmp_path: Path) -> None:
 # I1: version-field coercion — project activation
 # ---------------------------------------------------------------------------
 
+
 def test_load_project_activation_string_version_coerced(tmp_path: Path) -> None:
-    """String "1" should coerce to int 1 with a warning rather than tripping the unknown-version path."""
+    """String "1" should coerce to int 1 with a warning rather than
+    tripping the unknown-version path."""
     activation_file = tmp_path / "libraries.json"
-    activation_file.write_text(json.dumps({
-        "version": "1",
-        "activated_sources": ["lib-a"],
-    }))
+    activation_file.write_text(
+        json.dumps(
+            {
+                "version": "1",
+                "activated_sources": ["lib-a"],
+            }
+        )
+    )
     result = load_project_activation(activation_file)
     assert result.version == 1
     assert result.activated_sources == ["lib-a"]
@@ -216,8 +262,6 @@ def test_load_project_activation_top_level_not_dict(tmp_path: Path) -> None:
 # Task 4: resolve_dispatch_list
 # ---------------------------------------------------------------------------
 
-from sdlc_knowledge_base_scripts.registry import resolve_dispatch_list, DispatchList
-
 
 def _make_global(libraries: list[LibrarySource]) -> GlobalRegistry:
     return GlobalRegistry(libraries=libraries)
@@ -232,9 +276,13 @@ def test_resolve_happy_path(tmp_path: Path) -> None:
     local_lib.mkdir()
     (local_lib / "_shelf-index.md").write_text("# Shelf Index\n")
 
-    gr = _make_global([
-        LibrarySource(name="corp-semi", type="filesystem", path="/tmp/corp-semi/library"),
-    ])
+    gr = _make_global(
+        [
+            LibrarySource(
+                name="corp-semi", type="filesystem", path="/tmp/corp-semi/library"
+            ),
+        ]
+    )
     pa = _make_activation(["corp-semi"])
 
     result = resolve_dispatch_list(gr, pa, project_library_path=local_lib)
@@ -264,9 +312,11 @@ def test_resolve_remote_agent_type_skipped(tmp_path: Path) -> None:
     local_lib.mkdir()
     (local_lib / "_shelf-index.md").write_text("# Shelf Index\n")
 
-    gr = _make_global([
-        LibrarySource(name="corp-remote", type="remote-agent", path=None),
-    ])
+    gr = _make_global(
+        [
+            LibrarySource(name="corp-remote", type="remote-agent", path=None),
+        ]
+    )
     pa = _make_activation(["corp-remote"])
 
     result = resolve_dispatch_list(gr, pa, project_library_path=local_lib)
@@ -277,9 +327,13 @@ def test_resolve_remote_agent_type_skipped(tmp_path: Path) -> None:
 def test_resolve_no_local_library_with_externals(tmp_path: Path) -> None:
     missing_local = tmp_path / "library"
 
-    gr = _make_global([
-        LibrarySource(name="corp-semi", type="filesystem", path="/tmp/corp-semi/library"),
-    ])
+    gr = _make_global(
+        [
+            LibrarySource(
+                name="corp-semi", type="filesystem", path="/tmp/corp-semi/library"
+            ),
+        ]
+    )
     pa = _make_activation(["corp-semi"])
 
     result = resolve_dispatch_list(gr, pa, project_library_path=missing_local)
