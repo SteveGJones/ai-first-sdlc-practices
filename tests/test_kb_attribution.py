@@ -49,6 +49,9 @@ def test_retrieval_empty_output_is_ok() -> None:
     assert result.dropped_blocks == []
 
 
+PERMISSIVE_HANDLES = {"local", "corp-semi", "corp", "corp-health", "corporate-semi", "TODO", "0", "citation-needed"}
+
+
 def test_synthesis_all_claims_tagged() -> None:
     output = """### EUV cleanroom under regional constraints
 
@@ -61,7 +64,7 @@ def test_synthesis_all_claims_tagged() -> None:
 
 **Caveats**: This synthesis spans local and corporate-semi libraries.
 """
-    result = check_synthesis_attribution(output)
+    result = check_synthesis_attribution(output, valid_handles={"local", "corporate-semi"})
     assert isinstance(result, SynthesisCheckResult)
     assert result.passed is True
     assert result.untagged_claims == []
@@ -79,7 +82,7 @@ def test_synthesis_claim_missing_handle_aborts() -> None:
 
 **Caveats**: None.
 """
-    result = check_synthesis_attribution(output)
+    result = check_synthesis_attribution(output, valid_handles={"local", "corp"})
     assert result.passed is False
     assert len(result.untagged_claims) == 1
     assert "Untagged claim" in result.untagged_claims[0]
@@ -88,7 +91,7 @@ def test_synthesis_claim_missing_handle_aborts() -> None:
 def test_synthesis_empty_evidence_list_is_ok() -> None:
     # No supporting evidence section at all — nothing to check
     output = "### Argument\n\n**Claim**: X.\n\n**Caveats**: None.\n"
-    result = check_synthesis_attribution(output)
+    result = check_synthesis_attribution(output, valid_handles=set())
     assert result.passed is True
 
 

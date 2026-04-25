@@ -156,15 +156,13 @@ def _tokenize_retrieval(lines: list[str]) -> list[_Token]:
 
 def check_synthesis_attribution(
     output: str,
-    valid_handles: Optional[set[str]] = None,
+    valid_handles: set[str],
 ) -> SynthesisCheckResult:
-    """Verify every supporting-evidence item has a valid [handle] attribution.
+    """Verify every supporting-evidence item has a [handle] in valid_handles.
 
-    If valid_handles is provided, bracketed tokens must be in the set; tokens
-    like [0], [TODO], [citation-needed] are rejected. If valid_handles is
-    None (phase-A callers that don't yet pass the registry), any [word-token]
-    is accepted — callers should upgrade to the validated form as soon as
-    the registry is available.
+    valid_handles is required — there is no permissive default. This prevents
+    callers from accidentally accepting any bracketed token (e.g., [TODO] or
+    [0]) as a valid attribution.
 
     Multi-line evidence items (claim wrapping across lines) are handled by
     consuming continuation lines until the next numbered/bulleted item start
@@ -183,7 +181,8 @@ def check_synthesis_attribution(
         if not current_item:
             return
         item_text = " ".join(s.strip() for s in current_item).strip()
-        if not _has_valid_handle(item_text, valid_handles):
+        handle_matches = _HANDLE_TAG_RE.findall(item_text)
+        if not handle_matches or not any(h in valid_handles for h in handle_matches):
             untagged.append(item_text)
 
     while i < len(lines):
@@ -236,12 +235,3 @@ def _strip_item_marker(stripped_line: str) -> str:
     return _ITEM_MARKER_RE.sub("", stripped_line, count=1)
 
 
-def _has_valid_handle(item_text: str, valid_handles: Optional[set[str]]) -> bool:
-    matches = _HANDLE_TAG_RE.findall(item_text)
-    if not matches:
-        return False
-    if valid_handles is None:
-        # Permissive mode: any bracketed word-token is accepted.
-        # Callers without a registry reference use this.
-        return True
-    return any(h in valid_handles for h in matches)

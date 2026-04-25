@@ -18,6 +18,20 @@ from .priming import PrimingBundle
 from .registry import LibrarySource
 
 
+def _render_priming_block(priming: Optional[PrimingBundle]) -> list[str]:
+    """Return prompt lines for the PRIMING_CONTEXT block, empty if priming is None."""
+    if priming is None:
+        return []
+    priming_json = _json.dumps(
+        {
+            "local_kb_config_excerpt": priming.local_kb_config_excerpt,
+            "local_shelf_index_terms": priming.local_shelf_index_terms,
+        },
+        indent=2,
+    )
+    return ["PRIMING_CONTEXT:", priming_json]
+
+
 _SYNTHESIS_PHRASES = (
     "build me the case",
     "build the case",
@@ -69,16 +83,7 @@ def format_dispatch_prompt(
     lines: list[str] = []
     lines.append(f"SCOPE: {source.path}")
     lines.append(f"SOURCE_HANDLE: {source.name}")
-    if priming is not None:
-        priming_json = _json.dumps(
-            {
-                "local_kb_config_excerpt": priming.local_kb_config_excerpt,
-                "local_shelf_index_terms": priming.local_shelf_index_terms,
-            },
-            indent=2,
-        )
-        lines.append("PRIMING_CONTEXT:")
-        lines.append(priming_json)
+    lines.extend(_render_priming_block(priming))
     lines.append("")
     lines.append(f"Question: {question}")
     lines.append("")
@@ -233,16 +238,7 @@ def format_synthesis_prompt(
     """
     lines: list[str] = []
     lines.append("MODE: SYNTHESISE-ACROSS-SOURCES")
-    if priming is not None:
-        priming_json = _json.dumps(
-            {
-                "local_kb_config_excerpt": priming.local_kb_config_excerpt,
-                "local_shelf_index_terms": priming.local_shelf_index_terms,
-            },
-            indent=2,
-        )
-        lines.append("PRIMING_CONTEXT:")
-        lines.append(priming_json)
+    lines.extend(_render_priming_block(priming))
     lines.append("")
     lines.append(f"Question: {question}")
     lines.append("")
