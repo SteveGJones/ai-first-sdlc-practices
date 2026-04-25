@@ -304,6 +304,11 @@ class SynthesisQueryResult:
     fallback_reason: Optional[str] = None
 
 
+# SynthesisDispatcher: callable that takes a synthesis prompt and returns the
+# librarian's output. In the kb-query skill, this is wired to dispatch the
+# `synthesis-librarian` agent (NOT research-librarian) so the structural
+# "no file reads" guarantee is enforced at the agent level (tools: [])
+# rather than purely by prompt instruction.
 SynthesisDispatcher = Callable[[str], str]
 
 

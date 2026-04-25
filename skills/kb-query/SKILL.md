@@ -245,7 +245,7 @@ priming = PrimingBundle(
 # whether to actually dispatch (it will skip if <2 sources have findings)
 def synthesis_dispatcher(prompt):
     # In the real skill, this wraps the Agent tool: dispatch one
-    # research-librarian invocation with the synthesis prompt as input.
+    # synthesis-librarian invocation with the synthesis prompt as input.
     raise NotImplementedError('replace with Agent tool dispatch in the skill body')
 
 result = run_synthesis_query(
@@ -262,8 +262,7 @@ print(result.combined_output)
 
 In the actual skill flow, replace the `synthesis_dispatcher` placeholder with the
 **Agent tool** invocation: when `is_synthesis_query(question)` returns True AND at
-least 2 sources have findings, dispatch ONE more `research-librarian` call with the
-synthesis prompt as its input. Otherwise, skip — the orchestrator detects this and
+least 2 sources have findings, use the **Agent tool** to invoke the `synthesis-librarian` agent (NOT research-librarian — synthesis-librarian has tools: [] which makes 'no file reads' structural) with the synthesis prompt as its input. Otherwise, skip — the orchestrator detects this and
 returns the retrieval output unchanged.
 
 The dispatched synthesis prompt looks like:
@@ -294,7 +293,7 @@ MANDATORY: every claim in the Supporting evidence list must carry an inline
 [<handle>] tag identifying which source library it came from ...
 ```
 
-The librarian agent's prompt has a section "Synthesise-across-sources mode" describing how to consume this; the orchestrator's `format_synthesis_prompt` produces it; the skill, agent prompt, and orchestrator stay in lockstep on the format.
+The synthesis-librarian agent's prompt describes how to consume this; the orchestrator's `format_synthesis_prompt` produces it; the skill, agent prompt, and orchestrator stay in lockstep on the format.
 
 After the synthesis call returns, the orchestrator runs `check_synthesis_attribution` (with `valid_handles` drawn from the dispatch sources) on the librarian's output. If any supporting-evidence claim lacks an inline `[handle]` tag, or the bracketed token is not in the source whitelist (e.g., `[TODO]`, `[0]`), the synthesis is aborted: the retrieval output is preserved and an explanatory error block is appended. The user always sees something they can act on.
 

@@ -152,6 +152,7 @@ sdlc-lang-javascript:
 sdlc-knowledge-base:
   agents:
     - source: agents/knowledge-base/research-librarian.md
+    - source: agents/knowledge-base/synthesis-librarian.md
     - source: agents/knowledge-base/agent-knowledge-updater.md
   skills:
     - source: skills/kb-init/SKILL.md
