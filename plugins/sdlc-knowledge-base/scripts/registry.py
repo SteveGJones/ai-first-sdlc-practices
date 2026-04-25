@@ -323,6 +323,14 @@ def resolve_dispatch_list(
                 f"Source '{name}' has unknown type '{entry.type}'. Skipping."
             )
             continue
+        # Validate path before adding to dispatch list
+        if entry.path is None:
+            warnings.append(f"Source '{name}' has no path; skipping.")
+            continue
+        ok, reason = validate_library_path(Path(entry.path))
+        if not ok:
+            warnings.append(f"Source '{name}': {reason}; skipping.")
+            continue
         sources.append(entry)
 
     return DispatchList(

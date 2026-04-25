@@ -276,10 +276,14 @@ def test_resolve_happy_path(tmp_path: Path) -> None:
     local_lib.mkdir()
     (local_lib / "_shelf-index.md").write_text("# Shelf Index\n")
 
+    corp_semi_lib = tmp_path / "corp-semi" / "library"
+    corp_semi_lib.mkdir(parents=True)
+    (corp_semi_lib / "_shelf-index.md").write_text("# Corp Semi Shelf\n")
+
     gr = _make_global(
         [
             LibrarySource(
-                name="corp-semi", type="filesystem", path="/tmp/corp-semi/library"
+                name="corp-semi", type="filesystem", path=str(corp_semi_lib)
             ),
         ]
     )
@@ -327,10 +331,14 @@ def test_resolve_remote_agent_type_skipped(tmp_path: Path) -> None:
 def test_resolve_no_local_library_with_externals(tmp_path: Path) -> None:
     missing_local = tmp_path / "library"
 
+    corp_semi_lib = tmp_path / "corp-semi" / "library"
+    corp_semi_lib.mkdir(parents=True)
+    (corp_semi_lib / "_shelf-index.md").write_text("# Corp Semi Shelf\n")
+
     gr = _make_global(
         [
             LibrarySource(
-                name="corp-semi", type="filesystem", path="/tmp/corp-semi/library"
+                name="corp-semi", type="filesystem", path=str(corp_semi_lib)
             ),
         ]
     )
@@ -415,3 +423,29 @@ def test_validate_library_path_denylist_ssh(tmp_path: Path) -> None:
     assert ok is False
     # Either path doesn't exist OR denylist match — both acceptable verdicts
     assert ".ssh" in reason or "denylist" in reason.lower() or "does not exist" in reason.lower()
+
+
+# ---------------------------------------------------------------------------
+# Task 4: resolve_dispatch_list path validation
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_dispatch_skips_invalid_path_with_warning(tmp_path: Path) -> None:
+    local_lib = tmp_path / "library"
+    local_lib.mkdir()
+    (local_lib / "_shelf-index.md").write_text("# Shelf\n")
+
+    gr = _make_global([
+        LibrarySource(name="bad-corp", type="filesystem", path="/totally/nonexistent/path"),
+    ])
+    pa = _make_activation(["bad-corp"])
+    result = resolve_dispatch_list(gr, pa, project_library_path=local_lib)
+    # local should still be in dispatch list
+    assert any(s.name == "local" for s in result.sources)
+    # bad-corp should be SKIPPED
+    assert not any(s.name == "bad-corp" for s in result.sources)
+    # And warning explaining why
+    assert any(
+        "bad-corp" in w and ("does not exist" in w or "invalid" in w.lower())
+        for w in result.warnings
+    )

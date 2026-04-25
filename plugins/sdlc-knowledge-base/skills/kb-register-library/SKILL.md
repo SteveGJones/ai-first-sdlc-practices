@@ -26,9 +26,28 @@ Add an external knowledge base to the user-scope global registry so it can be ac
 
 ### 1. Validate the target library path
 
-- Verify `<path>` exists and is a directory.
-- Verify `<path>/_shelf-index.md` exists. If missing, error with: "no shelf-index found — run `/sdlc-knowledge-base:kb-rebuild-indexes` in that library first."
-- Parse the format_version from the shelf-index's first line (via the `format_version` helper). If the version is unknown, warn but continue — the librarian handles drift at query time.
+Run the path validator:
+
+```bash
+python3 -c "
+import sys, os
+sys.path.insert(0, os.path.join(os.environ.get('CLAUDE_PLUGIN_ROOT', ''), 'scripts'))
+from pathlib import Path
+from sdlc_knowledge_base_scripts.registry import validate_library_path
+ok, reason = validate_library_path(Path('<path>'))
+if not ok:
+    print(f'ERROR: {reason}')
+    exit(1)
+print('OK')
+"
+```
+
+If the validator returns an error, surface the exact `reason` string to the user and stop. Common reasons:
+
+- "path 'X' must be absolute" — relative path; correct it
+- "path 'X' does not exist" — directory doesn't exist; create it or correct path
+- "path 'X' has no _shelf-index.md" — run `/sdlc-knowledge-base:kb-rebuild-indexes` in that library first
+- "path 'X' resolves to '...' which contains denylisted fragment '...'" — refuse to register; user should pick a different path
 
 ### 2. Load or initialise the registry
 
