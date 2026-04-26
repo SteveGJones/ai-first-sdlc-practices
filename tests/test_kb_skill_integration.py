@@ -5,18 +5,14 @@ kb-setup-consulting skills do in production. Catches gaps between the
 Python helpers and the bash-snippet-orchestrated user flows.
 """
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 
 from sdlc_knowledge_base_scripts.audit import AuditEvent, log_event, read_log
 from sdlc_knowledge_base_scripts.orchestrator import (
     DispatchRequest,
-    RetrievalQueryResult,
     run_retrieval_query,
-    run_synthesis_query,
 )
-from sdlc_knowledge_base_scripts.priming import PrimingBundle
 from sdlc_knowledge_base_scripts.registry import LibrarySource
 
 
@@ -24,13 +20,13 @@ def _make_minimal_library(root: Path, name: str = "library") -> Path:
     """Create a minimal valid library directory at <root>/<name>/."""
     lib = root / name
     lib.mkdir(parents=True, exist_ok=True)
-    (lib / "_shelf-index.md").write_text(
-        "<!-- format_version: 1 -->\n# Shelf Index\n"
-    )
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf Index\n")
     return lib
 
 
-def test_kb_query_skill_flow_writes_audit_events_on_attribution_drop(tmp_path: Path) -> None:
+def test_kb_query_skill_flow_writes_audit_events_on_attribution_drop(
+    tmp_path: Path,
+) -> None:
     """Simulates kb-query Step 4: when run_retrieval_query is invoked the way
     the kb-query skill does it (with audit_log_path), attribution drops land
     in library/audit.log.
@@ -55,7 +51,7 @@ def test_kb_query_skill_flow_writes_audit_events_on_attribution_drop(tmp_path: P
     sources = [LibrarySource(name="local", type="filesystem", path=str(library_dir))]
     # The kb-query skill MUST invoke run_retrieval_query with audit_log_path
     # pointing at <project>/library/audit.log. Simulate that here.
-    result = run_retrieval_query(
+    run_retrieval_query(
         question="test query",
         sources=sources,
         priming=None,
@@ -64,7 +60,9 @@ def test_kb_query_skill_flow_writes_audit_events_on_attribution_drop(tmp_path: P
     )
 
     # Audit log should exist and contain the drop event
-    assert audit_log.exists(), "audit.log was not created — kb-query skill must pass audit_log_path"
+    assert (
+        audit_log.exists()
+    ), "audit.log was not created — kb-query skill must pass audit_log_path"
     events = read_log(audit_log, event_type="attribution_drop_retrieval")
     assert len(events) == 1
     assert events[0].source_handle == "local"
@@ -86,9 +84,12 @@ def test_kb_promote_cross_library_writes_file_and_audit(tmp_path: Path) -> None:
 
     # Set up a writeable target library by copying the corp-target-fixture
     import shutil
+
     repo_root = Path(__file__).parent.parent
     target_root = tmp_path / "target-corp"
-    shutil.copytree(repo_root / "tests/fixtures/kb_libraries/corp-target-fixture", target_root)
+    shutil.copytree(
+        repo_root / "tests/fixtures/kb_libraries/corp-target-fixture", target_root
+    )
     target_lib = target_root / "library"
 
     # Simulate the promotion: write a new file into the target library + update audit
@@ -96,7 +97,7 @@ def test_kb_promote_cross_library_writes_file_and_audit(tmp_path: Path) -> None:
     new_file_path = target_lib / new_file_name
     new_file_content = (
         "---\n"
-        "title: \"Promoted finding from local engagement\"\n"
+        'title: "Promoted finding from local engagement"\n'
         "domain: target, test\n"
         "status: active\n"
         "---\n\n"
@@ -112,17 +113,20 @@ def test_kb_promote_cross_library_writes_file_and_audit(tmp_path: Path) -> None:
     assert "Promoted finding" in new_file_path.read_text()
 
     # Simulate the audit event the skill writes
-    log_event(audit_log, AuditEvent(
-        timestamp=datetime.now(timezone.utc).isoformat(),
-        event_type="cross_library_promotion",
-        query="test promotion question",
-        source_handle="corp-target-fixture",
-        reason="answer promoted to external library",
-        detail={
-            "source_file": str(project_lib / "answer.md"),
-            "target_path": str(new_file_path),
-        },
-    ))
+    log_event(
+        audit_log,
+        AuditEvent(
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            event_type="cross_library_promotion",
+            query="test promotion question",
+            source_handle="corp-target-fixture",
+            reason="answer promoted to external library",
+            detail={
+                "source_file": str(project_lib / "answer.md"),
+                "target_path": str(new_file_path),
+            },
+        ),
+    )
 
     # Verify the audit event landed
     events = read_log(audit_log, event_type="cross_library_promotion")
@@ -169,30 +173,39 @@ def test_kb_audit_query_filter_by_event_type(tmp_path: Path) -> None:
     audit_log.parent.mkdir(parents=True)
 
     # Seed the audit log with events of different types
-    log_event(audit_log, AuditEvent(
-        timestamp="2026-04-25T10:00:00Z",
-        event_type="attribution_drop_retrieval",
-        query="q1",
-        source_handle="local",
-        reason="r",
-        detail={},
-    ))
-    log_event(audit_log, AuditEvent(
-        timestamp="2026-04-25T11:00:00Z",
-        event_type="synthesis_aborted_attribution",
-        query="q2",
-        source_handle=None,
-        reason="r",
-        detail={},
-    ))
-    log_event(audit_log, AuditEvent(
-        timestamp="2026-04-25T12:00:00Z",
-        event_type="attribution_drop_retrieval",
-        query="q3",
-        source_handle="corp",
-        reason="r",
-        detail={},
-    ))
+    log_event(
+        audit_log,
+        AuditEvent(
+            timestamp="2026-04-25T10:00:00Z",
+            event_type="attribution_drop_retrieval",
+            query="q1",
+            source_handle="local",
+            reason="r",
+            detail={},
+        ),
+    )
+    log_event(
+        audit_log,
+        AuditEvent(
+            timestamp="2026-04-25T11:00:00Z",
+            event_type="synthesis_aborted_attribution",
+            query="q2",
+            source_handle=None,
+            reason="r",
+            detail={},
+        ),
+    )
+    log_event(
+        audit_log,
+        AuditEvent(
+            timestamp="2026-04-25T12:00:00Z",
+            event_type="attribution_drop_retrieval",
+            query="q3",
+            source_handle="corp",
+            reason="r",
+            detail={},
+        ),
+    )
 
     # The skill's main path: read with event_type filter
     drops = read_log(audit_log, event_type="attribution_drop_retrieval")
@@ -209,23 +222,29 @@ def test_kb_audit_query_filter_by_date_range(tmp_path: Path) -> None:
     audit_log.parent.mkdir(parents=True)
 
     # Old event
-    log_event(audit_log, AuditEvent(
-        timestamp="2026-01-01T00:00:00Z",
-        event_type="attribution_drop_retrieval",
-        query="old",
-        source_handle="local",
-        reason="r",
-        detail={},
-    ))
+    log_event(
+        audit_log,
+        AuditEvent(
+            timestamp="2026-01-01T00:00:00Z",
+            event_type="attribution_drop_retrieval",
+            query="old",
+            source_handle="local",
+            reason="r",
+            detail={},
+        ),
+    )
     # Recent event
-    log_event(audit_log, AuditEvent(
-        timestamp="2026-04-25T00:00:00Z",
-        event_type="attribution_drop_retrieval",
-        query="recent",
-        source_handle="local",
-        reason="r",
-        detail={},
-    ))
+    log_event(
+        audit_log,
+        AuditEvent(
+            timestamp="2026-04-25T00:00:00Z",
+            event_type="attribution_drop_retrieval",
+            query="recent",
+            source_handle="local",
+            reason="r",
+            detail={},
+        ),
+    )
 
     # The skill's --since 2026-04-01 filter
     recent = read_log(audit_log, since="2026-04-01T00:00:00Z")
@@ -241,22 +260,28 @@ def test_kb_audit_query_summary_count_by_type(tmp_path: Path) -> None:
     audit_log.parent.mkdir(parents=True)
 
     for i in range(3):
-        log_event(audit_log, AuditEvent(
-            timestamp=f"2026-04-25T1{i}:00:00Z",
-            event_type="attribution_drop_retrieval",
-            query=f"q{i}",
-            source_handle="local",
+        log_event(
+            audit_log,
+            AuditEvent(
+                timestamp=f"2026-04-25T1{i}:00:00Z",
+                event_type="attribution_drop_retrieval",
+                query=f"q{i}",
+                source_handle="local",
+                reason="r",
+                detail={},
+            ),
+        )
+    log_event(
+        audit_log,
+        AuditEvent(
+            timestamp="2026-04-25T15:00:00Z",
+            event_type="cross_library_promotion",
+            query="promote",
+            source_handle="corp",
             reason="r",
             detail={},
-        ))
-    log_event(audit_log, AuditEvent(
-        timestamp="2026-04-25T15:00:00Z",
-        event_type="cross_library_promotion",
-        query="promote",
-        source_handle="corp",
-        reason="r",
-        detail={},
-    ))
+        ),
+    )
 
     events = read_log(audit_log)
     counts = Counter(e.event_type for e in events)
@@ -287,13 +312,21 @@ def test_kb_setup_consulting_verify_happy_path(tmp_path: Path) -> None:
 
     # User-scope registry pointing at it
     user_registry = tmp_path / "global-libraries.json"
-    user_registry.write_text(json.dumps({
-        "version": 1,
-        "libraries": [
-            {"name": "corp-engagement", "type": "filesystem", "path": str(target_lib),
-             "description": "Test corporate library"}
-        ],
-    }))
+    user_registry.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "libraries": [
+                    {
+                        "name": "corp-engagement",
+                        "type": "filesystem",
+                        "path": str(target_lib),
+                        "description": "Test corporate library",
+                    }
+                ],
+            }
+        )
+    )
 
     # Project-scope activation
     project_dir = tmp_path / "project"
@@ -301,7 +334,9 @@ def test_kb_setup_consulting_verify_happy_path(tmp_path: Path) -> None:
     project_lib = _make_minimal_library(project_dir)
     activation = project_dir / ".sdlc" / "libraries.json"
     activation.parent.mkdir()
-    activation.write_text(json.dumps({"version": 1, "activated_sources": ["corp-engagement"]}))
+    activation.write_text(
+        json.dumps({"version": 1, "activated_sources": ["corp-engagement"]})
+    )
 
     # The skill's --verify-only flow: load + validate
     gr = load_global_registry(user_registry)
@@ -325,16 +360,27 @@ def test_kb_setup_consulting_verify_happy_path(tmp_path: Path) -> None:
 
 def test_kb_setup_consulting_verify_reports_invalid_path(tmp_path: Path) -> None:
     """When a registered library's path is invalid, --verify-only reports it."""
-    from sdlc_knowledge_base_scripts.registry import load_global_registry, validate_library_path
+    from sdlc_knowledge_base_scripts.registry import (
+        load_global_registry,
+        validate_library_path,
+    )
 
     user_registry = tmp_path / "global-libraries.json"
-    user_registry.write_text(json.dumps({
-        "version": 1,
-        "libraries": [
-            {"name": "broken-corp", "type": "filesystem", "path": "/totally/nonexistent",
-             "description": "Drive unmounted"}
-        ],
-    }))
+    user_registry.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "libraries": [
+                    {
+                        "name": "broken-corp",
+                        "type": "filesystem",
+                        "path": "/totally/nonexistent",
+                        "description": "Drive unmounted",
+                    }
+                ],
+            }
+        )
+    )
 
     gr = load_global_registry(user_registry)
     invalid = []
@@ -370,8 +416,9 @@ def test_kb_setup_consulting_verify_handle_mismatch(tmp_path: Path) -> None:
     header = parse_shelf_index_header(lib / "_shelf-index.md")
 
     # The skill detects the mismatch
-    mismatch = (header.library_handle is not None
-                and header.library_handle != expected_handle)
+    mismatch = (
+        header.library_handle is not None and header.library_handle != expected_handle
+    )
     assert mismatch is True
     assert header.library_handle == "actual-handle"
 
