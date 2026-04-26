@@ -7,6 +7,7 @@ __pycache__/
 env/
 venv/
 .env
+*.egg-info/
 
 # AI Tools and Context
 .ai-context/
