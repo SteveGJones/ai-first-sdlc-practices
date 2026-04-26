@@ -256,97 +256,122 @@ Same behaviour as before — dispatch `kb-promote-answer-to-library` with the an
 
 ### 6. Cross-library synthesis (when the question calls for it)
 
-After Step 5, decide whether to run synthesis. The orchestrator's
-`run_synthesis_query` handles the decision and the dispatch:
+After Step 5 (retrieval is complete), decide whether to run synthesis:
 
-```bash
-python3 -c "
-from sdlc_knowledge_base_scripts.orchestrator import (
-    run_synthesis_query,
-    format_synthesis_prompt,
-    is_synthesis_query,
-    RetrievalQueryResult,
-)
-from sdlc_knowledge_base_scripts.priming import PrimingBundle
-from sdlc_knowledge_base_scripts.registry import LibrarySource
-import json
+**Skip synthesis when:**
+- The question is not a synthesis query (use `is_synthesis_query` from the orchestrator helper)
+- Fewer than 2 sources returned findings (nothing to synthesise across)
 
-# Reconstruct the retrieval result, sources, and per-source findings collected in Steps 3-5
-retrieval = RetrievalQueryResult(
-    combined_output='<combined retrieval output from Step 5>',
-    sources_with_findings=['<list of source names that returned findings>'],
-)
-sources = [
-    LibrarySource(name='<source.name>', type='filesystem', path='<source.path>'),
-    # ... one entry per dispatched source
-]
-per_source = {
-    '<source.name>': '<raw librarian output for that source>',
-    # ... one entry per source that returned findings
-}
-priming_data = json.loads('<priming_bundle_json_from_step_2>')
-priming = PrimingBundle(
-    question=priming_data['question'],
-    local_kb_config_excerpt=priming_data['local_kb_config_excerpt'],
-    local_shelf_index_terms=priming_data['local_shelf_index_terms'],
-)
+**Run synthesis when both conditions are met.** The synthesis flow has two phases:
 
-# is_synthesis_query handles the heuristic check; run_synthesis_query decides
-# whether to actually dispatch (it will skip if <2 sources have findings)
-def synthesis_dispatcher(prompt):
-    # In the real skill, this wraps the Agent tool: dispatch one
-    # synthesis-librarian invocation with the synthesis prompt as input.
-    raise NotImplementedError('replace with Agent tool dispatch in the skill body')
+#### Phase 6a — Dispatch synthesis-librarian via Agent tool
 
-result = run_synthesis_query(
-    question='<the user question>',
-    retrieval=retrieval,
-    priming=priming,
-    sources=sources,
-    synthesis_dispatcher=synthesis_dispatcher,
-    per_source_findings=per_source,
-    audit_log_path=Path('library/audit.log'),
-)
-print(result.combined_output)
-"
-```
-
-In the actual skill flow, replace the `synthesis_dispatcher` placeholder with the
-**Agent tool** invocation: when `is_synthesis_query(question)` returns True AND at
-least 2 sources have findings, use the **Agent tool** to invoke the `synthesis-librarian` agent (NOT research-librarian — synthesis-librarian has tools: [] which makes 'no file reads' structural) with the synthesis prompt as its input. Otherwise, skip — the orchestrator detects this and
-returns the retrieval output unchanged.
-
-The dispatched synthesis prompt looks like:
+Use the **Agent tool** to invoke the **`synthesis-librarian`** agent (NOT research-librarian — synthesis-librarian has tools: [] and is dedicated to no-file-read synthesis). Pass this exact dispatch prompt as the agent's input:
 
 ```
 MODE: SYNTHESISE-ACROSS-SOURCES
 PRIMING_CONTEXT:
 {
-  "local_kb_config_excerpt": "...",
-  "local_shelf_index_terms": [...]
+  "local_kb_config_excerpt": "<the excerpt from Step 2>",
+  "local_shelf_index_terms": [<the terms from Step 2>]
 }
 
 Question: <the user question>
 
 Per-source findings (your only source of facts — do not read any files):
 
---- [local] ---
-<local librarian's findings>
+--- [<source.name>] ---
+<raw librarian output for that source from Step 4>
 
---- [corp-semi] ---
-<corp-semi librarian's findings>
+--- [<other source.name>] ---
+<raw librarian output>
 
-Produce a single connected argument that addresses the question, drawing on
-the findings above. Use the synthesis output format (Claim / Supporting
-evidence / Caveats / Programme application).
+Produce a single connected argument that addresses the question, drawing on the findings above. Use the synthesis output format (Claim / Supporting evidence / Caveats / Programme application).
 
-MANDATORY: every claim in the Supporting evidence list must carry an inline
-[<handle>] tag identifying which source library it came from ...
+MANDATORY: every claim in the Supporting evidence list must carry an inline [<handle>] tag identifying which source library it came from.
+
+When findings span multiple libraries, the Caveats section MUST explicitly name the cross-library span and the priming-influence (which findings were prioritised, which were de-emphasised, whether priming changed the synthesis outcome).
 ```
 
-The synthesis-librarian agent's prompt describes how to consume this; the orchestrator's `format_synthesis_prompt` produces it; the skill, agent prompt, and orchestrator stay in lockstep on the format.
+Capture the agent's response as `synthesis_output` (a string).
 
-After the synthesis call returns, the orchestrator runs `check_synthesis_attribution` (with `valid_handles` drawn from the dispatch sources) on the librarian's output. If any supporting-evidence claim lacks an inline `[handle]` tag, or the bracketed token is not in the source whitelist (e.g., `[TODO]`, `[0]`), the synthesis is aborted: the retrieval output is preserved and an explanatory error block is appended. The user always sees something they can act on.
+#### Phase 6b — Validate attribution and render
+
+Run the orchestrator's synthesis attribution check on the captured output:
+
+```bash
+python3 -c "
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts',
+        INIT,
+        submodule_search_locations=[SCRIPTS],
+    )
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = module
+        spec.loader.exec_module(module)
+
+from pathlib import Path
+from datetime import datetime, timezone
+from sdlc_knowledge_base_scripts.attribution import check_synthesis_attribution
+from sdlc_knowledge_base_scripts.audit import AuditEvent, log_event
+
+valid_handles = {'<source1>', '<source2>'}  # the dispatch source names from Step 1
+synthesis_output = '''<paste the synthesis-librarian agent's response here>'''
+question = '<the user question>'
+
+check = check_synthesis_attribution(synthesis_output, valid_handles=valid_handles)
+
+if check.passed:
+    # Append synthesis to the retrieval combined output
+    final = '<retrieval combined output from Step 5>' + '\n\n---\n\n## Cross-library synthesis\n\n' + synthesis_output.rstrip() + '\n'
+    print(final)
+else:
+    # Synthesis aborted — return retrieval output with error block
+    log_event(Path('library/audit.log'), AuditEvent(
+        timestamp=datetime.now(timezone.utc).isoformat(),
+        event_type='synthesis_aborted_attribution',
+        query=question,
+        source_handle=None,
+        reason=f'{len(check.untagged_claims)} untagged supporting-evidence claim(s)',
+        detail={'untagged_claims': check.untagged_claims},
+    ))
+    final = (
+        '<retrieval combined output from Step 5>'
+        '\n\n---\n\n'
+        f'**Synthesis aborted:** attribution post-check failed. '
+        f'{len(check.untagged_claims)} supporting-evidence claim(s) lacked '
+        f'an inline source-handle tag and were not safe to publish. '
+        f'Per-source findings above remain valid; you can draw connections '
+        f'manually.\n'
+    )
+    print(final)
+"
+```
+
+If the synthesis dispatch in Phase 6a raises an exception (e.g., agent timeout), don't run Phase 6b — instead append an error block to the retrieval output:
+
+```
+**Synthesis aborted:** dispatcher failed: <exception>.
+Per-source findings above are complete; synthesis was not produced.
+```
+
+And write a `synthesis_aborted_dispatcher_error` audit event via the same `log_event` pattern.
+
+#### Why this two-phase split
+
+Phase 6a is the Agent-tool call (model-driven). Phase 6b is the structural post-check (deterministic Python). They cannot be combined: the Python orchestrator's `run_synthesis_query` expects a `synthesis_dispatcher` callable but Claude Code's Agent tool is invoked, not called from Python. The two phases preserve the structural attribution guarantee while making the integration concrete.
+
+#### What this skill does NOT do for synthesis
+
+- Does not synthesise when fewer than 2 sources have findings
+- Does not silently publish synthesis claims that fail the attribution post-check
+- Does not invent claims that aren't in the retrieved findings (synthesis-librarian has tools: [] for this reason — see `docs/superpowers/specs/2026-04-26-tools-empty-empirical-evidence.md` for the empirical validation of that constraint)
 
 ## Audit logging
 
