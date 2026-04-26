@@ -158,18 +158,15 @@ def check_synthesis_attribution(
     output: str,
     valid_handles: set[str],
 ) -> SynthesisCheckResult:
-    """Verify every supporting-evidence item has a [handle] in valid_handles.
+    """Verify every supporting-evidence item has an inline [handle] tag in valid_handles.
 
-    valid_handles is required — there is no permissive default. This prevents
-    callers from accidentally accepting any bracketed token (e.g., [TODO] or
-    [0]) as a valid attribution.
+    valid_handles is required and is typically the set of source names from
+    run_synthesis_query's dispatch sources. Bracketed tokens not in the set
+    (e.g., [TODO], [0], [citation-needed]) fail the check.
 
-    Multi-line evidence items (claim wrapping across lines) are handled by
-    consuming continuation lines until the next numbered/bulleted item start
-    or the end of the evidence section.
-
-    Any untagged item causes passed=False; the caller is expected to abort
-    the synthesis and return retrieval-only output with an error block.
+    Any untagged or out-of-whitelist item causes passed=False; the caller is
+    expected to abort the synthesis and return retrieval-only output with an
+    error block.
     """
     untagged: list[str] = []
     lines = output.splitlines()

@@ -166,7 +166,7 @@ return to user
 | `version` | Integer. Currently `1`. Unknown versions → warning, best-effort load of `libraries`. |
 | `libraries[].name` | String, unique within the file. Lowercase-kebab-case recommended, not enforced. Used as the source handle in attribution output. |
 | `libraries[].type` | String, one of `filesystem` or `remote-agent`. v1 only dispatches `filesystem`; `remote-agent` entries load into the registry but are skipped at dispatch time with a clear warning. |
-| `libraries[].path` | String, absolute path to the library *directory* (the one containing `_shelf-index.md`), not the repo root. Non-existent path at load time → warning, entry still loaded (drive may be unmounted); non-existent at dispatch time → failure marker. |
+| `libraries[].path` | String, absolute path to the library *directory* (the one containing `_shelf-index.md`), not the repo root. Non-existent path | Validated at dispatch time by `validate_library_path` (Phase D Task 4). Source is skipped from the dispatch list with a warning. The registry loader does not validate paths at load time so a temporarily-unmounted drive does not cause registry-wide failure. |
 | `libraries[].description` | Optional human note. Ignored by the system. |
 
 Absent file is normal. No registry means kb-query works as today (local only).

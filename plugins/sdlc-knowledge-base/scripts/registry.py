@@ -58,12 +58,23 @@ def _coerce_version(
 
 @dataclass(frozen=True)
 class LibrarySource:
-    """A library the skill can dispatch a librarian against."""
+    """A library the skill can dispatch a librarian against.
+
+    The `description` field is human-readable metadata for the operator's
+    own reference (shown by kb-setup-consulting and kb-audit-query). It is
+    not used by any dispatch-path code; the librarian never sees it.
+
+    The `staleness_threshold_days` field is consumed by Task 21's
+    query-time staleness caveat — when a source's last_rebuilt is older
+    than this threshold (days), the orchestrator emits a Staleness note.
+    None means use the default heuristic (14 for local, 90 for corp-*, 60 otherwise).
+    """
 
     name: str
     type: str  # "filesystem" or "remote-agent"
     path: Optional[str] = None
     description: Optional[str] = None
+    staleness_threshold_days: Optional[int] = None
 
 
 @dataclass
@@ -151,6 +162,7 @@ def load_global_registry(path: Path) -> GlobalRegistry:
                 type=raw_type,
                 path=entry.get("path"),
                 description=entry.get("description"),
+                staleness_threshold_days=entry.get("staleness_threshold_days"),
             )
         )
 

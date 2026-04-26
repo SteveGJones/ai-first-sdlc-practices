@@ -1,10 +1,13 @@
-"""kb-query orchestrator: dispatch, collect, per-source attribution post-check, render.
+"""kb-query orchestrator: dispatch, collect, attribution post-check, render.
 
 The orchestrator is pure Python; the `dispatcher` callable abstracts the
 Agent tool call so tests can inject mocks. The kb-query skill wires in a
-real dispatcher backed by parallel Agent invocations.
+real dispatcher backed by parallel Agent invocations against the
+research-librarian (retrieval) and synthesis-librarian (synthesis) agents.
 
-Phase A of EPIC #164 — see spec §3.2, §6.1.
+Phases A+B+C+D of EPIC #164 — see spec §3.2, §6.1, §6.2, §7.1, and the
+Phase D operational maturity additions (audit logging, staleness caveats,
+priming transparency).
 """
 from __future__ import annotations
 

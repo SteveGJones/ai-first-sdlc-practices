@@ -384,7 +384,10 @@ Expected: the librarian answers; the answer is then filed back into the **local*
 /sdlc-knowledge-base:kb-query "What patterns exist for platform engineering team topologies?"
 ```
 
-Expected: two parallel `research-librarian` invocations — one scoped to `library/`, one scoped to the activated external path. Output rendered with `## [local] Findings` and `## [corporate-platform] Findings` sections, joined by `---` separators, with `**Sources queried: 2 | Sources with findings: 2**` header.
+Expected: two parallel `research-librarian` invocations — one scoped to `library/`, one scoped to the activated external path. Output rendered with `## [local] Findings` and `## [corporate-platform] Findings` sections, joined by `---` separators, with header:
+
+**Sources queried:** local, corporate-platform
+**Sources with findings:** local, corporate-platform
 
 **Out-of-scope query:**
 ```
