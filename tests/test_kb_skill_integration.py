@@ -160,3 +160,112 @@ def test_kb_promote_target_validation_rejects_unknown_handle(tmp_path: Path) -> 
     matches = [lib for lib in gr.libraries if lib.name == "nonexistent-handle"]
 
     assert matches == []  # the skill emits ERROR and exits when len(matches) == 0
+
+
+def test_kb_audit_query_filter_by_event_type(tmp_path: Path) -> None:
+    """Simulates kb-audit-query --event-type attribution_drop_retrieval against
+    a project audit log with mixed event types."""
+    audit_log = tmp_path / "library" / "audit.log"
+    audit_log.parent.mkdir(parents=True)
+
+    # Seed the audit log with events of different types
+    log_event(audit_log, AuditEvent(
+        timestamp="2026-04-25T10:00:00Z",
+        event_type="attribution_drop_retrieval",
+        query="q1",
+        source_handle="local",
+        reason="r",
+        detail={},
+    ))
+    log_event(audit_log, AuditEvent(
+        timestamp="2026-04-25T11:00:00Z",
+        event_type="synthesis_aborted_attribution",
+        query="q2",
+        source_handle=None,
+        reason="r",
+        detail={},
+    ))
+    log_event(audit_log, AuditEvent(
+        timestamp="2026-04-25T12:00:00Z",
+        event_type="attribution_drop_retrieval",
+        query="q3",
+        source_handle="corp",
+        reason="r",
+        detail={},
+    ))
+
+    # The skill's main path: read with event_type filter
+    drops = read_log(audit_log, event_type="attribution_drop_retrieval")
+    assert len(drops) == 2
+    assert {e.source_handle for e in drops} == {"local", "corp"}
+
+    aborts = read_log(audit_log, event_type="synthesis_aborted_attribution")
+    assert len(aborts) == 1
+
+
+def test_kb_audit_query_filter_by_date_range(tmp_path: Path) -> None:
+    """Simulates kb-audit-query --since <date> against a project audit log."""
+    audit_log = tmp_path / "library" / "audit.log"
+    audit_log.parent.mkdir(parents=True)
+
+    # Old event
+    log_event(audit_log, AuditEvent(
+        timestamp="2026-01-01T00:00:00Z",
+        event_type="attribution_drop_retrieval",
+        query="old",
+        source_handle="local",
+        reason="r",
+        detail={},
+    ))
+    # Recent event
+    log_event(audit_log, AuditEvent(
+        timestamp="2026-04-25T00:00:00Z",
+        event_type="attribution_drop_retrieval",
+        query="recent",
+        source_handle="local",
+        reason="r",
+        detail={},
+    ))
+
+    # The skill's --since 2026-04-01 filter
+    recent = read_log(audit_log, since="2026-04-01T00:00:00Z")
+    assert len(recent) == 1
+    assert recent[0].query == "recent"
+
+
+def test_kb_audit_query_summary_count_by_type(tmp_path: Path) -> None:
+    """Simulates kb-audit-query --summary: count events by type."""
+    from collections import Counter
+
+    audit_log = tmp_path / "library" / "audit.log"
+    audit_log.parent.mkdir(parents=True)
+
+    for i in range(3):
+        log_event(audit_log, AuditEvent(
+            timestamp=f"2026-04-25T1{i}:00:00Z",
+            event_type="attribution_drop_retrieval",
+            query=f"q{i}",
+            source_handle="local",
+            reason="r",
+            detail={},
+        ))
+    log_event(audit_log, AuditEvent(
+        timestamp="2026-04-25T15:00:00Z",
+        event_type="cross_library_promotion",
+        query="promote",
+        source_handle="corp",
+        reason="r",
+        detail={},
+    ))
+
+    events = read_log(audit_log)
+    counts = Counter(e.event_type for e in events)
+    assert counts["attribution_drop_retrieval"] == 3
+    assert counts["cross_library_promotion"] == 1
+
+
+def test_kb_audit_query_missing_log_returns_empty(tmp_path: Path) -> None:
+    """Simulates kb-audit-query against a project with no audit log."""
+    audit_log = tmp_path / "library" / "audit.log"  # not created
+    events = read_log(audit_log)
+    assert events == []
