@@ -12,7 +12,7 @@ priming transparency).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -164,14 +164,17 @@ def run_retrieval_query(
                 f"[{source.name}] dispatch failed: {exc}\n"
             )
             if audit_log_path is not None:
-                log_event(audit_log_path, AuditEvent(
-                    timestamp=datetime.now(timezone.utc).isoformat(),
-                    event_type="source_dispatch_failed",
-                    query=question,
-                    source_handle=source.name,
-                    reason=str(exc),
-                    detail={"exception_type": type(exc).__name__},
-                ))
+                log_event(
+                    audit_log_path,
+                    AuditEvent(
+                        timestamp=datetime.now(timezone.utc).isoformat(),
+                        event_type="source_dispatch_failed",
+                        query=question,
+                        source_handle=source.name,
+                        reason=str(exc),
+                        detail={"exception_type": type(exc).__name__},
+                    ),
+                )
             continue
 
         lower = raw.strip().lower()
@@ -189,14 +192,17 @@ def run_retrieval_query(
             f"[{source.name}] {title}" for title in check.dropped_blocks
         )
         if check.dropped_blocks and audit_log_path is not None:
-            log_event(audit_log_path, AuditEvent(
-                timestamp=datetime.now(timezone.utc).isoformat(),
-                event_type="attribution_drop_retrieval",
-                query=question,
-                source_handle=source.name,
-                reason=f"{len(check.dropped_blocks)} finding(s) lacked Source library tag",
-                detail={"dropped_block_titles": check.dropped_blocks},
-            ))
+            log_event(
+                audit_log_path,
+                AuditEvent(
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    event_type="attribution_drop_retrieval",
+                    query=question,
+                    source_handle=source.name,
+                    reason=f"{len(check.dropped_blocks)} finding(s) lacked Source library tag",
+                    detail={"dropped_block_titles": check.dropped_blocks},
+                ),
+            )
         cleaned = check.cleaned_output.rstrip()
 
         if cleaned.strip() and "### " in cleaned:
@@ -423,14 +429,17 @@ def run_synthesis_query(
             f"Per-source findings above are complete; synthesis was not produced.\n"
         )
         if audit_log_path is not None:
-            log_event(audit_log_path, AuditEvent(
-                timestamp=datetime.now(timezone.utc).isoformat(),
-                event_type="synthesis_aborted_dispatcher_error",
-                query=question,
-                source_handle=None,
-                reason=str(exc),
-                detail={"exception_type": type(exc).__name__},
-            ))
+            log_event(
+                audit_log_path,
+                AuditEvent(
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    event_type="synthesis_aborted_dispatcher_error",
+                    query=question,
+                    source_handle=None,
+                    reason=str(exc),
+                    detail={"exception_type": type(exc).__name__},
+                ),
+            )
         return SynthesisQueryResult(
             combined_output=retrieval.combined_output + error_block,
             synthesis_attempted=True,
@@ -450,14 +459,17 @@ def run_synthesis_query(
             f"connections manually.\n"
         )
         if audit_log_path is not None:
-            log_event(audit_log_path, AuditEvent(
-                timestamp=datetime.now(timezone.utc).isoformat(),
-                event_type="synthesis_aborted_attribution",
-                query=question,
-                source_handle=None,
-                reason=f"{len(check.untagged_claims)} untagged supporting-evidence claim(s)",
-                detail={"untagged_claims": check.untagged_claims},
-            ))
+            log_event(
+                audit_log_path,
+                AuditEvent(
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    event_type="synthesis_aborted_attribution",
+                    query=question,
+                    source_handle=None,
+                    reason=f"{len(check.untagged_claims)} untagged supporting-evidence claim(s)",
+                    detail={"untagged_claims": check.untagged_claims},
+                ),
+            )
         return SynthesisQueryResult(
             combined_output=retrieval.combined_output + error_block,
             synthesis_attempted=True,

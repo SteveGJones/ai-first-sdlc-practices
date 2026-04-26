@@ -230,5 +230,3 @@ def _is_item_start(stripped_line: str) -> bool:
 
 def _strip_item_marker(stripped_line: str) -> str:
     return _ITEM_MARKER_RE.sub("", stripped_line, count=1)
-
-

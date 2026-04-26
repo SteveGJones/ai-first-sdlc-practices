@@ -12,28 +12,33 @@ maturity additions.
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Optional
 
 
-VALID_EVENT_TYPES = frozenset({
-    "attribution_drop_retrieval",
-    "synthesis_aborted_attribution",
-    "synthesis_aborted_dispatcher_error",
-    "source_dispatch_failed",
-    "no_evidence_marker",
-    "cross_library_promotion",
-})
+VALID_EVENT_TYPES = frozenset(
+    {
+        "attribution_drop_retrieval",
+        "synthesis_aborted_attribution",
+        "synthesis_aborted_dispatcher_error",
+        "source_dispatch_failed",
+        "no_evidence_marker",
+        "cross_library_promotion",
+    }
+)
 
 
 @dataclass
 class AuditEvent:
     """One audit log entry. Append-only; never mutated after write."""
+
     timestamp: str  # ISO 8601 UTC
     event_type: str  # one of VALID_EVENT_TYPES
     query: str  # truncated to 500 chars at write
-    source_handle: Optional[str]  # the relevant library, or None for orchestrator-level events
+    source_handle: Optional[
+        str
+    ]  # the relevant library, or None for orchestrator-level events
     reason: str  # human-readable cause
     detail: dict  # event-type-specific extras
 

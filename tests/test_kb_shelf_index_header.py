@@ -1,9 +1,8 @@
 """Unit tests for sdlc_knowledge_base_scripts.shelf_index_header."""
 from pathlib import Path
 from sdlc_knowledge_base_scripts.shelf_index_header import (
-    parse_shelf_index_header,
-    ShelfIndexHeader,
     CURRENT_FORMAT_VERSION,
+    parse_shelf_index_header,
 )
 
 
@@ -57,9 +56,7 @@ def test_parse_unknown_future_version(tmp_path: Path) -> None:
 def test_parse_malformed_date_field(tmp_path: Path) -> None:
     shelf = tmp_path / "_shelf-index.md"
     shelf.write_text(
-        "<!-- format_version: 1 -->\n"
-        "<!-- last_rebuilt: not-a-date -->\n"
-        "# Shelf\n"
+        "<!-- format_version: 1 -->\n" "<!-- last_rebuilt: not-a-date -->\n" "# Shelf\n"
     )
     header = parse_shelf_index_header(shelf)
     # Malformed date is parsed as the literal string; downstream consumers handle

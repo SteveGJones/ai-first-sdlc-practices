@@ -4,8 +4,10 @@ Uses a mock dispatcher to exercise the full flow without real Agent tool calls.
 """
 import json
 import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from sdlc_knowledge_base_scripts.audit import read_log
 from sdlc_knowledge_base_scripts.orchestrator import (
     DispatchRequest,
     RetrievalQueryResult,
@@ -642,13 +644,12 @@ def test_run_synthesis_query_uses_valid_handles_from_sources() -> None:
     assert len(result.attribution_warnings) == 2
 
 
-from sdlc_knowledge_base_scripts.audit import read_log
-
-
 def test_orchestrator_writes_audit_event_on_attribution_drop(tmp_path: Path) -> None:
     """When a finding is dropped for missing Source library tag, an audit event is written."""
     audit_log = tmp_path / "audit.log"
-    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
+    local_lib = _make_fixture_library(
+        tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n"
+    )
 
     def mock_dispatch(req: DispatchRequest) -> str:
         return (
@@ -660,7 +661,7 @@ def test_orchestrator_writes_audit_event_on_attribution_drop(tmp_path: Path) -> 
         )
 
     sources = [LibrarySource(name="local", type="filesystem", path=str(local_lib))]
-    result = run_retrieval_query(
+    run_retrieval_query(
         question="q",
         sources=sources,
         priming=None,
@@ -675,13 +676,15 @@ def test_orchestrator_writes_audit_event_on_attribution_drop(tmp_path: Path) -> 
 
 def test_orchestrator_writes_audit_event_on_dispatcher_failure(tmp_path: Path) -> None:
     audit_log = tmp_path / "audit.log"
-    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
+    local_lib = _make_fixture_library(
+        tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n"
+    )
 
     def mock_dispatch(req: DispatchRequest) -> str:
         raise RuntimeError("agent timeout")
 
     sources = [LibrarySource(name="corp", type="filesystem", path=str(local_lib))]
-    result = run_retrieval_query(
+    run_retrieval_query(
         question="q",
         sources=sources,
         priming=None,
@@ -694,7 +697,9 @@ def test_orchestrator_writes_audit_event_on_dispatcher_failure(tmp_path: Path) -
     assert "agent timeout" in events[0].reason
 
 
-def test_orchestrator_writes_audit_event_on_synthesis_attribution_abort(tmp_path: Path) -> None:
+def test_orchestrator_writes_audit_event_on_synthesis_attribution_abort(
+    tmp_path: Path,
+) -> None:
     audit_log = tmp_path / "audit.log"
     retrieval = RetrievalQueryResult(
         combined_output="output",
@@ -705,9 +710,11 @@ def test_orchestrator_writes_audit_event_on_synthesis_attribution_abort(tmp_path
         LibrarySource(name="corp", type="filesystem", path="/y"),
     ]
     bad_synth = "### Argument\n**Claim**: X.\n**Supporting evidence**:\n1. Untagged.\n**Caveats**: None.\n"
+
     def synth_dispatch(p: str) -> str:
         return bad_synth
-    result = run_synthesis_query(
+
+    run_synthesis_query(
         question="how should we think",
         retrieval=retrieval,
         priming=None,
@@ -720,7 +727,9 @@ def test_orchestrator_writes_audit_event_on_synthesis_attribution_abort(tmp_path
     assert len(events) == 1
 
 
-def test_orchestrator_writes_audit_event_on_synthesis_dispatcher_error(tmp_path: Path) -> None:
+def test_orchestrator_writes_audit_event_on_synthesis_dispatcher_error(
+    tmp_path: Path,
+) -> None:
     audit_log = tmp_path / "audit.log"
     retrieval = RetrievalQueryResult(
         combined_output="output",
@@ -730,9 +739,11 @@ def test_orchestrator_writes_audit_event_on_synthesis_dispatcher_error(tmp_path:
         LibrarySource(name="local", type="filesystem", path="/x"),
         LibrarySource(name="corp", type="filesystem", path="/y"),
     ]
+
     def synth_dispatch(p: str) -> str:
         raise RuntimeError("synth timeout")
-    result = run_synthesis_query(
+
+    run_synthesis_query(
         question="how should we think",
         retrieval=retrieval,
         priming=None,
@@ -748,12 +759,16 @@ def test_orchestrator_writes_audit_event_on_synthesis_dispatcher_error(tmp_path:
 
 def test_orchestrator_no_audit_when_path_is_none(tmp_path: Path) -> None:
     """audit_log_path=None (default) means no logging — preserves backwards compat."""
-    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
+    local_lib = _make_fixture_library(
+        tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n"
+    )
+
     def mock_dispatch(req: DispatchRequest) -> str:
         return "### Untagged\n**Finding**: bad.\n"
+
     sources = [LibrarySource(name="local", type="filesystem", path=str(local_lib))]
     # Use default audit_log_path=None
-    result = run_retrieval_query(
+    run_retrieval_query(
         question="q",
         sources=sources,
         priming=None,
@@ -761,9 +776,6 @@ def test_orchestrator_no_audit_when_path_is_none(tmp_path: Path) -> None:
     )
     # No audit log file should have been created
     assert not (tmp_path / "audit.log").exists()
-
-
-from datetime import datetime, timezone, timedelta
 
 
 def test_orchestrator_appends_staleness_caveat_when_stale(tmp_path: Path) -> None:
@@ -780,8 +792,17 @@ def test_orchestrator_appends_staleness_caveat_when_stale(tmp_path: Path) -> Non
     def mock_dispatch(req: DispatchRequest) -> str:
         return f"### finding\n**Finding**: x.\n**Source library**: {req.source.name}\n"
 
-    sources = [LibrarySource(name="corp-old", type="filesystem", path=str(lib), staleness_threshold_days=90)]
-    result = run_retrieval_query(question="q", sources=sources, priming=None, dispatcher=mock_dispatch)
+    sources = [
+        LibrarySource(
+            name="corp-old",
+            type="filesystem",
+            path=str(lib),
+            staleness_threshold_days=90,
+        )
+    ]
+    result = run_retrieval_query(
+        question="q", sources=sources, priming=None, dispatcher=mock_dispatch
+    )
     assert "Staleness note" in result.combined_output
     assert "200 days" in result.combined_output
 
@@ -801,7 +822,9 @@ def test_orchestrator_no_staleness_caveat_when_fresh(tmp_path: Path) -> None:
         return f"### finding\n**Finding**: x.\n**Source library**: {req.source.name}\n"
 
     sources = [LibrarySource(name="local", type="filesystem", path=str(lib))]
-    result = run_retrieval_query(question="q", sources=sources, priming=None, dispatcher=mock_dispatch)
+    result = run_retrieval_query(
+        question="q", sources=sources, priming=None, dispatcher=mock_dispatch
+    )
     assert "Staleness note" not in result.combined_output
 
 
@@ -815,5 +838,7 @@ def test_orchestrator_no_staleness_caveat_when_no_last_rebuilt(tmp_path: Path) -
         return f"### finding\n**Finding**: x.\n**Source library**: {req.source.name}\n"
 
     sources = [LibrarySource(name="local", type="filesystem", path=str(lib))]
-    result = run_retrieval_query(question="q", sources=sources, priming=None, dispatcher=mock_dispatch)
+    result = run_retrieval_query(
+        question="q", sources=sources, priming=None, dispatcher=mock_dispatch
+    )
     assert "Staleness note" not in result.combined_output

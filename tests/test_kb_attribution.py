@@ -49,7 +49,16 @@ def test_retrieval_empty_output_is_ok() -> None:
     assert result.dropped_blocks == []
 
 
-PERMISSIVE_HANDLES = {"local", "corp-semi", "corp", "corp-health", "corporate-semi", "TODO", "0", "citation-needed"}
+PERMISSIVE_HANDLES = {
+    "local",
+    "corp-semi",
+    "corp",
+    "corp-health",
+    "corporate-semi",
+    "TODO",
+    "0",
+    "citation-needed",
+}
 
 
 def test_synthesis_all_claims_tagged() -> None:
@@ -64,7 +73,9 @@ def test_synthesis_all_claims_tagged() -> None:
 
 **Caveats**: This synthesis spans local and corporate-semi libraries.
 """
-    result = check_synthesis_attribution(output, valid_handles={"local", "corporate-semi"})
+    result = check_synthesis_attribution(
+        output, valid_handles={"local", "corporate-semi"}
+    )
     assert isinstance(result, SynthesisCheckResult)
     assert result.passed is True
     assert result.untagged_claims == []

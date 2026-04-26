@@ -282,9 +282,7 @@ def test_resolve_happy_path(tmp_path: Path) -> None:
 
     gr = _make_global(
         [
-            LibrarySource(
-                name="corp-semi", type="filesystem", path=str(corp_semi_lib)
-            ),
+            LibrarySource(name="corp-semi", type="filesystem", path=str(corp_semi_lib)),
         ]
     )
     pa = _make_activation(["corp-semi"])
@@ -337,9 +335,7 @@ def test_resolve_no_local_library_with_externals(tmp_path: Path) -> None:
 
     gr = _make_global(
         [
-            LibrarySource(
-                name="corp-semi", type="filesystem", path=str(corp_semi_lib)
-            ),
+            LibrarySource(name="corp-semi", type="filesystem", path=str(corp_semi_lib)),
         ]
     )
     pa = _make_activation(["corp-semi"])
@@ -362,20 +358,23 @@ def test_resolve_empty_dispatch_list(tmp_path: Path) -> None:
 
 def test_load_global_registry_invalid_name_charset_skipped(tmp_path: Path) -> None:
     registry_file = tmp_path / "global-libraries.json"
-    registry_file.write_text(json.dumps({
-        "version": 1,
-        "libraries": [
-            {"name": "Valid-Name", "type": "filesystem", "path": "/x"},
-            {"name": "with spaces", "type": "filesystem", "path": "/y"},
-            {"name": "with;semi", "type": "filesystem", "path": "/z"},
-            {"name": "good-name", "type": "filesystem", "path": "/ok"},
-        ],
-    }))
+    registry_file.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "libraries": [
+                    {"name": "Valid-Name", "type": "filesystem", "path": "/x"},
+                    {"name": "with spaces", "type": "filesystem", "path": "/y"},
+                    {"name": "with;semi", "type": "filesystem", "path": "/z"},
+                    {"name": "good-name", "type": "filesystem", "path": "/ok"},
+                ],
+            }
+        )
+    )
     result = load_global_registry(registry_file)
     assert [lib.name for lib in result.libraries] == ["good-name"]
     invalid_warnings = [
-        w for w in result.warnings
-        if "name" in w.lower() and "invalid" in w.lower()
+        w for w in result.warnings if "name" in w.lower() and "invalid" in w.lower()
     ]
     assert len(invalid_warnings) == 3
 
@@ -438,9 +437,13 @@ def test_resolve_dispatch_skips_invalid_path_with_warning(tmp_path: Path) -> Non
     local_lib.mkdir()
     (local_lib / "_shelf-index.md").write_text("# Shelf\n")
 
-    gr = _make_global([
-        LibrarySource(name="bad-corp", type="filesystem", path="/totally/nonexistent/path"),
-    ])
+    gr = _make_global(
+        [
+            LibrarySource(
+                name="bad-corp", type="filesystem", path="/totally/nonexistent/path"
+            ),
+        ]
+    )
     pa = _make_activation(["bad-corp"])
     result = resolve_dispatch_list(gr, pa, project_library_path=local_lib)
     # local should still be in dispatch list
