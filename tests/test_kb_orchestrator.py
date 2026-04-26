@@ -640,3 +640,124 @@ def test_run_synthesis_query_uses_valid_handles_from_sources() -> None:
     # Bogus handles fail the whitelist; synthesis aborts
     assert result.synthesis_succeeded is False
     assert len(result.attribution_warnings) == 2
+
+
+from sdlc_knowledge_base_scripts.audit import read_log
+
+
+def test_orchestrator_writes_audit_event_on_attribution_drop(tmp_path: Path) -> None:
+    """When a finding is dropped for missing Source library tag, an audit event is written."""
+    audit_log = tmp_path / "audit.log"
+    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
+
+    def mock_dispatch(req: DispatchRequest) -> str:
+        return (
+            "### Tagged finding\n"
+            "**Finding**: ok.\n"
+            "**Source library**: local\n\n"
+            "### Untagged finding\n"
+            "**Finding**: bad, no attribution.\n"
+        )
+
+    sources = [LibrarySource(name="local", type="filesystem", path=str(local_lib))]
+    result = run_retrieval_query(
+        question="q",
+        sources=sources,
+        priming=None,
+        dispatcher=mock_dispatch,
+        audit_log_path=audit_log,
+    )
+    events = read_log(audit_log, event_type="attribution_drop_retrieval")
+    assert len(events) == 1
+    assert events[0].source_handle == "local"
+    assert "Untagged finding" in events[0].detail.get("dropped_block_titles", [])[0]
+
+
+def test_orchestrator_writes_audit_event_on_dispatcher_failure(tmp_path: Path) -> None:
+    audit_log = tmp_path / "audit.log"
+    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
+
+    def mock_dispatch(req: DispatchRequest) -> str:
+        raise RuntimeError("agent timeout")
+
+    sources = [LibrarySource(name="corp", type="filesystem", path=str(local_lib))]
+    result = run_retrieval_query(
+        question="q",
+        sources=sources,
+        priming=None,
+        dispatcher=mock_dispatch,
+        audit_log_path=audit_log,
+    )
+    events = read_log(audit_log, event_type="source_dispatch_failed")
+    assert len(events) == 1
+    assert events[0].source_handle == "corp"
+    assert "agent timeout" in events[0].reason
+
+
+def test_orchestrator_writes_audit_event_on_synthesis_attribution_abort(tmp_path: Path) -> None:
+    audit_log = tmp_path / "audit.log"
+    retrieval = RetrievalQueryResult(
+        combined_output="output",
+        sources_with_findings=["local", "corp"],
+    )
+    sources = [
+        LibrarySource(name="local", type="filesystem", path="/x"),
+        LibrarySource(name="corp", type="filesystem", path="/y"),
+    ]
+    bad_synth = "### Argument\n**Claim**: X.\n**Supporting evidence**:\n1. Untagged.\n**Caveats**: None.\n"
+    def synth_dispatch(p: str) -> str:
+        return bad_synth
+    result = run_synthesis_query(
+        question="how should we think",
+        retrieval=retrieval,
+        priming=None,
+        sources=sources,
+        synthesis_dispatcher=synth_dispatch,
+        per_source_findings={"local": "x", "corp": "y"},
+        audit_log_path=audit_log,
+    )
+    events = read_log(audit_log, event_type="synthesis_aborted_attribution")
+    assert len(events) == 1
+
+
+def test_orchestrator_writes_audit_event_on_synthesis_dispatcher_error(tmp_path: Path) -> None:
+    audit_log = tmp_path / "audit.log"
+    retrieval = RetrievalQueryResult(
+        combined_output="output",
+        sources_with_findings=["local", "corp"],
+    )
+    sources = [
+        LibrarySource(name="local", type="filesystem", path="/x"),
+        LibrarySource(name="corp", type="filesystem", path="/y"),
+    ]
+    def synth_dispatch(p: str) -> str:
+        raise RuntimeError("synth timeout")
+    result = run_synthesis_query(
+        question="how should we think",
+        retrieval=retrieval,
+        priming=None,
+        sources=sources,
+        synthesis_dispatcher=synth_dispatch,
+        per_source_findings={"local": "x", "corp": "y"},
+        audit_log_path=audit_log,
+    )
+    events = read_log(audit_log, event_type="synthesis_aborted_dispatcher_error")
+    assert len(events) == 1
+    assert "synth timeout" in events[0].reason
+
+
+def test_orchestrator_no_audit_when_path_is_none(tmp_path: Path) -> None:
+    """audit_log_path=None (default) means no logging — preserves backwards compat."""
+    local_lib = _make_fixture_library(tmp_path, "proj", "<!-- format_version: 1 -->\n# Shelf\n")
+    def mock_dispatch(req: DispatchRequest) -> str:
+        return "### Untagged\n**Finding**: bad.\n"
+    sources = [LibrarySource(name="local", type="filesystem", path=str(local_lib))]
+    # Use default audit_log_path=None
+    result = run_retrieval_query(
+        question="q",
+        sources=sources,
+        priming=None,
+        dispatcher=mock_dispatch,
+    )
+    # No audit log file should have been created
+    assert not (tmp_path / "audit.log").exists()
