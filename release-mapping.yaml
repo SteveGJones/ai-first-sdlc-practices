@@ -181,7 +181,7 @@ sdlc-knowledge-base:
     - source: plugins/sdlc-knowledge-base/scripts/registry.py
     - source: plugins/sdlc-knowledge-base/scripts/priming.py
     - source: plugins/sdlc-knowledge-base/scripts/attribution.py
-    - source: plugins/sdlc-knowledge-base/scripts/format_version.py
+    - source: plugins/sdlc-knowledge-base/scripts/shelf_index_header.py
     - source: plugins/sdlc-knowledge-base/scripts/orchestrator.py
     - source: plugins/sdlc-knowledge-base/scripts/audit.py
 
