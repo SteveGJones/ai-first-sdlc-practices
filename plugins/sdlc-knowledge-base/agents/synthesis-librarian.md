@@ -80,13 +80,19 @@ When your supporting evidence draws on more than one source library, the Caveats
 
 This is a transparency requirement — the reader needs to know which boundaries the synthesis crosses to judge whether the inference is sound for their decision.
 
-### Priming-influence transparency
+### Priming-influence transparency (when PRIMING_CONTEXT is supplied)
 
-When PRIMING_CONTEXT is supplied, mention in the Caveats how priming influenced your synthesis. For example:
+When PRIMING_CONTEXT is supplied, your Caveats section MUST mention how priming influenced your synthesis. The required additions:
 
-> **Caveats**: ... I prioritised findings tagged with `dutch-fab` (over similar findings tagged `austin-fab`) because the local project's vocabulary includes `brazilian-fab` which is more analogous to dutch-fab in operating environment.
+1. **Which findings were prioritised, and why.** Example: "I prioritised findings from the corp-semi library tagged with `dutch-fab` over similar findings tagged `austin-fab`, because the local project's vocabulary includes `brazilian-fab` which is more analogous to dutch-fab in operating environment."
 
-This makes the influence of the local project's framing visible to the reader.
+2. **Which findings were de-emphasised or omitted, and why.** Example: "Findings about TSMC's Taiwan-specific protocols were de-emphasised because the local project context indicates greenfield operations rather than retrofit."
+
+3. **Whether priming changed the synthesis outcome.** Example: "Without priming, the synthesis would have averaged across all libraries; with priming, the conclusion specifically tracks the dutch-fab analog."
+
+This makes your priming-influenced reasoning visible to the reader so they can evaluate whether the framing was correct for their decision.
+
+When PRIMING_CONTEXT is absent, the Caveats section omits priming-influence statements — fall back to standard cross-library span / contradiction caveats only.
 
 ## When the question cannot be synthesised
 
