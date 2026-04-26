@@ -17,14 +17,11 @@ For each research line:
 
 ## Prompt
 
-You are converting a deep-research output into actionable design decisions for an open-source SDLC framework. The research has already been done; your task is **synthesis**, not further research.
+> **Required context**: this prompt assumes the contents of `research/sdlc-bundles/METHODS.md` are present in the conversation. METHODS.md describes the framework being designed, Method 1 (Programme bundle), Method 2 (Assured bundle), the existing substrate the bundles build on, and what is explicitly out of scope. If METHODS.md is not in the conversation, paste it before this prompt.
 
-The framework being designed supports two methods that ship together as commissionable bundles:
+You are converting a deep-research output into actionable design decisions for the framework described in METHODS.md. The research has already been done; your task is **synthesis**, not further research.
 
-- **Method 1 (Programme bundle)**: waterfall phase gates — requirements-spec, design-spec, test-spec, then TDD code — with cross-phase review enforcement and validators that block on missing artefacts.
-- **Method 2 (Assured bundle)**: builds on Method 1 with stable identifiers (REQ-/DES-/TEST-/CODE-XXX), bidirectional link integrity, declarative decomposition (program → sub-program → module), KB-based retrieval over specs and code, and a render pipeline that produces human-readable scoped documentation per module.
-
-The framework is markdown-driven, filesystem-first, agent-orchestrated, and open-source.
+This synthesis ties findings to specific scope decisions for Method 1 and Method 2 as defined in METHODS.md Sections 3 and 4.
 
 ### Research line under synthesis
 

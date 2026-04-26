@@ -58,6 +58,8 @@ The synthesis stage is intentionally a separate activity. Doing it inside the sa
 ```
 research/sdlc-bundles/
 ├── PLAN.md                                     # This file
+├── METHODS.md                                  # Reference context: Method 1 + Method 2 definitions
+│                                               # (REQUIRED context for every prompt below)
 ├── prompts/
 │   ├── 01-traceability-standards.md            # Stage 2 prompt for line 1
 │   ├── 02-decomposition-patterns.md            # Stage 2 prompt for line 2
@@ -74,6 +76,8 @@ research/sdlc-bundles/
     ├── 03-alm-synthesis.md
     └── overall-scope-update.md
 ```
+
+**Important — METHODS.md is required context for every prompt.** Each prompt now starts with a "Required context" line instructing the operator to paste the contents of METHODS.md into Claude Desktop *before* the prompt itself. Without that context the research outputs will be too generic to drive specific design decisions.
 
 ---
 

@@ -11,20 +11,21 @@ This research line surveys those patterns, characterises each, and identifies wh
 ## How to use this prompt
 
 1. Open Claude Desktop with extended research mode enabled.
-2. Copy the entire content of the **`## Prompt`** section below into a new conversation.
-3. Allow the research to complete. Expect ~45-90 minutes for a thorough output.
-4. Save the output to `research/sdlc-bundles/outputs/02-decomposition-patterns/output-1.md`.
-5. If the output is thin or off-target, save it as `output-1-thin.md` and run a sharpened follow-up.
+2. **Paste the contents of `research/sdlc-bundles/METHODS.md` first**, as a system-context message at the start of the conversation. This tells the researcher what the framework is, what Method 1 and Method 2 are, and what's already built. Without this context the research output will be too generic to be useful.
+3. Then copy the entire content of the **`## Prompt`** section below as the next message.
+4. Allow the research to complete. Expect ~45-90 minutes for a thorough output.
+5. Save the output to `research/sdlc-bundles/outputs/02-decomposition-patterns/output-1.md`.
+6. If the output is thin or off-target, save it as `output-1-thin.md` and run a sharpened follow-up.
 
 ---
 
 ## Prompt
 
-You are conducting deep research to inform the design of an open-source software-development-lifecycle framework. The framework will support architectural decomposition: a project is broken into a small number of programs, each containing sub-programs, each containing modules, each containing code/test elements. Requirements, design elements, tests, and code are all assigned to a level in this hierarchy and tagged with a stable identifier.
+> **Required context**: this prompt assumes you have just read `research/sdlc-bundles/METHODS.md` describing the framework, Method 1 (Programme bundle), and Method 2 (Assured bundle). If that document was not pasted into this conversation, request it before continuing.
 
-Decomposition in this framework is **declarative** (a registry file says which programs exist, which sub-programs each contains, which modules each sub-program contains, and which directory paths belong to which module). It is enforced by validators that run during the development lifecycle rather than by a build system or a runtime. The framework is markdown-driven and filesystem-first; it does not own the build system or the deployment topology.
+You are conducting deep research to inform the **decomposition primitive** for Method 2 (the Assured bundle), described in METHODS.md Section 4. The Method 2 design declares decomposition (program → sub-program → module → code/test elements) in a registry file and enforces boundaries via validators that run during the development lifecycle. It is markdown-driven and filesystem-first; it does not own a build system or runtime.
 
-The decision your research informs is: which existing decomposition pattern (or combination) should this framework borrow its concepts and validators from? Which pattern's failure modes should it design against?
+The decision your research informs is: which existing decomposition pattern (or combination) should the **Assured bundle** borrow its concepts and validators from? Which pattern's failure modes should it design against?
 
 ### Scope of research
 

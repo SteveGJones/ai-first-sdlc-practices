@@ -15,20 +15,23 @@ This research is *calibration*, not direction-setting. The Method 1 + Method 2 s
 ## How to use this prompt
 
 1. Open Claude Desktop with extended research mode enabled.
-2. Copy the entire content of the **`## Prompt`** section below into a new conversation.
-3. Allow the research to complete. Expect ~30-60 minutes for a thorough output.
-4. Save the output to `research/sdlc-bundles/outputs/03-alm-tools-landscape/output-1.md`.
-5. If the output is thin or off-target, save it as `output-1-thin.md` and run a sharpened follow-up.
+2. **Paste the contents of `research/sdlc-bundles/METHODS.md` first**, as a system-context message at the start of the conversation. This tells the researcher what the framework is, what Method 1 and Method 2 are, and what's already built. Without this context the research output will be too generic to be useful.
+3. Then copy the entire content of the **`## Prompt`** section below as the next message.
+4. Allow the research to complete. Expect ~30-60 minutes for a thorough output.
+5. Save the output to `research/sdlc-bundles/outputs/03-alm-tools-landscape/output-1.md`.
+6. If the output is thin or off-target, save it as `output-1-thin.md` and run a sharpened follow-up.
 
 ---
 
 ## Prompt
 
-You are conducting deep research on the application-lifecycle-management and requirements-management tool landscape, with a specific objective: extract concrete design lessons (both positive and negative) for a new open-source framework that will support requirements-to-code traceability via stable identifiers, KB-style retrieval, and validator-enforced link integrity.
+> **Required context**: this prompt assumes you have just read `research/sdlc-bundles/METHODS.md` describing the framework, Method 1 (Programme bundle), and Method 2 (Assured bundle). If that document was not pasted into this conversation, request it before continuing.
 
-The framework being designed is **markdown-driven, filesystem-first, agent-orchestrated, and open-source**. It is intentionally NOT a relational ALM database; it stores specifications as markdown files with YAML headers, indexed by a content-hashed registry, and retrieved by a research librarian agent. Bidirectional links are validated by post-check tooling (similar to a static type-checker), not maintained by a database transaction.
+You are conducting deep research on the application-lifecycle-management and requirements-management tool landscape, with a specific objective: extract concrete design lessons (both positive and negative) for the **Assured bundle** described in METHODS.md Section 4. The Assured bundle supports requirements-to-code traceability via stable identifiers, KB-style retrieval, and validator-enforced link integrity, on top of the markdown-driven, filesystem-first, agent-orchestrated framework described in METHODS.md.
 
-The decision your research informs is: which existing tools' design patterns should this framework adopt, and which should it explicitly avoid?
+It is intentionally NOT a relational ALM database; it stores specifications as markdown files with YAML headers, indexed by a content-hashed registry, and retrieved by a research librarian agent (see METHODS.md Section 1 for the existing knowledge-base substrate). Bidirectional links are validated by post-check tooling (similar to a static type-checker), not maintained by a database transaction.
+
+The decision your research informs is: which existing tools' design patterns should the Assured bundle adopt, and which should it explicitly avoid?
 
 ### Scope of research
 

@@ -9,18 +9,21 @@ This research line establishes what the major safety-critical software standards
 ## How to use this prompt
 
 1. Open Claude Desktop with extended research mode enabled.
-2. Copy the entire content of the **`## Prompt`** section below into a new conversation.
-3. Allow the research to complete. Expect ~30-60 minutes of generation time for a thorough output.
-4. Save the output to `research/sdlc-bundles/outputs/01-traceability-standards/output-1.md`.
-5. If the output is thin or off-target, save it as `output-1-thin.md` and run a sharpened follow-up; the failed-attempt artefact stays in the repo as evidence.
+2. **Paste the contents of `research/sdlc-bundles/METHODS.md` first**, as a system-context message at the start of the conversation. This tells the researcher what the framework is, what Method 1 and Method 2 are, and what's already built. Without this context the research output will be too generic to be useful.
+3. Then copy the entire content of the **`## Prompt`** section below as the next message.
+4. Allow the research to complete. Expect ~30-60 minutes of generation time for a thorough output.
+5. Save the output to `research/sdlc-bundles/outputs/01-traceability-standards/output-1.md`.
+6. If the output is thin or off-target, save it as `output-1-thin.md` and run a sharpened follow-up; the failed-attempt artefact stays in the repo as evidence.
 
 ---
 
 ## Prompt
 
-You are conducting deep research to inform the design of an open-source software-development-lifecycle framework that aims to support safety-critical software work. You are NOT being asked to recommend a tool; you are being asked to characterise what authoritative standards demand, so the framework's scope can be calibrated.
+> **Required context**: this prompt assumes you have just read `research/sdlc-bundles/METHODS.md` describing the framework, Method 1 (Programme bundle), and Method 2 (Assured bundle). If that document was not pasted into this conversation, request it before continuing.
 
-The framework being designed is markdown-driven, agent-orchestrated, and filesystem-first. It will produce stable identifiers for requirements, design elements, tests, and code units, with bidirectional links between them. The decision your research informs is: which traceability obligations should the framework's "Assured" bundle natively support, and which are out of scope for an open-source framework (left to projects to layer on).
+You are conducting deep research to inform the design of the **Assured bundle** described in METHODS.md. You are NOT being asked to recommend a tool; you are being asked to characterise what authoritative standards demand, so the framework's scope can be calibrated.
+
+The decision your research informs is: which traceability obligations should the framework's **Assured bundle** (Method 2) natively support, and which are out of scope for an open-source framework (left to projects to layer on)?
 
 ### Scope of research
 

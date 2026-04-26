@@ -16,7 +16,9 @@ Run this in Claude Code or Claude Desktop. If in Desktop, paste all three per-li
 
 ## Prompt
 
-You are producing the **scope-update document** that consolidates findings from three independent research lines into a single set of design decisions for two SDLC framework bundles shipping together: Programme (Method 1 — waterfall phase gates) and Assured (Method 2 — agent-first specs with traceability + decomposition + KB-for-code, building on Method 1).
+> **Required context**: this prompt assumes the contents of `research/sdlc-bundles/METHODS.md` are present in the conversation. METHODS.md describes the framework, Method 1 (Programme bundle), Method 2 (Assured bundle), the existing substrate, and out-of-scope boundaries. If METHODS.md is not in the conversation, paste it before this prompt.
+
+You are producing the **scope-update document** that consolidates findings from three independent research lines into a single set of design decisions for the Programme and Assured bundles defined in METHODS.md Sections 3 and 4.
 
 Each research line was synthesised separately into a per-line synthesis document. Your task is **cross-line consolidation**: identify where findings agree, where they conflict, and what the integrated set of design decisions should be.
 
