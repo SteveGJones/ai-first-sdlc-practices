@@ -175,6 +175,7 @@ sdlc-knowledge-base:
     - source: skills/kb-staleness-check/SKILL.md
     - source: plugins/sdlc-knowledge-base/skills/kb-register-library/SKILL.md
     - source: plugins/sdlc-knowledge-base/skills/kb-audit-query/SKILL.md
+    - source: plugins/sdlc-knowledge-base/skills/kb-setup-consulting/SKILL.md
   scripts:
     # Authored in-plugin; listed for packaging audit. Ship in-place.
     - source: plugins/sdlc-knowledge-base/scripts/__init__.py
