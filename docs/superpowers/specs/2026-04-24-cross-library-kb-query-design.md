@@ -109,6 +109,16 @@ return to user
 - **Attribution integrity is a post-processing check, not a prompt rule.** The skill validates that every finding has a `Source library:` tag and every synthesis claim has an inline `[handle]`, before returning to the user.
 - **Synthesis works only from retrieved findings, never from files.** The synthesis librarian call receives the collected retrieval output as input; it cannot re-read files or invent citations. Attribution is carried through automatically.
 
+### 3.4 Priming behaviour — empirical note (added 2026-04-26)
+
+The original design framed priming as a **selection override** — local CLAUDE.md `[KB]` content and local shelf-index Terms biasing which files external librarians choose. Phase E real-Agent-dispatch validation (`docs/superpowers/specs/2026-04-26-priming-validation-real-dispatch.md`, `docs/superpowers/specs/2026-04-26-priming-rule1-fair-test.md`) showed that priming functions in production primarily as a **framing layer**, not a selection override:
+
+- **File selection rarely changes** when topical matching is unambiguous (the question's vocabulary already encodes the topic). Across two validation fixtures and six paired Q×{priming-OFF, priming-ON} dispatches, file-selection differences appeared in 1 of 6 cases — and that case was on the substantial fixture where two candidate files had genuinely comparable topical match.
+- **Output framing changes every time.** Priming-ON output adds a `## Selection rationale` section, cites Programme Relevance with explicit local-project applicability, and discusses priming influence in plain language.
+- **Reasoning attribution changes every time.** The librarian explicitly attributes its choices to either question topicality (when not primed) or priming term-overlap and KB-config-as-lens (when primed). The team can see *why* a finding was chosen.
+
+**Implication for v1's value proposition:** the consulting team gets findings interpreted through their project's lens, with transparent reasoning attribution. They get the same files most of the time, but with richer interpretation — and on the few queries where multiple candidates have comparable topical match, priming acts as a meaningful tiebreaker. This is a genuinely useful behaviour; it is **not** "priming changes which files get picked on every query."
+
 ## 4. Components
 
 ### 4.1 New files
