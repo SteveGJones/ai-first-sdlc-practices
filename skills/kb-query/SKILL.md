@@ -25,6 +25,55 @@ Optional flag:
 - Verify the `research-librarian` agent is available.
 - Library availability and shelf-index presence are checked in Step 1 via the registry resolver — no manual path checks needed here.
 
+## Preflight: verify scripts package importable
+
+Before running any subsequent step, verify the kb scripts package can be imported:
+
+```bash
+python3 -c "
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts',
+        INIT,
+        submodule_search_locations=[SCRIPTS],
+    )
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = module
+        spec.loader.exec_module(module)
+try:
+    import sdlc_knowledge_base_scripts.registry  # noqa: F401
+    print('OK')
+except ImportError:
+    print('MISSING')
+"
+```
+
+If output is `MISSING`, prepend this preamble to every subsequent bash snippet in this skill:
+
+```python
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts',
+        INIT,
+        submodule_search_locations=[SCRIPTS],
+    )
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = module
+        spec.loader.exec_module(module)
+```
+
+The `CLAUDE_PLUGIN_ROOT` environment variable is set by Claude Code when it loads the plugin. The scripts subdirectory is always packaged as `<plugin>/scripts/`. If `CLAUDE_PLUGIN_ROOT` is not set (running outside Claude Code), the user can either set it manually (`export CLAUDE_PLUGIN_ROOT=plugins/sdlc-knowledge-base`) or editable-install the plugin (`pip install -e plugins/sdlc-knowledge-base`).
+
 ## Steps
 
 ### 1. Preflight — load the dispatch list

@@ -30,8 +30,20 @@ Run the path validator:
 
 ```bash
 python3 -c "
-import sys, os
-sys.path.insert(0, os.path.join(os.environ.get('CLAUDE_PLUGIN_ROOT', ''), 'scripts'))
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts',
+        INIT,
+        submodule_search_locations=[SCRIPTS],
+    )
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = module
+        spec.loader.exec_module(module)
 from pathlib import Path
 from sdlc_knowledge_base_scripts.registry import validate_library_path
 ok, reason = validate_library_path(Path('<path>'))
