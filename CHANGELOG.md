@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **sdlc-knowledge-base 0.2.0 — cross-library query support (EPIC #164, PR #177)**
+  - Cross-library querying across local + activated corporate asset libraries via the `LibrarySource` abstraction (filesystem v1; remote-agent type schema-reserved for v2+)
+  - Two-tier registry: user-scope `~/.sdlc/global-libraries.json` + per-project `.sdlc/libraries.json` activation
+  - Priming bundle — local CLAUDE.md `[Knowledge Base]` content + local shelf-index Terms — passed to every external librarian dispatch. Empirically functions as a framing/reasoning-attribution layer (output framing changes every time; file selection changes only when topical matching has genuine ambiguity). See design spec §3.4.
+  - Cross-library synthesis via dedicated `synthesis-librarian` agent (`tools: []`); structural `check_synthesis_attribution` post-check with `valid_handles` whitelist guarantees no fabricated citations ship
+  - Project-scope audit log (`library/audit.log`) for confidentiality events: attribution drops, synthesis aborts, dispatcher failures, cross-library promotions
+  - 4-field shelf-index header (`format_version`, `last_rebuilt`, `library_handle`, `domain`) for library evolution
+  - 5 new/updated skills: `kb-register-library`, `kb-audit-query`, `kb-setup-consulting` (with `--verify-only`), enhanced `kb-query`, enhanced `kb-promote-answer-to-library` (now supports `--target` for cross-library promotion)
+  - 1 new agent: `synthesis-librarian` (separate from `research-librarian`, with `tools: []`)
+  - 109 kb tests across 7 test modules
 - **Plugin READMEs**: All 12 plugins now have README.md with agent tables, skill tables, usage guidance, and "when to use" sections (#160)
 - **Plugin Consumer Guide**: New `docs/PLUGIN-CONSUMER-GUIDE.md` explaining how plugins, agents, skills, and validation work for end users
 - **Prerequisites section** in README.md (Claude Code, Python 3.10+, Git, optional Docker/gh)

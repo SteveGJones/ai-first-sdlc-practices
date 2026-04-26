@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdlc-knowledge-base-scripts"
+version = "0.1.0"
+description = "Internal utility scripts for the sdlc-knowledge-base plugin (test importability)."
+requires-python = ">=3.10"
+dependencies = [
+  "pyyaml",
+]
+
+[tool.setuptools]
+packages = ["sdlc_knowledge_base_scripts"]
+
+[tool.setuptools.package-dir]
+sdlc_knowledge_base_scripts = "scripts"

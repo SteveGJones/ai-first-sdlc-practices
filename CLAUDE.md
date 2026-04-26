@@ -8,6 +8,8 @@ AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full ins
 - **EPIC #142** — Curated technology registry + plugin recommendation improvements. Sub-features 0-2 merged (#151, #143, #144 — pre/post check, kb recommendation, language detection). Sub-features 3-8 pending (registry schema, population, wiring, maintenance). See issue #142 for the full inventory.
 - **EPIC #96** — Containerised Claude Code workers. **Merged.** Plugin `sdlc-workflows` is live and installable. CI/CD automation deferred to separate issue.
 - **EPIC #105** — sdlc-knowledge-base plugin. **Merged.** Plugin is live and installable. Sub-feature 13 (#118 codebase-index) is future work.
+- **EPIC #164** — Cross-library query support for sdlc-knowledge-base. Design phase — needs architecture decisions on client isolation, format compatibility, access control before implementation.
+- **KB feedback issues** — From Amkor engagement feedback (2026-04-23): #161 (batch ingestion), #162 (kb-stats), #163 (confidence metadata), #165 (lint auto-fix). Plus #166 (named plugin bundles for setup-team on sdlc-core).
 
 ## Working in this repo — dogfood the skills we ship
 

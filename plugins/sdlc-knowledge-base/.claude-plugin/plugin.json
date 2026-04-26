@@ -1,6 +1,6 @@
 {
   "name": "sdlc-knowledge-base",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint operations. Orthogonal to SDLC option choice.",
   "author": { "name": "SteveGJones" },
   "repository": "https://github.com/SteveGJones/ai-first-sdlc-practices",
