@@ -2,7 +2,7 @@
 name: kb-promote-answer-to-library
 description: File a librarian query result back into the library as a new page with provenance tracking. Karpathy's "good answers can be filed back into the wiki as new pages" insight made concrete. The library compounds from explorations, not just from external sources.
 disable-model-invocation: false
-argument-hint: "<query-result-text-or-file> [--title <title>] [--path <library-file-path>]"
+argument-hint: "<query-result-text-or-file> [--title <title>] [--path <library-file-path>] [--target <handle>]"
 ---
 
 # Promote Answer to Library
@@ -19,6 +19,11 @@ This is Karpathy's "good answers can be filed back into the wiki as new pages" i
   - The output of a recent `kb-query` invocation (when called with `kb-query --promote-to-library`, this is automatic)
 - **`--title <title>`** (optional) — explicit title for the new library file. If omitted, derive from the query that produced the answer (extract from the answer's heading or first paragraph).
 - **`--path <library-file-path>`** (optional) — explicit destination path. If omitted, derive from the title using kebab-case conversion (e.g., `library/cycle-time-and-pi-planning.md`).
+- **`--target <handle>`** (optional) — the registered library handle to promote into. When omitted, promotes to the local library (default behaviour, backwards compatible). When set to a registered external library handle:
+  - The handle must resolve in `~/.sdlc/global-libraries.json`
+  - The library must be filesystem type (remote-agent rejected)
+  - The library's directory must be writeable
+  - The promotion writes a new file there + updates that library's shelf-index
 
 ## Preflight
 
@@ -48,7 +53,63 @@ If `--path` provided, use it. Otherwise derive: kebab-case the title, prepend `l
 
 If the destination already exists, abort with: "Destination `<path>` already exists. Use `--path` to specify an alternative or edit the existing file directly."
 
-### 3. Construct the library file
+### 3. Resolve and validate target
+
+If `--target <handle>` was specified:
+
+```bash
+python3 -c "
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts',
+        INIT,
+        submodule_search_locations=[SCRIPTS],
+    )
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = module
+        spec.loader.exec_module(module)
+
+from pathlib import Path
+from sdlc_knowledge_base_scripts.registry import (
+    load_global_registry, validate_library_path
+)
+
+handle = '<--target argument>'
+gr = load_global_registry(Path(os.path.expanduser('~/.sdlc/global-libraries.json')))
+matches = [lib for lib in gr.libraries if lib.name == handle]
+if not matches:
+    print(f'ERROR: target handle {handle!r} not registered')
+    exit(1)
+entry = matches[0]
+if entry.type != 'filesystem':
+    print(f'ERROR: target {handle!r} is type {entry.type!r}; remote-agent promotion is not supported in v1')
+    exit(1)
+ok, reason = validate_library_path(Path(entry.path))
+if not ok:
+    print(f'ERROR: target path invalid: {reason}')
+    exit(1)
+target_dir = Path(entry.path)
+test_file = target_dir / '.kb-promote-write-test'
+try:
+    test_file.write_text('')
+    test_file.unlink()
+except OSError as exc:
+    print(f'ERROR: target directory not writeable: {exc}')
+    exit(1)
+print(f'OK: target {handle!r} -> {entry.path}')
+"
+```
+
+If the validator emits ERROR, surface it to the user and stop. The default behaviour (no `--target`, write to local `library/`) is unchanged.
+
+Set `TARGET_DIR` to the resolved external library path if `--target` was specified, or to `library/` (relative to the local knowledge base root) if omitted.
+
+### 4. Construct the library file
 
 Use the library file format with provenance metadata:
 
@@ -104,15 +165,15 @@ This is a synthesis page. The librarian produced this answer by combining findin
 The lint operation may flag this synthesis as stale if any of its source files change after `synthesised_at`. That's the signal to re-query and re-promote.
 ```
 
-### 4. Write the file
+### 5. Write the file
 
-Use Write to create the new library file at the destination path. Verify the write succeeded.
+Use Write to create the new library file at `<TARGET_DIR>/<filename>.md` (where `TARGET_DIR` is the resolved value from Step 3). Verify the write succeeded.
 
-### 5. Update the shelf-index
+### 6. Update the shelf-index
 
-Invoke `/sdlc-knowledge-base:kb-rebuild-indexes` (incremental). The new file will be added to the index automatically.
+Invoke `/sdlc-knowledge-base:kb-rebuild-indexes` (incremental) against `<TARGET_DIR>`. The new file will be added to that library's index automatically.
 
-### 6. Append to log.md
+### 7. Append to log.md
 
 ```markdown
 ## [YYYY-MM-DD] promote-answer | <title>
@@ -120,19 +181,35 @@ Invoke `/sdlc-knowledge-base:kb-rebuild-indexes` (incremental). The new file wil
 Source: kb-query result
 Derived from: <source library files>
 New file: <destination path>
+Target: <handle if --target was specified, otherwise "local">
 ```
 
-### 7. Report
+### 8. Final report
 
 ```
-Promoted answer to library: <destination path>
+Answer promoted to: <TARGET_DIR>/<filename>.md
+Target shelf-index updated: <TARGET_DIR>/_shelf-index.md
+```
 
-  Title: <title>
-  Provenance: synthesis (derived from N source files)
-  Source files: <list>
-  Index rebuilt: yes
-  Log entry: yes (or skipped)
+If `--target` was used (external promotion), also output:
 
+```
+Audit event written: cross_library_promotion (target=<handle>)
+
+NOTE: the target library is a separate filesystem location, possibly
+in its own git repo. This skill does NOT auto-commit or push the
+target library. To complete promotion:
+  cd <target-repo-root>
+  git add library/<filename>.md library/_shelf-index.md
+  git commit -m "..."
+  git push
+```
+
+This reminds the user that the corporate library has its own version control discipline.
+
+If `--target` was NOT used (local promotion, default), output:
+
+```
 Note: this file is a synthesis. The lint operation will flag it as
 stale if any source files change after today's date. To refresh,
 re-query the librarian and re-promote.
@@ -159,6 +236,7 @@ Synthesis files are second-class citizens in a sense, but they're also where exp
 - It does not modify the source library files referenced in `derived_from`
 - It does not validate the answer's citations — run `kb-validate-citations` separately
 - It does not auto-promote every query result — promotion is always explicit (the user decides what's worth keeping)
+- It does not auto-commit or push a target external library — that library has its own git discipline
 
 ## Errors
 
@@ -166,6 +244,9 @@ Synthesis files are second-class citizens in a sense, but they're also where exp
 - **Destination already exists** — pick a different path or edit the existing file
 - **Answer is unparseable** — the answer text doesn't contain enough structure to extract findings; recommend re-querying with a more structured prompt
 - **No source files referenced in the answer** — the answer wasn't from the librarian (or the librarian failed to cite); recommend re-querying
+- **Target handle not registered** — run `/sdlc-knowledge-base:kb-query` to list registered libraries, or check `~/.sdlc/global-libraries.json`
+- **Target is remote-agent type** — only filesystem libraries support direct promotion in v1; use the target library's own ingestion workflow
+- **Target directory not writeable** — check permissions on the external library path
 
 ## Example
 
@@ -185,4 +266,22 @@ Promoted answer to library: library/dora-and-safe-pi-planning.md
     - library/programme-cadence.md
   Index rebuilt: yes
   Log entry: yes
+```
+
+Cross-library promotion example:
+
+```
+/sdlc-knowledge-base:kb-promote-answer-to-library answer.md --target corporate-semi
+
+Answer promoted to: /opt/corporate-kb/library/dora-and-safe-pi-planning.md
+Target shelf-index updated: /opt/corporate-kb/library/_shelf-index.md
+Audit event written: cross_library_promotion (target=corporate-semi)
+
+NOTE: the target library is a separate filesystem location, possibly
+in its own git repo. This skill does NOT auto-commit or push the
+target library. To complete promotion:
+  cd /opt/corporate-kb
+  git add library/dora-and-safe-pi-planning.md library/_shelf-index.md
+  git commit -m "promote synthesis: DORA and SAFe PI Planning"
+  git push
 ```
