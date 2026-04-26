@@ -30,7 +30,7 @@ See EPIC #164 body. The five-reviewer assessment after Phases A+B+C concluded th
 
 The Phase D commitment was to do this work BEFORE merging EPIC #164. Larger PR, fuller delivery.
 
-## Design
+## Proposed Solution
 
 Plan: `docs/superpowers/plans/2026-04-24-cross-library-kb-query-phase-d-operational-maturity.md`
 

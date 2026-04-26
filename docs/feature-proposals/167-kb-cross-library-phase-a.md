@@ -16,7 +16,7 @@ Foundation layer for cross-library knowledge base query. Delivers the LibrarySou
 
 See EPIC #164 body and design spec §1 (Context). Amkor AI Strategy engagement feedback (2026-04-23) identified that the research-librarian cannot query prior engagement libraries. Corporate asset libraries, reusable across engagements, need a registration + activation model and multi-source dispatch.
 
-## Design
+## Proposed Solution
 
 Full design in `docs/superpowers/specs/2026-04-24-cross-library-kb-query-design.md` (branch `feature/164-cross-library-kb-query`, commit 9ca9de5).
 

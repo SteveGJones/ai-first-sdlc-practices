@@ -16,7 +16,7 @@ Activate cross-library synthesis. When the user asks a synthesis question and fi
 
 See EPIC #164 body and design spec §3.3 (synthesis as architectural property), §6.2 (data flow), §7.1 (attribution integrity hard invariant). Phases A and B delivered the foundation and priming respectively; Phase C is the third leg of the v1 deliverable. Without it, the EPIC ships per-source retrieval only — the user has to draw cross-library connections manually.
 
-## Design
+## Proposed Solution
 
 Full design in `docs/superpowers/specs/2026-04-24-cross-library-kb-query-design.md`.
 

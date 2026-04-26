@@ -16,7 +16,7 @@ Activate the priming bundle scaffolded in Phase A. The local project's CLAUDE.md
 
 See EPIC #164 body and design spec §3.3 (priming as a key architectural property), §6.1 step 2 (data flow). Phase A built the scaffold (PrimingBundle dataclass, builder, orchestrator pass-through). Phase B is the activation layer — without it, the EPIC's differentiator ("local context frames how global libraries are interrogated") is unrealised.
 
-## Design
+## Proposed Solution
 
 Full design in `docs/superpowers/specs/2026-04-24-cross-library-kb-query-design.md`.
 
