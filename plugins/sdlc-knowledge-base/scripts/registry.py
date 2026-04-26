@@ -291,6 +291,22 @@ def validate_library_path(path: Path) -> tuple[bool, str]:
     return True, ""
 
 
+def staleness_threshold_for(source: LibrarySource) -> int:
+    """Default threshold heuristic when not explicitly configured.
+
+    Local source: 14 days (project libraries should be kept fresh).
+    'corp-' prefixed: 90 days (corporate libraries evolve slower).
+    Otherwise: 60 days.
+    """
+    if source.staleness_threshold_days is not None:
+        return source.staleness_threshold_days
+    if source.name == "local":
+        return 14
+    if source.name.startswith("corp-"):
+        return 90
+    return 60
+
+
 def resolve_dispatch_list(
     global_registry: GlobalRegistry,
     activation: ProjectActivation,

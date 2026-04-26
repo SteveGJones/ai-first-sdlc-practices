@@ -12,7 +12,7 @@ priming transparency).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -21,7 +21,8 @@ import json as _json
 from .attribution import check_retrieval_attribution, check_synthesis_attribution
 from .audit import AuditEvent, log_event
 from .priming import PrimingBundle
-from .registry import LibrarySource
+from .registry import LibrarySource, staleness_threshold_for
+from .shelf_index_header import parse_shelf_index_header
 
 
 def _render_priming_block(priming: Optional[PrimingBundle]) -> list[str]:
@@ -203,6 +204,40 @@ def run_retrieval_query(
             per_source_sections[
                 source.name
             ] = f"## [{source.name}] Findings\n\n{cleaned}\n"
+            # Append staleness caveat if applicable (only for sources with findings —
+            # no point warning on failed/no-evidence sources)
+            if source.path is not None:
+                try:
+                    header = parse_shelf_index_header(
+                        Path(source.path) / "_shelf-index.md"
+                    )
+                    if header.last_rebuilt is not None:
+                        try:
+                            # Handle both 'Z' suffix and offset-based ISO 8601
+                            last_rebuilt_str = header.last_rebuilt.replace(
+                                "Z", "+00:00"
+                            )
+                            last_rebuilt_dt = datetime.fromisoformat(last_rebuilt_str)
+                            if last_rebuilt_dt.tzinfo is None:
+                                last_rebuilt_dt = last_rebuilt_dt.replace(
+                                    tzinfo=timezone.utc
+                                )
+                            age_days = (
+                                datetime.now(timezone.utc) - last_rebuilt_dt
+                            ).days
+                            threshold = staleness_threshold_for(source)
+                            if age_days > threshold:
+                                staleness_caveat = (
+                                    f"\n\n**Staleness note:** {source.name} was last "
+                                    f"rebuilt {age_days} days ago (threshold: "
+                                    f"{threshold}). Findings may not reflect domain "
+                                    f"changes since {header.last_rebuilt}."
+                                )
+                                per_source_sections[source.name] += staleness_caveat
+                        except (ValueError, TypeError):
+                            pass  # malformed timestamp; skip staleness check
+                except (OSError, FileNotFoundError):
+                    pass  # shelf-index unreadable; skip
         else:
             # All findings from this source were dropped by attribution check
             no_evidence.append(source.name)

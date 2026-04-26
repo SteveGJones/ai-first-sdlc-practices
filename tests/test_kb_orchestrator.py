@@ -761,3 +761,59 @@ def test_orchestrator_no_audit_when_path_is_none(tmp_path: Path) -> None:
     )
     # No audit log file should have been created
     assert not (tmp_path / "audit.log").exists()
+
+
+from datetime import datetime, timezone, timedelta
+
+
+def test_orchestrator_appends_staleness_caveat_when_stale(tmp_path: Path) -> None:
+    """A library whose last_rebuilt is older than threshold emits a staleness caveat."""
+    lib = tmp_path / "library"
+    lib.mkdir()
+    old_date = (datetime.now(timezone.utc) - timedelta(days=200)).isoformat()
+    (lib / "_shelf-index.md").write_text(
+        f"<!-- format_version: 1 -->\n"
+        f"<!-- last_rebuilt: {old_date} -->\n"
+        "# Shelf\n"
+    )
+
+    def mock_dispatch(req: DispatchRequest) -> str:
+        return f"### finding\n**Finding**: x.\n**Source library**: {req.source.name}\n"
+
+    sources = [LibrarySource(name="corp-old", type="filesystem", path=str(lib), staleness_threshold_days=90)]
+    result = run_retrieval_query(question="q", sources=sources, priming=None, dispatcher=mock_dispatch)
+    assert "Staleness note" in result.combined_output
+    assert "200 days" in result.combined_output
+
+
+def test_orchestrator_no_staleness_caveat_when_fresh(tmp_path: Path) -> None:
+    """A library whose last_rebuilt is within threshold emits no staleness caveat."""
+    lib = tmp_path / "library"
+    lib.mkdir()
+    fresh_date = (datetime.now(timezone.utc) - timedelta(days=5)).isoformat()
+    (lib / "_shelf-index.md").write_text(
+        f"<!-- format_version: 1 -->\n"
+        f"<!-- last_rebuilt: {fresh_date} -->\n"
+        "# Shelf\n"
+    )
+
+    def mock_dispatch(req: DispatchRequest) -> str:
+        return f"### finding\n**Finding**: x.\n**Source library**: {req.source.name}\n"
+
+    sources = [LibrarySource(name="local", type="filesystem", path=str(lib))]
+    result = run_retrieval_query(question="q", sources=sources, priming=None, dispatcher=mock_dispatch)
+    assert "Staleness note" not in result.combined_output
+
+
+def test_orchestrator_no_staleness_caveat_when_no_last_rebuilt(tmp_path: Path) -> None:
+    """A library with no last_rebuilt header (legacy) emits no staleness caveat."""
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n")
+
+    def mock_dispatch(req: DispatchRequest) -> str:
+        return f"### finding\n**Finding**: x.\n**Source library**: {req.source.name}\n"
+
+    sources = [LibrarySource(name="local", type="filesystem", path=str(lib))]
+    result = run_retrieval_query(question="q", sources=sources, priming=None, dispatcher=mock_dispatch)
+    assert "Staleness note" not in result.combined_output
