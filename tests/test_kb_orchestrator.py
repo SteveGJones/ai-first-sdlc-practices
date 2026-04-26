@@ -440,7 +440,7 @@ def _good_synthesis_output() -> str:
     )
 
 
-def test_run_synthesis_query_skipped_when_question_is_retrieval(tmp_path: Path) -> None:
+def test_run_synthesis_query_skipped_for_non_synthesis_question(tmp_path: Path) -> None:
     """A non-synthesis question should not trigger a synthesis call."""
     retrieval = RetrievalQueryResult(
         combined_output="header\n## [local] Findings\n### x\n**Source library**: local",
