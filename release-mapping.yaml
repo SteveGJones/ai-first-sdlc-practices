@@ -182,6 +182,7 @@ sdlc-knowledge-base:
     - source: plugins/sdlc-knowledge-base/scripts/attribution.py
     - source: plugins/sdlc-knowledge-base/scripts/format_version.py
     - source: plugins/sdlc-knowledge-base/scripts/orchestrator.py
+    - source: plugins/sdlc-knowledge-base/scripts/audit.py
 
 # Workflow delegation plugin — Archon integration for parallel agent execution. EPIC #96.
 # Delivered in 5 phases; all skills, scripts, and Docker assets are shipped with
