@@ -236,6 +236,7 @@ result = run_retrieval_query(
     sources=sources,
     priming=priming,  # built in Step 2, formatted into each dispatch by Step 3
     dispatcher=pass_through,
+    audit_log_path=Path('library/audit.log'),
 )
 print(result.combined_output)
 "
@@ -304,6 +305,7 @@ result = run_synthesis_query(
     sources=sources,
     synthesis_dispatcher=synthesis_dispatcher,
     per_source_findings=per_source,
+    audit_log_path=Path('library/audit.log'),
 )
 print(result.combined_output)
 "
@@ -345,6 +347,10 @@ MANDATORY: every claim in the Supporting evidence list must carry an inline
 The synthesis-librarian agent's prompt describes how to consume this; the orchestrator's `format_synthesis_prompt` produces it; the skill, agent prompt, and orchestrator stay in lockstep on the format.
 
 After the synthesis call returns, the orchestrator runs `check_synthesis_attribution` (with `valid_handles` drawn from the dispatch sources) on the librarian's output. If any supporting-evidence claim lacks an inline `[handle]` tag, or the bracketed token is not in the source whitelist (e.g., `[TODO]`, `[0]`), the synthesis is aborted: the retrieval output is preserved and an explanatory error block is appended. The user always sees something they can act on.
+
+## Audit logging
+
+Every query writes confidentiality events (attribution drops, synthesis aborts, dispatcher failures) to `library/audit.log` for later audit via `/sdlc-knowledge-base:kb-audit-query`. The audit log is project-scope (lives in this project's `library/`) and append-only.
 
 ## What this skill does NOT do
 
