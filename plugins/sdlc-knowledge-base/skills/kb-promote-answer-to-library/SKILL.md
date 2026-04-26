@@ -173,7 +173,52 @@ Use Write to create the new library file at `<TARGET_DIR>/<filename>.md` (where 
 
 Invoke `/sdlc-knowledge-base:kb-rebuild-indexes` (incremental) against `<TARGET_DIR>`. The new file will be added to that library's index automatically.
 
-### 7. Append to log.md
+### 7. Write audit event (only when --target was used)
+
+If `--target <handle>` was specified, write a `cross_library_promotion` audit event to the project's audit log:
+
+```bash
+python3 -c "
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts',
+        INIT,
+        submodule_search_locations=[SCRIPTS],
+    )
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = module
+        spec.loader.exec_module(module)
+
+from pathlib import Path
+from datetime import datetime, timezone
+from sdlc_knowledge_base_scripts.audit import log_event, AuditEvent
+
+log_event(Path('library/audit.log'), AuditEvent(
+    timestamp=datetime.now(timezone.utc).isoformat(),
+    event_type='cross_library_promotion',
+    query='<question or topic that produced the answer>',
+    source_handle='<--target handle>',
+    reason='answer promoted to external library',
+    detail={
+        'source_file': '<local file path or answer source identifier>',
+        'target_path': '<absolute path to target library file just written>',
+    },
+))
+"
+```
+
+The audit log lives at `library/audit.log` in the current project (project-scope, append-only). The `cross_library_promotion` event records that knowledge moved from this engagement into a corporate library — useful for asking later "show me every cross-library promotion this quarter."
+
+Substitute the actual question/topic, target handle, source file, and target path values into the snippet.
+
+If --target was NOT used (default local-only promotion), skip this step.
+
+### 8. Append to log.md
 
 ```markdown
 ## [YYYY-MM-DD] promote-answer | <title>
@@ -184,7 +229,7 @@ New file: <destination path>
 Target: <handle if --target was specified, otherwise "local">
 ```
 
-### 8. Final report
+### 9. Final report
 
 ```
 Answer promoted to: <TARGET_DIR>/<filename>.md
