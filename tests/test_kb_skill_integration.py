@@ -269,3 +269,118 @@ def test_kb_audit_query_missing_log_returns_empty(tmp_path: Path) -> None:
     audit_log = tmp_path / "library" / "audit.log"  # not created
     events = read_log(audit_log)
     assert events == []
+
+
+def test_kb_setup_consulting_verify_happy_path(tmp_path: Path) -> None:
+    """Simulates kb-setup-consulting --verify-only against a healthy registry +
+    activation: every registered library validates, smoke-test would pass."""
+    from sdlc_knowledge_base_scripts.registry import (
+        load_global_registry,
+        load_project_activation,
+        resolve_dispatch_list,
+        validate_library_path,
+    )
+    from sdlc_knowledge_base_scripts.shelf_index_header import parse_shelf_index_header
+
+    # Set up: one valid library at known path
+    target_lib = _make_minimal_library(tmp_path, "corp-engagement")
+
+    # User-scope registry pointing at it
+    user_registry = tmp_path / "global-libraries.json"
+    user_registry.write_text(json.dumps({
+        "version": 1,
+        "libraries": [
+            {"name": "corp-engagement", "type": "filesystem", "path": str(target_lib),
+             "description": "Test corporate library"}
+        ],
+    }))
+
+    # Project-scope activation
+    project_dir = tmp_path / "project"
+    project_dir.mkdir()
+    project_lib = _make_minimal_library(project_dir)
+    activation = project_dir / ".sdlc" / "libraries.json"
+    activation.parent.mkdir()
+    activation.write_text(json.dumps({"version": 1, "activated_sources": ["corp-engagement"]}))
+
+    # The skill's --verify-only flow: load + validate
+    gr = load_global_registry(user_registry)
+    pa = load_project_activation(activation)
+    dispatch = resolve_dispatch_list(gr, pa, project_library_path=project_lib)
+
+    # Healthy state: 2 sources in dispatch (local + corp-engagement), no warnings
+    assert len(dispatch.sources) == 2
+    assert {s.name for s in dispatch.sources} == {"local", "corp-engagement"}
+    assert dispatch.warnings == []
+    assert dispatch.is_empty_error is False
+
+    # Verify each registered library's path
+    for lib in gr.libraries:
+        if lib.type == "filesystem" and lib.path:
+            ok, _ = validate_library_path(Path(lib.path))
+            assert ok is True
+            header = parse_shelf_index_header(Path(lib.path) / "_shelf-index.md")
+            assert header.format_version == 1
+
+
+def test_kb_setup_consulting_verify_reports_invalid_path(tmp_path: Path) -> None:
+    """When a registered library's path is invalid, --verify-only reports it."""
+    from sdlc_knowledge_base_scripts.registry import load_global_registry, validate_library_path
+
+    user_registry = tmp_path / "global-libraries.json"
+    user_registry.write_text(json.dumps({
+        "version": 1,
+        "libraries": [
+            {"name": "broken-corp", "type": "filesystem", "path": "/totally/nonexistent",
+             "description": "Drive unmounted"}
+        ],
+    }))
+
+    gr = load_global_registry(user_registry)
+    invalid = []
+    for lib in gr.libraries:
+        if lib.type == "filesystem" and lib.path:
+            ok, reason = validate_library_path(Path(lib.path))
+            if not ok:
+                invalid.append((lib.name, reason))
+
+    # The skill's --verify-only output should include this in "Issues to fix"
+    assert len(invalid) == 1
+    assert invalid[0][0] == "broken-corp"
+    assert "does not exist" in invalid[0][1].lower()
+
+
+def test_kb_setup_consulting_verify_handle_mismatch(tmp_path: Path) -> None:
+    """When a registered library's shelf-index handle differs from the registry,
+    --verify-only flags the mismatch."""
+    from sdlc_knowledge_base_scripts.shelf_index_header import parse_shelf_index_header
+
+    # Library on disk says handle is "actual-handle"
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text(
+        "<!-- format_version: 1 -->\n"
+        "<!-- last_rebuilt: 2026-04-26T00:00:00Z -->\n"
+        "<!-- library_handle: actual-handle -->\n"
+        "# Shelf\n"
+    )
+
+    # But the registry calls it "expected-handle"
+    expected_handle = "expected-handle"
+    header = parse_shelf_index_header(lib / "_shelf-index.md")
+
+    # The skill detects the mismatch
+    mismatch = (header.library_handle is not None
+                and header.library_handle != expected_handle)
+    assert mismatch is True
+    assert header.library_handle == "actual-handle"
+
+
+def test_kb_setup_consulting_verify_empty_registry(tmp_path: Path) -> None:
+    """--verify-only with no global registry reports gracefully (no error, just empty)."""
+    from sdlc_knowledge_base_scripts.registry import load_global_registry
+
+    user_registry = tmp_path / "global-libraries.json"  # not created
+    gr = load_global_registry(user_registry)
+    assert gr.libraries == []
+    assert gr.warnings == []
