@@ -75,11 +75,11 @@ Each artefact has a defined header schema (mandatory sections, optional sections
 Validators that block progression unless the gate condition is met:
 
 - `requirements-gate`: requirements-spec exists, has all mandatory sections, has a feature-id
-- `design-gate`: design-spec exists, has all mandatory sections, references the requirements-spec by feature-id
-- `test-gate`: test-spec exists, has all mandatory sections, references both requirements-spec and design-spec
-- `code-gate`: code is written under TDD; pre-push validation includes "every code change cites a test-spec section"
+- `design-gate`: design-spec exists, has all mandatory sections, references the requirements-spec by feature-id; **all cited requirements-spec section IDs must exist** (no broken cross-phase references)
+- `test-gate`: test-spec exists, has all mandatory sections, references both requirements-spec and design-spec; **all cited IDs must exist in the prior phase artefacts**
+- `code-gate`: code is written under TDD; pre-push validation includes "every code change cites a test-spec section" and the cited section ID must exist
 
-The gates run as part of pre-push validation and CI. Programme bundle defaults: **block on missing artefact, warn on weak cross-phase reference**.
+The gates run as part of pre-push validation and CI. Programme bundle defaults: **block on missing artefact AND on broken cross-phase references; warn on weak (vague but non-broken) cross-phase reference**. The blocking-on-broken-refs rule strengthens earlier weaker phrasing — broken references are a defect, not a style issue. *[Line 1: §3 Claims 1, 5; Line 3: §3 Claims 1-3 — file-based static link validation is sufficient and matches the regulatory baseline]*
 
 ### Templates
 
@@ -98,11 +98,19 @@ A new `phase-review` skill that runs structured review of the current artefact a
 - `commission-programme` — installs the Programme bundle into a project, configures the validators, copies the templates
 - `phase-init <phase>` — creates a phase artefact from the template
 - `phase-gate <phase>` — runs the gate validator
-- `phase-review <phase>` — dispatches a structured review of the artefact against its cited prior artefacts
+- `phase-review <phase>` — **mandatory** for design-spec and test-spec phases; recommended for requirements-spec. Dispatches a structured review of the artefact against its cited prior artefacts. Mandatory because human-in-the-loop review is the control that ensures not just *existence* but *meaningfulness* of cross-phase links — `phase-gate` validates syntactic integrity; `phase-review` validates semantic soundness. *[Cross-line agreement 1: bidirectional traceability requires link integrity; humans verify link meaningfulness]*
+- `traceability-export <format>` — produces audit-friendly traceability matrices in basic formats (CSV table, markdown matrix). Programme bundle ships simple formats; Assured bundle extends with standard-specific formats (DO-178C RTM, IEC 62304, ISO 26262 ASIL, FDA DHF). *[Line 1: §3 Claim 6 — traceability evidence export should be template-driven, not tool-specific]*
 
 ### Model selection hints
 
-Each skill ships with a "Model selection" section giving purpose-shaped guidance (no model names): for example, "this is a deep-planning task: prefer a model with strong reasoning over one optimised for throughput", "this is a mechanical fan-out: a smaller model is fine and probably cheaper". The pattern follows the existing `superpowers:subagent-driven-development` skill's "Model Selection" section.
+Each skill ships with a "Model selection" section giving purpose-shaped guidance (no model names). The pattern follows the existing `superpowers:subagent-driven-development` skill's "Model Selection" section, with explicit per-skill characterisation:
+
+- `phase-review` is a **structured comparison and reasoning task** — comparing artefacts against prior phases, surfacing semantic gaps, identifying where links are syntactically correct but semantically thin. Prefer a model with strong reasoning over one optimised for throughput. *[Cross-line agreement 1: bidirectional traceability complexity is distributed across artefacts; review is the integrative judgement step]*
+- `phase-gate` is **mechanical syntax-checking** — does the artefact exist, does it have required sections, do cited IDs resolve. Smaller / faster models are fine and probably cheaper.
+- `phase-init` is **template instantiation** — copying a template, filling placeholders. Smaller models are sufficient.
+- `commission-programme` is **a one-shot configuration task** — small per-project run, model choice has minimal cost impact; default model is fine.
+
+The discipline: each skill states *what kind of work it is* (deep reasoning vs mechanical execution vs template instantiation), and the operator chooses model accordingly.
 
 ### Integration with existing superpowers
 
@@ -159,25 +167,46 @@ The existing `synthesis-librarian` extends to a new mode `SYNTHESISE-ACROSS-SPEC
 - **Backward**: regenerated index supports queries like "what tests cover REQ-auth-003?" or "what code implements DES-auth-005?".
 
 Validators:
-- Forward link integrity — every cited ID exists in the registry
-- Backward coverage — every REQ has tests, every DES has implementing code, every CODE has annotations linking back
-- Block on broken links; warn on coverage gaps for non-commissioned modules
+- **Forward link integrity**: every cited ID exists in the registry; references to non-existent IDs block commit. *[Cross-line agreement 1 — bidirectional traceability is the regulatory baseline]*
+- **Backward coverage**: every REQ has at least one DES; every DES has at least one TEST; every TEST has at least one CODE annotation; every CODE carries at least one REQ/DES annotation. Orphans block commit. *[Line 1: §3 Claim 1]*
+- **Index regenerability**: `kb-rebuild-indexes` regenerates backward indices from markdown source idempotently (byte-identical output on repeat runs). Auditors verify integrity by running the command and comparing to committed indices. Warn if index age exceeds threshold (default: 7 days) and code has been committed since. *[Line 1: §3 Claim 4; cross-line agreement 8 — tool-neutral evidence regenerability]*
+- **Annotation format integrity**: every `implements: <ID>` reference must resolve to a real REQ/DES/TEST/CODE ID in the registry. Missing or malformed annotations block push (consistent with existing technical-debt checks). *[Line 2: §3 Claim 5]*
+
+#### Optional validators (enabled by configuration for regulated contexts)
+
+- `change-impact-gate` (default: **disabled**): blocks commits where code changes exist but no change-impact annotation is present. Recommended for IEC 62304, FDA 21 CFR Part 820, and ISO 26262 ASIL C/D contexts where change-impact assessment is a mandatory gating control. Commissioning script enables this gate by default when regulatory context is one of those three. *[Line 1: §3 Claim 5; cross-line agreement 6 — change-impact must be structured and upfront]*
 
 ### Decomposition
 
-Decomposition is **declarative**, not inferred. The commissioning step adds a `programs` block to the project's configuration:
+Decomposition is **declarative**, not inferred, and rooted in **Domain-Driven Design bounded contexts** as the primary primitive, layered with **Bazel's visibility-rule discipline** for cross-module dependencies. A "module" is a bounded context: a domain model with consistent ubiquitous language, owned by one team or part of one team. Modules group into sub-programs; sub-programs into programs. *[Cross-line agreement 5; Line 2: §3 Claims 1, 2, 4]*
+
+The commissioning step adds a `programs` block to the project's configuration:
 
 - Which programs exist
 - Which sub-programs each contains
 - Which modules each sub-program contains
 - Which directory paths belong to which module
+- **Granularity target per module**: `granularity: [requirement | function | module]`. Default is `requirement` (the finest, accepted by all five regulated standards). Modules may declare looser explicitly when justified by their risk class. *[Line 1: §3 Claim 3; cross-line agreement 7]*
+- **Visibility rules**: which modules (contexts) may depend on which, declared in a context-map document. *[Line 2: §3 Claim 2 — Bazel visibility-rule discipline]*
+- **Optional within-module structure**: modules may declare hexagonal architecture (`structure: hexagonal`); code within tagged `core` (domain logic) and `adapter` (infrastructure) directories. Optional, never required. *[Line 2: §3 Claim 3]*
 
 Validators:
 - Every REQ has a module assignment
 - Every CODE annotation maps to a declared module path
 - No module has un-cited code (warn) or un-tested REQs (block)
+- **Visibility-rule enforcement**: code imports must respect declared visibility; circular dependencies between programs block, between sub-programs warn. *[Line 2: §3 Claim 2]*
+- **Anaemic-context detection**: code implementing a REQ/DES not co-located in its declared module flagged as boundary violation. *[Line 2: §3 Claim 4 — anaemic contexts is the explicit failure mode designed against]*
+- **Granularity match**: if module M1 declares `granularity: requirement`, all code in M1 must carry REQ-level annotations; warn (not block) if actual granularity is coarser than declared (might be progressive tightening). *[Line 1: §3 Claim 3]*
 
 The framework does not try to suggest decomposition. The team declares it; the framework enforces what is declared.
+
+#### Decomposition refactoring without ID loss
+
+When teams refactor decomposition (merging programs, moving modules between sub-programs, splitting modules), `kb-rebuild-indexes` remaps old IDs to new paths, preserving historical traceability. This mitigates premature-decomposition risk: if initial decomposition is wrong, teams can refactor it without losing traceability history. *[Line 2: §3 Claim 6 — premature-decomposition mitigation]*
+
+### Organisational metadata (optional)
+
+Organisational metadata (owner, reviewer, approver) is **optional in spec YAML frontmatter**, never baked into the schema. Process enforcement (who approves what; the workflow tool's job) lives in Git hooks or CI workflows, not in the spec-record schema. This prevents the framework from breaking when organisations reorganise — Conway's law applied to requirements is a documented failure mode of database-centric ALM tools. *[Line 3: §4 Rejection C; library/doors-cautionary-tale.md]*
 
 ### KB extension to code (annotation-driven)
 
@@ -203,9 +232,22 @@ This is what humans review. The agent records (REQ-files, DES-files, etc.) remai
 
 - `commission-assured` — installs Assured bundle (which includes everything from `commission-programme`)
 - `req-add`, `req-link` — mint and connect IDs (alternatives are hand-editing the markdown; the skills are conveniences, not gatekeepers)
-- `module-bound-check` — runs decomposition validators
+- `code-annotate <artifact-id>` — auto-generates boilerplate `implements: <ID>` annotations for code referencing the given REQ/DES/TEST. Reduces manual burden so annotations stay current. *[Line 2: §3 Claim 5 — make annotation cheap so traceability stays alive]*
+- `module-bound-check` — runs decomposition validators (visibility rules, anaemic-context detection, granularity match)
 - `kb-codeindex` — parses annotations and emits the code-index
-- `traceability-render <module-id>` — produces human-scoped doc
+- `change-impact-annotate <artifact-id>` — when a requirement, design element, or code unit changes, guides the team through declaring impact scope (e.g., "REQ-005 changed; affected: DES-012, TEST-034, CODE-segment-B"). The annotation is recorded as a structured artefact alongside the changed item. Required for `change-impact-gate` to pass. *[Line 1: §3 Claim 2; cross-line agreement 6]*
+- `traceability-render <module-id>` — produces human-scoped doc for one module: just its REQs, just its DESs, just its tests, just its code locations, with all inter-ID links rendered as anchor links. Highlights orphan code and anaemic-context violations.
+- `traceability-export <format>` — produces audit-friendly traceability matrices in **standard-specific** formats: `do-178c-rtm`, `iec-62304-matrix`, `iso-26262-asil-matrix`, `fda-dhf-structure`. Programme bundle's `traceability-export` ships basic formats; Assured extends with these. *[Line 1: §3 Claim 6 — template-driven export, supports all major standards]*
+
+### Commissioning guidance
+
+The `commission-assured` skill includes explicit guidance for the team:
+
+- **Defer decomposition.** Decomposition should reflect *current* organisational boundaries and business domains, not speculative future structure. Default to `P1.SP1.M1.*` (one program, one sub-program, one module covering everything) and refactor when operational pain or business-domain shifts motivate change. *[Line 2: §3 Claim 7 — Segment microservices reversal as the canonical premature-decomposition warning]*
+- **Granularity per module.** Commissioning script asks regulatory context (none / DO-178C / IEC 62304 / ISO 26262 / IEC 61508 / FDA) and proposes per-module granularity. Conservative default is `requirement`. Object-code granularity is opt-in only.
+- **Change-impact gating.** When regulatory context is IEC 62304 / FDA 21 CFR Part 820 / ISO 26262 ASIL C/D, the commissioning script enables `change-impact-gate` by default. Other contexts default disabled.
+- **Module-size heuristic.** "A module should be the scope of responsibility for one team (or part of one team)." This is heuristic, not enforced — teams may declare smaller or larger modules with documented justification.
+- **Sub-program / program scale.** A program is a coherent product or service. A sub-program is a major capability area within it. Modules within a sub-program share a domain language. Don't worry about cross-program coupling at commissioning time — refactor when the cost surfaces. *[Line 2: §3 Claims 1, 7]*
 
 ### Method 2 design questions the research informs
 
@@ -234,9 +276,12 @@ Operationally:
 - **AST-level code intelligence.** No call graphs, no semantic search, no automated refactor support. Code KB is annotation-driven only.
 - **IDE integration.** The bundles are filesystem-first. IDE plug-ins are downstream tooling that someone can build on top of the substrate.
 - **Full ALM database.** No relational schema, no stored procedures. Every artefact is a markdown file in Git.
-- **Industry certification itself.** The Assured bundle produces *substrate that helps reach assurance* (e.g., bidirectional traceability records), not *certification* (which requires an accredited certification authority and is out of any framework's reach).
-- **Migration of pre-Assured projects' un-annotated code.** Manual annotation pass is part of adoption cost; the framework ships a checker that reports gaps, not an auto-annotator.
+- **Industry certification itself.** The Assured bundle produces *substrate that helps reach assurance* (e.g., bidirectional traceability records, decomposition declarations, change-impact records, code annotations, phase gates, independent reviews), not *certification* (which requires an accredited certification authority and is outside any framework's reach). Organisations may use the Assured bundle to build a safety case or prepare for external certification audits, but the framework itself is a tool, not a certifier. *[Line 1: §3 Claim 7]*
+- **Bidirectional ReqIF sync.** ReqIF (Requirements Interchange Format, OMG standard) round-trip workflows are documented as lossy in the practitioner literature: attributes silently dropped, parent-child relationships unreconstructible, complex link types degraded. The Assured bundle supports **one-way ReqIF export only** (as a plugin, not core). Round-trip sync is explicitly out of scope. *[Line 3: §3 Claim 7; library/doors-cautionary-tale.md]*
+- **Migration of pre-Assured projects' un-annotated code.** Manual annotation pass is part of adoption cost; the framework ships a coverage checker (`module-bound-check`) that reports gaps, not an auto-annotator.
 - **Decomposition suggestion.** The framework enforces declared decomposition; it doesn't suggest where module edges go.
+- **Automatic semantic change-impact detection.** The framework records human-declared change-impact annotations; it does not infer impact via call graphs, data-flow analysis, or AI-driven reasoning. *[Line 1: §4 first rejection]*
+- **Distributed multi-team ID coordination.** Each project has its own ID namespace. Centralised ID governance across teams requires a coordination service outside the scope of an open-source filesystem-first framework. Document conventions; don't bake distributed coordination into the framework.
 
 ---
 
