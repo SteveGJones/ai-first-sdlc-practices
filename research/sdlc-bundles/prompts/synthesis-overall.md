@@ -32,7 +32,7 @@ Each research line was synthesised separately into a per-line synthesis document
 
 ### Existing scope draft for context
 
-The Method 1 + Method 2 scope draft is the document being updated. [paste the scope draft here, or reference `docs/superpowers/specs/<filename>` once committed]
+The Method 1 + Method 2 scope draft is `research/sdlc-bundles/METHODS.md` (paste its full content alongside the three per-line synthesis files when running this prompt). All scope-change pointers in the output must reference specific sections / subsections of METHODS.md — e.g. "METHODS.md Section 3 'Method 1 in detail' → 'Phase gates' subsection".
 
 ### Your output
 

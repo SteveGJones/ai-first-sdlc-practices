@@ -35,7 +35,7 @@ This synthesis ties findings to specific scope decisions for Method 1 and Method
 
 ### Existing scope draft for context
 
-The Method 1 + Method 2 scope draft is located at <DRAFT-SCOPE-LINK>. The synthesis must reference specific paragraphs / table cells in that scope draft when proposing changes — not "the scope should change" but "section X.Y in the scope draft, which says Z, should change to W because of finding F in the research".
+The Method 1 + Method 2 scope draft is `research/sdlc-bundles/METHODS.md` (paste its full content alongside the research output when running this prompt). The synthesis must reference specific sections / subsections of METHODS.md when proposing changes — not "the scope should change" but "METHODS.md Section 4 'Method 2 in detail' → 'Bidirectional traceability' subsection, which says Z, should change to W because of finding F in the research".
 
 ### Your synthesis output
 
