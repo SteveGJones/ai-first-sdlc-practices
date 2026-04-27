@@ -83,7 +83,36 @@ Surfaced one real coverage gap during the exercise: `REQ-005` (canonical prompt 
 
 ## Phase verdict
 
-Phase B complete. The decomposition spike is shippable as Phase B output. Phase D plan-writing (roadmap sequencing, skill inventory, commissioning flow) can use the spike as-is. Phase E plan-writing must close the four schema gaps (source/derived paths split, known-violation field, cross-module-mutation validator, anaemic-context-detection opt-out semantics) as part of its scope before validator design proceeds against this `programs` block.
+Phase B complete. The decomposition spike is shippable as Phase B output. Phase D plan-writing (roadmap sequencing, skill inventory, commissioning flow) can use the spike as-is. Phase E plan-writing must close the four schema gaps (source/derived paths split, known-violation field, cross-module-mutation validator, anaemic-context-detection opt-out semantics) **plus a fifth gap (positional-vs-named ID format) surfaced by the containerised re-run** as part of its scope before validator design proceeds against this `programs` block.
+
+## Phase B addendum (2026-04-27) — containerised re-run of the architect review
+
+After Steve flagged that the in-session architect dispatch had no isolation, we re-ran the same architect review in a Docker container via `sdlc-workflows`:
+
+- **Authored**: `.archon/teams/decomposition-review.yaml` team manifest + workflow YAML at `research/sdlc-bundles/dogfood-workflows/architect-review-spike.yaml` + command at `architect-review-spike.md`
+- **Built**: `sdlc-worker:decomposition-review` team image via `/sdlc-workflows:deploy-team` mechanism (running `bash docker/build-team.sh decomposition-review`)
+- **Ran**: `archon workflow run architect-review-spike --no-worktree` from a fresh git-seeded workspace, image-preprocessed via `preprocess_workflow.py`, ~3 minutes wall-clock
+- **Output**: `research/sdlc-bundles/dogfood-workflows/architect-review-spike-output.md` (13.8KB independent review) + `architect-review-spike-run.log` (Archon CLI output)
+- **Findings**: 3 NEW issues the in-session review missed:
+  1. Material `paths:` coverage gap — six agent source directories not covered by any module's `paths:` (would have caused Phase D plan-writing scope errors)
+  2. Positional-vs-named ID format divergence (fifth Phase E schema gap)
+  3. `release-packaging` derived-path ownership subtlety in validator design
+
+**This validated the dogfood case directly**: containerised re-runs produce material additional signal compared to in-session dispatch. The workflow YAML + command + team manifest are now reusable artefacts under `research/sdlc-bundles/dogfood-workflows/` for Phase D-E onwards.
+
+**First-run failure honesty**: the first containerised run failed in 0.3 sec because we used `sdlc-worker:full` directly (the source image, not a runnable team image). The deploy-team mechanism rejected it correctly with `ERROR: sdlc-worker:full is a source image. Build a team image instead.` Iterated: built the team manifest, deployed the team image, re-ran successfully. Captured as a procedural lesson for Phase D-E.
+
+**New durable feedback memory** captured at `memory/feedback_containerised_review_for_design_artefacts.md` — when a design review is load-bearing (architectural decompositions, security models, data schemas, API contracts), use the containerised mechanism by default; in-session dispatch is for quick-turnaround work where reproducibility doesn't matter.
+
+## Phase B updated artefact list
+
+- `research/sdlc-bundles/decomposition-spike.md` (724 lines now, with Section 10 capturing the containerised re-run findings)
+- `research/sdlc-bundles/dogfood-workflows/architect-review-spike.md` — workflow command file
+- `research/sdlc-bundles/dogfood-workflows/architect-review-spike.yaml` — workflow YAML
+- `research/sdlc-bundles/dogfood-workflows/architect-review-spike-output.md` — independent containerised review verbatim (13.8KB)
+- `research/sdlc-bundles/dogfood-workflows/architect-review-spike-run.log` — Archon CLI output for reproducibility
+- `.archon/teams/decomposition-review.yaml` — team manifest
+- `.archon/teams/.generated/decomposition-review-CLAUDE.md` — generated team CLAUDE.md (gitignored if .archon/teams/.generated/ is)
 
 ## References
 

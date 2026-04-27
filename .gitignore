@@ -118,3 +118,4 @@ agent_prompts/
 
 # Archon generated build artifacts
 .archon/teams/.generated/
+.archon/teams/.generated/

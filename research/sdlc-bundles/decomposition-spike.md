@@ -637,3 +637,46 @@ These four issues are real but require schema-design decisions that are themselv
 The decomposition is **plausible for the four content sub-programs** (`framework-core`, `knowledge-base-system`, `workflows-system`, `framework-meta-sdlc`) and these can feed Phase D plan-writing as-is. The two cross-cutting / catalog sub-programs (`release-packaging`, `team-agent-library`) needed reclassification (now done inline) and four schema gaps (listed above) need closure during Phase E plan-writing before validator design proceeds against this `programs` block.
 
 **Spike is good enough to ship as Phase B output.** Phase D plan-writing can use it. Phase E plan-writing must close the four schema gaps as part of its scope.
+
+---
+
+## 10. Independent containerised review (run #2) — additional findings
+
+After the in-session review (Section 9), we re-ran the architect review **in a Docker container** via `sdlc-workflows` to dogfood our shipped containerised-execution mechanism and produce a reproducible review artefact. Container image: `sdlc-worker:decomposition-review` (built via `/sdlc-workflows:deploy-team`). Workflow: `architect-review-spike`. Output captured at `research/sdlc-bundles/dogfood-workflows/architect-review-spike-output.md` (full 13.8KB review verbatim) plus the run log at `architect-review-spike-run.log`.
+
+The independent dispatch confirmed all 8 verdicts directionally — no DISAGREE on any point Section 9 had AGREE / AGREE-WITH-CONCERNS on. **Three new findings** that Section 9 missed:
+
+### Finding 1 — Material `paths:` coverage gap in the `programs` block YAML
+
+Multiple agent source directories that exist on disk and are actively mapped by `release-mapping.yaml` to plugins are **not covered by any module** in Section 2's YAML. The independent reviewer enumerated them:
+
+- `agents/testing/` — contains `code-review-specialist.md`, `ai-test-engineer.md`, `integration-orchestrator.md`, `performance-engineer.md`, mapped to `sdlc-core` / `sdlc-team-ai` / `sdlc-team-common`
+- `agents/ai-builders/` — 5 agents mapped to `sdlc-team-ai`
+- `agents/ai-development/` — 10 agents mapped to `sdlc-team-ai`
+- `agents/delegation/` — 1 agent mapped to `sdlc-workflows`
+- `agents/documentation/` — 2 agents mapped to `sdlc-team-docs`
+- `agents/project-management/` — 4 agents mapped to `sdlc-team-pm`
+
+Neither in any module's `paths:` nor in Section 2's "out-of-scope filesystem locations". A `module-bound-check` validator running against this `programs` block would flag these as orphan code — or worse, silently miss them.
+
+**Action**: Phase D plan-writing must extend Section 2's YAML to assign each of these directories to an existing module (likely `core-agents`, `team-agent-library`, or `workflows-system`) before validator scope is locked. Surfaced explicitly here so plan-writing has the worklist.
+
+### Finding 2 — Positional-vs-named ID format divergence (fifth Phase E schema gap)
+
+The worked example uses named identifiers (`aisp.kb.kbsk.REQ-NNN`) while METHODS.md Section 4's canonical example uses positional (`P1.SP2.M3.REQ-007`). The spike implicitly chose named (more human-readable); METHODS.md's example suggests positional (sortable, terser).
+
+**Action**: add as a fifth schema gap for Phase E plan-writing — alongside the four previously identified — to resolve definitively. Either convention is defensible; the framework cannot ship without picking one.
+
+### Finding 3 — `release-packaging` cross-cutting-producer creates derived-path ownership challenge
+
+Section 9 deferred the `source-paths` / `derived-paths` split to Phase E. The independent reviewer notes this underestimates the validator-design subtlety: `module-bound-check` must understand that derived paths are *owned by release-packaging for production purposes* but *attributed to other modules for traceability purposes*. A naive validator scanning `derived-paths` will find code "owned" by modules that did not produce it.
+
+**Action**: when Phase E designs the `source-paths` / `derived-paths` schema split, the validator semantics must explicitly distinguish *production ownership* (release-packaging produced this file) from *traceability attribution* (this file is bound to module X for REQ/DES/TEST/CODE traceability purposes). These are two different concepts, both real, and both schema-supported.
+
+### Dogfood verdict
+
+The containerised re-run produced material additional signal — three findings the in-session dispatch missed. Reproducibility is now real: the workflow YAML, command, team manifest, and run log are all committed; anyone can re-run the same review against the same spike state. The pattern is established for Phases D-E going forward.
+
+**Cost**: build-team Docker image (~4GB) + ~3 minutes for the workflow run + pre-flight setup. Worth it for design-judgment artefacts where reproducibility matters; overkill for trivial reviews.
+
+**Process correction for Phase D-E onwards**: any architectural / security / data / API design review goes through the containerised mechanism by default. Per-engagement teams (`sdlc-worker:<team-name>`) get built once and reused. The artefacts under `research/sdlc-bundles/dogfood-workflows/` (workflow YAML + command + manifest) are the pattern-shape Phase D-E plan-writing should follow.
