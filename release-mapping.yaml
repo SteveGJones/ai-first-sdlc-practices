@@ -24,6 +24,12 @@ sdlc-core:
     - source: skills/setup-ci/templates/javascript.yml
     - source: skills/setup-ci/templates/go.yml
     - source: skills/release-plugin/SKILL.md
+    - source: skills/commission/SKILL.md
+    - source: skills/commission/templates/sample-bundle/manifest.yaml
+    - source: skills/commission/templates/sample-bundle/CONSTITUTION.md
+    - source: skills/commission/templates/sample-bundle/agents/sample-agent.md
+    - source: skills/commission/templates/sample-bundle/skills/sample-skill/SKILL.md
+    - source: skills/commission/templates/sample-bundle/templates/feature-proposal.md
   agents:
     - source: agents/core/sdlc-enforcer.md
     - source: agents/core/critical-goal-reviewer.md
@@ -34,6 +40,14 @@ sdlc-core:
     # belong here. The validation pipeline runs through the `validate` skill,
     # not via wrapper scripts shipped at this path.
     - source: tools/validation/check-tmp-usage.py
+    # Commissioning helpers — authored in-plugin, ship in-place. Listed here
+    # so check-plugin-packaging.py audits their presence and the release
+    # process knows about them.
+    - source: plugins/sdlc-core/scripts/__init__.py
+    - source: plugins/sdlc-core/scripts/commission/__init__.py
+    - source: plugins/sdlc-core/scripts/commission/manifest.py
+    - source: plugins/sdlc-core/scripts/commission/installer.py
+    - source: plugins/sdlc-core/scripts/commission/recorder.py
   hooks:
     - source: plugins/sdlc-core/hooks/hooks.json
   data:
