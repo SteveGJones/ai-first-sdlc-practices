@@ -1156,7 +1156,6 @@ class InstallationResult:
 
     bundle_name: str
     installed_paths: list[Path] = field(default_factory=list)
-    skipped_paths: list[Path] = field(default_factory=list)
 
 
 def install_bundle(
