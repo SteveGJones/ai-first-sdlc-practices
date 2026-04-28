@@ -23,6 +23,40 @@ Zero-dependency agent approach:
 
 Methodology for AI agents working in collaborative teams with specialist agents. Quality enforced through validation scripts and CI. See CONSTITUTION.md for all rules with progressive levels (Prototype/Production/Enterprise).
 
+## Commissioning
+
+Projects commission to one SDLC **option** at the start of work. Options express different *shapes* of SDLC, not different stringency levels:
+
+- **solo** — 1-2 person projects, fast iteration, minimal ceremony
+- **single-team** — 3-10 person product teams, the framework's default
+- **programme** — 11-50 person multi-team programmes with formal phase gates
+- **assured** — regulated-industry work with bidirectional traceability
+
+Each option ships as a **bundle** (a Claude Code plugin) installed by `/sdlc-core:commission`. The commissioning decision is recorded in `.sdlc/team-config.json` and read on every sdlc-enforcer invocation.
+
+### `.sdlc/team-config.json` commissioning fields
+
+| Field | Required | Description |
+|---|---|---|
+| `sdlc_option` | yes | One of `solo` / `single-team` / `programme` / `assured` |
+| `sdlc_level` | yes | One of `prototype` / `production` / `enterprise` |
+| `commissioned_at` | yes | ISO 8601 UTC timestamp |
+| `commissioned_by` | yes | Username or "claude-agent" |
+| `option_bundle_version` | yes | Bundle's manifest version (semver) |
+| `commissioning_history` | yes | Array of past commissioning entries |
+| `decomposition` | reserved | Phase E (Assured only) — pointer to `library/_decomposition.md` |
+| `commissioning_options` | reserved | Phase E (Assured only) — per-bundle config knobs |
+
+### Backward compatibility
+
+Projects without `sdlc_option` in `.sdlc/team-config.json` continue to work unchanged. The sdlc-enforcer silently defaults to `single-team` when `sdlc_option` is unset. No project must do anything to keep working when commissioning ships.
+
+### See also
+
+- Bundle contract: `docs/architecture/option-bundle-contract.md`
+- Commission skill: `/sdlc-core:commission`
+- EPIC #178 — joint Programme + Assured delivery
+
 ## Agent Collaboration
 
 You have 63+ specialist agents. Check for relevant experts before significant work and use the Task tool to engage them. You are a coordinator, not a solo developer. See CONSTITUTION.md Article 6.
