@@ -10,6 +10,7 @@ from sdlc_assured_scripts.assured.decomposition import (
     DecompositionParseError,
     ImportEdge,
     SpecArtefact,
+    anaemic_context_detection,
     code_annotation_maps_to_module,
     default_decomposition,
     parse_programs_yaml,
@@ -230,3 +231,57 @@ visibility:
     result = visibility_rule_enforcement(edges, decomp, mode="advisory")
     assert result.passed is True
     assert any("P1.SP1.M2" in w and "P1.SP1.M1" in w for w in result.warnings)
+
+
+def test_anaemic_context_passes_when_code_co_located():
+    annotations = [
+        CodeAnnotation(
+            file_path="src/auth/oauth/login.py", line=10, cited_ids=["REQ-auth-001"]
+        ),
+        CodeAnnotation(
+            file_path="src/auth/oauth/refresh.py", line=20, cited_ids=["REQ-auth-002"]
+        ),
+    ]
+    spec_lookup = {"REQ-auth-001": "P1.SP1.M1", "REQ-auth-002": "P1.SP1.M1"}
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {id: M1, name: OAuth, paths: [src/auth/oauth/], granularity: requirement, structure: flat}
+"""
+    )
+    result = anaemic_context_detection(annotations, decomp, spec_lookup)
+    assert result.passed is True
+
+
+def test_anaemic_context_fails_when_code_scattered():
+    """Two REQs from the same module, but their code lives under different module paths."""
+    annotations = [
+        CodeAnnotation(
+            file_path="src/auth/oauth/login.py", line=10, cited_ids=["REQ-auth-001"]
+        ),
+        CodeAnnotation(
+            file_path="src/payments/charge.py", line=20, cited_ids=["REQ-auth-002"]
+        ),
+    ]
+    spec_lookup = {"REQ-auth-001": "P1.SP1.M1", "REQ-auth-002": "P1.SP1.M1"}
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {id: M1, name: OAuth, paths: [src/auth/oauth/], granularity: requirement, structure: flat}
+"""
+    )
+    result = anaemic_context_detection(annotations, decomp, spec_lookup)
+    assert result.passed is False
+    assert any("anaemic" in e.lower() for e in result.errors)

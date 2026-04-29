@@ -270,3 +270,25 @@ def visibility_rule_enforcement(
     if mode == "strict":
         return DecompositionValidatorResult(passed=not issues, errors=issues)
     return DecompositionValidatorResult(passed=True, warnings=issues)
+
+
+def anaemic_context_detection(
+    annotations: List[CodeAnnotation],
+    decomp: Decomposition,
+    spec_module_lookup: dict,
+) -> DecompositionValidatorResult:
+    """Flag when code implementing a module's REQs/DESs lives outside the module's paths."""
+    paths_by_module = _module_paths(decomp)
+    errors: List[str] = []
+    for ann in annotations:
+        for cited in ann.cited_ids:
+            module = spec_module_lookup.get(cited)
+            if module is None:
+                continue
+            allowed_paths = paths_by_module.get(module, [])
+            if not _file_under_paths(ann.file_path, allowed_paths):
+                errors.append(
+                    f"anaemic context: {ann.file_path}:{ann.line} implements {cited} "
+                    f"(module {module}) but file is outside the module's paths {allowed_paths}"
+                )
+    return DecompositionValidatorResult(passed=not errors, errors=errors)
