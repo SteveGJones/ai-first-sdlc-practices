@@ -4,6 +4,7 @@ from sdlc_assured_scripts.assured.ids import IdRecord
 from sdlc_assured_scripts.assured.code_index import CodeIndexEntry
 from sdlc_assured_scripts.assured.export import (
     export_do178c_rtm,
+    export_fda_dhf_structure,
     export_iec_62304_matrix,
     export_iso_26262_asil_matrix,
 )
@@ -74,3 +75,17 @@ def test_export_iso_26262_asil_matrix_columns():
     assert "DES-auth-001" in output
     assert "src/auth/login.py" in output
     assert "TEST-auth-001" in output
+
+
+def test_export_fda_dhf_structure_sections():
+    records, code = _three_id_chain()
+    output = export_fda_dhf_structure(records, code)
+    # FDA 21 CFR §820.30 Design History File expects sections per design control element.
+    assert "FDA Design History File (21 CFR §820.30)" in output
+    assert "## Design inputs" in output
+    assert "REQ-auth-001" in output
+    assert "## Design outputs" in output
+    assert "DES-auth-001" in output
+    assert "## Design verification" in output
+    assert "TEST-auth-001" in output
+    assert "## Design validation" in output  # placeholder section per regulation
