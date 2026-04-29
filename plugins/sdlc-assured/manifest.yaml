@@ -1,0 +1,44 @@
+schema_version: 1
+name: assured
+version: 0.1.0
+supported_levels: [enterprise]
+description: Regulated-industry SDLC with positional namespace IDs, bidirectional traceability, DDD decomposition, and standard-specific exports (DO-178C, IEC 62304, ISO 26262, FDA DHF)
+constitution: CONSTITUTION.md
+depends_on: [sdlc-core, sdlc-programme, sdlc-team-common, sdlc-team-fullstack, sdlc-knowledge-base]
+agents: []
+skills:
+  - commission-assured
+  - req-add
+  - req-link
+  - code-annotate
+  - module-bound-check
+  - kb-codeindex
+  - change-impact-annotate
+  - traceability-render
+templates:
+  - programs.yaml
+  - visibility-rules.md
+  - change-impact.md
+  - requirements-spec-assured.md
+  - design-spec-assured.md
+  - test-spec-assured.md
+validators:
+  syntax: [python_ast]
+  quick: [check_technical_debt, check_logging_compliance]
+  pre_push:
+    - python_ast
+    - check_technical_debt
+    - check_logging_compliance
+    - run_tests
+    - id_uniqueness_validator
+    - cited_ids_resolve_validator
+    - orphan_ids_validator
+    - forward_link_integrity_validator
+    - backward_coverage_validator
+    - index_regenerability_validator
+    - annotation_format_integrity_validator
+    - req_module_assignment_validator
+    - code_module_mapping_validator
+    - visibility_rule_validator
+    - anaemic_context_validator
+    - granularity_match_validator
