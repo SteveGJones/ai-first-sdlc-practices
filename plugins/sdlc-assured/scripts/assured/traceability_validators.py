@@ -78,3 +78,31 @@ def forward_link_integrity(records: List[IdRecord]) -> ValidatorResult:
             if cited not in declared:
                 errors.append(f"{r.id} (in {r.source}) cites missing target {cited!r}")
     return ValidatorResult(passed=not errors, errors=errors)
+
+
+def backward_coverage(records: List[IdRecord]) -> ValidatorResult:
+    """Verify every REQ is covered by a DES; every DES is covered by a TEST."""
+    cited_by: dict[str, List[str]] = {r.id: [] for r in records}
+    for r in records:
+        for target in r.satisfies:
+            if target in cited_by:
+                cited_by[target].append(r.id)
+    errors: List[str] = []
+    for r in records:
+        if r.kind == "REQ":
+            des_children = [
+                c
+                for c in cited_by[r.id]
+                if c.startswith("DES") or "DES-" in c.split(".")[-1]
+            ]
+            if not des_children:
+                errors.append(f"{r.id} (in {r.source}) has no DES covering it")
+        if r.kind == "DES":
+            test_children = [
+                c
+                for c in cited_by[r.id]
+                if c.startswith("TEST") or "TEST-" in c.split(".")[-1]
+            ]
+            if not test_children:
+                errors.append(f"{r.id} (in {r.source}) has no TEST covering it")
+    return ValidatorResult(passed=not errors, errors=errors)

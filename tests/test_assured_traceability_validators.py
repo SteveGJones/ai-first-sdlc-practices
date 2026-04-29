@@ -3,6 +3,7 @@
 from sdlc_assured_scripts.assured.ids import IdRecord
 from sdlc_assured_scripts.assured.traceability_validators import (
     ValidatorResult,
+    backward_coverage,
     cited_ids_resolve,
     forward_link_integrity,
     id_uniqueness,
@@ -140,3 +141,41 @@ def test_forward_link_integrity_requires_test_to_cite_a_des():
     assert any(
         "TEST-auth-001" in e and "no satisfies" in e.lower() for e in result.errors
     )
+
+
+def test_backward_coverage_passes_when_every_req_has_des_test():
+    records = [
+        IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
+        IdRecord(
+            id="DES-auth-001", kind="DES", source="b.md", satisfies=["REQ-auth-001"]
+        ),
+        IdRecord(
+            id="TEST-auth-001",
+            kind="TEST",
+            source="c.md",
+            satisfies=["REQ-auth-001", "DES-auth-001"],
+        ),
+    ]
+    result = backward_coverage(records)
+    assert result.passed is True
+
+
+def test_backward_coverage_fails_when_req_has_no_des():
+    records = [
+        IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
+    ]
+    result = backward_coverage(records)
+    assert result.passed is False
+    assert any("REQ-auth-001" in e and "no DES" in e for e in result.errors)
+
+
+def test_backward_coverage_fails_when_des_has_no_test():
+    records = [
+        IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
+        IdRecord(
+            id="DES-auth-001", kind="DES", source="b.md", satisfies=["REQ-auth-001"]
+        ),
+    ]
+    result = backward_coverage(records)
+    assert result.passed is False
+    assert any("DES-auth-001" in e and "no TEST" in e for e in result.errors)
