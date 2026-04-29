@@ -144,3 +144,25 @@ def render_id_registry(records: List[IdRecord]) -> str:
         sat = ", ".join(r.satisfies)
         lines.append(f"| {r.id} | {r.kind} | {r.source} | {sat} |")
     return "\n".join(lines) + "\n"
+
+
+def remap_ids(
+    records: List[IdRecord], path_remapping: dict[str, str]
+) -> List[IdRecord]:
+    """Remap source paths using the given prefix remapping. IDs themselves are immutable."""
+    out: List[IdRecord] = []
+    for r in records:
+        new_source = r.source
+        for old_prefix, new_prefix in path_remapping.items():
+            if r.source.startswith(old_prefix):
+                new_source = new_prefix + r.source[len(old_prefix) :]
+                break
+        out.append(
+            IdRecord(
+                id=r.id,
+                kind=r.kind,
+                source=new_source,
+                satisfies=list(r.satisfies),
+            )
+        )
+    return out

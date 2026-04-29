@@ -12,6 +12,7 @@ from sdlc_assured_scripts.assured.ids import (
     format_id,
     is_positional,
     parse_id,
+    remap_ids,
     render_id_registry,
 )
 
@@ -118,3 +119,33 @@ def test_render_id_registry_produces_markdown_table(tmp_path: Path):
         "| DES-auth-001 | DES | docs/specs/auth/design-spec.md | REQ-auth-001 |"
         in output
     )
+
+
+def test_remap_ids_preserves_id_when_module_moves():
+    """When a module's path changes, the ID stays the same; only the source path updates."""
+    records = [
+        IdRecord(
+            id="P1.SP1.M1.REQ-001",
+            kind="REQ",
+            source="docs/specs/legacy/requirements-spec.md",
+            satisfies=[],
+        ),
+    ]
+    remapping = {"docs/specs/legacy/": "docs/specs/auth/"}
+    remapped = remap_ids(records, remapping)
+    assert remapped[0].id == "P1.SP1.M1.REQ-001"
+    assert remapped[0].source == "docs/specs/auth/requirements-spec.md"
+
+
+def test_remap_ids_no_op_when_no_paths_match():
+    records = [
+        IdRecord(
+            id="REQ-auth-001",
+            kind="REQ",
+            source="docs/specs/auth/requirements-spec.md",
+            satisfies=[],
+        ),
+    ]
+    remapping = {"docs/specs/legacy/": "docs/specs/old/"}
+    remapped = remap_ids(records, remapping)
+    assert remapped == records
