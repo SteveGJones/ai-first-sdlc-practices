@@ -5,6 +5,7 @@ from pathlib import Path
 
 from sdlc_assured_scripts.assured.traceability_validators import (
     ValidatorResult,
+    annotation_format_integrity,
     backward_coverage,
     cited_ids_resolve,
     forward_link_integrity,
@@ -205,3 +206,26 @@ def test_index_regenerability_fails_when_drift(tmp_path: Path):
     result = index_regenerability(index_path, regenerate)
     assert result.passed is False
     assert any("not idempotent" in e.lower() for e in result.errors)
+
+
+def test_annotation_format_integrity_passes_on_valid_annotations(tmp_path: Path):
+    f = tmp_path / "login.py"
+    f.write_text("def login():\n" "    # implements: REQ-auth-001\n" "    pass\n")
+    result = annotation_format_integrity([f], declared_ids={"REQ-auth-001"})
+    assert result.passed is True
+
+
+def test_annotation_format_integrity_fails_on_unknown_id(tmp_path: Path):
+    f = tmp_path / "login.py"
+    f.write_text("def login():\n" "    # implements: REQ-auth-999\n" "    pass\n")
+    result = annotation_format_integrity([f], declared_ids={"REQ-auth-001"})
+    assert result.passed is False
+    assert any("REQ-auth-999" in e for e in result.errors)
+
+
+def test_annotation_format_integrity_fails_on_malformed_annotation(tmp_path: Path):
+    f = tmp_path / "login.py"
+    f.write_text("def login():\n" "    # implements: not_an_id\n" "    pass\n")
+    result = annotation_format_integrity([f], declared_ids={"REQ-auth-001"})
+    assert result.passed is False
+    assert any("malformed" in e.lower() or "not_an_id" in e for e in result.errors)

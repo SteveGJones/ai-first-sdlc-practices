@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import re
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, List
 
-from .ids import IdRecord
+from .ids import IdParseError, IdRecord, parse_id
 
 
 @dataclass
@@ -129,3 +130,35 @@ def index_regenerability(
             "regenerated output. Run kb-rebuild-indexes and commit."
         ],
     )
+
+
+_IMPLEMENTS_RE = re.compile(r"^\s*#\s*implements:\s*(?P<ids>.+)$", re.MULTILINE)
+_ID_TOKEN_RE = re.compile(r"[A-Za-z0-9.\-]+")
+
+
+def annotation_format_integrity(
+    code_files: List[Path], declared_ids: set[str]
+) -> ValidatorResult:
+    """Check that every `# implements:` annotation cites a declared, well-formed ID."""
+    errors: List[str] = []
+    for f in code_files:
+        if not f.is_file():
+            continue
+        text = f.read_text(encoding="utf-8")
+        for line_no, line in enumerate(text.splitlines(), start=1):
+            m = _IMPLEMENTS_RE.match(line)
+            if not m:
+                continue
+            ids_part = m["ids"]
+            tokens = [t.strip(",") for t in _ID_TOKEN_RE.findall(ids_part)]
+            for tok in tokens:
+                try:
+                    parse_id(tok)
+                except IdParseError:
+                    errors.append(f"{f}:{line_no}: malformed annotation token {tok!r}")
+                    continue
+                if tok not in declared_ids:
+                    errors.append(
+                        f"{f}:{line_no}: annotation cites {tok!r} which is not declared"
+                    )
+    return ValidatorResult(passed=not errors, errors=errors)
