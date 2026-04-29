@@ -128,3 +128,15 @@ def test_forward_link_integrity_requires_des_to_cite_a_req():
     assert any(
         "DES-auth-001" in e and "no satisfies" in e.lower() for e in result.errors
     )
+
+
+def test_forward_link_integrity_requires_test_to_cite_a_des():
+    """A TEST with no satisfies links is a defect under Article 15."""
+    records = [
+        IdRecord(id="TEST-auth-001", kind="TEST", source="c.md", satisfies=[]),
+    ]
+    result = forward_link_integrity(records)
+    assert result.passed is False
+    assert any(
+        "TEST-auth-001" in e and "no satisfies" in e.lower() for e in result.errors
+    )
