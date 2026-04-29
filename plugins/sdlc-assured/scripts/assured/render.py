@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import List
 
 from .code_index import CodeIndexEntry
+from .decomposition import Decomposition, ImportEdge
 from .ids import IdRecord
 
 
@@ -70,4 +71,34 @@ def render_module_scope(
         for c in orphan_code:
             cited = ", ".join(c.cited_ids)
             lines.append(f"- `{c.file_path}:{c.line}` cites missing {cited}")
+    return "\n".join(lines) + "\n"
+
+
+def render_module_dependency_graph(
+    decomp: Decomposition, actual_edges: List[ImportEdge]
+) -> str:
+    """Render the module-dependency graph as a markdown edge-list (Q1 v0.1.0 format)."""
+    declared: dict[str, set[str]] = {}
+    for v in decomp.visibility:
+        declared[v.from_module] = set(v.to_modules)
+    lines = [
+        "# Module Dependency Graph",
+        "",
+        "Each row represents one observed cross-module edge."
+        ' "Allowed?" reflects the project\'s `programs.yaml` visibility block.',
+        "",
+    ]
+    if not actual_edges:
+        lines.append("_(no module-to-module dependencies detected)_")
+        return "\n".join(lines) + "\n"
+    lines.extend(
+        [
+            "| From | → | To | Allowed? |",
+            "|------|---|----|----------|",
+        ]
+    )
+    sorted_edges = sorted({(e.from_module, e.to_module) for e in actual_edges})
+    for from_, to_ in sorted_edges:
+        allowed = "yes" if to_ in declared.get(from_, set()) else "NO"
+        lines.append(f"| {from_} | → | {to_} | {allowed} |")
     return "\n".join(lines) + "\n"
