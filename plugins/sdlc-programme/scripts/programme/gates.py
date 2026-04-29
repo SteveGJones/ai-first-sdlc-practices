@@ -49,6 +49,19 @@ def _try_parse(path: Path, phase: str) -> tuple[ParsedSpec | None, str | None]:
         return None, str(e)
 
 
+def _has_review_record(feature_dir: Path, phase: str) -> bool:
+    """Return True if a review record exists for the given phase.
+
+    Review records live at <feature_dir>/reviews/<phase>-review-*.md
+    (pattern includes any reviewer name).
+    """
+    reviews_dir = feature_dir / "reviews"
+    if not reviews_dir.is_dir():
+        return False
+    matches = list(reviews_dir.glob(f"{phase}-review-*.md"))
+    return len(matches) > 0
+
+
 def requirements_gate(feature_dir: Path, feature_id: str) -> GateResult:
     """Check requirements-spec.md exists, has feature-id, declares ≥ 1 REQ-ID."""
     result = GateResult(gate_name="requirements", feature_id=feature_id)
@@ -118,6 +131,14 @@ def design_gate(feature_dir: Path, feature_id: str) -> GateResult:
                 f"in requirements-spec.md"
             )
 
+    # Article 14: design-spec requires a review record
+    if not _has_review_record(feature_dir, "design"):
+        result.passed = False
+        result.errors.append(
+            "design-spec.md has no review record at "
+            f"{feature_dir}/reviews/design-review-*.md (run phase-review design <feature-id>)"
+        )
+
     return result
 
 
@@ -174,6 +195,14 @@ def test_gate(feature_dir: Path, feature_id: str) -> GateResult:
                 f"test-spec.md references {ref} which is not declared "
                 f"in design-spec.md"
             )
+
+    # Article 14: test-spec requires a review record
+    if not _has_review_record(feature_dir, "test"):
+        result.passed = False
+        result.errors.append(
+            "test-spec.md has no review record at "
+            f"{feature_dir}/reviews/test-review-*.md (run phase-review test <feature-id>)"
+        )
 
     return result
 

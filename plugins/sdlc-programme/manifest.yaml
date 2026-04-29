@@ -4,7 +4,7 @@ version: 0.1.0
 supported_levels: [production, enterprise]
 description: Multi-team programme SDLC with formal waterfall phase gates and mandatory cross-phase review
 constitution: CONSTITUTION.md
-depends_on: [sdlc-core]
+depends_on: [sdlc-core, sdlc-team-common, sdlc-team-fullstack]
 agents: []
 skills:
   - commission-programme

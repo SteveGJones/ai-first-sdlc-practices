@@ -164,3 +164,28 @@ def test_code_gate_fails_when_code_has_no_implements_annotation(
 
     assert result.passed is False
     assert any("annotation" in e.lower() for e in result.errors)
+
+
+def test_design_gate_fails_when_review_record_missing(tmp_path: Path) -> None:
+    """design_gate fails if no design-review-*.md exists in reviews/ dir (Article 14)."""
+    feature_dir = _copy_feature(tmp_path)
+
+    # Remove the design review record
+    (feature_dir / "reviews" / "design-review-test.md").unlink()
+
+    result = design_gate(feature_dir, "sample")
+
+    assert result.passed is False
+    assert any("review record" in e.lower() for e in result.errors)
+
+
+def test_test_gate_fails_when_review_record_missing(tmp_path: Path) -> None:
+    """test_gate fails if no test-review-*.md exists in reviews/ dir (Article 14)."""
+    feature_dir = _copy_feature(tmp_path)
+
+    (feature_dir / "reviews" / "test-review-test.md").unlink()
+
+    result = run_test_gate(feature_dir, "sample")
+
+    assert result.passed is False
+    assert any("review record" in e.lower() for e in result.errors)
