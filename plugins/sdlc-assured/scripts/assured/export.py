@@ -182,3 +182,58 @@ def export_fda_dhf_structure(
         ]
     )
     return "\n".join(lines)
+
+
+def _build_rows(
+    records: List[IdRecord], code: List[CodeIndexEntry]
+) -> list[tuple[str, str, str, str]]:
+    """Shared helper — yields one row per (REQ, DES, tests, code) combination.
+
+    Emits a stub row for any REQ with no DES.
+    """
+    cited_by = _index_by_satisfies(records)
+    code_by_cited = _code_by_cited(code)
+    rows: list[tuple[str, str, str, str]] = []
+    for req in [r for r in records if r.kind == "REQ"]:
+        deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
+        if not deses:
+            rows.append((req.id, "", "", ""))
+            continue
+        for des in deses:
+            tests = [t for t in cited_by.get(des.id, []) if t.kind == "TEST"]
+            code_locs = code_by_cited.get(req.id, []) + code_by_cited.get(des.id, [])
+            code_str = "; ".join(f"{c.file_path}:{c.line}" for c in code_locs)
+            test_str = "; ".join(t.id for t in tests)
+            rows.append((req.id, des.id, test_str, code_str))
+    return rows
+
+
+def export_csv(records: List[IdRecord], code: List[CodeIndexEntry]) -> str:
+    """Generic CSV traceability export.
+
+    Header: REQ,DES,TEST,CODE. Commas within cells are replaced with semicolons
+    to avoid breaking the CSV structure.
+    """
+    rows = _build_rows(records, code)
+    out = ["REQ,DES,TEST,CODE"]
+    for r in rows:
+        out.append(",".join(c.replace(",", ";") for c in r))
+    return "\n".join(out) + "\n"
+
+
+def export_markdown(records: List[IdRecord], code: List[CodeIndexEntry]) -> str:
+    """Generic Markdown traceability matrix export.
+
+    Produces a ``# Traceability Matrix`` title followed by a GFM pipe table
+    with columns: REQ | DES | TEST | CODE.
+    """
+    rows = _build_rows(records, code)
+    out = [
+        "# Traceability Matrix",
+        "",
+        "| REQ | DES | TEST | CODE |",
+        "|-----|-----|------|------|",
+    ]
+    for r in rows:
+        out.append("| " + " | ".join(r) + " |")
+    return "\n".join(out) + "\n"

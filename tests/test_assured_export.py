@@ -3,10 +3,12 @@
 from sdlc_assured_scripts.assured.ids import IdRecord
 from sdlc_assured_scripts.assured.code_index import CodeIndexEntry
 from sdlc_assured_scripts.assured.export import (
+    export_csv,
     export_do178c_rtm,
     export_fda_dhf_structure,
     export_iec_62304_matrix,
     export_iso_26262_asil_matrix,
+    export_markdown,
 )
 
 
@@ -89,3 +91,18 @@ def test_export_fda_dhf_structure_sections():
     assert "## Design verification" in output
     assert "TEST-auth-001" in output
     assert "## Design validation" in output  # placeholder section per regulation
+
+
+def test_export_csv_emits_header_and_rows():
+    records, code = _three_id_chain()
+    output = export_csv(records, code)
+    assert output.startswith("REQ,DES,TEST,CODE")
+    assert "REQ-auth-001" in output
+    assert "src/auth/login.py:10" in output
+
+
+def test_export_markdown_emits_table():
+    records, code = _three_id_chain()
+    output = export_markdown(records, code)
+    assert "| REQ | DES | TEST | CODE |" in output
+    assert "| REQ-auth-001 | DES-auth-001 | TEST-auth-001 |" in output
