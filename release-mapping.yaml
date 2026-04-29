@@ -200,6 +200,39 @@ sdlc-knowledge-base:
     - source: plugins/sdlc-knowledge-base/scripts/orchestrator.py
     - source: plugins/sdlc-knowledge-base/scripts/audit.py
 
+# Programme SDLC plugin — formal waterfall with mandatory cross-phase review. EPIC #178.
+# Method 1 substrate: 5 skills (commission-programme, phase-init, phase-gate, phase-review,
+# traceability-export), 5 scripts (parser, gates, traceability, package init files), 3
+# templates (requirements/design/test specs), and plugin-root bundle artefacts.
+sdlc-programme:
+  skills:
+    - source: skills/commission-programme/SKILL.md
+    - source: skills/phase-init/SKILL.md
+    - source: skills/phase-gate/SKILL.md
+    - source: skills/phase-review/SKILL.md
+    - source: skills/traceability-export/SKILL.md
+  scripts:
+    # Authored in-plugin; listed for packaging audit. Ship in-place.
+    - source: plugins/sdlc-programme/scripts/__init__.py
+    - source: plugins/sdlc-programme/scripts/programme/__init__.py
+    - source: plugins/sdlc-programme/scripts/programme/spec_parser.py
+    - source: plugins/sdlc-programme/scripts/programme/gates.py
+    - source: plugins/sdlc-programme/scripts/programme/traceability.py
+  # Templates and plugin-root bundle artefacts ship in-place with the plugin. They
+  # live under plugins/sdlc-programme/ and are not validated by check-plugin-packaging.py
+  # today (no `templates`/`bundle` component type); listed here for release auditability
+  # and future validator extension. Same pattern as sdlc-workflows `files:` block.
+  files:
+    templates:
+      - plugins/sdlc-programme/templates/requirements-spec.md
+      - plugins/sdlc-programme/templates/design-spec.md
+      - plugins/sdlc-programme/templates/test-spec.md
+    bundle:
+      - plugins/sdlc-programme/manifest.yaml
+      - plugins/sdlc-programme/CONSTITUTION.md
+      - plugins/sdlc-programme/README.md
+      - plugins/sdlc-programme/pyproject.toml
+
 # Workflow delegation plugin — Archon integration for parallel agent execution. EPIC #96.
 # Delivered in 5 phases; all skills, scripts, and Docker assets are shipped with
 # the plugin. Docker assets and docs live in the plugin directory directly and
