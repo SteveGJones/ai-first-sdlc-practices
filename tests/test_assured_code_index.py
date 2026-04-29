@@ -6,7 +6,9 @@ from sdlc_assured_scripts.assured.code_index import (
     CodeIndexEntry,
     parse_code_annotations,
     render_code_index,
+    render_spec_findings,
 )
+from sdlc_assured_scripts.assured.ids import IdRecord
 
 
 def test_parse_code_annotations_extracts_implements_lines(tmp_path: Path):
@@ -45,3 +47,27 @@ def test_render_code_index_produces_shelf_shape(tmp_path: Path):
     assert "**Terms:** login, auth, session" in output
     assert "**Facts:**" in output
     assert "**Links:** REQ-auth-001" in output
+
+
+def test_render_spec_findings_emits_one_entry_per_id():
+    records = [
+        IdRecord(
+            id="REQ-auth-001",
+            kind="REQ",
+            source="docs/specs/auth/requirements-spec.md",
+            satisfies=[],
+        ),
+        IdRecord(
+            id="DES-auth-001",
+            kind="DES",
+            source="docs/specs/auth/design-spec.md",
+            satisfies=["REQ-auth-001"],
+        ),
+    ]
+    output = render_spec_findings(records, library_handle="local-project")
+    assert "<!-- format_version: 1 -->" in output
+    assert "## 1. REQ-auth-001" in output
+    assert "**Terms:** REQ, auth" in output
+    assert "**Links:**" in output
+    assert "## 2. DES-auth-001" in output
+    assert "REQ-auth-001" in output

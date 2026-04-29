@@ -21,8 +21,10 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
+
+from .ids import IdRecord
 
 _IMPLEMENTS_RE = re.compile(r"^\s*#\s*implements:\s*(?P<ids>.+)$")
 _ID_TOKEN_RE = re.compile(
@@ -129,3 +131,51 @@ def render_code_index(entries: List[CodeIndexEntry], library_handle: str) -> str
         lines.append(f"**Links:** {', '.join(e.cited_ids)}")
         lines.append("")
     return "\n".join(lines)
+
+
+def render_spec_findings(records: List[IdRecord], library_handle: str) -> str:
+    """Render REQ/DES/TEST records as shelf-index entries (spec-as-KB-finding)."""
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    lines = [
+        "<!-- format_version: 1 -->",
+        f"<!-- last_rebuilt: {timestamp} -->",
+        f"<!-- library_handle: {library_handle} -->",
+        "<!-- library_description: Spec findings — REQ/DES/TEST records as shelf-index entries -->",
+        "# Spec Findings",
+        "",
+    ]
+    for n, r in enumerate(records, start=1):
+        feature = _feature_from_id(r.id)
+        terms = ", ".join([r.kind] + ([feature] if feature else []))
+        links = ", ".join(r.satisfies) if r.satisfies else r.source
+        lines.append(f"## {n}. {r.id}")
+        lines.append("")
+        lines.append(f"**Terms:** {terms}")
+        lines.append("**Facts:**")
+        lines.append(f"- Declared in {r.source}")
+        lines.append(f"**Links:** {links}")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def _feature_from_id(id_: str) -> Optional[str]:
+    """Extract the feature segment from a flat ID such as ``REQ-auth-001``.
+
+    Parameters
+    ----------
+    id_:
+        A string ID, either flat (``REQ-feature-NNN``) or positional
+        (``P1.SP1.M1.REQ-NNN``).
+
+    Returns
+    -------
+    Optional[str]
+        The feature name for flat IDs, or ``None`` for positional IDs and IDs
+        that do not contain a feature segment.
+    """
+    if id_.startswith("P") and "." in id_:
+        return None
+    parts = id_.split("-")
+    if len(parts) >= 3:
+        return parts[1]
+    return None
