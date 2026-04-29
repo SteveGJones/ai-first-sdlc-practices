@@ -7,6 +7,7 @@ from sdlc_assured_scripts.assured.traceability_validators import (
     ValidatorResult,
     annotation_format_integrity,
     backward_coverage,
+    change_impact_gate,
     cited_ids_resolve,
     forward_link_integrity,
     id_uniqueness,
@@ -229,3 +230,45 @@ def test_annotation_format_integrity_fails_on_malformed_annotation(tmp_path: Pat
     result = annotation_format_integrity([f], declared_ids={"REQ-auth-001"})
     assert result.passed is False
     assert any("malformed" in e.lower() or "not_an_id" in e for e in result.errors)
+
+
+def test_change_impact_gate_passes_when_disabled():
+    """The gate is opt-in; when disabled, it always passes."""
+    result = change_impact_gate(
+        changed_code_files=[Path("src/auth/login.py")],
+        change_impact_records_dir=Path("docs/change-impacts"),
+        enabled=False,
+    )
+    assert result.passed is True
+
+
+def test_change_impact_gate_fails_when_enabled_and_no_record(tmp_path: Path):
+    code_file = tmp_path / "src" / "auth" / "login.py"
+    code_file.parent.mkdir(parents=True)
+    code_file.write_text("def login(): pass\n")
+    impacts_dir = tmp_path / "docs" / "change-impacts"
+    impacts_dir.mkdir(parents=True)  # empty
+    result = change_impact_gate(
+        changed_code_files=[code_file],
+        change_impact_records_dir=impacts_dir,
+        enabled=True,
+    )
+    assert result.passed is False
+    assert any("change-impact" in e.lower() for e in result.errors)
+
+
+def test_change_impact_gate_passes_when_record_exists(tmp_path: Path):
+    code_file = tmp_path / "src" / "auth" / "login.py"
+    code_file.parent.mkdir(parents=True)
+    code_file.write_text("def login(): pass\n")
+    impacts_dir = tmp_path / "docs" / "change-impacts"
+    impacts_dir.mkdir(parents=True)
+    (impacts_dir / "CHG-001.md").write_text(
+        "# Change CHG-001\n## CODE locations touched\n- src/auth/login.py: rewrite\n"
+    )
+    result = change_impact_gate(
+        changed_code_files=[code_file],
+        change_impact_records_dir=impacts_dir,
+        enabled=True,
+    )
+    assert result.passed is True

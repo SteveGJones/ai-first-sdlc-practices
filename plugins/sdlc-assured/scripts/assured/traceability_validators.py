@@ -132,6 +132,36 @@ def index_regenerability(
     )
 
 
+def change_impact_gate(
+    changed_code_files: List[Path],
+    change_impact_records_dir: Path,
+    enabled: bool,
+) -> ValidatorResult:
+    """When enabled, every changed code file must be cited in at least one change-impact record."""
+    if not enabled:
+        return ValidatorResult(passed=True)
+    if not change_impact_records_dir.is_dir():
+        return ValidatorResult(
+            passed=False,
+            errors=[
+                f"change-impact directory {change_impact_records_dir} does not exist"
+            ],
+        )
+    cited_paths: set[str] = set()
+    for record in change_impact_records_dir.glob("*.md"):
+        cited_paths |= {
+            line.split(":")[0].strip().lstrip("- ")
+            for line in record.read_text(encoding="utf-8").splitlines()
+            if "src/" in line and ":" in line
+        }
+    errors: List[str] = []
+    for f in changed_code_files:
+        rel = str(f).replace(str(f.anchor), "")
+        if not any(rel.endswith(c) or c in str(f) for c in cited_paths):
+            errors.append(f"{f}: no change-impact record cites this file")
+    return ValidatorResult(passed=not errors, errors=errors)
+
+
 _IMPLEMENTS_RE = re.compile(r"^\s*#\s*implements:\s*(?P<ids>.+)$", re.MULTILINE)
 _ID_TOKEN_RE = re.compile(r"[A-Za-z0-9.\-]+")
 
