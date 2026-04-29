@@ -124,3 +124,68 @@ def default_decomposition(
         id="P1", name="Default program", description=None, sub_programs=[sub_program]
     )
     return Decomposition(programs=[program], visibility=[])
+
+
+@dataclass(frozen=True)
+class SpecArtefact:
+    """A parsed spec artefact for module-assignment validation."""
+
+    path: str
+    feature_id: Optional[str]
+    module: Optional[str]
+    ids: List[str]
+
+
+@dataclass
+class DecompositionValidatorResult:
+    passed: bool
+    errors: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+
+
+def _all_module_ids(decomp: Decomposition) -> set:
+    out: set = set()
+    for p in decomp.programs:
+        for sp in p.sub_programs:
+            for m in sp.modules:
+                out.add(f"{p.id}.{sp.id}.{m.id}")
+    return out
+
+
+def _module_from_positional_id(id_: str) -> Optional[str]:
+    if "." not in id_:
+        return None
+    parts = id_.split(".")
+    if len(parts) >= 4:
+        return ".".join(parts[:3])
+    return None
+
+
+def req_has_module_assignment(
+    specs: List[SpecArtefact], decomp: Decomposition
+) -> DecompositionValidatorResult:
+    """Validate that every REQ ID has a module assignment within the decomposition.
+
+    A REQ ID gets its module either from a positional prefix (e.g. P1.SP1.M1.REQ-001)
+    or from the spec's explicit module field.  Missing or undeclared modules are errors.
+    """
+    declared = _all_module_ids(decomp)
+    errors: List[str] = []
+    for spec in specs:
+        for id_ in spec.ids:
+            if not id_.startswith("REQ"):
+                # Only REQ artefacts need explicit module assignment per Article 16.
+                if "." in id_ and id_.startswith("P"):
+                    pass
+                else:
+                    continue
+            module = _module_from_positional_id(id_) or spec.module
+            if module is None:
+                errors.append(f"{id_} (in {spec.path}) has no module assignment")
+                continue
+            if module not in declared:
+                errors.append(
+                    f"{id_} (in {spec.path}) is assigned to module {module!r} "
+                    "which is not declared in programs.yaml"
+                )
+    return DecompositionValidatorResult(passed=not errors, errors=errors)
