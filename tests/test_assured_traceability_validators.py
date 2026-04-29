@@ -3,6 +3,7 @@
 from sdlc_assured_scripts.assured.ids import IdRecord
 from sdlc_assured_scripts.assured.traceability_validators import (
     ValidatorResult,
+    cited_ids_resolve,
     id_uniqueness,
 )
 
@@ -30,3 +31,26 @@ def test_id_uniqueness_fails_on_duplicate():
     assert result.passed is False
     assert any("duplicate" in e.lower() for e in result.errors)
     assert any("REQ-auth-001" in e for e in result.errors)
+
+
+def test_cited_ids_resolve_passes_when_all_targets_exist():
+    records = [
+        IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
+        IdRecord(
+            id="DES-auth-001", kind="DES", source="b.md", satisfies=["REQ-auth-001"]
+        ),
+    ]
+    result = cited_ids_resolve(records)
+    assert result.passed is True
+
+
+def test_cited_ids_resolve_fails_on_missing_target():
+    records = [
+        IdRecord(
+            id="DES-auth-001", kind="DES", source="b.md", satisfies=["REQ-auth-999"]
+        ),
+    ]
+    result = cited_ids_resolve(records)
+    assert result.passed is False
+    assert any("REQ-auth-999" in e for e in result.errors)
+    assert any("DES-auth-001" in e for e in result.errors)

@@ -29,3 +29,15 @@ def id_uniqueness(records: List[IdRecord]) -> ValidatorResult:
         for id_ in sorted(duplicates)
     ]
     return ValidatorResult(passed=False, errors=errors)
+
+
+def cited_ids_resolve(records: List[IdRecord]) -> ValidatorResult:
+    declared = {r.id for r in records}
+    errors: List[str] = []
+    for r in records:
+        for cited in r.satisfies:
+            if cited not in declared:
+                errors.append(
+                    f"{r.id} (in {r.source}) cites {cited!r} which is not declared anywhere"
+                )
+    return ValidatorResult(passed=not errors, errors=errors)
