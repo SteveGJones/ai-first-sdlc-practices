@@ -11,8 +11,9 @@ clean package name at import time.  This replaces the earlier
 ``plugins_sdlc_workflows_scripts.py`` shim at the repo root.
 
 Also registers ``sdlc_knowledge_base_scripts`` from
-``plugins/sdlc-knowledge-base/scripts/`` and ``sdlc_core_scripts`` from
-``plugins/sdlc-core/scripts/`` using the same pattern.
+``plugins/sdlc-knowledge-base/scripts/``, ``sdlc_core_scripts`` from
+``plugins/sdlc-core/scripts/``, and ``sdlc_programme_scripts`` from
+``plugins/sdlc-programme/scripts/`` using the same pattern.
 
 If a real Python environment is later adopted, the plugins carry a
 ``pyproject.toml`` and can be installed editable with
@@ -54,3 +55,4 @@ def _register_scripts_package(plugin_dir_name: str, package_name: str) -> None:
 _register_scripts_package("sdlc-workflows", "sdlc_workflows_scripts")
 _register_scripts_package("sdlc-knowledge-base", "sdlc_knowledge_base_scripts")
 _register_scripts_package("sdlc-core", "sdlc_core_scripts")
+_register_scripts_package("sdlc-programme", "sdlc_programme_scripts")
