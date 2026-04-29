@@ -2,7 +2,10 @@
 
 from sdlc_assured_scripts.assured.ids import IdRecord
 from sdlc_assured_scripts.assured.code_index import CodeIndexEntry
-from sdlc_assured_scripts.assured.export import export_do178c_rtm
+from sdlc_assured_scripts.assured.export import (
+    export_do178c_rtm,
+    export_iec_62304_matrix,
+)
 
 
 def _three_id_chain() -> tuple[list[IdRecord], list[CodeIndexEntry]]:
@@ -44,3 +47,14 @@ def test_export_do178c_rtm_columns():
         "| REQ-auth-001 | DES-auth-001 | src/auth/login.py:10 | TEST-auth-001 |"
         in output
     )
+
+
+def test_export_iec_62304_matrix_columns():
+    records, code = _three_id_chain()
+    output = export_iec_62304_matrix(records, code, software_safety_class="B")
+    # IEC 62304 expects: Software requirement → Software unit → Verification activity.
+    assert "IEC 62304 Software Traceability Matrix" in output
+    assert "Software safety class: B" in output
+    assert "| Software requirement | Software unit | Verification activity |" in output
+    assert "REQ-auth-001" in output
+    assert "src/auth/login.py" in output

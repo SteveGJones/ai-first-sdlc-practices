@@ -56,3 +56,37 @@ def export_do178c_rtm(records: List[IdRecord], code: List[CodeIndexEntry]) -> st
         if not deses:
             lines.append(f"| {req.id} | — | — | — |")
     return "\n".join(lines) + "\n"
+
+
+def export_iec_62304_matrix(
+    records: List[IdRecord],
+    code: List[CodeIndexEntry],
+    software_safety_class: str = "A",
+) -> str:
+    """IEC 62304 Software Traceability Matrix.
+
+    Columns: Software requirement | Software unit (code) | Verification activity (test).
+    Software safety class is declared in the heading (A, B, or C).
+    """
+    cited_by = _index_by_satisfies(records)
+    code_by_cited = _code_by_cited(code)
+    lines = [
+        "# IEC 62304 Software Traceability Matrix",
+        "",
+        f"Software safety class: {software_safety_class}",
+        "",
+        "| Software requirement | Software unit | Verification activity |",
+        "|----------------------|---------------|------------------------|",
+    ]
+    reqs = [r for r in records if r.kind == "REQ"]
+    for req in reqs:
+        units = code_by_cited.get(req.id, [])
+        deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
+        tests: List[IdRecord] = []
+        for des in deses:
+            units.extend(code_by_cited.get(des.id, []))
+            tests.extend([t for t in cited_by.get(des.id, []) if t.kind == "TEST"])
+        unit_str = ", ".join(f"{c.file_path}:{c.line}" for c in units) or "—"
+        test_str = ", ".join(t.id for t in tests) or "—"
+        lines.append(f"| {req.id} | {unit_str} | {test_str} |")
+    return "\n".join(lines) + "\n"
