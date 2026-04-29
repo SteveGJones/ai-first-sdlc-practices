@@ -1,0 +1,22 @@
+schema_version: 1
+name: programme
+version: 0.1.0
+supported_levels: [production, enterprise]
+description: Multi-team programme SDLC with formal waterfall phase gates and mandatory cross-phase review
+constitution: CONSTITUTION.md
+depends_on: [sdlc-core]
+agents: []
+skills:
+  - commission-programme
+  - phase-init
+  - phase-gate
+  - phase-review
+  - traceability-export
+templates:
+  - requirements-spec.md
+  - design-spec.md
+  - test-spec.md
+validators:
+  syntax: [python_ast]
+  quick: [check_technical_debt, check_logging_compliance]
+  pre_push: [python_ast, check_technical_debt, check_logging_compliance, run_tests, requirements_gate, design_gate, test_gate, code_gate]
