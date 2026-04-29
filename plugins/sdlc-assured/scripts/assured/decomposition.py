@@ -237,3 +237,36 @@ def code_annotation_maps_to_module(
                     f"but file is not under any declared path: {allowed_paths}"
                 )
     return DecompositionValidatorResult(passed=not errors, errors=errors)
+
+
+@dataclass(frozen=True)
+class ImportEdge:
+    """A directed dependency edge between modules, derived from imports."""
+
+    from_module: str
+    to_module: str
+
+
+def visibility_rule_enforcement(
+    edges: List[ImportEdge], decomp: Decomposition, mode: str = "advisory"
+) -> DecompositionValidatorResult:
+    """Verify each cross-module edge is declared in the visibility block.
+
+    mode = 'strict' -> undeclared edges block (errors).
+    mode = 'advisory' -> undeclared edges warn.
+    """
+    declared: dict = {}
+    for v in decomp.visibility:
+        declared[v.from_module] = set(v.to_modules)
+    issues: List[str] = []
+    for edge in edges:
+        if edge.from_module == edge.to_module:
+            continue
+        allowed = declared.get(edge.from_module, set())
+        if edge.to_module not in allowed:
+            issues.append(
+                f"undeclared visibility: {edge.from_module} → {edge.to_module}"
+            )
+    if mode == "strict":
+        return DecompositionValidatorResult(passed=not issues, errors=issues)
+    return DecompositionValidatorResult(passed=True, warnings=issues)
