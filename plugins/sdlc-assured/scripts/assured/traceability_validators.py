@@ -59,3 +59,22 @@ def orphan_ids(records: List[IdRecord]) -> ValidatorResult:
                 f"orphan {r.kind} {r.id!r} (declared in {r.source}) is never cited"
             )
     return ValidatorResult(passed=True, warnings=warnings)
+
+
+def forward_link_integrity(records: List[IdRecord]) -> ValidatorResult:
+    """Verify every DES cites at least one REQ; every TEST cites at least one DES; targets resolve."""
+    declared = {r.id: r for r in records}
+    errors: List[str] = []
+    for r in records:
+        if r.kind == "DES" and not r.satisfies:
+            errors.append(
+                f"{r.id} (in {r.source}) has no satisfies links — DES must cite at least one REQ"
+            )
+        if r.kind == "TEST" and not r.satisfies:
+            errors.append(
+                f"{r.id} (in {r.source}) has no satisfies links — TEST must cite at least one DES"
+            )
+        for cited in r.satisfies:
+            if cited not in declared:
+                errors.append(f"{r.id} (in {r.source}) cites missing target {cited!r}")
+    return ValidatorResult(passed=not errors, errors=errors)
