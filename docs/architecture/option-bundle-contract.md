@@ -25,14 +25,20 @@ A bundle plugin directory MUST contain:
 ```
 plugins/sdlc-<option>/
 ├── .claude-plugin/
-│   └── plugin.json              # standard plugin metadata; bundle plugins are identified by the presence of manifest.yaml in the plugin root
-├── manifest.yaml                # bundle manifest (this contract's primary artefact)
-├── CONSTITUTION.md              # option-specific constitution
+│   └── plugin.json              # standard plugin metadata
+├── manifest.yaml                # bundle manifest (NEW convention for bundle plugins)
+├── README.md                    # bundle overview, audience, level guidance
+├── CONSTITUTION.md              # option-specific constitution (NEW convention for bundle plugins)
+├── pyproject.toml               # OPTIONAL: present if the bundle ships Python helpers
 ├── agents/                      # option-specific agents
-├── skills/                      # option-specific skills
+├── skills/                      # option-specific skills (each in its own subdirectory)
 ├── templates/                   # artefact templates
-└── validators/                  # validator config (paths to run, thresholds)
+└── scripts/                     # OPTIONAL: Python implementation helpers (mirror sdlc-knowledge-base / sdlc-workflows pattern)
 ```
+
+**New conventions for bundle plugins**: `manifest.yaml` and root-level `CONSTITUTION.md` are introduced by bundle plugins; existing non-bundle plugins (sdlc-team-*, sdlc-lang-*, sdlc-knowledge-base, sdlc-workflows) do not have them. Bundle plugins are identified by the presence of `manifest.yaml` in the plugin root.
+
+**Validator dispatcher infrastructure deferred**: Phase C does not specify a `validators/` directory or dispatcher. Validator identifiers (e.g., `python_ast`, `check_technical_debt`) are listed in the manifest's `validators:` object as bundle-defined identifiers. Phase D and Phase E refine the registry shape — including any `validators/` directory or dispatcher — based on what real bundles need at implementation time.
 
 ## Manifest schema (`manifest.yaml`)
 
@@ -45,6 +51,7 @@ Every bundle has a manifest at the bundle root with these fields:
 | `version` | semver string | yes | Bundle version (e.g. `0.1.0`) |
 | `supported_levels` | list[string] | yes | One or more of `prototype` / `production` / `enterprise` |
 | `description` | string | yes | One-line description |
+| `constitution` | string | yes | Path to constitution file relative to bundle root (typically `CONSTITUTION.md`) |
 | `depends_on` | list[string] | no | Other plugins this bundle depends on (default: `[sdlc-core]`) |
 | `agents` | list[string] | no | Agent file basenames provided (e.g. `["sdlc-enforcer.md"]`) |
 | `skills` | list[string] | no | Skill directory names provided (e.g. `["validate", "phase-review"]`) |
@@ -66,6 +73,8 @@ The fields below are **bundle-capability flags** — declarations on the bundle 
 | `paths_split_supported` | bool | Whether the bundle's modules use the `source-paths` / `derived-paths` distinction |
 | `known_violations_field` | bool | Whether the bundle's commissioning record carries a `known_violations` array |
 | `anaemic_context_opt_out` | bool | Whether modules in this bundle may declare `anaemic-context-detection: suppressed` |
+
+**Note on Spike Gap 3 (cross-module-mutation validator)**: not represented as a dedicated capability flag because validator identifiers are added to the manifest's `validators:` object as bundle-defined identifiers (see "Validator configuration" section). When Phase E ships the cross-module-mutation validator, bundles that include it list it in their `validators:` block — no manifest-level flag needed.
 
 ### Versioning rules
 
@@ -104,9 +113,9 @@ Reserved fields appear in the schema but are NOT populated by Phase C bundles. P
 
 Bundles declare which validators run at each pipeline phase:
 
-The names in the validator lists (e.g. `python_ast`, `check_technical_debt`) are **bundle-defined identifiers**, NOT global script paths. Each bundle's `validators/` directory provides the mapping from identifier to actual command — typically a small YAML or JSON registry plus a `validators/run.sh` dispatcher. This indirection lets a bundle add or rename validators without breaking other bundles, and lets multiple bundles use the same identifier (e.g. `run_tests`) backed by different commands when their projects' test runners differ.
+The names in the validator lists (e.g. `python_ast`, `check_technical_debt`) are **bundle-defined identifiers**, NOT global script paths. The identifier-to-command mapping is bundle-internal — Phase C does not specify how a bundle resolves an identifier to a runnable command. This indirection lets a bundle add or rename validators without breaking other bundles, and lets multiple bundles use the same identifier (e.g. `run_tests`) backed by different commands when their projects' test runners differ.
 
-Phase C ships a stub bundle-defined identifier list in the sample bundle (Task 4). Phase D and Phase E refine the registry shape based on real bundle needs.
+Phase C ships a stub bundle-defined identifier list in the sample bundle (Task 4). Phase D and Phase E refine the registry shape — including any `validators/` directory or dispatcher pattern — based on real bundle needs.
 
 ```yaml
 validators:
@@ -136,5 +145,8 @@ Existing projects without `sdlc_option` in `.sdlc/team-config.json` continue to 
 - Single-team and Solo bundle implementation (#99 / #100, separate sub-features)
 - Migration between options (#101)
 - The Method 2 schema fields' validator semantics (Phase E)
+- **Per-validator audit-evidence requirements** (e.g., declaring "this validator's output is the regulator-facing artefact"). Bundles that need this declare it in their `README.md`; the framework does not enforce a schema for it.
+- **Bundle-level certification scope** (e.g., "this bundle supports DO-178C Level B but not Level A", or specific ASIL ranges). Declared in the bundle's `README.md`; not part of the manifest schema. Future versions of the contract may add a `regulatory_contexts: list[string]` field if Phase E or later real-world bundles need machine-readable declaration.
+- **Validator tool-qualification levels** (TCL per ISO 26262-8, similar concepts in DO-178C). The framework is open-source code; tool qualification is determined per-project based on context, not declared by the bundle.
 
 Phase C ships the contract + the commission skill + the recorder + the installer + sdlc-enforcer adaptation. Bundles get built on top.
