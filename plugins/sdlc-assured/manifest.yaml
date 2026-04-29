@@ -30,15 +30,15 @@ validators:
     - check_technical_debt
     - check_logging_compliance
     - run_tests
-    - id_uniqueness_validator
-    - cited_ids_resolve_validator
-    - orphan_ids_validator
-    - forward_link_integrity_validator
-    - backward_coverage_validator
-    - index_regenerability_validator
-    - annotation_format_integrity_validator
-    - req_module_assignment_validator
-    - code_module_mapping_validator
-    - visibility_rule_validator
-    - anaemic_context_validator
-    - granularity_match_validator
+    - id_uniqueness
+    - cited_ids_resolve
+    - orphan_ids
+    - forward_link_integrity
+    - backward_coverage
+    - index_regenerability
+    - annotation_format_integrity
+    - req_has_module_assignment
+    - code_annotation_maps_to_module
+    - visibility_rule_enforcement
+    - anaemic_context_detection
+    - granularity_match

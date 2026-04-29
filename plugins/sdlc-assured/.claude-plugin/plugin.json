@@ -1,5 +1,9 @@
 {
   "name": "sdlc-assured",
   "version": "0.1.0",
-  "description": "Assured (Method 2) regulated-industry SDLC bundle"
+  "description": "Assured (Method 2) regulated-industry SDLC bundle",
+  "author": { "name": "SteveGJones" },
+  "repository": "https://github.com/SteveGJones/ai-first-sdlc-practices",
+  "license": "MIT",
+  "keywords": ["sdlc", "assured", "regulated", "traceability", "decomposition", "do-178c", "iec-62304", "iso-26262", "fda", "method-2", "bundle"]
 }
