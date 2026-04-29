@@ -292,3 +292,32 @@ def anaemic_context_detection(
                     f"(module {module}) but file is outside the module's paths {allowed_paths}"
                 )
     return DecompositionValidatorResult(passed=not errors, errors=errors)
+
+
+def granularity_match(
+    declared_reqs: List[str],
+    annotations: List[CodeAnnotation],
+    decomp: Decomposition,
+    spec_module_lookup: dict[str, str],
+) -> DecompositionValidatorResult:
+    """For modules with granularity=requirement, every REQ must have at least one annotation."""
+    cited: set[str] = set()
+    for ann in annotations:
+        cited.update(ann.cited_ids)
+    granularity_by_module: dict[str, str] = {}
+    for p in decomp.programs:
+        for sp in p.sub_programs:
+            for m in sp.modules:
+                granularity_by_module[f"{p.id}.{sp.id}.{m.id}"] = m.granularity
+    warnings: List[str] = []
+    for req in declared_reqs:
+        module = spec_module_lookup.get(req)
+        if module is None:
+            continue
+        if granularity_by_module.get(module) != "requirement":
+            continue
+        if req not in cited:
+            warnings.append(
+                f"under-specified: {req} (module {module}) has no `# implements:` annotation"
+            )
+    return DecompositionValidatorResult(passed=True, warnings=warnings)

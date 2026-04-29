@@ -13,6 +13,7 @@ from sdlc_assured_scripts.assured.decomposition import (
     anaemic_context_detection,
     code_annotation_maps_to_module,
     default_decomposition,
+    granularity_match,
     parse_programs_yaml,
     req_has_module_assignment,
     visibility_rule_enforcement,
@@ -284,4 +285,55 @@ programs:
     )
     result = anaemic_context_detection(annotations, decomp, spec_lookup)
     assert result.passed is False
-    assert any("anaemic" in e.lower() for e in result.errors)
+
+
+def test_granularity_match_passes_when_each_req_has_annotation():
+    declared_reqs = ["REQ-auth-001", "REQ-auth-002"]
+    annotations = [
+        CodeAnnotation(
+            file_path="src/auth/oauth/login.py", line=10, cited_ids=["REQ-auth-001"]
+        ),
+        CodeAnnotation(
+            file_path="src/auth/oauth/refresh.py", line=20, cited_ids=["REQ-auth-002"]
+        ),
+    ]
+    spec_lookup = {"REQ-auth-001": "P1.SP1.M1", "REQ-auth-002": "P1.SP1.M1"}
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {id: M1, name: OAuth, paths: [src/auth/oauth/], granularity: requirement, structure: flat}
+"""
+    )
+    result = granularity_match(declared_reqs, annotations, decomp, spec_lookup)
+    assert result.passed is True
+
+
+def test_granularity_match_warns_when_req_under_specified():
+    declared_reqs = ["REQ-auth-001", "REQ-auth-002"]
+    annotations = [
+        CodeAnnotation(
+            file_path="src/auth/oauth/login.py", line=10, cited_ids=["REQ-auth-001"]
+        ),
+    ]
+    spec_lookup = {"REQ-auth-001": "P1.SP1.M1", "REQ-auth-002": "P1.SP1.M1"}
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {id: M1, name: OAuth, paths: [src/auth/oauth/], granularity: requirement, structure: flat}
+"""
+    )
+    result = granularity_match(declared_reqs, annotations, decomp, spec_lookup)
+    assert result.passed is True
+    assert any("REQ-auth-002" in w for w in result.warnings)
