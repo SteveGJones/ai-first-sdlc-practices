@@ -5,6 +5,7 @@ from sdlc_assured_scripts.assured.code_index import CodeIndexEntry
 from sdlc_assured_scripts.assured.export import (
     export_do178c_rtm,
     export_iec_62304_matrix,
+    export_iso_26262_asil_matrix,
 )
 
 
@@ -58,3 +59,18 @@ def test_export_iec_62304_matrix_columns():
     assert "| Software requirement | Software unit | Verification activity |" in output
     assert "REQ-auth-001" in output
     assert "src/auth/login.py" in output
+
+
+def test_export_iso_26262_asil_matrix_columns():
+    records, code = _three_id_chain()
+    output = export_iso_26262_asil_matrix(records, code, asil_level="C")
+    assert "ISO 26262 ASIL Traceability Matrix" in output
+    assert "ASIL: C" in output
+    assert (
+        "| Safety requirement | Architectural element | Implementation | Verification |"
+        in output
+    )
+    assert "REQ-auth-001" in output
+    assert "DES-auth-001" in output
+    assert "src/auth/login.py" in output
+    assert "TEST-auth-001" in output

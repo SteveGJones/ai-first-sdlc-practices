@@ -90,3 +90,35 @@ def export_iec_62304_matrix(
         test_str = ", ".join(t.id for t in tests) or "—"
         lines.append(f"| {req.id} | {unit_str} | {test_str} |")
     return "\n".join(lines) + "\n"
+
+
+def export_iso_26262_asil_matrix(
+    records: List[IdRecord], code: List[CodeIndexEntry], asil_level: str = "B"
+) -> str:
+    """ISO 26262 ASIL Traceability Matrix.
+
+    Columns: Safety requirement | Architectural element (design) |
+    Implementation (code) | Verification (test).
+    """
+    cited_by = _index_by_satisfies(records)
+    code_by_cited = _code_by_cited(code)
+    lines = [
+        "# ISO 26262 ASIL Traceability Matrix",
+        "",
+        f"ASIL: {asil_level}",
+        "",
+        "| Safety requirement | Architectural element | Implementation | Verification |",
+        "|---------------------|----------------------|----------------|---------------|",
+    ]
+    reqs = [r for r in records if r.kind == "REQ"]
+    for req in reqs:
+        deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
+        for des in deses:
+            tests = [t for t in cited_by.get(des.id, []) if t.kind == "TEST"]
+            code_locs = code_by_cited.get(req.id, []) + code_by_cited.get(des.id, [])
+            code_str = ", ".join(f"{c.file_path}:{c.line}" for c in code_locs) or "—"
+            test_str = ", ".join(t.id for t in tests) or "—"
+            lines.append(f"| {req.id} | {des.id} | {code_str} | {test_str} |")
+        if not deses:
+            lines.append(f"| {req.id} | — | — | — |")
+    return "\n".join(lines) + "\n"
