@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import List
+from pathlib import Path
+from typing import Callable, List
 
 from .ids import IdRecord
 
@@ -106,3 +107,25 @@ def backward_coverage(records: List[IdRecord]) -> ValidatorResult:
             if not test_children:
                 errors.append(f"{r.id} (in {r.source}) has no TEST covering it")
     return ValidatorResult(passed=not errors, errors=errors)
+
+
+def index_regenerability(
+    index_path: Path, regenerate: Callable[[], str]
+) -> ValidatorResult:
+    """Idempotency check: re-running the generator must produce byte-identical output."""
+    if not index_path.is_file():
+        return ValidatorResult(
+            passed=False,
+            errors=[f"index file does not exist: {index_path}"],
+        )
+    on_disk = index_path.read_text(encoding="utf-8")
+    fresh = regenerate()
+    if on_disk == fresh:
+        return ValidatorResult(passed=True)
+    return ValidatorResult(
+        passed=False,
+        errors=[
+            f"index {index_path} is not idempotent — committed content differs from "
+            "regenerated output. Run kb-rebuild-indexes and commit."
+        ],
+    )

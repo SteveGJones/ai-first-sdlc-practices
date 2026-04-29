@@ -1,12 +1,15 @@
 """Tests for assured.traceability_validators."""
 
 from sdlc_assured_scripts.assured.ids import IdRecord
+from pathlib import Path
+
 from sdlc_assured_scripts.assured.traceability_validators import (
     ValidatorResult,
     backward_coverage,
     cited_ids_resolve,
     forward_link_integrity,
     id_uniqueness,
+    index_regenerability,
     orphan_ids,
 )
 
@@ -179,3 +182,26 @@ def test_backward_coverage_fails_when_des_has_no_test():
     result = backward_coverage(records)
     assert result.passed is False
     assert any("DES-auth-001" in e and "no TEST" in e for e in result.errors)
+
+
+def test_index_regenerability_passes_when_byte_identical(tmp_path: Path):
+    index_path = tmp_path / "_ids.md"
+    index_path.write_text("# ID Registry\n| ID | Kind | Source | Satisfies |\n")
+
+    def regenerate() -> str:
+        return "# ID Registry\n| ID | Kind | Source | Satisfies |\n"
+
+    result = index_regenerability(index_path, regenerate)
+    assert result.passed is True
+
+
+def test_index_regenerability_fails_when_drift(tmp_path: Path):
+    index_path = tmp_path / "_ids.md"
+    index_path.write_text("# ID Registry\nOLD\n")
+
+    def regenerate() -> str:
+        return "# ID Registry\nNEW\n"
+
+    result = index_regenerability(index_path, regenerate)
+    assert result.passed is False
+    assert any("not idempotent" in e.lower() for e in result.errors)
