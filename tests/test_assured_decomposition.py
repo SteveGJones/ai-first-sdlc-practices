@@ -5,12 +5,25 @@ from pathlib import Path
 import pytest
 
 from sdlc_assured_scripts.assured.decomposition import (
+    CodeAnnotation,
+    Decomposition,
     DecompositionParseError,
     SpecArtefact,
+    code_annotation_maps_to_module,
     default_decomposition,
     parse_programs_yaml,
     req_has_module_assignment,
 )
+
+
+def parse_programs_yaml_inline(content: str) -> Decomposition:
+    import tempfile
+    from pathlib import Path as _Path
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(content)
+        tmp_path = _Path(f.name)
+    return parse_programs_yaml(tmp_path)
 
 
 def test_parse_programs_yaml_extracts_modules(tmp_path: Path):
@@ -92,3 +105,58 @@ def test_req_has_module_assignment_fails_when_module_undeclared():
     result = req_has_module_assignment([spec], decomp)
     assert result.passed is False
     assert any("P9.SP9.M9" in e for e in result.errors)
+
+
+def test_code_annotation_maps_to_module_passes_when_path_under_module():
+    annotation = CodeAnnotation(
+        file_path="src/auth/oauth/login.py",
+        line=42,
+        cited_ids=["REQ-auth-001"],
+    )
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: Auth
+    sub_programs:
+      - id: SP1
+        name: Identity
+        modules:
+          - id: M1
+            name: OAuth
+            paths: [src/auth/oauth/]
+            granularity: requirement
+            structure: flat
+"""
+    )
+    spec_lookup = {"REQ-auth-001": "P1.SP1.M1"}
+    result = code_annotation_maps_to_module([annotation], decomp, spec_lookup)
+    assert result.passed is True
+
+
+def test_code_annotation_maps_to_module_fails_when_path_outside_module():
+    annotation = CodeAnnotation(
+        file_path="src/payments/charge.py",
+        line=10,
+        cited_ids=["REQ-auth-001"],
+    )
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: Auth
+    sub_programs:
+      - id: SP1
+        name: Identity
+        modules:
+          - id: M1
+            name: OAuth
+            paths: [src/auth/oauth/]
+            granularity: requirement
+            structure: flat
+"""
+    )
+    spec_lookup = {"REQ-auth-001": "P1.SP1.M1"}
+    result = code_annotation_maps_to_module([annotation], decomp, spec_lookup)
+    assert result.passed is False
+    assert any("src/payments/charge.py" in e for e in result.errors)

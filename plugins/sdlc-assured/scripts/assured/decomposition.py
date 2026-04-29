@@ -189,3 +189,51 @@ def req_has_module_assignment(
                     "which is not declared in programs.yaml"
                 )
     return DecompositionValidatorResult(passed=not errors, errors=errors)
+
+
+@dataclass(frozen=True)
+class CodeAnnotation:
+    """A parsed `# implements:` annotation."""
+
+    file_path: str
+    line: int
+    cited_ids: List[str]
+
+
+def _module_paths(decomp: Decomposition) -> dict:
+    out: dict = {}
+    for p in decomp.programs:
+        for sp in p.sub_programs:
+            for m in sp.modules:
+                out[f"{p.id}.{sp.id}.{m.id}"] = list(m.paths)
+    return out
+
+
+def _file_under_paths(file_path: str, paths: List[str]) -> bool:
+    return any(file_path.startswith(p) for p in paths)
+
+
+def code_annotation_maps_to_module(
+    annotations: List[CodeAnnotation],
+    decomp: Decomposition,
+    spec_module_lookup: dict,
+) -> DecompositionValidatorResult:
+    """Each annotation's file path must lie under its cited spec's module path.
+
+    spec_module_lookup maps REQ/DES/TEST IDs to their declared module.
+    """
+    paths_by_module = _module_paths(decomp)
+    errors: List[str] = []
+    for ann in annotations:
+        for cited in ann.cited_ids:
+            module = spec_module_lookup.get(cited)
+            if module is None:
+                # Caught by cited_ids_resolve; skip here.
+                continue
+            allowed_paths = paths_by_module.get(module, [])
+            if not _file_under_paths(ann.file_path, allowed_paths):
+                errors.append(
+                    f"{ann.file_path}:{ann.line} cites {cited} (module {module}) "
+                    f"but file is not under any declared path: {allowed_paths}"
+                )
+    return DecompositionValidatorResult(passed=not errors, errors=errors)
