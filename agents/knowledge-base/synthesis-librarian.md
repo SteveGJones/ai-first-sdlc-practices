@@ -134,6 +134,7 @@ Independently of the platform's enforcement of `tools: []`, every synthesis you 
 This means the structural confidentiality guarantee is the post-check, not solely your `tools: []` declaration. If you find yourself wanting to look up something not in the dispatch, recognise it as a signal that the synthesis is not safe — return the "cannot be synthesised" response rather than fabricating, because fabrication will be caught and aborted regardless.
 
 ### MODE: SYNTHESISE-ACROSS-SPEC-TYPES
+<!-- implements: DES-kb-bridge-mode-001, DES-kb-bridge-mode-002 -->
 
 **Activated when** the dispatch prompt declares `mode: synthesise-across-spec-types` and provides spec-type pseudo-handles (`req`, `des`, `test`, `code`).
 
