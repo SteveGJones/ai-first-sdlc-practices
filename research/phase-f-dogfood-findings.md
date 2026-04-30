@@ -13,6 +13,14 @@
 plugins/sdlc-programme/skills/ and their root mirrors in skills/. Total markdown files
 carrying `<!-- implements: DES-... -->` annotations now: 10 (5 from Tasks 5-7 + 5 from
 Task 8). Parser fix remains pending for v0.2.0.
+**Scale note (Task 17 — index generation):** When the three KB indexes were generated,
+`_ids.md` collected 129 ID records (REQ + DES + TEST across all spec files) while
+`_code-index.md` collected only 18 Python `# implements:` annotation entries from 13
+Python source files (plugins/sdlc-assured/scripts + plugins/sdlc-programme/scripts). The
+ratio is 18/129 = 14 % — confirming that ~86 % of the spec layer is invisible to the code
+index because the annotation carrier is markdown (SKILL.md files and design docs), not
+Python. This directly quantifies F-001's impact: the code-index underrepresents the
+implementation by a factor of ~7x in this dogfood exercise.
 
 ## F-002 — programs.yaml `paths` cannot scope to a section of a file
 
