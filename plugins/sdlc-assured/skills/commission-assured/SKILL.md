@@ -27,6 +27,7 @@ This skill assumes:
     - If multiple: how many programs? Sub-programs per program? Modules per sub-program?
 
 4. **Scaffold the artefacts.**
+    <!-- implements: DES-assured-substrate-001 -->
     - Copy `programs.yaml` template to `programs.yaml` (project root) with placeholders substituted.
     - Copy `visibility-rules.md` template to `docs/architecture/visibility-rules.md`.
     - For regulated contexts (IEC 62304 ≥ B, FDA, ISO 26262 ASIL ≥ C): copy `change-impact.md` template to `docs/change-impacts/CHG-template.md`.
