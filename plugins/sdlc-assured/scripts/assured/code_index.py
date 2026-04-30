@@ -45,6 +45,7 @@ class CodeIndexEntry:
 def parse_code_annotations(
     files: List[Path], project_root: Path
 ) -> List[CodeIndexEntry]:
+    # implements: DES-assured-code-index-001
     """Walk *files* and extract every ``# implements:`` annotation.
 
     Parameters
@@ -88,6 +89,7 @@ def render_code_index(
     library_handle: str,
     timestamp: Optional[str] = None,
 ) -> str:
+    # implements: DES-assured-code-index-002
     """Serialise *entries* to a shelf-index-shaped Markdown string.
 
     The output begins with the standard shelf-index header comments
@@ -149,6 +151,7 @@ def render_spec_findings(
     library_handle: str,
     timestamp: Optional[str] = None,
 ) -> str:
+    # implements: DES-assured-code-index-002
     """Render REQ/DES/TEST records as shelf-index entries (spec-as-KB-finding).
 
     Parameters
