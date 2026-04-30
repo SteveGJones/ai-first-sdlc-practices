@@ -164,6 +164,7 @@ def _module_from_positional_id(id_: str) -> Optional[str]:
 def req_has_module_assignment(
     specs: List[SpecArtefact], decomp: Decomposition
 ) -> DecompositionValidatorResult:
+    # implements: DES-assured-decomposition-validators-001
     """Validate that every REQ ID has a module assignment within the decomposition.
 
     A REQ ID gets its module either from a positional prefix (e.g. P1.SP1.M1.REQ-001)
@@ -218,6 +219,7 @@ def code_annotation_maps_to_module(
     decomp: Decomposition,
     spec_module_lookup: dict,
 ) -> DecompositionValidatorResult:
+    # implements: DES-assured-decomposition-validators-002
     """Each annotation's file path must lie under its cited spec's module path.
 
     spec_module_lookup maps REQ/DES/TEST IDs to their declared module.
@@ -250,6 +252,7 @@ class ImportEdge:
 def visibility_rule_enforcement(
     edges: List[ImportEdge], decomp: Decomposition, mode: str = "advisory"
 ) -> DecompositionValidatorResult:
+    # implements: DES-assured-decomposition-validators-003
     """Verify each cross-module edge is declared in the visibility block.
 
     mode = 'strict' -> undeclared edges block (errors).
@@ -278,6 +281,7 @@ def anaemic_context_detection(
     spec_module_lookup: dict,
     scatter_threshold: float = 0.20,
 ) -> DecompositionValidatorResult:
+    # implements: DES-assured-decomposition-validators-004
     """Flag systemic anaemia: a module whose implementations are significantly scattered.
 
     This validator detects DDD bounded-context erosion at the module level.
@@ -347,6 +351,7 @@ def granularity_match(
     decomp: Decomposition,
     spec_module_lookup: dict[str, str],
 ) -> DecompositionValidatorResult:
+    # implements: DES-assured-decomposition-validators-005
     """For modules with granularity=requirement, every REQ must have at least one annotation."""
     cited: set[str] = set()
     for ann in annotations:
