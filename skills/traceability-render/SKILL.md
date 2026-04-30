@@ -3,6 +3,8 @@ name: traceability-render
 description: Render module-scoped human-readable traceability for a single module — REQs, DESs, TESTs, code locations with anchor links, plus the module-dependency graph as a markdown edge-list.
 ---
 
+<!-- implements: DES-assured-skills-007 -->
+
 # Skill: traceability-render
 
 **Use this skill** when a reviewer or auditor needs a human-readable view of one module's traceability. Produces a markdown document with anchors that resolve in any markdown renderer, no Sphinx required.

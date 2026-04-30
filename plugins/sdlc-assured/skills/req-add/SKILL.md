@@ -3,6 +3,8 @@ name: req-add
 description: Mint a new REQ ID in the Assured project's namespace, with module assignment, and append it to the requirements-spec.
 ---
 
+<!-- implements: DES-assured-skills-001 -->
+
 # Skill: req-add
 
 **Use this skill** when adding a new requirement to an existing requirements-spec under the Assured bundle. Computes the next sequential ID for the feature and module, prompts for the requirement text, and appends a properly-formatted `### REQ-...` section.

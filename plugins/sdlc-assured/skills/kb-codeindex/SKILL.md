@@ -3,6 +3,8 @@ name: kb-codeindex
 description: Parse all `# implements:` annotations in source code and emit `library/_code-index.md` as a shelf-index. Idempotent — re-running produces byte-identical output if no annotations changed.
 ---
 
+<!-- implements: DES-assured-skills-005 -->
+
 # Skill: kb-codeindex
 
 **Use this skill** to build or refresh the project's code index. The output is structurally a KB shelf-index, queryable by the `research-librarian` agent like the regular library files. Run after adding/changing `# implements:` annotations.

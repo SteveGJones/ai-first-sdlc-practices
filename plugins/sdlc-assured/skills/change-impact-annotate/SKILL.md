@@ -3,6 +3,8 @@ name: change-impact-annotate
 description: Guide the team through writing a change-impact record for IEC 62304 / FDA / ISO 26262 ASIL C+ projects. Surfaces the affected REQ/DES/TEST/CODE artefacts and captures human-attested verification approach.
 ---
 
+<!-- implements: DES-assured-skills-006 -->
+
 # Skill: change-impact-annotate
 
 **Use this skill** before pushing a code change that touches a regulated-context project where `change_impact_gate` is enabled. Produces a `docs/change-impacts/CHG-NNN.md` record that satisfies the gate.

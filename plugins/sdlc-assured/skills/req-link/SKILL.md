@@ -3,6 +3,8 @@ name: req-link
 description: Add a satisfies link from a DES → REQ, TEST → REQ/DES, or CODE annotation → ID, validating that the target exists in the registry.
 ---
 
+<!-- implements: DES-assured-skills-002 -->
+
 # Skill: req-link
 
 **Use this skill** when adding a `satisfies:` link between artefacts, OR when adding an inline `# implements:` annotation in source code. This skill validates that the target ID exists before writing the link.

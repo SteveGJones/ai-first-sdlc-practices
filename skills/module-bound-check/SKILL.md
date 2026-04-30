@@ -3,6 +3,8 @@ name: module-bound-check
 description: Run all 5 decomposition validators (req-has-module, code-annotation-maps-to-module, visibility-rule-enforcement, anaemic-context-detection, granularity-match) on the project, reporting violations.
 ---
 
+<!-- implements: DES-assured-skills-004 -->
+
 # Skill: module-bound-check
 
 **Use this skill** to verify the project's decomposition is sound. Aggregates results from all 5 module-bound validators and reports a single pass/fail with per-validator detail. Run this before pushing a substantial change to a regulated-context project.

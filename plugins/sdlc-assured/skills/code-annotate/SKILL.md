@@ -3,6 +3,8 @@ name: code-annotate
 description: Generate boilerplate `# implements:` annotation for a function based on the artefact ID, inserting it as the first line of the function body.
 ---
 
+<!-- implements: DES-assured-skills-003 -->
+
 # Skill: code-annotate
 
 **Use this skill** when adding implementation code that satisfies a REQ or DES. Generates the correct `# implements:` annotation, validates that the cited IDs exist in the registry, and inserts the annotation in a syntactically-correct place.
