@@ -1,0 +1,18 @@
+name: assured-bundle-review
+description: |
+  Independent containerised architect review of the Assured bundle (Phase E
+  deliverable). Phase F (real dogfood) layers on top of Method 2's
+  traceability + decomposition substrate, so getting Assured right matters.
+
+  Reuses the sdlc-worker:decomposition-review team image used in Phase B
+  and Phase D.
+
+provider: claude
+
+nodes:
+  - id: assured-review
+    command: assured-bundle-review
+    context: fresh
+    effort: high
+    image: sdlc-worker:decomposition-review
+    timeout: 600000
