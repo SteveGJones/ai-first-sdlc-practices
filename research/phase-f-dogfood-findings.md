@@ -178,3 +178,53 @@ Separately: all 43 TEST records cite **both** their DES and REQ in `satisfies:` 
 ### Observation — backward_coverage F-003 concern resolved by inspection
 
 F-003 (constitution category error) raised the concern that `backward_coverage` might fail for `REQ-programme-substrate-003` because CONSTITUTION.md — the artefact that "satisfies" the requirement — carries no annotation. In practice, `backward_coverage` passes because `DES-programme-substrate-003` (which describes the constitution as a documentation design unit) satisfies the REQ, and `TEST-programme-substrate-003` satisfies the DES. The validator does not require a code annotation; it only checks the ID-graph. The annotation gap (F-001/F-003) affects `annotation_format_integrity` and the code-index coverage ratio, but does not cause `backward_coverage` or `forward_link_integrity` to fail.
+
+---
+
+## Phase F Task 21 — Dependency graph + DO-178C RTM smoke test (HEAD 1494681)
+
+**Run date:** 2026-04-28
+
+### Dependency graph
+
+`render_module_dependency_graph` was called with an empty `actual_edges` list because no import-graph extractor exists (see F-007). Output: `_(no module-to-module dependencies detected)_`. The file at `docs/traceability/dependency-graph.md` correctly reflects the v0.1.0 limitation documented in F-007.
+
+Quantified F-007 observation: Phase F could not produce a meaningful dependency graph because no import-graph extractor exists. v0.2.0 should ship a default Python-import extractor (ast-based scanner resolving imports to owning modules via `programs.yaml` paths).
+
+### DO-178C RTM
+
+| Metric | Value |
+|--------|-------|
+| Total REQ rows | 43 |
+| Rows with source-code annotation | 15 (34.9%) |
+| Rows with source-code placeholder (—) | 28 (65.1%) |
+| Rows with test-case placeholder (—) | 0 (0%) |
+
+All 43 rows have populated HLR and LLR columns. All 43 rows have populated Test case columns (no test gaps — every DES has a TEST). The gap is entirely in the Source code column.
+
+---
+
+## F-009 — DO-178C RTM source-code column is 65% empty due to F-001 annotation scope
+
+**Severity:** IMPORTANT
+**Surfaced during:** Task 21 (Phase F, DO-178C RTM smoke test)
+**Reproduction:** Of 43 REQ rows in the RTM, 28 (65.1%) show `—` in the Source code column. Examination confirms that this is a direct consequence of F-001 (annotation parser does not handle markdown files): the 15 populated source-code cells correspond exactly to the Python source files that carry `# implements:` annotations. The 28 empty cells correspond to REQs whose implementing artefacts are markdown files (SKILL.md files, design docs, agent manifests) — none of which are currently indexed by `parse_code_annotations`.
+
+The DO-178C standard requires that every HLR be traceable to source code (or a justification for why no source artefact exists). A 65% gap in the Source code column of the RTM would fail a DO-178C audit without supplementary explanation.
+
+**Breakdown by feature area:**
+- `assured-export-formats` (4 REQs): 4 empty — export.py has no `# implements:` annotations despite being the implementing module
+- `assured-id-system` (2 REQs): 2 empty — ids.py has no `# implements:` annotations
+- `assured-skills` (7 REQs): 7 empty — SKILL.md files cannot be indexed (F-001)
+- `assured-substrate` (3 REQs): 3 empty — substrate artefacts are markdown
+- `assured-traceability-validators` (4 REQs): 4 empty — traceability_validators.py has no `# implements:` annotations
+- `kb-bridge-mode` (2 REQs): 2 empty — synthesis-librarian.md is markdown (F-001)
+- `programme-skills` (5 REQs): 5 empty — SKILL.md files cannot be indexed (F-001)
+- `code-index`, `decomposition-validators`, `render` (7 REQs): all 7 populated — these Python modules have `# implements:` annotations
+
+**Impact on regulated-industry users:** high — a DO-178C RTM with 65% source-code gaps would require manual supplementary evidence (e.g., DAL traceability tables maintained separately) to pass an audit. The RTM as generated is not audit-ready.
+**Suggested resolution (v0.2.0):**
+  1. Fix F-001 so that markdown SKILL.md annotations are indexed. This resolves the 7 `assured-skills` + 5 `programme-skills` gaps immediately.
+  2. Add `# implements:` annotations to `export.py`, `ids.py`, and `traceability_validators.py` (pure Python files that currently lack them). This resolves 10 further gaps with no tooling change.
+  3. Adopt YAML frontmatter `implements:` for structural documentation artefacts (F-003 pattern). This resolves the remaining substrate/markdown gaps.
+**Related:** F-001, F-003, `plugins/sdlc-assured/scripts/assured/code_index.py`, `docs/traceability/do-178c-rtm.md`
