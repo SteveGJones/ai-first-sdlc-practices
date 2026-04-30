@@ -146,3 +146,35 @@ Option 1 is the most backward-compatible and produces the most useful signal. Op
 
 **Scale note:** 43/43 REQs warned = 100% noise rate. All 18 Python annotations cite DES IDs. Zero REQ annotations exist anywhere in the codebase.
 **Related code:** `plugins/sdlc-assured/scripts/assured/decomposition.py:granularity_match` (lines 348–375); `programs.yaml` (granularity field for M1, M2, M3 — all set to `requirement`)
+
+---
+
+## Phase F Task 19 — Traceability validator run (HEAD af103d6)
+
+**Run date:** 2026-04-28
+**Index state:** 18 code annotations (Python-only), 129 ID records (43 REQ + 43 DES + 43 TEST)
+**Files scanned by annotation_format_integrity:** 13 Python source files in `plugins/sdlc-assured/scripts` + `plugins/sdlc-programme/scripts`
+
+### Validator summary
+
+| Validator | Passed | Errors | Warnings | Notes |
+|-----------|--------|--------|----------|-------|
+| `id_uniqueness` | TRUE | 0 | 0 | All 129 IDs are unique |
+| `cited_ids_resolve` | TRUE | 0 | 0 | All `satisfies:` targets resolve to declared IDs |
+| `orphan_ids` | TRUE | 0 | 0 | All 43 REQs and 43 DESs are cited (see observation below) |
+| `forward_link_integrity` | TRUE | 0 | 0 | Every DES cites ≥1 REQ; every TEST cites ≥1 DES |
+| `backward_coverage` | TRUE | 0 | 0 | Every REQ has ≥1 DES covering it; every DES has ≥1 TEST covering it |
+| `index_regenerability` | TRUE | 0 | 0 | `library/_ids.md` is byte-identical to freshly regenerated output |
+| `annotation_format_integrity` | TRUE | 0 | 0 | All 18 `# implements:` annotations cite declared, well-formed IDs |
+
+All 7 validators passed with zero errors and zero warnings. No new findings.
+
+### Observation — orphan_ids zero-warnings is correct, not surprising
+
+The task notes anticipated `orphan_ids` might warn for "REQs whose implementing DES isn't cited by any TEST yet." Examination shows this concern does not apply: all 43 REQs are cited by their corresponding DES `satisfies:` fields, and all 43 DESs are cited by TEST `satisfies:` fields. The dogfood exercise produced a complete 43×3 triad: every module has exactly one REQ→DES→TEST chain with no dangling nodes.
+
+Separately: all 43 TEST records cite **both** their DES and REQ in `satisfies:` (e.g. `satisfies: [REQ-foo-001, DES-foo-001]`). This is belt-and-suspenders traceability — the forward_link_integrity validator only requires TEST to cite ≥1 DES, so the extra REQ citation is accepted without complaint. The pattern adds a direct TEST→REQ link alongside the TEST→DES→REQ transitive chain. This is not a finding but worth noting: it means both direct and transitive backward-coverage are present for every test.
+
+### Observation — backward_coverage F-003 concern resolved by inspection
+
+F-003 (constitution category error) raised the concern that `backward_coverage` might fail for `REQ-programme-substrate-003` because CONSTITUTION.md — the artefact that "satisfies" the requirement — carries no annotation. In practice, `backward_coverage` passes because `DES-programme-substrate-003` (which describes the constitution as a documentation design unit) satisfies the REQ, and `TEST-programme-substrate-003` satisfies the DES. The validator does not require a code annotation; it only checks the ID-graph. The annotation gap (F-001/F-003) affects `annotation_format_integrity` and the code-index coverage ratio, but does not cause `backward_coverage` or `forward_link_integrity` to fail.
