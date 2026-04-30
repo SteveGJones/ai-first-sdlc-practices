@@ -18,6 +18,15 @@
 **Suggested resolution:** consider line-range or section-anchor support in v0.2.0; or document the limitation
 **Related:** plugins/sdlc-assured/scripts/assured/decomposition.py:Module.paths
 
+## F-003 — Constitution REQ creates a category error in the annotation model
+
+**Severity:** MINOR
+**Surfaced during:** Task 6 (Stage 2, M1 programme-substrate)
+**Reproduction:** REQ-programme-substrate-003 requires the Constitution to define Articles 12-14. The Constitution is the governance document — it IS the requirement source for the programme bundle, not a code artefact that implements a requirement from some higher-level spec. Writing `# implements: DES-programme-substrate-003` inside CONSTITUTION.md (a) conflicts with F-001 (markdown H1 ambiguity) and (b) inverts the artefact hierarchy: the Constitution is the authority from which requirements flow, not the output of one. No annotation was added to CONSTITUTION.md. DES-programme-substrate-003 instead describes the constitution as a documentation design unit, and TEST-programme-substrate-003 verifies its content structurally.
+**Impact on regulated-industry users:** medium — projects with governance documents (policy files, constitutional documents, architecture decision records) will routinely encounter requirements that are "satisfied by the document itself existing with the right content." The annotation model has no first-class concept for this; the gap forces a category violation or a silent omission.
+**Suggested resolution:** v0.2.0 — introduce a `# satisfies-by-existence:` annotation type (or YAML frontmatter `satisfies: [REQ-NNN]`) for documents that ARE the artefact satisfying a requirement, distinct from code that implements a design unit. Alternatively, restrict the annotation model to code files only and document that documentation requirements are verified by structural tests (as done here in TEST-programme-substrate-003).
+**Related code:** plugins/sdlc-assured/scripts/assured/code_index.py (annotation scanner scope); plugins/sdlc-programme/CONSTITUTION.md (the artefact in question)
+
 ---
 
 ## Stage 1 checkpoint reflection

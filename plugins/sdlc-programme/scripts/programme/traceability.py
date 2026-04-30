@@ -119,6 +119,7 @@ def _satisfies_for_test(
 
 def build_matrix(feature_dir: Path, feature_id: str) -> list[TraceabilityRow]:
     """Build the traceability matrix as a list of rows ordered by REQ-ID."""
+    # implements: DES-programme-substrate-002
     req = _load_phase(feature_dir, "requirements", "requirements-spec.md")
     _load_phase(feature_dir, "design", "design-spec.md")
     _load_phase(feature_dir, "test", "test-spec.md")
@@ -164,6 +165,7 @@ def export_csv(feature_dir: Path, feature_id: str) -> str:
     Cartesian-product expansion: a REQ with 2 DES and 3 TEST yields up to 6 rows.
     Empty DES or TEST cells render as empty strings.
     """
+    # implements: DES-programme-substrate-002
     rows = build_matrix(feature_dir, feature_id)
     out_lines = ["REQ,DES,TEST"]
     for row in rows:
@@ -177,6 +179,7 @@ def export_csv(feature_dir: Path, feature_id: str) -> str:
 
 def export_markdown(feature_dir: Path, feature_id: str) -> str:
     """Export the matrix as a markdown table."""
+    # implements: DES-programme-substrate-002
     rows = build_matrix(feature_dir, feature_id)
     lines = ["| REQ | DES | TEST |", "| --- | --- | --- |"]
     for row in rows:

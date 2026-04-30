@@ -51,6 +51,7 @@ def parse_spec(path: Path, phase: str) -> ParsedSpec:
 
     Skips IDs inside fenced code blocks (``` blocks).
     """
+    # implements: DES-programme-substrate-001
     if phase not in VALID_PHASES:
         raise SpecParseError(
             f"Unknown phase '{phase}'; must be one of {sorted(VALID_PHASES)}"
