@@ -20,7 +20,7 @@ class ValidatorResult:
     warnings: List[str] = field(default_factory=list)
 
 
-def id_uniqueness(records: List[IdRecord]) -> ValidatorResult:
+def id_uniqueness(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001
     counts = Counter(r.id for r in records)
     duplicates = [id_ for id_, n in counts.items() if n > 1]
     if not duplicates:
@@ -33,7 +33,7 @@ def id_uniqueness(records: List[IdRecord]) -> ValidatorResult:
     return ValidatorResult(passed=False, errors=errors)
 
 
-def cited_ids_resolve(records: List[IdRecord]) -> ValidatorResult:
+def cited_ids_resolve(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001
     declared = {r.id for r in records}
     errors: List[str] = []
     for r in records:
@@ -45,7 +45,7 @@ def cited_ids_resolve(records: List[IdRecord]) -> ValidatorResult:
     return ValidatorResult(passed=not errors, errors=errors)
 
 
-def orphan_ids(records: List[IdRecord]) -> ValidatorResult:
+def orphan_ids(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001
     """Warn when an ID that should be cited (REQ, DES) is never cited.
 
     TEST and CODE are leaves; missing back-references for them are
@@ -63,7 +63,7 @@ def orphan_ids(records: List[IdRecord]) -> ValidatorResult:
     return ValidatorResult(passed=True, warnings=warnings)
 
 
-def forward_link_integrity(records: List[IdRecord]) -> ValidatorResult:
+def forward_link_integrity(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-002
     """Verify every DES cites at least one REQ; every TEST cites at least one DES; targets resolve."""
     declared = {r.id: r for r in records}
     errors: List[str] = []
@@ -82,7 +82,7 @@ def forward_link_integrity(records: List[IdRecord]) -> ValidatorResult:
     return ValidatorResult(passed=not errors, errors=errors)
 
 
-def backward_coverage(records: List[IdRecord]) -> ValidatorResult:
+def backward_coverage(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-002
     """Verify every REQ is covered by a DES; every DES is covered by a TEST."""
     cited_by: dict[str, List[str]] = {r.id: [] for r in records}
     for r in records:
@@ -110,7 +110,7 @@ def backward_coverage(records: List[IdRecord]) -> ValidatorResult:
     return ValidatorResult(passed=not errors, errors=errors)
 
 
-def index_regenerability(
+def index_regenerability(  # implements: DES-assured-traceability-validators-003
     index_path: Path, regenerate: Callable[[], str]
 ) -> ValidatorResult:
     """Idempotency check: re-running the generator must produce byte-identical output."""
@@ -132,7 +132,7 @@ def index_regenerability(
     )
 
 
-def change_impact_gate(
+def change_impact_gate(  # implements: DES-assured-substrate-003
     changed_code_files: List[Path],
     change_impact_records_dir: Path,
     enabled: bool,
@@ -166,7 +166,7 @@ _IMPLEMENTS_RE = re.compile(r"^\s*#\s*implements:\s*(?P<ids>.+)$", re.MULTILINE)
 _ID_TOKEN_RE = re.compile(r"[A-Za-z0-9.\-]+")
 
 
-def annotation_format_integrity(
+def annotation_format_integrity(  # implements: DES-assured-traceability-validators-004
     code_files: List[Path], declared_ids: set[str]
 ) -> ValidatorResult:
     """Check that every `# implements:` annotation cites a declared, well-formed ID."""
