@@ -64,6 +64,7 @@ def _has_review_record(feature_dir: Path, phase: str) -> bool:
 
 def requirements_gate(feature_dir: Path, feature_id: str) -> GateResult:
     """Check requirements-spec.md exists, has feature-id, declares ≥ 1 REQ-ID."""
+    # implements: DES-programme-validators-001
     result = GateResult(gate_name="requirements", feature_id=feature_id)
     spec = feature_dir / "requirements-spec.md"
 
@@ -91,6 +92,7 @@ def requirements_gate(feature_dir: Path, feature_id: str) -> GateResult:
 
 def design_gate(feature_dir: Path, feature_id: str) -> GateResult:
     """Check design-spec.md exists with valid satisfies refs to requirements-spec."""
+    # implements: DES-programme-validators-002
     result = GateResult(gate_name="design", feature_id=feature_id)
 
     req_spec = feature_dir / "requirements-spec.md"
@@ -144,6 +146,7 @@ def design_gate(feature_dir: Path, feature_id: str) -> GateResult:
 
 def test_gate(feature_dir: Path, feature_id: str) -> GateResult:
     """Check test-spec.md exists with valid satisfies refs to both prior phases."""
+    # implements: DES-programme-validators-003
     result = GateResult(gate_name="test", feature_id=feature_id)
 
     req_spec = feature_dir / "requirements-spec.md"
@@ -209,6 +212,7 @@ def test_gate(feature_dir: Path, feature_id: str) -> GateResult:
 
 def code_gate(feature_dir: Path, feature_id: str, code_text: str) -> GateResult:
     """Check code_text has a TEST-ID annotation that resolves to test-spec.md."""
+    # implements: DES-programme-validators-004
     result = GateResult(gate_name="code", feature_id=feature_id)
 
     test_spec = feature_dir / "test-spec.md"

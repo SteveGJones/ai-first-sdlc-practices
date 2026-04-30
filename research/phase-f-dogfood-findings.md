@@ -27,6 +27,34 @@
 **Suggested resolution:** v0.2.0 — introduce a `# satisfies-by-existence:` annotation type (or YAML frontmatter `satisfies: [REQ-NNN]`) for documents that ARE the artefact satisfying a requirement, distinct from code that implements a design unit. Alternatively, restrict the annotation model to code files only and document that documentation requirements are verified by structural tests (as done here in TEST-programme-substrate-003).
 **Related code:** plugins/sdlc-assured/scripts/assured/code_index.py (annotation scanner scope); plugins/sdlc-programme/CONSTITUTION.md (the artefact in question)
 
+## F-004 — REQ-inventory review-record gate assignment is offset by one phase
+
+**Severity:** MINOR
+**Surfaced during:** Task 7 (Stage 2, M1 programme-validators)
+**Reproduction:** The REQ inventory (`research/phase-f-req-inventory.md`) states that
+`design_gate` requires "a review record for the **requirements** phase" and that
+`test_gate` requires "a review record for the **design** phase." The actual
+implementation in `gates.py` checks for a review record for the gate's **own** phase:
+`design_gate` calls `_has_review_record(feature_dir, "design")` and `test_gate` calls
+`_has_review_record(feature_dir, "test")`. The code's convention — each gate requires
+a review of the phase it is guarding before advancement — is more semantically
+consistent with Article 14 of the programme Constitution ("mandatory phase-review
+records committed alongside design-spec and test-spec artefacts"). The REQ inventory
+wording was authored before the implementation and has an off-by-one phase assignment.
+The REQs in `docs/specs/programme-validators/requirements-spec.md` are written to match
+the code (REQ-programme-validators-002 requires a design-phase review record;
+REQ-programme-validators-003 requires a test-phase review record).
+**Impact on regulated-industry users:** low — the code is correct; only the planning
+artefact (REQ inventory) had the mismatch. A downstream user reading the REQ inventory
+without the code would author an incorrect test fixture.
+**Suggested resolution:** Update the REQ inventory row descriptions in v0.2.0 to state
+"a review record for the **same** phase" rather than naming a specific prior phase.
+Alternatively, add a note to the REQ inventory that gate N checks for a review of
+phase N (not phase N-1).
+**Related:** `research/phase-f-req-inventory.md` (programme-validators table),
+`plugins/sdlc-programme/scripts/programme/gates.py:135,200`,
+`docs/specs/programme-validators/requirements-spec.md`
+
 ---
 
 ## Stage 1 checkpoint reflection
