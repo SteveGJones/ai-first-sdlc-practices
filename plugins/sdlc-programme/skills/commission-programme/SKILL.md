@@ -4,6 +4,7 @@ description: Commission a project to the Programme SDLC bundle. Tailored entry p
 disable-model-invocation: true
 argument-hint: "[--level production|enterprise]"
 ---
+<!-- implements: DES-programme-skills-001 -->
 
 # Commission to Programme
 

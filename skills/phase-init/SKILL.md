@@ -4,6 +4,7 @@ description: Instantiate a phase artefact (requirements-spec / design-spec / tes
 disable-model-invocation: false
 argument-hint: "<phase> <feature-id>"
 ---
+<!-- implements: DES-programme-skills-002 -->
 
 # Initialise a Phase Artefact
 

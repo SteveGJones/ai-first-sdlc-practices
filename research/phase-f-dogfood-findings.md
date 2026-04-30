@@ -8,6 +8,11 @@
 **Impact on regulated-industry users:** high — most user-facing artefacts (SKILLs, agents, design docs) are markdown, not Python. Regulated-industry users will hit this within the first feature.
 **Suggested resolution:** v0.2.0 — extend `_IMPLEMENTS_RE` to recognise both forms, or add a second regex `_HTML_IMPLEMENTS_RE = re.compile(r"<!--\s*implements:\s*(?P<ids>.+)\s*-->")`. Alternative: define a project-wide rule that markdown annotations live in YAML frontmatter (`implements: [DES-x-001, ...]`).
 **Related code:** plugins/sdlc-assured/scripts/assured/code_index.py:9-13, plugins/sdlc-assured/scripts/assured/traceability_validators.py:_IMPLEMENTS_RE
+**Scale note (Task 8):** HTML-comment workaround applied to 5 more SKILL.md files
+(commission-programme, phase-init, phase-gate, phase-review, traceability-export) in
+plugins/sdlc-programme/skills/ and their root mirrors in skills/. Total markdown files
+carrying `<!-- implements: DES-... -->` annotations now: 10 (5 from Tasks 5-7 + 5 from
+Task 8). Parser fix remains pending for v0.2.0.
 
 ## F-002 — programs.yaml `paths` cannot scope to a section of a file
 

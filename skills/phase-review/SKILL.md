@@ -4,6 +4,7 @@ description: Dispatch a structured cross-phase review of a phase artefact. MANDA
 disable-model-invocation: false
 argument-hint: "<phase> <feature-id>"
 ---
+<!-- implements: DES-programme-skills-004 -->
 
 # Cross-Phase Review
 

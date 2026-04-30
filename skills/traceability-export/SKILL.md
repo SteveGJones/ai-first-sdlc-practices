@@ -4,6 +4,7 @@ description: Export the REQ↔DES↔TEST traceability matrix for a feature in cs
 disable-model-invocation: false
 argument-hint: "<format> <feature-id> [output-path]"
 ---
+<!-- implements: DES-programme-skills-005 -->
 
 # Export Traceability Matrix
 

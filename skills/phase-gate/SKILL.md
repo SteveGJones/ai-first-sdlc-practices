@@ -4,6 +4,7 @@ description: Run a Programme phase gate validator (requirements / design / test 
 disable-model-invocation: false
 argument-hint: "<phase> <feature-id> [code-file-glob-for-code-gate]"
 ---
+<!-- implements: DES-programme-skills-003 -->
 
 # Run a Phase Gate
 
