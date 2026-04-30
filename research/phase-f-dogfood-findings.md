@@ -97,3 +97,52 @@ phase N (not phase N-1).
 **Suggested resolution:** v0.2.0 — either split `orphan_ids` into its own REQ with explicit "SHALL warn (non-blocking)" language, or add a parenthetical to REQ-001 that makes the two-tier severity explicit at the requirement level (e.g., "SHALL detect ... as a blocking error; SHALL detect ... as a non-blocking warning"). The current wording already partially does this ("warn-not-block" is stated), so this is a documentation clarity issue more than a design defect.
 **Related:** `docs/specs/assured-traceability-validators/requirements-spec.md` (REQ-001),
 `plugins/sdlc-assured/scripts/assured/traceability_validators.py:orphan_ids`
+
+---
+
+## Phase F Task 18 — Decomposition validator run (HEAD b83edb1)
+
+**Run date:** 2026-04-28
+**Index state:** 18 code annotations (Python-only), 129 ID records (43 REQ + 43 DES + 43 TEST)
+
+### Validator summary
+
+| Validator | Passed | Errors | Warnings | Notes |
+|-----------|--------|--------|----------|-------|
+| `req_has_module_assignment` | TRUE | 0 | 0 | All 43 REQs have valid module assignments |
+| `code_annotation_maps_to_module` | TRUE | 0 | 0 | All 18 Python annotations map correctly to their module |
+| `anaemic_context_detection` | TRUE | 0 | 0 | No module has >20% scatter ratio |
+| `visibility_rule_enforcement` | NOT RUN | — | — | No import-graph extractor available (see F-007) |
+| `granularity_match` | TRUE | 0 | 43 | Every declared REQ warns as under-specified (see F-008) |
+
+---
+
+## F-007 — `visibility_rule_enforcement` cannot run without an import-graph extractor
+
+**Severity:** MINOR
+**Surfaced during:** Task 18 (Phase F, decomposition validator run)
+**Reproduction:** `visibility_rule_enforcement` requires a list of `ImportEdge` objects — directed dependency edges derived from actual import statements. Phase F has no tooling to extract these from the Python source tree (no AST-based import scanner, no `pydeps` wrapper, no `grep`-based approximation). The validator was skipped with the note "NOT RUN — Phase F has no automated import-graph extractor; would require external tool."
+**Impact on regulated-industry users:** medium — the visibility block in `programs.yaml` declares which modules may depend on which. Without an import-graph extractor, the declared visibility rules are never enforced at any check boundary. A team that writes `from P1.SP1.M3 import ...` inside M1 code would get no feedback until a human reviewer noticed. The validator exists in the codebase but is permanently dormant until an extractor is added.
+**Suggested resolution:** v0.2.0 — add a `tools/import_scanner.py` that walks Python source trees, extracts `import` and `from ... import` statements, resolves each import to its owning module (using `programs.yaml` `paths`), and emits `ImportEdge` objects. Wire this into the `kb-codeindex` build step and/or the `sdlc-assured` validation pipeline so that `visibility_rule_enforcement` runs automatically. A lightweight `ast.parse`-based approach is sufficient for Phase F scope.
+**Related code:** `plugins/sdlc-assured/scripts/assured/decomposition.py:visibility_rule_enforcement` (lines 252–275)
+
+---
+
+## F-008 — `granularity_match` fires on all 43 REQs because the convention is to annotate DES, not REQ
+
+**Severity:** IMPORTANT
+**Surfaced during:** Task 18 (Phase F, decomposition validator run)
+**Reproduction:** `granularity_match` warns for every REQ that lacks a `# implements:` annotation. All 43 declared REQs produced warnings. Examination of the 18 Python `# implements:` annotations shows that **zero** cite a REQ ID — all 18 cite DES IDs (e.g. `# implements: DES-programme-validators-001`). The established dogfood convention, followed consistently across `gates.py`, `spec_parser.py`, `traceability.py`, `code_index.py`, `render.py`, and `decomposition.py`, is to annotate at the DES (design-unit) level, not the REQ level.
+
+The validator's design spec (DES-assured-decomposition-validators-005) states: "For modules with `granularity=requirement`, every REQ must have at least one `# implements:` annotation." This is a valid policy — but the actual annotation practice in this codebase targets DES IDs, making the validator fire noise on every REQ in every feature that correctly follows the DES-annotation convention.
+
+**Impact on regulated-industry users:** high — a project that correctly annotates at the DES level will see `granularity_match` produce 100% warning coverage on every REQ. Two outcomes: (a) teams dismiss the validator as always-noisy and stop reading its output; (b) teams add REQ annotations in addition to DES annotations to silence the warnings, creating redundant traceability overhead with no added assurance value. Neither outcome is acceptable in a regulated context where warning fatigue leads to missed genuine signals.
+**Suggested resolution:** v0.2.0 — one of three options:
+  1. **Change `granularity_match` to accept indirect coverage**: a REQ is considered covered if any DES ID that `satisfies` it has a `# implements:` annotation. This matches the actual annotation convention and the three-layer REQ→DES→CODE chain.
+  2. **Document the convention mismatch as intentional**: state clearly in SKILL.md and the validator description that `granularity_match` is designed for projects that annotate at REQ level (not DES level), and that projects using DES-level annotation should set `granularity: design` on their modules to suppress the validator.
+  3. **Add a `granularity: design` option to Module** that shifts `granularity_match` to check DES coverage instead of REQ coverage. Set `granularity: design` in `programs.yaml` for modules that follow the DES-annotation convention.
+
+Option 1 is the most backward-compatible and produces the most useful signal. Option 2 is the lowest-effort fix that correctly documents the current behaviour.
+
+**Scale note:** 43/43 REQs warned = 100% noise rate. All 18 Python annotations cite DES IDs. Zero REQ annotations exist anywhere in the codebase.
+**Related code:** `plugins/sdlc-assured/scripts/assured/decomposition.py:granularity_match` (lines 348–375); `programs.yaml` (granularity field for M1, M2, M3 — all set to `requirement`)
