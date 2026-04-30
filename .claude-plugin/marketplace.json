@@ -18,6 +18,7 @@
     { "name": "sdlc-lang-javascript", "source": "./plugins/sdlc-lang-javascript", "description": "JavaScript/TypeScript-specific validation and patterns", "version": "1.0.0" },
     { "name": "sdlc-knowledge-base", "source": "./plugins/sdlc-knowledge-base", "description": "Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, cross-library queries with priming + synthesis, audit log, ingest/query/lint operations", "version": "0.2.0" },
     { "name": "sdlc-programme", "source": "./plugins/sdlc-programme", "description": "Programme SDLC bundle — formal waterfall phase gates with mandatory cross-phase review (Method 1 substrate)", "version": "0.1.0" },
+    { "name": "sdlc-assured", "source": "./plugins/sdlc-assured", "description": "Regulated-industry SDLC bundle (Method 2): positional namespace IDs, bidirectional traceability, DDD decomposition, KB extension to code, standard-specific exports (DO-178C, IEC 62304, ISO 26262, FDA DHF)", "version": "0.1.0", "category": "sdlc-bundle" },
     { "name": "sdlc-workflows", "source": "./plugins/sdlc-workflows", "description": "Containerised delegated execution — Archon DAG workflows with team-scoped Docker containers, tiered termination, 4 bundled workflows, 6 skills", "version": "0.1.0" }
   ]
 }

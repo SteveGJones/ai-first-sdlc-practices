@@ -233,6 +233,52 @@ sdlc-programme:
       - plugins/sdlc-programme/README.md
       - plugins/sdlc-programme/pyproject.toml
 
+sdlc-assured:
+  skills:
+    - source: plugins/sdlc-assured/skills/commission-assured/SKILL.md
+    - source: plugins/sdlc-assured/skills/req-add/SKILL.md
+    - source: plugins/sdlc-assured/skills/req-link/SKILL.md
+    - source: plugins/sdlc-assured/skills/code-annotate/SKILL.md
+    - source: plugins/sdlc-assured/skills/module-bound-check/SKILL.md
+    - source: plugins/sdlc-assured/skills/kb-codeindex/SKILL.md
+    - source: plugins/sdlc-assured/skills/change-impact-annotate/SKILL.md
+    - source: plugins/sdlc-assured/skills/traceability-render/SKILL.md
+  scripts:
+    # Authored in-plugin; listed for packaging audit. Ship in-place.
+    - source: plugins/sdlc-assured/scripts/__init__.py
+    - source: plugins/sdlc-assured/scripts/assured/__init__.py
+    - source: plugins/sdlc-assured/scripts/assured/ids.py
+    - source: plugins/sdlc-assured/scripts/assured/traceability_validators.py
+    - source: plugins/sdlc-assured/scripts/assured/decomposition.py
+    - source: plugins/sdlc-assured/scripts/assured/code_index.py
+    - source: plugins/sdlc-assured/scripts/assured/render.py
+    - source: plugins/sdlc-assured/scripts/assured/export.py
+  files:
+    bundle:
+      - source: plugins/sdlc-assured/manifest.yaml
+        destination: plugins/sdlc-assured/manifest.yaml
+      - source: plugins/sdlc-assured/CONSTITUTION.md
+        destination: plugins/sdlc-assured/CONSTITUTION.md
+      - source: plugins/sdlc-assured/README.md
+        destination: plugins/sdlc-assured/README.md
+      - source: plugins/sdlc-assured/pyproject.toml
+        destination: plugins/sdlc-assured/pyproject.toml
+      - source: plugins/sdlc-assured/.claude-plugin/plugin.json
+        destination: plugins/sdlc-assured/.claude-plugin/plugin.json
+    templates:
+      - source: plugins/sdlc-assured/templates/programs.yaml
+        destination: plugins/sdlc-assured/templates/programs.yaml
+      - source: plugins/sdlc-assured/templates/visibility-rules.md
+        destination: plugins/sdlc-assured/templates/visibility-rules.md
+      - source: plugins/sdlc-assured/templates/change-impact.md
+        destination: plugins/sdlc-assured/templates/change-impact.md
+      - source: plugins/sdlc-assured/templates/requirements-spec-assured.md
+        destination: plugins/sdlc-assured/templates/requirements-spec-assured.md
+      - source: plugins/sdlc-assured/templates/design-spec-assured.md
+        destination: plugins/sdlc-assured/templates/design-spec-assured.md
+      - source: plugins/sdlc-assured/templates/test-spec-assured.md
+        destination: plugins/sdlc-assured/templates/test-spec-assured.md
+
 # Workflow delegation plugin — Archon integration for parallel agent execution. EPIC #96.
 # Delivered in 5 phases; all skills, scripts, and Docker assets are shipped with
 # the plugin. Docker assets and docs live in the plugin directory directly and
