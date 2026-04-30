@@ -71,3 +71,67 @@ def test_render_spec_findings_emits_one_entry_per_id():
     assert "**Links:**" in output
     assert "## 2. DES-auth-001" in output
     assert "REQ-auth-001" in output
+
+
+def test_render_code_index_is_idempotent_without_timestamp():
+    """Repeated calls with the same entries produce byte-identical output."""
+    entries = [
+        CodeIndexEntry(
+            file_path="src/auth/login.py",
+            line=10,
+            cited_ids=["REQ-auth-001"],
+            terms=["auth"],
+        ),
+    ]
+    first = render_code_index(entries, library_handle="local-project")
+    second = render_code_index(entries, library_handle="local-project")
+    assert first == second
+
+
+def test_render_code_index_omits_last_rebuilt_by_default():
+    """Without a timestamp argument the last_rebuilt header line is absent."""
+    entries = [
+        CodeIndexEntry(file_path="src/x.py", line=1, cited_ids=["REQ-x-001"]),
+    ]
+    output = render_code_index(entries, library_handle="h")
+    assert "last_rebuilt" not in output
+
+
+def test_render_code_index_includes_last_rebuilt_when_supplied():
+    """An explicit timestamp is embedded in the header."""
+    entries = [
+        CodeIndexEntry(file_path="src/x.py", line=1, cited_ids=["REQ-x-001"]),
+    ]
+    output = render_code_index(
+        entries, library_handle="h", timestamp="2026-04-30T00:00:00Z"
+    )
+    assert "<!-- last_rebuilt: 2026-04-30T00:00:00Z -->" in output
+
+
+def test_render_spec_findings_is_idempotent_without_timestamp():
+    """Repeated calls with the same records produce byte-identical output."""
+    records = [
+        IdRecord(
+            id="REQ-auth-001",
+            kind="REQ",
+            source="docs/specs/auth/requirements-spec.md",
+            satisfies=[],
+        ),
+    ]
+    first = render_spec_findings(records, library_handle="local-project")
+    second = render_spec_findings(records, library_handle="local-project")
+    assert first == second
+
+
+def test_render_spec_findings_omits_last_rebuilt_by_default():
+    """Without a timestamp argument the last_rebuilt header line is absent."""
+    records = [
+        IdRecord(
+            id="REQ-auth-001",
+            kind="REQ",
+            source="docs/specs/auth/requirements-spec.md",
+            satisfies=[],
+        ),
+    ]
+    output = render_spec_findings(records, library_handle="h")
+    assert "last_rebuilt" not in output

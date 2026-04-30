@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
@@ -84,11 +83,15 @@ def parse_code_annotations(
     return entries
 
 
-def render_code_index(entries: List[CodeIndexEntry], library_handle: str) -> str:
+def render_code_index(
+    entries: List[CodeIndexEntry],
+    library_handle: str,
+    timestamp: Optional[str] = None,
+) -> str:
     """Serialise *entries* to a shelf-index-shaped Markdown string.
 
-    The output begins with the four standard shelf-index header comments
-    (``format_version``, ``last_rebuilt``, ``library_handle``,
+    The output begins with the standard shelf-index header comments
+    (``format_version``, optionally ``last_rebuilt``, ``library_handle``,
     ``library_description``) followed by numbered section entries in the
     format consumed by the sdlc-knowledge-base librarian.
 
@@ -98,16 +101,24 @@ def render_code_index(entries: List[CodeIndexEntry], library_handle: str) -> str
         Ordered list of :class:`CodeIndexEntry` objects to render.
     library_handle:
         The ``library_handle`` value to embed in the header comment.
+    timestamp:
+        Optional ISO 8601 string for the ``last_rebuilt`` header field.
+        When ``None`` (the default) the ``last_rebuilt`` line is omitted so
+        that repeated calls on unchanged inputs produce byte-identical output.
+        Pass an explicit value when a stable rebuild timestamp is required
+        (e.g. ``kb-rebuild-indexes`` managing the library record).
 
     Returns
     -------
     str
         The complete shelf-index Markdown document as a single string.
     """
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     lines = [
         "<!-- format_version: 1 -->",
-        f"<!-- last_rebuilt: {timestamp} -->",
+    ]
+    if timestamp is not None:
+        lines.append(f"<!-- last_rebuilt: {timestamp} -->")
+    lines += [
         f"<!-- library_handle: {library_handle} -->",
         "<!-- library_description: Code index — annotation-derived shelf-index for source code -->",
         "# Code Index",
@@ -133,12 +144,30 @@ def render_code_index(entries: List[CodeIndexEntry], library_handle: str) -> str
     return "\n".join(lines)
 
 
-def render_spec_findings(records: List[IdRecord], library_handle: str) -> str:
-    """Render REQ/DES/TEST records as shelf-index entries (spec-as-KB-finding)."""
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+def render_spec_findings(
+    records: List[IdRecord],
+    library_handle: str,
+    timestamp: Optional[str] = None,
+) -> str:
+    """Render REQ/DES/TEST records as shelf-index entries (spec-as-KB-finding).
+
+    Parameters
+    ----------
+    records:
+        Ordered list of :class:`~assured.ids.IdRecord` objects to render.
+    library_handle:
+        The ``library_handle`` value to embed in the header comment.
+    timestamp:
+        Optional ISO 8601 string for the ``last_rebuilt`` header field.
+        When ``None`` (the default) the ``last_rebuilt`` line is omitted so
+        that repeated calls on unchanged inputs produce byte-identical output.
+    """
     lines = [
         "<!-- format_version: 1 -->",
-        f"<!-- last_rebuilt: {timestamp} -->",
+    ]
+    if timestamp is not None:
+        lines.append(f"<!-- last_rebuilt: {timestamp} -->")
+    lines += [
         f"<!-- library_handle: {library_handle} -->",
         "<!-- library_description: Spec findings — REQ/DES/TEST records as shelf-index entries -->",
         "# Spec Findings",
