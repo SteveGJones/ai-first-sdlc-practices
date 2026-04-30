@@ -15,6 +15,7 @@ def render_module_scope(
     code_entries: List[CodeIndexEntry],
     spec_module_lookup: dict[str, str],
 ) -> str:
+    # implements: DES-assured-render-001
     """Render the REQ → DES → TEST → CODE chain for a single module."""
     in_module = [r for r in records if spec_module_lookup.get(r.id) == module_id]
     reqs = [r for r in in_module if r.kind == "REQ"]
@@ -77,6 +78,7 @@ def render_module_scope(
 def render_module_dependency_graph(
     decomp: Decomposition, actual_edges: List[ImportEdge]
 ) -> str:
+    # implements: DES-assured-render-002
     """Render the module-dependency graph as a markdown edge-list (Q1 v0.1.0 format)."""
     declared: dict[str, set[str]] = {}
     for v in decomp.visibility:
