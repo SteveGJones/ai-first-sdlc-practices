@@ -261,7 +261,10 @@ programs:
 
 
 def test_anaemic_context_fails_when_code_scattered():
-    """Two REQs from the same module, but their code lives under different module paths."""
+    """Two REQs from the same module, but their code lives under different module paths.
+
+    1 inside, 1 outside = 50% scatter — exceeds the 20% default threshold.
+    """
     annotations = [
         CodeAnnotation(
             file_path="src/auth/oauth/login.py", line=10, cited_ids=["REQ-auth-001"]
@@ -285,6 +288,127 @@ programs:
     )
     result = anaemic_context_detection(annotations, decomp, spec_lookup)
     assert result.passed is False
+    assert any("50%" in e for e in result.errors)
+
+
+def test_anaemic_context_passes_with_single_outlier_below_threshold():
+    """One outlier in five annotations (20% scatter) does NOT trigger anaemia.
+
+    A single stray annotation is an outlier, not systemic anaemia.
+    Default threshold is >20%, so exactly 20% passes.
+    """
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {id: M1, name: OAuth, paths: [src/auth/oauth/], granularity: requirement, structure: flat}
+"""
+    )
+    spec_lookup = {
+        "REQ-auth-001": "P1.SP1.M1",
+        "REQ-auth-002": "P1.SP1.M1",
+        "REQ-auth-003": "P1.SP1.M1",
+        "REQ-auth-004": "P1.SP1.M1",
+        "REQ-auth-005": "P1.SP1.M1",
+    }
+    # 4 inside, 1 outside = 20% scatter (not > 20%, so should pass).
+    annotations = [
+        CodeAnnotation(
+            file_path="src/auth/oauth/a.py", line=1, cited_ids=["REQ-auth-001"]
+        ),
+        CodeAnnotation(
+            file_path="src/auth/oauth/b.py", line=1, cited_ids=["REQ-auth-002"]
+        ),
+        CodeAnnotation(
+            file_path="src/auth/oauth/c.py", line=1, cited_ids=["REQ-auth-003"]
+        ),
+        CodeAnnotation(
+            file_path="src/auth/oauth/d.py", line=1, cited_ids=["REQ-auth-004"]
+        ),
+        CodeAnnotation(
+            file_path="src/payments/stray.py", line=1, cited_ids=["REQ-auth-005"]
+        ),
+    ]
+    result = anaemic_context_detection(annotations, decomp, spec_lookup)
+    assert result.passed is True
+
+
+def test_anaemic_context_fails_above_threshold():
+    """More than 20% scatter triggers anaemia (5 inside, 2 outside = ~29%)."""
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {id: M1, name: OAuth, paths: [src/auth/oauth/], granularity: requirement, structure: flat}
+"""
+    )
+    spec_lookup = {f"REQ-auth-{i:03d}": "P1.SP1.M1" for i in range(1, 8)}
+    annotations = [
+        CodeAnnotation(
+            file_path="src/auth/oauth/a.py", line=1, cited_ids=["REQ-auth-001"]
+        ),
+        CodeAnnotation(
+            file_path="src/auth/oauth/b.py", line=1, cited_ids=["REQ-auth-002"]
+        ),
+        CodeAnnotation(
+            file_path="src/auth/oauth/c.py", line=1, cited_ids=["REQ-auth-003"]
+        ),
+        CodeAnnotation(
+            file_path="src/auth/oauth/d.py", line=1, cited_ids=["REQ-auth-004"]
+        ),
+        CodeAnnotation(
+            file_path="src/auth/oauth/e.py", line=1, cited_ids=["REQ-auth-005"]
+        ),
+        CodeAnnotation(
+            file_path="src/payments/x.py", line=1, cited_ids=["REQ-auth-006"]
+        ),
+        CodeAnnotation(
+            file_path="src/payments/y.py", line=1, cited_ids=["REQ-auth-007"]
+        ),
+    ]
+    result = anaemic_context_detection(annotations, decomp, spec_lookup)
+    assert result.passed is False
+    assert any("module P1.SP1.M1" in e for e in result.errors)
+
+
+def test_anaemic_context_custom_threshold():
+    """Custom threshold of 0.50 ignores minor scatter."""
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {id: M1, name: OAuth, paths: [src/auth/oauth/], granularity: requirement, structure: flat}
+"""
+    )
+    spec_lookup = {"REQ-auth-001": "P1.SP1.M1", "REQ-auth-002": "P1.SP1.M1"}
+    annotations = [
+        CodeAnnotation(
+            file_path="src/auth/oauth/login.py", line=10, cited_ids=["REQ-auth-001"]
+        ),
+        CodeAnnotation(
+            file_path="src/payments/charge.py", line=20, cited_ids=["REQ-auth-002"]
+        ),
+    ]
+    # 50% scatter but threshold set to >50%, so should pass.
+    result = anaemic_context_detection(
+        annotations, decomp, spec_lookup, scatter_threshold=0.50
+    )
+    assert result.passed is True
 
 
 def test_granularity_match_passes_when_each_req_has_annotation():

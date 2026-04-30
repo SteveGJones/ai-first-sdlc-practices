@@ -276,21 +276,68 @@ def anaemic_context_detection(
     annotations: List[CodeAnnotation],
     decomp: Decomposition,
     spec_module_lookup: dict,
+    scatter_threshold: float = 0.20,
 ) -> DecompositionValidatorResult:
-    """Flag when code implementing a module's REQs/DESs lives outside the module's paths."""
+    """Flag systemic anaemia: a module whose implementations are significantly scattered.
+
+    This validator detects DDD bounded-context erosion at the module level.
+    It differs from :func:`code_annotation_maps_to_module`, which blocks on
+    *every* individual out-of-module annotation.  Anaemic-context detection
+    only flags when the *proportion* of a module's annotations that live
+    outside its declared paths exceeds *scatter_threshold* (default 20%).
+    A single stray annotation is an outlier; 25% scatter is a smell.
+
+    Parameters
+    ----------
+    annotations:
+        All ``# implements:`` annotations for the project.
+    decomp:
+        Parsed decomposition declaration.
+    spec_module_lookup:
+        Mapping from spec ID to its declared module (e.g. ``"REQ-auth-001"``
+        → ``"P1.SP1.M1"``).
+    scatter_threshold:
+        Fraction of a module's annotations that must be outside the module's
+        declared paths before the validator fires (0.0–1.0, default 0.20).
+
+    Returns
+    -------
+    DecompositionValidatorResult
+        Errors for every module whose scatter ratio exceeds the threshold,
+        listing the out-of-module annotations as evidence.
+    """
     paths_by_module = _module_paths(decomp)
-    errors: List[str] = []
+
+    # Collect per-module annotation counts: inside vs outside declared paths.
+    inside: dict = {}  # module → count of in-module annotations
+    outside: dict = {}  # module → list of (file_path, line, cited_id) triples
+
     for ann in annotations:
         for cited in ann.cited_ids:
             module = spec_module_lookup.get(cited)
             if module is None:
                 continue
             allowed_paths = paths_by_module.get(module, [])
-            if not _file_under_paths(ann.file_path, allowed_paths):
-                errors.append(
-                    f"anaemic context: {ann.file_path}:{ann.line} implements {cited} "
-                    f"(module {module}) but file is outside the module's paths {allowed_paths}"
+            if _file_under_paths(ann.file_path, allowed_paths):
+                inside[module] = inside.get(module, 0) + 1
+            else:
+                outside.setdefault(module, []).append((ann.file_path, ann.line, cited))
+
+    errors: List[str] = []
+    for module, stray_annotations in outside.items():
+        stray_count = len(stray_annotations)
+        total = inside.get(module, 0) + stray_count
+        ratio = stray_count / total if total > 0 else 1.0
+        if ratio > scatter_threshold:
+            pct = int(ratio * 100)
+            errors.append(
+                f"anaemic context: module {module} has {pct}% of its annotations "
+                f"({stray_count}/{total}) outside its declared paths — "
+                f"evidence: "
+                + "; ".join(
+                    f"{fp}:{ln} implements {cid}" for fp, ln, cid in stray_annotations
                 )
+            )
     return DecompositionValidatorResult(passed=not errors, errors=errors)
 
 

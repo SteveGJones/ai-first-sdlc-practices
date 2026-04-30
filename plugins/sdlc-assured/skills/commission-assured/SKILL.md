@@ -42,8 +42,27 @@ This skill assumes:
     - `kb-codeindex` to build initial `library/_code-index.md` (will be empty until annotations exist)
     - Confirm validators run cleanly on the empty/scaffolded project.
 
-7. **Commit the commissioning.**
-    - One commit per scaffolded artefact group (programs.yaml + visibility-rules.md as one; change-impact template as another).
+7. **Wire the Assured library sources into the knowledge base.**
+
+    The `_code-index.md` and `_spec-findings.md` files emitted by `kb-codeindex` and `kb-rebuild-indexes` are shelf-index documents that must be registered as library sources so the `research-librarian` and `synthesis-librarian` agents can query them.
+
+    Run `kb-register-library` for each source:
+    ```
+    /sdlc-knowledge-base:kb-register-library \
+        --handle <project-handle>-code \
+        --path library/_code-index.md \
+        --domain code-annotations
+
+    /sdlc-knowledge-base:kb-register-library \
+        --handle <project-handle>-specs \
+        --path library/_spec-findings.md \
+        --domain spec-requirements
+    ```
+
+    Confirm both handles appear in `library/.sdlc-kb/registry.json` (or the project's active registry). The `SYNTHESISE-ACROSS-SPEC-TYPES` mode in `synthesis-librarian` queries these handles; without this registration step, spec-as-KB-finding queries will return empty results.
+
+8. **Commit the commissioning.**
+    - One commit per scaffolded artefact group (programs.yaml + visibility-rules.md as one; change-impact template as another; library wiring as a third).
 
 ## Done criteria
 
