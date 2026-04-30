@@ -32,6 +32,8 @@ def export_do178c_rtm(records: List[IdRecord], code: List[CodeIndexEntry]) -> st
 
     Columns: HLR (high-level requirement) | LLR (low-level requirement / design) |
     Source code | Test case.
+
+    **DES:** DES-assured-export-formats-001
     """
     cited_by = _index_by_satisfies(records)
     code_by_cited = _code_by_cited(code)
@@ -67,6 +69,8 @@ def export_iec_62304_matrix(
 
     Columns: Software requirement | Software unit (code) | Verification activity (test).
     Software safety class is declared in the heading (A, B, or C).
+
+    **DES:** DES-assured-export-formats-002
     """
     cited_by = _index_by_satisfies(records)
     code_by_cited = _code_by_cited(code)
@@ -99,6 +103,8 @@ def export_iso_26262_asil_matrix(
 
     Columns: Safety requirement | Architectural element (design) |
     Implementation (code) | Verification (test).
+
+    **DES:** DES-assured-export-formats-003
     """
     cited_by = _index_by_satisfies(records)
     code_by_cited = _code_by_cited(code)
@@ -131,6 +137,8 @@ def export_fda_dhf_structure(
 
     Sections: Design inputs (REQs) | Design outputs (DESs + code) |
     Design verification (TESTs) | Design validation (placeholder for human attestation).
+
+    **DES:** DES-assured-export-formats-004
     """
     reqs = [r for r in records if r.kind == "REQ"]
     deses = [r for r in records if r.kind == "DES"]
@@ -213,6 +221,8 @@ def export_csv(records: List[IdRecord], code: List[CodeIndexEntry]) -> str:
 
     Header: REQ,DES,TEST,CODE. Commas within cells are replaced with semicolons
     to avoid breaking the CSV structure.
+
+    **DES:** DES-assured-export-formats-004 (non-regulatory companion)
     """
     rows = _build_rows(records, code)
     out = ["REQ,DES,TEST,CODE"]
@@ -226,6 +236,8 @@ def export_markdown(records: List[IdRecord], code: List[CodeIndexEntry]) -> str:
 
     Produces a ``# Traceability Matrix`` title followed by a GFM pipe table
     with columns: REQ | DES | TEST | CODE.
+
+    **DES:** DES-assured-export-formats-004 (non-regulatory companion)
     """
     rows = _build_rows(records, code)
     out = [
