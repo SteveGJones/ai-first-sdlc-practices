@@ -25,8 +25,6 @@ Three design units constitute the assured-substrate: the `commission-assured` sk
 
 ### DES-assured-substrate-001
 
-<!-- implements: DES-assured-substrate-001 -->
-
 `commission_assured_scaffold(project_root: Path) -> list[Path]` is called by the `commission-assured` skill at step 4 (Scaffold the artefacts). It creates the following four targets under `project_root` if they do not exist:
 
 - `programs.yaml` — written from the stub template embedded in the skill; contains placeholder module entries `P1.SP1.M1` through `P1.SP1.M3` with `# TODO: fill in` comments.

@@ -28,6 +28,22 @@ description: Generate boilerplate `# implements:` annotation for a function base
 
 6. **Run annotation_format_integrity** on the file to verify the annotation parses correctly.
 
+## Annotation placement rules
+
+`<!-- implements: <DES-ID> -->` and `# implements: <DES-ID>` annotations ALWAYS go on the implementing artefact:
+
+- A Python function body — first line of the body, comment form
+- A SKILL.md file — immediately after frontmatter close `---`, HTML-comment form
+- A governance document — YAML frontmatter `satisfies_by_existence: [...]` or `implements: [...]`
+
+NEVER place annotations:
+
+- Inside a design-spec.md DES element (the DES is what is satisfied, not what implements)
+- Inside a requirements-spec.md REQ element
+- Inside a test-spec.md TEST element
+
+The spec layer expresses obligation; the implementing artefact carries evidence. Crossing the layers blurs the audit trail.
+
 ## Done criteria
 
 - Annotation inserted in syntactically-correct location.
