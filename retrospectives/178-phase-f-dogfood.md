@@ -189,13 +189,27 @@ This rule should be standardised in the Assured bundle documentation.
 | F-004 | MINOR | REQ-inventory review-record gate assignment was offset by one phase; code is correct, planning artefact had the mismatch |
 | F-005 | MINOR | Collapsing warn-not-block and blocking validators under one REQ obscures severity contract — a REQ should stand alone |
 | F-006 | MINOR | No "see also" mechanism for related REQs with overlapping intent; a reviewer reading one cannot discover the other without reading DES |
-| F-007 | MINOR | `visibility_rule_enforcement` cannot run without an import-graph extractor; validator exists but is permanently dormant in v0.1.0 |
+| F-007 | IMPORTANT | `visibility_rule_enforcement` cannot run without an import-graph extractor; the boundary model is partially aspirational (severity raised from MINOR per architect review 2026-05-01) |
 | F-008 | IMPORTANT | `granularity_match` fires on all 43 REQs producing 100% noise — established convention annotates at DES level, validator expects REQ level |
-| F-009 | IMPORTANT | DO-178C RTM source-code column is 65% empty (28/43 rows show `—`) — direct downstream consequence of F-001 |
+| F-009 | IMPORTANT | DO-178C RTM source-code column is 65% empty (28/43 rows show `—`); RTM not audit-ready as currently exported |
+| F-010 | IMPORTANT | Some Phase F REQ statements drift toward function-shaped form despite plan guidance (added per architect review 2026-05-01) |
 
-Three IMPORTANT findings (F-001, F-008, F-009) all trace back to the same root: the annotation
-parser only handles Python comment syntax. Fixing F-001 in v0.2.0 resolves F-009 and the
-dominant cause of the F-008 noise pattern.
+**Correction (2026-05-01).** An earlier draft of this retrospective claimed F-001, F-008, and
+F-009 cluster on a single root cause and that fixing F-001 resolves the others. An independent
+architect review challenged that claim and a recheck confirms the reviewer is correct. The three
+IMPORTANT findings reinforce each other but represent **three distinct defects** that need three
+coordinated v0.2.0 fixes:
+
+- **F-001** is a parser-coverage defect (the annotation regex only matches Python comment syntax).
+- **F-008** is a traceability-semantics defect (`granularity_match` expects REQ-level annotations
+  while the convention is DES-level — a parser fix alone does not resolve this).
+- **F-009** is an export-evidence completeness defect (the RTM emits placeholders rather than
+  typed evidence statuses; even if every annotation were captured, the exporter still cannot
+  distinguish "not implemented" from "implemented by configuration artefact" from "implemented
+  by external evidence").
+
+A v0.2.0 EPIC must address all three plus F-007 (visibility extraction) and F-010 (REQ-quality
+discipline) to meaningfully close the audit-readiness gap.
 
 ---
 
@@ -204,19 +218,29 @@ dominant cause of the F-008 noise pattern.
 The following items are seeded by the `suggested-resolution` fields in
 `research/phase-f-dogfood-findings.md`. They form the initial v0.2.0 backlog.
 
-1. **F-001 fix — extend annotation parser to handle HTML-comment form.** Add
+1. **F-001 fix — extend annotation parser beyond Python-comment syntax.** Add
    `_HTML_IMPLEMENTS_RE = re.compile(r"<!--\s*implements:\s*(?P<ids>.+)\s*-->")` in
    `code_index.py` and `traceability_validators.py`. Alternative: adopt YAML frontmatter
-   `implements: [DES-x-001]` as the canonical markdown annotation form. Either path
-   resolves F-009 and reduces F-008 noise substantially.
+   `implements: [DES-x-001]` as the canonical markdown annotation form.
+   **Architect review note (2026-05-01):** the broader generalisation is to introduce an
+   `EvidenceIndexEntry` abstraction that supports source code, markdown HTML comments,
+   YAML/JSON/plist paths, configuration entries, externally-attached evidence files, and
+   explicit `satisfies-by-existence` records — rather than expanding `CodeIndexEntry`
+   indefinitely. This sets up file-format support as a registry by file type instead of
+   one regex at a time.
    Affected files: `plugins/sdlc-assured/scripts/assured/code_index.py:9-13`,
    `plugins/sdlc-assured/scripts/assured/traceability_validators.py:_IMPLEMENTS_RE`.
 
-2. **F-007 fix — ship a default Python import scanner.** Add `tools/import_scanner.py`
+2. **F-007 fix (severity now IMPORTANT) — ship a platform-neutral dependency-extractor interface with Python as the first adapter.** Add `tools/import_scanner.py`
    that walks Python source trees using `ast.parse`, resolves each `import` and
    `from ... import` statement to its owning module via `programs.yaml` `paths`, and
    emits `ImportEdge` objects. Wire into `kb-codeindex` build step so
    `visibility_rule_enforcement` runs automatically.
+   **Architect review note (2026-05-01):** define the extractor as a platform-neutral
+   *interface*, not a Python-only concrete. Future Swift/Xcode/Java/Go/etc. extractors
+   slot in without changing the validator contract. This is more important than it looks
+   — without an extractor, the boundary model is currently aspirational rather than
+   enforced, which is why severity was raised from MINOR to IMPORTANT.
 
 3. **F-008 fix — align `granularity_match` with DES-annotation convention.** Three options:
    (a) accept indirect coverage — a REQ is covered if any DES that `satisfies` it has
@@ -252,6 +276,12 @@ The following items are seeded by the `suggested-resolution` fields in
    in the `traceability-export` skill documentation that v0.1.0 RTM output is a triage tool,
    not an audit artefact, until F-001 is fixed. Document the minimum supplementary evidence
    required for a real DO-178C audit when the code-annotation coverage is incomplete.
+
+10. **F-009 fix — typed evidence-status concept on the RTM exporter (NEW from architect review 2026-05-01).** The current RTM emits a bare `—` placeholder for any cell where the source-code annotation is missing. This conflates four distinct meanings: "not implemented yet", "implemented by a non-source artefact (config / entitlement / privacy manifest)", "implemented by source but not indexed by v0.1.0 parser", and "not applicable with explicit justification". For DO-178C / IEC 62304 / ISO 26262 use, replace the placeholder with a typed evidence status: `linked` / `missing` / `not_applicable` / `manual_evidence_required` / `configuration_artifact`. Without this, the RTM creates a false sense of completeness — a document that looks formal while failing the central evidence obligation.
+    Affected: `plugins/sdlc-assured/scripts/assured/export.py:export_do178c_rtm` and the four other regulatory exporters.
+
+11. **F-010 fix — REQ-quality audit + lint discipline (NEW from architect review 2026-05-01).**
+    Audit all 44 Phase F REQs against the user-visible-capability bar (the architect-review-named three are confirmed drifters: `REQ-assured-decomposition-validators-001`, `REQ-assured-traceability-validators-003`, `REQ-assured-skills-001`). Rewrite drifters at the user-visible level. Add a writing-plans-skill checklist for banned phrasings ("the function X exists", "begins with the function name") and a candidate validator that flags REQ statements opening with a Python identifier or containing the literal word "function" / "method".
 
 ---
 

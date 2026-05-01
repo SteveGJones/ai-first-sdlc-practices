@@ -119,11 +119,11 @@ phase N (not phase N-1).
 
 ## F-007 — `visibility_rule_enforcement` cannot run without an import-graph extractor
 
-**Severity:** MINOR
+**Severity:** IMPORTANT (raised from MINOR per architect review 2026-05-01)
 **Surfaced during:** Task 18 (Phase F, decomposition validator run)
 **Reproduction:** `visibility_rule_enforcement` requires a list of `ImportEdge` objects — directed dependency edges derived from actual import statements. Phase F has no tooling to extract these from the Python source tree (no AST-based import scanner, no `pydeps` wrapper, no `grep`-based approximation). The validator was skipped with the note "NOT RUN — Phase F has no automated import-graph extractor; would require external tool."
-**Impact on regulated-industry users:** medium — the visibility block in `programs.yaml` declares which modules may depend on which. Without an import-graph extractor, the declared visibility rules are never enforced at any check boundary. A team that writes `from P1.SP1.M3 import ...` inside M1 code would get no feedback until a human reviewer noticed. The validator exists in the codebase but is permanently dormant until an extractor is added.
-**Suggested resolution:** v0.2.0 — add a `tools/import_scanner.py` that walks Python source trees, extracts `import` and `from ... import` statements, resolves each import to its owning module (using `programs.yaml` `paths`), and emits `ImportEdge` objects. Wire this into the `kb-codeindex` build step and/or the `sdlc-assured` validation pipeline so that `visibility_rule_enforcement` runs automatically. A lightweight `ast.parse`-based approach is sufficient for Phase F scope.
+**Impact on regulated-industry users:** **high** — the visibility block in `programs.yaml` declares which modules may depend on which. Without an import-graph extractor, the declared visibility rules are **never enforced at any check boundary**. A team that writes `from P1.SP1.M3 import ...` inside M1 code would get no feedback until a human reviewer noticed. The validator exists in the codebase but is permanently dormant until an extractor is added. **Architect review (2026-05-01) flagged that this means the boundary model is partially aspirational — the framework is currently making claims about architectural enforcement that it does not deliver. Severity raised from MINOR to IMPORTANT accordingly.**
+**Suggested resolution:** v0.2.0 — add a `tools/import_scanner.py` that walks Python source trees, extracts `import` and `from ... import` statements, resolves each import to its owning module (using `programs.yaml` `paths`), and emits `ImportEdge` objects. Wire this into the `kb-codeindex` build step and/or the `sdlc-assured` validation pipeline so that `visibility_rule_enforcement` runs automatically. A lightweight `ast.parse`-based approach is sufficient for Phase F scope. **Architect review recommendation:** define the extractor as a platform-neutral interface (with a Python implementation as the first language adapter), so that future Swift/Xcode/Java/etc. extractors slot in without changing the validator contract.
 **Related code:** `plugins/sdlc-assured/scripts/assured/decomposition.py:visibility_rule_enforcement` (lines 252–275)
 
 ---
@@ -227,4 +227,32 @@ The DO-178C standard requires that every HLR be traceable to source code (or a j
   1. Fix F-001 so that markdown SKILL.md annotations are indexed. This resolves the 7 `assured-skills` + 5 `programme-skills` gaps immediately.
   2. Add `# implements:` annotations to `export.py`, `ids.py`, and `traceability_validators.py` (pure Python files that currently lack them). This resolves 10 further gaps with no tooling change.
   3. Adopt YAML frontmatter `implements:` for structural documentation artefacts (F-003 pattern). This resolves the remaining substrate/markdown gaps.
+**Architect review note (2026-05-01):** The 65% gap is a strong indicator that the RTM exporter currently emits placeholders rather than distinguishing between "not implemented", "implemented by non-source artefact", "implemented by source but not indexed", and "not applicable with justification." For DO-178C / IEC 62304 / ISO 26262 use, v0.2.0 should add a typed evidence-status concept (e.g. `linked / missing / not_applicable / manual_evidence_required / configuration_artifact`) so the RTM is not a false signal of completeness.
 **Related:** F-001, F-003, `plugins/sdlc-assured/scripts/assured/code_index.py`, `docs/traceability/do-178c-rtm.md`
+
+---
+
+## F-010 — Some Phase F REQ statements drift toward function-shaped form despite plan guidance
+
+**Severity:** IMPORTANT
+**Surfaced during:** Architect review (2026-05-01); not caught during Phase F authoring or per-task review
+**Reproduction:** Phase F's plan and authoring rule explicitly directed REQs at the user-visible-capability level, not at the function-signature level. Sampling by an independent architect reviewer found three REQs that have drifted:
+
+- `REQ-assured-decomposition-validators-001` opens with the function name `req_has_module_assignment` and describes its output rather than the user-visible behaviour it guarantees.
+- `REQ-assured-traceability-validators-003` opens with `index_regenerability` and describes byte-for-byte regeneration rather than the assurance contract that this enforces.
+- `REQ-assured-skills-001` mixes workflow outcome with implementation details (scanning headings, incrementing max IDs).
+
+A reviewer reading these REQs in isolation would see them as function contracts, not capability obligations. In Method 2's framing this is a category drift: requirements should describe what users / auditors / safety reviewers can rely on, not what individual functions compute. If REQs become function contracts, the process can prove that functions satisfy themselves while missing user, safety, privacy, or operational obligations.
+
+**Why this was not caught earlier:** the controller's review intensity drifted across Phase F (acknowledged in the session meta-retrospective §3.3); per-task reviews became "tight" in mid-Phase F, and the controller did not run a final REQ-quality audit across all 44 REQs before Phase G.
+
+**Impact on regulated-industry users:** high — for a regulated codebase the REQ statement is the audit-bearing artefact. Function-shaped REQs cannot be audited against user-visible safety / privacy / operational guarantees. A regulator would reject them as testable function contracts dressed up as requirements.
+
+**Suggested resolution:**
+  1. **v0.2.0 (concrete fix):** rewrite the three named REQs (and any other REQs found by a full Phase F audit) at the user-visible-capability level. Document the rewrites in a v0.2.0 retrospective addendum.
+  2. **v0.2.0 (process fix):** add a REQ-quality gate to the writing-plans skill — a checklist or lint rule for banned phrasings ("the function X exists", "begins with the function name", etc.) and required framings ("the system MUST", "users MUST be able to", "the bundle MUST guarantee").
+  3. **Method 2 substrate (v0.2.0+):** consider adding a REQ-quality validator that flags REQ statements opening with a Python identifier or containing the literal word "function" / "method".
+
+**Architect review note (2026-05-01):** The reviewer characterised this as the most subtle of the assurance gaps — unlike F-001 / F-008 / F-009 which are tooling defects, F-010 is a process / discipline defect. Tooling alone cannot enforce REQ quality; human review must remain the primary gate until a lint pattern stabilises.
+
+**Related:** Phase F plan (`docs/superpowers/plans/2026-04-30-phase-f-dogfood-plan.md` — authoring rule), session meta-retrospective §3.8, `docs/specs/assured-decomposition-validators/requirements-spec.md`, `docs/specs/assured-traceability-validators/requirements-spec.md`, `docs/specs/assured-skills/requirements-spec.md`
