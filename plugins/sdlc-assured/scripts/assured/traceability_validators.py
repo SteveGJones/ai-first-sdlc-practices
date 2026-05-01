@@ -56,7 +56,7 @@ def orphan_ids(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-a
         cited.update(r.satisfies)
     warnings: List[str] = []
     for r in records:
-        if r.kind in {"REQ", "DES"} and r.id not in cited:
+        if r.kind in {"REQ", "DES", "TEST", "CODE"} and r.id not in cited:
             warnings.append(
                 f"orphan {r.kind} {r.id!r} (declared in {r.source}) is never cited"
             )
