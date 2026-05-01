@@ -35,7 +35,7 @@ The directional-coverage validators (`forward_link_integrity`, `backward_coverag
 
 ### REQ-assured-traceability-validators-003
 
-`index_regenerability` SHALL report a blocking error when a committed ID-registry file on disk differs byte-for-byte from the output produced by the caller-supplied regeneration function; when the file is absent it SHALL report a blocking error; when the content matches it SHALL pass with no errors or warnings (idempotency check).
+Auditors MUST be able to verify the published ID registry has not been hand-edited by re-running the registry-build process and observing identical output, without any environment-specific drift (timestamps, machine identifiers, locale).
 
 **Module:** P1.SP1.M2
 
