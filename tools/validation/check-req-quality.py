@@ -111,14 +111,36 @@ def lint_corpus(root: Path) -> List[Flag]:
 
 
 def main(argv: List[str]) -> int:
-    root = Path(argv[1]) if len(argv) > 1 else Path("docs/specs")
+    """Run the REQ-quality linter.
+
+    Default mode: advisory — prints flags and exits 0. This matches the
+    "advisory at first, promoted to a blocker once the corpus is clean"
+    intent documented at the top of this module. v0.3.0 will wire `--strict`
+    into CI as a blocking gate.
+
+    --strict: hard-fail mode — exits 1 when any flag is reported. Use this
+    when the corpus is expected to be clean (e.g., per-PR enforcement once
+    promoted).
+    """
+    args = [a for a in argv[1:] if not a.startswith("-")]
+    strict = "--strict" in argv[1:]
+    root = Path(args[0]) if args else Path("docs/specs")
     if not root.exists():
         print(f"check-req-quality: root not found: {root}", file=sys.stderr)
         return 2
     flags = lint_corpus(root)
     for f in flags:
         print(f"{f.file}:{f.line}: {f.req_id} — {f.rule}: '{f.snippet}'")
-    return 1 if flags else 0
+    if not flags:
+        return 0
+    if strict:
+        return 1
+    print(
+        f"\ncheck-req-quality: {len(flags)} advisory flag(s) — exit 0 in default "
+        "(advisory) mode. Run with --strict to fail on flags.",
+        file=sys.stderr,
+    )
+    return 0
 
 
 if __name__ == "__main__":

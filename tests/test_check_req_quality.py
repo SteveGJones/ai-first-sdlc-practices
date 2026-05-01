@@ -105,3 +105,55 @@ def test_corpus_walk_skips_archive_paths(tmp_path: Path) -> None:
     )
     flags = check_req_quality.lint_corpus(tmp_path)
     assert flags == []  # archive skipped
+
+
+def test_main_advisory_mode_returns_zero_with_flags(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Default (advisory) mode: prints flags but exits 0."""
+    spec_file = tmp_path / "requirements-spec.md"
+    spec_file.write_text(
+        "## Requirements\n\n### REQ-bad-001\n\n`f()` SHALL ...\n\n**Module:** M\n"
+    )
+    rc = check_req_quality.main(["check-req-quality.py", str(tmp_path)])
+    assert rc == 0
+    captured = capsys.readouterr()
+    assert "REQ-bad-001" in captured.out
+    assert "advisory" in captured.err.lower()
+
+
+def test_main_strict_mode_returns_one_with_flags(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """--strict mode: exits 1 when flags are reported."""
+    spec_file = tmp_path / "requirements-spec.md"
+    spec_file.write_text(
+        "## Requirements\n\n### REQ-bad-001\n\n`f()` SHALL ...\n\n**Module:** M\n"
+    )
+    rc = check_req_quality.main(["check-req-quality.py", str(tmp_path), "--strict"])
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "REQ-bad-001" in captured.out
+
+
+def test_main_returns_zero_with_no_flags_in_either_mode(tmp_path: Path) -> None:
+    """Both modes exit 0 when no flags are reported."""
+    spec_file = tmp_path / "requirements-spec.md"
+    spec_file.write_text(
+        "## Requirements\n\n### REQ-good-001\n\n"
+        "Auditors MUST be able to do X.\n\n"
+        "**Module:** M\n"
+    )
+    assert check_req_quality.main(["check-req-quality.py", str(tmp_path)]) == 0
+    assert (
+        check_req_quality.main(["check-req-quality.py", str(tmp_path), "--strict"])
+        == 0
+    )
+
+
+def test_main_returns_two_when_root_does_not_exist(tmp_path: Path) -> None:
+    """Missing root: exit 2 (configuration error, neither mode)."""
+    rc = check_req_quality.main(
+        ["check-req-quality.py", str(tmp_path / "no-such-dir")]
+    )
+    assert rc == 2
