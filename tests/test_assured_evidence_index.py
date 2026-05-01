@@ -1,5 +1,10 @@
 """Tests for assured.evidence_index — abstraction for the v0.2.0 file-type registry."""
 
+from pathlib import Path
+
+from sdlc_assured_scripts.assured.evidence_adapters import (
+    PythonCommentAdapter,
+)
 from sdlc_assured_scripts.assured.evidence_index import (
     EvidenceIndexEntry,
     EvidenceKind,
@@ -39,3 +44,25 @@ def test_evidence_index_entry_satisfies_by_existence_has_no_line() -> None:
         facts=["Constitution authority document"],
     )
     assert entry.line is None
+
+
+def test_python_comment_adapter_extracts_implements_lines(tmp_path: Path) -> None:
+    f = tmp_path / "login.py"
+    f.write_text(
+        "def login(token):\n"
+        "    # implements: DES-auth-005, REQ-auth-003\n"
+        "    return token\n"
+    )
+    adapter = PythonCommentAdapter()
+    entries = list(adapter.extract([f], project_root=tmp_path))
+    assert len(entries) == 1
+    assert entries[0].kind == EvidenceKind.PYTHON_COMMENT
+    assert entries[0].line == 2
+    assert entries[0].cited_ids == ["DES-auth-005", "REQ-auth-003"]
+
+
+def test_python_comment_adapter_skips_non_python_files(tmp_path: Path) -> None:
+    f = tmp_path / "README.md"
+    f.write_text("# implements: DES-x-001\n")
+    adapter = PythonCommentAdapter()
+    assert list(adapter.extract([f], project_root=tmp_path)) == []

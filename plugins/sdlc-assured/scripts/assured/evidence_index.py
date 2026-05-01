@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional
+from pathlib import Path
+from typing import Iterable, List, Optional, Protocol
 
 
 class EvidenceKind(Enum):
@@ -30,3 +31,14 @@ class EvidenceIndexEntry:
     cited_ids: List[str]
     terms: List[str] = field(default_factory=list)
     facts: List[str] = field(default_factory=list)
+
+
+class EvidenceAdapter(Protocol):
+    """Protocol for file-type-specific evidence adapters."""
+
+    file_extensions: tuple[str, ...]
+
+    def extract(
+        self, files: list[Path], project_root: Path
+    ) -> Iterable[EvidenceIndexEntry]:
+        ...
