@@ -8,6 +8,8 @@ from sdlc_assured_scripts.assured.dependency_extractor import (  # noqa: F401
     PythonAstExtractor,
     GenericRegexExtractor,
     make_swift_extractor,
+    render_dependency_edges,
+    parse_dependency_edges,
 )
 from sdlc_assured_scripts.assured.decomposition import (
     Decomposition,
@@ -233,3 +235,20 @@ def test_generic_regex_extractor_satisfies_protocol() -> None:
     """GenericRegexExtractor is structurally compatible with DependencyExtractor."""
     swift = make_swift_extractor()
     assert isinstance(swift, DependencyExtractor)
+
+
+def test_render_dependency_edges_emits_markdown_table() -> None:
+    edges = [
+        ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2"),
+        ImportEdge(from_module="P1.SP1.M2", to_module="P1.SP1.M3"),
+    ]
+    out = render_dependency_edges(edges, library_handle="phase-f-dogfood")
+    assert "| From | To |" in out
+    assert "| P1.SP1.M1 | P1.SP1.M2 |" in out
+    assert "<!-- library_handle: phase-f-dogfood -->" in out
+
+
+def test_parse_dependency_edges_round_trips() -> None:
+    original = [ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2")]
+    text = render_dependency_edges(original, library_handle="x")
+    assert parse_dependency_edges(text) == original
