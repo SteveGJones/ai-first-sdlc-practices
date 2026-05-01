@@ -31,9 +31,11 @@
 | `plugins/sdlc-assured/scripts/assured/evidence_adapters.py` | File-type adapters: PythonComment, MarkdownHtmlComment, YamlFrontmatter, SatisfiesByExistence (F-003) |
 | `plugins/sdlc-assured/scripts/assured/dependency_extractor.py` | `DependencyExtractor` protocol + `PythonAstExtractor` + non-Python proof adapter (F-007) |
 | `plugins/sdlc-assured/scripts/assured/evidence_status.py` | `EvidenceStatus` enum (`linked` / `missing` / `not_applicable` / `manual_evidence_required` / `configuration_artifact`) for F-009 |
+| `plugins/sdlc-assured/scripts/assured/requirement_metadata.py` | `RequirementMetadata` dataclass + `build_requirement_metadata_registry` — per-REQ `evidence_status` / `justification` / `related` from inline `**Field:**` lines (P1.2 + P2.2 plan-review fixes; foundation for F-006 + F-009) |
 | `tests/test_assured_evidence_index.py` | Tests for evidence_index + adapters |
 | `tests/test_assured_dependency_extractor.py` | Tests for dependency_extractor + Python adapter + non-Python proof |
 | `tests/test_assured_evidence_status.py` | Tests for typed evidence statuses on the 4 regulatory exporters |
+| `tests/test_assured_requirement_metadata.py` | Tests for the metadata registry (per-REQ frontmatter capture) |
 | `tests/test_assured_validators_v020.py` | Tests for new/rewritten validators (granularity_match indirect, orphan_ids widened, forward_annotation_completeness, requirements_gate non-empty) |
 | `tests/fixtures/v020-verification/` | Injected-defect fixtures for Phase G sub-stage 2 (one fixture per seeded defect) |
 | `research/v020-baseline-metrics.md` | Phase G sub-stage 1 baseline measurement |
@@ -937,6 +939,178 @@ git commit -m "feat(v020): spec_parser skip blockquotes/inline-code/HTML-comment
 
 ---
 
+### Task 10A: RequirementMetadata registry (foundation for F-009 typed statuses)
+
+**Files:**
+- Create: `plugins/sdlc-assured/scripts/assured/requirement_metadata.py`
+- Create: `tests/test_assured_requirement_metadata.py`
+
+**Why this task exists:** the v0.2.0 plan review (P1.2) caught that EvidenceStatus depends on metadata (`evidence_status`, `justification`, `related`) that `IdRecord` does not capture. Without this metadata-capture step, RTM exporters cannot distinguish `MISSING` from `NOT_APPLICABLE` from `MANUAL_EVIDENCE_REQUIRED` — they only see absence-of-annotation. This task adds a parallel registry keyed by REQ-ID, populated from the requirements-spec.md frontmatter PLUS per-REQ inline fields.
+
+- [ ] **Step 1: Failing test**
+
+```python
+"""Tests for assured.requirement_metadata."""
+
+from pathlib import Path
+
+from sdlc_assured_scripts.assured.evidence_status import EvidenceStatus
+from sdlc_assured_scripts.assured.requirement_metadata import (
+    RequirementMetadata,
+    build_requirement_metadata_registry,
+)
+
+
+def test_metadata_captured_from_per_req_inline_fields(tmp_path: Path) -> None:
+    spec = tmp_path / "docs" / "specs" / "auth" / "requirements-spec.md"
+    spec.parent.mkdir(parents=True)
+    spec.write_text(
+        "---\n"
+        "feature_id: auth\n"
+        "module: P1.SP1.M1\n"
+        "---\n"
+        "## Requirements\n"
+        "\n"
+        "### REQ-auth-001\n"
+        "Real one.\n"
+        "**Module:** P1.SP1.M1\n"
+        "**Evidence-status:** linked\n"
+        "\n"
+        "### REQ-auth-002\n"
+        "Configuration-only.\n"
+        "**Module:** P1.SP1.M1\n"
+        "**Evidence-status:** configuration_artifact\n"
+        "**Justification:** Implemented entirely by `programs.yaml` declarations.\n"
+        "**Related:** REQ-auth-001\n"
+    )
+    registry = build_requirement_metadata_registry(tmp_path)
+    md1 = registry["REQ-auth-001"]
+    assert md1.evidence_status == EvidenceStatus.LINKED
+    assert md1.justification is None
+    assert md1.related == []
+    md2 = registry["REQ-auth-002"]
+    assert md2.evidence_status == EvidenceStatus.CONFIGURATION_ARTIFACT
+    assert "programs.yaml" in (md2.justification or "")
+    assert md2.related == ["REQ-auth-001"]
+
+
+def test_missing_evidence_status_field_defaults_to_none() -> None:
+    md = RequirementMetadata(req_id="REQ-x-001")
+    assert md.evidence_status is None
+    assert md.justification is None
+    assert md.related == []
+```
+
+- [ ] **Step 2: Run (fail on import)**
+
+- [ ] **Step 3: Implement**
+
+```python
+"""Per-requirement metadata captured from inline `**Field:**` lines.
+
+This complements `IdRecord` (which carries only id/kind/source/satisfies)
+with the metadata that v0.2.0 typed-evidence-status (F-009) and per-REQ
+relation tracking (F-006) require.
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional
+
+from .evidence_status import EvidenceStatus
+
+
+@dataclass(frozen=True)
+class RequirementMetadata:
+    req_id: str
+    evidence_status: Optional[EvidenceStatus] = None
+    justification: Optional[str] = None
+    related: list[str] = field(default_factory=list)
+
+
+_REQ_HEADING_RE = re.compile(
+    r"^###\s+(?P<id>(?:P\d+\.SP\d+\.M\d+\.)?REQ-(?:[a-z0-9][a-z0-9-]*-)?\d+)\b"
+)
+_FIELD_RE = re.compile(r"^\*\*(?P<key>[A-Za-z][A-Za-z0-9-]*)?:\*\*\s+(?P<value>.+)$")
+_ID_TOKEN_RE = re.compile(
+    r"\b((?:P\d+\.SP\d+\.M\d+\.)?(?:REQ|DES|TEST|CODE)-(?:[a-z0-9][a-z0-9-]*-)?\d+)\b"
+)
+
+
+def build_requirement_metadata_registry(project_root: Path) -> dict[str, RequirementMetadata]:
+    """Walk docs/specs/**/requirements-spec.md; build {req_id: RequirementMetadata}."""
+    registry: dict[str, RequirementMetadata] = {}
+    specs_dir = project_root / "docs" / "specs"
+    if not specs_dir.is_dir():
+        return registry
+    for spec_file in sorted(specs_dir.glob("**/requirements-spec.md")):
+        text = spec_file.read_text(encoding="utf-8")
+        current_id: Optional[str] = None
+        evidence_status: Optional[EvidenceStatus] = None
+        justification: Optional[str] = None
+        related: list[str] = []
+        in_code_block = False
+
+        def _flush() -> None:
+            nonlocal current_id, evidence_status, justification, related
+            if current_id is not None:
+                registry[current_id] = RequirementMetadata(
+                    req_id=current_id,
+                    evidence_status=evidence_status,
+                    justification=justification,
+                    related=list(related),
+                )
+            current_id = None
+            evidence_status = None
+            justification = None
+            related = []
+
+        for line in text.splitlines():
+            if line.strip().startswith("```"):
+                in_code_block = not in_code_block
+                continue
+            if in_code_block:
+                continue
+            heading = _REQ_HEADING_RE.match(line)
+            if heading:
+                _flush()
+                current_id = heading["id"]
+                continue
+            if current_id is None:
+                continue
+            field_match = _FIELD_RE.match(line)
+            if not field_match:
+                continue
+            key = (field_match["key"] or "").lower()
+            value = field_match["value"].strip()
+            if key == "evidence-status":
+                try:
+                    evidence_status = EvidenceStatus(value.lower())
+                except ValueError:
+                    pass
+            elif key == "justification":
+                justification = value
+            elif key == "related":
+                related = _ID_TOKEN_RE.findall(value)
+        _flush()
+    return registry
+```
+
+- [ ] **Step 4: Run tests pass**
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add plugins/sdlc-assured/scripts/assured/requirement_metadata.py \
+        tests/test_assured_requirement_metadata.py
+git commit -m "feat(v020): RequirementMetadata registry (foundation for F-006 + F-009) (Phase B task 10A)"
+```
+
+---
+
 ### Task 11: EvidenceStatus enum + migration of regulatory exporters (F-009)
 
 **Files:**
@@ -1028,6 +1202,128 @@ git add plugins/sdlc-assured/scripts/assured/evidence_status.py \
         plugins/sdlc-assured/scripts/assured/export.py \
         tests/test_assured_evidence_status.py tests/test_assured_export.py
 git commit -m "feat(v020): typed EvidenceStatus on 4 regulatory RTM exporters (F-009) (Phase B task 11)"
+```
+
+---
+
+### Task 11A: Migrate exporters from CodeIndexEntry to EvidenceIndexEntry input
+
+**Files:**
+- Modify: `plugins/sdlc-assured/scripts/assured/export.py` — change exporter signatures to accept `List[EvidenceIndexEntry]` + `Mapping[str, RequirementMetadata]`
+- Modify: `tests/test_assured_export.py`
+
+**Why this task exists:** the v0.2.0 plan review (P1.1) caught that Task 9's compatibility shim filtered out every `EvidenceKind` except `PYTHON_COMMENT`. Without this migration, markdown SKILL.md / YAML frontmatter / satisfies-by-existence evidence (Tasks 6-8) never reaches the RTM. F-001 + F-009 stay broken despite the new abstraction existing. This task changes the exporters to consume the full `EvidenceIndexEntry` flow plus the metadata registry from Task 10A.
+
+- [ ] **Step 1: Failing test**
+
+```python
+def test_export_do178c_rtm_recognises_markdown_evidence_in_source_code_column() -> None:
+    """An entry with kind=MARKDOWN_HTML_COMMENT must populate the source-code column,
+    not produce a MISSING placeholder. Regression test for F-001/F-009 plan-review P1.1."""
+    records = [
+        IdRecord(id="REQ-foo-001", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
+        IdRecord(id="DES-foo-001", kind="DES", source="docs/specs/foo/design-spec.md", satisfies=["REQ-foo-001"]),
+        IdRecord(id="TEST-foo-001", kind="TEST", source="docs/specs/foo/test-spec.md", satisfies=["DES-foo-001"]),
+    ]
+    evidence = [
+        EvidenceIndexEntry(
+            kind=EvidenceKind.MARKDOWN_HTML_COMMENT,
+            source="plugins/sdlc-x/skills/foo/SKILL.md",
+            line=5,
+            cited_ids=["DES-foo-001"],
+        ),
+    ]
+    metadata: dict[str, RequirementMetadata] = {}
+    out = export_do178c_rtm(records, evidence, metadata)
+    assert "plugins/sdlc-x/skills/foo/SKILL.md" in out
+    assert "MISSING" not in out
+```
+
+- [ ] **Step 2: Run (fails on signature)**
+
+- [ ] **Step 3: Update exporter signatures**
+
+```python
+def export_do178c_rtm(
+    records: List[IdRecord],
+    evidence: List[EvidenceIndexEntry],
+    metadata: Mapping[str, RequirementMetadata],
+) -> str:
+    """DO-178C Requirements Traceability Matrix — v0.2.0 signature consumes
+    EvidenceIndexEntry directly (P1.1 fix) and uses RequirementMetadata for
+    typed evidence statuses (P1.2 fix)."""
+    evidence_by_cited = _evidence_by_cited(evidence)  # NEW helper
+    cited_by = _index_by_satisfies(records)
+    lines = [
+        "# Requirements Traceability Matrix (DO-178C)",
+        "",
+        (
+            "Generated by `traceability-export do-178c-rtm`. Each row links a high-level requirement "
+            + "to its low-level requirements (designs), implementing source code, and verifying test cases."
+        ),
+        "",
+        "| HLR | LLR | Source code | Test case |",
+        "|-----|-----|-------------|-----------|",
+    ]
+    for req in [r for r in records if r.kind == "REQ"]:
+        deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
+        for des in deses:
+            tests = [t for t in cited_by.get(des.id, []) if t.kind == "TEST"]
+            evidence_cells = (
+                evidence_by_cited.get(req.id, []) + evidence_by_cited.get(des.id, [])
+            )
+            source_cell = _format_source_cell(evidence_cells, metadata.get(req.id))
+            test_str = ", ".join(t.id for t in tests) or _format_missing()
+            lines.append(f"| {req.id} | {des.id} | {source_cell} | {test_str} |")
+        if not deses:
+            source_cell = _format_source_cell([], metadata.get(req.id))
+            lines.append(f"| {req.id} | — | {source_cell} | — |")
+    return "\n".join(lines) + "\n"
+
+
+def _evidence_by_cited(evidence: List[EvidenceIndexEntry]) -> dict[str, List[EvidenceIndexEntry]]:
+    out: dict[str, List[EvidenceIndexEntry]] = defaultdict(list)
+    for e in evidence:
+        for cited in e.cited_ids:
+            out[cited].append(e)
+    return out
+
+
+def _format_source_cell(
+    evidence_cells: List[EvidenceIndexEntry],
+    metadata: Optional[RequirementMetadata],
+) -> str:
+    """Render a source-code cell. Uses typed EvidenceStatus when no evidence
+    is present and the REQ frontmatter declares a non-LINKED status."""
+    if evidence_cells:
+        return "; ".join(
+            f"{e.source}:{e.line}" if e.line is not None else e.source
+            for e in evidence_cells
+        )
+    if metadata is not None and metadata.evidence_status is not None:
+        status = metadata.evidence_status
+        if status == EvidenceStatus.NOT_APPLICABLE:
+            return f"{status.display()}: {metadata.justification or '(no justification)'}"
+        if status == EvidenceStatus.MANUAL_EVIDENCE_REQUIRED:
+            return status.display()
+        if status == EvidenceStatus.CONFIGURATION_ARTIFACT:
+            return f"{status.display()}: {metadata.justification or '(unspecified)'}"
+        if status == EvidenceStatus.LINKED:
+            return "LINKED-NO-EVIDENCE"  # frontmatter claim contradicts reality — surface
+    return EvidenceStatus.MISSING.display()
+```
+
+Apply the same signature change to `export_iec_62304_matrix`, `export_iso_26262_asil_matrix`, `export_fda_dhf_structure`. Update `_build_rows` (used by csv + markdown exporters) similarly.
+
+- [ ] **Step 4: Update existing v0.1.0 export tests for new signature**
+
+Existing tests pass `code` (a `List[CodeIndexEntry]`) — change to `evidence` (a `List[EvidenceIndexEntry]`). Add `metadata={}` for v0.1.0-shape tests where no metadata is captured.
+
+- [ ] **Step 5: Run tests pass + commit**
+
+```bash
+git add plugins/sdlc-assured/scripts/assured/export.py tests/test_assured_export.py
+git commit -m "feat(v020): exporters consume EvidenceIndexEntry + RequirementMetadata directly (P1.1 + P1.2 plan-review fixes) (Phase B task 11A)"
 ```
 
 ---
@@ -1444,6 +1740,173 @@ git commit -m "feat(v020): wire DependencyExtractor into kb-codeindex; new libra
 
 ---
 
+### Task 16A: Dependency-edges artefact — renderer + parser
+
+**Files:**
+- Modify: `plugins/sdlc-assured/scripts/assured/dependency_extractor.py` — add `render_dependency_edges` + `parse_dependency_edges`
+- Modify: `tests/test_assured_dependency_extractor.py`
+
+**Why this task exists:** the v0.2.0 plan review (P1.3) caught that Task 16 only documented the wiring in SKILL.md and re-exported the dataclass — there was no executable plumbing. Without a renderer for `library/_dependency-edges.md`, a parser to read it back, and an integration helper, `visibility_rule_enforcement` cannot consume real extracted edges. F-007 stays aspirational. This task adds the executable round-trip.
+
+- [ ] **Step 1: Failing test for render**
+
+```python
+def test_render_dependency_edges_emits_markdown_table() -> None:
+    edges = [
+        ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2"),
+        ImportEdge(from_module="P1.SP1.M2", to_module="P1.SP1.M3"),
+    ]
+    out = render_dependency_edges(edges, library_handle="phase-f-dogfood")
+    assert "| From | To |" in out
+    assert "| P1.SP1.M1 | P1.SP1.M2 |" in out
+    assert "<!-- library_handle: phase-f-dogfood -->" in out
+
+
+def test_parse_dependency_edges_round_trips() -> None:
+    original = [ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2")]
+    text = render_dependency_edges(original, library_handle="x")
+    assert parse_dependency_edges(text) == original
+```
+
+- [ ] **Step 2: Implementation**
+
+```python
+def render_dependency_edges(edges: List[ImportEdge], library_handle: str) -> str:
+    """Render edges as a markdown table for library/_dependency-edges.md."""
+    lines = [
+        "<!-- format_version: 1 -->",
+        f"<!-- library_handle: {library_handle} -->",
+        "# Module Dependency Edges",
+        "",
+        "Generated by `kb-codeindex`. One row per observed cross-module import edge.",
+        "",
+        "| From | To |",
+        "|------|----|",
+    ]
+    for edge in sorted({(e.from_module, e.to_module) for e in edges}):
+        lines.append(f"| {edge[0]} | {edge[1]} |")
+    return "\n".join(lines) + "\n"
+
+
+_EDGE_ROW_RE = re.compile(r"^\|\s+(\S+)\s+\|\s+(\S+)\s+\|$")
+
+
+def parse_dependency_edges(text: str) -> List[ImportEdge]:
+    """Parse a `library/_dependency-edges.md` file back into ImportEdge objects."""
+    edges: List[ImportEdge] = []
+    for line in text.splitlines():
+        m = _EDGE_ROW_RE.match(line.strip())
+        if not m:
+            continue
+        from_, to_ = m.group(1), m.group(2)
+        if from_ == "From" or to_ == "To" or from_.startswith("--"):
+            continue
+        edges.append(ImportEdge(from_module=from_, to_module=to_))
+    return edges
+```
+
+- [ ] **Step 3: Run tests pass + commit**
+
+```bash
+git add plugins/sdlc-assured/scripts/assured/dependency_extractor.py \
+        tests/test_assured_dependency_extractor.py
+git commit -m "feat(v020): dependency-edges renderer + parser for library/_dependency-edges.md (P1.3 plan-review fix) (Phase C task 16A)"
+```
+
+---
+
+### Task 16B: Build helper + integration test (real source → edges → visibility validator)
+
+**Files:**
+- Modify: `plugins/sdlc-assured/scripts/assured/dependency_extractor.py` — add `build_dependency_edges` orchestrator
+- Modify: `tests/test_assured_dependency_extractor.py` — integration test
+- Modify: `plugins/sdlc-assured/skills/kb-codeindex/SKILL.md` + root mirror — invoke the orchestrator
+
+**Why this task exists:** P1.3 also requires an end-to-end integration test — real source files → extracted edges → file written → file read → `visibility_rule_enforcement` consumes them. This task wires the loop end-to-end.
+
+- [ ] **Step 1: Integration test**
+
+```python
+from sdlc_assured_scripts.assured.decomposition import visibility_rule_enforcement
+
+
+def test_integration_python_source_to_visibility_validator(tmp_path: Path) -> None:
+    """End-to-end: real Python source → PythonAstExtractor → render → parse → validator."""
+    src_a = tmp_path / "src" / "a"
+    src_a.mkdir(parents=True)
+    (src_a / "module_a.py").write_text("from b.module_b import foo\n")
+    src_b = tmp_path / "src" / "b"
+    src_b.mkdir(parents=True)
+    (src_b / "module_b.py").write_text("def foo(): return 1\n")
+
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {id: M1, name: A, paths: [src/a/], granularity: requirement, structure: flat}
+          - {id: M2, name: B, paths: [src/b/], granularity: requirement, structure: flat}
+visibility:
+  - from: P1.SP1.M1
+    to: []  # M1 → M2 is NOT declared
+  - from: P1.SP1.M2
+    to: []
+"""
+    )
+
+    edges = build_dependency_edges(
+        source_paths=[src_a / "module_a.py", src_b / "module_b.py"],
+        programs=decomp,
+        extractors=[PythonAstExtractor()],
+    )
+    assert ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2") in edges
+
+    # Round-trip through file
+    out_path = tmp_path / "library" / "_dependency-edges.md"
+    out_path.parent.mkdir(parents=True)
+    out_path.write_text(render_dependency_edges(edges, library_handle="x"))
+    parsed = parse_dependency_edges(out_path.read_text())
+
+    # Validator consumes parsed edges
+    result = visibility_rule_enforcement(parsed, decomp, mode="strict")
+    assert result.passed is False
+    assert any("P1.SP1.M1" in e and "P1.SP1.M2" in e for e in result.errors)
+```
+
+- [ ] **Step 2: Implement `build_dependency_edges`**
+
+```python
+def build_dependency_edges(
+    source_paths: List[Path],
+    programs: Decomposition,
+    extractors: List[DependencyExtractor],
+) -> List[ImportEdge]:
+    """Run each extractor on source_paths; return deduplicated union of edges."""
+    seen: set[ImportEdge] = set()
+    for extractor in extractors:
+        for edge in extractor.extract(source_paths, programs):
+            seen.add(edge)
+    return sorted(seen, key=lambda e: (e.from_module, e.to_module))
+```
+
+- [ ] **Step 3: Update kb-codeindex SKILL.md to invoke build_dependency_edges + write `library/_dependency-edges.md`**
+
+- [ ] **Step 4: Sync root mirror; run tests pass; commit**
+
+```bash
+git add plugins/sdlc-assured/scripts/assured/dependency_extractor.py \
+        tests/test_assured_dependency_extractor.py \
+        plugins/sdlc-assured/skills/kb-codeindex/SKILL.md \
+        skills/kb-codeindex/SKILL.md
+git commit -m "feat(v020): build_dependency_edges orchestrator + end-to-end integration test (P1.3 plan-review fix) (Phase C task 16B)"
+```
+
+---
+
 ### Task 17: granularity_match rewrite for indirect DES-mediated coverage (F-008)
 
 **Files:**
@@ -1719,37 +2182,89 @@ git commit -m "feat(v020): remap_ids multiple-prefix handling with longest-match
 
 ---
 
-### Task 22: REQ frontmatter `related:` field (F-006)
+### Task 22: Per-REQ `**Related:**` field (F-006)
 
 **Files:**
-- Modify: `plugins/sdlc-assured/templates/requirements-spec-assured.md` — add example
-- Modify: `plugins/sdlc-assured/scripts/assured/code_index.py` — render_spec_findings includes `related:` if present
+- Modify: `plugins/sdlc-assured/templates/requirements-spec-assured.md` — add inline `**Related:**` example under one of the example REQs
+- Modify: `plugins/sdlc-assured/scripts/assured/code_index.py` — `render_spec_findings` consults the metadata registry from Task 10A and emits per-entry `Related:` line
 - Modify: `tests/test_assured_code_index.py`
+
+**Why scoped to per-REQ, not file:** the v0.2.0 plan review (P2.2) caught that file-level frontmatter `related:` cannot express "REQ-002 related to REQ-004 while REQ-003 has no relation." F-006 wanted per-REQ relations. The metadata registry from Task 10A already parses per-REQ inline `**Related:**` fields — Task 22 wires `render_spec_findings` to consume that registry.
 
 - [ ] **Step 1: Update template**
 
-Add to the requirements-spec-assured.md template:
+Modify `plugins/sdlc-assured/templates/requirements-spec-assured.md` — add an inline `**Related:**` field to one example REQ:
 
 ```markdown
----
-feature_id: <feature-id>
-module: P1.SP1.M1
-granularity: requirement
-related: []   # optional list of related REQ-IDs (see-also cross-references, F-006)
----
+### REQ-<feature-id>-001
+
+<Single declarative sentence describing one requirement.>
+
+**Module:** P1.SP1.M1
+
+### REQ-<feature-id>-002
+
+<Single declarative sentence describing the next requirement.>
+
+**Module:** P1.SP1.M1
+**Related:** REQ-<feature-id>-001
 ```
 
-- [ ] **Step 2-4: TDD cycle**
+The `**Related:**` field is OPTIONAL per REQ. Only emit it for requirements that genuinely cross-reference each other.
 
-Test that `render_spec_findings` includes a `Related:` line in each entry's output if frontmatter declares `related: [...]`.
+- [ ] **Step 2: Failing test**
 
-- [ ] **Step 5: Commit**
+```python
+def test_render_spec_findings_emits_per_req_related_when_metadata_provided() -> None:
+    records = [
+        IdRecord(id="REQ-foo-001", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
+        IdRecord(id="REQ-foo-002", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
+        IdRecord(id="REQ-foo-003", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
+    ]
+    metadata = {
+        "REQ-foo-002": RequirementMetadata(req_id="REQ-foo-002", related=["REQ-foo-001"]),
+        # REQ-foo-001 and REQ-foo-003 have NO `Related:` line
+    }
+    out = render_spec_findings(records, library_handle="x", metadata=metadata)
+    # Only REQ-foo-002 gets a Related: line
+    assert "Related: REQ-foo-001" in out
+    # REQ-foo-001 and REQ-foo-003 do NOT get Related: lines
+    section_001 = out.split("REQ-foo-001")[1].split("REQ-foo-002")[0]
+    assert "Related:" not in section_001
+    section_003 = out.split("REQ-foo-003")[1]
+    assert "Related:" not in section_003
+```
+
+- [ ] **Step 3: Update render_spec_findings signature**
+
+```python
+def render_spec_findings(
+    records: List[IdRecord],
+    library_handle: str,
+    metadata: Optional[Mapping[str, "RequirementMetadata"]] = None,
+) -> str:
+    """Render REQ/DES/TEST records as shelf-index entries (spec-as-KB-finding).
+
+    metadata: optional per-REQ metadata registry from build_requirement_metadata_registry.
+              When provided, emits a `Related:` line per entry for REQs that have
+              a non-empty `related` list.
+    """
+    metadata = metadata or {}
+    # ... existing rendering loop ...
+    for n, r in enumerate(records, start=1):
+        # ... existing entry render ...
+        md = metadata.get(r.id)
+        if md is not None and md.related:
+            lines.append(f"**Related:** {', '.join(md.related)}")
+```
+
+- [ ] **Step 4: Run tests pass + commit**
 
 ```bash
 git add plugins/sdlc-assured/templates/requirements-spec-assured.md \
         plugins/sdlc-assured/scripts/assured/code_index.py \
         tests/test_assured_code_index.py
-git commit -m "feat(v020): REQ frontmatter related: field for see-also cross-refs (F-006) (Phase D task 22)"
+git commit -m "feat(v020): per-REQ Related: field via metadata registry (F-006; P2.2 plan-review fix) (Phase D task 22)"
 ```
 
 ---
@@ -1766,12 +2281,14 @@ The v0.1.0 REQ-001 collapses `id_uniqueness` (blocking), `cited_ids_resolve` (bl
 
 - [ ] **Step 2: Rewrite as two REQs**
 
-REQ-001: blocking integrity (`id_uniqueness` + `cited_ids_resolve`)
-REQ-001a (new): non-blocking orphan-warning (`orphan_ids`)
+REQ-001 (existing): blocking integrity (`id_uniqueness` + `cited_ids_resolve`)
+REQ-005 (NEW; numeric continuation, NOT a letter suffix): non-blocking orphan-warning (`orphan_ids`)
+
+**Important:** the existing ID grammar (`_FLAT_RE` and `_HEADING_RE` in `assured.ids`) accepts numeric suffixes only. A `REQ-001a` form would break `parse_id`, `build_id_registry`, and citation validation. The split must use the next available numeric ID (REQ-005, since the file currently has REQ-001 through REQ-004).
 
 - [ ] **Step 3: Update DES + TEST**
 
-DES-001 references the blocking pair. New DES-001a covers `orphan_ids`. Update TEST-001/001a accordingly.
+DES-001 references the blocking pair. New DES-005 covers `orphan_ids`. Update TEST-001 / TEST-005 accordingly. All numeric, valid grammar.
 
 - [ ] **Step 4: Run validators on the modified specs**
 
@@ -2300,17 +2817,17 @@ Same pattern as #178 PR #187: monitor CI; investigate failures; merge when green
 | Spec section | Task |
 |---|---|
 | §3 Phase A — Design decisions | Tasks 1-3 |
-| §3 Phase B — Evidence model + parser | Tasks 4-12 |
-| §3 Phase C — Validator improvements + non-Python adapter | Tasks 13-20 |
+| §3 Phase B — Evidence model + parser | Tasks 4-12 + inserts 10A, 11A (data-flow fixes per plan-review P1.1 + P1.2) |
+| §3 Phase C — Validator improvements + non-Python adapter | Tasks 13-20 + inserts 16A, 16B (executable wiring per plan-review P1.3) |
 | §3 Phase D — ID system + REQ format | Tasks 21-24 |
 | §3 Phase E — Quality discipline + skill robustness | Tasks 25-31 |
 | §3 Phase F — Audit closure | Task 32 |
 | §3 Phase G — Verification dogfood + EPIC closure | Tasks 33-39 |
-| §3 18 items mapping | F-001=4-9, F-002=12, F-003=7, F-004=24, F-005=23, F-006=22, F-007=13-16, F-008=17, F-009=11, F-010=25-29, F1=31, F4=32, D1=10, D2=20, D3=30, E1=18, E2=19, E3=21 |
+| §3 18 items mapping | F-001=4-9 + 11A; F-002=12; F-003=7; F-004=24; F-005=23 (with P2.1 ID grammar fix); F-006=22 (with P2.2 per-REQ scope fix) + 10A; F-007=13-16, 16A, 16B; F-008=17; F-009=10A + 11 + 11A; F-010=25-29; F1=31; F4=32; D1=10; D2=20; D3=30; E1=18; E2=19; E3=21 |
 | §4 success criteria | Task 36 hard gates + Task 38 architect review |
 | §5 out of scope | (no task; spec-level constraint) |
 
-All 18 items covered. Phase G hard gates checked in Task 36.
+All 18 items covered. **Plan-review (Codex 2026-05-01T06:42:38Z) findings P1.1, P1.2, P1.3, P2.1, P2.2 all incorporated** via 4 new tasks (10A, 11A, 16A, 16B) plus textual fixes in Tasks 22 and 23. Total task count: 43 tasks (was 39).
 
 **Placeholder scan:** every code block contains real content. No "TBD", "TODO", "fill in details". The architect-review verdicts are explicit `<to be filled>` placeholders inside Task 1's addendum content — these are template placeholders the implementer fills in Task 2 Step 4.
 
@@ -2325,3 +2842,9 @@ All 18 items covered. Phase G hard gates checked in Task 36.
 ## Execution
 
 Use `superpowers:subagent-driven-development` to execute this plan task-by-task. Fresh subagent per task; spec-compliance review then code-quality review between tasks. Use a standard model (Sonnet) for the mostly-mechanical TDD tasks (Tasks 4-24); use a more capable model for design-decision tasks (Task 1) and architect-review-driven triage tasks (Tasks 2, 38). The verification-dogfood phase (Tasks 34-36) requires careful metric capture; pair-implementer-and-reviewer if seeded defects don't fire as expected.
+
+## Time budget reality check
+
+The 2026-05-01T06:42:38Z plan review (Codex) noted: *"the stated '25 hours of focused execution' estimate is optimistic. Tasks 9, 11A, 16A, 16B, 17, 19, 28, and 34-36 are integration-heavy and likely to reveal coupling that is not visible in the plan."*
+
+**Use the spec's 20-27 day envelope as the primary budget**, not the optimistic 25-hour estimate. The 4 new plan-review tasks (10A, 11A, 16A, 16B) are themselves integration-heavy — they exist precisely because the original plan under-specified data-flow guarantees. Allow 1-2 extra days for these compared to the original 39-task estimate. Total revised target: 22-29 days.
