@@ -3,7 +3,7 @@
 import tempfile
 from pathlib import Path
 
-from sdlc_assured_scripts.assured.dependency_extractor import (  # noqa: F401
+from sdlc_assured_scripts.assured.dependency_extractor import (
     DependencyExtractor,
     ImportEdge,
     PythonAstExtractor,

@@ -5,7 +5,7 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import yaml
 
@@ -484,12 +484,14 @@ def _is_trivial(node: ast.FunctionDef) -> bool:
     return False
 
 
-def _collect_functions(tree: ast.Module) -> List[ast.FunctionDef]:
+def _collect_functions(
+    tree: ast.Module,
+) -> List[Union[ast.FunctionDef, ast.AsyncFunctionDef]]:
     """Recursively collect all FunctionDef and AsyncFunctionDef nodes in the AST."""
-    funcs: List[ast.FunctionDef] = []
+    funcs: List[Union[ast.FunctionDef, ast.AsyncFunctionDef]] = []
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            funcs.append(node)  # type: ignore[arg-type]
+            funcs.append(node)
     return funcs
 
 
