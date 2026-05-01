@@ -86,8 +86,10 @@ def render_module_dependency_graph(
     lines = [
         "# Module Dependency Graph",
         "",
-        "Each row represents one observed cross-module edge."
-        ' "Allowed?" reflects the project\'s `programs.yaml` visibility block.',
+        (
+            "Each row represents one observed cross-module edge."
+            + ' "Allowed?" reflects the project\'s `programs.yaml` visibility block.'
+        ),
         "",
     ]
     if not actual_edges:
