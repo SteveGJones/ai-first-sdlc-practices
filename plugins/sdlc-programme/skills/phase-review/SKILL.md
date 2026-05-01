@@ -68,6 +68,22 @@ esac
 REVIEW_PATH="$REVIEWS_DIR/$PHASE-review-$REVIEWER_LABEL.md"
 ```
 
+## Graceful fallback when the configured agent is not available
+
+If the `$REVIEWER_AGENT` listed above is not loaded in the current environment (e.g., the `sdlc-team-common` or `sdlc-team-fullstack` plugin was not installed), the dispatch will return an error like "subagent_type not found" or "agent not loaded".
+
+In that case, fall back to the **`superpowers:requesting-code-review`** pattern: dispatch the `general-purpose` subagent with the same review prompt below, and prefix the review record's `## Reviewer` section with a `Fallback:` line so auditors can see which agent actually performed the review.
+
+Concretely:
+
+1. First attempt the configured agent (`$REVIEWER_AGENT`).
+2. If that returns an "agent not found" / "subagent_type not loaded" error, retry with `subagent_type=general-purpose` and prepend this line to the review prompt: `**Fallback dispatch:** the configured reviewer ($REVIEWER_AGENT) was not loaded; you are acting as a fallback reviewer. Note this in the review record's Reviewer section.`
+3. The resulting review record is still valid — Article 14's gate checks for the FILE, not for which agent produced it. The audit trail captures the fallback explicitly via the `Fallback:` line.
+
+Do NOT silently skip the review just because the configured agent is absent. Either dispatch the configured agent OR explicitly fall back; never produce no review record.
+
+---
+
 Now use the `Agent` tool to dispatch `$REVIEWER_AGENT` (substituting the value from the bash variable) with this prompt:
 
 ```
