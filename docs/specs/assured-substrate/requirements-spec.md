@@ -42,8 +42,8 @@ The Assured Constitution articles 15-17 SHALL overlay articles 1-14 cleanly with
 Teams operating in regulated contexts MUST be able to opt in to a change-impact gate that blocks commits lacking a CHG record, configured via `.sdlc/team-config.json` using the key `assured.change_impact_gate` (`enabled` | `disabled`, default `disabled`) — so that the gate is never imposed silently on projects that have not explicitly requested it.
 
 **Module:** P1.SP1.M2
-**Evidence-Status:** MISSING
-**Justification:** `change_impact_gate` in `traceability_validators.py` carries `# implements: DES-assured-substrate-003` but path-based coverage lookup failed during measurement; the annotation is present and coverage should resolve once path matching is confirmed.
+**Evidence-Status:** LINKED
+**Justification:** `change_impact_gate` in `plugins/sdlc-assured/scripts/assured/traceability_validators.py:139` carries `# implements: DES-assured-substrate-003`. Phase G acceptance measurement confirms DES-mediated coverage post-Task-36A path-resolution fix.
 
 ## Out of scope
 

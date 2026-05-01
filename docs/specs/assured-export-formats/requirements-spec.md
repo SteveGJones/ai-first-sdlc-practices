@@ -26,32 +26,32 @@ The Assured SDLC option must produce traceability artefacts that satisfy the doc
 Auditors working under DO-178C MUST be able to produce a Requirements Traceability Matrix from project artefacts in the standard-prescribed four-column format (HLR | LLR | Source code | Test case) with a document header that identifies the DO-178C standard, so that the matrix can be submitted without manual reformatting.
 
 **Module:** P1.SP1.M2
-**Evidence-Status:** MISSING
-**Justification:** `export_do178c_rtm` in `export.py` implements DES-assured-export-formats-001 but lacks an `# implements:` annotation; the annotation must be added to close this cell.
+**Evidence-Status:** LINKED
+**Justification:** `export_do178c_rtm` in `plugins/sdlc-assured/scripts/assured/export.py:72` carries `# implements: DES-assured-export-formats-001`. Annotation added in Task 36A; Phase G acceptance measurement (`research/v020-acceptance-metrics.md`) confirms DES-mediated coverage.
 
 ### REQ-assured-export-formats-002
 
 Auditors working under IEC 62304 MUST be able to produce a Software Traceability Matrix from project artefacts with columns (Software requirement | Software unit | Verification activity) and a document header that declares the software safety class (A, B, or C), so that the matrix meets the IEC 62304 documentary expectation without post-processing.
 
 **Module:** P1.SP1.M2
-**Evidence-Status:** MISSING
-**Justification:** `export_iec_62304_matrix` in `export.py` implements DES-assured-export-formats-002 but lacks an `# implements:` annotation; the annotation must be added to close this cell.
+**Evidence-Status:** LINKED
+**Justification:** `export_iec_62304_matrix` in `plugins/sdlc-assured/scripts/assured/export.py:120` carries `# implements: DES-assured-export-formats-002`. Annotation added in Task 36A; Phase G acceptance measurement confirms DES-mediated coverage.
 
 ### REQ-assured-export-formats-003
 
 Auditors working under ISO 26262 MUST be able to produce an ASIL-tagged traceability matrix from project artefacts with columns (Safety requirement | Architectural element | Implementation | Verification) and a document header that declares the ASIL level (A, B, C, or D), so that the matrix satisfies the ISO 26262 evidence expectation without manual annotation.
 
 **Module:** P1.SP1.M2
-**Evidence-Status:** MISSING
-**Justification:** `export_iso_26262_asil_matrix` in `export.py` implements DES-assured-export-formats-003 but lacks an `# implements:` annotation; the annotation must be added to close this cell.
+**Evidence-Status:** LINKED
+**Justification:** `export_iso_26262_asil_matrix` in `plugins/sdlc-assured/scripts/assured/export.py:161` carries `# implements: DES-assured-export-formats-003`. Annotation added in Task 36A; Phase G acceptance measurement confirms DES-mediated coverage.
 
 ### REQ-assured-export-formats-004
 
 Auditors working under FDA 21 CFR §820.30 MUST be able to produce a Design History File structure from project artefacts organised under the four design-control sections (Design inputs §820.30(c) | Design outputs §820.30(d) | Design verification §820.30(f) | Design validation §820.30(g)), each citing the relevant regulatory clause. Non-regulatory consumers MUST be able to obtain the same artefact set as a four-column REQ | DES | TEST | CODE matrix in both CSV and Markdown formats.
 
 **Module:** P1.SP1.M2
-**Evidence-Status:** MISSING
-**Justification:** `export_fda_dhf_structure`, `export_csv`, and `export_markdown` in `export.py` implement DES-assured-export-formats-004 but lack `# implements:` annotations; the annotations must be added to close this cell.
+**Evidence-Status:** LINKED
+**Justification:** `export_fda_dhf_structure` (`export.py:205`), `export_csv` (`export.py:306`), and `export_markdown` (`export.py:326`) all carry `# implements: DES-assured-export-formats-004`. Annotations added in Task 36A; Phase G acceptance measurement confirms DES-mediated coverage.
 
 ## Out of scope
 
