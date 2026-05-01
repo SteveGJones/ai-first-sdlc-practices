@@ -69,6 +69,7 @@ def export_do178c_rtm(
     evidence: List[EvidenceIndexEntry],
     metadata: Mapping[str, RequirementMetadata],
 ) -> str:
+    # implements: DES-assured-export-formats-001
     """DO-178C Requirements Traceability Matrix.
 
     Columns: HLR (high-level requirement) | LLR (low-level requirement / design) |
@@ -116,6 +117,7 @@ def export_iec_62304_matrix(
     metadata: Mapping[str, RequirementMetadata],
     software_safety_class: str = "A",
 ) -> str:
+    # implements: DES-assured-export-formats-002
     """IEC 62304 Software Traceability Matrix.
 
     Columns: Software requirement | Software unit (code) | Verification activity (test).
@@ -156,6 +158,7 @@ def export_iso_26262_asil_matrix(
     metadata: Mapping[str, RequirementMetadata],
     asil_level: str = "B",
 ) -> str:
+    # implements: DES-assured-export-formats-003
     """ISO 26262 ASIL Traceability Matrix.
 
     Columns: Safety requirement | Architectural element (design) |
@@ -199,6 +202,7 @@ def export_fda_dhf_structure(
     evidence: List[EvidenceIndexEntry],
     metadata: Mapping[str, RequirementMetadata],
 ) -> str:
+    # implements: DES-assured-export-formats-004
     """FDA Design History File structure (21 CFR §820.30).
 
     Sections: Design inputs (REQs) | Design outputs (DESs + evidence) |
@@ -299,6 +303,7 @@ def export_csv(
     evidence: List[EvidenceIndexEntry],
     metadata: Mapping[str, RequirementMetadata],
 ) -> str:
+    # implements: DES-assured-export-formats-004
     """Generic CSV traceability export.
 
     Header: REQ,DES,TEST,CODE. Commas within cells are replaced with semicolons
@@ -318,6 +323,7 @@ def export_markdown(
     evidence: List[EvidenceIndexEntry],
     metadata: Mapping[str, RequirementMetadata],
 ) -> str:
+    # implements: DES-assured-export-formats-004
     """Generic Markdown traceability matrix export.
 
     Produces a ``# Traceability Matrix`` title followed by a GFM pipe table

@@ -47,6 +47,7 @@ class CodeIndexEntry:
 def parse_code_annotations(
     files: List[Path], project_root: Path
 ) -> List[CodeIndexEntry]:
+    # implements: DES-assured-code-index-001
     """Walk files via EvidenceIndexRegistry; convert PYTHON_COMMENT entries to CodeIndexEntry.
 
     v0.1.0 compatibility shim: returns CodeIndexEntry for backward compatibility with
