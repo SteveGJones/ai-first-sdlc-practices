@@ -45,42 +45,25 @@ class CodeIndexEntry:
 def parse_code_annotations(
     files: List[Path], project_root: Path
 ) -> List[CodeIndexEntry]:
-    # implements: DES-assured-code-index-001
-    """Walk *files* and extract every ``# implements:`` annotation.
+    """Walk files via EvidenceIndexRegistry; convert PYTHON_COMMENT entries to CodeIndexEntry.
 
-    Parameters
-    ----------
-    files:
-        Explicit list of :class:`~pathlib.Path` objects to inspect.
-    project_root:
-        Used to relativise file paths in the returned entries.
-
-    Returns
-    -------
-    List[CodeIndexEntry]
-        One entry per annotation line found, in file-then-line order.
+    v0.1.0 compatibility shim: returns CodeIndexEntry for backward compatibility with
+    existing render_code_index calls. New code paths should use EvidenceIndexRegistry directly.
     """
+    from .evidence_index import EvidenceIndexRegistry, EvidenceKind
+
+    registry = EvidenceIndexRegistry.with_default_adapters()
     entries: List[CodeIndexEntry] = []
-    for f in files:
-        if not f.is_file():
+    for ev in registry.scan(files, project_root):
+        if ev.kind != EvidenceKind.PYTHON_COMMENT:
             continue
-        text = f.read_text(encoding="utf-8")
-        if f.parent == project_root or project_root in f.parents:
-            rel_path = str(f.relative_to(project_root))
-        else:
-            rel_path = str(f.name)
-        for line_no, line in enumerate(text.splitlines(), start=1):
-            m = _IMPLEMENTS_RE.match(line)
-            if not m:
-                continue
-            cited = _ID_TOKEN_RE.findall(m["ids"])
-            entries.append(
-                CodeIndexEntry(
-                    file_path=rel_path,
-                    line=line_no,
-                    cited_ids=cited,
-                )
+        entries.append(
+            CodeIndexEntry(
+                file_path=ev.source,
+                line=ev.line or 0,
+                cited_ids=list(ev.cited_ids),
             )
+        )
     return entries
 
 
