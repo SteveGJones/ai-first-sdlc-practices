@@ -9,6 +9,7 @@ from sdlc_assured_scripts.assured.code_index import (
     render_spec_findings,
 )
 from sdlc_assured_scripts.assured.ids import IdRecord
+from sdlc_assured_scripts.assured.requirement_metadata import RequirementMetadata
 
 
 def test_parse_code_annotations_extracts_implements_lines(tmp_path: Path) -> None:
@@ -135,3 +136,20 @@ def test_render_spec_findings_omits_last_rebuilt_by_default() -> None:
     ]
     output = render_spec_findings(records, library_handle="h")
     assert "last_rebuilt" not in output
+
+
+def test_render_spec_findings_emits_per_req_related_when_metadata_provided() -> None:
+    records = [
+        IdRecord(id="REQ-foo-001", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
+        IdRecord(id="REQ-foo-002", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
+        IdRecord(id="REQ-foo-003", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
+    ]
+    metadata = {
+        "REQ-foo-002": RequirementMetadata(req_id="REQ-foo-002", related=["REQ-foo-001"]),
+    }
+    out = render_spec_findings(records, library_handle="x", metadata=metadata)
+    assert "**Related:** REQ-foo-001" in out
+    section_001 = out.split("REQ-foo-001")[1].split("REQ-foo-002")[0]
+    assert "Related:" not in section_001
+    section_003 = out.split("REQ-foo-003")[1]
+    assert "Related:" not in section_003

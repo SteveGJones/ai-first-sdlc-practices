@@ -20,8 +20,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Mapping, Optional
 
+if TYPE_CHECKING:
+    from .requirement_metadata import RequirementMetadata
 
 from .ids import IdRecord
 
@@ -133,6 +135,7 @@ def render_spec_findings(
     records: List[IdRecord],
     library_handle: str,
     timestamp: Optional[str] = None,
+    metadata: Optional[Mapping[str, "RequirementMetadata"]] = None,
 ) -> str:
     # implements: DES-assured-code-index-002
     """Render REQ/DES/TEST records as shelf-index entries (spec-as-KB-finding).
@@ -147,6 +150,12 @@ def render_spec_findings(
         Optional ISO 8601 string for the ``last_rebuilt`` header field.
         When ``None`` (the default) the ``last_rebuilt`` line is omitted so
         that repeated calls on unchanged inputs produce byte-identical output.
+    metadata:
+        Optional mapping from requirement ID to :class:`RequirementMetadata`.
+        When provided and an entry has a non-empty ``related`` list, a
+        ``**Related:**`` line is appended to that entry's rendered block.
+        Entries without metadata or with an empty ``related`` list emit no
+        ``Related:`` line.
     """
     lines = [
         "<!-- format_version: 1 -->",
@@ -169,6 +178,9 @@ def render_spec_findings(
         lines.append("**Facts:**")
         lines.append(f"- Declared in {r.source}")
         lines.append(f"**Links:** {links}")
+        md = metadata.get(r.id) if metadata else None
+        if md is not None and md.related:
+            lines.append(f"**Related:** {', '.join(md.related)}")
         lines.append("")
     return "\n".join(lines)
 
