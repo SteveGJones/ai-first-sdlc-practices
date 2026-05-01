@@ -182,7 +182,7 @@ def remap_ids(  # implements: DES-assured-id-system-002
         matches = [prefix for prefix in path_remapping if r.source.startswith(prefix)]
 
         if len(matches) >= 2:
-            longest = max(matches, key=len)
+            longest = max(matches, key=lambda p: (len(p), p))
             msg = (
                 f"multiple prefix match for {r.source!r}: "
                 f"{sorted(matches, key=len)} — using longest {longest!r}"
