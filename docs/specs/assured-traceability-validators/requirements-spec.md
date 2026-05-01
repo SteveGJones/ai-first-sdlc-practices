@@ -23,7 +23,7 @@ The Assured SDLC option requires a suite of validators that can detect structura
 
 ### REQ-assured-traceability-validators-001
 
-The reference-integrity validators (`id_uniqueness`, `cited_ids_resolve`, `orphan_ids`) SHALL collectively detect: duplicate IDs across all records and report each duplicate as a blocking error; citations in any record's `satisfies` list that do not resolve to a declared ID and report each as a blocking error; and REQ or DES IDs that are declared but never cited by any other record and report each as a non-blocking warning (orphan detection SHALL NOT prevent a passing result).
+The reference-integrity validators (`id_uniqueness`, `cited_ids_resolve`) SHALL collectively detect: duplicate IDs across all records and report each duplicate as a blocking error; and citations in any record's `satisfies` list that do not resolve to a declared ID and report each as a blocking error.
 
 **Module:** P1.SP1.M2
 
@@ -45,6 +45,12 @@ The directional-coverage validators (`forward_link_integrity`, `backward_coverag
 
 **Module:** P1.SP1.M2
 
+### REQ-assured-traceability-validators-005
+
+`orphan_ids` SHALL detect declared IDs (any kind) that are never cited by any record's `satisfies` list and report each as a non-blocking warning. The validator SHALL always return `passed=True` regardless of warnings — orphan detection is advisory and SHALL NOT prevent a passing result.
+
+**Module:** P1.SP1.M2
+
 ## Out of scope
 
 - Persistence of validator results to disk — callers are responsible for writing reports; the validators return `ValidatorResult` objects only.
@@ -56,7 +62,7 @@ The directional-coverage validators (`forward_link_integrity`, `backward_coverag
 
 - `id_uniqueness` given two records with the same `id` returns `ValidatorResult(passed=False)` with an error mentioning both source paths.
 - `cited_ids_resolve` given a record whose `satisfies` list contains an undeclared ID returns `passed=False` with a descriptive error; given a record whose `satisfies` list is empty or fully declared returns `passed=True`.
-- `orphan_ids` given a REQ that is never cited returns `passed=True` with a non-empty `warnings` list containing the orphan ID.
+- `orphan_ids` given a declared ID of any kind that is never cited returns `passed=True` with a non-empty `warnings` list containing the orphan ID (REQ-005 coverage).
 - `forward_link_integrity` given a DES with an empty `satisfies` list returns `passed=False`; given a fully-linked graph returns `passed=True`.
 - `backward_coverage` given a REQ with no DES citing it returns `passed=False`; given a fully-covered graph returns `passed=True`.
 - `index_regenerability` given matching on-disk and regenerated content returns `passed=True`; given differing content returns `passed=False`.

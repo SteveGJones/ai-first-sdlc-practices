@@ -17,7 +17,7 @@ granularity: design
 
 ## Overview
 
-Four design units map to the four requirements. DES-001 covers the three reference-integrity validators (`id_uniqueness`, `cited_ids_resolve`, `orphan_ids`). DES-002 covers the two directional-coverage validators (`forward_link_integrity`, `backward_coverage`). DES-003 covers the idempotency check (`index_regenerability`). DES-004 covers the annotation scanner (`annotation_format_integrity`). The `change_impact_gate` function is annotated to DES-assured-substrate-003 (cross-feature reference).
+Five design units map to the five requirements. DES-001 covers the two blocking reference-integrity validators (`id_uniqueness`, `cited_ids_resolve`). DES-002 covers the two directional-coverage validators (`forward_link_integrity`, `backward_coverage`). DES-003 covers the idempotency check (`index_regenerability`). DES-004 covers the annotation scanner (`annotation_format_integrity`). DES-005 covers the non-blocking orphan detector (`orphan_ids`). The `change_impact_gate` function is annotated to DES-assured-substrate-003 (cross-feature reference).
 
 All validators accept `List[IdRecord]` or a similar typed input and return `ValidatorResult(passed: bool, errors: List[str], warnings: List[str])`. None perform I/O beyond what is explicitly passed through their arguments.
 
@@ -27,13 +27,11 @@ All validators accept `List[IdRecord]` or a similar typed input and return `Vali
 
 ### DES-assured-traceability-validators-001
 
-The three reference-integrity validators operate as follows:
+The two blocking reference-integrity validators operate as follows:
 
 `id_uniqueness(records: List[IdRecord]) -> ValidatorResult` builds a frequency counter over all `r.id` values. Any ID with count > 1 is a duplicate. For each duplicate, it constructs an error string listing all source paths where it appears. Returns `passed=False` with a non-empty errors list when duplicates exist; `passed=True` otherwise.
 
 `cited_ids_resolve(records: List[IdRecord]) -> ValidatorResult` builds the declared set `{r.id for r in records}`. For each record `r` and each item `cited` in `r.satisfies`, if `cited` is not in the declared set it appends an error. Returns `passed=False` when any errors were collected; `passed=True` otherwise.
-
-`orphan_ids(records: List[IdRecord]) -> ValidatorResult` builds the cited set from all `r.satisfies` across all records. For each record `r` whose `r.kind` is `REQ` or `DES`, if `r.id` is not in the cited set, it appends a warning. Always returns `passed=True` regardless of warnings — orphan detection is advisory, not a blocker.
 
 **satisfies:** REQ-assured-traceability-validators-001
 
@@ -71,6 +69,12 @@ The `regenerate` callable is provided by the caller (typically a thin wrapper ar
 Returns `passed=False` with a non-empty errors list if any errors were collected; `passed=True` otherwise. Files that do not exist on disk are skipped without error.
 
 **satisfies:** REQ-assured-traceability-validators-004
+
+### DES-assured-traceability-validators-005
+
+`orphan_ids(records: List[IdRecord]) -> ValidatorResult` builds the cited set from all `r.satisfies` across all records. For each record `r`, if `r.id` is not in the cited set, it appends a warning (covers REQ, DES, TEST, and CODE kinds). Always returns `passed=True` regardless of warnings — orphan detection is advisory, not a blocker.
+
+**satisfies:** REQ-assured-traceability-validators-005
 
 ---
 
