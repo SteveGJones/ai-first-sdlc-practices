@@ -4,12 +4,19 @@ from __future__ import annotations
 
 import ast
 import logging
+import re as _re
 from pathlib import Path
 from typing import Dict, List, Optional, Protocol, runtime_checkable
 
 from .decomposition import Decomposition, ImportEdge
 
-__all__ = ["ImportEdge", "DependencyExtractor", "PythonAstExtractor"]
+__all__ = [
+    "ImportEdge",
+    "DependencyExtractor",
+    "PythonAstExtractor",
+    "GenericRegexExtractor",
+    "make_swift_extractor",
+]
 
 logger = logging.getLogger(__name__)
 
@@ -173,3 +180,77 @@ class PythonAstExtractor:
                 ):
                     return module_id
         return None
+
+
+class GenericRegexExtractor:
+    """Generic regex-based extractor parameterised by language + import pattern.
+
+    Demonstrates the DependencyExtractor interface is not Python-shaped.
+    Phase C task 15 uses this with a Swift-import pattern to validate
+    cross-platform genericity.
+    """
+
+    def __init__(
+        self,
+        language: str,
+        file_extensions: tuple,
+        import_pattern: "_re.Pattern[str]",
+    ) -> None:
+        self.language = language
+        self._file_extensions = file_extensions
+        self._import_pattern = import_pattern
+
+    def extract(
+        self, source_paths: List[Path], programs: Decomposition
+    ) -> List[ImportEdge]:
+        """Return ImportEdges by matching *import_pattern* against file text.
+
+        Reuses PythonAstExtractor path-resolution helpers so module assignment
+        is identical regardless of language — only the import-detection step
+        differs (regex text scan vs AST walk).
+        """
+        py = PythonAstExtractor()
+        path_to_module: Dict[Path, str] = py._build_path_index(source_paths, programs)
+        seen: set = set()
+        edges: List[ImportEdge] = []
+
+        for src_path in source_paths:
+            if src_path.suffix not in self._file_extensions:
+                continue
+            if not src_path.is_file():
+                continue
+            from_module = py._resolve_module(src_path, programs)
+            if from_module is None:
+                continue
+            try:
+                text = src_path.read_text(encoding="utf-8")
+            except OSError:
+                logger.warning(
+                    "dependency_extractor: cannot read %s — skipping", src_path
+                )
+                continue
+            for match in self._import_pattern.finditer(text):
+                target_name = match.group(1)
+                for known_path, module_id in path_to_module.items():
+                    stem = known_path.stem.lower()
+                    parent = known_path.parent.name.lower()
+                    if target_name.lower() in (stem, parent):
+                        if module_id != from_module:
+                            edge = ImportEdge(
+                                from_module=from_module, to_module=module_id
+                            )
+                            if edge not in seen:
+                                seen.add(edge)
+                                edges.append(edge)
+                        break
+
+        return edges
+
+
+def make_swift_extractor() -> GenericRegexExtractor:
+    """Return a toy Swift import extractor for v0.2.0 interface validation."""
+    return GenericRegexExtractor(
+        language="swift",
+        file_extensions=(".swift",),
+        import_pattern=_re.compile(r"^\s*import\s+(\w+)\s*$", _re.MULTILINE),
+    )

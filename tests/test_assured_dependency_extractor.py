@@ -6,6 +6,8 @@ from sdlc_assured_scripts.assured.dependency_extractor import (  # noqa: F401
     DependencyExtractor,
     ImportEdge,
     PythonAstExtractor,
+    GenericRegexExtractor,
+    make_swift_extractor,
 )
 from sdlc_assured_scripts.assured.decomposition import (
     Decomposition,
@@ -188,3 +190,46 @@ def test_python_ast_extractor_skips_syntax_errors(tmp_path: Path) -> None:
     # Must not raise
     edges = extractor.extract([bad_file], decomp)
     assert isinstance(edges, list)
+
+
+def test_swift_extractor_finds_cross_module_import(tmp_path: Path) -> None:
+    """GenericRegexExtractor with Swift pattern detects cross-module 'import b'."""
+    src_a = tmp_path / "src" / "a"
+    src_b = tmp_path / "src" / "b"
+    src_a.mkdir(parents=True)
+    src_b.mkdir(parents=True)
+
+    (src_a / "ViewA.swift").write_text("import b\n")
+    (src_b / "ServiceB.swift").write_text("public class ServiceB {}\n")
+
+    m1 = Module(
+        id="M1",
+        name="A",
+        paths=[str(src_a) + "/"],
+        granularity="requirement",
+        structure="flat",
+    )
+    m2 = Module(
+        id="M2",
+        name="B",
+        paths=[str(src_b) + "/"],
+        granularity="requirement",
+        structure="flat",
+    )
+    sp = SubProgram(id="SP1", name="SP1", modules=[m1, m2])
+    p = Program(id="P1", name="P1", description=None, sub_programs=[sp])
+    decomp = Decomposition(programs=[p], visibility=[])
+
+    swift = make_swift_extractor()
+    assert swift.language == "swift"
+    edges = swift.extract(
+        source_paths=[src_a / "ViewA.swift", src_b / "ServiceB.swift"],
+        programs=decomp,
+    )
+    assert ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2") in edges
+
+
+def test_generic_regex_extractor_satisfies_protocol() -> None:
+    """GenericRegexExtractor is structurally compatible with DependencyExtractor."""
+    swift = make_swift_extractor()
+    assert isinstance(swift, DependencyExtractor)
