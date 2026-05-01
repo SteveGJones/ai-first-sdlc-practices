@@ -34,6 +34,7 @@ _POSITIONAL_RE = re.compile(
 
 
 def parse_id(text: str) -> ParsedId:  # implements: DES-assured-id-system-001
+    # implements: DES-assured-id-system-001
     flat = _FLAT_RE.match(text)
     if flat:
         return ParsedId(
@@ -87,6 +88,7 @@ _REF_ID_RE = re.compile(
 
 
 def build_id_registry(project_root: Path) -> List[IdRecord]:  # implements: DES-assured-id-system-002
+    # implements: DES-assured-id-system-002
     """Walk docs/specs/ and collect every declared ID with its forward links."""
     specs_dir = project_root / "docs" / "specs"
     records: List[IdRecord] = []
