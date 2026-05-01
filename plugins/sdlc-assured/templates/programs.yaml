@@ -1,0 +1,36 @@
+# Decomposition declaration for an Assured-bundle project.
+#
+# This file declares the project's programs / sub-programs / modules,
+# their directory paths, granularity, and (optional) visibility rules.
+# Replace placeholders before committing.
+
+schema_version: 1
+
+programs:
+  - id: P1
+    name: <Program 1 Name>
+    description: <One-line description>
+    sub_programs:
+      - id: SP1
+        name: <Sub-program 1 Name>
+        modules:
+          - id: M1
+            name: <Module 1 Name>
+            paths: [src/<module-1-dir>/]
+            granularity: requirement   # one of: requirement | function | module
+            structure: flat            # one of: flat | hexagonal
+            owner: <team-or-person>    # optional
+          - id: M2
+            name: <Module 2 Name>
+            paths: [src/<module-2-dir>/]
+            granularity: requirement
+            structure: flat
+
+# Visibility rules declare which modules may depend on which.
+# Rules omitted = no cross-module dependencies allowed.
+# See visibility-rules.md for the context-map document.
+visibility:
+  - from: P1.SP1.M1
+    to: [P1.SP1.M2]
+  - from: P1.SP1.M2
+    to: []

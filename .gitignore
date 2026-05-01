@@ -114,7 +114,9 @@ backups/
 # Session artifacts (generated during development, not committed)
 memory/
 reviews/
+!tests/fixtures/**/reviews/
 agent_prompts/
 
 # Archon generated build artifacts
+.archon/teams/.generated/
 .archon/teams/.generated/

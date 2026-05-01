@@ -1,0 +1,141 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.3.1] injecting env (0) from .env.development -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+[dotenv@17.3.1] injecting env (0) from .env.production -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+{"level":30,"time":1777423763831,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.discovery","count":20,"msg":"app_default_workflows_loaded"}
+{"level":40,"time":1777423763833,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.loader","filename":"sdlc-commissioned-pipeline.yaml","validationErrors":["Node 'approve-plan': 'approval.message' Required","Node 'implement': 'loop.prompt' Required","Node 'approve-review': 'approval.message' Required"],"msg":"dag_node_validation_failed"}
+{"level":40,"time":1777423763833,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.loader","filename":"sdlc-feature-development.yaml","validationErrors":["Node 'implement': 'loop.prompt' Required"],"msg":"dag_node_validation_failed"}
+{"level":30,"time":1777423763836,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.discovery","count":24,"errorCount":2,"msg":"workflows_discovery_completed"}
+Running workflow: bundle-contract-review
+Working directory: /private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-y5cXFf
+
+{"level":30,"time":1777423763837,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"db.connection","dbPath":"/Users/stevejones/.archon/archon.db","msg":"db.connection_sqlite_selected"}
+{"level":30,"time":1777423763840,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"db.sqlite","msg":"db.sqlite_schema_initialized"}
+{"level":30,"time":1777423763872,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"clone","owner":"_local","repo":"sdlc-run-y5cXFf","path":"/Users/stevejones/.archon/workspaces/_local/sdlc-run-y5cXFf/source","msg":"project_structure_created"}
+{"level":30,"time":1777423763874,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"cli.workflow","name":"sdlc-run-y5cXFf","msg":"cli.codebase_auto_registered"}
+{"level":30,"time":1777423763874,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"cli.workflow","cwd":"/private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-y5cXFf","msg":"workflow.running_without_isolation"}
+Dispatching workflow: **bundle-contract-review**
+{"level":30,"time":1777423763876,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"provider.claude","authMode":"global","msg":"using_global_auth"}
+{"level":40,"time":1777423763904,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"git","repoPath":"/private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-y5cXFf","msg":"default_branch_detection_failed"}
+{"level":40,"time":1777423763905,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","err":{"type":"Error","message":"Cannot detect default branch for /private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-y5cXFf: neither origin/HEAD nor origin/main exist. Set worktree.baseBranch in .archon/config.yaml to specify the branch explicitly.","stack":"Error: Cannot detect default branch for /private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-y5cXFf: neither origin/HEAD nor origin/main exist. Set worktree.baseBranch in .archon/config.yaml to specify the branch explicitly.\n    at getDefaultBranch (/Users/stevejones/.archon-install/packages/git/src/branch.ts:68:17)\n    at async executeWorkflow (/Users/stevejones/.archon-install/packages/workflows/src/executor.ts:265:26)\n    at async workflowRunCommand (/Users/stevejones/.archon-install/packages/cli/src/commands/workflow.ts:613:20)\n    at async main (/Users/stevejones/.archon-install/packages/cli/src/cli.ts:349:19)\n    at processTicksAndRejections (native:7:39)"},"errorType":"Error","cwd":"/private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-y5cXFf","msg":"workflow.base_branch_auto_detect_failed"}
+{"level":30,"time":1777423763905,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","workflowName":"bundle-contract-review","provider":"claude","providerSource":"workflow definition","msg":"workflow_provider_resolved"}
+{"level":40,"time":1777423763906,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","codebaseName":"sdlc-run-y5cXFf","msg":"codebase_name_not_owner_repo_format"}
+{"level":30,"time":1777423763907,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","workflowName":"bundle-contract-review","workflowRunId":"aca0a08cec20f22afe98342e24616e78","hasIssueContext":false,"issueContextLength":0,"msg":"workflow_starting"}
+🚀 **Starting workflow**: `bundle-contract-review`
+
+> Independent containerised architect review of the option bundle contract
+(Phase C task 1 deliverable, refined in tasks 2-9 by validator semantics).
+Load-bearing artefact: Phase D (#103, Programme bundle) and Phase E (#104,
+Assured bundle) both build bundles against this contract — getting schema
+decisions wrong here propagates expensively.
+Reuses the sdlc-worker:decomposition-review team image built in Phase B
+(decomposition spike review). The team image has the sdlc-team-common
+plugin installed, providing the solution-architect agent.
+Single-node workflow: one architect review, no fan-out, no synthesis.
+Captures the review verbatim for audit; integrates findings inline if
+warranted, or notes "no actionable findings" in the Phase C retrospective.
+Input: docs/architecture/option-bundle-contract.md and required-context
+files (METHODS.md, decomposition-spike.md, library/regulatory-*.md,
+library/decomposition-*.md, agents/core/sdlc-enforcer.md).
+Output: research/sdlc-bundles/dogfood-workflows/bundle-contract-review-output.md
+{"level":30,"time":1777423763911,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","workflowName":"bundle-contract-review","nodeCount":1,"layerCount":1,"hasIssueContext":false,"issueContextLength":0,"msg":"dag_workflow_starting"}
+{"level":30,"time":1777423763912,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","nodeId":"contract-review","type":"bash","msg":"dag_node_started"}
+[contract-review] Started
+{"level":30,"time":1777423768291,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"service.title-generator","conversationDbId":"c03fd9a363f178eb36b0a6d2c96971e0","title":"Bundle Contract Review Workflow","msg":"title.generate_completed"}
+{"level":30,"time":1777424032034,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","nodeId":"contract-review","durationMs":268122,"msg":"dag_node_completed"}
+[contract-review] Completed (4m28s)
+{"level":30,"time":1777424032036,"pid":96335,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","nodeCount":1,"anyCompleted":true,"anyFailed":false,"msg":"dag_workflow_finished"}
+=== SDLC Worker Container ===
+Auth: credentials loaded from creds mount
+Claude Code version: 2.1.107 (Claude Code)
+Archon version: [dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+[dotenv@17.3.1] injecting env (0) from .env.development -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.3.1] injecting env (0) from .env.production -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+Archon CLI - Run AI workflows from the command line
+
+Usage:
+  archon <command> [subcommand] [options] [arguments]
+
+Commands:
+  chat <message>             Send a message to the orchestrator
+  setup                      Interactive setup wizard for credentials and config
+  workflow list              List available workflows in current directory
+  workflow run <name> [msg]  Run a workflow with optional message
+  workflow status            Show status of running workflows
+  isolation list             List all active worktrees/environments
+  isolation cleanup [days]   Remove stale environments (default: 7 days)
+  isolation cleanup --merged Remove environments with branches merged into main
+  continue <branch> [msg]    Continue work on an existing worktree with prior context
+  complete <branch> [...]    Complete branch lifecycle (remove worktree + branches)
+  serve                      Start the web UI server (downloads web UI on first run)
+  validate workflows [name]  Validate workflow definitions and their references
+  validate commands [name]   Validate command files
+  version                    Show version info
+  help                       Show this help message
+
+Options:
+  --cwd <path>               Override working directory (default: current directory)
+  --branch, -b <name>        Create worktree for branch (or reuse existing)
+  --from, --from-branch <name> Create new branch from specific start point
+  --no-worktree              Run on branch directly without worktree isolation
+  --resume                   Resume the most recent failed run of the workflow (mutually exclusive with --branch)
+  --spawn                    Open setup wizard in a new terminal window (for setup command)
+  --quiet, -q                Reduce log verbosity to warnings and errors only
+  --verbose, -v              Show debug-level output
+  --json                     Output machine-readable JSON (for workflow list)
+  --workflow <name>          Workflow to run for 'continue' (default: archon-assist)
+  --no-context               Skip context injection for 'continue'
+  --allow-env-keys           Grant env-key consent during auto-registration
+                             (bypasses the env-leak gate for this codebase;
+                             logs an audit entry)
+  --port <port>              Override server port for 'serve' (default: 3090)
+  --download-only            Download web UI without starting the server
+
+Examples:
+  archon chat "What does the orchestrator do?"
+  archon workflow list
+  archon workflow run investigate-issue "Fix the login bug"
+  archon workflow run plan --cwd /path/to/repo "Add dark mode"
+  archon workflow run implement --branch feature-auth "Implement auth"
+  archon workflow run quick-fix --no-worktree "Fix typo"
+  archon continue fix/issue-42 --workflow archon-smart-pr-review "Review the changes"
+
+NOT FOUND
+Python version: Python 3.11.2
+
+Auth: OK
+
+Loop workaround: active
+Running Claude Code with prompt...
+The review is complete and meets all done criteria. Here's the summary:
+
+## Bundle Contract Review — Complete
+
+The review has been written to `research/sdlc-bundles/dogfood-workflows/bundle-contract-review-output.md`.
+
+### Verdicts
+
+| # | Question | Verdict |
+|---|---|---|
+| 1 | Manifest schema permissiveness | **AGREE-WITH-CONCERNS** |
+| 2 | Phase E reserved fields adequacy | **AGREE-WITH-CONCERNS** |
+| 3 | File layout vs existing plugin family | **DISAGREE** |
+| 4 | Backward compatibility tightness | **AGREE** |
+| 5 | Regulated-industry adoption gap | **AGREE-WITH-CONCERNS** |
+
+### Go/No-Go
+
+- **Phase D plan-writing: GO.** The contract is sound enough to proceed.
+- **Phase E plan-writing: CONDITIONAL GO.** The `validators/` directory specification must be resolved first — it mandates directory structure that exists nowhere in the 12-plugin family and describes dispatcher infrastructure never built. Phase E cannot design validators against an ungrounded spec.
+
+### Key Finding
+
+The `validators/` directory is the single structural problem. The contract conflates two things: (a) the manifest field listing validator identifiers per pipeline phase (this works), and (b) a physical `validators/` directory with YAML registry + `run.sh` dispatcher (this has never existed anywhere). All other concerns are additive — missing fields (`constitution`), convention gaps (`README.md`, `pyproject.toml`, `scripts/`), and documentation improvements for regulated teams — none of which block either phase.
+
+=== SDLC Worker Complete ===
+
+=== Cleanup ===
+
+Workflow completed successfully.

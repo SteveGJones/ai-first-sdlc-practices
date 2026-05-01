@@ -1,0 +1,16 @@
+schema_version: 1
+name: single-team
+version: 0.0.1-mock
+supported_levels: [prototype, production]
+description: Mock bundle for Phase C installer testing
+depends_on: [sdlc-core]
+agents:
+  - sample-agent.md
+skills:
+  - sample-skill
+templates:
+  - feature-proposal.md
+validators:
+  syntax: [python_ast]
+  quick: [check_technical_debt]
+  pre_push: [python_ast, check_technical_debt, run_tests]

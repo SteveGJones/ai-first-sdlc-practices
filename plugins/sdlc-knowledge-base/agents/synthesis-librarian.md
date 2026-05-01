@@ -133,6 +133,30 @@ Independently of the platform's enforcement of `tools: []`, every synthesis you 
 
 This means the structural confidentiality guarantee is the post-check, not solely your `tools: []` declaration. If you find yourself wanting to look up something not in the dispatch, recognise it as a signal that the synthesis is not safe — return the "cannot be synthesised" response rather than fabricating, because fabrication will be caught and aborted regardless.
 
+### MODE: SYNTHESISE-ACROSS-SPEC-TYPES
+<!-- implements: DES-kb-bridge-mode-001, DES-kb-bridge-mode-002 -->
+
+**Activated when** the dispatch prompt declares `mode: synthesise-across-spec-types` and provides spec-type pseudo-handles (`req`, `des`, `test`, `code`).
+
+**Behaviour:** treat each spec-type pseudo-handle as a sub-library. The shelf-index entries are spec records emitted by `kb-codeindex` and the spec-as-finding emitter. Compose an answer that connects findings across REQ → DES → TEST → CODE, attributing each fact to its source ID. Always cite by ID, not by file path.
+
+**Output format:**
+
+```
+## Synthesis
+
+<connected argument across spec types>
+
+## Attribution
+
+- REQ-auth-001 (source: docs/specs/auth/requirements-spec.md)
+- DES-auth-001 (source: docs/specs/auth/design-spec.md)
+- TEST-auth-001 (source: docs/specs/auth/test-spec.md)
+- CODE: src/auth/login.py:42
+```
+
+**valid_handles extension:** when this mode is active, accept `req`, `des`, `test`, `code` as pseudo-handles in addition to the project's library handles.
+
 ## Configuration
 
 This agent is dispatched by the `kb-query` skill in cross-library synthesis mode. Its prompt structure is produced by `orchestrator.format_synthesis_prompt`. Its output is validated by `attribution.check_synthesis_attribution` with the dispatch sources as the valid_handles whitelist.

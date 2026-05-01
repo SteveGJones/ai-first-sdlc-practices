@@ -1,0 +1,36 @@
+schema_version: 1
+
+programs:
+  - id: P1
+    name: SDLC Bundle Family
+    description: Programme + Assured + KB-bridge — the EPIC #178 deliverable
+    sub_programs:
+      - id: SP1
+        name: Bundles
+        modules:
+          - id: M1
+            name: programme-bundle
+            paths: [plugins/sdlc-programme/]
+            granularity: requirement
+            structure: flat
+            owner: ai-first-sdlc-team
+          - id: M2
+            name: assured-bundle
+            paths: [plugins/sdlc-assured/]
+            granularity: requirement
+            structure: flat
+            owner: ai-first-sdlc-team
+          - id: M3
+            name: kb-bridge
+            paths: [plugins/sdlc-knowledge-base/agents/]
+            granularity: requirement
+            structure: flat
+            owner: ai-first-sdlc-team
+
+visibility:
+  - from: P1.SP1.M1
+    to: []
+  - from: P1.SP1.M2
+    to: [P1.SP1.M1, P1.SP1.M3]
+  - from: P1.SP1.M3
+    to: []

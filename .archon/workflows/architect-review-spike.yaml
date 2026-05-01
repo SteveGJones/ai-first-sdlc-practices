@@ -1,0 +1,27 @@
+name: architect-review-spike
+description: |
+  Independent containerised architect review of the Phase B decomposition spike.
+
+  Dogfood for EPIC #178: re-runs the architect review of decomposition-spike.md
+  in a fresh container with SDLC plugins installed, producing an independent
+  finding set that can be compared against the in-session review (captured in
+  Section 9 of the spike itself).
+
+  Single-node workflow: one architect review, no fan-out, no synthesis. The
+  in-session review covered the design-judgment surface; this run validates
+  whether containerised dispatch of the same agent type produces the same,
+  similar, or different findings — and produces a reproducible artefact.
+
+  Input: the spike file at research/sdlc-bundles/decomposition-spike.md and
+  required-context files (METHODS.md, library/decomposition-*.md).
+  Output: research/sdlc-bundles/dogfood-workflows/architect-review-spike-output.md
+
+provider: claude
+
+nodes:
+  - id: architect-review
+    command: architect-review-spike
+    context: fresh
+    effort: high
+    image: sdlc-worker:decomposition-review
+    timeout: 600000  # 10 minutes (in ms — Archon's timeout is milliseconds, see EPIC #96 Phase F findings)

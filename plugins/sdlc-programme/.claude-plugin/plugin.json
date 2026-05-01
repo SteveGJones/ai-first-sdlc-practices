@@ -1,0 +1,9 @@
+{
+  "name": "sdlc-programme",
+  "version": "0.1.0",
+  "description": "Programme SDLC bundle — formal waterfall phase gates with mandatory cross-phase review",
+  "author": { "name": "SteveGJones" },
+  "repository": "https://github.com/SteveGJones/ai-first-sdlc-practices",
+  "license": "MIT",
+  "keywords": ["sdlc", "programme", "phase-gates", "method-1", "bundle"]
+}

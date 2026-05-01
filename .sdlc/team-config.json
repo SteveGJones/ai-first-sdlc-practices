@@ -1,0 +1,7 @@
+{
+  "assured": {
+    "visibility_mode": "advisory",
+    "change_impact_gate": "disabled",
+    "decomposition": "programs.yaml"
+  }
+}

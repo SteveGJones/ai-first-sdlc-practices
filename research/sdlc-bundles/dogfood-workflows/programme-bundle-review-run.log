@@ -1,0 +1,130 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.3.1] injecting env (0) from .env.development -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+[dotenv@17.3.1] injecting env (0) from .env.production -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+{"level":30,"time":1777439874011,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.discovery","count":20,"msg":"app_default_workflows_loaded"}
+{"level":40,"time":1777439874014,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.loader","filename":"sdlc-commissioned-pipeline.yaml","validationErrors":["Node 'approve-plan': 'approval.message' Required","Node 'implement': 'loop.prompt' Required","Node 'approve-review': 'approval.message' Required"],"msg":"dag_node_validation_failed"}
+{"level":40,"time":1777439874014,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.loader","filename":"sdlc-feature-development.yaml","validationErrors":["Node 'implement': 'loop.prompt' Required"],"msg":"dag_node_validation_failed"}
+{"level":30,"time":1777439874014,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.discovery","count":25,"errorCount":2,"msg":"workflows_discovery_completed"}
+Running workflow: programme-bundle-review
+Working directory: /private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-DvdYHj
+
+{"level":30,"time":1777439874015,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"db.connection","dbPath":"/Users/stevejones/.archon/archon.db","msg":"db.connection_sqlite_selected"}
+{"level":30,"time":1777439874019,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"db.sqlite","msg":"db.sqlite_schema_initialized"}
+{"level":30,"time":1777439874049,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"clone","owner":"_local","repo":"sdlc-run-DvdYHj","path":"/Users/stevejones/.archon/workspaces/_local/sdlc-run-DvdYHj/source","msg":"project_structure_created"}
+{"level":30,"time":1777439874051,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"cli.workflow","name":"sdlc-run-DvdYHj","msg":"cli.codebase_auto_registered"}
+{"level":30,"time":1777439874051,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"cli.workflow","cwd":"/private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-DvdYHj","msg":"workflow.running_without_isolation"}
+Dispatching workflow: **programme-bundle-review**
+{"level":30,"time":1777439874052,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"provider.claude","authMode":"global","msg":"using_global_auth"}
+{"level":40,"time":1777439874078,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"git","repoPath":"/private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-DvdYHj","msg":"default_branch_detection_failed"}
+{"level":40,"time":1777439874079,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","err":{"type":"Error","message":"Cannot detect default branch for /private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-DvdYHj: neither origin/HEAD nor origin/main exist. Set worktree.baseBranch in .archon/config.yaml to specify the branch explicitly.","stack":"Error: Cannot detect default branch for /private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-DvdYHj: neither origin/HEAD nor origin/main exist. Set worktree.baseBranch in .archon/config.yaml to specify the branch explicitly.\n    at getDefaultBranch (/Users/stevejones/.archon-install/packages/git/src/branch.ts:68:17)\n    at async executeWorkflow (/Users/stevejones/.archon-install/packages/workflows/src/executor.ts:265:26)\n    at async workflowRunCommand (/Users/stevejones/.archon-install/packages/cli/src/commands/workflow.ts:613:20)\n    at async main (/Users/stevejones/.archon-install/packages/cli/src/cli.ts:349:19)\n    at processTicksAndRejections (native:7:39)"},"errorType":"Error","cwd":"/private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-DvdYHj","msg":"workflow.base_branch_auto_detect_failed"}
+{"level":30,"time":1777439874079,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","workflowName":"programme-bundle-review","provider":"claude","providerSource":"workflow definition","msg":"workflow_provider_resolved"}
+{"level":40,"time":1777439874081,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","codebaseName":"sdlc-run-DvdYHj","msg":"codebase_name_not_owner_repo_format"}
+{"level":30,"time":1777439874081,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","workflowName":"programme-bundle-review","workflowRunId":"3c1feb509545e10bccd8d72e3042d28b","hasIssueContext":false,"issueContextLength":0,"msg":"workflow_starting"}
+🚀 **Starting workflow**: `programme-bundle-review`
+
+> Independent containerised architect review of the Programme bundle (Phase D
+deliverable). Load-bearing artefact: Phase E (Assured bundle) layers on top
+of Method 1's phase-gate substrate, so getting Programme right matters.
+Reuses the sdlc-worker:decomposition-review team image built in Phase B
+and reused in Phase C task 10.
+{"level":30,"time":1777439874086,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","workflowName":"programme-bundle-review","nodeCount":1,"layerCount":1,"hasIssueContext":false,"issueContextLength":0,"msg":"dag_workflow_starting"}
+{"level":30,"time":1777439874087,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","nodeId":"programme-review","type":"bash","msg":"dag_node_started"}
+[programme-review] Started
+{"level":30,"time":1777439881345,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"service.title-generator","conversationDbId":"d5649e85cba92c3b664b634f8910d817","title":"Programme Bundle Review Workflow","msg":"title.generate_completed"}
+{"level":30,"time":1777440130743,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","nodeId":"programme-review","durationMs":256656,"msg":"dag_node_completed"}
+[programme-review] Completed (4m17s)
+{"level":30,"time":1777440130745,"pid":24154,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","nodeCount":1,"anyCompleted":true,"anyFailed":false,"msg":"dag_workflow_finished"}
+=== SDLC Worker Container ===
+Auth: credentials loaded from creds mount
+Claude Code version: 2.1.107 (Claude Code)
+Archon version: [dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.3.1] injecting env (0) from .env.development -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+[dotenv@17.3.1] injecting env (0) from .env.production -- tip: 🛡️ auth for agents: https://vestauth.com
+
+Archon CLI - Run AI workflows from the command line
+
+Usage:
+  archon <command> [subcommand] [options] [arguments]
+
+Commands:
+  chat <message>             Send a message to the orchestrator
+  setup                      Interactive setup wizard for credentials and config
+  workflow list              List available workflows in current directory
+  workflow run <name> [msg]  Run a workflow with optional message
+  workflow status            Show status of running workflows
+  isolation list             List all active worktrees/environments
+  isolation cleanup [days]   Remove stale environments (default: 7 days)
+  isolation cleanup --merged Remove environments with branches merged into main
+  continue <branch> [msg]    Continue work on an existing worktree with prior context
+  complete <branch> [...]    Complete branch lifecycle (remove worktree + branches)
+  serve                      Start the web UI server (downloads web UI on first run)
+  validate workflows [name]  Validate workflow definitions and their references
+  validate commands [name]   Validate command files
+  version                    Show version info
+  help                       Show this help message
+
+Options:
+  --cwd <path>               Override working directory (default: current directory)
+  --branch, -b <name>        Create worktree for branch (or reuse existing)
+  --from, --from-branch <name> Create new branch from specific start point
+  --no-worktree              Run on branch directly without worktree isolation
+  --resume                   Resume the most recent failed run of the workflow (mutually exclusive with --branch)
+  --spawn                    Open setup wizard in a new terminal window (for setup command)
+  --quiet, -q                Reduce log verbosity to warnings and errors only
+  --verbose, -v              Show debug-level output
+  --json                     Output machine-readable JSON (for workflow list)
+  --workflow <name>          Workflow to run for 'continue' (default: archon-assist)
+  --no-context               Skip context injection for 'continue'
+  --allow-env-keys           Grant env-key consent during auto-registration
+                             (bypasses the env-leak gate for this codebase;
+                             logs an audit entry)
+  --port <port>              Override server port for 'serve' (default: 3090)
+  --download-only            Download web UI without starting the server
+
+Examples:
+  archon chat "What does the orchestrator do?"
+  archon workflow list
+  archon workflow run investigate-issue "Fix the login bug"
+  archon workflow run plan --cwd /path/to/repo "Add dark mode"
+  archon workflow run implement --branch feature-auth "Implement auth"
+  archon workflow run quick-fix --no-worktree "Fix typo"
+  archon continue fix/issue-42 --workflow archon-smart-pr-review "Review the changes"
+
+NOT FOUND
+Python version: Python 3.11.2
+
+Auth: OK
+
+Loop workaround: active
+Running Claude Code with prompt...
+The review is complete. Here's the summary:
+
+## Review Results
+
+The solution architect reviewed all 5 questions with these verdicts:
+
+| # | Question | Verdict |
+|---|----------|---------|
+| 1 | Constitution overlay soundness | **AGREE-WITH-CONCERNS** |
+| 2 | Phase artefact templates fitness | **AGREE** |
+| 3 | Gate validator robustness | **AGREE-WITH-CONCERNS** |
+| 4 | Phase-review skill realism | **AGREE-WITH-CONCERNS** |
+| 5 | Bundle layout vs Phase C contract | **AGREE** |
+
+**Go/no-go**: Ship-ready as v0.1.0 with two documented gaps:
+
+1. **Review record enforcement gap** — Article 14 promises gate validators check for review records, but `gates.py` doesn't implement this. Enforceable only by skill discipline, not automation. Must be implemented by v0.2.0.
+
+2. **Agent dependency gap** — `phase-review` dispatches agents from `sdlc-team-common` and `sdlc-team-fullstack` without declaring them in `depends_on` or providing fallbacks. Teams installing only `sdlc-core` + `sdlc-programme` hit runtime failures.
+
+**Phase E (Assured bundle) can build on top without retrofit.** The architecture (spec_parser, gates, traceability) is extensible for coverage validators, decomposition support, and KB indexing.
+
+Output written to `research/sdlc-bundles/dogfood-workflows/programme-bundle-review-output.md`.
+
+=== SDLC Worker Complete ===
+
+=== Cleanup ===
+
+Workflow completed successfully.
