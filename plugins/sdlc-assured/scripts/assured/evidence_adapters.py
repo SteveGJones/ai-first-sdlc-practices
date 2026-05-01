@@ -44,3 +44,37 @@ class PythonCommentAdapter:
                     line=line_no,
                     cited_ids=cited,
                 )
+
+
+_HTML_IMPLEMENTS_RE = re.compile(r"<!--\s*implements:\s*(?P<ids>.+?)\s*-->")
+
+
+class MarkdownHtmlCommentAdapter:
+    """Adapter for markdown `<!-- implements: <ID> -->` HTML-comment annotations."""
+
+    file_extensions = (".md",)
+
+    def extract(
+        self, files: list[Path], project_root: Path
+    ) -> Iterable[EvidenceIndexEntry]:
+        for f in files:
+            if f.suffix not in self.file_extensions:
+                continue
+            if not f.is_file():
+                continue
+            text = f.read_text(encoding="utf-8")
+            try:
+                rel_path = str(f.relative_to(project_root))
+            except ValueError:
+                rel_path = str(f.name)
+            for line_no, line in enumerate(text.splitlines(), start=1):
+                m = _HTML_IMPLEMENTS_RE.search(line)
+                if not m:
+                    continue
+                cited = _ID_TOKEN_RE.findall(m["ids"])
+                yield EvidenceIndexEntry(
+                    kind=EvidenceKind.MARKDOWN_HTML_COMMENT,
+                    source=rel_path,
+                    line=line_no,
+                    cited_ids=cited,
+                )
