@@ -23,9 +23,10 @@ The Assured SDLC option declares a module decomposition in `programs.yaml`. Five
 
 ### REQ-assured-decomposition-validators-001
 
-`req_has_module_assignment` SHALL report a blocking error for any REQ ID that has no module assignment (neither a positional prefix nor an explicit `module` field in its enclosing spec artefact) AND SHALL report a blocking error for any REQ ID whose resolved module is not declared in `programs.yaml`.
+The Assured bundle MUST refuse to commission a project whose decomposition declares any REQ assigned to a module that does not exist in the project's `programs.yaml` — preventing silent module-typo defects from shipping into traceability artefacts.
 
 **Module:** P1.SP1.M2
+**Related:** REQ-assured-substrate-001
 
 ### REQ-assured-decomposition-validators-002
 
