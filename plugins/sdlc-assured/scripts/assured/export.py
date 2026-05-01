@@ -6,6 +6,7 @@ from collections import defaultdict
 from typing import List
 
 from .code_index import CodeIndexEntry
+from .evidence_status import EvidenceStatus
 from .ids import IdRecord
 
 
@@ -48,17 +49,20 @@ def export_do178c_rtm(records: List[IdRecord], code: List[CodeIndexEntry]) -> st
         "| HLR | LLR | Source code | Test case |",
         "|-----|-----|-------------|-----------|",
     ]
+    _missing = EvidenceStatus.MISSING.display()
     reqs = [r for r in records if r.kind == "REQ"]
     for req in reqs:
         deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
         for des in deses:
             tests = [t for t in cited_by.get(des.id, []) if t.kind == "TEST"]
             code_locs = code_by_cited.get(req.id, []) + code_by_cited.get(des.id, [])
-            code_str = ", ".join(f"{c.file_path}:{c.line}" for c in code_locs) or "—"
-            test_str = ", ".join(t.id for t in tests) or "—"
+            code_str = (
+                ", ".join(f"{c.file_path}:{c.line}" for c in code_locs) or _missing
+            )
+            test_str = ", ".join(t.id for t in tests) or _missing
             lines.append(f"| {req.id} | {des.id} | {code_str} | {test_str} |")
         if not deses:
-            lines.append(f"| {req.id} | — | — | — |")
+            lines.append(f"| {req.id} | {_missing} | {_missing} | {_missing} |")
     return "\n".join(lines) + "\n"
 
 
@@ -84,6 +88,7 @@ def export_iec_62304_matrix(
         "| Software requirement | Software unit | Verification activity |",
         "|----------------------|---------------|------------------------|",
     ]
+    _missing = EvidenceStatus.MISSING.display()
     reqs = [r for r in records if r.kind == "REQ"]
     for req in reqs:
         units = code_by_cited.get(req.id, [])
@@ -92,8 +97,8 @@ def export_iec_62304_matrix(
         for des in deses:
             units.extend(code_by_cited.get(des.id, []))
             tests.extend([t for t in cited_by.get(des.id, []) if t.kind == "TEST"])
-        unit_str = ", ".join(f"{c.file_path}:{c.line}" for c in units) or "—"
-        test_str = ", ".join(t.id for t in tests) or "—"
+        unit_str = ", ".join(f"{c.file_path}:{c.line}" for c in units) or _missing
+        test_str = ", ".join(t.id for t in tests) or _missing
         lines.append(f"| {req.id} | {unit_str} | {test_str} |")
     return "\n".join(lines) + "\n"
 
@@ -118,17 +123,20 @@ def export_iso_26262_asil_matrix(
         "| Safety requirement | Architectural element | Implementation | Verification |",
         "|---------------------|----------------------|----------------|---------------|",
     ]
+    _missing = EvidenceStatus.MISSING.display()
     reqs = [r for r in records if r.kind == "REQ"]
     for req in reqs:
         deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
         for des in deses:
             tests = [t for t in cited_by.get(des.id, []) if t.kind == "TEST"]
             code_locs = code_by_cited.get(req.id, []) + code_by_cited.get(des.id, [])
-            code_str = ", ".join(f"{c.file_path}:{c.line}" for c in code_locs) or "—"
-            test_str = ", ".join(t.id for t in tests) or "—"
+            code_str = (
+                ", ".join(f"{c.file_path}:{c.line}" for c in code_locs) or _missing
+            )
+            test_str = ", ".join(t.id for t in tests) or _missing
             lines.append(f"| {req.id} | {des.id} | {code_str} | {test_str} |")
         if not deses:
-            lines.append(f"| {req.id} | — | — | — |")
+            lines.append(f"| {req.id} | {_missing} | {_missing} | {_missing} |")
     return "\n".join(lines) + "\n"
 
 
@@ -142,6 +150,7 @@ def export_fda_dhf_structure(
 
     **DES:** DES-assured-export-formats-004
     """
+    _missing = EvidenceStatus.MISSING.display()
     reqs = [r for r in records if r.kind == "REQ"]
     deses = [r for r in records if r.kind == "DES"]
     tests = [r for r in records if r.kind == "TEST"]
@@ -171,14 +180,14 @@ def export_fda_dhf_structure(
             f"- Source code: `{c.file_path}:{c.line}` implements {', '.join(c.cited_ids)}"
         )
     if not deses and not code:
-        lines.append("_(no design outputs declared)_")
+        lines.append(f"_({_missing} — no design outputs declared)_")
     lines.extend(
         ["", "## Design verification", "", "(Per §820.30(f) — Design verification)", ""]
     )
     for t in tests:
         lines.append(f"- **{t.id}** verifies {', '.join(t.satisfies)}: see {t.source}")
     if not tests:
-        lines.append("_(no verification tests declared)_")
+        lines.append(f"_({_missing} — no verification tests declared)_")
     lines.extend(
         [
             "",

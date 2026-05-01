@@ -11,3 +11,11 @@ def test_evidence_status_has_five_values() -> None:
         "MANUAL_EVIDENCE_REQUIRED",
         "CONFIGURATION_ARTIFACT",
     }
+
+
+def test_evidence_status_display_strings() -> None:
+    assert EvidenceStatus.LINKED.display() == "linked"
+    assert EvidenceStatus.MISSING.display() == "MISSING"
+    assert EvidenceStatus.NOT_APPLICABLE.display() == "n/a"
+    assert EvidenceStatus.MANUAL_EVIDENCE_REQUIRED.display() == "manual"
+    assert EvidenceStatus.CONFIGURATION_ARTIFACT.display() == "config"

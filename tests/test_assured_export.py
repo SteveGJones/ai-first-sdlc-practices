@@ -10,6 +10,7 @@ from sdlc_assured_scripts.assured.export import (
     export_iso_26262_asil_matrix,
     export_markdown,
 )
+from sdlc_assured_scripts.assured.evidence_status import EvidenceStatus
 
 
 def _three_id_chain() -> tuple[list[IdRecord], list[CodeIndexEntry]]:
@@ -106,3 +107,45 @@ def test_export_markdown_emits_table() -> None:
     output = export_markdown(records, code)
     assert "| REQ | DES | TEST | CODE |" in output
     assert "| REQ-auth-001 | DES-auth-001 | TEST-auth-001 |" in output
+
+
+def _three_id_chain_with_no_code() -> tuple[list[IdRecord], list[CodeIndexEntry]]:
+    """REQ with no DES, no code — every evidence placeholder should be MISSING."""
+    records = [
+        IdRecord(
+            id="REQ-auth-001",
+            kind="REQ",
+            source="docs/specs/auth/requirements-spec.md",
+            satisfies=[],
+        ),
+    ]
+    code: list[CodeIndexEntry] = []
+    return records, code
+
+
+def test_export_do178c_rtm_uses_typed_evidence_status_for_missing() -> None:
+    records, code = _three_id_chain_with_no_code()
+    out = export_do178c_rtm(records, code)
+    assert EvidenceStatus.MISSING.display() in out
+    assert "—" not in out
+
+
+def test_export_iec_62304_matrix_uses_typed_evidence_status_for_missing() -> None:
+    records, code = _three_id_chain_with_no_code()
+    out = export_iec_62304_matrix(records, code)
+    assert EvidenceStatus.MISSING.display() in out
+    assert "—" not in out
+
+
+def test_export_iso_26262_asil_matrix_uses_typed_evidence_status_for_missing() -> None:
+    records, code = _three_id_chain_with_no_code()
+    out = export_iso_26262_asil_matrix(records, code)
+    assert EvidenceStatus.MISSING.display() in out
+    assert "—" not in out
+
+
+def test_export_fda_dhf_structure_uses_typed_evidence_status_for_missing() -> None:
+    records, code = _three_id_chain_with_no_code()
+    out = export_fda_dhf_structure(records, code)
+    # FDA DHF does not use "—" placeholder cells; verify MISSING annotation on empty REQ
+    assert EvidenceStatus.MISSING.display() in out
