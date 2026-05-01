@@ -9,6 +9,7 @@ from sdlc_assured_scripts.assured.decomposition import (
     Decomposition,
     DecompositionParseError,
     ImportEdge,
+    PathSection,
     SpecArtefact,
     anaemic_context_detection,
     code_annotation_maps_to_module,
@@ -188,7 +189,9 @@ visibility:
     assert result.passed is True
 
 
-def test_visibility_rule_enforcement_fails_when_edge_undeclared_in_strict_mode() -> None:
+def test_visibility_rule_enforcement_fails_when_edge_undeclared_in_strict_mode() -> (
+    None
+):
     edges = [ImportEdge(from_module="P1.SP1.M2", to_module="P1.SP1.M1")]
     decomp = parse_programs_yaml_inline(
         """schema_version: 1
@@ -461,3 +464,101 @@ programs:
     result = granularity_match(declared_reqs, annotations, decomp, spec_lookup)
     assert result.passed is True
     assert any("REQ-auth-002" in w for w in result.warnings)
+
+
+# ---------------------------------------------------------------------------
+# F-002: paths_sections named-anchor scoping
+# ---------------------------------------------------------------------------
+
+
+def test_paths_sections_round_trip(tmp_path: Path) -> None:
+    """paths_sections entries survive a parse round-trip with correct values."""
+    pyaml = tmp_path / "programs.yaml"
+    pyaml.write_text(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: Auth platform
+    sub_programs:
+      - id: SP1
+        name: Identity
+        modules:
+          - id: M1
+            name: OAuth
+            paths: [src/auth/oauth/]
+            granularity: requirement
+            structure: flat
+            paths_sections:
+              - file: docs/specs/auth/design-spec.md
+                anchor: "### MODE: SYNTHESISE-ACROSS-SPEC-TYPES"
+              - file: docs/specs/auth/requirements-spec.md
+                anchor: "## Requirements"
+"""
+    )
+    parsed = parse_programs_yaml(pyaml)
+    module = parsed.programs[0].sub_programs[0].modules[0]
+    assert len(module.paths_sections) == 2
+    assert module.paths_sections[0] == PathSection(
+        file="docs/specs/auth/design-spec.md",
+        anchor="### MODE: SYNTHESISE-ACROSS-SPEC-TYPES",
+    )
+    assert module.paths_sections[1] == PathSection(
+        file="docs/specs/auth/requirements-spec.md",
+        anchor="## Requirements",
+    )
+
+
+def test_paths_sections_defaults_to_empty_list(tmp_path: Path) -> None:
+    """A module with no paths_sections key yields an empty list (not None)."""
+    pyaml = tmp_path / "programs.yaml"
+    pyaml.write_text(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - id: M1
+            name: M1
+            paths: [src/]
+            granularity: requirement
+            structure: flat
+"""
+    )
+    parsed = parse_programs_yaml(pyaml)
+    module = parsed.programs[0].sub_programs[0].modules[0]
+    assert module.paths_sections == []
+
+
+def test_paths_sections_preserved_alongside_existing_fields(tmp_path: Path) -> None:
+    """paths_sections does not disturb owner or other optional fields."""
+    pyaml = tmp_path / "programs.yaml"
+    pyaml.write_text(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - id: M1
+            name: M1
+            paths: [src/]
+            granularity: function
+            structure: hexagonal
+            owner: team-auth
+            paths_sections:
+              - file: docs/design.md
+                anchor: "## Overview"
+"""
+    )
+    parsed = parse_programs_yaml(pyaml)
+    module = parsed.programs[0].sub_programs[0].modules[0]
+    assert module.owner == "team-auth"
+    assert module.granularity == "function"
+    assert module.structure == "hexagonal"
+    assert len(module.paths_sections) == 1
+    assert module.paths_sections[0].anchor == "## Overview"

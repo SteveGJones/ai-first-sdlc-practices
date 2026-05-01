@@ -14,6 +14,19 @@ class DecompositionParseError(ValueError):
 
 
 @dataclass(frozen=True)
+class PathSection:
+    """A named-anchor scope within a file.
+
+    Restricts a module path entry to the section of a file delimited by
+    the heading text *anchor* (e.g. ``### MODE: SYNTHESISE-ACROSS-SPEC-TYPES``).
+    Both fields are required; anchor must be the exact markdown heading text.
+    """
+
+    file: str
+    anchor: str
+
+
+@dataclass(frozen=True)
 class Module:
     id: str
     name: str
@@ -21,6 +34,7 @@ class Module:
     granularity: str
     structure: str
     owner: Optional[str] = None
+    paths_sections: List[PathSection] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -72,6 +86,11 @@ def parse_programs_yaml(path: Path) -> Decomposition:
         for sp in p.get("sub_programs", []):
             modules: List[Module] = []
             for m in sp.get("modules", []):
+                raw_sections = m.get("paths_sections", []) or []
+                paths_sections: List[PathSection] = [
+                    PathSection(file=ps["file"], anchor=ps["anchor"])
+                    for ps in raw_sections
+                ]
                 modules.append(
                     Module(
                         id=m["id"],
@@ -80,6 +99,7 @@ def parse_programs_yaml(path: Path) -> Decomposition:
                         granularity=m.get("granularity", "requirement"),
                         structure=m.get("structure", "flat"),
                         owner=m.get("owner"),
+                        paths_sections=paths_sections,
                     )
                 )
             sub_programs.append(
