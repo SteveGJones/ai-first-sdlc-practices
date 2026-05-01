@@ -45,6 +45,34 @@ The audit-readiness claim of `sdlc-assured` is not credible if F-001/F-007/F-008
 
 ---
 
+## Proposed Solution
+
+The proposed solution is a 7-phase implementation with hard gates at Phase G:
+
+- **Phase A** locks 6 architectural decisions in a design-decisions addendum, signed off by an independent containerised architect review.
+- **Phase B** introduces the multi-format evidence model (`EvidenceIndexEntry` + 4 adapters + registry) and migrates the 4 regulatory exporters to consume it.
+- **Phase C** ships the `DependencyExtractor` protocol with `PythonAstExtractor` (production) and `make_swift_extractor` (proof of language-neutrality), plus the F-008 indirect-coverage rewrite, the E1/E2/D2 validator changes, and the F-007 wiring into `kb-codeindex`.
+- **Phase D** addresses ID system and REQ format: `remap_ids` longest-match-prefix, per-REQ `**Related:**` field, severity-mixed REQ split using numeric IDs, REQ inventory wording fixes.
+- **Phase E** rewrites function-shaped REQs at user-visible-capability level (10 inline rewrites + 6 deferred to v0.3.0), ships a candidate REQ-quality linter, adds `phase-review` graceful fallback, and codifies annotation placement convention.
+- **Phase F** re-audits the F4 timeout-recovery commits and confirms CONFIRMED CLEAN.
+- **Phase G** runs verification dogfood: 8 injected-defect fixtures, baseline + acceptance metrics, 6 hard gates, corpus retrofit (Task 36A) to close the RTM gap, retrospective, containerised architect review, PR.
+
+The solution explicitly addresses 5 plan-review findings via insert tasks (10A, 11A, 16A, 16B) plus textual fixes in tasks 22 and 23.
+
+## Success Criteria
+
+The EPIC is successful when:
+
+1. **All 6 Phase G hard gates pass**: granularity_match noise rate ≤5%, RTM source-code gap ≤20%, RTM gap typing every-cell-typed, FAC FPR ≤5%, visibility_rule_enforcement runs cleanly, no test regression.
+2. **Independent containerised architect review** at Phase G close returns AGREE or AGREE-WITH-CONCERNS overall (no NEEDS-REWORK or DISAGREE) on all 6 sign-off questions.
+3. **Test totals**: 590/590 full pytest suite passes; 166/166 v020-targeted tests pass.
+4. **Plugin packaging**: 14/14 plugins verified.
+5. **Technical debt**: COMPLIANT against framework policy (suppressions at v0.1.0 baseline).
+6. **F-001/F-007/F-008/F-009/F-010 closures**: each finding from EPIC #178 Phase F dogfood has a documented v0.2.0 implementation, with retrospective + audit traceability.
+7. **CI green** on the EPIC PR.
+
+All criteria met as of commit `a0694f6` on `feature/sdlc-assured-v020`.
+
 ## Approach
 
 Seven phases, with explicit hard gates at Phase G:
