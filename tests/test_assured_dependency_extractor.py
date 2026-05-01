@@ -1,5 +1,6 @@
 """Tests for assured.dependency_extractor — DependencyExtractor protocol + ImportEdge."""
 
+import tempfile
 from pathlib import Path
 
 from sdlc_assured_scripts.assured.dependency_extractor import (  # noqa: F401
@@ -10,13 +11,24 @@ from sdlc_assured_scripts.assured.dependency_extractor import (  # noqa: F401
     make_swift_extractor,
     render_dependency_edges,
     parse_dependency_edges,
+    build_dependency_edges,
 )
 from sdlc_assured_scripts.assured.decomposition import (
     Decomposition,
     Module,
     Program,
     SubProgram,
+    parse_programs_yaml,
+    visibility_rule_enforcement,
 )
+
+
+def _parse_programs_yaml_inline(content: str) -> Decomposition:
+    """Write *content* to a temp file and parse it."""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(content)
+        tmp_path = Path(f.name)
+    return parse_programs_yaml(tmp_path)
 
 
 def test_import_edge_dataclass() -> None:
@@ -252,3 +264,50 @@ def test_parse_dependency_edges_round_trips() -> None:
     original = [ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2")]
     text = render_dependency_edges(original, library_handle="x")
     assert parse_dependency_edges(text) == original
+
+
+def test_integration_python_source_to_visibility_validator(tmp_path: Path) -> None:
+    """End-to-end: real Python source → PythonAstExtractor → render → parse → validator."""
+    src_a = tmp_path / "src" / "a"
+    src_a.mkdir(parents=True)
+    (src_a / "module_a.py").write_text("from b.module_b import foo\n")
+    src_b = tmp_path / "src" / "b"
+    src_b.mkdir(parents=True)
+    (src_b / "module_b.py").write_text("def foo(): return 1\n")
+
+    decomp = _parse_programs_yaml_inline(
+        f"""schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {{id: M1, name: A, paths: [{str(src_a)}/], granularity: requirement, structure: flat}}
+          - {{id: M2, name: B, paths: [{str(src_b)}/], granularity: requirement, structure: flat}}
+visibility:
+  - from: P1.SP1.M1
+    to: []
+  - from: P1.SP1.M2
+    to: []
+"""
+    )
+
+    edges = build_dependency_edges(
+        source_paths=[src_a / "module_a.py", src_b / "module_b.py"],
+        programs=decomp,
+        extractors=[PythonAstExtractor()],
+    )
+    assert ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2") in edges
+
+    # Round-trip through file
+    out_path = tmp_path / "library" / "_dependency-edges.md"
+    out_path.parent.mkdir(parents=True)
+    out_path.write_text(render_dependency_edges(edges, library_handle="x"))
+    parsed = parse_dependency_edges(out_path.read_text())
+
+    # Validator consumes parsed edges — M1→M2 is undeclared, so strict mode errors
+    result = visibility_rule_enforcement(parsed, decomp, mode="strict")
+    assert result.passed is False
+    assert any("P1.SP1.M1" in e and "P1.SP1.M2" in e for e in result.errors)

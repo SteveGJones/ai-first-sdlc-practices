@@ -18,6 +18,7 @@ __all__ = [
     "make_swift_extractor",
     "render_dependency_edges",
     "parse_dependency_edges",
+    "build_dependency_edges",
 ]
 
 logger = logging.getLogger(__name__)
@@ -290,3 +291,20 @@ def parse_dependency_edges(text: str) -> List[ImportEdge]:
             continue
         edges.append(ImportEdge(from_module=from_, to_module=to_))
     return edges
+
+
+def build_dependency_edges(
+    source_paths: List[Path],
+    programs: Decomposition,
+    extractors: List[DependencyExtractor],
+) -> List[ImportEdge]:
+    """Run each extractor on source_paths; return deduplicated union of edges.
+
+    Merges results from all extractors, deduplicates via a set, and returns
+    edges sorted by (from_module, to_module) for deterministic output.
+    """
+    seen: set = set()
+    for extractor in extractors:
+        for edge in extractor.extract(source_paths, programs):
+            seen.add(edge)
+    return sorted(seen, key=lambda e: (e.from_module, e.to_module))
