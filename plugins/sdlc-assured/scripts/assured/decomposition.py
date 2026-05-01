@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
@@ -413,3 +414,110 @@ def granularity_match(
             "annotation directly OR via a satisfies-linked DES"
         )
     return DecompositionValidatorResult(passed=True, warnings=warnings)
+
+
+def _is_single_line_getter_setter(node: ast.FunctionDef) -> bool:
+    """Return True if the function body is a single return-self-attr or assign-self-attr."""
+    if len(node.body) != 1:
+        return False
+    stmt = node.body[0]
+    # Single return self.<x>
+    if isinstance(stmt, ast.Return) and isinstance(stmt.value, ast.Attribute):
+        if isinstance(stmt.value.value, ast.Name) and stmt.value.value.id == "self":
+            return True
+    # Single self.<x> = <y>  (plain Assign, not AnnAssign)
+    if isinstance(stmt, ast.Assign) and len(stmt.targets) == 1:
+        target = stmt.targets[0]
+        if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name):
+            if target.value.id == "self":
+                return True
+    return False
+
+
+def _is_property_single_line(node: ast.FunctionDef) -> bool:
+    """Return True if the function has a @property decorator and a single-statement body."""
+    has_property = any(
+        isinstance(d, ast.Name) and d.id == "property"
+        for d in node.decorator_list
+    )
+    if not has_property:
+        return False
+    return len(node.body) == 1
+
+
+def _is_trivial(node: ast.FunctionDef) -> bool:
+    """Return True if the function should be excluded from annotation checks."""
+    name = node.name
+    # Dunder methods
+    if name.startswith("__") and name.endswith("__"):
+        return True
+    # Private functions
+    if name.startswith("_"):
+        return True
+    # Single-line getter/setter
+    if _is_single_line_getter_setter(node):
+        return True
+    # @property with single-line body
+    if _is_property_single_line(node):
+        return True
+    return False
+
+
+def _collect_functions(tree: ast.Module) -> List[ast.FunctionDef]:
+    """Recursively collect all FunctionDef and AsyncFunctionDef nodes in the AST."""
+    funcs: List[ast.FunctionDef] = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            funcs.append(node)  # type: ignore[arg-type]
+    return funcs
+
+
+def forward_annotation_completeness(
+    source_paths: List[Path],
+    decomp: Decomposition,
+) -> DecompositionValidatorResult:
+    # implements: DES-assured-decomposition-validators-006
+    """E2: every non-trivial public function in declared paths has a `# implements:` annotation.
+
+    Returns errors (not warnings) for functions missing annotations.
+    Files outside declared module paths are silently skipped.
+    Test files (test_*.py, conftest.py) are silently skipped.
+    """
+    declared_paths: List[str] = []
+    for p in decomp.programs:
+        for sp in p.sub_programs:
+            for m in sp.modules:
+                declared_paths.extend(m.paths)
+
+    errors: List[str] = []
+    for src in source_paths:
+        # Skip files outside declared module paths
+        if not _file_under_paths(str(src), declared_paths):
+            continue
+        # Skip test files and conftest — check filename only (not directory components)
+        if src.name.startswith("test_") or src.name == "conftest.py":
+            continue
+
+        try:
+            source_text = src.read_text(encoding="utf-8")
+            tree = ast.parse(source_text, filename=str(src))
+        except (SyntaxError, OSError):
+            continue
+
+        source_lines = source_text.splitlines()
+
+        for node in _collect_functions(tree):
+            if _is_trivial(node):
+                continue
+
+            # Check for `# implements:` anywhere in the function's line range
+            start_line = node.lineno - 1  # 0-indexed
+            end_line = node.end_lineno  # exclusive upper bound (0-indexed)
+            func_source_lines = source_lines[start_line:end_line]
+            has_annotation = any(
+                "# implements:" in line for line in func_source_lines
+            )
+            if not has_annotation:
+                errors.append(f"{src}:{node.lineno} {node.name}")
+
+    return DecompositionValidatorResult(passed=not errors, errors=errors)

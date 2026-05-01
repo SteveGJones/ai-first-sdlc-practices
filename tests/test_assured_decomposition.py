@@ -9,11 +9,15 @@ from sdlc_assured_scripts.assured.decomposition import (
     Decomposition,
     DecompositionParseError,
     ImportEdge,
+    Module,
     PathSection,
+    Program,
     SpecArtefact,
+    SubProgram,
     anaemic_context_detection,
     code_annotation_maps_to_module,
     default_decomposition,
+    forward_annotation_completeness,
     granularity_match,
     parse_programs_yaml,
     req_has_module_assignment,
@@ -601,3 +605,103 @@ programs:
     # Indirect coverage: REQ has no direct annotation but DES-foo-001 (which satisfies REQ-foo-001) does
     assert result.passed is True
     assert result.warnings == []  # NO under-specified warning
+
+
+# ---------------------------------------------------------------------------
+# E2: forward_annotation_completeness
+# ---------------------------------------------------------------------------
+
+
+def _decomp_for_path(src_dir: Path) -> Decomposition:
+    """Build a minimal Decomposition whose single module covers src_dir."""
+    module = Module(
+        id="M1",
+        name="Test module",
+        paths=[str(src_dir)],
+        granularity="requirement",
+        structure="flat",
+        paths_sections=[],
+    )
+    sub_program = SubProgram(id="SP1", name="Test sub-program", modules=[module])
+    program = Program(id="P1", name="Test program", description=None, sub_programs=[sub_program])
+    return Decomposition(programs=[program], visibility=[])
+
+
+def test_forward_annotation_completeness_passes_when_all_public_functions_annotated(
+    tmp_path: Path,
+) -> None:
+    f = tmp_path / "src" / "auth.py"
+    f.parent.mkdir(parents=True)
+    f.write_text(
+        "def login(token):\n"
+        "    # implements: DES-auth-001\n"
+        "    return token\n"
+    )
+    decomp = _decomp_for_path(tmp_path / "src")
+    result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
+    assert result.passed is True
+
+
+def test_forward_annotation_completeness_fails_when_public_function_missing_annotation(
+    tmp_path: Path,
+) -> None:
+    f = tmp_path / "src" / "auth.py"
+    f.parent.mkdir(parents=True)
+    f.write_text(
+        "def login(token):\n"
+        "    return token\n"
+    )
+    decomp = _decomp_for_path(tmp_path / "src")
+    result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
+    assert result.passed is False
+    assert any("login" in e for e in result.errors)
+
+
+def test_forward_annotation_completeness_skips_dunder_methods(
+    tmp_path: Path,
+) -> None:
+    f = tmp_path / "src" / "auth.py"
+    f.parent.mkdir(parents=True)
+    f.write_text(
+        "class Auth:\n"
+        "    def __init__(self):\n"
+        "        self.x = 1\n"
+        "    def __repr__(self):\n"
+        "        return 'Auth'\n"
+    )
+    decomp = _decomp_for_path(tmp_path / "src")
+    result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
+    assert result.passed is True
+    assert result.errors == []
+
+
+def test_forward_annotation_completeness_skips_test_files(
+    tmp_path: Path,
+) -> None:
+    f = tmp_path / "src" / "test_auth.py"
+    f.parent.mkdir(parents=True)
+    f.write_text(
+        "def test_login():\n"
+        "    assert True\n"
+    )
+    decomp = _decomp_for_path(tmp_path / "src")
+    result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
+    assert result.passed is True
+    assert result.errors == []
+
+
+def test_forward_annotation_completeness_skips_property_decorated_single_line(
+    tmp_path: Path,
+) -> None:
+    f = tmp_path / "src" / "auth.py"
+    f.parent.mkdir(parents=True)
+    f.write_text(
+        "class Auth:\n"
+        "    @property\n"
+        "    def token(self):\n"
+        "        return self._token\n"
+    )
+    decomp = _decomp_for_path(tmp_path / "src")
+    result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
+    assert result.passed is True
+    assert result.errors == []
