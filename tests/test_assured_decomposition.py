@@ -705,3 +705,33 @@ def test_forward_annotation_completeness_skips_property_decorated_single_line(
     result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
     assert result.passed is True
     assert result.errors == []
+
+
+def test_forward_annotation_completeness_skips_protocol_method_stubs(
+    tmp_path: Path,
+) -> None:
+    """Protocol method stubs (body is `...`) are non-substantive and must be skipped."""
+    f = tmp_path / "src" / "p.py"
+    f.parent.mkdir(parents=True)
+    f.write_text(
+        "from typing import Protocol\n"
+        "class MyProto(Protocol):\n"
+        "    def method(self) -> int: ...\n"
+    )
+    decomp = _decomp_for_path(tmp_path / "src")
+    result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
+    assert result.passed is True
+
+
+def test_forward_annotation_completeness_skips_pass_only_body(
+    tmp_path: Path,
+) -> None:
+    """Functions with a single `pass` body are non-substantive and must be skipped."""
+    f = tmp_path / "src" / "p.py"
+    f.parent.mkdir(parents=True)
+    f.write_text(
+        "def noop():\n    pass\n"
+    )
+    decomp = _decomp_for_path(tmp_path / "src")
+    result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
+    assert result.passed is True

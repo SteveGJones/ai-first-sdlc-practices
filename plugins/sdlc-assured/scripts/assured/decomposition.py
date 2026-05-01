@@ -445,6 +445,24 @@ def _is_property_single_line(node: ast.FunctionDef) -> bool:
     return len(node.body) == 1
 
 
+def _is_stub_body(node: ast.FunctionDef) -> bool:
+    """Return True if the function body is exactly one `...` (Ellipsis) or `pass` statement.
+
+    Both are non-substantive: they carry no semantics and are the conventional
+    body form for Protocol method stubs and empty placeholder implementations.
+    """
+    if len(node.body) != 1:
+        return False
+    stmt = node.body[0]
+    # `pass` statement
+    if isinstance(stmt, ast.Pass):
+        return True
+    # `...` expressed as a bare expression statement
+    if isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant):
+        return stmt.value.value is ...
+    return False
+
+
 def _is_trivial(node: ast.FunctionDef) -> bool:
     """Return True if the function should be excluded from annotation checks."""
     name = node.name
@@ -459,6 +477,9 @@ def _is_trivial(node: ast.FunctionDef) -> bool:
         return True
     # @property with single-line body
     if _is_property_single_line(node):
+        return True
+    # Protocol stub or pass-only body (no runtime semantics)
+    if _is_stub_body(node):
         return True
     return False
 
