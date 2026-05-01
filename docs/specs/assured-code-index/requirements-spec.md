@@ -26,6 +26,8 @@ The Assured SDLC option requires that every non-trivial function implementing a 
 The Assured bundle MUST be able to extract every `# implements:` annotation from a supplied list of source files, capturing for each the relative file path, the line number, and the cited IDs in both flat (`KIND-feature-NNN`) and positional (`P1.SP1.M1.KIND-NNN`) forms — so that callers can build a complete code-index without implementing annotation parsing themselves. Non-existent files in the list MUST be silently skipped rather than raising an error.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MISSING
+**Justification:** `parse_code_annotations` in `code_index.py` implements DES-assured-code-index-001 but lacks an `# implements:` annotation; the annotation must be added to close this cell.
 
 ### REQ-assured-code-index-002
 

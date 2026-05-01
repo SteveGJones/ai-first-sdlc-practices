@@ -26,30 +26,40 @@ The Assured SDLC option requires a suite of validators that can detect structura
 The reference-integrity validators (`id_uniqueness`, `cited_ids_resolve`) SHALL collectively detect: duplicate IDs across all records and report each duplicate as a blocking error; and citations in any record's `satisfies` list that do not resolve to a declared ID and report each as a blocking error.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MISSING
+**Justification:** `id_uniqueness`, `cited_ids_resolve`, and `orphan_ids` in `traceability_validators.py` carry `# implements: DES-assured-traceability-validators-001` but path-based coverage lookup failed during measurement; annotations are present and coverage should resolve once path matching is confirmed.
 
 ### REQ-assured-traceability-validators-002
 
 The directional-coverage validators (`forward_link_integrity`, `backward_coverage`) SHALL collectively enforce that every DES record cites at least one REQ, every TEST record cites at least one DES, every REQ record is covered by at least one DES, and every DES record is covered by at least one TEST; all violations SHALL be reported as blocking errors.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MISSING
+**Justification:** `forward_link_integrity` and `backward_coverage` in `traceability_validators.py` carry `# implements: DES-assured-traceability-validators-002` but path-based coverage lookup failed during measurement; annotations are present and coverage should resolve once path matching is confirmed.
 
 ### REQ-assured-traceability-validators-003
 
 Auditors MUST be able to verify the published ID registry has not been hand-edited by re-running the registry-build process and observing identical output, without any environment-specific drift (timestamps, machine identifiers, locale).
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MISSING
+**Justification:** `index_regenerability` in `traceability_validators.py` carries `# implements: DES-assured-traceability-validators-003` but path-based coverage lookup failed during measurement; annotation is present and coverage should resolve once path matching is confirmed.
 
 ### REQ-assured-traceability-validators-004
 
 The Assured bundle MUST detect malformed or dangling `# implements:` annotations before a phase gate, reporting a blocking error for each annotation token that fails the ID format rule and a separate blocking error for each well-formed token that cites an ID absent from the declared set — so that broken annotations cannot silently corrupt the traceability graph.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MISSING
+**Justification:** `annotation_format_integrity` in `traceability_validators.py` carries `# implements: DES-assured-traceability-validators-004` but path-based coverage lookup failed during measurement; annotation is present and coverage should resolve once path matching is confirmed.
 
 ### REQ-assured-traceability-validators-005
 
 `orphan_ids` SHALL detect declared IDs (any kind) that are never cited by any record's `satisfies` list and report each as a non-blocking warning. The validator SHALL always return `passed=True` regardless of warnings — orphan detection is advisory and SHALL NOT prevent a passing result.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MISSING
+**Justification:** No dedicated DES-assured-traceability-validators-005 annotation exists; `orphan_ids` is annotated under DES-001. A dedicated `# implements: DES-assured-traceability-validators-005` annotation on `orphan_ids` is needed to close this cell.
 
 ## Out of scope
 

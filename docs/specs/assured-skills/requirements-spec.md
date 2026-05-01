@@ -26,42 +26,56 @@ The Assured SDLC option ships eight skills that form the day-to-day working surf
 A user adding a requirement to an existing feature MUST be able to invoke a skill that mints a unique, sequential REQ-ID, prompts for the requirement statement, and persists the new requirement to the canonical spec file — with no risk of duplicate IDs even when invoked concurrently in different terminals on the same project.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `req-add` skill workflow (a Claude Code skill YAML); the skill drives the agent interaction and no single Python function can be annotated as the primary implementation locus.
 
 ### REQ-assured-skills-002
 
 The `req-link` skill SHALL verify that both the source ID and every target ID resolve in `library/_ids.md` before inserting the `**satisfies:**` link, and SHALL abort with a structured error message if any target ID is not found in the registry.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `req-link` skill workflow; the behavioural contract is enforced through the skill prompt, not a single annotatable Python function.
 
 ### REQ-assured-skills-003
 
 The `code-annotate` skill SHALL detect the comment syntax for the file's language (Python: `#`, JavaScript/TypeScript/Go/Rust: `//`, defaulting to `#` if the extension is unrecognised) and insert the `<comment-prefix> implements: <artefact-id>` annotation in a syntactically-valid position (first line of the function body, immediately after the opening delimiter), then run `annotation_format_integrity` to confirm the annotation parses correctly.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `code-annotate` skill workflow; the language-detection and insertion logic is agent-driven, not a single annotatable Python function.
 
 ### REQ-assured-skills-004
 
 The `module-bound-check` skill SHALL run all five decomposition validators (`req_has_module_assignment`, `code_annotation_maps_to_module`, `visibility_rule_enforcement`, `anaemic_context_detection`, `granularity_match`) and SHALL report a per-validator pass/fail summary table with error and warning counts; exit code SHALL be 0 if all validators pass (or produce only warnings) and 1 if any validator reports at least one error.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `module-bound-check` skill workflow; the orchestration and reporting contract is defined in the skill YAML, not a single annotatable Python function.
 
 ### REQ-assured-skills-005
 
 The `kb-codeindex` skill SHALL be idempotent: re-running it on a project whose source annotations have not changed since the last run SHALL produce byte-identical output in `library/_code-index.md` (i.e., the file content SHALL NOT differ in any byte between two successive runs with identical inputs).
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `kb-codeindex` skill workflow; idempotency is a system-level property of the skill invocation, not a single annotatable Python function.
 
 ### REQ-assured-skills-006
 
 The `change-impact-annotate` skill SHALL scaffold a `CHG-NNN` record from the staged or unstaged diff returned by `git diff`, pre-filling the impacted-artefacts sections by parsing existing `# implements:` annotations on the touched functions, and SHALL produce a record where every touched code file is cited before writing to `docs/change-impacts/CHG-<NNN>.md`.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `change-impact-annotate` skill workflow; the scaffolding and diff-parsing behaviour is defined in the skill YAML prompt, not a single annotatable Python function.
 
 ### REQ-assured-skills-007
 
 The `traceability-render` skill SHALL write a file to `docs/traceability/<module-id>.md` containing the module-scope render (all REQs, DESs, TESTs, and code locations assigned to the module) and the module dependency graph (as a markdown edge-list derived from source-file imports), and SHALL be idempotent — re-running with unchanged inputs SHALL produce a byte-identical output file.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `traceability-render` skill workflow; the write-path and idempotency contract is defined in the skill YAML, not a single annotatable Python function.
 
 ## Out of scope
 

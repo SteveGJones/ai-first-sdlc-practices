@@ -26,18 +26,24 @@ The Assured SDLC option (Method 2) adds three substrate components on top of the
 The `commission-assured` skill SHALL scaffold `programs.yaml`, `library/`, `docs/specs/`, and `docs/change-impacts/` directories on first run, creating stub files where needed, and SHALL exit with a structured error if any target path already exists with conflicting content.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `commission-assured` skill workflow; the scaffolding behaviour is defined in the skill YAML, not a single annotatable Python function.
 
 ### REQ-assured-substrate-002
 
 The Assured Constitution articles 15-17 SHALL overlay articles 1-14 cleanly with no contradictions: article 15 (identifier and traceability integrity), article 16 (decomposition discipline), and article 17 (KB-for-code annotation completeness) SHALL each extend, not duplicate, the rules established by articles 1-14, and no rule in articles 15-17 SHALL directly contradict any rule in articles 1-14.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** CONFIGURATION_ARTIFACT
+**Justification:** This requirement is satisfied by the Constitution document itself (`plugins/sdlc-assured/CONSTITUTION.md`); the overlay-and-non-contradiction contract is verified by reading the document, not by executing a function.
 
 ### REQ-assured-substrate-003
 
 Teams operating in regulated contexts MUST be able to opt in to a change-impact gate that blocks commits lacking a CHG record, configured via `.sdlc/team-config.json` using the key `assured.change_impact_gate` (`enabled` | `disabled`, default `disabled`) — so that the gate is never imposed silently on projects that have not explicitly requested it.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MISSING
+**Justification:** `change_impact_gate` in `traceability_validators.py` carries `# implements: DES-assured-substrate-003` but path-based coverage lookup failed during measurement; the annotation is present and coverage should resolve once path matching is confirmed.
 
 ## Out of scope
 

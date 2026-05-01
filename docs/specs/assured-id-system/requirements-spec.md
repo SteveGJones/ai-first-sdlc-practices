@@ -26,12 +26,16 @@ The Assured SDLC option uses IDs in two distinct namespace forms: a flat form (`
 The ID parser SHALL parse both flat (`REQ-feature-NNN`) and positional (`P1.SP2.M3.REQ-007`) namespace forms from a single string, distinguishing them via an `is_positional` predicate, and SHALL raise a typed `IdParseError` for any string that matches neither form.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MISSING
+**Justification:** `parse_id`, `format_id`, and `is_positional` in `ids.py` carry `# implements: DES-assured-id-system-001` but path-based coverage lookup failed during measurement; annotations are present and DES-mediated coverage should resolve once path matching is confirmed.
 
 ### REQ-assured-id-system-002
 
 The ID registry SHALL be regenerable byte-identically from project artefacts (idempotent): given the same set of spec files on disk, `build_id_registry` SHALL return the same ordered list of `IdRecord` values on every invocation. The registry SHALL also be remappable across module-path changes — `remap_ids` SHALL update source-file paths in existing records without altering the ID strings themselves.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MISSING
+**Justification:** `build_id_registry`, `render_id_registry`, and `remap_ids` in `ids.py` carry `# implements: DES-assured-id-system-002` but path-based coverage lookup failed during measurement; annotations are present and DES-mediated coverage should resolve once path matching is confirmed.
 
 ## Out of scope
 

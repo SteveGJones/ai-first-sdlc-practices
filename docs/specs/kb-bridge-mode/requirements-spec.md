@@ -26,12 +26,16 @@ Method 2 (Assured) needs to query across spec types (REQ, DES, TEST, CODE) when 
 The synthesis-librarian agent MUST recognise a `mode: synthesise-across-spec-types` dispatch directive and treat it as a distinct synthesis mode, not a fallback to `SYNTHESISE-ACROSS-SOURCES`.
 
 **Module:** P1.SP1.M3
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `synthesis-librarian` agent YAML (in `plugins/sdlc-knowledge-base/agents/`); mode recognition is defined in the agent prompt, not an annotatable Python function.
 
 ### REQ-kb-bridge-mode-002
 
 When the SYNTHESISE-ACROSS-SPEC-TYPES mode is active, the agent's `valid_handles` whitelist MUST accept the four pseudo-handles `req`, `des`, `test`, `code` in addition to any project library handles, so that spec-type-keyed dispatch sources resolve correctly during attribution post-checks.
 
 **Module:** P1.SP1.M3
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `synthesis-librarian` agent YAML; the `valid_handles` whitelist extension is defined in the agent prompt, not an annotatable Python function.
 
 ## Out of scope
 
