@@ -10,6 +10,7 @@ from sdlc_assured_scripts.assured.evidence_adapters import (
 )
 from sdlc_assured_scripts.assured.evidence_index import (
     EvidenceIndexEntry,
+    EvidenceIndexRegistry,
     EvidenceKind,
 )
 
@@ -132,3 +133,17 @@ def test_satisfies_by_existence_adapter_emits_one_entry_per_satisfies_id(
     assert entries[0].kind == EvidenceKind.SATISFIES_BY_EXISTENCE
     assert entries[0].line is None
     assert entries[0].cited_ids == ["REQ-programme-substrate-003"]
+
+
+def test_registry_dispatches_python_and_markdown_files(tmp_path: Path) -> None:
+    py = tmp_path / "a.py"
+    py.write_text("def f():\n    # implements: DES-x-001\n    pass\n")
+    md = tmp_path / "b.md"
+    md.write_text("<!-- implements: DES-x-002 -->\n")
+    registry = EvidenceIndexRegistry.with_default_adapters()
+    entries = list(registry.scan([py, md], project_root=tmp_path))
+    kinds = {e.kind for e in entries}
+    assert EvidenceKind.PYTHON_COMMENT in kinds
+    assert EvidenceKind.MARKDOWN_HTML_COMMENT in kinds
+    assert any(e.cited_ids == ["DES-x-001"] for e in entries)
+    assert any(e.cited_ids == ["DES-x-002"] for e in entries)

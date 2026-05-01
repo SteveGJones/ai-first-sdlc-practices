@@ -42,3 +42,34 @@ class EvidenceAdapter(Protocol):
         self, files: list[Path], project_root: Path
     ) -> Iterable[EvidenceIndexEntry]:
         ...
+
+
+class EvidenceIndexRegistry:
+    """Dispatches files to file-type-specific evidence adapters."""
+
+    def __init__(self, adapters: list[EvidenceAdapter]) -> None:
+        self._adapters = list(adapters)
+
+    @classmethod
+    def with_default_adapters(cls) -> "EvidenceIndexRegistry":
+        from .evidence_adapters import (
+            MarkdownHtmlCommentAdapter,
+            PythonCommentAdapter,
+            SatisfiesByExistenceAdapter,
+            YamlFrontmatterAdapter,
+        )
+
+        return cls(
+            [
+                PythonCommentAdapter(),
+                MarkdownHtmlCommentAdapter(),
+                YamlFrontmatterAdapter(),
+                SatisfiesByExistenceAdapter(),
+            ]
+        )
+
+    def scan(
+        self, files: list[Path], project_root: Path
+    ) -> Iterable[EvidenceIndexEntry]:
+        for adapter in self._adapters:
+            yield from adapter.extract(files, project_root)
