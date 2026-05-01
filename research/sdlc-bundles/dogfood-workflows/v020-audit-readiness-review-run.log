@@ -1,0 +1,139 @@
+CRED_TIER=keychain
+WORKSPACE=/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T//sdlc-run-pFG6Yn
+SEED_SHA=3795623236c4743f9a92c853d4a1585ce1c6d392
+Preprocessed: /var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-pFG6Yn/.archon/workflows/.generated/v020-audit-readiness-review.yaml
+Launching workflow at Fri May  1 18:56:23 IST 2026
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: ⚙️  suppress all logs with { quiet: true }
+[dotenv@17.3.1] injecting env (0) from .env.development -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.3.1] injecting env (0) from .env.production -- tip: ⚙️  suppress all logs with { quiet: true }
+{"level":30,"time":1777641983471,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.discovery","count":20,"msg":"app_default_workflows_loaded"}
+{"level":40,"time":1777641983473,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.loader","filename":"sdlc-commissioned-pipeline.yaml","validationErrors":["Node 'approve-plan': 'approval.message' Required","Node 'implement': 'loop.prompt' Required","Node 'approve-review': 'approval.message' Required"],"msg":"dag_node_validation_failed"}
+{"level":40,"time":1777641983474,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.loader","filename":"sdlc-feature-development.yaml","validationErrors":["Node 'implement': 'loop.prompt' Required"],"msg":"dag_node_validation_failed"}
+{"level":30,"time":1777641983474,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.discovery","count":28,"errorCount":2,"msg":"workflows_discovery_completed"}
+Running workflow: v020-audit-readiness-review
+Working directory: /private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-pFG6Yn
+
+{"level":30,"time":1777641983474,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"db.connection","dbPath":"/Users/stevejones/.archon/archon.db","msg":"db.connection_sqlite_selected"}
+{"level":30,"time":1777641983478,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"db.sqlite","msg":"db.sqlite_schema_initialized"}
+{"level":30,"time":1777641983515,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"clone","owner":"_local","repo":"sdlc-run-pFG6Yn","path":"/Users/stevejones/.archon/workspaces/_local/sdlc-run-pFG6Yn/source","msg":"project_structure_created"}
+{"level":30,"time":1777641983518,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"cli.workflow","name":"sdlc-run-pFG6Yn","msg":"cli.codebase_auto_registered"}
+{"level":30,"time":1777641983518,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"cli.workflow","cwd":"/private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-pFG6Yn","msg":"workflow.running_without_isolation"}
+Dispatching workflow: **v020-audit-readiness-review**
+{"level":30,"time":1777641983520,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"provider.claude","authMode":"global","msg":"using_global_auth"}
+{"level":40,"time":1777641983548,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"git","repoPath":"/private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-pFG6Yn","msg":"default_branch_detection_failed"}
+{"level":40,"time":1777641983549,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","err":{"type":"Error","message":"Cannot detect default branch for /private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-pFG6Yn: neither origin/HEAD nor origin/main exist. Set worktree.baseBranch in .archon/config.yaml to specify the branch explicitly.","stack":"Error: Cannot detect default branch for /private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-pFG6Yn: neither origin/HEAD nor origin/main exist. Set worktree.baseBranch in .archon/config.yaml to specify the branch explicitly.\n    at getDefaultBranch (/Users/stevejones/.archon-install/packages/git/src/branch.ts:68:17)\n    at async executeWorkflow (/Users/stevejones/.archon-install/packages/workflows/src/executor.ts:265:26)\n    at async workflowRunCommand (/Users/stevejones/.archon-install/packages/cli/src/commands/workflow.ts:613:20)\n    at async main (/Users/stevejones/.archon-install/packages/cli/src/cli.ts:349:19)\n    at processTicksAndRejections (native:7:39)"},"errorType":"Error","cwd":"/private/var/folders/wv/3d8v0prs1wzcg2bmdcpcrqd00000gn/T/sdlc-run-pFG6Yn","msg":"workflow.base_branch_auto_detect_failed"}
+{"level":30,"time":1777641983549,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","workflowName":"v020-audit-readiness-review","provider":"claude","providerSource":"workflow definition","msg":"workflow_provider_resolved"}
+{"level":40,"time":1777641983551,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","codebaseName":"sdlc-run-pFG6Yn","msg":"codebase_name_not_owner_repo_format"}
+{"level":30,"time":1777641983552,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.executor","workflowName":"v020-audit-readiness-review","workflowRunId":"0ec554f125f186dd8550eda1df740ecc","hasIssueContext":false,"issueContextLength":0,"msg":"workflow_starting"}
+🚀 **Starting workflow**: `v020-audit-readiness-review`
+
+> Independent containerised architect review at Phase G close. Validates
+whether v0.2.0 delivers on the audit-readiness claim against the closure
+of F-001 / F-007 / F-008 / F-009 / F-010 plus the carry-forward items
+(F1 annotation placement, F4 timeout-recovery commits, D1-D3 lint &
+skill robustness, E1-E3 traceability validators).
+Reuses the sdlc-worker:decomposition-review team image used in
+Phase A v020-design-decisions-review and earlier Phase B/C/D/E reviews.
+{"level":30,"time":1777641983557,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","workflowName":"v020-audit-readiness-review","nodeCount":1,"layerCount":1,"hasIssueContext":false,"issueContextLength":0,"msg":"dag_workflow_starting"}
+{"level":30,"time":1777641983558,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","nodeId":"v020-audit-readiness-review","type":"bash","msg":"dag_node_started"}
+[v020-audit-readiness-review] Started
+{"level":30,"time":1777641988137,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"service.title-generator","conversationDbId":"6e266425eb2259e9402722b5453427f9","title":"Workflow v020 Audit Readiness Review","msg":"title.generate_completed"}
+{"level":30,"time":1777642269782,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","nodeId":"v020-audit-readiness-review","durationMs":286220,"msg":"dag_node_completed"}
+[v020-audit-readiness-review] Completed (4m46s)
+{"level":30,"time":1777642269799,"pid":24346,"hostname":"Steves-MacBook-Pro-M3.local","module":"workflow.dag-executor","nodeCount":1,"anyCompleted":true,"anyFailed":false,"msg":"dag_workflow_finished"}
+=== SDLC Worker Container ===
+Auth: credentials loaded from creds mount
+Claude Code version: 2.1.107 (Claude Code)
+Archon version: [dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: 🛡️ auth for agents: https://vestauth.com
+[dotenv@17.3.1] injecting env (0) from .env.development -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.3.1] injecting env (0) from .env.production -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+Archon CLI - Run AI workflows from the command line
+
+Usage:
+  archon <command> [subcommand] [options] [arguments]
+
+Commands:
+  chat <message>             Send a message to the orchestrator
+  setup                      Interactive setup wizard for credentials and config
+  workflow list              List available workflows in current directory
+  workflow run <name> [msg]  Run a workflow with optional message
+  workflow status            Show status of running workflows
+  isolation list             List all active worktrees/environments
+  isolation cleanup [days]   Remove stale environments (default: 7 days)
+  isolation cleanup --merged Remove environments with branches merged into main
+  continue <branch> [msg]    Continue work on an existing worktree with prior context
+  complete <branch> [...]    Complete branch lifecycle (remove worktree + branches)
+  serve                      Start the web UI server (downloads web UI on first run)
+  validate workflows [name]  Validate workflow definitions and their references
+  validate commands [name]   Validate command files
+  version                    Show version info
+  help                       Show this help message
+
+Options:
+  --cwd <path>               Override working directory (default: current directory)
+  --branch, -b <name>        Create worktree for branch (or reuse existing)
+  --from, --from-branch <name> Create new branch from specific start point
+  --no-worktree              Run on branch directly without worktree isolation
+  --resume                   Resume the most recent failed run of the workflow (mutually exclusive with --branch)
+  --spawn                    Open setup wizard in a new terminal window (for setup command)
+  --quiet, -q                Reduce log verbosity to warnings and errors only
+  --verbose, -v              Show debug-level output
+  --json                     Output machine-readable JSON (for workflow list)
+  --workflow <name>          Workflow to run for 'continue' (default: archon-assist)
+  --no-context               Skip context injection for 'continue'
+  --allow-env-keys           Grant env-key consent during auto-registration
+                             (bypasses the env-leak gate for this codebase;
+                             logs an audit entry)
+  --port <port>              Override server port for 'serve' (default: 3090)
+  --download-only            Download web UI without starting the server
+
+Examples:
+  archon chat "What does the orchestrator do?"
+  archon workflow list
+  archon workflow run investigate-issue "Fix the login bug"
+  archon workflow run plan --cwd /path/to/repo "Add dark mode"
+  archon workflow run implement --branch feature-auth "Implement auth"
+  archon workflow run quick-fix --no-worktree "Fix typo"
+  archon continue fix/issue-42 --workflow archon-smart-pr-review "Review the changes"
+
+NOT FOUND
+Python version: Python 3.11.2
+
+Auth: OK
+
+Loop workaround: active
+Running Claude Code with prompt...
+The review is complete. All done criteria are met:
+
+**Review dispatched and written** to `research/sdlc-bundles/dogfood-workflows/v020-audit-readiness-review-output.md` (237 lines).
+
+**Six verdict labels delivered:**
+
+| Question | Verdict |
+|----------|---------|
+| Q1. F-001 (evidence model) | **AGREE** |
+| Q2. F-007 (dependency extractor) | **AGREE-WITH-CONCERNS** |
+| Q3. F-008 (indirect coverage) | **AGREE** |
+| Q4. F-009 (typed statuses) | **AGREE-WITH-CONCERNS** |
+| Q5. F-010 (REQ quality) | **AGREE-WITH-CONCERNS** |
+| Q6. Phase G honesty | **AGREE-WITH-CONCERNS** |
+
+**Overall verdict: AGREE-WITH-CONCERNS** — v0.2.0 tooling is audit-ready; the corpus and policy documentation need v0.3.0 cleanup.
+
+**Four hidden gaps** the EPIC retrospective missed:
+1. 8 stale MISSING-status REQs not updated after path-resolution fix
+2. REQ-quality linter not wired into CI
+3. `GenericRegexExtractor` coupling to `PythonAstExtractor` internals
+4. MANUAL_EVIDENCE_REQUIRED covers 34% of REQs with no documented policy
+
+**Top v0.3.0 priority:** Formalise the MANUAL_EVIDENCE_REQUIRED policy — it covers 15/44 REQs and is the largest soft spot in the audit-readiness claim.
+
+=== SDLC Worker Complete ===
+
+=== Cleanup ===
+
+Workflow completed successfully.
+Workflow exited rc=0 at Fri May  1 19:01:09 IST 2026

@@ -1,0 +1,20 @@
+name: v020-audit-readiness-review
+description: |
+  Independent containerised architect review at Phase G close. Validates
+  whether v0.2.0 delivers on the audit-readiness claim against the closure
+  of F-001 / F-007 / F-008 / F-009 / F-010 plus the carry-forward items
+  (F1 annotation placement, F4 timeout-recovery commits, D1-D3 lint &
+  skill robustness, E1-E3 traceability validators).
+
+  Reuses the sdlc-worker:decomposition-review team image used in
+  Phase A v020-design-decisions-review and earlier Phase B/C/D/E reviews.
+
+provider: claude
+
+nodes:
+  - id: v020-audit-readiness-review
+    command: v020-audit-readiness-review
+    context: fresh
+    effort: high
+    image: sdlc-worker:decomposition-review
+    timeout: 900000
