@@ -4,11 +4,13 @@ AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full ins
 
 ## Active Work
 
-- **EPIC #97** — Multi-Option Commissioned SDLC. Branch `feature/sdlc-commissioning` has the feature proposal for sub-feature #98 (commissioning infrastructure). Implementation pending. See `docs/feature-proposals/98-sdlc-commissioning-infrastructure.md`.
-- **EPIC #142** — Curated technology registry + plugin recommendation improvements. Sub-features 0-2 merged (#151, #143, #144 — pre/post check, kb recommendation, language detection). Sub-features 3-8 pending (registry schema, population, wiring, maintenance). See issue #142 for the full inventory.
-- **EPIC #96** — Containerised Claude Code workers. **Merged.** Plugin `sdlc-workflows` is live and installable. CI/CD automation deferred to separate issue.
-- **EPIC #105** — sdlc-knowledge-base plugin. **Merged.** Plugin is live and installable. Sub-feature 13 (#118 codebase-index) is future work.
-- **EPIC #164** — Cross-library query support for sdlc-knowledge-base. Design phase — needs architecture decisions on client isolation, format compatibility, access control before implementation.
+- **EPIC #178** — Joint Programme + Assured bundle delivery. **Merged** (PR #187, merge commit `e05e446`, 2026-05-01). 6 phases A-F plus G closure shipped on `feature/sdlc-programme-assured-bundles`. `sdlc-programme` v0.1.0 (Method 1) and `sdlc-assured` v0.1.0 (Method 2) are live and installable. Marketplace 12 → 14 plugins. Phase F recursive dogfood produced 10 findings (5 IMPORTANT + 5 MINOR) seeding the v0.2.0 backlog. **Programme and Assured v0.1.0 are NOT audit-ready** — see consolidating retro at `retrospectives/178-programme-assured-bundles-epic.md`.
+- **v0.2.0 EPIC (next)** — addresses Phase F findings: F-001 parser generalisation (`EvidenceIndexEntry` abstraction), F-007 platform-neutral dependency-extractor interface, F-008 traceability semantics decision, F-009 typed evidence statuses on RTM exporter, F-010 REQ-quality audit + lint discipline. Combined with Phase F deviation cleanup (F1: annotation inside design-spec; F4: timeout-recovery commit review). Brainstorming next.
+- **EPIC #164** — Cross-library query support for sdlc-knowledge-base. **Merged** (PR #177).
+- **EPIC #97** — Multi-Option Commissioned SDLC. Phase C (commissioning infrastructure #98) shipped as part of #178. Sub-features for Single-team / Solo bundles still pending.
+- **EPIC #142** — Curated technology registry. **Merged** (sub-features 0-8 all complete via PRs #152 + #153).
+- **EPIC #96** — Containerised Claude Code workers. **Merged.**
+- **EPIC #105** — sdlc-knowledge-base plugin. **Merged.** Sub-feature 13 (#118 codebase-index) is future work.
 - **KB feedback issues** — From Amkor engagement feedback (2026-04-23): #161 (batch ingestion), #162 (kb-stats), #163 (confidence metadata), #165 (lint auto-fix). Plus #166 (named plugin bundles for setup-team on sdlc-core).
 
 ## Working in this repo — dogfood the skills we ship
@@ -91,7 +93,7 @@ Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
 - CONSTITUTION.md — all rules (11 articles, progressive levels)
 - CLAUDE-CONTEXT-logging.md — logging standards
 - CLAUDE-CONTEXT-architecture.md — architecture docs
-- AGENT-INDEX.md — 56 specialist agents across 12 plugins
+- AGENT-INDEX.md — 56 specialist agents across 14 plugins (sdlc-programme + sdlc-assured added in EPIC #178; both ship 0 agents in v0.1.0 — they are skill+validator bundles)
 
 ## Plugin Installation (Recommended)
 
@@ -120,6 +122,8 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-lang-python` | Python language expert agent |
 | `sdlc-lang-javascript` | JavaScript/TypeScript language expert agent |
 | `sdlc-workflows` | Containerised delegation — Archon-orchestrated DAG workflows in isolated Docker containers (6 skills) |
+| `sdlc-programme` | Method 1 SDLC bundle for multi-team programme work — formal waterfall phase gates (requirements/design/test/code), 4 phase-gate validators, mandatory cross-phase review (5 skills, EPIC #178 v0.1.0) |
+| `sdlc-assured` | Method 2 SDLC bundle for regulated-industry work — positional namespace IDs, bidirectional traceability, DDD decomposition with visibility rules, KB-for-code annotations, standard-specific exports (DO-178C / IEC 62304 / ISO 26262 / FDA DHF). 8 skills, EPIC #178 v0.1.0. **Not yet audit-ready** — v0.2.0 addresses 5 IMPORTANT findings. |
 
 ### Available Skills
 
