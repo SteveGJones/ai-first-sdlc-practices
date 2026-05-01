@@ -23,7 +23,7 @@ The Assured SDLC option ships eight skills that form the day-to-day working surf
 
 ### REQ-assured-skills-001
 
-The `req-add` skill SHALL mint a new REQ ID with the next sequential number for the feature (by scanning existing `### REQ-...` headings and incrementing the maximum), prompt for the requirement statement, and append a properly-formatted `### REQ-<feature-id>-<NNN>` section with a `**Module:**` field to `requirements-spec.md`, without renumbering any existing IDs.
+A user adding a requirement to an existing feature MUST be able to invoke a skill that mints a unique, sequential REQ-ID, prompts for the requirement statement, and persists the new requirement to the canonical spec file — with no risk of duplicate IDs even when invoked concurrently in different terminals on the same project.
 
 **Module:** P1.SP1.M2
 
