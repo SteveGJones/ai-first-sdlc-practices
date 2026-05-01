@@ -11,7 +11,7 @@ from sdlc_assured_scripts.assured.code_index import (
 from sdlc_assured_scripts.assured.ids import IdRecord
 
 
-def test_parse_code_annotations_extracts_implements_lines(tmp_path: Path):
+def test_parse_code_annotations_extracts_implements_lines(tmp_path: Path) -> None:
     f = tmp_path / "login.py"
     f.write_text(
         "def login(token):\n"
@@ -30,7 +30,7 @@ def test_parse_code_annotations_extracts_implements_lines(tmp_path: Path):
     assert entries[1].cited_ids == ["REQ-auth-007"]
 
 
-def test_render_code_index_produces_shelf_shape(tmp_path: Path):
+def test_render_code_index_produces_shelf_shape(tmp_path: Path) -> None:
     entries = [
         CodeIndexEntry(
             file_path="src/auth/login.py",
@@ -49,7 +49,7 @@ def test_render_code_index_produces_shelf_shape(tmp_path: Path):
     assert "**Links:** REQ-auth-001" in output
 
 
-def test_render_spec_findings_emits_one_entry_per_id():
+def test_render_spec_findings_emits_one_entry_per_id() -> None:
     records = [
         IdRecord(
             id="REQ-auth-001",
@@ -73,7 +73,7 @@ def test_render_spec_findings_emits_one_entry_per_id():
     assert "REQ-auth-001" in output
 
 
-def test_render_code_index_is_idempotent_without_timestamp():
+def test_render_code_index_is_idempotent_without_timestamp() -> None:
     """Repeated calls with the same entries produce byte-identical output."""
     entries = [
         CodeIndexEntry(
@@ -88,7 +88,7 @@ def test_render_code_index_is_idempotent_without_timestamp():
     assert first == second
 
 
-def test_render_code_index_omits_last_rebuilt_by_default():
+def test_render_code_index_omits_last_rebuilt_by_default() -> None:
     """Without a timestamp argument the last_rebuilt header line is absent."""
     entries = [
         CodeIndexEntry(file_path="src/x.py", line=1, cited_ids=["REQ-x-001"]),
@@ -97,7 +97,7 @@ def test_render_code_index_omits_last_rebuilt_by_default():
     assert "last_rebuilt" not in output
 
 
-def test_render_code_index_includes_last_rebuilt_when_supplied():
+def test_render_code_index_includes_last_rebuilt_when_supplied() -> None:
     """An explicit timestamp is embedded in the header."""
     entries = [
         CodeIndexEntry(file_path="src/x.py", line=1, cited_ids=["REQ-x-001"]),
@@ -108,7 +108,7 @@ def test_render_code_index_includes_last_rebuilt_when_supplied():
     assert "<!-- last_rebuilt: 2026-04-30T00:00:00Z -->" in output
 
 
-def test_render_spec_findings_is_idempotent_without_timestamp():
+def test_render_spec_findings_is_idempotent_without_timestamp() -> None:
     """Repeated calls with the same records produce byte-identical output."""
     records = [
         IdRecord(
@@ -123,7 +123,7 @@ def test_render_spec_findings_is_idempotent_without_timestamp():
     assert first == second
 
 
-def test_render_spec_findings_omits_last_rebuilt_by_default():
+def test_render_spec_findings_omits_last_rebuilt_by_default() -> None:
     """Without a timestamp argument the last_rebuilt header line is absent."""
     records = [
         IdRecord(

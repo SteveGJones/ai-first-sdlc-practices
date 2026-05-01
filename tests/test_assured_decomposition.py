@@ -30,7 +30,7 @@ def parse_programs_yaml_inline(content: str) -> Decomposition:
     return parse_programs_yaml(tmp_path)
 
 
-def test_parse_programs_yaml_extracts_modules(tmp_path: Path):
+def test_parse_programs_yaml_extracts_modules(tmp_path: Path) -> None:
     pyaml = tmp_path / "programs.yaml"
     pyaml.write_text(
         """schema_version: 1
@@ -59,14 +59,14 @@ visibility:
     assert parsed.programs[0].sub_programs[0].modules[0].granularity == "requirement"
 
 
-def test_parse_programs_yaml_raises_on_missing_schema_version(tmp_path: Path):
+def test_parse_programs_yaml_raises_on_missing_schema_version(tmp_path: Path) -> None:
     pyaml = tmp_path / "programs.yaml"
     pyaml.write_text("programs: []\n")
     with pytest.raises(DecompositionParseError):
         parse_programs_yaml(pyaml)
 
 
-def test_default_decomposition_is_p1_sp1_m1():
+def test_default_decomposition_is_p1_sp1_m1() -> None:
     parsed = default_decomposition(project_root_paths=["."])
     assert parsed.programs[0].id == "P1"
     assert parsed.programs[0].sub_programs[0].id == "SP1"
@@ -74,7 +74,7 @@ def test_default_decomposition_is_p1_sp1_m1():
     assert parsed.programs[0].sub_programs[0].modules[0].paths == ["."]
 
 
-def test_req_has_module_assignment_passes_when_frontmatter_declared():
+def test_req_has_module_assignment_passes_when_frontmatter_declared() -> None:
     spec = SpecArtefact(
         path="docs/specs/auth/requirements-spec.md",
         feature_id="auth",
@@ -86,7 +86,7 @@ def test_req_has_module_assignment_passes_when_frontmatter_declared():
     assert result.passed is True
 
 
-def test_req_has_module_assignment_passes_when_positional_id_used():
+def test_req_has_module_assignment_passes_when_positional_id_used() -> None:
     spec = SpecArtefact(
         path="docs/specs/auth/requirements-spec.md",
         feature_id=None,
@@ -98,7 +98,7 @@ def test_req_has_module_assignment_passes_when_positional_id_used():
     assert result.passed is True
 
 
-def test_req_has_module_assignment_fails_when_module_undeclared():
+def test_req_has_module_assignment_fails_when_module_undeclared() -> None:
     spec = SpecArtefact(
         path="docs/specs/auth/requirements-spec.md",
         feature_id="auth",
@@ -111,7 +111,7 @@ def test_req_has_module_assignment_fails_when_module_undeclared():
     assert any("P9.SP9.M9" in e for e in result.errors)
 
 
-def test_code_annotation_maps_to_module_passes_when_path_under_module():
+def test_code_annotation_maps_to_module_passes_when_path_under_module() -> None:
     annotation = CodeAnnotation(
         file_path="src/auth/oauth/login.py",
         line=42,
@@ -138,7 +138,7 @@ programs:
     assert result.passed is True
 
 
-def test_code_annotation_maps_to_module_fails_when_path_outside_module():
+def test_code_annotation_maps_to_module_fails_when_path_outside_module() -> None:
     annotation = CodeAnnotation(
         file_path="src/payments/charge.py",
         line=10,
@@ -166,7 +166,7 @@ programs:
     assert any("src/payments/charge.py" in e for e in result.errors)
 
 
-def test_visibility_rule_enforcement_passes_when_edge_declared():
+def test_visibility_rule_enforcement_passes_when_edge_declared() -> None:
     edges = [ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2")]
     decomp = parse_programs_yaml_inline(
         """schema_version: 1
@@ -188,7 +188,7 @@ visibility:
     assert result.passed is True
 
 
-def test_visibility_rule_enforcement_fails_when_edge_undeclared_in_strict_mode():
+def test_visibility_rule_enforcement_fails_when_edge_undeclared_in_strict_mode() -> None:
     edges = [ImportEdge(from_module="P1.SP1.M2", to_module="P1.SP1.M1")]
     decomp = parse_programs_yaml_inline(
         """schema_version: 1
@@ -211,7 +211,7 @@ visibility:
     assert any("P1.SP1.M2" in e and "P1.SP1.M1" in e for e in result.errors)
 
 
-def test_visibility_rule_enforcement_warns_in_advisory_mode():
+def test_visibility_rule_enforcement_warns_in_advisory_mode() -> None:
     edges = [ImportEdge(from_module="P1.SP1.M2", to_module="P1.SP1.M1")]
     decomp = parse_programs_yaml_inline(
         """schema_version: 1
@@ -234,7 +234,7 @@ visibility:
     assert any("P1.SP1.M2" in w and "P1.SP1.M1" in w for w in result.warnings)
 
 
-def test_anaemic_context_passes_when_code_co_located():
+def test_anaemic_context_passes_when_code_co_located() -> None:
     annotations = [
         CodeAnnotation(
             file_path="src/auth/oauth/login.py", line=10, cited_ids=["REQ-auth-001"]
@@ -260,7 +260,7 @@ programs:
     assert result.passed is True
 
 
-def test_anaemic_context_fails_when_code_scattered():
+def test_anaemic_context_fails_when_code_scattered() -> None:
     """Two REQs from the same module, but their code lives under different module paths.
 
     1 inside, 1 outside = 50% scatter — exceeds the 20% default threshold.
@@ -291,7 +291,7 @@ programs:
     assert any("50%" in e for e in result.errors)
 
 
-def test_anaemic_context_passes_with_single_outlier_below_threshold():
+def test_anaemic_context_passes_with_single_outlier_below_threshold() -> None:
     """One outlier in five annotations (20% scatter) does NOT trigger anaemia.
 
     A single stray annotation is an outlier, not systemic anaemia.
@@ -338,7 +338,7 @@ programs:
     assert result.passed is True
 
 
-def test_anaemic_context_fails_above_threshold():
+def test_anaemic_context_fails_above_threshold() -> None:
     """More than 20% scatter triggers anaemia (5 inside, 2 outside = ~29%)."""
     decomp = parse_programs_yaml_inline(
         """schema_version: 1
@@ -381,7 +381,7 @@ programs:
     assert any("module P1.SP1.M1" in e for e in result.errors)
 
 
-def test_anaemic_context_custom_threshold():
+def test_anaemic_context_custom_threshold() -> None:
     """Custom threshold of 0.50 ignores minor scatter."""
     decomp = parse_programs_yaml_inline(
         """schema_version: 1
@@ -411,7 +411,7 @@ programs:
     assert result.passed is True
 
 
-def test_granularity_match_passes_when_each_req_has_annotation():
+def test_granularity_match_passes_when_each_req_has_annotation() -> None:
     declared_reqs = ["REQ-auth-001", "REQ-auth-002"]
     annotations = [
         CodeAnnotation(
@@ -438,7 +438,7 @@ programs:
     assert result.passed is True
 
 
-def test_granularity_match_warns_when_req_under_specified():
+def test_granularity_match_warns_when_req_under_specified() -> None:
     declared_reqs = ["REQ-auth-001", "REQ-auth-002"]
     annotations = [
         CodeAnnotation(

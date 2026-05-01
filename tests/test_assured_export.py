@@ -41,7 +41,7 @@ def _three_id_chain() -> tuple[list[IdRecord], list[CodeIndexEntry]]:
     return records, code
 
 
-def test_export_do178c_rtm_columns():
+def test_export_do178c_rtm_columns() -> None:
     records, code = _three_id_chain()
     output = export_do178c_rtm(records, code)
     # DO-178C Requirements Traceability Matrix expects: HLR → LLR → Source code → Test cases.
@@ -53,7 +53,7 @@ def test_export_do178c_rtm_columns():
     )
 
 
-def test_export_iec_62304_matrix_columns():
+def test_export_iec_62304_matrix_columns() -> None:
     records, code = _three_id_chain()
     output = export_iec_62304_matrix(records, code, software_safety_class="B")
     # IEC 62304 expects: Software requirement → Software unit → Verification activity.
@@ -64,7 +64,7 @@ def test_export_iec_62304_matrix_columns():
     assert "src/auth/login.py" in output
 
 
-def test_export_iso_26262_asil_matrix_columns():
+def test_export_iso_26262_asil_matrix_columns() -> None:
     records, code = _three_id_chain()
     output = export_iso_26262_asil_matrix(records, code, asil_level="C")
     assert "ISO 26262 ASIL Traceability Matrix" in output
@@ -79,7 +79,7 @@ def test_export_iso_26262_asil_matrix_columns():
     assert "TEST-auth-001" in output
 
 
-def test_export_fda_dhf_structure_sections():
+def test_export_fda_dhf_structure_sections() -> None:
     records, code = _three_id_chain()
     output = export_fda_dhf_structure(records, code)
     # FDA 21 CFR §820.30 Design History File expects sections per design control element.
@@ -93,7 +93,7 @@ def test_export_fda_dhf_structure_sections():
     assert "## Design validation" in output  # placeholder section per regulation
 
 
-def test_export_csv_emits_header_and_rows():
+def test_export_csv_emits_header_and_rows() -> None:
     records, code = _three_id_chain()
     output = export_csv(records, code)
     assert output.startswith("REQ,DES,TEST,CODE")
@@ -101,7 +101,7 @@ def test_export_csv_emits_header_and_rows():
     assert "src/auth/login.py:10" in output
 
 
-def test_export_markdown_emits_table():
+def test_export_markdown_emits_table() -> None:
     records, code = _three_id_chain()
     output = export_markdown(records, code)
     assert "| REQ | DES | TEST | CODE |" in output

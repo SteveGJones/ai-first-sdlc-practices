@@ -16,7 +16,7 @@ from sdlc_assured_scripts.assured.traceability_validators import (
 )
 
 
-def test_id_uniqueness_passes_when_all_ids_unique():
+def test_id_uniqueness_passes_when_all_ids_unique() -> None:
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
         IdRecord(id="REQ-auth-002", kind="REQ", source="a.md", satisfies=[]),
@@ -30,7 +30,7 @@ def test_id_uniqueness_passes_when_all_ids_unique():
     assert result.errors == []
 
 
-def test_id_uniqueness_fails_on_duplicate():
+def test_id_uniqueness_fails_on_duplicate() -> None:
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
         IdRecord(id="REQ-auth-001", kind="REQ", source="b.md", satisfies=[]),
@@ -41,7 +41,7 @@ def test_id_uniqueness_fails_on_duplicate():
     assert any("REQ-auth-001" in e for e in result.errors)
 
 
-def test_cited_ids_resolve_passes_when_all_targets_exist():
+def test_cited_ids_resolve_passes_when_all_targets_exist() -> None:
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
         IdRecord(
@@ -52,7 +52,7 @@ def test_cited_ids_resolve_passes_when_all_targets_exist():
     assert result.passed is True
 
 
-def test_cited_ids_resolve_fails_on_missing_target():
+def test_cited_ids_resolve_fails_on_missing_target() -> None:
     records = [
         IdRecord(
             id="DES-auth-001", kind="DES", source="b.md", satisfies=["REQ-auth-999"]
@@ -64,7 +64,7 @@ def test_cited_ids_resolve_fails_on_missing_target():
     assert any("DES-auth-001" in e for e in result.errors)
 
 
-def test_orphan_ids_warns_when_req_never_cited():
+def test_orphan_ids_warns_when_req_never_cited() -> None:
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
         IdRecord(id="REQ-auth-002", kind="REQ", source="a.md", satisfies=[]),
@@ -77,7 +77,7 @@ def test_orphan_ids_warns_when_req_never_cited():
     assert any("REQ-auth-002" in w for w in result.warnings)
 
 
-def test_orphan_ids_does_not_warn_for_test_or_code():
+def test_orphan_ids_does_not_warn_for_test_or_code() -> None:
     """TEST and CODE are leaves — they cite, but nothing cites them."""
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
@@ -96,7 +96,7 @@ def test_orphan_ids_does_not_warn_for_test_or_code():
     assert result.warnings == []
 
 
-def test_forward_link_integrity_passes_when_chain_intact():
+def test_forward_link_integrity_passes_when_chain_intact() -> None:
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
         IdRecord(
@@ -113,7 +113,7 @@ def test_forward_link_integrity_passes_when_chain_intact():
     assert result.passed is True
 
 
-def test_forward_link_integrity_fails_when_des_targets_missing_req():
+def test_forward_link_integrity_fails_when_des_targets_missing_req() -> None:
     records = [
         IdRecord(
             id="DES-auth-001", kind="DES", source="b.md", satisfies=["REQ-auth-999"]
@@ -124,7 +124,7 @@ def test_forward_link_integrity_fails_when_des_targets_missing_req():
     assert any("REQ-auth-999" in e for e in result.errors)
 
 
-def test_forward_link_integrity_requires_des_to_cite_a_req():
+def test_forward_link_integrity_requires_des_to_cite_a_req() -> None:
     """A DES with no satisfies links is a defect under Article 15."""
     records = [
         IdRecord(id="DES-auth-001", kind="DES", source="b.md", satisfies=[]),
@@ -136,7 +136,7 @@ def test_forward_link_integrity_requires_des_to_cite_a_req():
     )
 
 
-def test_forward_link_integrity_requires_test_to_cite_a_des():
+def test_forward_link_integrity_requires_test_to_cite_a_des() -> None:
     """A TEST with no satisfies links is a defect under Article 15."""
     records = [
         IdRecord(id="TEST-auth-001", kind="TEST", source="c.md", satisfies=[]),
@@ -148,7 +148,7 @@ def test_forward_link_integrity_requires_test_to_cite_a_des():
     )
 
 
-def test_backward_coverage_passes_when_every_req_has_des_test():
+def test_backward_coverage_passes_when_every_req_has_des_test() -> None:
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
         IdRecord(
@@ -165,7 +165,7 @@ def test_backward_coverage_passes_when_every_req_has_des_test():
     assert result.passed is True
 
 
-def test_backward_coverage_fails_when_req_has_no_des():
+def test_backward_coverage_fails_when_req_has_no_des() -> None:
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
     ]
@@ -174,7 +174,7 @@ def test_backward_coverage_fails_when_req_has_no_des():
     assert any("REQ-auth-001" in e and "no DES" in e for e in result.errors)
 
 
-def test_backward_coverage_fails_when_des_has_no_test():
+def test_backward_coverage_fails_when_des_has_no_test() -> None:
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
         IdRecord(
@@ -186,7 +186,7 @@ def test_backward_coverage_fails_when_des_has_no_test():
     assert any("DES-auth-001" in e and "no TEST" in e for e in result.errors)
 
 
-def test_index_regenerability_passes_when_byte_identical(tmp_path: Path):
+def test_index_regenerability_passes_when_byte_identical(tmp_path: Path) -> None:
     index_path = tmp_path / "_ids.md"
     index_path.write_text("# ID Registry\n| ID | Kind | Source | Satisfies |\n")
 
@@ -197,7 +197,7 @@ def test_index_regenerability_passes_when_byte_identical(tmp_path: Path):
     assert result.passed is True
 
 
-def test_index_regenerability_fails_when_drift(tmp_path: Path):
+def test_index_regenerability_fails_when_drift(tmp_path: Path) -> None:
     index_path = tmp_path / "_ids.md"
     index_path.write_text("# ID Registry\nOLD\n")
 
@@ -209,14 +209,14 @@ def test_index_regenerability_fails_when_drift(tmp_path: Path):
     assert any("not idempotent" in e.lower() for e in result.errors)
 
 
-def test_annotation_format_integrity_passes_on_valid_annotations(tmp_path: Path):
+def test_annotation_format_integrity_passes_on_valid_annotations(tmp_path: Path) -> None:
     f = tmp_path / "login.py"
     f.write_text("def login():\n" "    # implements: REQ-auth-001\n" "    pass\n")
     result = annotation_format_integrity([f], declared_ids={"REQ-auth-001"})
     assert result.passed is True
 
 
-def test_annotation_format_integrity_fails_on_unknown_id(tmp_path: Path):
+def test_annotation_format_integrity_fails_on_unknown_id(tmp_path: Path) -> None:
     f = tmp_path / "login.py"
     f.write_text("def login():\n" "    # implements: REQ-auth-999\n" "    pass\n")
     result = annotation_format_integrity([f], declared_ids={"REQ-auth-001"})
@@ -224,7 +224,7 @@ def test_annotation_format_integrity_fails_on_unknown_id(tmp_path: Path):
     assert any("REQ-auth-999" in e for e in result.errors)
 
 
-def test_annotation_format_integrity_fails_on_malformed_annotation(tmp_path: Path):
+def test_annotation_format_integrity_fails_on_malformed_annotation(tmp_path: Path) -> None:
     f = tmp_path / "login.py"
     f.write_text("def login():\n" "    # implements: not_an_id\n" "    pass\n")
     result = annotation_format_integrity([f], declared_ids={"REQ-auth-001"})
@@ -232,7 +232,7 @@ def test_annotation_format_integrity_fails_on_malformed_annotation(tmp_path: Pat
     assert any("malformed" in e.lower() or "not_an_id" in e for e in result.errors)
 
 
-def test_change_impact_gate_passes_when_disabled():
+def test_change_impact_gate_passes_when_disabled() -> None:
     """The gate is opt-in; when disabled, it always passes."""
     result = change_impact_gate(
         changed_code_files=[Path("src/auth/login.py")],
@@ -242,7 +242,7 @@ def test_change_impact_gate_passes_when_disabled():
     assert result.passed is True
 
 
-def test_change_impact_gate_fails_when_enabled_and_no_record(tmp_path: Path):
+def test_change_impact_gate_fails_when_enabled_and_no_record(tmp_path: Path) -> None:
     code_file = tmp_path / "src" / "auth" / "login.py"
     code_file.parent.mkdir(parents=True)
     code_file.write_text("def login(): pass\n")
@@ -257,7 +257,7 @@ def test_change_impact_gate_fails_when_enabled_and_no_record(tmp_path: Path):
     assert any("change-impact" in e.lower() for e in result.errors)
 
 
-def test_change_impact_gate_passes_when_record_exists(tmp_path: Path):
+def test_change_impact_gate_passes_when_record_exists(tmp_path: Path) -> None:
     code_file = tmp_path / "src" / "auth" / "login.py"
     code_file.parent.mkdir(parents=True)
     code_file.write_text("def login(): pass\n")

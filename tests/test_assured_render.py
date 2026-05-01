@@ -16,7 +16,7 @@ from sdlc_assured_scripts.assured.render import (
 )
 
 
-def test_render_module_scope_includes_reqs_des_tests_code():
+def test_render_module_scope_includes_reqs_des_tests_code() -> None:
     records = [
         IdRecord(
             id="REQ-auth-001",
@@ -64,7 +64,7 @@ def test_render_module_scope_includes_reqs_des_tests_code():
     assert "src/auth/login.py:10" in output
 
 
-def test_render_module_scope_flags_orphan_code():
+def test_render_module_scope_flags_orphan_code() -> None:
     records = []
     code_entries = [
         CodeIndexEntry(
@@ -103,7 +103,7 @@ def _two_module_decomp() -> Decomposition:
     return Decomposition(programs=[p], visibility=visibility)
 
 
-def test_render_module_dependency_graph_lists_each_actual_edge():
+def test_render_module_dependency_graph_lists_each_actual_edge() -> None:
     decomp = _two_module_decomp()
     actual_edges = [
         ImportEdge(from_module="P1.SP1.M1", to_module="P1.SP1.M2"),
@@ -115,7 +115,7 @@ def test_render_module_dependency_graph_lists_each_actual_edge():
     assert "| P1.SP1.M2 | → | P1.SP1.M1 | NO |" in output
 
 
-def test_render_module_dependency_graph_handles_zero_edges():
+def test_render_module_dependency_graph_handles_zero_edges() -> None:
     decomp = _two_module_decomp()
     output = render_module_dependency_graph(decomp, [])
     assert "_(no module-to-module dependencies detected)_" in output

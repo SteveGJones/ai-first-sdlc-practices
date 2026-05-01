@@ -26,13 +26,13 @@ from sdlc_assured_scripts.assured.traceability_validators import (
 FIXTURE = Path(__file__).parent / "fixtures" / "assured" / "feature-sample"
 
 
-def test_fixture_programs_yaml_parses():
+def test_fixture_programs_yaml_parses() -> None:
     decomp = parse_programs_yaml(FIXTURE / "programs.yaml")
     assert decomp.programs[0].id == "P1"
     assert decomp.programs[0].sub_programs[0].modules[0].id == "M1"
 
 
-def test_fixture_id_registry_has_six_ids():
+def test_fixture_id_registry_has_six_ids() -> None:
     records = build_id_registry(FIXTURE)
     ids = {r.id for r in records}
     assert ids == {
@@ -45,7 +45,7 @@ def test_fixture_id_registry_has_six_ids():
     }
 
 
-def test_fixture_validators_all_pass():
+def test_fixture_validators_all_pass() -> None:
     records = build_id_registry(FIXTURE)
     assert id_uniqueness(records).passed
     assert cited_ids_resolve(records).passed
@@ -53,14 +53,14 @@ def test_fixture_validators_all_pass():
     assert backward_coverage(records).passed
 
 
-def test_fixture_code_annotations_parse():
+def test_fixture_code_annotations_parse() -> None:
     code_files = list((FIXTURE / "src").rglob("*.py"))
     entries = parse_code_annotations(code_files, project_root=FIXTURE)
     cited = sorted({cid for e in entries for cid in e.cited_ids})
     assert cited == ["DES-auth-001", "DES-auth-002", "REQ-auth-001", "REQ-auth-002"]
 
 
-def test_fixture_render_module_scope_produces_full_doc():
+def test_fixture_render_module_scope_produces_full_doc() -> None:
     records = build_id_registry(FIXTURE)
     code_files = list((FIXTURE / "src").rglob("*.py"))
     entries = parse_code_annotations(code_files, project_root=FIXTURE)
@@ -75,7 +75,7 @@ def test_fixture_render_module_scope_produces_full_doc():
         assert required in output
 
 
-def test_fixture_code_annotations_in_module():
+def test_fixture_code_annotations_in_module() -> None:
     decomp = parse_programs_yaml(FIXTURE / "programs.yaml")
     code_files = list((FIXTURE / "src").rglob("*.py"))
     entries = parse_code_annotations(code_files, project_root=FIXTURE)
