@@ -5,6 +5,8 @@ from pathlib import Path
 from sdlc_assured_scripts.assured.evidence_adapters import (
     MarkdownHtmlCommentAdapter,
     PythonCommentAdapter,
+    SatisfiesByExistenceAdapter,
+    YamlFrontmatterAdapter,
 )
 from sdlc_assured_scripts.assured.evidence_index import (
     EvidenceIndexEntry,
@@ -94,3 +96,39 @@ def test_markdown_html_comment_adapter_ignores_h1_implements(tmp_path: Path) -> 
     f.write_text("# implements: REQ-x-001\n")
     adapter = MarkdownHtmlCommentAdapter()
     assert list(adapter.extract([f], project_root=tmp_path)) == []
+
+
+def test_yaml_frontmatter_adapter_extracts_implements_list(tmp_path: Path) -> None:
+    f = tmp_path / "doc.md"
+    f.write_text(
+        "---\n"
+        "implements:\n"
+        "  - DES-foo-001\n"
+        "  - DES-foo-002\n"
+        "---\n"
+        "# Body\n"
+    )
+    adapter = YamlFrontmatterAdapter()
+    entries = list(adapter.extract([f], project_root=tmp_path))
+    assert len(entries) == 1
+    assert entries[0].kind == EvidenceKind.YAML_FRONTMATTER
+    assert sorted(entries[0].cited_ids) == ["DES-foo-001", "DES-foo-002"]
+
+
+def test_satisfies_by_existence_adapter_emits_one_entry_per_satisfies_id(
+    tmp_path: Path,
+) -> None:
+    f = tmp_path / "CONSTITUTION.md"
+    f.write_text(
+        "---\n"
+        "satisfies_by_existence:\n"
+        "  - REQ-programme-substrate-003\n"
+        "---\n"
+        "# Constitution\n"
+    )
+    adapter = SatisfiesByExistenceAdapter()
+    entries = list(adapter.extract([f], project_root=tmp_path))
+    assert len(entries) == 1
+    assert entries[0].kind == EvidenceKind.SATISFIES_BY_EXISTENCE
+    assert entries[0].line is None
+    assert entries[0].cited_ids == ["REQ-programme-substrate-003"]

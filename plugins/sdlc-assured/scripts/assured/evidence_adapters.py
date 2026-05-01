@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import yaml as _yaml
 from pathlib import Path
 from typing import Iterable
 
@@ -46,6 +47,19 @@ class PythonCommentAdapter:
                 )
 
 
+def _parse_frontmatter(text: str) -> dict | None:
+    """Extract YAML frontmatter from a markdown document. Returns None if no frontmatter."""
+    if not text.startswith("---"):
+        return None
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return None
+    try:
+        return _yaml.safe_load(parts[1]) or {}
+    except _yaml.YAMLError:
+        return None
+
+
 _HTML_IMPLEMENTS_RE = re.compile(r"<!--\s*implements:\s*(?P<ids>.+?)\s*-->")
 
 
@@ -78,3 +92,63 @@ class MarkdownHtmlCommentAdapter:
                     line=line_no,
                     cited_ids=cited,
                 )
+
+
+class YamlFrontmatterAdapter:
+    """Adapter for `implements: [...]` in YAML frontmatter."""
+
+    file_extensions = (".md",)
+
+    def extract(
+        self, files: list[Path], project_root: Path
+    ) -> Iterable[EvidenceIndexEntry]:
+        for f in files:
+            if f.suffix not in self.file_extensions or not f.is_file():
+                continue
+            text = f.read_text(encoding="utf-8")
+            fm = _parse_frontmatter(text)
+            if not fm or "implements" not in fm:
+                continue
+            ids = fm["implements"]
+            if not isinstance(ids, list):
+                continue
+            try:
+                rel_path = str(f.relative_to(project_root))
+            except ValueError:
+                rel_path = str(f.name)
+            yield EvidenceIndexEntry(
+                kind=EvidenceKind.YAML_FRONTMATTER,
+                source=rel_path,
+                line=None,
+                cited_ids=[str(x) for x in ids],
+            )
+
+
+class SatisfiesByExistenceAdapter:
+    """Adapter for governance documents declaring `satisfies_by_existence: [...]` (F-003)."""
+
+    file_extensions = (".md",)
+
+    def extract(
+        self, files: list[Path], project_root: Path
+    ) -> Iterable[EvidenceIndexEntry]:
+        for f in files:
+            if f.suffix not in self.file_extensions or not f.is_file():
+                continue
+            text = f.read_text(encoding="utf-8")
+            fm = _parse_frontmatter(text)
+            if not fm or "satisfies_by_existence" not in fm:
+                continue
+            ids = fm["satisfies_by_existence"]
+            if not isinstance(ids, list):
+                continue
+            try:
+                rel_path = str(f.relative_to(project_root))
+            except ValueError:
+                rel_path = str(f.name)
+            yield EvidenceIndexEntry(
+                kind=EvidenceKind.SATISFIES_BY_EXISTENCE,
+                source=rel_path,
+                line=None,
+                cited_ids=[str(x) for x in ids],
+            )
