@@ -370,26 +370,46 @@ def granularity_match(
     annotations: List[CodeAnnotation],
     decomp: Decomposition,
     spec_module_lookup: dict[str, str],
+    satisfies_graph: Optional[dict[str, list[str]]] = None,
 ) -> DecompositionValidatorResult:
     # implements: DES-assured-decomposition-validators-005
-    """For modules with granularity=requirement, every REQ must have at least one annotation."""
-    cited: set[str] = set()
+    """For modules with granularity=requirement, every REQ must have at least one
+    annotation — directly OR via a satisfies-linked DES (F-008 indirect coverage).
+
+    satisfies_graph maps DES-id → list of REQ-ids it satisfies. If None, falls back to
+    direct-only coverage (v0.1.0 behaviour, deprecated).
+    """
+    annotated_ids: set[str] = set()
     for ann in annotations:
-        cited.update(ann.cited_ids)
+        annotated_ids.update(ann.cited_ids)
+
     granularity_by_module: dict[str, str] = {}
     for p in decomp.programs:
         for sp in p.sub_programs:
             for m in sp.modules:
                 granularity_by_module[f"{p.id}.{sp.id}.{m.id}"] = m.granularity
+
+    # Build the inverse: REQ-id → list of DES-ids that satisfy it
+    inverse_satisfies: dict[str, list[str]] = {}
+    if satisfies_graph:
+        for des_id, req_ids in satisfies_graph.items():
+            for req_id in req_ids:
+                inverse_satisfies.setdefault(req_id, []).append(des_id)
+
     warnings: List[str] = []
     for req in declared_reqs:
         module = spec_module_lookup.get(req)
-        if module is None:
+        if module is None or granularity_by_module.get(module) != "requirement":
             continue
-        if granularity_by_module.get(module) != "requirement":
+        # Direct coverage check
+        if req in annotated_ids:
             continue
-        if req not in cited:
-            warnings.append(
-                f"under-specified: {req} (module {module}) has no `# implements:` annotation"
-            )
+        # Indirect coverage: any satisfies-linked DES annotated?
+        satisfying_dess = inverse_satisfies.get(req, [])
+        if any(des_id in annotated_ids for des_id in satisfying_dess):
+            continue
+        warnings.append(
+            f"under-specified: {req} (module {module}) has no `# implements:` "
+            "annotation directly OR via a satisfies-linked DES"
+        )
     return DecompositionValidatorResult(passed=True, warnings=warnings)

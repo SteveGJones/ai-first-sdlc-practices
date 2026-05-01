@@ -437,7 +437,9 @@ programs:
           - {id: M1, name: OAuth, paths: [src/auth/oauth/], granularity: requirement, structure: flat}
 """
     )
-    result = granularity_match(declared_reqs, annotations, decomp, spec_lookup)
+    result = granularity_match(
+        declared_reqs, annotations, decomp, spec_lookup, satisfies_graph={}
+    )
     assert result.passed is True
 
 
@@ -461,7 +463,9 @@ programs:
           - {id: M1, name: OAuth, paths: [src/auth/oauth/], granularity: requirement, structure: flat}
 """
     )
-    result = granularity_match(declared_reqs, annotations, decomp, spec_lookup)
+    result = granularity_match(
+        declared_reqs, annotations, decomp, spec_lookup, satisfies_graph={}
+    )
     assert result.passed is True
     assert any("REQ-auth-002" in w for w in result.warnings)
 
@@ -562,3 +566,38 @@ programs:
     assert module.structure == "hexagonal"
     assert len(module.paths_sections) == 1
     assert module.paths_sections[0].anchor == "## Overview"
+
+
+# ---------------------------------------------------------------------------
+# F-008: granularity_match indirect DES-mediated coverage
+# ---------------------------------------------------------------------------
+
+
+def test_granularity_match_indirect_coverage_via_des() -> None:
+    """A REQ is covered if any satisfies-linked DES has annotation evidence (F-008)."""
+    declared_reqs = ["REQ-foo-001"]
+    # No annotation on REQ; one annotation on the satisfying DES
+    annotations = [
+        CodeAnnotation(file_path="src/foo.py", line=10, cited_ids=["DES-foo-001"]),
+    ]
+    decomp = parse_programs_yaml_inline(
+        """schema_version: 1
+programs:
+  - id: P1
+    name: P1
+    sub_programs:
+      - id: SP1
+        name: SP1
+        modules:
+          - {id: M1, name: M1, paths: [src/], granularity: requirement, structure: flat}
+"""
+    )
+    spec_lookup = {"REQ-foo-001": "P1.SP1.M1", "DES-foo-001": "P1.SP1.M1"}
+    # NEW signature: needs the satisfies-graph
+    satisfies_graph = {"DES-foo-001": ["REQ-foo-001"]}
+    result = granularity_match(
+        declared_reqs, annotations, decomp, spec_lookup, satisfies_graph
+    )
+    # Indirect coverage: REQ has no direct annotation but DES-foo-001 (which satisfies REQ-foo-001) does
+    assert result.passed is True
+    assert result.warnings == []  # NO under-specified warning
