@@ -46,10 +46,10 @@ def cited_ids_resolve(records: List[IdRecord]) -> ValidatorResult:  # implements
 
 
 def orphan_ids(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001
-    """Warn when an ID that should be cited (REQ, DES) is never cited.
+    """Warn when any declared ID is never cited by another record.
 
-    TEST and CODE are leaves; missing back-references for them are
-    surfaced by backward_coverage instead.
+    Covers REQ, DES, TEST, and CODE kinds (E1: widened in v0.2.0).
+    Complementary to backward_coverage, which checks the REQ→DES→TEST chain.
     """
     cited: set[str] = set()
     for r in records:
