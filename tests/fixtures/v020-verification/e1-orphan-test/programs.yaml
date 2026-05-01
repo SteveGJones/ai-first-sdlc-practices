@@ -1,0 +1,20 @@
+schema_version: 1
+
+programs:
+  - id: P1
+    name: E1 Programme
+    description: Fixture for E1 orphan-test defect
+    sub_programs:
+      - id: SP1
+        name: Core
+        modules:
+          - id: M1
+            name: fxe1-mod
+            paths: [src/fxe1_mod/]
+            granularity: requirement
+            structure: flat
+            owner: test
+
+visibility:
+  - from: P1.SP1.M1
+    to: []

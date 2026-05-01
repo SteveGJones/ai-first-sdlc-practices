@@ -1,0 +1,28 @@
+schema_version: 1
+
+programs:
+  - id: P1
+    name: Fix7sw Programme
+    description: Fixture for F-007 visibility_rule_enforcement defect (Swift)
+    sub_programs:
+      - id: SP1
+        name: Core
+        modules:
+          - id: M1
+            name: mod-a
+            paths: [src/mod_a/]
+            granularity: requirement
+            structure: flat
+            owner: test
+          - id: M2
+            name: mod-b
+            paths: [src/mod_b/]
+            granularity: requirement
+            structure: flat
+            owner: test
+
+visibility:
+  - from: P1.SP1.M1
+    to: []
+  - from: P1.SP1.M2
+    to: []
