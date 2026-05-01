@@ -35,7 +35,7 @@ The Assured Constitution articles 15-17 SHALL overlay articles 1-14 cleanly with
 
 ### REQ-assured-substrate-003
 
-The `change_impact_gate` validator SHALL be opt-in (default disabled) and SHALL be configurable via `.sdlc/team-config.json` using the key `assured.change_impact_gate` with permitted values `enabled` and `disabled`; the validator SHALL read the configuration on every invocation and apply the gate only when the value is `enabled`.
+Teams operating in regulated contexts MUST be able to opt in to a change-impact gate that blocks commits lacking a CHG record, configured via `.sdlc/team-config.json` using the key `assured.change_impact_gate` (`enabled` | `disabled`, default `disabled`) — so that the gate is never imposed silently on projects that have not explicitly requested it.
 
 **Module:** P1.SP1.M2
 

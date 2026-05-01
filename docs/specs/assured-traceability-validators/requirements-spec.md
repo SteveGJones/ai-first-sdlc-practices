@@ -41,7 +41,7 @@ Auditors MUST be able to verify the published ID registry has not been hand-edit
 
 ### REQ-assured-traceability-validators-004
 
-`annotation_format_integrity` SHALL scan source files for `# implements:` annotation lines and report a blocking error for each token that fails the ID format parse AND a separate blocking error for each well-formed token that cites an ID not present in the caller-supplied declared set.
+The Assured bundle MUST detect malformed or dangling `# implements:` annotations before a phase gate, reporting a blocking error for each annotation token that fails the ID format rule and a separate blocking error for each well-formed token that cites an ID absent from the declared set — so that broken annotations cannot silently corrupt the traceability graph.
 
 **Module:** P1.SP1.M2
 
