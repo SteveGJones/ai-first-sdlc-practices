@@ -15,7 +15,7 @@ mypy>=1.5.0
 pre-commit>=3.5.0
 
 # Security scanning
-safety>=2.3.0
+safety>=3.7.0
 bandit>=1.7.0
 
 # Documentation
