@@ -61,7 +61,7 @@ The framework's `/sdlc-core:commission` skill walks projects through commissioni
 | **Solo** | 1–2 contributors, fast iteration, lightweight constitution overlay. |
 | **Single-team** | 3–10 contributors, organic delivery — the framework default. |
 | **Programme** (Method 1) | 11–50 across 2–5 teams, formal phase gates, mandatory cross-phase review. |
-| **Assured** (Method 2) | Regulated industries (DO-178C, IEC 62304, ISO 26262, FDA 21 CFR Part 820); audit-ready traceability + decomposition + typed evidence. |
+| **Assured** (Method 2) | Regulated industries **or** complex agentic systems at scale (10+ bounded contexts; scoped context per agent); audit-ready traceability + decomposition + typed evidence. |
 
 The choice is **orthogonal to team plugin selection**. A regulated medical-device project might be `cloud-infrastructure` (project type C in `setup-team`) **and** `assured` (SDLC method D); an AI/ML prototype might be `ai-ml` (project type B) **and** `solo` (SDLC method B). Project type drives team plugin selection; SDLC method drives delivery discipline.
 
@@ -73,9 +73,9 @@ You don't have to pick at setup time — `setup-team` accepts "Decide later" and
 
 Answer the questions in order; the first match wins.
 
-**1. Are you targeting a regulated industry?** (DO-178C avionics, IEC 62304 medical devices, ISO 26262 automotive, IEC 61508 functional safety, FDA 21 CFR Part 820)
+**1. Are you targeting a regulated industry** (DO-178C avionics, IEC 62304 medical devices, ISO 26262 automotive, IEC 61508 functional safety, FDA 21 CFR Part 820) **— or — building a complex agentic system with 10+ bounded contexts** where you need to give each agent a scoped context slice rather than the whole system (to prevent mis-implementation from "knowing too much")?
 
-- **Yes** → use [**Assured (Method 2)**](#assured-method-2). Stop here.
+- **Yes to either** → use [**Assured (Method 2)**](#assured-method-2). Stop here.
 - **No** → continue.
 
 **2. Do you need formal cross-team sign-off on phase artefacts?** (typically: 11+ contributors, **or** 2 or more sub-teams that must explicitly approve each other's design / test artefacts)
@@ -254,11 +254,22 @@ If you need any of those, pick Assured.
 
 ### When to use
 
+**Regulated industries** — any of these apply:
+
 - Target standards: **DO-178C** (avionics), **IEC 62304** (medical devices), **ISO 26262** (automotive), **IEC 61508** (functional safety), **FDA 21 CFR Part 820** (medical devices)
 - Audit requirement: audit-ready bidirectional traceability, positional IDs, decomposition visibility, typed evidence
+- Regulator context: FAA, EASA, FDA, notified body, certification agency
+
+**Complex agentic systems at scale** — any of these apply:
+
+- 10 or more bounded contexts / modules where routing each agent to a scoped slice reduces mis-implementation
+- You need KB-for-code (`# implements:` annotations) to give agents a requirements-grounded context slice without loading the entire codebase
+- Decomposition visibility enforcement across module boundaries is operationally valuable, regardless of any audit requirement
+
+**Common to both**:
+
 - Specification maturity: formal, requirement-driven
 - Team size: any (the bundle scales from one engineer up to multi-team programmes)
-- Regulator context: FAA, EASA, FDA, notified body, certification agency
 
 ### What Method 2 adds over Method 1
 
@@ -332,7 +343,7 @@ For a full breakdown of what's automated vs. what requires manual evidence vs. w
 | Constitution articles | 1–11 (overlay relaxes some) | 1–11 | 1–11 + 12–14 | 1–11 + 12–14 + 15–17 |
 | Regulatory support | None | None | None | DO-178C, IEC 62304, ISO 26262, IEC 61508, FDA 21 CFR Part 820 |
 | Commission command | `/sdlc-core:commission --option solo` | (none — default) | `/sdlc-core:commission --option programme` | `/sdlc-core:commission --option assured` |
-| When to pick | Solo / experimental | Most projects (default) | Multi-team, formal spec | Regulated industry |
+| When to pick | Solo / experimental | Most projects (default) | Multi-team, formal spec | Regulated industry OR complex agentic system (10+ bounded contexts) |
 
 ---
 
