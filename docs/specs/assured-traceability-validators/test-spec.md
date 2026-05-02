@@ -25,14 +25,12 @@ One test per DES item. Tests are unit-level, using in-memory `IdRecord` fixtures
 
 ### TEST-assured-traceability-validators-001
 
-**Title:** Reference-integrity validators — uniqueness, resolution, and orphan detection
+**Title:** Reference-integrity validators — uniqueness and resolution
 
 **Description:**
 (a) `id_uniqueness` — given two `IdRecord` objects with the same `id` in different `source` paths, assert `passed=False` and that the error string contains both source paths. Given a list with all distinct IDs, assert `passed=True` with no errors.
 
 (b) `cited_ids_resolve` — given a record whose `satisfies` list contains `"REQ-missing-001"` and no record with that ID exists in the list, assert `passed=False` and that the error mentions `"REQ-missing-001"`. Given a fully-declared set, assert `passed=True`.
-
-(c) `orphan_ids` — given a REQ record that does not appear in any `satisfies` list, assert `passed=True` (not a blocking failure) and that `warnings` is non-empty and contains the orphan ID. Given a record that IS cited, assert `passed=True` with an empty `warnings` list. Assert that a TEST-kind record that is never cited does NOT appear in `warnings` (TEST and CODE are leaves).
 
 **satisfies:** REQ-assured-traceability-validators-001 via DES-assured-traceability-validators-001
 
@@ -84,3 +82,14 @@ The `regenerate` callable should be a plain lambda returning a string for all th
 (e) Given a path that does not exist on disk, assert the function returns `passed=True` without raising (non-existent files are silently skipped).
 
 **satisfies:** REQ-assured-traceability-validators-004 via DES-assured-traceability-validators-004
+
+---
+
+### TEST-assured-traceability-validators-005
+
+**Title:** `orphan_ids` — non-blocking orphan detection across all kinds
+
+**Description:**
+Given a REQ record that does not appear in any `satisfies` list, assert `passed=True` (not a blocking failure) and that `warnings` is non-empty and contains the orphan ID. Given a record that IS cited, assert `passed=True` with an empty `warnings` list. Given a TEST record that is never cited by any CODE record, assert that the orphan TEST ID appears in `warnings` (E1 widening — TEST and CODE are no longer exempt).
+
+**satisfies:** REQ-assured-traceability-validators-005 via DES-assured-traceability-validators-005

@@ -8,6 +8,7 @@ from sdlc_assured_scripts.assured.ids import (
     IdParseError,
     IdRecord,
     ParsedId,
+    RemapResult,
     build_id_registry,
     format_id,
     is_positional,
@@ -132,9 +133,9 @@ def test_remap_ids_preserves_id_when_module_moves() -> None:
         ),
     ]
     remapping = {"docs/specs/legacy/": "docs/specs/auth/"}
-    remapped = remap_ids(records, remapping)
-    assert remapped[0].id == "P1.SP1.M1.REQ-001"
-    assert remapped[0].source == "docs/specs/auth/requirements-spec.md"
+    result = remap_ids(records, remapping)
+    assert result.records[0].id == "P1.SP1.M1.REQ-001"
+    assert result.records[0].source == "docs/specs/auth/requirements-spec.md"
 
 
 def test_remap_ids_no_op_when_no_paths_match() -> None:
@@ -147,5 +148,39 @@ def test_remap_ids_no_op_when_no_paths_match() -> None:
         ),
     ]
     remapping = {"docs/specs/legacy/": "docs/specs/old/"}
-    remapped = remap_ids(records, remapping)
-    assert remapped == records
+    result = remap_ids(records, remapping)
+    assert result.records == records
+    assert result.warnings == []
+
+
+def test_remap_ids_warns_on_multiple_prefix_match() -> None:
+    records = [
+        IdRecord(id="REQ-x-001", kind="REQ", source="docs/specs/foo/bar/spec.md", satisfies=[]),
+    ]
+    remapping = {
+        "docs/specs/foo/": "renamed/foo/",
+        "docs/specs/foo/bar/": "renamed/foobar/",
+    }
+    result = remap_ids(records, remapping, on_overlap="warn")
+    assert result.records[0].source == "renamed/foobar/spec.md"
+    assert any("multiple prefix match" in w.lower() for w in result.warnings)
+
+
+def test_remap_ids_error_mode_raises_on_overlap() -> None:
+    records = [IdRecord(id="REQ-x-001", kind="REQ", source="docs/specs/foo/bar/spec.md", satisfies=[])]
+    remapping = {"docs/specs/foo/": "a/", "docs/specs/foo/bar/": "b/"}
+    with pytest.raises(ValueError, match="multiple prefix match"):
+        remap_ids(records, remapping, on_overlap="error")
+
+
+def test_remap_ids_single_match_no_warning() -> None:
+    records = [IdRecord(id="REQ-x-001", kind="REQ", source="docs/specs/foo/spec.md", satisfies=[])]
+    remapping = {"docs/specs/foo/": "renamed/foo/"}
+    result = remap_ids(records, remapping)
+    assert result.records[0].source == "renamed/foo/spec.md"
+    assert result.warnings == []
+
+
+def test_remap_ids_invalid_on_overlap_value_raises() -> None:
+    with pytest.raises(ValueError, match="on_overlap"):
+        remap_ids([], {}, on_overlap="bogus")

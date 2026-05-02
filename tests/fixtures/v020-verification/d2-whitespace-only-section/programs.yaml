@@ -1,0 +1,20 @@
+schema_version: 1
+
+programs:
+  - id: P1
+    name: D2 Programme
+    description: Fixture for D2 whitespace-only Motivation section defect
+    sub_programs:
+      - id: SP1
+        name: Core
+        modules:
+          - id: M1
+            name: fxd2-mod
+            paths: [src/]
+            granularity: requirement
+            structure: flat
+            owner: test
+
+visibility:
+  - from: P1.SP1.M1
+    to: []

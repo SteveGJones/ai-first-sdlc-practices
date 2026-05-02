@@ -1,0 +1,20 @@
+schema_version: 1
+
+programs:
+  - id: P1
+    name: Fix9 Programme
+    description: Fixture for F-009 missing justification on not_applicable status
+    sub_programs:
+      - id: SP1
+        name: Core
+        modules:
+          - id: M1
+            name: fix9-mod
+            paths: [src/]
+            granularity: requirement
+            structure: flat
+            owner: test
+
+visibility:
+  - from: P1.SP1.M1
+    to: []

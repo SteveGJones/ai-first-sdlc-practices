@@ -62,6 +62,44 @@ def _has_review_record(feature_dir: Path, phase: str) -> bool:
     return len(matches) > 0
 
 
+_REQUIREMENTS_MANDATORY_SECTIONS = ("Motivation", "Requirements")
+
+
+def _check_mandatory_sections_non_empty(spec_path: Path, result: GateResult) -> None:
+    """Append errors to result for any mandatory section whose body is whitespace-only.
+
+    Reads spec_path directly and scans for ## <Name> headings in
+    _REQUIREMENTS_MANDATORY_SECTIONS.  The body of a section is all lines
+    between that heading and the next ## heading (or EOF).  A body is
+    considered non-empty if it contains at least one line that is not solely
+    whitespace (including ### subheadings, which count as real content).
+    """
+    text = spec_path.read_text()
+    lines = text.splitlines()
+    # Build a list of (section_name, start_line_index) for mandatory sections
+    section_starts: list[tuple[str, int]] = []
+    for idx, line in enumerate(lines):
+        for name in _REQUIREMENTS_MANDATORY_SECTIONS:
+            if line.strip() == f"## {name}":
+                section_starts.append((name, idx))
+
+    for section_name, start_idx in section_starts:
+        # Collect body lines: after the heading until the next ## heading or EOF
+        body: list[str] = []
+        for line in lines[start_idx + 1 :]:
+            if line.startswith("## "):
+                break
+            body.append(line)
+        # Non-empty means at least one line that isn't blank/whitespace
+        has_content = any(ln.strip() for ln in body)
+        if not has_content:
+            result.passed = False
+            result.errors.append(
+                f"requirements-spec.md section ## {section_name} is empty or "
+                f"whitespace-only (needs non-empty content)"
+            )
+
+
 def requirements_gate(feature_dir: Path, feature_id: str) -> GateResult:
     """Check requirements-spec.md exists, has feature-id, declares ≥ 1 REQ-ID."""
     # implements: DES-programme-validators-001
@@ -86,6 +124,9 @@ def requirements_gate(feature_dir: Path, feature_id: str) -> GateResult:
             "requirements-spec.md declares no REQ-IDs "
             "(need at least one ### REQ-<feature>-NNN heading)"
         )
+
+    # D2: each mandatory section must have at least one non-whitespace line in its body
+    _check_mandatory_sections_non_empty(spec, result)
 
     return result
 

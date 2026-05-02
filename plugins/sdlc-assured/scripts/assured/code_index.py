@@ -20,8 +20,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Mapping, Optional
 
+if TYPE_CHECKING:
+    from .requirement_metadata import RequirementMetadata
 
 from .ids import IdRecord
 
@@ -46,41 +48,25 @@ def parse_code_annotations(
     files: List[Path], project_root: Path
 ) -> List[CodeIndexEntry]:
     # implements: DES-assured-code-index-001
-    """Walk *files* and extract every ``# implements:`` annotation.
+    """Walk files via EvidenceIndexRegistry; convert PYTHON_COMMENT entries to CodeIndexEntry.
 
-    Parameters
-    ----------
-    files:
-        Explicit list of :class:`~pathlib.Path` objects to inspect.
-    project_root:
-        Used to relativise file paths in the returned entries.
-
-    Returns
-    -------
-    List[CodeIndexEntry]
-        One entry per annotation line found, in file-then-line order.
+    v0.1.0 compatibility shim: returns CodeIndexEntry for backward compatibility with
+    existing render_code_index calls. New code paths should use EvidenceIndexRegistry directly.
     """
+    from .evidence_index import EvidenceIndexRegistry, EvidenceKind
+
+    registry = EvidenceIndexRegistry.with_default_adapters()
     entries: List[CodeIndexEntry] = []
-    for f in files:
-        if not f.is_file():
+    for ev in registry.scan(files, project_root):
+        if ev.kind != EvidenceKind.PYTHON_COMMENT:
             continue
-        text = f.read_text(encoding="utf-8")
-        if f.parent == project_root or project_root in f.parents:
-            rel_path = str(f.relative_to(project_root))
-        else:
-            rel_path = str(f.name)
-        for line_no, line in enumerate(text.splitlines(), start=1):
-            m = _IMPLEMENTS_RE.match(line)
-            if not m:
-                continue
-            cited = _ID_TOKEN_RE.findall(m["ids"])
-            entries.append(
-                CodeIndexEntry(
-                    file_path=rel_path,
-                    line=line_no,
-                    cited_ids=cited,
-                )
+        entries.append(
+            CodeIndexEntry(
+                file_path=ev.source,
+                line=ev.line or 0,
+                cited_ids=list(ev.cited_ids),
             )
+        )
     return entries
 
 
@@ -150,6 +136,7 @@ def render_spec_findings(
     records: List[IdRecord],
     library_handle: str,
     timestamp: Optional[str] = None,
+    metadata: Optional[Mapping[str, "RequirementMetadata"]] = None,
 ) -> str:
     # implements: DES-assured-code-index-002
     """Render REQ/DES/TEST records as shelf-index entries (spec-as-KB-finding).
@@ -164,6 +151,12 @@ def render_spec_findings(
         Optional ISO 8601 string for the ``last_rebuilt`` header field.
         When ``None`` (the default) the ``last_rebuilt`` line is omitted so
         that repeated calls on unchanged inputs produce byte-identical output.
+    metadata:
+        Optional mapping from requirement ID to :class:`RequirementMetadata`.
+        When provided and an entry has a non-empty ``related`` list, a
+        ``**Related:**`` line is appended to that entry's rendered block.
+        Entries without metadata or with an empty ``related`` list emit no
+        ``Related:`` line.
     """
     lines = [
         "<!-- format_version: 1 -->",
@@ -186,6 +179,9 @@ def render_spec_findings(
         lines.append("**Facts:**")
         lines.append(f"- Declared in {r.source}")
         lines.append(f"**Links:** {links}")
+        md = metadata.get(r.id) if metadata else None
+        if md is not None and md.related:
+            lines.append(f"**Related:** {', '.join(md.related)}")
         lines.append("")
     return "\n".join(lines)
 

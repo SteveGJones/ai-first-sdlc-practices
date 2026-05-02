@@ -2,15 +2,29 @@
 
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import yaml
 
 
 class DecompositionParseError(ValueError):
     """Raised when programs.yaml cannot be parsed."""
+
+
+@dataclass(frozen=True)
+class PathSection:
+    """A named-anchor scope within a file.
+
+    Restricts a module path entry to the section of a file delimited by
+    the heading text *anchor* (e.g. ``### MODE: SYNTHESISE-ACROSS-SPEC-TYPES``).
+    Both fields are required; anchor must be the exact markdown heading text.
+    """
+
+    file: str
+    anchor: str
 
 
 @dataclass(frozen=True)
@@ -21,6 +35,7 @@ class Module:
     granularity: str
     structure: str
     owner: Optional[str] = None
+    paths_sections: List[PathSection] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -72,6 +87,11 @@ def parse_programs_yaml(path: Path) -> Decomposition:
         for sp in p.get("sub_programs", []):
             modules: List[Module] = []
             for m in sp.get("modules", []):
+                raw_sections = m.get("paths_sections", []) or []
+                paths_sections: List[PathSection] = [
+                    PathSection(file=ps["file"], anchor=ps["anchor"])
+                    for ps in raw_sections
+                ]
                 modules.append(
                     Module(
                         id=m["id"],
@@ -80,6 +100,7 @@ def parse_programs_yaml(path: Path) -> Decomposition:
                         granularity=m.get("granularity", "requirement"),
                         structure=m.get("structure", "flat"),
                         owner=m.get("owner"),
+                        paths_sections=paths_sections,
                     )
                 )
             sub_programs.append(
@@ -350,26 +371,176 @@ def granularity_match(
     annotations: List[CodeAnnotation],
     decomp: Decomposition,
     spec_module_lookup: dict[str, str],
+    satisfies_graph: Optional[dict[str, list[str]]] = None,
 ) -> DecompositionValidatorResult:
     # implements: DES-assured-decomposition-validators-005
-    """For modules with granularity=requirement, every REQ must have at least one annotation."""
-    cited: set[str] = set()
+    """For modules with granularity=requirement, every REQ must have at least one
+    annotation — directly OR via a satisfies-linked DES (F-008 indirect coverage).
+
+    satisfies_graph maps DES-id → list of REQ-ids it satisfies. If None, falls back to
+    direct-only coverage (v0.1.0 behaviour, deprecated).
+    """
+    annotated_ids: set[str] = set()
     for ann in annotations:
-        cited.update(ann.cited_ids)
+        annotated_ids.update(ann.cited_ids)
+
     granularity_by_module: dict[str, str] = {}
     for p in decomp.programs:
         for sp in p.sub_programs:
             for m in sp.modules:
                 granularity_by_module[f"{p.id}.{sp.id}.{m.id}"] = m.granularity
+
+    # Build the inverse: REQ-id → list of DES-ids that satisfy it
+    inverse_satisfies: dict[str, list[str]] = {}
+    if satisfies_graph:
+        for des_id, req_ids in satisfies_graph.items():
+            for req_id in req_ids:
+                inverse_satisfies.setdefault(req_id, []).append(des_id)
+
     warnings: List[str] = []
     for req in declared_reqs:
         module = spec_module_lookup.get(req)
-        if module is None:
+        if module is None or granularity_by_module.get(module) != "requirement":
             continue
-        if granularity_by_module.get(module) != "requirement":
+        # Direct coverage check
+        if req in annotated_ids:
             continue
-        if req not in cited:
-            warnings.append(
-                f"under-specified: {req} (module {module}) has no `# implements:` annotation"
-            )
+        # Indirect coverage: any satisfies-linked DES annotated?
+        satisfying_dess = inverse_satisfies.get(req, [])
+        if any(des_id in annotated_ids for des_id in satisfying_dess):
+            continue
+        warnings.append(
+            f"under-specified: {req} (module {module}) has no `# implements:` "
+            "annotation directly OR via a satisfies-linked DES"
+        )
     return DecompositionValidatorResult(passed=True, warnings=warnings)
+
+
+def _is_single_line_getter_setter(node: ast.FunctionDef) -> bool:
+    """Return True if the function body is a single return-self-attr or assign-self-attr."""
+    if len(node.body) != 1:
+        return False
+    stmt = node.body[0]
+    # Single return self.<x>
+    if isinstance(stmt, ast.Return) and isinstance(stmt.value, ast.Attribute):
+        if isinstance(stmt.value.value, ast.Name) and stmt.value.value.id == "self":
+            return True
+    # Single self.<x> = <y>  (plain Assign, not AnnAssign)
+    if isinstance(stmt, ast.Assign) and len(stmt.targets) == 1:
+        target = stmt.targets[0]
+        if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name):
+            if target.value.id == "self":
+                return True
+    return False
+
+
+def _is_property_single_line(node: ast.FunctionDef) -> bool:
+    """Return True if the function has a @property decorator and a single-statement body."""
+    has_property = any(
+        isinstance(d, ast.Name) and d.id == "property"
+        for d in node.decorator_list
+    )
+    if not has_property:
+        return False
+    return len(node.body) == 1
+
+
+def _is_stub_body(node: ast.FunctionDef) -> bool:
+    """Return True if the function body is exactly one `...` (Ellipsis) or `pass` statement.
+
+    Both are non-substantive: they carry no semantics and are the conventional
+    body form for Protocol method stubs and empty placeholder implementations.
+    """
+    if len(node.body) != 1:
+        return False
+    stmt = node.body[0]
+    # `pass` statement
+    if isinstance(stmt, ast.Pass):
+        return True
+    # `...` expressed as a bare expression statement
+    if isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant):
+        return stmt.value.value is ...
+    return False
+
+
+def _is_trivial(node: ast.FunctionDef) -> bool:
+    """Return True if the function should be excluded from annotation checks."""
+    name = node.name
+    # Dunder methods
+    if name.startswith("__") and name.endswith("__"):
+        return True
+    # Private functions
+    if name.startswith("_"):
+        return True
+    # Single-line getter/setter
+    if _is_single_line_getter_setter(node):
+        return True
+    # @property with single-line body
+    if _is_property_single_line(node):
+        return True
+    # Protocol stub or pass-only body (no runtime semantics)
+    if _is_stub_body(node):
+        return True
+    return False
+
+
+def _collect_functions(
+    tree: ast.Module,
+) -> List[Union[ast.FunctionDef, ast.AsyncFunctionDef]]:
+    """Recursively collect all FunctionDef and AsyncFunctionDef nodes in the AST."""
+    funcs: List[Union[ast.FunctionDef, ast.AsyncFunctionDef]] = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            funcs.append(node)
+    return funcs
+
+
+def forward_annotation_completeness(
+    source_paths: List[Path],
+    decomp: Decomposition,
+) -> DecompositionValidatorResult:
+    # implements: DES-assured-decomposition-validators-006
+    """E2: every non-trivial public function in declared paths has a `# implements:` annotation.
+
+    Returns errors (not warnings) for functions missing annotations.
+    Files outside declared module paths are silently skipped.
+    Test files (test_*.py, conftest.py) are silently skipped.
+    """
+    declared_paths: List[str] = []
+    for p in decomp.programs:
+        for sp in p.sub_programs:
+            for m in sp.modules:
+                declared_paths.extend(m.paths)
+
+    errors: List[str] = []
+    for src in source_paths:
+        # Skip files outside declared module paths
+        if not _file_under_paths(str(src), declared_paths):
+            continue
+        # Skip test files and conftest — check filename only (not directory components)
+        if src.name.startswith("test_") or src.name == "conftest.py":
+            continue
+
+        try:
+            source_text = src.read_text(encoding="utf-8")
+            tree = ast.parse(source_text, filename=str(src))
+        except (SyntaxError, OSError):
+            continue
+
+        source_lines = source_text.splitlines()
+
+        for node in _collect_functions(tree):
+            if _is_trivial(node):
+                continue
+
+            # Check for `# implements:` anywhere in the function's line range
+            start_line = node.lineno - 1  # 0-indexed
+            end_line = node.end_lineno  # exclusive upper bound (0-indexed)
+            func_source_lines = source_lines[start_line:end_line]
+            has_annotation = any(
+                "# implements:" in line for line in func_source_lines
+            )
+            if not has_annotation:
+                errors.append(f"{src}:{node.lineno} {node.name}")
+
+    return DecompositionValidatorResult(passed=not errors, errors=errors)

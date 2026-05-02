@@ -23,13 +23,13 @@ The Assured SDLC option must provide human-readable renderings of the traceabili
 
 ### REQ-assured-render-001
 
-`render_module_scope` SHALL produce markdown containing all REQ, DES, and TEST artefacts assigned to the given module, plus their citing code annotations, plus an "Orphan code" section listing code annotations whose cited IDs do not exist in the registry.
+A team member or auditor MUST be able to produce a human-readable module-scope document listing all REQ, DES, and TEST artefacts assigned to a given module together with their citing code annotations, plus an "Orphan code" section for annotations whose cited IDs do not exist in the registry — so that the full traceability state of a module is visible at a glance.
 
 **Module:** P1.SP1.M2
 
 ### REQ-assured-render-002
 
-`render_module_dependency_graph` SHALL emit a markdown edge-list (Q1 v0.1.0 format) showing every observed cross-module edge with an Allowed?/yes/NO column derived from the visibility block in the project decomposition.
+A team member or auditor MUST be able to produce a markdown edge-list showing every observed cross-module dependency with an Allowed?/yes/NO column derived from the project's declared visibility block — so that undeclared module boundaries can be identified at a glance.
 
 **Module:** P1.SP1.M2
 

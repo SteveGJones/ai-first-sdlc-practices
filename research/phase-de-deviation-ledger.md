@@ -216,6 +216,25 @@
 
 ---
 
+## F4 — Re-audit verdict (v0.2.0 Phase F closure)
+
+**Audit date:** 2026-05-01
+**Verdict:** CONFIRMED CLEAN
+
+### Commit `4aa73d3` — req_has_module_assignment validator
+
+Both dataclasses (`SpecArtefact`, `DecompositionValidatorResult`), both private helpers (`_all_module_ids`, `_module_from_positional_id`), and the public `req_has_module_assignment` function match the plan's Step 3 prescription (plan lines 1655–1714) line-for-line with one within-tolerance difference: the plan used `set[str]` (Python 3.9+ generic syntax) while the commit used bare `set` — already logged as deviation E5 and accepted as cosmetic. All three tests match the plan's Step 1 prescription (plan lines 1604–1638) exactly; the commit also hoisted the imports to satisfy flake8 E402, consistent with the E3 pattern. No substantive drift found.
+
+### Commit `dbff56c` — integration tests + fixture
+
+All five fixture files (`programs.yaml`, `requirements-spec.md`, `design-spec.md`, `test-spec.md`, `src/auth/oauth/login.py`) match the plan's Steps 1–3 (plan lines 4446–4559) byte-for-byte. The integration test file (`test_assured_skill_integration.py`) contains the same six test functions with identical bodies (plan lines 4608–4662); the commit correctly dropped eight unused imports that the plan prescribed but that flake8 F401 would have rejected (`pytest`, `render_code_index`, `render_spec_findings`, `Decomposition`, `Module`, `Program`, `SubProgram`, `VisibilityRule`, `render_id_registry`, `req_has_module_assignment`, `SpecArtefact`) — this is the same pattern as deviation E4 and within formatting tolerance. No substantive drift found.
+
+### Action
+
+None. Both commits deliver exactly what the plan prescribed, and the only differences are lint-driven import reductions consistent with the project's established deviation pattern (E3, E4). Validators confirmed: `id_uniqueness`, `cited_ids_resolve`, `forward_link_integrity` all True after re-audit.
+
+---
+
 ## Summary statistics
 
 | Category | Count |

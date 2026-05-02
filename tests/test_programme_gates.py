@@ -189,3 +189,33 @@ def test_test_gate_fails_when_review_record_missing(tmp_path: Path) -> None:
 
     assert result.passed is False
     assert any("review record" in e.lower() for e in result.errors)
+
+
+def test_requirements_gate_fails_on_whitespace_only_mandatory_section(tmp_path: Path) -> None:
+    """requirements_gate fails when a mandatory section body is whitespace-only (D2)."""
+    feature_dir = tmp_path / "auth"
+    feature_dir.mkdir()
+    (feature_dir / "requirements-spec.md").write_text(
+        "**Feature-id:** auth\n\n"
+        "## Motivation\n\n"
+        "   \n\n"  # whitespace-only
+        "## Requirements\n\n"
+        "### REQ-auth-001\nReal req.\n"
+    )
+    result = requirements_gate(feature_dir, feature_id="auth")
+    assert result.passed is False
+    assert any("non-empty" in e.lower() or "whitespace" in e.lower() for e in result.errors)
+
+
+def test_requirements_gate_passes_when_mandatory_sections_populated(tmp_path: Path) -> None:
+    """requirements_gate passes when mandatory sections have real content (anti-regression, D2)."""
+    feature_dir = tmp_path / "auth"
+    feature_dir.mkdir()
+    (feature_dir / "requirements-spec.md").write_text(
+        "**Feature-id:** auth\n\n"
+        "## Motivation\n\nWe need authentication.\n\n"
+        "## Requirements\n\n"
+        "### REQ-auth-001\nReal req.\n"
+    )
+    result = requirements_gate(feature_dir, feature_id="auth")
+    assert result.passed is True

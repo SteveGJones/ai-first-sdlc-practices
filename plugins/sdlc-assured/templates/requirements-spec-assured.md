@@ -34,6 +34,7 @@ granularity: requirement
 <Single declarative sentence describing the next requirement.>
 
 **Module:** P1.SP1.M1
+**Related:** REQ-<feature-id>-001
 
 ## Out of scope
 

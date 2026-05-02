@@ -33,6 +33,8 @@ spec, populate it with stub entries derived from `programs.yaml` module decompos
 and record the commissioning event in an audit log.
 
 **Module:** P1.SP1.M1
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `commission-programme` skill workflow (a Claude Code skill YAML); the scaffolding behaviour is defined in the skill prompt, not a single annotatable Python function.
 
 ### REQ-programme-skills-002
 
@@ -41,6 +43,8 @@ design-spec, or test-spec) in the feature directory by copying the correct templ
 the plugin, and SHALL refuse to proceed if the target spec file already exists.
 
 **Module:** P1.SP1.M1
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `phase-init` skill workflow; the template-copy and conflict-check behaviour is defined in the skill YAML, not a single annotatable Python function.
 
 ### REQ-programme-skills-003
 
@@ -49,6 +53,8 @@ design, test, or code), surface pass/fail with per-failure rationale, and block
 progression when the gate fails.
 
 **Module:** P1.SP1.M1
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `phase-gate` skill workflow; the gate-invocation and pass/fail reporting contract is defined in the skill YAML, not a single annotatable Python function.
 
 ### REQ-programme-skills-004
 
@@ -56,6 +62,8 @@ The `phase-review` skill SHALL record a dated review entry in the feature direct
 update the phase status, and make no structural mutations beyond the review record.
 
 **Module:** P1.SP1.M1
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `phase-review` skill workflow; the review-record writing and status-update contract is defined in the skill YAML, not a single annotatable Python function.
 
 ### REQ-programme-skills-005
 
@@ -64,6 +72,8 @@ in both CSV and Markdown formats from the artefacts in the feature directory, wi
 rows silently omitted.
 
 **Module:** P1.SP1.M1
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `traceability-export` skill workflow; the matrix-production and no-omission contract is defined in the skill YAML, not a single annotatable Python function.
 
 ## Out of scope
 

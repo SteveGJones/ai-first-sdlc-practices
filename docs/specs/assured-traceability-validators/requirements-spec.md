@@ -23,27 +23,43 @@ The Assured SDLC option requires a suite of validators that can detect structura
 
 ### REQ-assured-traceability-validators-001
 
-The reference-integrity validators (`id_uniqueness`, `cited_ids_resolve`, `orphan_ids`) SHALL collectively detect: duplicate IDs across all records and report each duplicate as a blocking error; citations in any record's `satisfies` list that do not resolve to a declared ID and report each as a blocking error; and REQ or DES IDs that are declared but never cited by any other record and report each as a non-blocking warning (orphan detection SHALL NOT prevent a passing result).
+The reference-integrity validators (`id_uniqueness`, `cited_ids_resolve`) SHALL collectively detect: duplicate IDs across all records and report each duplicate as a blocking error; and citations in any record's `satisfies` list that do not resolve to a declared ID and report each as a blocking error.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** LINKED
+**Justification:** `id_uniqueness` and `cited_ids_resolve` in `plugins/sdlc-assured/scripts/assured/traceability_validators.py` (lines 23, 37) both carry `# implements: DES-assured-traceability-validators-001`. Phase G acceptance measurement (`research/v020-acceptance-metrics.md`) confirms DES-mediated coverage post-Task-36A path-resolution fix.
 
 ### REQ-assured-traceability-validators-002
 
 The directional-coverage validators (`forward_link_integrity`, `backward_coverage`) SHALL collectively enforce that every DES record cites at least one REQ, every TEST record cites at least one DES, every REQ record is covered by at least one DES, and every DES record is covered by at least one TEST; all violations SHALL be reported as blocking errors.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** LINKED
+**Justification:** `forward_link_integrity` and `backward_coverage` in `plugins/sdlc-assured/scripts/assured/traceability_validators.py` (lines 68, 88) both carry `# implements: DES-assured-traceability-validators-002`. Phase G acceptance measurement confirms DES-mediated coverage post-Task-36A path-resolution fix.
 
 ### REQ-assured-traceability-validators-003
 
-`index_regenerability` SHALL report a blocking error when a committed ID-registry file on disk differs byte-for-byte from the output produced by the caller-supplied regeneration function; when the file is absent it SHALL report a blocking error; when the content matches it SHALL pass with no errors or warnings (idempotency check).
+Auditors MUST be able to verify the published ID registry has not been hand-edited by re-running the registry-build process and observing identical output, without any environment-specific drift (timestamps, machine identifiers, locale).
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** LINKED
+**Justification:** `index_regenerability` in `plugins/sdlc-assured/scripts/assured/traceability_validators.py:116` carries `# implements: DES-assured-traceability-validators-003`. Phase G acceptance measurement confirms DES-mediated coverage post-Task-36A path-resolution fix.
 
 ### REQ-assured-traceability-validators-004
 
-`annotation_format_integrity` SHALL scan source files for `# implements:` annotation lines and report a blocking error for each token that fails the ID format parse AND a separate blocking error for each well-formed token that cites an ID not present in the caller-supplied declared set.
+The Assured bundle MUST detect malformed or dangling `# implements:` annotations before a phase gate, reporting a blocking error for each annotation token that fails the ID format rule and a separate blocking error for each well-formed token that cites an ID absent from the declared set — so that broken annotations cannot silently corrupt the traceability graph.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** LINKED
+**Justification:** `annotation_format_integrity` in `plugins/sdlc-assured/scripts/assured/traceability_validators.py:174` carries `# implements: DES-assured-traceability-validators-004`. Phase G acceptance measurement confirms DES-mediated coverage post-Task-36A path-resolution fix.
+
+### REQ-assured-traceability-validators-005
+
+`orphan_ids` SHALL detect declared IDs (any kind) that are never cited by any record's `satisfies` list and report each as a non-blocking warning. The validator SHALL always return `passed=True` regardless of warnings — orphan detection is advisory and SHALL NOT prevent a passing result.
+
+**Module:** P1.SP1.M2
+**Evidence-Status:** LINKED
+**Justification:** `orphan_ids` in `plugins/sdlc-assured/scripts/assured/traceability_validators.py:49-50` carries both `# implements: DES-assured-traceability-validators-001, DES-assured-traceability-validators-005` (inline) and a body-form `# implements: DES-assured-traceability-validators-005`. Annotation added in Task 36A; Phase G acceptance measurement confirms DES-mediated coverage.
 
 ## Out of scope
 
@@ -56,7 +72,7 @@ The directional-coverage validators (`forward_link_integrity`, `backward_coverag
 
 - `id_uniqueness` given two records with the same `id` returns `ValidatorResult(passed=False)` with an error mentioning both source paths.
 - `cited_ids_resolve` given a record whose `satisfies` list contains an undeclared ID returns `passed=False` with a descriptive error; given a record whose `satisfies` list is empty or fully declared returns `passed=True`.
-- `orphan_ids` given a REQ that is never cited returns `passed=True` with a non-empty `warnings` list containing the orphan ID.
+- `orphan_ids` given a declared ID of any kind that is never cited returns `passed=True` with a non-empty `warnings` list containing the orphan ID (REQ-005 coverage).
 - `forward_link_integrity` given a DES with an empty `satisfies` list returns `passed=False`; given a fully-linked graph returns `passed=True`.
 - `backward_coverage` given a REQ with no DES citing it returns `passed=False`; given a fully-covered graph returns `passed=True`.
 - `index_regenerability` given matching on-disk and regenerated content returns `passed=True`; given differing content returns `passed=False`.

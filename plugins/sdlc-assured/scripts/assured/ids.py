@@ -34,6 +34,7 @@ _POSITIONAL_RE = re.compile(
 
 
 def parse_id(text: str) -> ParsedId:  # implements: DES-assured-id-system-001
+    # implements: DES-assured-id-system-001
     flat = _FLAT_RE.match(text)
     if flat:
         return ParsedId(
@@ -87,6 +88,7 @@ _REF_ID_RE = re.compile(
 
 
 def build_id_registry(project_root: Path) -> List[IdRecord]:  # implements: DES-assured-id-system-002
+    # implements: DES-assured-id-system-002
     """Walk docs/specs/ and collect every declared ID with its forward links."""
     specs_dir = project_root / "docs" / "specs"
     records: List[IdRecord] = []
@@ -146,17 +148,57 @@ def render_id_registry(records: List[IdRecord]) -> str:  # implements: DES-assur
     return "\n".join(lines) + "\n"
 
 
+@dataclass(frozen=True)
+class RemapResult:
+    """Result of a remap_ids call: updated records plus any overlap warnings."""
+
+    records: List[IdRecord]
+    warnings: List[str]
+
+
 def remap_ids(  # implements: DES-assured-id-system-002
-    records: List[IdRecord], path_remapping: dict[str, str]
-) -> List[IdRecord]:
-    """Remap source paths using the given prefix remapping. IDs themselves are immutable."""
+    records: List[IdRecord],
+    path_remapping: dict[str, str],
+    *,
+    on_overlap: str = "warn",
+) -> RemapResult:
+    """Remap source paths using longest-matching prefix. IDs themselves are immutable.
+
+    Args:
+        records: ID records to remap.
+        path_remapping: Mapping from old path prefixes to new path prefixes.
+        on_overlap: How to handle records matched by multiple prefixes.
+            "warn" (default): collect warning, longest-match wins.
+            "error": raise ValueError on first overlap detected.
+
+    Returns:
+        RemapResult with updated records and any overlap warnings.
+    """
+    if on_overlap not in ("warn", "error"):
+        raise ValueError(f"on_overlap must be 'warn' or 'error', got {on_overlap!r}")
+
     out: List[IdRecord] = []
+    warnings: List[str] = []
+
     for r in records:
-        new_source = r.source
-        for old_prefix, new_prefix in path_remapping.items():
-            if r.source.startswith(old_prefix):
-                new_source = new_prefix + r.source[len(old_prefix) :]
-                break
+        matches = [prefix for prefix in path_remapping if r.source.startswith(prefix)]
+
+        if len(matches) >= 2:
+            longest = max(matches, key=lambda p: (len(p), p))
+            msg = (
+                f"multiple prefix match for {r.source!r}: "
+                f"{sorted(matches, key=len)} — using longest {longest!r}"
+            )
+            if on_overlap == "error":
+                raise ValueError(msg)
+            warnings.append(msg)
+            new_source = path_remapping[longest] + r.source[len(longest):]
+        elif len(matches) == 1:
+            prefix = matches[0]
+            new_source = path_remapping[prefix] + r.source[len(prefix):]
+        else:
+            new_source = r.source
+
         out.append(
             IdRecord(
                 id=r.id,
@@ -165,4 +207,5 @@ def remap_ids(  # implements: DES-assured-id-system-002
                 satisfies=list(r.satisfies),
             )
         )
-    return out
+
+    return RemapResult(records=out, warnings=warnings)

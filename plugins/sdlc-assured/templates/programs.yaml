@@ -20,6 +20,9 @@ programs:
             granularity: requirement   # one of: requirement | function | module
             structure: flat            # one of: flat | hexagonal
             owner: <team-or-person>    # optional
+            paths_sections:            # optional: named-anchor scoping (F-002)
+              - file: docs/specs/<module-1-dir>/design-spec.md
+                anchor: "### MODE: SYNTHESISE-ACROSS-SPEC-TYPES"
           - id: M2
             name: <Module 2 Name>
             paths: [src/<module-2-dir>/]

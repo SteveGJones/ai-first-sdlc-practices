@@ -38,6 +38,8 @@ The traceability matrix builder SHALL produce one row per REQ-ID covering its sa
 The Constitution SHALL define Articles 12-14 prescribing the mandatory four-phase gate sequence, the spec-file naming convention, and the review-record format required by the Programme bundle.
 
 **Module:** P1.SP1.M1
+**Evidence-Status:** CONFIGURATION_ARTIFACT
+**Justification:** This requirement is satisfied by the Programme Constitution document (`plugins/sdlc-programme/CONSTITUTION.md`); the presence of Articles 12-14 is verified by reading the document, not by executing a function.
 
 ## Out of scope
 

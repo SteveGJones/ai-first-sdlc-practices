@@ -77,8 +77,8 @@ def test_orphan_ids_warns_when_req_never_cited() -> None:
     assert any("REQ-auth-002" in w for w in result.warnings)
 
 
-def test_orphan_ids_does_not_warn_for_test_or_code() -> None:
-    """TEST and CODE are leaves — they cite, but nothing cites them."""
+def test_orphan_ids_warns_for_orphan_test_leaf() -> None:
+    """E1: TEST with no citing CODE record is now an orphan warning (widened from v0.1.0)."""
     records = [
         IdRecord(id="REQ-auth-001", kind="REQ", source="a.md", satisfies=[]),
         IdRecord(
@@ -93,7 +93,18 @@ def test_orphan_ids_does_not_warn_for_test_or_code() -> None:
     ]
     result = orphan_ids(records)
     assert result.passed is True
-    assert result.warnings == []
+    assert any("TEST-auth-001" in w for w in result.warnings)
+
+
+def test_orphan_ids_widened_warns_on_orphan_test() -> None:
+    """E1: orphan_ids now also reports orphan TEST/CODE IDs, not just REQ/DES."""
+    records = [
+        IdRecord(id="TEST-foo-001", kind="TEST", source="t.md", satisfies=["DES-foo-001"]),
+    ]
+    result = orphan_ids(records)
+    # No CODE record cites TEST-foo-001 → orphan warning
+    assert result.passed is True
+    assert any("TEST-foo-001" in w for w in result.warnings)
 
 
 def test_forward_link_integrity_passes_when_chain_intact() -> None:

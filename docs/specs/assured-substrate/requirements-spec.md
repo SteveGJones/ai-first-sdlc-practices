@@ -26,18 +26,24 @@ The Assured SDLC option (Method 2) adds three substrate components on top of the
 The `commission-assured` skill SHALL scaffold `programs.yaml`, `library/`, `docs/specs/`, and `docs/change-impacts/` directories on first run, creating stub files where needed, and SHALL exit with a structured error if any target path already exists with conflicting content.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** MANUAL_EVIDENCE_REQUIRED
+**Justification:** This requirement is satisfied by the `commission-assured` skill workflow; the scaffolding behaviour is defined in the skill YAML, not a single annotatable Python function.
 
 ### REQ-assured-substrate-002
 
 The Assured Constitution articles 15-17 SHALL overlay articles 1-14 cleanly with no contradictions: article 15 (identifier and traceability integrity), article 16 (decomposition discipline), and article 17 (KB-for-code annotation completeness) SHALL each extend, not duplicate, the rules established by articles 1-14, and no rule in articles 15-17 SHALL directly contradict any rule in articles 1-14.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** CONFIGURATION_ARTIFACT
+**Justification:** This requirement is satisfied by the Constitution document itself (`plugins/sdlc-assured/CONSTITUTION.md`); the overlay-and-non-contradiction contract is verified by reading the document, not by executing a function.
 
 ### REQ-assured-substrate-003
 
-The `change_impact_gate` validator SHALL be opt-in (default disabled) and SHALL be configurable via `.sdlc/team-config.json` using the key `assured.change_impact_gate` with permitted values `enabled` and `disabled`; the validator SHALL read the configuration on every invocation and apply the gate only when the value is `enabled`.
+Teams operating in regulated contexts MUST be able to opt in to a change-impact gate that blocks commits lacking a CHG record, configured via `.sdlc/team-config.json` using the key `assured.change_impact_gate` (`enabled` | `disabled`, default `disabled`) — so that the gate is never imposed silently on projects that have not explicitly requested it.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** LINKED
+**Justification:** `change_impact_gate` in `plugins/sdlc-assured/scripts/assured/traceability_validators.py:139` carries `# implements: DES-assured-substrate-003`. Phase G acceptance measurement confirms DES-mediated coverage post-Task-36A path-resolution fix.
 
 ## Out of scope
 

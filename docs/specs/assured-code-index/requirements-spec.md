@@ -23,13 +23,15 @@ The Assured SDLC option requires that every non-trivial function implementing a 
 
 ### REQ-assured-code-index-001
 
-`parse_code_annotations` SHALL extract every `# implements:` annotation from the supplied list of source files, returning each as a `CodeIndexEntry` with the relative file path, the line number, and the list of cited IDs parsed from the annotation; files that do not exist SHALL be silently skipped; ID tokens SHALL conform to the pattern recognised by `_ID_TOKEN_RE` (flat `KIND-feature-NNN` or positional `P1.SP1.M1.KIND-NNN`).
+The Assured bundle MUST be able to extract every `# implements:` annotation from a supplied list of source files, capturing for each the relative file path, the line number, and the cited IDs in both flat (`KIND-feature-NNN`) and positional (`P1.SP1.M1.KIND-NNN`) forms — so that callers can build a complete code-index without implementing annotation parsing themselves. Non-existent files in the list MUST be silently skipped rather than raising an error.
 
 **Module:** P1.SP1.M2
+**Evidence-Status:** LINKED
+**Justification:** `parse_code_annotations` in `plugins/sdlc-assured/scripts/assured/code_index.py:47-50` carries `# implements: DES-assured-code-index-001`. Annotation added in Task 36A; Phase G acceptance measurement confirms DES-mediated coverage.
 
 ### REQ-assured-code-index-002
 
-`render_code_index` and `render_spec_findings` SHALL each emit a shelf-index-shaped Markdown document — beginning with the standard four-field header comment block (`format_version`, optional `last_rebuilt`, `library_handle`, `library_description`) followed by numbered `## N. <title>` sections with `**Terms:**`, `**Facts:**`, and `**Links:**` fields — such that the document is directly queryable by the existing `research-librarian` agent without modification to the agent or the librarian dispatch layer.
+The Assured bundle MUST produce code-index and spec-findings documents in the shelf-index Markdown format (standard four-field header comment block followed by numbered `## N. <title>` sections with `**Terms:**`, `**Facts:**`, and `**Links:**` fields) so that the `research-librarian` agent can query them without any modification to the agent or the librarian dispatch layer.
 
 **Module:** P1.SP1.M2
 

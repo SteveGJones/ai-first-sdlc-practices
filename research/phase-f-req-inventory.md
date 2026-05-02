@@ -23,8 +23,8 @@ Total: **44 REQs** across **11 feature directories**.
 | Component | REQ-intent |
 |---|---|
 | `requirements_gate` | The requirements gate SHALL pass if and only if the REQ spec parses without error and contains at least one non-stub requirement entry. |
-| `design_gate` | The design gate SHALL pass if and only if the DES spec parses without error, every REQ ID cited in DES is present in the REQ spec, and a review record exists for the requirements phase. |
-| `test_gate` | The test gate SHALL pass if and only if the TEST spec parses without error, every DES ID cited in TEST is present in the DES spec, and a review record exists for the design phase. |
+| `design_gate` | The design gate SHALL pass if and only if the DES spec parses without error, every REQ ID cited in DES is present in the REQ spec, and a review record exists for the same phase (i.e., design). |
+| `test_gate` | The test gate SHALL pass if and only if the TEST spec parses without error, every DES ID cited in TEST is present in the DES spec, and a review record exists for the same phase (i.e., test). |
 | `code_gate` | The code gate SHALL pass if and only if code annotations reference only IDs present in the TEST spec and a review record exists for the test phase. |
 
 ### `programme-substrate` — 3 REQs

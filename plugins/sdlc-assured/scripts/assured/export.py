@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import List
+from typing import List, Mapping, Optional
 
-from .code_index import CodeIndexEntry
+from .evidence_index import EvidenceIndexEntry
+from .evidence_status import EvidenceStatus
 from .ids import IdRecord
+from .requirement_metadata import RequirementMetadata
 
 
 def _index_by_satisfies(records: List[IdRecord]) -> dict[str, list[IdRecord]]:
@@ -18,25 +20,68 @@ def _index_by_satisfies(records: List[IdRecord]) -> dict[str, list[IdRecord]]:
     return out
 
 
-def _code_by_cited(code: List[CodeIndexEntry]) -> dict[str, list[CodeIndexEntry]]:
-    """Code entries keyed by cited ID: cited_id → [entries that cite that ID]."""
-    out: dict[str, list[CodeIndexEntry]] = defaultdict(list)
-    for c in code:
-        for cited in c.cited_ids:
-            out[cited].append(c)
+def _evidence_by_cited(
+    evidence: List[EvidenceIndexEntry],
+) -> dict[str, list[EvidenceIndexEntry]]:
+    """Evidence entries keyed by cited ID: cited_id → [entries that cite that ID]."""
+    out: dict[str, list[EvidenceIndexEntry]] = defaultdict(list)
+    for e in evidence:
+        for cited in e.cited_ids:
+            out[cited].append(e)
     return out
 
 
-def export_do178c_rtm(records: List[IdRecord], code: List[CodeIndexEntry]) -> str:
+def _format_source_cell(
+    evidence_cells: List[EvidenceIndexEntry],
+    req_metadata: Optional[RequirementMetadata],
+) -> str:
+    """Render a source-code cell.
+
+    Uses typed EvidenceStatus when no evidence is present and the REQ
+    frontmatter declares a non-LINKED status (F-009 / P1.2 plan-review fix).
+    When evidence is present, renders all entries regardless of kind (F-001 /
+    P1.1 plan-review fix — markdown/YAML/existence evidence all reach the RTM).
+    """
+    if evidence_cells:
+        return "; ".join(
+            f"{e.source}:{e.line}" if e.line is not None else e.source
+            for e in evidence_cells
+        )
+    if req_metadata is not None and req_metadata.evidence_status is not None:
+        status = req_metadata.evidence_status
+        if status == EvidenceStatus.NOT_APPLICABLE:
+            return f"{status.display()}: {req_metadata.justification or '(no justification)'}"
+        if status == EvidenceStatus.MANUAL_EVIDENCE_REQUIRED:
+            return status.display()
+        if status == EvidenceStatus.CONFIGURATION_ARTIFACT:
+            return (
+                f"{status.display()}: {req_metadata.justification or '(unspecified)'}"
+            )
+        if status == EvidenceStatus.LINKED:
+            return (
+                "LINKED-NO-EVIDENCE"  # frontmatter claim contradicts reality — surface
+            )
+    return EvidenceStatus.MISSING.display()
+
+
+def export_do178c_rtm(
+    records: List[IdRecord],
+    evidence: List[EvidenceIndexEntry],
+    metadata: Mapping[str, RequirementMetadata],
+) -> str:
+    # implements: DES-assured-export-formats-001
     """DO-178C Requirements Traceability Matrix.
 
     Columns: HLR (high-level requirement) | LLR (low-level requirement / design) |
     Source code | Test case.
 
+    v0.2.0 signature: consumes EvidenceIndexEntry directly (P1.1 fix) and uses
+    RequirementMetadata for typed evidence statuses (P1.2 fix).
+
     **DES:** DES-assured-export-formats-001
     """
     cited_by = _index_by_satisfies(records)
-    code_by_cited = _code_by_cited(code)
+    evidence_by_cited = _evidence_by_cited(evidence)
     lines = [
         "# Requirements Traceability Matrix (DO-178C)",
         "",
@@ -48,34 +93,43 @@ def export_do178c_rtm(records: List[IdRecord], code: List[CodeIndexEntry]) -> st
         "| HLR | LLR | Source code | Test case |",
         "|-----|-----|-------------|-----------|",
     ]
+    _missing = EvidenceStatus.MISSING.display()
     reqs = [r for r in records if r.kind == "REQ"]
     for req in reqs:
         deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
         for des in deses:
             tests = [t for t in cited_by.get(des.id, []) if t.kind == "TEST"]
-            code_locs = code_by_cited.get(req.id, []) + code_by_cited.get(des.id, [])
-            code_str = ", ".join(f"{c.file_path}:{c.line}" for c in code_locs) or "—"
-            test_str = ", ".join(t.id for t in tests) or "—"
-            lines.append(f"| {req.id} | {des.id} | {code_str} | {test_str} |")
+            evidence_cells = evidence_by_cited.get(req.id, []) + evidence_by_cited.get(
+                des.id, []
+            )
+            source_cell = _format_source_cell(evidence_cells, metadata.get(req.id))
+            test_str = ", ".join(t.id for t in tests) or _missing
+            lines.append(f"| {req.id} | {des.id} | {source_cell} | {test_str} |")
         if not deses:
-            lines.append(f"| {req.id} | — | — | — |")
+            source_cell = _format_source_cell([], metadata.get(req.id))
+            lines.append(f"| {req.id} | {_missing} | {source_cell} | {_missing} |")
     return "\n".join(lines) + "\n"
 
 
 def export_iec_62304_matrix(
     records: List[IdRecord],
-    code: List[CodeIndexEntry],
+    evidence: List[EvidenceIndexEntry],
+    metadata: Mapping[str, RequirementMetadata],
     software_safety_class: str = "A",
 ) -> str:
+    # implements: DES-assured-export-formats-002
     """IEC 62304 Software Traceability Matrix.
 
     Columns: Software requirement | Software unit (code) | Verification activity (test).
     Software safety class is declared in the heading (A, B, or C).
 
+    v0.2.0 signature: consumes EvidenceIndexEntry directly (P1.1 fix) and uses
+    RequirementMetadata for typed evidence statuses (P1.2 fix).
+
     **DES:** DES-assured-export-formats-002
     """
     cited_by = _index_by_satisfies(records)
-    code_by_cited = _code_by_cited(code)
+    evidence_by_cited = _evidence_by_cited(evidence)
     lines = [
         "# IEC 62304 Software Traceability Matrix",
         "",
@@ -86,30 +140,37 @@ def export_iec_62304_matrix(
     ]
     reqs = [r for r in records if r.kind == "REQ"]
     for req in reqs:
-        units = code_by_cited.get(req.id, [])
+        units: list[EvidenceIndexEntry] = list(evidence_by_cited.get(req.id, []))
         deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
         tests: List[IdRecord] = []
         for des in deses:
-            units.extend(code_by_cited.get(des.id, []))
+            units.extend(evidence_by_cited.get(des.id, []))
             tests.extend([t for t in cited_by.get(des.id, []) if t.kind == "TEST"])
-        unit_str = ", ".join(f"{c.file_path}:{c.line}" for c in units) or "—"
-        test_str = ", ".join(t.id for t in tests) or "—"
-        lines.append(f"| {req.id} | {unit_str} | {test_str} |")
+        unit_cell = _format_source_cell(units, metadata.get(req.id))
+        test_str = ", ".join(t.id for t in tests) or EvidenceStatus.MISSING.display()
+        lines.append(f"| {req.id} | {unit_cell} | {test_str} |")
     return "\n".join(lines) + "\n"
 
 
 def export_iso_26262_asil_matrix(
-    records: List[IdRecord], code: List[CodeIndexEntry], asil_level: str = "B"
+    records: List[IdRecord],
+    evidence: List[EvidenceIndexEntry],
+    metadata: Mapping[str, RequirementMetadata],
+    asil_level: str = "B",
 ) -> str:
+    # implements: DES-assured-export-formats-003
     """ISO 26262 ASIL Traceability Matrix.
 
     Columns: Safety requirement | Architectural element (design) |
     Implementation (code) | Verification (test).
 
+    v0.2.0 signature: consumes EvidenceIndexEntry directly (P1.1 fix) and uses
+    RequirementMetadata for typed evidence statuses (P1.2 fix).
+
     **DES:** DES-assured-export-formats-003
     """
     cited_by = _index_by_satisfies(records)
-    code_by_cited = _code_by_cited(code)
+    evidence_by_cited = _evidence_by_cited(evidence)
     lines = [
         "# ISO 26262 ASIL Traceability Matrix",
         "",
@@ -118,30 +179,41 @@ def export_iso_26262_asil_matrix(
         "| Safety requirement | Architectural element | Implementation | Verification |",
         "|---------------------|----------------------|----------------|---------------|",
     ]
+    _missing = EvidenceStatus.MISSING.display()
     reqs = [r for r in records if r.kind == "REQ"]
     for req in reqs:
         deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
         for des in deses:
             tests = [t for t in cited_by.get(des.id, []) if t.kind == "TEST"]
-            code_locs = code_by_cited.get(req.id, []) + code_by_cited.get(des.id, [])
-            code_str = ", ".join(f"{c.file_path}:{c.line}" for c in code_locs) or "—"
-            test_str = ", ".join(t.id for t in tests) or "—"
-            lines.append(f"| {req.id} | {des.id} | {code_str} | {test_str} |")
+            evidence_cells = evidence_by_cited.get(req.id, []) + evidence_by_cited.get(
+                des.id, []
+            )
+            source_cell = _format_source_cell(evidence_cells, metadata.get(req.id))
+            test_str = ", ".join(t.id for t in tests) or _missing
+            lines.append(f"| {req.id} | {des.id} | {source_cell} | {test_str} |")
         if not deses:
-            lines.append(f"| {req.id} | — | — | — |")
+            source_cell = _format_source_cell([], metadata.get(req.id))
+            lines.append(f"| {req.id} | {_missing} | {source_cell} | {_missing} |")
     return "\n".join(lines) + "\n"
 
 
 def export_fda_dhf_structure(
-    records: List[IdRecord], code: List[CodeIndexEntry]
+    records: List[IdRecord],
+    evidence: List[EvidenceIndexEntry],
+    metadata: Mapping[str, RequirementMetadata],
 ) -> str:
+    # implements: DES-assured-export-formats-004
     """FDA Design History File structure (21 CFR §820.30).
 
-    Sections: Design inputs (REQs) | Design outputs (DESs + code) |
+    Sections: Design inputs (REQs) | Design outputs (DESs + evidence) |
     Design verification (TESTs) | Design validation (placeholder for human attestation).
+
+    v0.2.0 signature: consumes EvidenceIndexEntry directly (P1.1 fix) and uses
+    RequirementMetadata for typed evidence statuses (P1.2 fix).
 
     **DES:** DES-assured-export-formats-004
     """
+    _missing = EvidenceStatus.MISSING.display()
     reqs = [r for r in records if r.kind == "REQ"]
     deses = [r for r in records if r.kind == "DES"]
     tests = [r for r in records if r.kind == "TEST"]
@@ -166,19 +238,19 @@ def export_fda_dhf_structure(
     for d in deses:
         lines.append(f"- **{d.id}** satisfies {', '.join(d.satisfies)}: see {d.source}")
     lines.append("")
-    for c in code:
-        lines.append(
-            f"- Source code: `{c.file_path}:{c.line}` implements {', '.join(c.cited_ids)}"
-        )
-    if not deses and not code:
-        lines.append("_(no design outputs declared)_")
+    for e in evidence:
+        cited = ", ".join(e.cited_ids)
+        loc = f"{e.source}:{e.line}" if e.line is not None else e.source
+        lines.append(f"- Evidence: `{loc}` implements {cited}")
+    if not deses and not evidence:
+        lines.append(f"_({_missing} — no design outputs declared)_")
     lines.extend(
         ["", "## Design verification", "", "(Per §820.30(f) — Design verification)", ""]
     )
     for t in tests:
         lines.append(f"- **{t.id}** verifies {', '.join(t.satisfies)}: see {t.source}")
     if not tests:
-        lines.append("_(no verification tests declared)_")
+        lines.append(f"_({_missing} — no verification tests declared)_")
     lines.extend(
         [
             "",
@@ -199,14 +271,16 @@ def export_fda_dhf_structure(
 
 
 def _build_rows(
-    records: List[IdRecord], code: List[CodeIndexEntry]
+    records: List[IdRecord],
+    evidence: List[EvidenceIndexEntry],
+    metadata: Mapping[str, RequirementMetadata],
 ) -> list[tuple[str, str, str, str]]:
-    """Shared helper — yields one row per (REQ, DES, tests, code) combination.
+    """Shared helper — yields one row per (REQ, DES, tests, evidence) combination.
 
     Emits a stub row for any REQ with no DES.
     """
     cited_by = _index_by_satisfies(records)
-    code_by_cited = _code_by_cited(code)
+    evidence_by_cited = _evidence_by_cited(evidence)
     rows: list[tuple[str, str, str, str]] = []
     for req in [r for r in records if r.kind == "REQ"]:
         deses = [d for d in cited_by.get(req.id, []) if d.kind == "DES"]
@@ -215,14 +289,21 @@ def _build_rows(
             continue
         for des in deses:
             tests = [t for t in cited_by.get(des.id, []) if t.kind == "TEST"]
-            code_locs = code_by_cited.get(req.id, []) + code_by_cited.get(des.id, [])
-            code_str = "; ".join(f"{c.file_path}:{c.line}" for c in code_locs)
+            evidence_cells = evidence_by_cited.get(req.id, []) + evidence_by_cited.get(
+                des.id, []
+            )
+            source_cell = _format_source_cell(evidence_cells, metadata.get(req.id))
             test_str = "; ".join(t.id for t in tests)
-            rows.append((req.id, des.id, test_str, code_str))
+            rows.append((req.id, des.id, test_str, source_cell))
     return rows
 
 
-def export_csv(records: List[IdRecord], code: List[CodeIndexEntry]) -> str:
+def export_csv(
+    records: List[IdRecord],
+    evidence: List[EvidenceIndexEntry],
+    metadata: Mapping[str, RequirementMetadata],
+) -> str:
+    # implements: DES-assured-export-formats-004
     """Generic CSV traceability export.
 
     Header: REQ,DES,TEST,CODE. Commas within cells are replaced with semicolons
@@ -230,14 +311,19 @@ def export_csv(records: List[IdRecord], code: List[CodeIndexEntry]) -> str:
 
     **DES:** DES-assured-export-formats-004 (non-regulatory companion)
     """
-    rows = _build_rows(records, code)
+    rows = _build_rows(records, evidence, metadata)
     out = ["REQ,DES,TEST,CODE"]
     for r in rows:
         out.append(",".join(c.replace(",", ";") for c in r))
     return "\n".join(out) + "\n"
 
 
-def export_markdown(records: List[IdRecord], code: List[CodeIndexEntry]) -> str:
+def export_markdown(
+    records: List[IdRecord],
+    evidence: List[EvidenceIndexEntry],
+    metadata: Mapping[str, RequirementMetadata],
+) -> str:
+    # implements: DES-assured-export-formats-004
     """Generic Markdown traceability matrix export.
 
     Produces a ``# Traceability Matrix`` title followed by a GFM pipe table
@@ -245,7 +331,7 @@ def export_markdown(records: List[IdRecord], code: List[CodeIndexEntry]) -> str:
 
     **DES:** DES-assured-export-formats-004 (non-regulatory companion)
     """
-    rows = _build_rows(records, code)
+    rows = _build_rows(records, evidence, metadata)
     out = [
         "# Traceability Matrix",
         "",

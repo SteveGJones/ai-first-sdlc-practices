@@ -132,3 +132,55 @@ def test_parse_spec_ignores_ids_in_code_blocks(tmp_path: Path) -> None:
 
     assert parsed.declared_ids == {"DES-my-feature-001"}  # not -999
     assert parsed.references == {"REQ-my-feature-001"}  # not -999
+
+
+def test_parse_spec_ignores_ids_in_blockquotes(tmp_path: Path) -> None:
+    """IDs inside blockquote lines (> ...) are NOT counted as declared or referenced."""
+    spec_path = tmp_path / "design-spec.md"
+    spec_path.write_text(
+        "**Feature-id:** my-feature\n\n"
+        "### DES-my-feature-001 — real\n"
+        "**satisfies:** REQ-my-feature-001\n\n"
+        "> ### DES-my-feature-999 — fake (blockquote)\n"
+        "> **satisfies:** REQ-my-feature-999\n"
+    )
+
+    parsed = parse_spec(spec_path, phase="design")
+
+    assert parsed.declared_ids == {"DES-my-feature-001"}  # not -999
+    assert parsed.references == {"REQ-my-feature-001"}  # not -999
+
+
+def test_parse_spec_ignores_ids_in_inline_code(tmp_path: Path) -> None:
+    """IDs inside inline code spans on a satisfies line are NOT extracted as references."""
+    spec_path = tmp_path / "design-spec.md"
+    spec_path.write_text(
+        "**Feature-id:** my-feature\n\n"
+        "### DES-my-feature-001 — real\n"
+        "**satisfies:** REQ-my-feature-001\n\n"
+        "### DES-my-feature-002 — inline-code satisfies\n"
+        "**satisfies:** `REQ-my-feature-999`\n"
+    )
+
+    parsed = parse_spec(spec_path, phase="design")
+
+    assert parsed.declared_ids == {"DES-my-feature-001", "DES-my-feature-002"}
+    # REQ-my-feature-999 is inside backtick span — must NOT be extracted
+    assert parsed.references == {"REQ-my-feature-001"}  # not -999
+
+
+def test_parse_spec_ignores_ids_in_html_comments(tmp_path: Path) -> None:
+    """IDs inside HTML comments (<!-- ... -->) are NOT counted as declared or referenced."""
+    spec_path = tmp_path / "design-spec.md"
+    spec_path.write_text(
+        "**Feature-id:** my-feature\n\n"
+        "### DES-my-feature-001 — real\n"
+        "**satisfies:** REQ-my-feature-001\n\n"
+        "<!-- ### DES-my-feature-999 — fake (html comment) -->\n"
+        "<!-- **satisfies:** REQ-my-feature-999 -->\n"
+    )
+
+    parsed = parse_spec(spec_path, phase="design")
+
+    assert parsed.declared_ids == {"DES-my-feature-001"}  # not -999
+    assert parsed.references == {"REQ-my-feature-001"}  # not -999

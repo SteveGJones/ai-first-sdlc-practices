@@ -39,7 +39,7 @@ Two design units implement the ID system: a parser/formatter/predicate trio hand
 
 `render_id_registry(records: List[IdRecord]) -> str` formats the list as a markdown table with a generation comment header. It is a pure function of its input — the same `records` list always yields the same string.
 
-`remap_ids(records: List[IdRecord], path_remapping: dict[str, str]) -> List[IdRecord]` iterates each record and tests its `source` field against each key in `path_remapping`; the first matching prefix is replaced by the corresponding new prefix. The `id`, `kind`, and `satisfies` fields of every record are copied without modification, preserving ID immutability across module-path changes.
+`remap_ids(records: List[IdRecord], path_remapping: dict[str, str], *, on_overlap: str = "warn") -> RemapResult` iterates each record and finds ALL prefixes in `path_remapping` whose value is a prefix of `record.source`. When ≥2 prefixes match a single record, the longest-matching wins (lexicographically by `(len, prefix)` for deterministic tie-break) and a warning is recorded; when `on_overlap="error"` the function raises `ValueError` instead. The `id`, `kind`, and `satisfies` fields of every record are copied without modification, preserving ID immutability across module-path changes. Returns a `RemapResult` frozen dataclass with two fields: `records: List[IdRecord]` (the remapped output) and `warnings: List[str]` (any overlap notes). The longest-match rule replaces v0.1.0's first-match-wins behaviour to fix E3 from Phase F dogfood, where iteration-order non-determinism caused inconsistent remaps.
 
 **satisfies:** REQ-assured-id-system-002
 

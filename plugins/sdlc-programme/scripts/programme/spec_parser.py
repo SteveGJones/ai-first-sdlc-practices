@@ -4,8 +4,8 @@ Each phase artefact (requirements-spec, design-spec, test-spec) declares IDs via
 H3 headings of the form ``### TYPE-<feature-id>-NNN`` and (for design-spec and
 test-spec) references prior-phase IDs via ``**satisfies:**`` lines.
 
-The parser is line-wise and skips fenced code blocks so that IDs in code
-samples don't pollute the parse.
+The parser is line-wise and skips fenced code blocks, blockquotes, HTML comments,
+and inline code spans so that IDs in non-prose contexts don't pollute the parse.
 
 Used by the four phase-gate validators in ``gates.py``.
 """
@@ -30,6 +30,13 @@ _FEATURE_ID_RE = re.compile(
 _HEADING_ID_RE = re.compile(r"^###\s+(?P<id>(?:REQ|DES|TEST)-[a-z0-9][a-z0-9-]*-\d+)\b")
 _SATISFIES_RE = re.compile(r"^\*\*satisfies:\*\*\s+(?P<refs>.+)$")
 _REF_ID_RE = re.compile(r"\b((?:REQ|DES)-[a-z0-9][a-z0-9-]*-\d+)\b")
+_INLINE_CODE_RE = re.compile(r"`[^`]*`")
+
+
+def _strip_inline_code(text: str) -> str:
+    """Remove inline code spans (`` `...` ``) from *text* so their contents
+    are not matched as ID references."""
+    return _INLINE_CODE_RE.sub("", text)
 
 
 class SpecParseError(Exception):
@@ -76,6 +83,7 @@ def parse_spec(path: Path, phase: str) -> ParsedSpec:
     expected_prefix = _PHASE_TO_PREFIX[phase]
 
     in_code_block = False
+    in_html_comment = False
     for line in text.splitlines():
         stripped = line.strip()
 
@@ -84,6 +92,20 @@ def parse_spec(path: Path, phase: str) -> ParsedSpec:
             in_code_block = not in_code_block
             continue
         if in_code_block:
+            continue
+
+        # Track multi-line HTML comments and skip comment lines
+        if in_html_comment:
+            if "-->" in line:
+                in_html_comment = False
+            continue
+        if stripped.startswith("<!--"):
+            if "-->" not in line:
+                in_html_comment = True
+            continue
+
+        # Skip blockquote lines
+        if stripped.startswith(">"):
             continue
 
         # H3 headings — declared IDs (only those matching this phase's prefix)
@@ -97,7 +119,7 @@ def parse_spec(path: Path, phase: str) -> ParsedSpec:
         # **satisfies:** lines — cross-phase references
         satisfies_match = _SATISFIES_RE.match(line)
         if satisfies_match:
-            refs_text = satisfies_match.group("refs")
+            refs_text = _strip_inline_code(satisfies_match.group("refs"))
             for ref in _REF_ID_RE.findall(refs_text):
                 references.add(ref)
 
