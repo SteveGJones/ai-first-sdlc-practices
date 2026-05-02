@@ -93,7 +93,8 @@ Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
 - CONSTITUTION.md — all rules (11 articles, progressive levels)
 - CLAUDE-CONTEXT-logging.md — logging standards
 - CLAUDE-CONTEXT-architecture.md — architecture docs
-- AGENT-INDEX.md — 56 specialist agents across 14 plugins (sdlc-programme + sdlc-assured added in EPIC #178; both ship 0 agents in v0.1.0 — they are skill+validator bundles)
+- docs/METHODS-GUIDE.md — decision tree for the four SDLC methods (solo / single-team / programme / assured), comparison table, trade-offs, and migration notes (load when commissioning a project or advising on method choice)
+- AGENT-INDEX.md — 56 specialist agents across 14 plugins. `sdlc-programme` v0.1.0 + `sdlc-assured` v0.2.0 are **skill+validator bundles by design** — they provide structured SDLC delivery methodology (phase gates, traceability, decomposition), not new specialist agent roles, so they intentionally ship 0 agents.
 
 ## Plugin Installation (Recommended)
 
