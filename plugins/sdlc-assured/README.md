@@ -160,7 +160,8 @@ From the EPIC #188 architect review (AGREE-WITH-CONCERNS — these are the conce
 
 | Metric | Result | Hard-gate threshold |
 |--------|--------|--------------------|
-| Total tests passing | 594 / 594 | All pass |
+| Total tests passing (assured-bundle corpus, EPIC #188 Phase G) | 594 / 594 | All pass |
+| Total tests passing (whole framework `pytest`, post-PR-#191) | 599 / 599 | All pass |
 | Granularity-match noise | 0% (2 / 2 remaining warnings are true positives) | ≤ 5% |
 | RTM source-code gap (own corpus) | 4.55% — **2 of 44 REQs uncovered** (was 68.18% / 30 of 44 in v0.1.0) | < 30% for audit pass |
 | Gap-typing completeness | 2 / 2 typed (both `CONFIGURATION_ARTIFACT`); during retrofit, all 30 original gap REQs were typed before closure (8 `MISSING`, 15 `MANUAL_EVIDENCE_REQUIRED`, 2 `CONFIGURATION_ARTIFACT`) | every gap cell typed |
