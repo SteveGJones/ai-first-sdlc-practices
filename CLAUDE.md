@@ -1,6 +1,6 @@
-# CLAUDE.md
+# CLAUDE.md — AI Development Instructions
 
-AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full instructions: **CLAUDE-CORE.md**.
+AI-First SDLC Practices framework for AI development (v1.8.0). Rules: **CONSTITUTION.md**. Full instructions: **CLAUDE-CORE.md**.
 
 ## Active Work
 
@@ -51,6 +51,8 @@ we use them ourselves.
 ```
 specify → architect → implement → review
 ```
+
+Git workflow: feature branches only; **never push directly to main**; never commit to main directly. Full rules in CONSTITUTION.md Article 1.
 
 1. Feature proposal (`docs/feature-proposals/XX-name.md`) + retrospective (`retrospectives/XX-name.md`)
 2. Feature branch (`feature/name`) — never commit to main directly
