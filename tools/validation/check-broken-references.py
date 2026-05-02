@@ -65,6 +65,7 @@ USER_PROJECT_FILES = {
     ".agent-recommendations.json", ".claude-project.json",
     "master_list.json", "last_assessment.json", "assessment_history.json",
     "team-engagement-blocker.sh",
+    "team-config.json", "_index.yaml",
     # Example source files
     "main.py", "app.py", "index.ts", "index.js", "cli.py", "__main__.py",
     "predict.py", "train.py", "model.py", "etl.py", "pipeline.py", "analysis.py",
@@ -84,6 +85,7 @@ USER_PROJECT_FILES = {
     "adoption-guide.md", "user-guide.md",
     "hall-of-fame.md", "HALL-OF-FAME.md", "celebration-guide.md",
     "success-stories.md", "wiki.md",
+    "01-user-authentication.md",
     # Agent pipeline template references
     "agent_prompts/research-your-agent.md",
 }
@@ -225,7 +227,7 @@ def find_broken_references(strict: bool = False):
 
         for ref in refs:
             # Skip non-local references
-            if ref.startswith(("http", "mailto", "#", "{{", "$")):
+            if ref.startswith(("http", "mailto", "#", "{{", "$", "~/")):
                 continue
             # Skip glob patterns and f-string templates
             if "*" in ref or "{" in ref or "}" in ref:
