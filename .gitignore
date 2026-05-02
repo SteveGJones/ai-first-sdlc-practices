@@ -12,6 +12,7 @@ venv/
 # AI Tools and Context
 .ai-context/
 .ai-progress/
+.dialogue/
 HANDOFF_*.md
 
 # Claude (Anthropic)
