@@ -65,8 +65,8 @@ Both generic exporters use `_build_rows`, a shared helper that iterates REQ reco
 
 All six exporters consume the v0.2.0 evidence model:
 
-- `EvidenceIndexEntry` (defined in `evidence_index.py`): a single annotation entry with `kind: EvidenceKind`, `source: str`, `line: int | None`, `cited_ids: list[str]`, optional `terms` and `facts`. Replaces the v0.1.0 `CodeIndexEntry`-only model so markdown HTML comments, YAML frontmatter, and satisfies-by-existence evidence all flow into the RTM.
-- `RequirementMetadata` (defined in `requirement_metadata.py`): per-REQ `evidence_status: EvidenceStatus | None`, `justification: str | None`, `related: list[str]`. Parsed from inline `**Evidence-Status:**`, `**Justification:**`, `**Related:**` fields in `requirements-spec.md`.
+- `EvidenceIndexEntry` (defined in `plugins/sdlc-assured/scripts/assured/evidence_index.py`): a single annotation entry with `kind: EvidenceKind`, `source: str`, `line: int | None`, `cited_ids: list[str]`, optional `terms` and `facts`. Replaces the v0.1.0 `CodeIndexEntry`-only model so markdown HTML comments, YAML frontmatter, and satisfies-by-existence evidence all flow into the RTM.
+- `RequirementMetadata` (defined in `plugins/sdlc-assured/scripts/assured/requirement_metadata.py`): per-REQ `evidence_status: EvidenceStatus | None`, `justification: str | None`, `related: list[str]`. Parsed from inline `**Evidence-Status:**`, `**Justification:**`, `**Related:**` fields in `requirements-spec.md`.
 - `_format_source_cell(req_id, evidence_for_req, metadata)`: shared helper that renders `LINKED`, `MISSING`, `NOT_APPLICABLE`, `MANUAL_EVIDENCE_REQUIRED`, `CONFIGURATION_ARTIFACT`, or a list of `file:line` evidence locations. Surfaces `LINKED-NO-EVIDENCE` as a contradiction marker when metadata says LINKED but no `EvidenceIndexEntry` is found.
 
 ---
