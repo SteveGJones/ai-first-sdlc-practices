@@ -11,6 +11,7 @@
     - [Step 1: Add the marketplace](#step-1-add-the-marketplace)
     - [Step 2: Install the core plugin](#step-2-install-the-core-plugin)
     - [Step 3: Configure your team](#step-3-configure-your-team)
+  - [SDLC Method Selection (Optional)](#sdlc-method-selection-optional)
   - [Which plugins to install](#which-plugins-to-install)
     - [Always install](#always-install)
     - [Recommended for most projects](#recommended-for-most-projects)
@@ -94,7 +95,24 @@ This is the only required plugin. It provides validation, enforcement, and the w
 /sdlc-core:setup-team
 ```
 
-This presents project type options (Full-stack, AI/ML, Cloud, API, Security, Custom) and installs the matching team plugins. You can also install plugins individually.
+This presents project type options (Full-stack, AI/ML, Cloud, API, Security, Custom) and installs the matching team plugins. It also asks the **SDLC method question** (see below) and recommends the appropriate bundle. You can also install plugins individually.
+
+---
+
+## SDLC Method Selection (Optional)
+
+The framework supports four SDLC delivery structures. `setup-team` asks which one applies; you can also pick later via `/sdlc-core:commission`. Most projects pick **single-team** (the default).
+
+| Method | When to use | Team size | What you install |
+|--------|-------------|-----------|-------------------|
+| **Single-team** (default) | Organic delivery, no formal phase gates. Most projects pick this. | 3–10 | `sdlc-core` + team plugins (no extra bundle) |
+| **Solo** | Fast iteration, lightweight constitution overlay. | 1–2 | `sdlc-core` + team plugins; commission with `/sdlc-core:commission --option solo` |
+| **Programme** (Method 1) | Multi-team programme work with formal phase gates and mandatory cross-phase review. | 11–50 across 2–5 teams | `sdlc-programme` bundle; commission with `/sdlc-core:commission --option programme --level production` |
+| **Assured** (Method 2) | Regulated industries — DO-178C (avionics), IEC 62304 (medical devices), ISO 26262 (automotive), FDA 21 CFR Part 820. Bidirectional traceability, positional namespace IDs, DDD decomposition, typed evidence statuses, standard-specific exports. | Any | `sdlc-assured` bundle (v0.2.0 audit-ready at the tooling layer); commission with `/sdlc-core:commission --option assured --level production` |
+
+**For decision criteria, comparison table, trade-offs, and migration notes**, see [METHODS-GUIDE.md](METHODS-GUIDE.md).
+
+**Important**: installing the bundle plugin is not enough — you must also **commission** the project with the appropriate `/sdlc-core:commission` command. Commissioning scaffolds templates, configuration files, and the constitution overlay. Without commissioning, the bundle ships installed but inert.
 
 ---
 
@@ -120,6 +138,8 @@ This presents project type options (Full-stack, AI/ML, Cloud, API, Security, Cus
 | JS/TS project | `sdlc-lang-javascript` |
 | Research-heavy | `sdlc-knowledge-base` |
 | Containerised delegation | `sdlc-workflows` |
+| Multi-team programme (11–50 across 2–5 teams, formal phase gates) | `sdlc-programme` (Method 1 substrate) — see [METHODS-GUIDE.md](METHODS-GUIDE.md) |
+| Regulated industry (DO-178C / IEC 62304 / ISO 26262 / FDA) | `sdlc-assured` (Method 2 substrate, v0.2.0 audit-ready) — see [METHODS-GUIDE.md](METHODS-GUIDE.md) |
 
 ### Optional
 
@@ -207,6 +227,7 @@ Claude Code blocks writes to `.claude/` in project directories (security feature
 
 - [README.md](../README.md) — Project overview
 - [HOWTO.md](HOWTO.md) — Step-by-step usage guide
+- [METHODS-GUIDE.md](METHODS-GUIDE.md) — SDLC method decision tree (solo / single-team / programme / assured)
 - [QUICK-REFERENCE.md](QUICK-REFERENCE.md) — Command cheat sheet
 - [CONSTITUTION.md](../CONSTITUTION.md) — All rules (11 articles)
 - [AGENT-INDEX.md](../AGENT-INDEX.md) — Full catalog of all 56 agents

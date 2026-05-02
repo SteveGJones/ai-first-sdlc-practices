@@ -6,6 +6,7 @@
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
     - [Plugin Install (Recommended)](#plugin-install-recommended)
+    - [SDLC Method Selection](#sdlc-method-selection)
     - [Available Plugins](#available-plugins)
     - [Available Skills](#available-skills)
     - [Agent-Based Setup (Pre-release / Development)](#agent-based-setup-pre-release--development)
@@ -70,11 +71,24 @@ This presents project types (Full-stack, AI/ML, Cloud, API, Security, Custom) an
 /sdlc-core:new-feature 1 my-feature "Description of the feature"
 ```
 
+### SDLC Method Selection
+
+The framework supports **four SDLC delivery structures**. The `setup-team` skill asks which one applies to your project; you can also pick later via `/sdlc-core:commission`. Most projects pick **single-team** (the default).
+
+| Method | When to use | Team size | What you install |
+|--------|-------------|-----------|-------------------|
+| **Single-team** (default) | Organic delivery, no formal phase gates. Most projects pick this. | 3–10 | `sdlc-core` + team plugins (no extra bundle) |
+| **Solo** | Fast-iteration, lightweight constitution overlay. | 1–2 | `sdlc-core` + team plugins; commission with `--option solo` |
+| **Programme** (Method 1) | Multi-team programme work with formal phase gates (requirements → design → test → code) and mandatory cross-phase review. | 11–50 across 2–5 teams | `sdlc-programme` bundle + commission |
+| **Assured** (Method 2) | Regulated industries (DO-178C, IEC 62304, ISO 26262, FDA 21 CFR Part 820). Bidirectional traceability, positional namespace IDs, DDD decomposition, typed evidence statuses, standard-specific exports. | Any | `sdlc-assured` bundle (v0.2.0 audit-ready at the tooling layer) + commission |
+
+**Decision tree, comparison table, trade-offs, and migration notes:** see [docs/METHODS-GUIDE.md](docs/METHODS-GUIDE.md).
+
 ### Available Plugins
 
 | Plugin | Agents | Skills | Description |
 |--------|--------|--------|-------------|
-| [`sdlc-core`](plugins/sdlc-core/README.md) | 4 | 8 | Rules, validators, enforcement, workflows (always install) |
+| [`sdlc-core`](plugins/sdlc-core/README.md) | 4 | 9 | Rules, validators, enforcement, workflows, four-option commissioning (solo / single-team / programme / assured) — always install |
 | [`sdlc-team-common`](plugins/sdlc-team-common/README.md) | 8 | — | Cross-cutting architects, researchers, performance engineers |
 | [`sdlc-team-ai`](plugins/sdlc-team-ai/README.md) | 14 | — | AI/ML specialists — architects, prompt engineers, RAG designers |
 | [`sdlc-team-fullstack`](plugins/sdlc-team-fullstack/README.md) | 10 | — | Frontend, backend, API, DevOps architects |
@@ -86,6 +100,8 @@ This presents project types (Full-stack, AI/ML, Cloud, API, Security, Custom) an
 | [`sdlc-lang-javascript`](plugins/sdlc-lang-javascript/README.md) | 1 | — | JavaScript/TypeScript validation and patterns |
 | [`sdlc-knowledge-base`](plugins/sdlc-knowledge-base/README.md) | 2 | 8 | Filesystem-based knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint |
 | [`sdlc-workflows`](plugins/sdlc-workflows/README.md) | 1 | 6 | Containerised delegation — Archon-orchestrated DAG workflows in isolated Docker containers |
+| [`sdlc-programme`](plugins/sdlc-programme/README.md) | 0 | 5 | **Method 1 substrate** — formal phase gates (requirements → design → test → code) with mandatory cross-phase review. Skill+validator bundle for multi-team programme work. |
+| [`sdlc-assured`](plugins/sdlc-assured/README.md) | 0 | 8 | **Method 2 substrate (v0.2.0 audit-ready)** — positional namespace IDs, bidirectional traceability, DDD decomposition, KB-for-code, standard-specific exports (DO-178C / IEC 62304 / ISO 26262 / FDA DHF). Skill+validator bundle for regulated industries. |
 
 ### Available Skills
 
@@ -97,7 +113,8 @@ This presents project types (Full-stack, AI/ML, Cloud, API, Security, Custom) an
 | `/sdlc-core:new-feature` | Create feature proposal, retrospective, and branch |
 | `/sdlc-core:commit` | Validated commit with test execution |
 | `/sdlc-core:pr` | Full validation + PR creation |
-| `/sdlc-core:setup-team` | Configure team formation for your project |
+| `/sdlc-core:setup-team` | Configure team formation for your project; asks the four-option SDLC method question |
+| `/sdlc-core:commission` | Commission a project to one of the four SDLC options (solo / single-team / programme / assured); records choice in `.sdlc/team-config.json` |
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
 | `/sdlc-core:rules` | AI-First SDLC compliance rules and standards |
@@ -217,6 +234,7 @@ See [AGENT-INDEX.md](AGENT-INDEX.md) for the full catalog with detailed descript
 | [CLAUDE.md](CLAUDE.md) | Gateway file — concise entry point for Claude Code |
 | [docs/HOWTO.md](docs/HOWTO.md) | Comprehensive usage guide |
 | [docs/QUICK-REFERENCE.md](docs/QUICK-REFERENCE.md) | Command cheat sheet |
+| [docs/METHODS-GUIDE.md](docs/METHODS-GUIDE.md) | Decision tree for the four SDLC methods (solo / single-team / programme / assured) — when to use each, comparison table, trade-offs, migration notes |
 | [docs/PLUGIN-CONSUMER-GUIDE.md](docs/PLUGIN-CONSUMER-GUIDE.md) | How the plugin ecosystem works for end users |
 | [CHANGELOG.md](CHANGELOG.md) | Version history and release notes |
 | [CLAUDE-CONTEXT-workflows.md](CLAUDE-CONTEXT-workflows.md) | Containerised delegation reference (team manifests, workflows, Docker) |

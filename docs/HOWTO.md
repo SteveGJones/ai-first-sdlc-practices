@@ -29,6 +29,8 @@
     - [Starting a New Project](#starting-a-new-project)
     - [Adding a Knowledge Base](#adding-a-knowledge-base)
     - [Setting Up Containerised Workflows](#setting-up-containerised-workflows)
+    - [Setting Up a Multi-Team Programme (Method 1)](#setting-up-a-multi-team-programme-method-1)
+    - [Setting Up Regulated-Industry Traceability (Method 2)](#setting-up-regulated-industry-traceability-method-2)
   - [Troubleshooting](#troubleshooting)
     - ["Skill not found"](#skill-not-found)
     - [Validation failures](#validation-failures)
@@ -258,6 +260,82 @@ All rules are in [CONSTITUTION.md](../CONSTITUTION.md) — 11 articles covering:
 /sdlc-workflows:workflows-run sdlc-parallel-review
 ```
 
+### Setting Up a Multi-Team Programme (Method 1)
+
+For teams of 11–50 across 2–5 sub-teams that need formal phase gates (requirements → design → test → code) with mandatory cross-phase review:
+
+```bash
+# 1. Install and commission
+/plugin install sdlc-programme@ai-first-sdlc
+/sdlc-core:commission --option programme --level production
+# (or: /sdlc-programme:commission-programme)
+
+# 2. For each feature, walk the phases:
+/sdlc-programme:phase-init requirements FEAT-123
+# Edit the generated requirements-spec.md
+/sdlc-programme:phase-gate requirements FEAT-123
+
+/sdlc-programme:phase-init design FEAT-123
+# Edit the generated design-spec.md
+/sdlc-programme:phase-review design FEAT-123     # Mandatory cross-team review
+/sdlc-programme:phase-gate design FEAT-123
+
+/sdlc-programme:phase-init test FEAT-123
+# Edit the generated test-spec.md
+/sdlc-programme:phase-review test FEAT-123        # Mandatory
+/sdlc-programme:phase-gate test FEAT-123
+
+# 3. Code phase uses the standard sdlc-core flow:
+/sdlc-core:new-feature 123 feature-name "Description"
+# Implement against test-spec
+/sdlc-core:pr
+
+# 4. Export traceability for audit:
+/sdlc-programme:traceability-export csv
+/sdlc-programme:traceability-export markdown
+```
+
+See [`plugins/sdlc-programme/README.md`](../plugins/sdlc-programme/README.md) for phase contract details and [METHODS-GUIDE.md](METHODS-GUIDE.md) for when Method 1 is the right choice.
+
+### Setting Up Regulated-Industry Traceability (Method 2)
+
+For projects targeting DO-178C (avionics), IEC 62304 (medical devices), ISO 26262 (automotive), or FDA 21 CFR Part 820:
+
+```bash
+# 1. Install and commission
+/plugin install sdlc-assured@ai-first-sdlc
+/sdlc-core:commission --option assured --level production
+/sdlc-assured:commission-assured
+# This scaffolds programmes.yaml (DDD bounded contexts), visibility-rules.md, and base specification templates.
+
+# 2. Edit programmes.yaml to declare your modules (bounded contexts) with parent + visibility rules.
+
+# 3. For each requirement, mint a positional ID and link bidirectionally:
+/sdlc-assured:req-add <module> <feature> "System SHALL authenticate users via OAuth 2.0"
+# → mints e.g. P1.REQ-001
+/sdlc-assured:req-link P1.REQ-001 design-spec.md "Section 3.2 OAuth flow"
+/sdlc-assured:req-link P1.REQ-001 test-spec.md "Test 4.1.3 valid token exchange"
+
+# 4. As you implement, annotate functions and rebuild the code index:
+/sdlc-assured:code-annotate src/auth/login.py::authenticate_user
+# → auto-generates "# implements: P1.REQ-001"
+/sdlc-assured:kb-codeindex
+# → parses all annotations into library/_code-index.md
+
+# 5. Validate decomposition before commit:
+/sdlc-assured:module-bound-check    # Visibility, scatter, anaemic-context checks
+
+# 6. For IEC 62304 / FDA change-impact tracking:
+/sdlc-assured:change-impact-annotate
+
+# 7. Generate audit-ready artefacts:
+/sdlc-assured:traceability-render
+```
+
+For what "audit-ready at the tooling layer" actually means in v0.2.0 (what's automated, what's manual evidence, what an auditor can regenerate, what's deferred to v0.3.0), see [`plugins/sdlc-assured/README.md`](../plugins/sdlc-assured/README.md).
+
+For decision criteria between Method 1 and Method 2, see [METHODS-GUIDE.md](METHODS-GUIDE.md).
+
 ---
 
 ## Troubleshooting
@@ -321,6 +399,7 @@ cat .pre-commit-config.yaml
 
 - [README.md](../README.md) — Project overview and setup
 - [CONSTITUTION.md](../CONSTITUTION.md) — All rules (11 articles)
+- [METHODS-GUIDE.md](METHODS-GUIDE.md) — Decision tree for the four SDLC methods (solo / single-team / programme / assured) — when to use each, comparison, trade-offs, migration notes
 - [QUICK-REFERENCE.md](QUICK-REFERENCE.md) — Command cheat sheet
 - [PLUGIN-CONSUMER-GUIDE.md](PLUGIN-CONSUMER-GUIDE.md) — How the plugin ecosystem works
 - [AGENT-INDEX.md](../AGENT-INDEX.md) — Full catalog of all agents

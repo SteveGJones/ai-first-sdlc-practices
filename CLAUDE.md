@@ -1,6 +1,6 @@
-# CLAUDE.md
+# CLAUDE.md — AI Development Instructions
 
-AI-First SDLC Practices framework (v1.8.0). Rules: **CONSTITUTION.md**. Full instructions: **CLAUDE-CORE.md**.
+AI-First SDLC Practices framework for AI development (v1.8.0). Rules: **CONSTITUTION.md**. Full instructions: **CLAUDE-CORE.md**.
 
 ## Active Work
 
@@ -52,6 +52,8 @@ we use them ourselves.
 specify → architect → implement → review
 ```
 
+Git workflow: feature branches only; **never push directly to main**; never commit to main directly. Full rules in CONSTITUTION.md Article 1.
+
 1. Feature proposal (`docs/feature-proposals/XX-name.md`) + retrospective (`retrospectives/XX-name.md`)
 2. Feature branch (`feature/name`) — never commit to main directly
 3. Implement with zero technical debt, validate continuously
@@ -93,7 +95,8 @@ Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
 - CONSTITUTION.md — all rules (11 articles, progressive levels)
 - CLAUDE-CONTEXT-logging.md — logging standards
 - CLAUDE-CONTEXT-architecture.md — architecture docs
-- AGENT-INDEX.md — 56 specialist agents across 14 plugins (sdlc-programme + sdlc-assured added in EPIC #178; both ship 0 agents in v0.1.0 — they are skill+validator bundles)
+- docs/METHODS-GUIDE.md — decision tree for the four SDLC methods (solo / single-team / programme / assured), comparison table, trade-offs, and migration notes (load when commissioning a project or advising on method choice)
+- AGENT-INDEX.md — 56 specialist agents across 14 plugins. `sdlc-programme` v0.1.0 + `sdlc-assured` v0.2.0 are **skill+validator bundles by design** — they provide structured SDLC delivery methodology (phase gates, traceability, decomposition), not new specialist agent roles, so they intentionally ship 0 agents.
 
 ## Plugin Installation (Recommended)
 
@@ -133,7 +136,8 @@ Then configure your team: `/sdlc-core:setup-team`
 | `/sdlc-core:new-feature` | Create feature proposal, retrospective, and branch |
 | `/sdlc-core:commit` | Validated commit with test execution |
 | `/sdlc-core:pr` | Full validation + PR creation |
-| `/sdlc-core:setup-team` | Configure team formation |
+| `/sdlc-core:setup-team` | Configure team formation; asks the four-option SDLC method question |
+| `/sdlc-core:commission` | Commission a project to one of the four SDLC options (solo / single-team / programme / assured) |
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
 | `/sdlc-core:rules` | AI-First SDLC compliance rules and standards |

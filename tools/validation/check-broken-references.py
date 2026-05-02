@@ -47,6 +47,9 @@ USER_PROJECT_FILES = {
     "bitbucket-pipelines.yml", ".drone.yml",
     # Pre-commit
     "pre-commit-config.yaml", ".pre-commit-config.yaml",
+    # SDLC method bundle artefacts (created by /sdlc-core:commission and bundle skills)
+    "programmes.yaml", "visibility-rules.md", "change-impact.md",
+    "requirements-spec.md", "design-spec.md", "test-spec.md",
     # Test/build files
     "test-framework.sh", "test_framework_setup.py",
     # AI instruction files

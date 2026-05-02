@@ -8,6 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **sdlc-assured 0.2.0 — audit-ready at the tooling layer (EPIC #188, PR #189, 2026-05-02)**
+  - Typed evidence statuses: `Evidence-Status` field replaces untyped boolean traceability with `LINKED`, `MANUAL_EVIDENCE_REQUIRED`, and `CONFIGURATION_ARTIFACT` outcomes; gap-typing 30/30 across the bundle's own corpus
+  - Multi-format evidence model: a single requirement can be satisfied by Python `# implements:` annotations, markdown evidence tables, YAML satisfies-blocks, or satisfies-by-existence (file presence as evidence) — all consumed by a unified `EvidenceIndexEntry` API
+  - Platform-neutral dependency extractor: `GenericRegexExtractor` + `PythonAstExtractor` shared interface; non-Python projects no longer need Python AST to participate in coverage analysis
+  - Indirect DES-mediated coverage: requirements satisfied through DES (design) intermediaries are now correctly counted in RTM rather than reported as gaps; RTM source-code gap improved from 68.18% to 4.55% across the bundle's own 44-REQ corpus
+  - REQ-quality linter (`tools/validation/check-req-quality.py`): advisory by default, `--strict` opt-in for CI; detects DRIFTER requirements (open with implementation detail rather than user-visible capability)
+  - Spec refresh: `design-spec.md` and `test-spec.md` updated to match implemented API surfaces (`EvidenceIndexEntry`, `RequirementMetadata`, `RemapResult`); spec drift treated as closure-blocking for audit-readiness work
+  - 6 hard gates pass at close: granularity_match noise 0%, RTM gap 4.55%, gap-typing 30/30, FAC false-positive rate 0%, visibility_rule_enforcement clean, 594/594 tests passing
+  - Architect review verdict: AGREE-WITH-CONCERNS (no blockers; 4 v0.3.0 carry-forward items)
+  - v0.3.0 carry-forward (not in v0.2.0): formalise MANUAL_EVIDENCE_REQUIRED corpus policy in CI, wire `check-req-quality.py --strict` into the pre-push pipeline, refactor `GenericRegexExtractor` / `PythonAstExtractor` coupling, address 6 deferred F-010 drifter requirements
+- **sdlc-programme 0.1.0 — Method 1 substrate (EPIC #178, PR #187, 2026-05-01)**
+  - 5 skills: `commission-programme`, `phase-init`, `phase-gate`, `phase-review`, `traceability-export`
+  - 4 phase-gate validators enforcing requirements → design → test → code progression
+  - Mandatory cross-phase review for design and test phases
+  - Constitution overlay (Articles 12–14) enforcing phase discipline and reference integrity
+  - Skill+validator bundle with 0 agents by design — provides delivery methodology, not new specialist roles
+- **sdlc-assured 0.1.0 — Method 2 initial release (EPIC #178, PR #187, 2026-05-01)**
+  - 8 skills: `commission-assured`, `req-add`, `req-link`, `code-annotate`, `module-bound-check`, `kb-codeindex`, `change-impact-annotate`, `traceability-render`
+  - Positional namespace IDs (`P1.SP2.M3.REQ-007`) for decomposed projects with parent registry tracking
+  - Bidirectional traceability (forward links REQ→artefact + backward coverage)
+  - DDD decomposition declared in `programmes.yaml` with module visibility rules
+  - KB-for-code: inline `# implements:` annotations parsed into `library/_code-index.md` (shelf-index-shaped)
+  - Standard-specific export templates for DO-178C / IEC 62304 / ISO 26262 / FDA DHF
+  - 5 traceability validators + 5 module-bound validators
+  - **v0.1.0 was not audit-ready** — Phase F dogfood produced 10 findings (5 IMPORTANT + 5 MINOR) seeding v0.2.0; consumers should install 0.2.0 (current) rather than 0.1.0
+- **`/sdlc-core:commission` skill — four-option SDLC commissioning (EPIC #178 Phase C, PR #187)**
+  - Walks projects through commissioning to one of four SDLC options: solo (1–2 people, fast iteration), single-team (3–10, current default), programme (11–50, formal phase gates), assured (regulated industries with traceability)
+  - Records decision in `.sdlc/team-config.json` for downstream skills to consult
+  - Bundle-side wrappers (`commission-programme`, `commission-assured`) delegate to this skill with appropriate `--option` and `--bundle-dir` arguments
 - **sdlc-knowledge-base 0.2.0 — cross-library query support (EPIC #164, PR #177)**
   - Cross-library querying across local + activated corporate asset libraries via the `LibrarySource` abstraction (filesystem v1; remote-agent type schema-reserved for v2+)
   - Two-tier registry: user-scope `~/.sdlc/global-libraries.json` + per-project `.sdlc/libraries.json` activation
