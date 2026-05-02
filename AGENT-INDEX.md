@@ -1,8 +1,10 @@
 # Agent Catalog Index
-*Generated: 2026-04-21T05:56:05.745671*
-*Total Agents: 128 (source directory) | 56 published in plugins*
+*Generated: 2026-04-21T05:56:05.745671 (with manual notes added 2026-05-02 for SDLC method bundles)*
+*Total Agents: 128 (source directory) | 56 published in plugins (across 14 plugins)*
 
-> **Note:** This catalog indexes all agent files in the `agents/` source directory (128 agents across development categories) AND the `plugins/*/agents/` directories (56 agents packaged into the 12 published plugins). Many source agents appear in both the source category and a plugin category. The 56 agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
+> **Note:** This catalog indexes all agent files in the `agents/` source directory (128 agents across development categories) AND the `plugins/*/agents/` directories (56 agents packaged into the 14 published plugins). Many source agents appear in both the source category and a plugin category. The 56 agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
+
+> **SDLC method bundles — `sdlc-programme` v0.1.0 and `sdlc-assured` v0.2.0 are skill+validator bundles by design and ship 0 agents.** They are not absent from the catalogue because they are unfinished; they are absent because they overlay the universal constitution with structured SDLC delivery methodology (phase gates for Programme; bidirectional traceability + DDD decomposition + KB-for-code for Assured) rather than introducing new specialist agent roles. The value is in their skills (5 for Programme, 8 for Assured), validators, and constitution articles. See [docs/METHODS-GUIDE.md](docs/METHODS-GUIDE.md) for when to use each method, and the bundle READMEs ([sdlc-programme](plugins/sdlc-programme/README.md), [sdlc-assured](plugins/sdlc-assured/README.md)) for skill catalogues and Getting Started walkthroughs.
 
 ## Agents by Category
 

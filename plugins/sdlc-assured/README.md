@@ -2,7 +2,7 @@
 
 Regulated-industry SDLC bundle (Method 2) for projects targeting DO-178C, IEC 62304, ISO 26262, IEC 61508, or FDA 21 CFR Part 820. Layers on top of `sdlc-programme` (Method 1) with positional namespace IDs, bidirectional traceability, DDD-style decomposition with visibility rules, KB extension to code, typed evidence statuses, and standard-specific traceability exports.
 
-**v0.2.0 status**: audit-ready at the tooling layer. The validators, traceability machinery, evidence model, and exports are auditor-grade and deterministically regenerable. Corpus-policy formalisation and CI integration of the REQ-quality linter are deferred to v0.3.0 — see [Audit-Ready at the Tooling Layer (v0.2.0)](#audit-ready-at-the-tooling-layer-v020) below for what is and is not in scope.
+**v0.2.0 status**: audit-ready at the tooling layer. The validators, traceability machinery, evidence model, and exports are deterministic and regenerable by an auditor from the source tree. Two of four carry-forward items — corpus-policy CI enforcement and CI integration of the REQ-quality linter — are deferred to v0.3.0; see [Audit-Ready at the Tooling Layer (v0.2.0)](#audit-ready-at-the-tooling-layer-v020) below for the full list of what is and is not in scope.
 
 ## What this bundle adds over Programme
 
@@ -109,9 +109,11 @@ For the full decision tree and method comparison, see [`docs/METHODS-GUIDE.md`](
 
 ## Audit-Ready at the Tooling Layer (v0.2.0)
 
-**What this means.** v0.2.0 ships the *tooling substrate* required for auditor-grade traceability: the ID system, validators, evidence model, and exports are deterministic, regenerable, and produce auditor-readable artefacts. A complete audit dossier still requires both this tooling **and** manual evidence (test reports, design reviews, code walkthroughs) that the team supplies. This section is explicit about what is and is not automated, so consumers and auditors share the same expectations.
+**What this means.** v0.2.0 ships the *tooling substrate* required for audit-ready traceability: the ID system, validators, evidence model, and exports are deterministic, regenerable, and produce auditor-readable artefacts. A complete audit dossier still requires both this tooling **and** manual evidence (test reports, design reviews, code walkthroughs) that the team supplies. This section is explicit about what is and is not automated, so consumers and auditors share the same expectations.
 
 This claim is backed by EPIC #188 Phase G hard gates (all PASS) and an independent containerised architect review (verdict: AGREE-WITH-CONCERNS — no blockers; 4 carry-forward items deferred to v0.3.0).
+
+**Scope of the claim.** "Audit-ready at the tooling layer" means: an auditor handed a v0.2.0-commissioned codebase can re-run the validators and get the same registry, code index, RTM, and standard-specific exports as the team submitted. It does **not** mean the codebase is certified, nor that the team's evidence is sufficient for a specific regulator — those are decisions the team and the regulator make using the artefacts this tooling produces.
 
 ### What the tooling automates
 
@@ -137,7 +139,7 @@ This claim is backed by EPIC #188 Phase G hard gates (all PASS) and an independe
 
 All of the following are deterministic and regenerable from the source tree alone — an auditor can re-run the validators on a submitted codebase and verify that the traceability has not been tampered with post-audit.
 
-- **ID registry** (`library/_ids.md`) — regenerable from `requirements-spec.md` artefacts via `kb-codeindex`.
+- **ID registry** (`library/_ids.md`) — auto-maintained by `req-add` and `req-link` as IDs are minted and links are added; an auditor can re-parse the source `requirements-spec.md` artefacts to verify the registry has not been tampered with post-audit.
 - **Code index** (`library/_code-index.md`) — regenerable from source via `kb-codeindex` (parses `# implements:` annotations).
 - **Module dependency graph** — regenerable from source via the platform-neutral dependency extractor.
 - **RTM (Requirements Traceability Matrix)** — backward coverage for every requirement, regenerable via the `backward_coverage_validator`.
@@ -159,12 +161,21 @@ From the EPIC #188 architect review (AGREE-WITH-CONCERNS — these are the conce
 | Metric | Result | Hard-gate threshold |
 |--------|--------|--------------------|
 | Total tests passing | 594 / 594 | All pass |
-| Granularity-match noise | 0% | ≤ 5% |
-| RTM source-code gap (own corpus) | 4.55% (was 68.18% in v0.1.0) | < 30% for audit pass |
-| Gap-typing completeness | 30 / 30 | 100% |
+| Granularity-match noise | 0% (2 / 2 remaining warnings are true positives) | ≤ 5% |
+| RTM source-code gap (own corpus) | 4.55% — **2 of 44 REQs uncovered** (was 68.18% / 30 of 44 in v0.1.0) | < 30% for audit pass |
+| Gap-typing completeness | 2 / 2 typed (both `CONFIGURATION_ARTIFACT`); during retrofit, all 30 original gap REQs were typed before closure (8 `MISSING`, 15 `MANUAL_EVIDENCE_REQUIRED`, 2 `CONFIGURATION_ARTIFACT`) | every gap cell typed |
 | FAC false-positive rate | 0% | ≤ 5% |
 | Visibility-rule enforcement | Clean (no false positives) | Clean |
 | Validator determinism | All deterministic; auditor-regenerable | Required |
+
+> **Glossary (for auditors and non-engineer compliance leads).**
+> - **FAC** (forward-attribution check) — validator that confirms each non-trivial function carries a `# implements:` annotation pointing at a declared requirement. "FAC false-positive rate" is the rate at which FAC wrongly flags an annotated function as un-annotated. 0% means zero false alarms in the bundle's own corpus.
+> - **Granularity-match noise** — REQ IDs cited in code that do not exist in the ID registry, OR REQs declared in the registry that have no corresponding code-side annotation. "Noise" is a citation that is genuinely a false alarm vs. a real coverage gap. 0% noise means every warning corresponds to a real, actionable gap.
+> - **RTM source-code gap** — proportion of declared requirements that lack any code-side coverage path (direct annotation OR DES-mediated transitive coverage). Denominator is total declared REQs in the corpus (44 for the bundle's own corpus). 4.55% = 2 of 44; both remaining gap REQs are `CONFIGURATION_ARTIFACT` (Constitution overlay contracts with no Python function to annotate).
+> - **Gap-typing** — for each gap cell, the team has declared an `Evidence-Status` (LINKED / MISSING / MANUAL_EVIDENCE_REQUIRED / CONFIGURATION_ARTIFACT / NOT_APPLICABLE). "Every gap cell typed" is the hard-gate criterion — auditors get an explanation for every gap, not just a list.
+> - **Validator determinism** — all validators are pure functions of the source tree; running them on the same checkout twice produces byte-identical output. This is what makes auditor regeneration meaningful.
+>
+> All thresholds are bundle-internal hard gates from EPIC #188 Phase G; they are not set by any standards body. Each consuming project's audit will set its own thresholds.
 
 See `retrospectives/188-v020-assured-improvements.md` for the full Phase G test session and `research/v020-acceptance-metrics.md` for the metric definitions.
 

@@ -134,7 +134,8 @@ Then configure your team: `/sdlc-core:setup-team`
 | `/sdlc-core:new-feature` | Create feature proposal, retrospective, and branch |
 | `/sdlc-core:commit` | Validated commit with test execution |
 | `/sdlc-core:pr` | Full validation + PR creation |
-| `/sdlc-core:setup-team` | Configure team formation |
+| `/sdlc-core:setup-team` | Configure team formation; asks the four-option SDLC method question |
+| `/sdlc-core:commission` | Commission a project to one of the four SDLC options (solo / single-team / programme / assured) |
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
 | `/sdlc-core:rules` | AI-First SDLC compliance rules and standards |

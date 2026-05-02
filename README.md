@@ -87,7 +87,7 @@ The framework supports **four SDLC delivery structures**. The `setup-team` skill
 
 | Plugin | Agents | Skills | Description |
 |--------|--------|--------|-------------|
-| [`sdlc-core`](plugins/sdlc-core/README.md) | 4 | 8 | Rules, validators, enforcement, workflows (always install) |
+| [`sdlc-core`](plugins/sdlc-core/README.md) | 4 | 9 | Rules, validators, enforcement, workflows, four-option commissioning (solo / single-team / programme / assured) — always install |
 | [`sdlc-team-common`](plugins/sdlc-team-common/README.md) | 8 | — | Cross-cutting architects, researchers, performance engineers |
 | [`sdlc-team-ai`](plugins/sdlc-team-ai/README.md) | 14 | — | AI/ML specialists — architects, prompt engineers, RAG designers |
 | [`sdlc-team-fullstack`](plugins/sdlc-team-fullstack/README.md) | 10 | — | Frontend, backend, API, DevOps architects |
@@ -112,7 +112,8 @@ The framework supports **four SDLC delivery structures**. The `setup-team` skill
 | `/sdlc-core:new-feature` | Create feature proposal, retrospective, and branch |
 | `/sdlc-core:commit` | Validated commit with test execution |
 | `/sdlc-core:pr` | Full validation + PR creation |
-| `/sdlc-core:setup-team` | Configure team formation for your project |
+| `/sdlc-core:setup-team` | Configure team formation for your project; asks the four-option SDLC method question |
+| `/sdlc-core:commission` | Commission a project to one of the four SDLC options (solo / single-team / programme / assured); records choice in `.sdlc/team-config.json` |
 | `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
 | `/sdlc-core:release-plugin` | Package source into plugins |
 | `/sdlc-core:rules` | AI-First SDLC compliance rules and standards |

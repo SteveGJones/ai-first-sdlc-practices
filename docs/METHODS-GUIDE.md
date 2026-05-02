@@ -15,7 +15,7 @@ The framework's `/sdlc-core:commission` skill walks projects through commissioni
 | **Solo** | 1–2 contributors, fast iteration, lightweight constitution overlay. |
 | **Single-team** | 3–10 contributors, organic delivery — the framework default. |
 | **Programme** (Method 1) | 11–50 across 2–5 teams, formal phase gates, mandatory cross-phase review. |
-| **Assured** (Method 2) | Regulated industries (DO-178C, IEC 62304, ISO 26262, FDA 21 CFR Part 820); audit-grade traceability + decomposition + typed evidence. |
+| **Assured** (Method 2) | Regulated industries (DO-178C, IEC 62304, ISO 26262, FDA 21 CFR Part 820); audit-ready traceability + decomposition + typed evidence. |
 
 The choice is **orthogonal to team plugin selection**. A regulated medical-device project might be `cloud-infrastructure` (project type C in `setup-team`) **and** `assured` (SDLC method D); an AI/ML prototype might be `ai-ml` (project type B) **and** `solo` (SDLC method B). Project type drives team plugin selection; SDLC method drives delivery discipline.
 
@@ -32,9 +32,9 @@ Answer the questions in order; the first match wins.
 - **Yes** → use [**Assured (Method 2)**](#assured-method-2). Stop here.
 - **No** → continue.
 
-**2. Is your team 11–50 people across 2–5 sub-teams?**
+**2. Do you need formal cross-team sign-off on phase artefacts?** (typically: 11+ contributors, **or** 2 or more sub-teams that must explicitly approve each other's design / test artefacts)
 
-- **Yes** → use [**Programme (Method 1)**](#programme-method-1). Stop here.
+- **Yes** → use [**Programme (Method 1)**](#programme-method-1). Stop here. The driver is the *cross-team review need*, not just the headcount — a single team of 14 that doesn't need formal sign-off can still pick Single-team; a single team of 8 that does need formal sign-off should pick Programme.
 - **No** → continue.
 
 **3. Is this a 1–2 person project with fast iteration and minimal review overhead?**
@@ -44,7 +44,7 @@ Answer the questions in order; the first match wins.
 
 **4. Default**
 
-- Use [**Single-team**](#single-team) — the framework default; no commissioning needed.
+- Use [**Single-team**](#single-team) — the framework default; no commissioning needed. Single-team scales comfortably to ~15 contributors; the upper bound is whenever you start needing formal cross-phase sign-off (see Q2).
 
 If you're between two options, pick the lighter one — you can always migrate up later. See [Migration](#migration) for what each upgrade involves.
 
@@ -204,12 +204,12 @@ If you need any of those, pick Assured.
 
 ## Assured (Method 2)
 
-**For regulated industries.** Method 2 is a superset of Method 1 — it keeps phase discipline and adds the substrate required for auditor-grade traceability. Commission with `/sdlc-core:commission --option assured --level production` (and run `/sdlc-assured:commission-assured` to scaffold the decomposition files).
+**For regulated industries.** Method 2 is a superset of Method 1 — it keeps phase discipline and adds the substrate required for audit-ready traceability. Commission with `/sdlc-core:commission --option assured --level production` (and run `/sdlc-assured:commission-assured` to scaffold the decomposition files).
 
 ### When to use
 
 - Target standards: **DO-178C** (avionics), **IEC 62304** (medical devices), **ISO 26262** (automotive), **IEC 61508** (functional safety), **FDA 21 CFR Part 820** (medical devices)
-- Audit requirement: auditor-grade bidirectional traceability, positional IDs, decomposition visibility, typed evidence
+- Audit requirement: audit-ready bidirectional traceability, positional IDs, decomposition visibility, typed evidence
 - Specification maturity: formal, requirement-driven
 - Team size: any (the bundle scales from one engineer up to multi-team programmes)
 - Regulator context: FAA, EASA, FDA, notified body, certification agency
@@ -258,14 +258,16 @@ If you need any of those, pick Assured.
 
 ### v0.2.0 status: audit-ready at the tooling layer
 
-The validators, traceability machinery, evidence model, and exports are auditor-grade and deterministically regenerable. Corpus-policy formalisation (CI enforcement that all REQs satisfy declared policy) and CI integration of the REQ-quality linter are deferred to v0.3.0.
+**The gap in one sentence:** the tooling automates ID integrity, traceability, and standard-specific exports; teams supply the actual evidence that backs each requirement; corpus-policy CI enforcement and REQ-quality lint gating are deferred to v0.3.0.
 
-For a full breakdown of what's automated vs. what requires manual evidence vs. what an auditor can regenerate vs. what's deferred to v0.3.0, see the [Audit-Ready at the Tooling Layer (v0.2.0)](../plugins/sdlc-assured/README.md#audit-ready-at-the-tooling-layer-v020) section in the bundle README.
+The validators, traceability machinery, evidence model, and exports are deterministic and auditor-regenerable. EPIC #188 Phase G hard-gate metrics: 594 / 594 tests pass; RTM source-code gap 4.55% (2 of 44 REQs in the bundle's own corpus, both correctly typed as `CONFIGURATION_ARTIFACT` — Constitution overlay contracts with no Python function to annotate); granularity-match noise 0%; gap-typing complete. Independent architect review verdict: AGREE-WITH-CONCERNS — no blockers; four carry-forward items deferred to v0.3.0 (corpus-policy CI enforcement, REQ-quality linter CI gate, extractor decoupling, six deferred F-010 DRIFTERs).
+
+For a full breakdown of what's automated vs. what requires manual evidence vs. what an auditor can regenerate vs. what's deferred to v0.3.0 — including a glossary of the metric terms — see the [Audit-Ready at the Tooling Layer (v0.2.0)](../plugins/sdlc-assured/README.md#audit-ready-at-the-tooling-layer-v020) section in the bundle README.
 
 ### Trade-offs
 
-- **Pro**: auditor-grade traceability; deterministic regeneration; standard-specific exports; typed evidence. The metrics are concrete (594/594 tests pass; granularity-match noise 0%; RTM gap 4.55%; FAC FPR 0%).
-- **Con**: requires explicit decomposition discipline (programmes.yaml + visibility rules); evidence is still manual (teams provide proof, tooling provides structure); higher learning curve than Programme.
+- **Pro**: audit-ready at the tooling layer — validators are deterministic, an auditor can regenerate the ID registry, code index, RTM, and standard-specific exports from the source tree alone; evidence typing makes audit dossiers reproducible. Metrics and the four v0.3.0 carry-forward gaps are documented in the [bundle README](../plugins/sdlc-assured/README.md#audit-ready-at-the-tooling-layer-v020) with a glossary.
+- **Con**: requires explicit decomposition discipline (`programmes.yaml` + visibility rules); evidence collection is still manual (teams provide proof, tooling provides structure); higher learning curve than Programme.
 
 ---
 
@@ -276,11 +278,11 @@ For a full breakdown of what's automated vs. what requires manual evidence vs. w
 | Team size | 1–2 | 3–10 | 11–50 | Any |
 | Delivery structure | Light overlay | Organic | Phase gates (REQ → DES → TEST → CODE) | Decomposed modules + evidence-typed REQs |
 | Per-feature ceremony | Minimal | Standard | High (3 mandatory phase reviews) | High (decomposition + traceability links) |
-| Traceability | Forward only (test ↔ code) | Forward only | Cross-phase (REQ ↔ design ↔ test ↔ code) | Bidirectional + positional IDs + ID registry |
+| Traceability | Code → test only | Code → test only | Cross-phase (REQ → design → test → code) | Bidirectional (REQ ↔ design ↔ test ↔ code) + positional IDs + ID registry |
 | Decomposition | Implicit | Implicit | Optional | Mandatory (DDD, visibility rules) |
-| Evidence model | Test coverage | Test coverage | Phase-review records | Typed (LINKED / MANUAL_EVIDENCE_REQUIRED / CONFIGURATION_ARTIFACT) |
+| Evidence model | None (test coverage only) | None (test coverage only) | Phase-review records | Typed (LINKED / MANUAL_EVIDENCE_REQUIRED / CONFIGURATION_ARTIFACT) |
 | Audit readiness | None | None | Cross-phase records | Auditor-regenerable, standard-specific exports |
-| Skills shipped | 8 (sdlc-core only) | 8 (sdlc-core only) | 8 + 5 (sdlc-programme) = 13 | 8 + 8 (sdlc-assured) = 16 |
+| Skills shipped | 9 (sdlc-core only) | 9 (sdlc-core only) | 9 + 5 (sdlc-programme) = 14 | 9 + 8 (sdlc-assured) = 17 |
 | Constitution articles | 1–11 (overlay relaxes some) | 1–11 | 1–11 + 12–14 | 1–11 + 12–14 + 15–17 |
 | Regulatory support | None | None | None | DO-178C, IEC 62304, ISO 26262, IEC 61508, FDA 21 CFR Part 820 |
 | Commission command | `/sdlc-core:commission --option solo` | (none — default) | `/sdlc-core:commission --option programme` | `/sdlc-core:commission --option assured` |
@@ -307,8 +309,8 @@ For a full breakdown of what's automated vs. what requires manual evidence vs. w
 
 ### Assured
 
-- **Pro**: auditor-grade traceability; deterministic regeneration; standard-specific exports; evidence typing makes audit dossiers reproducible
-- **Con**: requires explicit decomposition discipline (programmes.yaml + visibility rules); evidence collection is still manual (teams provide proof, tooling provides structure); higher learning curve
+- **Pro**: audit-ready at the tooling layer (validators are deterministic; an auditor can regenerate ID registry, code index, RTM, and standard-specific exports from the source tree); evidence typing makes audit dossiers reproducible. EPIC #188 metrics are documented in the [bundle README](../plugins/sdlc-assured/README.md#audit-ready-at-the-tooling-layer-v020).
+- **Con**: requires explicit decomposition discipline (`programmes.yaml` + visibility rules); evidence collection is still manual (teams provide proof, tooling provides structure); higher learning curve. Four v0.3.0 carry-forward gaps (corpus-policy CI enforcement, REQ-quality linter CI gate, extractor decoupling, deferred F-010 DRIFTERs) — see the bundle README for what each gap means for what an auditor can rely on.
 
 ---
 
@@ -332,7 +334,7 @@ Requires more upfront work because Assured needs decomposition declared.
 2. Run `/sdlc-core:commission --option assured --level production` to install the bundle.
 3. Run `/sdlc-assured:commission-assured` to scaffold `programmes.yaml`, `visibility-rules.md`, and base specification templates.
 4. Edit `programmes.yaml` to declare modules.
-5. New requirements use `req-add` and get positional IDs; legacy IDs can be mapped (manual today; an import-mode is on the v0.3.0+ roadmap).
+5. New requirements use `req-add` and get positional IDs; legacy IDs can be mapped (manual today; an import-mode is on the v0.3.0+ roadmap). For corpora over ~50 legacy requirements, plan this as a one-off migration project rather than per-feature work.
 6. Annotate functions as you touch them (`code-annotate` + `kb-codeindex`); legacy code can be annotated incrementally.
 
 ### Programme → Assured
