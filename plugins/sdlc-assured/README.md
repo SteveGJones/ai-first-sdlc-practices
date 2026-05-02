@@ -1,8 +1,18 @@
 # sdlc-assured (v0.2.0 — audit-ready at the tooling layer)
 
-Regulated-industry SDLC bundle (Method 2) for projects targeting DO-178C, IEC 62304, ISO 26262, IEC 61508, or FDA 21 CFR Part 820. Layers on top of `sdlc-programme` (Method 1) with positional namespace IDs, bidirectional traceability, DDD-style decomposition with visibility rules, KB extension to code, typed evidence statuses, and standard-specific traceability exports.
+SDLC bundle (Method 2) for regulated-industry projects and complex agentic systems at scale. Layers on top of `sdlc-programme` (Method 1) with positional namespace IDs, bidirectional traceability, DDD-style decomposition with visibility rules, KB extension to code, typed evidence statuses, and standard-specific traceability exports.
 
 **v0.2.0 status**: audit-ready at the tooling layer. The validators, traceability machinery, evidence model, and exports are deterministic and regenerable by an auditor from the source tree. Two of four carry-forward items — corpus-policy CI enforcement and CI integration of the REQ-quality linter — are deferred to v0.3.0; see [Audit-Ready at the Tooling Layer (v0.2.0)](#audit-ready-at-the-tooling-layer-v020) below for the full list of what is and is not in scope.
+
+## Use Assured when
+
+**Regulated industries** — you are targeting a certification standard (DO-178C, IEC 62304, ISO 26262, IEC 61508, FDA 21 CFR Part 820) and need auditor-regenerable artefacts: bidirectional traceability, positional IDs, typed evidence, and standard-specific exports.
+
+**Complex agentic systems at scale** — you are building a system with 10 or more bounded contexts (modules) and want to give each agent a scoped context slice rather than the whole system. The original design motivation for Method 2 included this explicitly: positional IDs + KB-for-code + decomposition validators let you route each agent to its relevant module with a small, scoped requirement slice, reducing the risk that an agent "knows too much" and mis-implements by hallucinating against unrelated system context. No regulatory requirement is needed to benefit from this.
+
+If neither condition applies, use [Programme (Method 1)](../../docs/METHODS-GUIDE.md#programme-method-1) for multi-team coordination or [Single-team](../../docs/METHODS-GUIDE.md#single-team) for most projects.
+
+---
 
 ## What this bundle adds over Programme
 
