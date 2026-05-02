@@ -11,6 +11,8 @@
     - [sdlc-core (always installed)](#sdlc-core-always-installed)
     - [sdlc-knowledge-base](#sdlc-knowledge-base)
     - [sdlc-workflows](#sdlc-workflows)
+    - [sdlc-programme (Method 1 — multi-team phase gates)](#sdlc-programme-method-1--multi-team-phase-gates)
+    - [sdlc-assured (Method 2 — regulated-industry traceability, v0.2.0 audit-ready)](#sdlc-assured-method-2--regulated-industry-traceability-v020-audit-ready)
   - [Validation Pipeline (10 Checks)](#validation-pipeline-10-checks)
   - [Direct Validators (Framework Development)](#direct-validators-framework-development)
   - [Branch Naming](#branch-naming)
@@ -88,6 +90,33 @@
 | `/sdlc-workflows:author-workflow` | Recommend or create workflows |
 | `/sdlc-workflows:deploy-team <name>` | Build team image from manifest |
 | `/sdlc-workflows:manage-teams` | Team lifecycle coaching |
+
+### sdlc-programme (Method 1 — multi-team phase gates)
+
+Install with `/plugin install sdlc-programme@ai-first-sdlc`, then commission with `/sdlc-core:commission --option programme --level production` (or `/sdlc-programme:commission-programme`).
+
+| Skill | Purpose |
+|-------|---------|
+| `/sdlc-programme:commission-programme` | Install Method 1 bundle and scaffold phase templates (delegates to `/sdlc-core:commission`) |
+| `/sdlc-programme:phase-init <phase> <id>` | Initialise requirements / design / test phase artefact |
+| `/sdlc-programme:phase-gate <phase> <id>` | Validate phase artefact and gate entry to next phase |
+| `/sdlc-programme:phase-review <phase> <id>` | Mandatory cross-phase review (design + test phases) |
+| `/sdlc-programme:traceability-export <format>` | Export cross-phase traceability (csv / markdown) for audit |
+
+### sdlc-assured (Method 2 — regulated-industry traceability, v0.2.0 audit-ready)
+
+Install with `/plugin install sdlc-assured@ai-first-sdlc`, then commission with `/sdlc-core:commission --option assured --level production` (or `/sdlc-assured:commission-assured`).
+
+| Skill | Purpose |
+|-------|---------|
+| `/sdlc-assured:commission-assured` | Install Method 2 bundle and scaffold programmes.yaml + visibility-rules.md (delegates to `/sdlc-core:commission`) |
+| `/sdlc-assured:req-add <module> <feature>` | Mint positional-namespace REQ ID with module assignment |
+| `/sdlc-assured:req-link <req-id> <artefact>` | Add satisfies link (bidirectional traceability) |
+| `/sdlc-assured:code-annotate <function>` | Generate `# implements: <REQ-ID>` boilerplate annotation |
+| `/sdlc-assured:module-bound-check` | Run 5 decomposition validators (visibility, anaemia, scatter) |
+| `/sdlc-assured:kb-codeindex` | Parse `# implements:` annotations into `library/_code-index.md` |
+| `/sdlc-assured:change-impact-annotate` | Guide change-impact declaration (IEC 62304 / FDA tracking) |
+| `/sdlc-assured:traceability-render` | Generate module-scoped audit-ready traceability document |
 
 ---
 
@@ -217,6 +246,7 @@ git stash && git checkout -b feature/correct-name && git stash pop
 
 - [README.md](../README.md) — Project overview
 - [HOWTO.md](HOWTO.md) — Comprehensive usage guide
+- [METHODS-GUIDE.md](METHODS-GUIDE.md) — SDLC method decision tree (solo / single-team / programme / assured)
 - [PLUGIN-CONSUMER-GUIDE.md](PLUGIN-CONSUMER-GUIDE.md) — How the plugin ecosystem works
 - [CONSTITUTION.md](../CONSTITUTION.md) — All rules (11 articles)
 - [AGENT-INDEX.md](../AGENT-INDEX.md) — Full agent catalog
