@@ -2,11 +2,26 @@
 
 **Issue:** [#190](https://github.com/SteveGJones/ai-first-sdlc-practices/issues/190)
 **Branch:** `feature/190-v020-adoption-surface`
+**Target Branch:** `feature/190-v020-adoption-surface`
 **Author:** Steve Jones (with Claude Opus 4.7)
 **Date opened:** 2026-05-02
 **Type:** Documentation + onboarding (no production code change)
 **Depends on:** EPIC #178 (merged), EPIC #188 (merged)
 **Carried-forward from:** Fresh-user audit conducted 2026-05-02 in-session (post-#188 merge)
+
+---
+
+## Motivation
+
+See **Section 1: Problem statement** below — the motivation for this proposal is the gap between EPIC #188 having shipped audit-readiness in `main` and a fresh user being unable to discover, pick, or even reach v0.2.0 of `sdlc-assured` through the natural reading paths.
+
+## Proposed Solution
+
+See **Section 4: Scope (what this PR will change)** below — the proposed solution is a 6-tier file-by-file punch list of documentation, onboarding-skill, and version-metadata edits, totalling ~159 minutes of doc-only work with no production code change.
+
+## Success Criteria
+
+See **Section 6: Acceptance criteria** below — 13 explicit acceptance criteria covering version metadata, fresh-user discoverability, setup-team gating, audit-readiness narrative, and CI passes.
 
 ---
 
