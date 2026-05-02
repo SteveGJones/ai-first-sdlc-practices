@@ -6,6 +6,7 @@
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
     - [Plugin Install (Recommended)](#plugin-install-recommended)
+    - [SDLC Method Selection](#sdlc-method-selection)
     - [Available Plugins](#available-plugins)
     - [Available Skills](#available-skills)
     - [Agent-Based Setup (Pre-release / Development)](#agent-based-setup-pre-release--development)

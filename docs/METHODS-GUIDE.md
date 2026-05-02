@@ -1,3 +1,49 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [SDLC Methods Guide](#sdlc-methods-guide)
+  - [Overview](#overview)
+  - [Decision Tree](#decision-tree)
+  - [Single-team](#single-team)
+    - [When to use](#when-to-use)
+    - [What you get](#what-you-get)
+    - [Example workflow](#example-workflow)
+    - [What you don't get (compared with Programme / Assured)](#what-you-dont-get-compared-with-programme--assured)
+  - [Solo](#solo)
+    - [When to use](#when-to-use-1)
+    - [What Solo adds (or removes) compared with Single-team](#what-solo-adds-or-removes-compared-with-single-team)
+    - [Example workflow](#example-workflow-1)
+    - [When NOT to use Solo](#when-not-to-use-solo)
+  - [Programme (Method 1)](#programme-method-1)
+    - [When to use](#when-to-use-2)
+    - [What Method 1 adds over Single-team](#what-method-1-adds-over-single-team)
+    - [Example workflow per feature](#example-workflow-per-feature)
+    - [Trade-offs](#trade-offs)
+    - [What you don't get (compared with Assured)](#what-you-dont-get-compared-with-assured)
+  - [Assured (Method 2)](#assured-method-2)
+    - [When to use](#when-to-use-3)
+    - [What Method 2 adds over Method 1](#what-method-2-adds-over-method-1)
+    - [Example workflow per requirement](#example-workflow-per-requirement)
+    - [v0.2.0 status: audit-ready at the tooling layer](#v020-status-audit-ready-at-the-tooling-layer)
+    - [Trade-offs](#trade-offs-1)
+  - [Comparison Table](#comparison-table)
+  - [Trade-offs](#trade-offs-2)
+    - [Solo](#solo-1)
+    - [Single-team](#single-team-1)
+    - [Programme](#programme)
+    - [Assured](#assured)
+  - [Migration](#migration)
+    - [Single-team → Programme](#single-team-%E2%86%92-programme)
+    - [Single-team → Assured](#single-team-%E2%86%92-assured)
+    - [Programme → Assured](#programme-%E2%86%92-assured)
+    - [Solo → Single-team](#solo-%E2%86%92-single-team)
+    - [Downgrades](#downgrades)
+  - [Commissioning Status and `setup-team`](#commissioning-status-and-setup-team)
+  - [Further Reading](#further-reading)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # SDLC Methods Guide
 
 The AI-First SDLC Framework supports four SDLC delivery structures. This guide helps you pick the right one and explains how to migrate between them as your project evolves.
