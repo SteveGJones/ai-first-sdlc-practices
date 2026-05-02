@@ -52,7 +52,7 @@ we use them ourselves.
 specify → architect → implement → review
 ```
 
-Git workflow: feature branches only; **never push directly to main**; never commit to main directly. Full rules in CONSTITUTION.md Article 1.
+Git workflow: feature branches only; **never push directly to main**; never commit to main directly. Full rules in CONSTITUTION.md Article 1. **Never use `--admin`, `--force`, or any branch-protection bypass when a merge is blocked** — report the block and ask the user whether to override.
 
 1. Feature proposal (`docs/feature-proposals/XX-name.md`) + retrospective (`retrospectives/XX-name.md`)
 2. Feature branch (`feature/name`) — never commit to main directly
