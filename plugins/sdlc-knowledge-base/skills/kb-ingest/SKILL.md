@@ -7,6 +7,8 @@ argument-hint: "<source-path-or-url-or-text>"
 
 # Knowledge Base Ingest
 
+> **Agent-only**: Dispatch this operation via the Agent tool (`research-librarian` for queries/lint/validate, `agent-knowledge-updater` for ingest/promote). Running inline fills the main session context and degrades subsequent tasks. See `CLAUDE-CONTEXT-knowledge-base.md`.
+
 Take a new source and integrate it into the project's knowledge base. This is the **ingest** operation in the three-operations model (ingest / query / lint).
 
 ## Argument

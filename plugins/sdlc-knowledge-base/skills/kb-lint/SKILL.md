@@ -7,6 +7,8 @@ argument-hint: "[--scope <pattern>]"
 
 # Knowledge Base Lint
 
+> **Agent-only**: Dispatch this operation via the Agent tool (`research-librarian` for queries/lint/validate, `agent-knowledge-updater` for ingest/promote). Running inline fills the main session context and degrades subsequent tasks. See `CLAUDE-CONTEXT-knowledge-base.md`.
+
 Periodic health-check for the project's knowledge base. This is the **lint** operation in the three-operations model (ingest / query / lint), adopted from Karpathy's LLM Wiki gist.
 
 The staleness check that runs in environment validation catches one kind of drift (file changed since last index). Lint catches the other kinds: logical drift, orphan accumulation, missing concepts, contradictions, gaps. Both are needed.
