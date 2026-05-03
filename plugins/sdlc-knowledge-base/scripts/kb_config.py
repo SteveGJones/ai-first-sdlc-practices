@@ -74,6 +74,9 @@ def _parse_layers_from_section(section: str) -> Optional[list[str]]:
         stripped = line.strip()
 
         if collecting:
+            # Skip blank lines while collecting
+            if not stripped:
+                continue
             # Check for a list item under layers:
             if re.match(r"^\s{2,}-\s+", line) or re.match(r"^-\s+", line):
                 # Strip the leading "- " and any inline comment

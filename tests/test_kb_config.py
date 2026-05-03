@@ -95,6 +95,16 @@ def test_allowed_layers_stops_at_next_heading(tmp_path: Path) -> None:
     assert "should_not_appear" not in result
 
 
+def test_allowed_layers_handles_blank_line_in_list(tmp_path: Path) -> None:
+    """Parser must skip blank lines within the layers: list."""
+    claude_md = tmp_path / "CLAUDE.md"
+    claude_md.write_text(
+        "## Knowledge Base\n\nlayers:\n  - methodology\n\n  - evidence\n"
+    )
+    result = allowed_layers(tmp_path)
+    assert result == ["methodology", "evidence"]
+
+
 # ---------------------------------------------------------------------------
 # Tests for check_layer_compliance()
 # ---------------------------------------------------------------------------
