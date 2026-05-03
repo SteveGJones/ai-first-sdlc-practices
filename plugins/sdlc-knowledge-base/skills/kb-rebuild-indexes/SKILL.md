@@ -87,12 +87,13 @@ if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
         spec.loader.exec_module(module)
 from sdlc_knowledge_base_scripts.build_shelf_index import main
 args = ['<library_path>', '--shelf-index-path', '<shelf_index_path>']
-# append '--full' if the --full argument was passed to this skill
+# If this skill was called with --full, append it:
+# args.append('--full')
 sys.exit(main(args))
 "
 ```
 
-Replace `<library_path>` and `<shelf_index_path>` with the values from Step 1.
+Replace `<library_path>` and `<shelf_index_path>` with the values from Step 1. If the skill argument was `--full`, uncomment the `args.append('--full')` line.
 
 ### 4. Report results
 
