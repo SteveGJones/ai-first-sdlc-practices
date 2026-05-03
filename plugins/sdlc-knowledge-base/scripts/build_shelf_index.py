@@ -159,6 +159,8 @@ def _read_existing_header(shelf_index_path: Path) -> tuple[str, str]:
     with shelf_index_path.open("r", encoding="utf-8") as fh:
         for line in fh:
             stripped = line.rstrip("\n")
+            if not stripped:
+                continue  # skip blank lines within the header block
             if not stripped.startswith("<!--"):
                 break
             match = _HEADER_FIELD_RE.match(stripped)
@@ -306,15 +308,15 @@ def rebuild_shelf_index(
         current_hash = compute_hash(file_path)
         recorded_hash = existing_hashes.get(rel)
 
-        if not full and recorded_hash == current_hash:
-            stats.unchanged += 1
-        elif recorded_hash is None:
-            stats.added += 1
-        else:
-            stats.modified += 1
-
         try:
             entries.append(build_entry(file_path, library_path))
+            # Only increment stats after successful extraction
+            if not full and recorded_hash == current_hash:
+                stats.unchanged += 1
+            elif recorded_hash is None:
+                stats.added += 1
+            else:
+                stats.modified += 1
         except Exception as exc:
             stats.failed.append(f"{rel}: {exc}")
 
@@ -328,7 +330,10 @@ def rebuild_shelf_index(
     )
 
     if log_path is not None and log_path.exists():
-        _append_to_log(log_path, stats, full=full)
+        try:
+            _append_to_log(log_path, stats, full=full)
+        except OSError as exc:
+            stats.failed.append(f"log append failed: {exc}")
 
     return stats
 
