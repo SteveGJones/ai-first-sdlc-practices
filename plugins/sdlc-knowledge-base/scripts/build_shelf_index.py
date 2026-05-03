@@ -43,6 +43,7 @@ class IndexEntry:
     terms: list[str]
     facts: list[str]
     links: list[str]
+    layer: str = "uncategorized"
 
 
 @dataclass
@@ -97,6 +98,11 @@ def extract_terms(frontmatter: dict, content: str) -> list[str]:
     if isinstance(tags, list):
         raw.extend(str(t).strip().lower() for t in tags if t)
 
+    # layer value included in terms so librarian queries naturally match it
+    layer_val = frontmatter.get("layer", "")
+    if layer_val:
+        raw.append(str(layer_val).strip().lower())
+
     for heading in _HEADING_RE.findall(content):
         raw.append(heading.strip().lower())
 
@@ -139,6 +145,14 @@ def extract_links(frontmatter: dict) -> list[str]:
     if isinstance(cross_refs, list):
         return [str(ref).strip() for ref in cross_refs if ref]
     return []
+
+
+def extract_layer(frontmatter: dict[str, object]) -> str:
+    """Return layer value as stripped lowercase string, or 'uncategorized' if absent."""
+    val = frontmatter.get("layer", "")
+    if not val:
+        return "uncategorized"
+    return str(val).strip().lower()
 
 
 def compute_hash(path: Path) -> str:
@@ -208,6 +222,7 @@ def build_entry(file_path: Path, library_root: Path) -> IndexEntry:
         terms=extract_terms(frontmatter, text),
         facts=extract_facts(text),
         links=extract_links(frontmatter),
+        layer=extract_layer(frontmatter),
     )
 
 
@@ -237,6 +252,7 @@ def _render_entry(n: int, entry: IndexEntry) -> str:
     return (
         f"## {n}. {entry.file_path}\n\n"
         f"**Hash:** {entry.hash}\n"
+        f"**Layer:** {entry.layer}\n"
         f"**Terms:** {', '.join(entry.terms)}\n"
         f"**Facts:**\n{facts_block}\n"
         f"**Links:** {links_str}\n"

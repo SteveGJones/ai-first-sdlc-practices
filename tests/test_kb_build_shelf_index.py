@@ -372,3 +372,112 @@ def test_rebuild_shelf_index_creates_parent_directory(tmp_path: Path) -> None:
     stats = rebuild_shelf_index(lib, shelf)
     assert shelf.exists()
     assert stats.added == 1
+
+
+# ---------------------------------------------------------------------------
+# Layer support (Phase B, #154)
+# ---------------------------------------------------------------------------
+
+
+def test_extract_layer_returns_valid_value() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_layer
+    assert extract_layer({"layer": "methodology"}) == "methodology"
+
+
+def test_extract_layer_strips_and_lowercases() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_layer
+    assert extract_layer({"layer": "  Methodology  "}) == "methodology"
+
+
+def test_extract_layer_returns_uncategorized_when_missing() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_layer
+    assert extract_layer({}) == "uncategorized"
+
+
+def test_extract_layer_returns_uncategorized_for_empty_string() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_layer
+    assert extract_layer({"layer": ""}) == "uncategorized"
+
+
+def test_extract_layer_returns_value_even_if_invalid() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_layer
+    assert extract_layer({"layer": "INVALID VALUE"}) == "invalid value"
+
+
+def test_index_entry_has_layer_field() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import IndexEntry
+    entry = IndexEntry(
+        file_path="test.md",
+        hash="a" * 64,
+        terms=["term"],
+        facts=[],
+        links=[],
+        layer="methodology",
+    )
+    assert entry.layer == "methodology"
+
+
+def test_build_entry_includes_layer(tmp_path: Path) -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import build_entry
+    lib = tmp_path / "library"
+    lib.mkdir()
+    f = lib / "test.md"
+    f.write_text(
+        "---\ntitle: Test\ndomain: testing\nlayer: evidence\nstatus: active\n---\n## Key Question\nWhat?\n",
+        encoding="utf-8",
+    )
+    entry = build_entry(f, lib)
+    assert entry.layer == "evidence"
+
+
+def test_build_entry_layer_uncategorized_when_missing(tmp_path: Path) -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import build_entry
+    lib = tmp_path / "library"
+    lib.mkdir()
+    f = lib / "test.md"
+    f.write_text(
+        "---\ntitle: Test\ndomain: testing\nstatus: active\n---\n## Key Question\nWhat?\n",
+        encoding="utf-8",
+    )
+    entry = build_entry(f, lib)
+    assert entry.layer == "uncategorized"
+
+
+def test_render_entry_includes_layer_line() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import IndexEntry, _render_entry
+    entry = IndexEntry(
+        file_path="test.md",
+        hash="a" * 64,
+        terms=["testing"],
+        facts=["A fact."],
+        links=[],
+        layer="domain",
+    )
+    rendered = _render_entry(1, entry)
+    assert "**Layer:** domain" in rendered
+    lines = rendered.splitlines()
+    hash_idx = next(i for i, l in enumerate(lines) if l.startswith("**Hash:**"))
+    layer_idx = next(i for i, l in enumerate(lines) if l.startswith("**Layer:**"))
+    terms_idx = next(i for i, l in enumerate(lines) if l.startswith("**Terms:**"))
+    assert hash_idx < layer_idx < terms_idx
+
+
+def test_extract_terms_includes_layer() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_terms
+    fm = {"title": "Test", "domain": "sdlc", "layer": "methodology"}
+    terms = extract_terms(fm, "")
+    assert "methodology" in terms
+
+
+def test_rebuild_includes_layer_in_shelf_index(tmp_path: Path) -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "test.md").write_text(
+        "---\ntitle: Test\ndomain: testing\nlayer: evidence\nstatus: active\n---\n## Key Question\nWhat?\n",
+        encoding="utf-8",
+    )
+    shelf = lib / "_shelf-index.md"
+    rebuild_shelf_index(lib, shelf)
+    content = shelf.read_text(encoding="utf-8")
+    assert "**Layer:** evidence" in content
