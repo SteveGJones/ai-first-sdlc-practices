@@ -199,6 +199,7 @@ sdlc-knowledge-base:
     - source: plugins/sdlc-knowledge-base/scripts/shelf_index_header.py
     - source: plugins/sdlc-knowledge-base/scripts/orchestrator.py
     - source: plugins/sdlc-knowledge-base/scripts/audit.py
+    - source: plugins/sdlc-knowledge-base/scripts/build_shelf_index.py
 
 # Programme SDLC plugin — formal waterfall with mandatory cross-phase review. EPIC #178.
 # Method 1 substrate: 5 skills (commission-programme, phase-init, phase-gate, phase-review,
