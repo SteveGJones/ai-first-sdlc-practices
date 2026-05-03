@@ -191,3 +191,78 @@ def test_main_exits_one_on_missing_library(tmp_path: Path) -> None:
         ]
     )
     assert rc == 1
+
+
+def test_generate_stats_inventory_includes_layer_quality_metric(tmp_path: Path) -> None:
+    lib, shelf, log = _make_library(tmp_path)
+    _write_shelf_index(
+        shelf,
+        [
+            {"file": "a.md", "layer": "uncategorized", "facts_count": 1},
+            {"file": "b.md", "layer": "methodology", "facts_count": 2},
+        ],
+    )
+    _write_log(log, [])
+    stats = generate_stats(lib, shelf, log)
+    assert "Files lacking layer tag: 1" in stats
+
+
+def test_generate_stats_inventory_includes_xref_metric(tmp_path: Path) -> None:
+    lib, shelf, log = _make_library(tmp_path)
+    _write_shelf_index(
+        shelf,
+        [
+            {"file": "a.md", "layer": "methodology", "links": [], "facts_count": 1},
+            {"file": "b.md", "layer": "evidence", "links": ["a.md"], "facts_count": 1},
+        ],
+    )
+    _write_log(log, [])
+    stats = generate_stats(lib, shelf, log)
+    assert "Files lacking cross-references" in stats
+    assert ": 1" in stats  # one orphan
+
+
+def test_generate_stats_layer_section_is_table(tmp_path: Path) -> None:
+    lib, shelf, log = _make_library(tmp_path)
+    _write_shelf_index(
+        shelf, [{"file": "a.md", "layer": "methodology", "facts_count": 2}]
+    )
+    _write_log(log, [])
+    stats = generate_stats(lib, shelf, log)
+    assert "| Layer | Files | Findings |" in stats
+
+
+def test_generate_stats_domain_section_is_table(tmp_path: Path) -> None:
+    lib, shelf, log = _make_library(tmp_path)
+    _write_shelf_index(
+        shelf,
+        [{"file": "a.md", "layer": "methodology", "domain": "sdlc", "facts_count": 1}],
+    )
+    _write_log(log, [])
+    stats = generate_stats(lib, shelf, log)
+    assert "| Domain | Files |" in stats
+
+
+def test_main_since_flag(tmp_path: Path) -> None:
+    lib, shelf, log = _make_library(tmp_path)
+    _write_shelf_index(shelf, [{"file": "a.md", "layer": "methodology"}])
+    _write_log(
+        log,
+        [
+            "## [2020-01-01] ingest | old.md\n\nSource: library/raw/old.md",
+            "## [2026-05-01] ingest | recent.md\n\nSource: library/raw/recent.md",
+        ],
+    )
+    rc = main(
+        [
+            "--library-path",
+            str(lib),
+            "--shelf-index-path",
+            str(shelf),
+            "--log-path",
+            str(log),
+            "--since",
+            "2026-04-01",
+        ]
+    )
+    assert rc == 0

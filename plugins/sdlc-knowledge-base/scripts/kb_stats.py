@@ -158,17 +158,135 @@ def _parse_log(content: str, since: date | None = None) -> list[_LogEntry]:
 
 
 # ---------------------------------------------------------------------------
-# Report generation
+# Section renderers
 # ---------------------------------------------------------------------------
 
 
-def _bar(count: int, total: int, width: int = 20) -> str:
-    """Render a simple ASCII bar proportional to count/total."""
-    if total == 0:
-        filled = 0
+def _render_inventory_section(entries: list[_ShelfEntry]) -> list[str]:
+    """Render the Inventory section lines."""
+    total_files = len(entries)
+    total_facts = sum(e.facts_count for e in entries)
+    no_layer = sum(1 for e in entries if e.layer == "uncategorized")
+    orphans = sum(1 for e in entries if not e.links)
+    lines: list[str] = []
+    lines.append("## Inventory")
+    lines.append("")
+    lines.append(f"- Total files: {total_files}")
+    lines.append(f"- Total findings: {total_facts}")
+    lines.append(f"- Files lacking layer tag: {no_layer}")
+    lines.append(f"- Files lacking cross-references (orphans): {orphans}")
+    lines.append("")
+    return lines
+
+
+def _render_layer_section(entries: list[_ShelfEntry]) -> list[str]:
+    """Render the Distribution by layer section as a markdown table."""
+    layer_files: dict[str, int] = {}
+    layer_facts: dict[str, int] = {}
+    for e in entries:
+        layer_files[e.layer] = layer_files.get(e.layer, 0) + 1
+        layer_facts[e.layer] = layer_facts.get(e.layer, 0) + e.facts_count
+
+    lines: list[str] = []
+    lines.append("## Distribution by layer")
+    lines.append("")
+    if layer_files:
+        lines.append("| Layer | Files | Findings | Avg findings/file |")
+        lines.append("|---|---|---|---|")
+        for layer, count in sorted(layer_files.items(), key=lambda x: -x[1]):
+            facts = layer_facts.get(layer, 0)
+            avg = f"{facts / count:.1f}" if count else "-"
+            lines.append(f"| {layer} | {count} | {facts} | {avg} |")
     else:
-        filled = round(count / total * width)
-    return "[" + "#" * filled + " " * (width - filled) + "]"
+        lines.append("_No entries in shelf-index._")
+    lines.append("")
+    return lines
+
+
+def _render_domain_section(entries: list[_ShelfEntry]) -> list[str]:
+    """Render the Distribution by domain section as a markdown table."""
+    domain_counts: dict[str, int] = {}
+    for e in entries:
+        for d in e.domains:
+            domain_counts[d] = domain_counts.get(d, 0) + 1
+
+    lines: list[str] = []
+    lines.append("## Distribution by domain")
+    lines.append("")
+    if domain_counts:
+        top_domains = sorted(domain_counts.items(), key=lambda x: -x[1])[:15]
+        lines.append("| Domain | Files |")
+        lines.append("|---|---|")
+        for domain, count in top_domains:
+            lines.append(f"| {domain} | {count} |")
+    else:
+        lines.append("_No domain terms found._")
+    lines.append("")
+    return lines
+
+
+def _render_activity_section(
+    log_entries: list[_LogEntry], since_days: int
+) -> list[str]:
+    """Render the Recent activity section lines."""
+    lines: list[str] = []
+    lines.append("## Recent activity")
+    lines.append("")
+    window_label = f"last {since_days} days"
+    if log_entries:
+        # Group by operation
+        op_counts: dict[str, int] = {}
+        for entry in log_entries:
+            op_counts[entry.operation] = op_counts.get(entry.operation, 0) + 1
+        lines.append(f"- Total operations: {len(log_entries)}")
+        for op, cnt in sorted(op_counts.items(), key=lambda x: -x[1]):
+            lines.append(f"  - {op}: {cnt}")
+        lines.append("")
+        # Show up to 10 most recent entries
+        lines.append("### Most recent entries")
+        lines.append("")
+        for entry in sorted(log_entries, key=lambda e: e.date, reverse=True)[:10]:
+            subject = entry.subject or "(no subject)"
+            lines.append(f"- [{entry.date}] {entry.operation} | {subject}")
+    else:
+        lines.append(f"_No log entries in the {window_label} window._")
+    lines.append("")
+    return lines
+
+
+def _render_staleness_section(last_rebuilt_raw: str) -> list[str]:
+    """Render the Staleness section lines."""
+    lines: list[str] = []
+    lines.append("## Staleness")
+    lines.append("")
+    if last_rebuilt_raw:
+        lines.append(f"- Last rebuilt: {last_rebuilt_raw}")
+        try:
+            rebuilt_dt = datetime.fromisoformat(last_rebuilt_raw.rstrip("Z")).replace(
+                tzinfo=timezone.utc
+            )
+            age_days = (datetime.now(timezone.utc) - rebuilt_dt).days
+            lines.append(f"- Age: {age_days} day(s)")
+            if age_days > 7:
+                lines.append(
+                    "- Status: STALE — consider running `/sdlc-knowledge-base:kb-rebuild-indexes`"
+                )
+            else:
+                lines.append("- Status: FRESH")
+        except ValueError:
+            lines.append("- Status: unknown (could not parse last_rebuilt timestamp)")
+    else:
+        lines.append("- Last rebuilt: unknown")
+        lines.append(
+            "- Status: unknown — run `/sdlc-knowledge-base:kb-rebuild-indexes` to generate shelf-index"
+        )
+    lines.append("")
+    return lines
+
+
+# ---------------------------------------------------------------------------
+# Report generation
+# ---------------------------------------------------------------------------
 
 
 def generate_stats(
@@ -205,21 +323,7 @@ def generate_stats(
         log_content = log_path.read_text(encoding="utf-8")
     recent_log = _parse_log(log_content, since=since_date)
 
-    # --- Compute aggregates ---
-    total_files = len(entries)
-    total_facts = sum(e.facts_count for e in entries)
-    total_links = sum(len(e.links) for e in entries)
-
-    layer_counts: dict[str, int] = {}
-    for e in entries:
-        layer_counts[e.layer] = layer_counts.get(e.layer, 0) + 1
-
-    domain_counts: dict[str, int] = {}
-    for e in entries:
-        for d in e.domains:
-            domain_counts[d] = domain_counts.get(d, 0) + 1
-
-    # --- Build report sections ---
+    # --- Build report ---
     lines: list[str] = []
 
     # Title
@@ -230,87 +334,11 @@ def generate_stats(
     )
     lines.append("")
 
-    # --- Section 1: Inventory ---
-    lines.append("## Inventory")
-    lines.append("")
-    lines.append(f"- Total files: {total_files}")
-    lines.append(f"- Total findings: {total_facts}")
-    lines.append(f"- Total cross-links: {total_links}")
-    lines.append(f"- Layers in use: {len(layer_counts)}")
-    lines.append("")
-
-    # --- Section 2: Distribution by layer ---
-    lines.append("## Distribution by layer")
-    lines.append("")
-    if layer_counts:
-        for layer, count in sorted(layer_counts.items(), key=lambda x: -x[1]):
-            pct = round(count / total_files * 100) if total_files else 0
-            bar = _bar(count, total_files)
-            lines.append(f"- {layer}: {count} files ({pct}%) {bar}")
-    else:
-        lines.append("_No entries in shelf-index._")
-    lines.append("")
-
-    # --- Section 3: Distribution by domain ---
-    lines.append("## Distribution by domain")
-    lines.append("")
-    if domain_counts:
-        top_domains = sorted(domain_counts.items(), key=lambda x: -x[1])[:15]
-        for domain, count in top_domains:
-            lines.append(f"- {domain}: {count} files")
-    else:
-        lines.append("_No domain terms found._")
-    lines.append("")
-
-    # --- Section 4: Recent activity ---
-    window_label = f"last {since_days} days"
-    lines.append(f"## Recent activity ({window_label})")
-    lines.append("")
-    if recent_log:
-        # Group by operation
-        op_counts: dict[str, int] = {}
-        for entry in recent_log:
-            op_counts[entry.operation] = op_counts.get(entry.operation, 0) + 1
-        lines.append(f"- Total operations: {len(recent_log)}")
-        for op, cnt in sorted(op_counts.items(), key=lambda x: -x[1]):
-            lines.append(f"  - {op}: {cnt}")
-        lines.append("")
-        # Show up to 10 most recent entries
-        lines.append("### Most recent entries")
-        lines.append("")
-        for entry in sorted(recent_log, key=lambda e: e.date, reverse=True)[:10]:
-            subject = entry.subject or "(no subject)"
-            lines.append(f"- [{entry.date}] {entry.operation} | {subject}")
-    else:
-        lines.append(f"_No log entries in the {window_label} window._")
-    lines.append("")
-
-    # --- Section 5: Staleness ---
-    lines.append("## Staleness")
-    lines.append("")
-    last_rebuilt_raw = header_fields.get("last_rebuilt", "")
-    if last_rebuilt_raw:
-        lines.append(f"- Last rebuilt: {last_rebuilt_raw}")
-        try:
-            rebuilt_dt = datetime.fromisoformat(last_rebuilt_raw.rstrip("Z")).replace(
-                tzinfo=timezone.utc
-            )
-            age_days = (datetime.now(timezone.utc) - rebuilt_dt).days
-            lines.append(f"- Age: {age_days} day(s)")
-            if age_days > 7:
-                lines.append(
-                    "- Status: STALE — consider running `/sdlc-knowledge-base:kb-rebuild-indexes`"
-                )
-            else:
-                lines.append("- Status: FRESH")
-        except ValueError:
-            lines.append("- Status: unknown (could not parse last_rebuilt timestamp)")
-    else:
-        lines.append("- Last rebuilt: unknown")
-        lines.append(
-            "- Status: unknown — run `/sdlc-knowledge-base:kb-rebuild-indexes` to generate shelf-index"
-        )
-    lines.append("")
+    lines.extend(_render_inventory_section(entries))
+    lines.extend(_render_layer_section(entries))
+    lines.extend(_render_domain_section(entries))
+    lines.extend(_render_activity_section(recent_log, since_days))
+    lines.extend(_render_staleness_section(header_fields.get("last_rebuilt", "")))
 
     return "\n".join(lines)
 
