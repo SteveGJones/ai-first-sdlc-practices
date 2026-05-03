@@ -29,6 +29,7 @@ _EXCLUDED_NAMES: frozenset[str] = frozenset({"_shelf-index.md", "_index.md", "lo
 _EXCLUDED_DIRS: frozenset[str] = frozenset({"raw"})
 
 _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
+_LIST_ITEM_RE = re.compile(r"^\s*-\s+")
 
 # ---------------------------------------------------------------------------
 # CLAUDE.md parser
@@ -78,7 +79,7 @@ def _parse_layers_from_section(section: str) -> Optional[list[str]]:
             if not stripped:
                 continue
             # Check for a list item under layers:
-            if re.match(r"^\s{2,}-\s+", line) or re.match(r"^-\s+", line):
+            if _LIST_ITEM_RE.match(line):
                 # Strip the leading "- " and any inline comment
                 item = re.sub(r"^\s*-\s+", "", line)
                 item = item.split("#")[0].strip()
@@ -125,7 +126,7 @@ def allowed_layers(project_dir: Path) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def _parse_frontmatter(text: str) -> dict:
+def _parse_frontmatter(text: str) -> dict[str, object]:
     """Extract YAML frontmatter dict from a markdown file's text.
 
     Returns an empty dict when frontmatter is absent or malformed.
@@ -151,14 +152,13 @@ def _is_excluded(path: Path, library_path: Path) -> bool:
     """Return True if path should be skipped during compliance checking."""
     if path.name in _EXCLUDED_NAMES:
         return True
-    # Check if any ancestor directory (relative to library_path) is in _EXCLUDED_DIRS
+    # Check if top-level directory (relative to library_path) is in _EXCLUDED_DIRS
     try:
         rel = path.relative_to(library_path)
     except ValueError:
         return False
-    for part in rel.parts[:-1]:  # exclude the filename itself
-        if part in _EXCLUDED_DIRS:
-            return True
+    if rel.parts[0] in _EXCLUDED_DIRS:
+        return True
     return False
 
 
