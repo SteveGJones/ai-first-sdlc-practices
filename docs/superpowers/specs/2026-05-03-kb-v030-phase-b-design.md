@@ -69,7 +69,54 @@ Rules:
 - Each value must match `^[a-z][a-z0-9-]*$` (lowercase, hyphenated). Invalid entries in the config trigger a kb-lint error.
 - The framework's own `CLAUDE.md` does **not** declare `layers:` — the four defaults stand, and CI runs `kb-lint --strict-layer` against them.
 
-A small helper module (`plugins/sdlc-knowledge-base/scripts/kb_config.py` — or extend an existing config-reading utility) parses `[Knowledge Base]` and exposes `allowed_layers(project_dir: Path) -> list[str]`. This is consumed by `kb-lint`. `build_shelf_index.py` does **not** read the config — it stays permissive.
+A small helper module (`plugins/sdlc-knowledge-base/scripts/kb_config.py` — or extend an existing config-reading utility) parses `[Knowledge Base]` and exposes `allowed_layers(project_dir: Path) -> list[str]`. This is consumed by `kb-lint` and `kb-layers`. `build_shelf_index.py` does **not** read the config — it stays permissive.
+
+### `kb-layers` skill — manage the project's layer vocabulary
+
+Without tooling, operators have to hand-edit CLAUDE.md to add or remove layers — error-prone. The `kb-layers` skill provides safe, idempotent management:
+
+```
+/sdlc-knowledge-base:kb-layers                              # list mode (default)
+/sdlc-knowledge-base:kb-layers --add <layer>                # extend the allowed set
+/sdlc-knowledge-base:kb-layers --remove <layer>             # drop from the allowed set, with usage check
+/sdlc-knowledge-base:kb-layers --remove <layer> --force     # bypass usage check
+```
+
+**`list` (default mode):**
+
+```
+# Project layer set
+
+Mode: project-defined (declared in CLAUDE.md)
+   or: defaults (no `layers:` declared — using the four built-ins)
+
+Allowed layers:
+- methodology    (15 files)
+- evidence       (22 files)
+- domain         ( 7 files)
+- development    ( 3 files)
+- regulatory     ( 0 files)   # custom
+
+Files with `layer:` not in the allowed set: 0
+Files lacking a `layer:` tag:                3
+```
+
+Reads the shelf-index for per-layer usage counts. No agent dispatch.
+
+**`--add <layer>`:**
+- Validates `^[a-z][a-z0-9-]*$`; refuses malformed values with a clear error.
+- If `layers:` is absent in CLAUDE.md, **materialises** it with the current defaults + the new value (transparent transition from "using defaults" to "explicit list").
+- Idempotent: adding an already-listed layer is a no-op with a confirmation message.
+- Atomic write to CLAUDE.md (write to `.tmp`, rename on success).
+
+**`--remove <layer>`:**
+- Reads the shelf-index; if any file uses the layer, refuses with the list of using files and exits non-zero.
+- `--force` bypasses the usage check (operator's responsibility to clean up dangling references — kb-lint will catch them on next run).
+- If `layers:` is absent in CLAUDE.md and the operator removes a default, materialises the explicit list (defaults minus the removed value).
+- Refuses to remove the last remaining layer — the KB needs at least one valid value.
+- Atomic write.
+
+**Implementation:** pure Python `plugins/sdlc-knowledge-base/scripts/kb_layers.py` + thin Bash wrapper skill. Reads `kb_config.allowed_layers` for the current set, reads the shelf-index for usage data, writes CLAUDE.md atomically. No agent dispatch — categorised as **lightweight** in the agent-only routing table.
 
 ### Lenient default in tooling, strict via opt-in
 
@@ -341,14 +388,15 @@ The three starter-pack library files get `layer:` values. The starter-pack `_she
 
 1. Add `layer` to the frontmatter schema documentation.
 2. Add a "Batch Workflow" section describing the prepare-then-ingest two-stage pattern with a worked example.
-3. Update the routing table to include `kb-prepare-batch` (Bash, no agent) and `kb-ingest-batch` (Agent tool — dispatches `agent-knowledge-updater`).
+3. Update the routing table to include `kb-prepare-batch` (Bash, no agent), `kb-ingest-batch` (Agent tool — dispatches `agent-knowledge-updater`), and `kb-layers` (Bash, lightweight).
 4. Update the `kb-stats` row to reflect the new dashboard.
+5. Add a "Managing the layer vocabulary" subsection covering kb-layers usage and the safe-remove behaviour.
 
 ### `release-mapping.yaml` updates
 
 Register the new files under `sdlc-knowledge-base`:
 - New scripts: `plugins/sdlc-knowledge-base/scripts/kb_stats.py`
-- New skills: `plugins/sdlc-knowledge-base/skills/kb-prepare-batch/SKILL.md`, `kb-ingest-batch/SKILL.md`, `kb-stats/SKILL.md`
+- New skills: `plugins/sdlc-knowledge-base/skills/kb-prepare-batch/SKILL.md`, `kb-ingest-batch/SKILL.md`, `kb-stats/SKILL.md`, `kb-layers/SKILL.md`
 
 ### CI changes
 
@@ -364,6 +412,9 @@ This repo's CI gains a `kb-lint --strict-layer` step against the framework's own
 | Create | `plugins/sdlc-knowledge-base/scripts/kb_stats.py` | Pure-Python stats generator |
 | Create | `plugins/sdlc-knowledge-base/scripts/kb_config.py` | Helper: read `[Knowledge Base]` from CLAUDE.md, expose `allowed_layers()` |
 | Create | `tests/test_kb_config.py` | Unit tests for `allowed_layers()` |
+| Create | `plugins/sdlc-knowledge-base/scripts/kb_layers.py` | Manage project's layer vocabulary (list/add/remove) |
+| Create | `plugins/sdlc-knowledge-base/skills/kb-layers/SKILL.md` | Bash wrapper skill |
+| Create | `tests/test_kb_layers.py` | Unit + integration tests for kb-layers |
 | Modify | `tests/test_kb_build_shelf_index.py` | Layer extraction + rendering tests |
 | Create | `tests/test_kb_stats.py` | Stats generator unit + integration tests |
 | Create | `plugins/sdlc-knowledge-base/skills/kb-prepare-batch/SKILL.md` | Prepare-batch skill |
@@ -393,6 +444,15 @@ This repo's CI gains a `kb-lint --strict-layer` step against the framework's own
 | `kb-lint --strict-layer` flags malformed entries in `layers:` config | Integration test |
 | `kb_config.allowed_layers()` returns defaults when no config declared | Unit test |
 | `kb_config.allowed_layers()` returns project values when `layers:` is declared | Unit test |
+| `kb-layers` (default) lists allowed layers with file counts from shelf-index | Integration test |
+| `kb-layers --add <new>` appends to `layers:` and materialises defaults if absent | Integration test |
+| `kb-layers --add <existing>` is a no-op with confirmation message | Integration test |
+| `kb-layers --add <malformed>` refuses with validation error | Unit test |
+| `kb-layers --remove <unused>` removes value from `layers:` cleanly | Integration test |
+| `kb-layers --remove <in-use>` refuses with list of using files | Integration test |
+| `kb-layers --remove <in-use> --force` removes despite usage | Integration test |
+| `kb-layers --remove` refuses to drop the last remaining layer | Integration test |
+| `kb-layers` writes CLAUDE.md atomically (temp file + rename) | Integration test |
 | Shelf-index entries render `**Layer:** <value>` between Hash and Terms | Integration test on rendered output |
 | Layer value appears in Terms list | Integration test |
 | `kb-prepare-batch` copies/moves `.md` files into `raw/` correctly | Integration test |
@@ -411,7 +471,7 @@ This repo's CI gains a `kb-lint --strict-layer` step against the framework's own
 | Starter-pack files have valid `layer:` values | Self-test in CI |
 | Repo CI fails if any framework library file lacks `layer` | CI dogfood test |
 
-Test additions: roughly 45–60 new tests across `test_kb_build_shelf_index.py` (layer additions), `test_kb_stats.py` (new), `test_kb_prepare_batch.py` (new), `test_kb_ingest_batch.py` (new), plus a small extension to existing kb-lint tests.
+Test additions: roughly 60–80 new tests across `test_kb_build_shelf_index.py` (layer additions), `test_kb_stats.py` (new), `test_kb_prepare_batch.py` (new), `test_kb_ingest_batch.py` (new), `test_kb_config.py` (new), `test_kb_layers.py` (new), plus a small extension to existing kb-lint tests.
 
 ---
 
