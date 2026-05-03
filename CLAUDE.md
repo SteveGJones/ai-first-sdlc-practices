@@ -4,14 +4,8 @@ AI-First SDLC Practices framework for AI development (v1.8.0). Rules: **CONSTITU
 
 ## Active Work
 
-- **EPIC #188** — sdlc-assured v0.2.0 audit-readiness + carry-forward closure. **Merged** (PR #189, merge commit `1356ff3`, 2026-05-02). 7 phases A-G shipped on `feature/sdlc-assured-v020`. Closes F-001/F-007/F-008/F-009/F-010 + carry-forward items (F1/F4/D1/D2/D3/E1/E2/E3). All 6 Phase G hard gates PASS: granularity_match noise 0%, RTM gap 4.55% (was 68.18%), gap-typing 30/30, FAC FPR 0%, visibility runs cleanly, 594/594 tests. Architect review: AGREE-WITH-CONCERNS (no blockers; 4 v0.3.0 carry-forward items). **`sdlc-assured` is now audit-ready at the tooling layer** — corpus-policy formalisation (MANUAL_EVIDENCE_REQUIRED) and CI integration of REQ-quality linter are v0.3.0 work. See `retrospectives/188-v020-assured-improvements.md`. **Adoption surface (#190 → PR #191)** closed 2026-05-02 (merge commit `9f02122`): marketplace bumped 0.1.0 → 0.2.0; new `docs/METHODS-GUIDE.md`; `setup-team` step 3 asks the four-option SDLC method question; bundle READMEs gain Getting Started + audit-readiness narrative; `/sdlc-core:commission` (already shipped in #178) now surfaced in every skill table. See `retrospectives/190-v020-adoption-surface.md`.
-- **EPIC #178** — Joint Programme + Assured bundle delivery. **Merged** (PR #187, merge commit `e05e446`, 2026-05-01). 6 phases A-F plus G closure shipped on `feature/sdlc-programme-assured-bundles`. `sdlc-programme` v0.1.0 (Method 1) and `sdlc-assured` v0.1.0 (Method 2) are live and installable. Marketplace 12 → 14 plugins. Phase F recursive dogfood produced 10 findings (5 IMPORTANT + 5 MINOR) — all closed in EPIC #188.
-- **EPIC #164** — Cross-library query support for sdlc-knowledge-base. **Merged** (PR #177).
-- **EPIC #97** — Multi-Option Commissioned SDLC. Phase C (commissioning infrastructure #98) shipped as part of #178. Sub-features for Single-team / Solo bundles still pending.
-- **EPIC #142** — Curated technology registry. **Merged** (sub-features 0-8 all complete via PRs #152 + #153).
-- **EPIC #96** — Containerised Claude Code workers. **Merged.**
-- **EPIC #105** — sdlc-knowledge-base plugin. **Merged.** Sub-feature 13 (#118 codebase-index) is future work.
-- **KB feedback issues** — From Amkor engagement feedback (2026-04-23): #161 (batch ingestion), #162 (kb-stats), #163 (confidence metadata), #165 (lint auto-fix). Plus #166 (named plugin bundles for setup-team on sdlc-core).
+- **EPIC #197** — sdlc-knowledge-base v0.3.0 operator experience + scale. Branch: `feature/kb-v030-operator-experience`. 7 sub-issues across 3 phases: Phase A (#155 programmatic index rebuild, #196 agent-only enforcement), Phase B (#154 layer tags, #161 batch ingestion, #162 kb-stats), Phase C (#163 confidence metadata, #165 lint auto-fix). See EPIC issue #197 for full architecture notes.
+- **EPIC #97** — Multi-Option Commissioned SDLC. Sub-features for Single-team (#99) / Solo (#100) bundles still pending. Migration skill (#101) and docs (#102) also pending.
 
 ## Working in this repo — dogfood the skills we ship
 
