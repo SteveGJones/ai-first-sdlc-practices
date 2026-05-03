@@ -55,7 +55,7 @@ class RebuildStats:
     failed: list[str] = field(default_factory=list)
 
 
-def parse_frontmatter(text: str) -> dict:
+def parse_frontmatter(text: str) -> dict[str, object]:
     """Parse YAML frontmatter delimited by --- from a Markdown file.
 
     Returns an empty dict if no frontmatter is found or if YAML is malformed.
@@ -71,7 +71,7 @@ def parse_frontmatter(text: str) -> dict:
         return {}
 
 
-def extract_terms(frontmatter: dict, content: str) -> list[str]:
+def extract_terms(frontmatter: dict[str, object], content: str) -> list[str]:
     """Extract up to 30 terms from frontmatter fields and ## headings.
 
     Sources, in order of priority:
@@ -139,7 +139,7 @@ def extract_facts(content: str) -> list[str]:
     return []
 
 
-def extract_links(frontmatter: dict) -> list[str]:
+def extract_links(frontmatter: dict[str, object]) -> list[str]:
     """Extract cross-reference links from frontmatter 'cross_references' list."""
     cross_refs = frontmatter.get("cross_references", [])
     if isinstance(cross_refs, list):
