@@ -4,7 +4,7 @@ Knowledge base operations reference. Load this when working with kb-* skills, de
 
 ## Agent-Only Rule (Critical)
 
-**kb-query and kb-ingest operations MUST be dispatched to the `research-librarian` or `agent-knowledge-updater` agents via the Agent tool. Never run these operations inline in the main session.**
+**All heavy kb-* operations (kb-query, kb-ingest, kb-lint, kb-validate-citations, kb-promote-answer-to-library) MUST be dispatched via the Agent tool to `research-librarian` or `agent-knowledge-updater`. Never run these inline in the main session.**
 
 ### Why this rule exists
 
@@ -22,20 +22,20 @@ Root cause: In the Amkor AI Strategy engagement (2026-04), inline kb-query calls
 | `kb-validate-citations` | Agent tool → `research-librarian` | Reads all library files + external checks |
 | `kb-promote-answer-to-library` | Agent tool → `agent-knowledge-updater` | Writes to library — agent write-access only |
 | `kb-rebuild-indexes` | Bash (script) | Pure Python, no library file content loaded into session |
-| `kb-stats` | Bash (reads shelf-index header only) | Lightweight — timestamps + counts only |
-| `kb-staleness-check` | Bash (reads timestamps) | Lightweight — no library file content read |
-| `kb-audit-query` | Bash (reads audit.log) | Lightweight — small append-only log |
+| `kb-stats` | Bash (script) | Lightweight — timestamps + counts only |
+| `kb-staleness-check` | Bash (script) | Lightweight — no library file content read |
+| `kb-audit-query` | Bash (script) | Lightweight — small append-only log |
 | `kb-init` | Inline OK | Writes CLAUDE.md section + empty dirs — no library content read |
 | `kb-register-library` | Inline OK | Updates `~/.sdlc/global-libraries.json` — no library content read |
 
 ### Correct dispatch pattern
 
 ```
-# Correct — dispatches to sub-session
+# ✅ Correct — dispatches to sub-session
 Use the Agent tool: dispatch research-librarian with prompt:
 "SCOPE: library/  SOURCE_HANDLE: local  Question: What does our research say about cycle time?"
 
-# Wrong — fills main context
+# ❌ Wrong — fills main context
 /sdlc-knowledge-base:kb-query "What does our research say about cycle time?"
 ```
 
