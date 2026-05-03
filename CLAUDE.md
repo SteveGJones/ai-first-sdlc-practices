@@ -4,7 +4,7 @@ AI-First SDLC Practices framework for AI development (v1.8.0). Rules: **CONSTITU
 
 ## Active Work
 
-- **EPIC #197** — sdlc-knowledge-base v0.3.0 operator experience + scale. Branch: `feature/kb-v030-operator-experience`. 7 sub-issues across 3 phases: Phase A (#155 programmatic index rebuild, #196 agent-only enforcement), Phase B (#154 layer tags, #161 batch ingestion, #162 kb-stats), Phase C (#163 confidence metadata, #165 lint auto-fix). See EPIC issue #197 for full architecture notes.
+- **EPIC #197** — sdlc-knowledge-base v0.3.0 operator experience + scale. Branch: `feature/kb-v030-operator-experience`. 7 sub-issues across 3 phases. **Phase A complete** (PR #198 open: #155 programmatic index rebuild, #196 agent-only enforcement). **Phase B in progress** — spec approved at `docs/superpowers/specs/2026-05-03-kb-v030-phase-b-design.md` (#154 layer tags + project-configurable layer set + new `kb-layers` skill, #161 `kb-prepare-batch` + `kb-ingest-batch`, #162 `kb-stats`). Phase C remaining (#163 confidence metadata, #165 lint auto-fix). EPIC branch accumulates across phases — Phase A's PR #198 is an exception; Phase B continues on the same branch.
 - **EPIC #97** — Multi-Option Commissioned SDLC. Sub-features for Single-team (#99) / Solo (#100) bundles still pending. Migration skill (#101) and docs (#102) also pending.
 
 ## Working in this repo — dogfood the skills we ship
