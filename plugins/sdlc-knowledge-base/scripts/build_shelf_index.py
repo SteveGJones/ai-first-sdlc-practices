@@ -324,6 +324,7 @@ def rebuild_shelf_index(
         if path not in current_paths:
             stats.removed += 1
 
+    shelf_index_path.parent.mkdir(parents=True, exist_ok=True)
     shelf_index_path.write_text(
         _build_index_content(entries, library_handle, library_description),
         encoding="utf-8",

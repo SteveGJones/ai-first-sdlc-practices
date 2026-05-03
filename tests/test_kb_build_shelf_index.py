@@ -361,3 +361,14 @@ def test_rebuild_shelf_index_priming_terms_format(tmp_path: Path) -> None:
     matches = _re.findall(r"\*\*Terms:\*\*[ \t]*(.*?)(?=\n|$)", content)
     assert matches, "No **Terms:** line found in shelf-index"
     assert "," in matches[0], "Terms must be comma-separated for priming compatibility"
+
+
+def test_rebuild_shelf_index_creates_parent_directory(tmp_path: Path) -> None:
+    lib = tmp_path / "library"
+    lib.mkdir()
+    _write_library_file(lib / "entry.md", "Entry")
+    # shelf-index in a subdirectory that doesn't exist yet
+    shelf = lib / "indexes" / "_shelf-index.md"
+    stats = rebuild_shelf_index(lib, shelf)
+    assert shelf.exists()
+    assert stats.added == 1
