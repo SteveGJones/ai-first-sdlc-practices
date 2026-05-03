@@ -1,4 +1,7 @@
 """Unit and integration tests for sdlc_knowledge_base_scripts.kb_layers."""
+
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
@@ -46,13 +49,20 @@ def _write_shelf_index(path: Path, layer_counts: dict[str, int]) -> None:
 
 
 def test_list_layers_returns_defaults_when_no_layers_declared(tmp_path: Path) -> None:
-    _write_claude_md(tmp_path / "CLAUDE.md", "## Knowledge Base\n\nlibrary_path: library/\n")
+    _write_claude_md(
+        tmp_path / "CLAUDE.md", "## Knowledge Base\n\nlibrary_path: library/\n"
+    )
     shelf = tmp_path / "library" / "_shelf-index.md"
     shelf.parent.mkdir()
     _write_shelf_index(shelf, {"methodology": 2, "evidence": 3})
     result = list_layers(tmp_path, shelf)
     assert result["mode"] == "defaults"
-    assert set(result["allowed"]) == {"methodology", "evidence", "domain", "development"}
+    assert set(result["allowed"]) == {
+        "methodology",
+        "evidence",
+        "domain",
+        "development",
+    }
     assert result["usage"]["methodology"] == 2
     assert result["usage"]["evidence"] == 3
     assert result["usage"].get("domain", 0) == 0
@@ -98,7 +108,9 @@ def test_add_layer_appends_to_explicit_list(tmp_path: Path) -> None:
 
 
 def test_add_layer_materialises_defaults_when_layers_absent(tmp_path: Path) -> None:
-    _write_claude_md(tmp_path / "CLAUDE.md", "## Knowledge Base\n\nlibrary_path: library/\n")
+    _write_claude_md(
+        tmp_path / "CLAUDE.md", "## Knowledge Base\n\nlibrary_path: library/\n"
+    )
     add_layer(tmp_path, "regulatory")
     content = (tmp_path / "CLAUDE.md").read_text()
     assert "layers:" in content
@@ -202,7 +214,9 @@ def test_remove_layer_refuses_last_remaining_layer(tmp_path: Path) -> None:
 
 
 def test_remove_layer_materialises_defaults_when_layers_absent(tmp_path: Path) -> None:
-    _write_claude_md(tmp_path / "CLAUDE.md", "## Knowledge Base\n\nlibrary_path: library/\n")
+    _write_claude_md(
+        tmp_path / "CLAUDE.md", "## Knowledge Base\n\nlibrary_path: library/\n"
+    )
     shelf = tmp_path / "library" / "_shelf-index.md"
     shelf.parent.mkdir()
     _write_shelf_index(shelf, {"methodology": 0})
@@ -223,3 +237,60 @@ def test_remove_layer_writes_atomically(tmp_path: Path) -> None:
     _write_shelf_index(shelf, {"methodology": 0, "evidence": 0})
     remove_layer(tmp_path, shelf, "methodology")
     assert not (tmp_path / "CLAUDE.md.tmp").exists()
+
+
+# ---------------------------------------------------------------------------
+# main() CLI
+# ---------------------------------------------------------------------------
+
+
+def test_main_list_exits_zero(tmp_path: Path) -> None:
+    from sdlc_knowledge_base_scripts.kb_layers import main
+
+    _write_claude_md(tmp_path / "CLAUDE.md", "## Knowledge Base\n\n")
+    shelf = tmp_path / "library" / "_shelf-index.md"
+    shelf.parent.mkdir()
+    _write_shelf_index(shelf, {"methodology": 1})
+    rc = main(["--project-dir", str(tmp_path), "--shelf-index-path", str(shelf)])
+    assert rc == 0
+
+
+def test_main_add_exits_zero(tmp_path: Path) -> None:
+    from sdlc_knowledge_base_scripts.kb_layers import main
+
+    _write_claude_md(tmp_path / "CLAUDE.md", "## Knowledge Base\n\n")
+    shelf = tmp_path / "library" / "_shelf-index.md"
+    shelf.parent.mkdir()
+    _write_shelf_index(shelf, {})
+    rc = main(
+        [
+            "--project-dir",
+            str(tmp_path),
+            "--shelf-index-path",
+            str(shelf),
+            "--add",
+            "regulatory",
+        ]
+    )
+    assert rc == 0
+    assert "  - regulatory" in (tmp_path / "CLAUDE.md").read_text()
+
+
+def test_main_add_invalid_layer_exits_one(tmp_path: Path) -> None:
+    from sdlc_knowledge_base_scripts.kb_layers import main
+
+    _write_claude_md(tmp_path / "CLAUDE.md", "## Knowledge Base\n\n")
+    shelf = tmp_path / "library" / "_shelf-index.md"
+    shelf.parent.mkdir()
+    _write_shelf_index(shelf, {})
+    rc = main(
+        [
+            "--project-dir",
+            str(tmp_path),
+            "--shelf-index-path",
+            str(shelf),
+            "--add",
+            "INVALID",
+        ]
+    )
+    assert rc == 1

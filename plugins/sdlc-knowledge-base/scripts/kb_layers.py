@@ -1,16 +1,25 @@
 """Manage the project's layer vocabulary in CLAUDE.md Knowledge Base section."""
+
 from __future__ import annotations
 
 import re
 import sys
 from pathlib import Path
+from typing import TypedDict
 
 from .kb_config import (
-    DEFAULT_LAYERS,
     _extract_kb_section,
     _parse_layers_from_section,
     allowed_layers,
 )
+
+
+class LayerListResult(TypedDict):
+    mode: str
+    allowed: list[str]
+    usage: dict[str, int]
+    uncategorized_count: int
+
 
 _LAYER_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 _KB_HEADING_RE = re.compile(r"^##\s+Knowledge Base\s*$", re.IGNORECASE)
@@ -43,18 +52,10 @@ def _write_claude_md_atomic(project_dir: Path, content: str) -> None:
     tmp.rename(claude_md)
 
 
-def _materialise_layers_in_claude_md(project_dir: Path, new_layers: list[str]) -> None:
-    """Write the layers: list into the ## Knowledge Base section of CLAUDE.md.
-
-    If layers: already exists, replaces it. If absent, inserts it.
-    If the KB section is missing entirely, appends it.
-    """
-    claude_md = project_dir / "CLAUDE.md"
-    text = claude_md.read_text(encoding="utf-8") if claude_md.exists() else ""
-    lines = text.splitlines(keepends=True)
-
-    layers_block = "layers:\n" + "".join(f"  - {layer}\n" for layer in new_layers)
-
+def _locate_layers_block(
+    lines: list[str],
+) -> tuple[int, int, int, int]:
+    """Return (section_start, section_end, layers_start, layers_end) for the KB section."""
     in_section = False
     section_start = -1
     section_end = len(lines)
@@ -75,11 +76,27 @@ def _materialise_layers_in_claude_md(project_dir: Path, new_layers: list[str]) -
             layers_start = i
             j = i + 1
             while j < section_end and (
-                re.match(r"^\s*-\s+", lines[j]) or not lines[j].strip()
+                _LIST_ITEM_RE.match(lines[j]) or not lines[j].strip()
             ):
                 j += 1
             layers_end = j
         i += 1
+    return section_start, section_end, layers_start, layers_end
+
+
+def _materialise_layers_in_claude_md(project_dir: Path, new_layers: list[str]) -> None:
+    """Write the layers: list into the ## Knowledge Base section of CLAUDE.md.
+
+    If layers: already exists, replaces it. If absent, inserts it.
+    If the KB section is missing entirely, appends it.
+    """
+    claude_md = project_dir / "CLAUDE.md"
+    text = claude_md.read_text(encoding="utf-8") if claude_md.exists() else ""
+    lines = text.splitlines(keepends=True)
+
+    layers_block = "layers:\n" + "".join(f"  - {layer}\n" for layer in new_layers)
+
+    section_start, section_end, layers_start, layers_end = _locate_layers_block(lines)
 
     if section_start == -1:
         # No KB section — append one
@@ -111,7 +128,7 @@ def _has_explicit_layers(project_dir: Path) -> bool:
     return _parse_layers_from_section(section) is not None
 
 
-def list_layers(project_dir: Path, shelf_index_path: Path) -> dict[str, object]:
+def list_layers(project_dir: Path, shelf_index_path: Path) -> LayerListResult:
     """Return dict with mode, allowed layers, usage counts, and uncategorized count."""
     has_explicit = _has_explicit_layers(project_dir)
     current: list[str] = allowed_layers(project_dir)
@@ -183,12 +200,18 @@ def main(args: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(description="Manage KB layer vocabulary.")
-    parser.add_argument("--project-dir", default=".", help="Project root containing CLAUDE.md")
+    parser.add_argument(
+        "--project-dir", default=".", help="Project root containing CLAUDE.md"
+    )
     parser.add_argument("--shelf-index-path", default=None, help="Path to shelf-index")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--add", metavar="LAYER", help="Add a layer to the allowed set")
-    group.add_argument("--remove", metavar="LAYER", help="Remove a layer from the allowed set")
-    parser.add_argument("--force", action="store_true", help="Bypass usage check on --remove")
+    group.add_argument(
+        "--remove", metavar="LAYER", help="Remove a layer from the allowed set"
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="Bypass usage check on --remove"
+    )
     parsed = parser.parse_args(args)
 
     project_dir = Path(parsed.project_dir)
@@ -204,7 +227,9 @@ def main(args: list[str] | None = None) -> int:
             print(msg)
             return 0
         elif parsed.remove:
-            msg = remove_layer(project_dir, shelf_path, parsed.remove, force=parsed.force)
+            msg = remove_layer(
+                project_dir, shelf_path, parsed.remove, force=parsed.force
+            )
             print(msg)
             return 0
         else:
