@@ -7,8 +7,6 @@ argument-hint: "<question> [--promote-to-library]"
 
 # Knowledge Base Query
 
-> **Agent-only**: Dispatch this operation via the Agent tool (`research-librarian` for queries/lint/validate, `agent-knowledge-updater` for ingest/promote). Running inline fills the main session context and degrades subsequent tasks. See `CLAUDE-CONTEXT-knowledge-base.md`.
-
 Ask a question against the project's knowledge base. This is the **query** operation in the three-operations model (ingest / query / lint).
 
 ## Argument

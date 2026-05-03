@@ -7,8 +7,6 @@ argument-hint: "[<file-path-or-glob>]"
 
 # Validate Knowledge Base Citations
 
-> **Agent-only**: Dispatch this operation via the Agent tool (`research-librarian` for queries/lint/validate, `agent-knowledge-updater` for ingest/promote). Running inline fills the main session context and degrades subsequent tasks. See `CLAUDE-CONTEXT-knowledge-base.md`.
-
 Catch obvious citation hallucinations in library files. Deep research engines occasionally fabricate DOIs, attribute findings to the wrong author, or invent journal names. Manual spot-checking 10-20% of citations remains necessary; this skill automates the obvious failure cases so manual review can focus on subtler issues.
 
 ## Argument

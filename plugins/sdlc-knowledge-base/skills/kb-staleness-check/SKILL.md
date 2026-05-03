@@ -7,8 +7,6 @@ argument-hint: "[--strict]"
 
 # Knowledge Base Staleness Check
 
-> **Lightweight**: This skill reads only index metadata (timestamps / audit log entries). Inline execution is acceptable.
-
 Verify that the knowledge base shelf-index reflects the current state of the library files. Reports drifted entries without making changes. Designed as the touch-point between the knowledge base plugin and existing SDLC validation operations.
 
 This is the **opt-in environment validation extension** described in the EPIC. The plugin does not modify the existing `validate` skill in `sdlc-core` directly — instead, this skill is shipped as a standalone check that users can invoke manually or wire into their pre-push validation when they want it.

@@ -7,8 +7,6 @@ argument-hint: "<query-result-text-or-file> [--title <title>] [--path <library-f
 
 # Promote Answer to Library
 
-> **Agent-only**: Dispatch this operation via the Agent tool (`research-librarian` for queries/lint/validate, `agent-knowledge-updater` for ingest/promote). Running inline fills the main session context and degrades subsequent tasks. See `CLAUDE-CONTEXT-knowledge-base.md`.
-
 When the librarian answers a query well — a comparison, an analysis, a connection between findings the library hadn't explicitly captured — that answer is itself valuable. It shouldn't disappear into chat history. This skill files the answer back into the library as a new page so explorations compound just like ingested sources do.
 
 This is Karpathy's "good answers can be filed back into the wiki as new pages" insight from the LLM Wiki gist.
