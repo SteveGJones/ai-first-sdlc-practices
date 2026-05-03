@@ -30,13 +30,13 @@ A new **required** frontmatter field in library files:
 ---
 title: ...
 domain: ...
-layer: methodology   # one of: methodology | evidence | domain | development
+layer: methodology   # default set: methodology | evidence | domain | development
 status: active
 cross_references: [...]
 ---
 ```
 
-The four values:
+The default set, used when the project has not declared its own:
 
 | Layer | Meaning |
 |---|---|
@@ -45,7 +45,31 @@ The four values:
 | `domain` | Subject-matter context: regulatory frameworks, industry vocabulary, problem-space description |
 | `development` | Engineering knowledge: architectural patterns, code-level practices, tooling |
 
-The set is closed for v0.3.0. Extension requires a separate proposal.
+### Project-configurable layer set
+
+Projects override or extend the default by declaring `layers:` in the `[Knowledge Base]` section of `CLAUDE.md`:
+
+```markdown
+## Knowledge Base
+
+library_path: library/
+shelf_index_path: library/_shelf-index.md
+layers:
+  - methodology
+  - evidence
+  - domain
+  - development
+  - regulatory          # custom
+  - clinical-evidence   # custom
+```
+
+Rules:
+- **Absent `layers:`** — the four defaults are the allowed set.
+- **Present `layers:`** — the listed values are the **complete** allowed set (replace, not extend). Projects that want to keep the defaults must list them explicitly. This keeps semantics simple: there's exactly one source of truth for the project's layer vocabulary.
+- Each value must match `^[a-z][a-z0-9-]*$` (lowercase, hyphenated). Invalid entries in the config trigger a kb-lint error.
+- The framework's own `CLAUDE.md` does **not** declare `layers:` — the four defaults stand, and CI runs `kb-lint --strict-layer` against them.
+
+A small helper module (`plugins/sdlc-knowledge-base/scripts/kb_config.py` — or extend an existing config-reading utility) parses `[Knowledge Base]` and exposes `allowed_layers(project_dir: Path) -> list[str]`. This is consumed by `kb-lint`. `build_shelf_index.py` does **not** read the config — it stays permissive.
 
 ### Lenient default in tooling, strict via opt-in
 
@@ -289,7 +313,7 @@ Per the agent-only enforcement context module, kb-stats falls into the **lightwe
 
 ### `build_shelf_index.py` updates
 
-1. `extract_layer(frontmatter: dict) -> str` — new function returning the `layer` value if present and valid, else `"uncategorized"`. Validates against the closed set `{methodology, evidence, domain, development}`.
+1. `extract_layer(frontmatter: dict) -> str` — new function returning the `layer` value as a stripped lowercase string if present, else `"uncategorized"`. **Does not validate against any allowed set** — that's kb-lint's job. The rebuild path stays permissive so the index can always be built regardless of layer-config drift.
 2. `IndexEntry` dataclass gains `layer: str` field.
 3. `_render_entry` adds the `**Layer:**` line between `**Hash:**` and `**Terms:**`.
 4. `extract_terms` continues to operate as today; the layer value is appended to the term list as part of the standard frontmatter scan (it's already covered if we add `layer` to the list of frontmatter fields whose values are tokenised). Implementation detail: include `layer` alongside `domain` in the term-extraction priority list.
@@ -298,8 +322,10 @@ Per the agent-only enforcement context module, kb-stats falls into the **lightwe
 ### `kb-lint` updates
 
 1. New flag `--strict-layer`. When set, missing or invalid `layer` values upgrade from warning to error and the lint exits non-zero.
-2. Lint output gains a "Layer compliance" section listing per-file violations.
-3. Tests added for both modes (lenient default, strict failure).
+2. Reads the project's `layers:` config from CLAUDE.md `[Knowledge Base]` section via the `kb_config.allowed_layers(project_dir)` helper. Falls back to the four defaults when no config is declared.
+3. Validates the config first: each entry must match `^[a-z][a-z0-9-]*$`. Config errors surface as a single top-of-report finding before per-file checks run.
+4. Lint output gains a "Layer compliance" section listing per-file violations (missing `layer`, value not in allowed set, malformed value).
+5. Tests added for: lenient default, strict failure, config-defined layer set (extended and replaced), malformed config entries, file with allowed custom layer, file with disallowed value.
 
 ### `agent-knowledge-updater.md` updates
 
@@ -336,6 +362,8 @@ This repo's CI gains a `kb-lint --strict-layer` step against the framework's own
 |---|---|---|
 | Modify | `plugins/sdlc-knowledge-base/scripts/build_shelf_index.py` | Add `extract_layer`, `IndexEntry.layer`, render `**Layer:**` field |
 | Create | `plugins/sdlc-knowledge-base/scripts/kb_stats.py` | Pure-Python stats generator |
+| Create | `plugins/sdlc-knowledge-base/scripts/kb_config.py` | Helper: read `[Knowledge Base]` from CLAUDE.md, expose `allowed_layers()` |
+| Create | `tests/test_kb_config.py` | Unit tests for `allowed_layers()` |
 | Modify | `tests/test_kb_build_shelf_index.py` | Layer extraction + rendering tests |
 | Create | `tests/test_kb_stats.py` | Stats generator unit + integration tests |
 | Create | `plugins/sdlc-knowledge-base/skills/kb-prepare-batch/SKILL.md` | Prepare-batch skill |
@@ -360,7 +388,11 @@ This repo's CI gains a `kb-lint --strict-layer` step against the framework's own
 | Library files with `layer: methodology\|evidence\|domain\|development` parse cleanly | Unit test on `extract_layer` |
 | Missing `layer` produces `uncategorized` in shelf-index, no script failure | Unit test on `extract_layer`, integration on `rebuild_shelf_index` |
 | Invalid `layer` value produces `uncategorized` and a warning | Unit test |
-| `kb-lint --strict-layer` exits non-zero when any file lacks valid `layer` | Integration test with fixture library |
+| `kb-lint --strict-layer` exits non-zero when any file lacks valid `layer` (default set) | Integration test with fixture library |
+| `kb-lint --strict-layer` honours project-defined `layers:` from CLAUDE.md | Integration test with custom layers config |
+| `kb-lint --strict-layer` flags malformed entries in `layers:` config | Integration test |
+| `kb_config.allowed_layers()` returns defaults when no config declared | Unit test |
+| `kb_config.allowed_layers()` returns project values when `layers:` is declared | Unit test |
 | Shelf-index entries render `**Layer:** <value>` between Hash and Terms | Integration test on rendered output |
 | Layer value appears in Terms list | Integration test |
 | `kb-prepare-batch` copies/moves `.md` files into `raw/` correctly | Integration test |
@@ -399,7 +431,7 @@ Test additions: roughly 45–60 new tests across `test_kb_build_shelf_index.py` 
 1. **markitdown / pandoc binary availability** — operators on locked-down workstations may have neither. Mitigation: clear preflight error with install hints, and `.md`-only operation continues to work fully.
 2. **Parallel batch dispatch model in Claude Code** — the parallel-Agent pattern is established in `kb-query`, but at higher concurrency (N=10+) it may hit harness limits. Mitigation: cap `--parallel` at 5 by default, document the cap, encourage operators to start sequential and ramp up.
 3. **Resume-manifest write atomicity on Windows filesystems** — atomic rename semantics differ. Mitigation: explicit fallback to copy-and-delete-original if rename fails, with a brief race window documented.
-4. **Layer set extension pressure** — operators may want custom layer values (e.g., "regulatory", "tooling"). Mitigation: closed set in v0.3.0; if real demand emerges in Phase C, reopen via proposal #154 follow-up.
+4. **Layer set drift** — projects can extend the layer set freely via `layers:` in CLAUDE.md, so a malformed or inconsistent config could cause kb-lint failures across all files. Mitigation: kb-lint validates the config itself before validating files, so config errors are flagged once and clearly. Operators removing a previously-used layer from `layers:` will see lint failures on every file using the dropped value — this is desired behaviour (it surfaces orphaned layer references).
 
 ---
 
