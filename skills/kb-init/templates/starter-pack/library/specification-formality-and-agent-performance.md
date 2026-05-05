@@ -1,6 +1,7 @@
 ---
 title: "Specification Formality as Predictor of Agent Performance"
 domain: specifications, bdd, formal-methods, agent-suitability
+layer: evidence
 status: active
 tags: [bdd, gherkin, openapi, formal-methods, tla-plus, specification-driven, agent-velocity]
 source: research/sdlc/Phase5_Final_Report.md (ai-first-sdlc-practices repo)
