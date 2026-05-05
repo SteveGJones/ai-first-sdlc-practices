@@ -111,7 +111,7 @@ def build_manifest(
         if _read_status(p) == "raw":
             pending.append(key)
 
-    total = len(completed) + len(failed) + len(pending)
+    total = len(completed) + len(pending)
 
     return {
         "started_at": started_at,
@@ -146,14 +146,16 @@ def mark_failed(
     error: str,
     timestamp: str,
 ) -> dict[str, object]:
-    """Return a new manifest with *path* moved from ``pending`` to ``failed``.
+    """Move path from pending to failed.
 
     If *path* is not in ``pending`` the manifest is returned unchanged.
     """
-    pending = [p for p in manifest["pending"] if p != path]  # type: ignore[union-attr]
-    failed = list(manifest["failed"])  # type: ignore[arg-type]
-    failed.append({"path": path, "error": error, "attempted_at": timestamp})
-    return {**manifest, "pending": pending, "failed": failed}
+    manifest = dict(manifest)
+    manifest["pending"] = [p for p in manifest.get("pending", []) if p != path]
+    manifest["failed"] = list(manifest.get("failed", [])) + [
+        {"path": path, "error": error, "attempted_at": timestamp}
+    ]
+    return manifest
 
 
 def retry_failed(manifest: dict[str, object]) -> dict[str, object]:

@@ -110,6 +110,16 @@ def test_mark_failed_moves_from_pending(tmp_path: Path) -> None:
     assert updated["failed"][0]["error"] == "YAML parse error"
 
 
+def test_mark_failed_removes_from_pending(tmp_path: Path) -> None:
+    manifest = {
+        "started_at": _now(), "total": 2, "completed": [], "failed": [],
+        "pending": ["good.md", "bad.md"],
+    }
+    updated = mark_failed(manifest, "bad.md", "error", _now())
+    assert "bad.md" not in updated["pending"]
+    assert "good.md" in updated["pending"]
+
+
 def test_retry_failed_moves_back_to_pending() -> None:
     manifest = {
         "started_at": _now(), "total": 2, "completed": [], "failed": [
