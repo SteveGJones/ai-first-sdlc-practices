@@ -190,6 +190,10 @@ sdlc-knowledge-base:
     - source: plugins/sdlc-knowledge-base/skills/kb-register-library/SKILL.md
     - source: plugins/sdlc-knowledge-base/skills/kb-audit-query/SKILL.md
     - source: plugins/sdlc-knowledge-base/skills/kb-setup-consulting/SKILL.md
+    - source: plugins/sdlc-knowledge-base/skills/kb-layers/SKILL.md
+    - source: plugins/sdlc-knowledge-base/skills/kb-prepare-batch/SKILL.md
+    - source: plugins/sdlc-knowledge-base/skills/kb-ingest-batch/SKILL.md
+    - source: plugins/sdlc-knowledge-base/skills/kb-stats/SKILL.md
   scripts:
     # Authored in-plugin; listed for packaging audit. Ship in-place.
     - source: plugins/sdlc-knowledge-base/scripts/__init__.py
@@ -200,6 +204,11 @@ sdlc-knowledge-base:
     - source: plugins/sdlc-knowledge-base/scripts/orchestrator.py
     - source: plugins/sdlc-knowledge-base/scripts/audit.py
     - source: plugins/sdlc-knowledge-base/scripts/build_shelf_index.py
+    - source: plugins/sdlc-knowledge-base/scripts/kb_config.py
+    - source: plugins/sdlc-knowledge-base/scripts/kb_layers.py
+    - source: plugins/sdlc-knowledge-base/scripts/kb_stats.py
+    - source: plugins/sdlc-knowledge-base/scripts/kb_prepare_batch.py
+    - source: plugins/sdlc-knowledge-base/scripts/kb_ingest_batch.py
 
 # Programme SDLC plugin — formal waterfall with mandatory cross-phase review. EPIC #178.
 # Method 1 substrate: 5 skills (commission-programme, phase-init, phase-gate, phase-review,
