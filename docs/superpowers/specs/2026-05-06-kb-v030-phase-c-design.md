@@ -236,7 +236,20 @@ Three fixes applied in a single pass over library files (excluding `_shelf-index
 
 **Insertion position**: new fields are appended at the end of the existing frontmatter block (before the closing `---`), preserving all existing fields and body content exactly. Atomic write (`.tmp` + rename).
 
-**Files without parseable frontmatter** (no `---` delimiters, or malformed YAML) are reported as errors and skipped — fixing them requires a `title:` and `domain:` which the script cannot infer. They appear in `FixResult.errors`.
+**Files without parseable frontmatter** (no `---` delimiters, or malformed YAML): the script inserts a stub frontmatter block at the top of the file. The stub uses the filename (hyphen/underscore → spaces, title-cased) as the title, `domain: unknown`, and `confidence: low` — low because no source metadata exists to calibrate from. The fix output reports the stub creation and explains why confidence is `low`:
+
+```
+Fixed library/unfronted-file.md:
+  + stub frontmatter created (no existing frontmatter found)
+    title: Unfronted File  (derived from filename — please update)
+    domain: unknown        (please update)
+    layer: uncategorized
+    confidence: low        (no source metadata; update after reviewing source quality)
+    status: draft
+    cross_references: []
+```
+
+`status: draft` (not `active`) signals the file needs human review before it is treated as curated library content.
 
 **`--dry-run`**: reports what would be changed without writing. Output format:
 ```
@@ -378,6 +391,9 @@ The job is renamed to `kb-compliance` to reflect its broader scope.
 | `fix_missing_fields --dry-run` reports changes without writing | Integration test (check file unchanged) |
 | `fix_missing_fields` preserves all existing frontmatter fields and body content | Integration test |
 | `fix_missing_fields` writes atomically (no `.tmp` file left on success) | Integration test |
+| `fix_missing_fields` creates stub frontmatter for files with no frontmatter at all | Integration test |
+| Stub frontmatter has `confidence: low` and `status: draft` | Integration test |
+| Stub title is derived from filename (hyphen→space, title-cased) | Unit test on title derivation |
 | `kb-lint --auto-fix` runs fix script, then rebuilds index, then runs lint | Skill integration (SKILL.md review) |
 | `kb-lint --auto-fix --strict-confidence` fails after fix if confidence still missing | Integration test |
 | CI `kb-compliance` job fails if starter-pack files lack `confidence:` | Dogfood gate |
