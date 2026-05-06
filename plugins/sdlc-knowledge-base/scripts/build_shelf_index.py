@@ -44,6 +44,7 @@ class IndexEntry:
     facts: list[str]
     links: list[str]
     layer: str = "uncategorized"
+    confidence: str = "unknown"
 
 
 @dataclass
@@ -103,6 +104,13 @@ def extract_terms(frontmatter: dict[str, object], content: str) -> list[str]:
     if layer_val:
         raw.append(str(layer_val).strip().lower())
 
+    # confidence value included in terms for natural matching
+    confidence_val = frontmatter.get("confidence", "")
+    if confidence_val:
+        normalized_conf = str(confidence_val).strip().lower()
+        if normalized_conf in _VALID_CONFIDENCE:
+            raw.append(normalized_conf)
+
     for heading in _HEADING_RE.findall(content):
         raw.append(heading.strip().lower())
 
@@ -153,6 +161,18 @@ def extract_layer(frontmatter: dict[str, object]) -> str:
     if not val:
         return "uncategorized"
     return str(val).strip().lower()
+
+
+_VALID_CONFIDENCE: frozenset[str] = frozenset({"high", "medium", "low"})
+
+
+def extract_confidence(frontmatter: dict[str, object]) -> str:
+    """Return confidence value (high/medium/low) or 'unknown' if absent or invalid."""
+    val = frontmatter.get("confidence", "")
+    if not val:
+        return "unknown"
+    normalized = str(val).strip().lower()
+    return normalized if normalized in _VALID_CONFIDENCE else "unknown"
 
 
 def compute_hash(path: Path) -> str:
@@ -223,6 +243,7 @@ def build_entry(file_path: Path, library_root: Path) -> IndexEntry:
         facts=extract_facts(text),
         links=extract_links(frontmatter),
         layer=extract_layer(frontmatter),
+        confidence=extract_confidence(frontmatter),
     )
 
 
@@ -253,6 +274,7 @@ def _render_entry(n: int, entry: IndexEntry) -> str:
         f"## {n}. {entry.file_path}\n\n"
         f"**Hash:** {entry.hash}\n"
         f"**Layer:** {entry.layer}\n"
+        f"**Confidence:** {entry.confidence}\n"
         f"**Terms:** {', '.join(entry.terms)}\n"
         f"**Facts:**\n{facts_block}\n"
         f"**Links:** {links_str}\n"

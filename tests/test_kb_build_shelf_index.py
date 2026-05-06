@@ -481,3 +481,126 @@ def test_rebuild_includes_layer_in_shelf_index(tmp_path: Path) -> None:
     rebuild_shelf_index(lib, shelf)
     content = shelf.read_text(encoding="utf-8")
     assert "**Layer:** evidence" in content
+
+
+# ---------------------------------------------------------------------------
+# Confidence support (Phase C, #163)
+# ---------------------------------------------------------------------------
+
+
+def test_extract_confidence_high() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_confidence
+    assert extract_confidence({"confidence": "high"}) == "high"
+
+
+def test_extract_confidence_medium() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_confidence
+    assert extract_confidence({"confidence": "medium"}) == "medium"
+
+
+def test_extract_confidence_low() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_confidence
+    assert extract_confidence({"confidence": "low"}) == "low"
+
+
+def test_extract_confidence_unknown_when_missing() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_confidence
+    assert extract_confidence({}) == "unknown"
+
+
+def test_extract_confidence_unknown_for_invalid_value() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_confidence
+    assert extract_confidence({"confidence": "excellent"}) == "unknown"
+
+
+def test_extract_confidence_strips_and_lowercases() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_confidence
+    assert extract_confidence({"confidence": "  HIGH  "}) == "high"
+
+
+def test_index_entry_has_confidence_field() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import IndexEntry
+    entry = IndexEntry(
+        file_path="test.md",
+        hash="a" * 64,
+        terms=[],
+        facts=[],
+        links=[],
+        layer="methodology",
+        confidence="high",
+    )
+    assert entry.confidence == "high"
+
+
+def test_index_entry_confidence_defaults_to_unknown() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import IndexEntry
+    entry = IndexEntry(
+        file_path="test.md", hash="a" * 64, terms=[], facts=[], links=[], layer="methodology"
+    )
+    assert entry.confidence == "unknown"
+
+
+def test_build_entry_includes_confidence(tmp_path: Path) -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import build_entry
+    lib = tmp_path / "library"
+    lib.mkdir()
+    f = lib / "test.md"
+    f.write_text(
+        "---\ntitle: Test\ndomain: testing\nlayer: evidence\nconfidence: high\nstatus: active\n---\n## Q\nWhat?\n",
+        encoding="utf-8",
+    )
+    entry = build_entry(f, lib)
+    assert entry.confidence == "high"
+
+
+def test_build_entry_confidence_unknown_when_missing(tmp_path: Path) -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import build_entry
+    lib = tmp_path / "library"
+    lib.mkdir()
+    f = lib / "test.md"
+    f.write_text(
+        "---\ntitle: Test\ndomain: testing\nlayer: evidence\nstatus: active\n---\n## Q\nWhat?\n",
+        encoding="utf-8",
+    )
+    entry = build_entry(f, lib)
+    assert entry.confidence == "unknown"
+
+
+def test_render_entry_confidence_between_layer_and_terms() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import IndexEntry, _render_entry
+    entry = IndexEntry(
+        file_path="test.md",
+        hash="a" * 64,
+        terms=["testing"],
+        facts=["A fact."],
+        links=[],
+        layer="methodology",
+        confidence="high",
+    )
+    rendered = _render_entry(1, entry)
+    assert "**Confidence:** high" in rendered
+    lines = rendered.splitlines()
+    layer_idx = next(i for i, l in enumerate(lines) if l.startswith("**Layer:**"))
+    conf_idx = next(i for i, l in enumerate(lines) if l.startswith("**Confidence:**"))
+    terms_idx = next(i for i, l in enumerate(lines) if l.startswith("**Terms:**"))
+    assert layer_idx < conf_idx < terms_idx
+
+
+def test_extract_terms_includes_confidence() -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import extract_terms
+    fm = {"title": "Test", "domain": "sdlc", "layer": "methodology", "confidence": "high"}
+    terms = extract_terms(fm, "")
+    assert "high" in terms
+
+
+def test_rebuild_includes_confidence_in_shelf_index(tmp_path: Path) -> None:
+    from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "test.md").write_text(
+        "---\ntitle: Test\ndomain: testing\nlayer: evidence\nconfidence: medium\nstatus: active\n---\n## Q\nWhat?\n",
+        encoding="utf-8",
+    )
+    shelf = lib / "_shelf-index.md"
+    rebuild_shelf_index(lib, shelf)
+    assert "**Confidence:** medium" in shelf.read_text(encoding="utf-8")
