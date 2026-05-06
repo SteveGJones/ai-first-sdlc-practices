@@ -204,6 +204,8 @@ sdlc-knowledge-base:
     - source: plugins/sdlc-knowledge-base/scripts/orchestrator.py
     - source: plugins/sdlc-knowledge-base/scripts/audit.py
     - source: plugins/sdlc-knowledge-base/scripts/build_shelf_index.py
+    - source: plugins/sdlc-knowledge-base/scripts/confidence.py
+    - source: plugins/sdlc-knowledge-base/scripts/kb_lint_fix.py
     - source: plugins/sdlc-knowledge-base/scripts/kb_config.py
     - source: plugins/sdlc-knowledge-base/scripts/kb_layers.py
     - source: plugins/sdlc-knowledge-base/scripts/kb_stats.py

@@ -2,6 +2,7 @@
 title: "Four SDLC Options for Agentic Software Delivery"
 domain: sdlc, agentic-development, methodology, process
 layer: methodology
+confidence: high
 status: active
 tags: [sdlc, agentic, scrum, safe, formal-methods, solo-development, multi-team, assured]
 source: research/sdlc/Agentic_SDLC_Options.md (ai-first-sdlc-practices repo)

@@ -46,6 +46,28 @@ The knowledge base is for **evidence about a problem space** — research findin
 
 When in doubt, ask the user: "Is this evidence about a problem space, or operational knowledge about the project? If operational, I'll recommend the right destination."
 
+## Setting confidence at ingest
+
+When you create or update a library file, set the `confidence:` frontmatter field based on the source type:
+
+| Source type | Confidence |
+|---|---|
+| Academic paper, peer-reviewed study | `high` |
+| Industry research report (DORA, Gartner, State of DevOps) | `high` |
+| Practitioner book chapter with empirical backing | `medium` |
+| Named case study with measurable outcomes | `medium` |
+| Vendor whitepaper with acknowledged bias flag | `medium` |
+| Blog post with original research and citations | `low` |
+| Conversation excerpt / informal source | `low` |
+
+**When creating a new file:** set `confidence:` in the frontmatter based on the source being ingested.
+
+**When updating an existing file** (adding a finding from a new source):
+- Do NOT downgrade the file's existing `confidence:` rating even if the new source has lower confidence.
+- Instead, append a note in the `**Citation:**` line of the new finding: `(note: this finding comes from a lower-confidence source than the file's overall rating — treat accordingly)`.
+
+**When the source has no clear type:** use `confidence: medium` as a conservative default and note the uncertainty in the `**Caveats:**` section.
+
 ## How you work
 
 ### Ingest workflow
