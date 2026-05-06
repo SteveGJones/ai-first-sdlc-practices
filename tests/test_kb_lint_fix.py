@@ -155,6 +155,7 @@ def test_fix_skips_excluded_files(tmp_path: Path) -> None:
     lib = _make_lib(tmp_path)
     (lib / "_shelf-index.md").write_text("# Index\n", encoding="utf-8")
     (lib / "log.md").write_text("# Log\n", encoding="utf-8")
+    (lib / "_index.md").write_text("# Index2\n", encoding="utf-8")
     raw = lib / "raw"
     raw.mkdir()
     _write_no_frontmatter(raw / "source.md")

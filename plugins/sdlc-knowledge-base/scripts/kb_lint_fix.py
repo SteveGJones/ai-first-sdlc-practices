@@ -108,7 +108,8 @@ def _create_stub_frontmatter(text: str, path: Path) -> tuple[str, list[str]]:
         "cross_references: []\n"
         "---\n\n"
     )
-    return stub + text, ["stub"]
+    additions = ["title", "domain", "layer", "confidence", "status", "cross_references"]
+    return stub + text, additions
 
 
 def fix_missing_fields(library_path: Path, dry_run: bool = False) -> FixResult:
@@ -142,7 +143,7 @@ def fix_missing_fields(library_path: Path, dry_run: bool = False) -> FixResult:
             if not dry_run:
                 _write_atomic(md_file, new_text)
             result.files_fixed += 1
-            result.fields_added += 1
+            result.fields_added += len(additions)
 
     return result
 
