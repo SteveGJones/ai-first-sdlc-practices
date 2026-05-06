@@ -126,6 +126,7 @@ def test_check_compliance_skips_excluded_files(tmp_path: Path) -> None:
     lib.mkdir()
     (lib / "_shelf-index.md").write_text("# Index\n", encoding="utf-8")
     (lib / "log.md").write_text("# Log\n", encoding="utf-8")
+    (lib / "_index.md").write_text("# Index2\n", encoding="utf-8")
     raw = lib / "raw"
     raw.mkdir()
     _write_lib_file(raw / "source.md", confidence=None)

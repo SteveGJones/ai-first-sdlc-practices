@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -30,7 +31,7 @@ COMBINATION_TABLE: dict[tuple[str, str], str] = {
 
 _EXCLUDED_NAMES = frozenset({"_shelf-index.md", "_index.md", "log.md"})
 _EXCLUDED_DIRS = frozenset({"raw"})
-_FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
+_FRONTMATTER_RE = re.compile(r"^---[ \t]*\r?\n(.*?)\r?\n---[ \t]*\r?\n", re.DOTALL)
 _SOURCE_CONF_RE = re.compile(r"^\*\*Source confidence:\*\*\s+(\S+)", re.MULTILINE)
 _QUERY_REL_RE = re.compile(r"^\*\*Query relevance:\*\*\s+(\S+)", re.MULTILINE)
 _COMBINED_RE = re.compile(r"^\*\*Confidence:\*\*\s+(\S+)", re.MULTILINE)
@@ -77,6 +78,8 @@ def _is_library_file(path: Path, library_path: Path) -> bool:
         rel = path.relative_to(library_path)
     except ValueError:
         return False
+    if not rel.parts:
+        return False
     if rel.parts[0] in _EXCLUDED_DIRS:
         return False
     return path.suffix == ".md"
@@ -89,7 +92,11 @@ def check_confidence_compliance(library_path: Path) -> list[tuple[str, str]]:
         if not _is_library_file(md_file, library_path):
             continue
         rel = str(md_file.relative_to(library_path))
-        text = md_file.read_text(encoding="utf-8")
+        try:
+            text = md_file.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            violations.append((rel, f"unreadable: {exc}"))
+            continue
         fm = _parse_frontmatter(text)
         val = fm.get("confidence", "")
         if not val:
@@ -103,8 +110,6 @@ def check_confidence_compliance(library_path: Path) -> list[tuple[str, str]]:
 
 def main(args: list[str] | None = None) -> int:
     """CLI: check confidence compliance for a library directory."""
-    import argparse
-
     parser = argparse.ArgumentParser(description="Check KB confidence compliance.")
     parser.add_argument("library_path", help="Path to the library directory")
     parsed = parser.parse_args(args)
