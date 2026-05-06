@@ -18,7 +18,7 @@ Root cause: In the Amkor AI Strategy engagement (2026-04), inline kb-query calls
 |---|---|---|
 | `kb-query` | Agent tool → `research-librarian` | Reads 2–4 library files + shelf-index |
 | `kb-ingest` | Agent tool → `agent-knowledge-updater` | Reads raw source + library files + writes |
-| `kb-lint` | Agent tool → `research-librarian` | Reads all library files for consistency check |
+| `kb-lint` | Agent tool → `research-librarian` | Reads all library files; `--strict-layer`/`--strict-confidence` exit non-zero on violations; `--auto-fix` patches mechanical issues first |
 | `kb-validate-citations` | Agent tool → `research-librarian` | Reads all library files + external checks |
 | `kb-promote-answer-to-library` | Agent tool → `agent-knowledge-updater` | Writes to library — agent write-access only |
 | `kb-rebuild-indexes` | Bash (script) | Pure Python, no library file content loaded into session |
@@ -59,6 +59,7 @@ The shelf-index (`library/_shelf-index.md`) structure:
 
 **Hash:** <sha256-hex-64chars>
 **Layer:** methodology
+**Confidence:** high
 **Terms:** rubric, dora, evaluation, sdlc, methodology, ...
 **Facts:**
 - Elite teams have cycle time <1 hour (DORA 2024)
@@ -73,6 +74,7 @@ Fields:
 - `library_description` — human-readable note, preserved across rebuilds
 - `**Hash:**` — SHA-256 of raw file bytes; triggers re-extraction on change
 - `**Layer:**` — layer classification value (e.g. `methodology`, `evidence`); `uncategorized` if absent in frontmatter
+- `**Confidence:**` — source evidence quality (`high`, `medium`, `low`, or `unknown` for pre-v0.3.0 libraries or missing field)
 - `**Terms:**` — comma-separated keywords; consumed by `priming.py` for cross-library biasing
 - `**Facts:**` — up to 5 key findings; guides librarian's initial file selection
 - `**Links:**` — cross-references to other library files and project artifacts
@@ -102,6 +104,24 @@ status: active
 Projects extend the set via `layers:` in the `[Knowledge Base]` section of CLAUDE.md. Use `/sdlc-knowledge-base:kb-layers` to manage the vocabulary safely.
 
 `build_shelf_index.py` is permissive: missing or invalid `layer` values produce `uncategorized` in the shelf-index without failing the rebuild. `kb-lint --strict-layer` enforces compliance and exits non-zero on violations.
+
+### Confidence Classification
+
+Every library file also requires a `confidence:` frontmatter field:
+
+```yaml
+confidence: high   # high | medium | low
+```
+
+| Value | Criteria |
+|---|---|
+| `high` | Peer-reviewed study; named industry research (DORA, Gartner); n≥100; DOI/arXiv traceable |
+| `medium` | Industry report; practitioner book; named case study; vendor whitepaper with acknowledged bias |
+| `low` | Blog post; opinion piece; small study (n<10); undated or unattributed source |
+
+`agent-knowledge-updater` sets this automatically at ingest. `kb-lint --strict-confidence` enforces it. `kb-lint --auto-fix` adds `confidence: medium` to files missing the field, or `confidence: low` when creating stub frontmatter.
+
+**Query-time confidence**: the research librarian emits three tags per finding — `**Source confidence:**`, `**Query relevance:**` (direct / supporting / tangential), and `**Confidence:**` (combined via lookup table). A high-quality source that is only tangentially relevant returns `**Confidence:** medium`, not high.
 
 ## Key Files
 
