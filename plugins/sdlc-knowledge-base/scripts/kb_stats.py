@@ -32,6 +32,7 @@ from pathlib import Path
 _HEADER_FIELD_RE = re.compile(r"^<!--\s*(\w+):\s*(.+?)\s*-->\s*$")
 _ENTRY_SPLIT_RE = re.compile(r"^## \d+\.", re.MULTILINE)
 _LAYER_RE = re.compile(r"^\*\*Layer:\*\*\s+(\S+)\s*$", re.MULTILINE)
+_CONFIDENCE_RE = re.compile(r"^\*\*Confidence:\*\*\s+(\S+)\s*$", re.MULTILINE)
 _TERMS_RE = re.compile(r"^\*\*Terms:\*\*\s+(.+)$", re.MULTILINE)
 _FACTS_BULLET_RE = re.compile(r"^\s*-\s+.+", re.MULTILINE)
 _FACTS_SECTION_RE = re.compile(r"\*\*Facts:\*\*\s*\n(.*?)(?=\n\*\*|\Z)", re.DOTALL)
@@ -53,6 +54,7 @@ class _ShelfEntry:
     domains: list[str]
     facts_count: int
     links: list[str] = field(default_factory=list)
+    confidence: str = "unknown"
 
 
 @dataclass
@@ -115,6 +117,9 @@ def _parse_shelf_index(content: str) -> list[_ShelfEntry]:
         layer_match = _LAYER_RE.search(section)
         layer = layer_match.group(1).strip().lower() if layer_match else "uncategorized"
 
+        confidence_match = _CONFIDENCE_RE.search(section)
+        confidence = confidence_match.group(1).strip().lower() if confidence_match else "unknown"
+
         terms_match = _TERMS_RE.search(section)
         domains = _parse_domains_from_terms(terms_match.group(1)) if terms_match else []
 
@@ -135,6 +140,7 @@ def _parse_shelf_index(content: str) -> list[_ShelfEntry]:
                 domains=domains,
                 facts_count=facts_count,
                 links=links,
+                confidence=confidence,
             )
         )
     return entries
@@ -167,6 +173,7 @@ def _render_inventory_section(entries: list[_ShelfEntry]) -> list[str]:
     total_files = len(entries)
     total_facts = sum(e.facts_count for e in entries)
     no_layer = sum(1 for e in entries if e.layer == "uncategorized")
+    no_confidence = sum(1 for e in entries if e.confidence == "unknown")
     orphans = sum(1 for e in entries if not e.links)
     lines: list[str] = []
     lines.append("## Inventory")
@@ -174,6 +181,7 @@ def _render_inventory_section(entries: list[_ShelfEntry]) -> list[str]:
     lines.append(f"- Total files: {total_files}")
     lines.append(f"- Total findings: {total_facts}")
     lines.append(f"- Files lacking layer tag: {no_layer}")
+    lines.append(f"- Files lacking confidence tag: {no_confidence}")
     lines.append(f"- Files lacking cross-references (orphans): {orphans}")
     lines.append("")
     return lines
@@ -197,6 +205,28 @@ def _render_layer_section(entries: list[_ShelfEntry]) -> list[str]:
             facts = layer_facts.get(layer, 0)
             avg = f"{facts / count:.1f}" if count else "-"
             lines.append(f"| {layer} | {count} | {facts} | {avg} |")
+    else:
+        lines.append("_No entries in shelf-index._")
+    lines.append("")
+    return lines
+
+
+def _render_confidence_section(entries: list[_ShelfEntry]) -> list[str]:
+    """Render the Distribution by confidence section as a markdown table."""
+    conf_counts: dict[str, int] = {}
+    for e in entries:
+        conf_counts[e.confidence] = conf_counts.get(e.confidence, 0) + 1
+
+    order = ["high", "medium", "low", "unknown"]
+    lines: list[str] = []
+    lines.append("## Distribution by confidence")
+    lines.append("")
+    if conf_counts:
+        lines.append("| Confidence | Files |")
+        lines.append("|---|---|")
+        for conf in order:
+            if conf in conf_counts:
+                lines.append(f"| {conf} | {conf_counts[conf]} |")
     else:
         lines.append("_No entries in shelf-index._")
     lines.append("")
@@ -336,6 +366,7 @@ def generate_stats(
 
     lines.extend(_render_inventory_section(entries))
     lines.extend(_render_layer_section(entries))
+    lines.extend(_render_confidence_section(entries))
     lines.extend(_render_domain_section(entries))
     lines.extend(_render_activity_section(recent_log, since_days))
     lines.extend(_render_staleness_section(header_fields.get("last_rebuilt", "")))

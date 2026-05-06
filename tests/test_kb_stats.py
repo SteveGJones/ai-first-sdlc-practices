@@ -8,7 +8,7 @@ from sdlc_knowledge_base_scripts.kb_stats import generate_stats, main
 
 
 def _write_shelf_index(path: Path, entries: list[dict]) -> None:
-    """Write a minimal shelf-index. Each dict: file, layer, domain, facts_count, links."""
+    """Write a minimal shelf-index. Each dict: file, layer, domain, facts_count, links, confidence (optional)."""
     header = (
         "<!-- format_version: 1 -->\n"
         "<!-- last_rebuilt: 2026-05-01T08:00:00Z -->\n"
@@ -20,10 +20,12 @@ def _write_shelf_index(path: Path, entries: list[dict]) -> None:
     for n, e in enumerate(entries, 1):
         facts_block = "\n".join(f"- Fact {i}." for i in range(e.get("facts_count", 1)))
         links = ", ".join(e.get("links", []))
+        confidence_line = f"**Confidence:** {e['confidence']}\n" if "confidence" in e else ""
         body += (
             f"## {n}. {e['file']}\n\n"
             f"**Hash:** {'a' * 64}\n"
             f"**Layer:** {e.get('layer', 'uncategorized')}\n"
+            f"{confidence_line}"
             f"**Terms:** {e.get('domain', 'testing')}, {e.get('layer', 'uncategorized')}\n"
             f"**Facts:**\n{facts_block}\n"
             f"**Links:** {links}\n\n"
@@ -266,3 +268,58 @@ def test_main_since_flag(tmp_path: Path) -> None:
         ]
     )
     assert rc == 0
+
+
+# ---------------------------------------------------------------------------
+# Confidence distribution (Phase C, #163)
+# ---------------------------------------------------------------------------
+
+
+def test_stats_inventory_includes_lacking_confidence_count(tmp_path: Path) -> None:
+    lib, shelf, log = _make_library(tmp_path)
+    _write_shelf_index(
+        shelf,
+        [
+            {"file": "a.md", "layer": "methodology", "facts_count": 1},
+            {"file": "b.md", "layer": "evidence", "facts_count": 2},
+        ],
+    )
+    _write_log(log, [])
+    stats = generate_stats(lib, shelf, log)
+    assert "Files lacking confidence tag" in stats
+
+
+def test_stats_includes_confidence_distribution_section(tmp_path: Path) -> None:
+    lib, shelf, log = _make_library(tmp_path)
+    _write_shelf_index(
+        shelf,
+        [{"file": "a.md", "layer": "methodology", "facts_count": 1}],
+    )
+    _write_log(log, [])
+    stats = generate_stats(lib, shelf, log)
+    assert "## Distribution by confidence" in stats
+
+
+def test_stats_confidence_distribution_has_table(tmp_path: Path) -> None:
+    lib, shelf, log = _make_library(tmp_path)
+    _write_shelf_index(
+        shelf,
+        [{"file": "a.md", "layer": "methodology", "facts_count": 1}],
+    )
+    _write_log(log, [])
+    stats = generate_stats(lib, shelf, log)
+    assert "| Confidence | Files |" in stats
+
+
+def test_stats_counts_files_lacking_confidence(tmp_path: Path) -> None:
+    lib, shelf, log = _make_library(tmp_path)
+    _write_shelf_index(
+        shelf,
+        [
+            {"file": "a.md", "layer": "methodology", "confidence": "high", "facts_count": 1},
+            {"file": "b.md", "layer": "evidence", "facts_count": 1},  # no confidence
+        ],
+    )
+    _write_log(log, [])
+    stats = generate_stats(lib, shelf, log)
+    assert "Files lacking confidence tag: 1" in stats
