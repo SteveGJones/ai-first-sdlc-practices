@@ -81,6 +81,42 @@ at the top of your input:
   structurally required; omitting it means your finding will be dropped
   by the skill's attribution post-check.
 
+### Confidence tags (required in every retrieval finding block)
+
+Every retrieval finding block must include three confidence tags, positioned after `**Source library:**` and before `**File:**`:
+
+```
+**Source confidence:** high
+**Query relevance:** direct
+**Confidence:** high
+```
+
+**Source confidence** comes from the `**Confidence:**` field in the shelf-index entry for the file you are citing. If the shelf-index entry has no `**Confidence:**` field, use `unknown`.
+
+**Query relevance** is your assessment of how directly this source addresses the question:
+- `direct` — the source directly addresses the question asked; findings are on-point
+- `supporting` — the source addresses a closely related topic or provides context; requires one inferential step
+- `tangential` — the source has peripheral connection; useful as background but not primary evidence for this question
+
+**Confidence** (combined) — apply this table exactly:
+
+| Source confidence | Query relevance | Combined |
+|---|---|---|
+| high | direct | high |
+| high | supporting | medium |
+| high | tangential | medium |
+| medium | direct | medium |
+| medium | supporting | medium |
+| medium | tangential | low |
+| low | direct | low |
+| low | supporting | low |
+| low | tangential | low |
+| unknown | direct | medium |
+| unknown | supporting | low |
+| unknown | tangential | low |
+
+When relevance is `supporting` or `tangential`, explain the indirect connection in the existing `**Caveats:**` line.
+
 ### Synthesise-across-sources mode
 
 When the dispatch message starts with `MODE: SYNTHESISE-ACROSS-SOURCES`, you are

@@ -1,6 +1,8 @@
 ---
 title: "14-Dimension Rubric for Agent Suitability of SDLC Methodologies"
 domain: sdlc, evaluation, methodology, rubric
+layer: methodology
+confidence: high
 status: active
 tags: [rubric, dora, evaluation, scoring, agent-suitability, methodology-comparison]
 source: research/sdlc/Phase1_Output.md (ai-first-sdlc-practices repo)

@@ -2,7 +2,7 @@
 name: kb-lint
 description: Health-check the project knowledge base. Looks for contradictions between files, stale claims that newer sources have superseded, orphan files with no inbound cross-references, important concepts mentioned but lacking their own page, missing cross-references, and data gaps. Returns a structured report; does not auto-fix.
 disable-model-invocation: false
-argument-hint: "[--scope <pattern>]"
+argument-hint: "[--scope <pattern>] [--strict-layer] [--strict-confidence] [--auto-fix]"
 ---
 
 # Knowledge Base Lint
@@ -11,14 +11,24 @@ Periodic health-check for the project's knowledge base. This is the **lint** ope
 
 The staleness check that runs in environment validation catches one kind of drift (file changed since last index). Lint catches the other kinds: logical drift, orphan accumulation, missing concepts, contradictions, gaps. Both are needed.
 
-## Argument
+## Arguments
 
 Optional `--scope <pattern>` to limit lint to a subset of library files. Default is the entire library.
+
+Optional `--strict-layer` to fail with a non-zero exit when any library file has a missing or invalid `layer:` frontmatter field. Without this flag, layer violations are reported as warnings only in the Layer Compliance section.
+
+Optional `--strict-confidence` to fail with a non-zero exit when any library file has a missing or invalid `confidence:` field. Without this flag, confidence violations are reported as warnings in the Layer Compliance section.
+
+Optional `--auto-fix` to run the mechanical frontmatter fixer (`kb_lint_fix.py`) before lint. Auto-fix adds missing `layer:`, `confidence:`, and `cross_references:` fields with safe defaults, and creates stub frontmatter (with `confidence: low`, `status: draft`) for files that have no frontmatter at all. After fixing, the shelf-index is rebuilt before lint proceeds.
 
 Examples:
 - `--scope dora-*.md` — lint only DORA-related files
 - `--scope library/architecture/*.md` — lint a sub-directory
-- (no argument) — lint everything
+- `--strict-layer` — enforce layer compliance (used by this repo's CI)
+- `--strict-layer --scope *.md` — combine both
+- `--strict-confidence` — enforce confidence compliance
+- `--auto-fix --strict-layer --strict-confidence` — fix mechanics, then enforce both
+- (no argument) — lint everything, warnings only
 
 ## Preflight
 
@@ -27,6 +37,111 @@ Examples:
 - Verify there are at least 3 library files. Linting an empty or near-empty library is not useful.
 
 ## Steps
+
+### -1. Auto-fix mechanical issues (only when --auto-fix is passed)
+
+If `--auto-fix` was passed, run the mechanical fixer before any other step:
+
+```bash
+python3 -c "
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts', INIT,
+        submodule_search_locations=[SCRIPTS])
+    if spec and spec.loader:
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = mod
+        spec.loader.exec_module(mod)
+from sdlc_knowledge_base_scripts.kb_lint_fix import fix_missing_fields
+from pathlib import Path
+result = fix_missing_fields(Path('<library_path>'))
+print(f'Auto-fix: {result.files_fixed} file(s) fixed, {result.fields_added} field(s) added')
+if result.errors:
+    print(f'Errors: {result.errors}')
+"
+```
+
+Replace `<library_path>` with the resolved library path from the KB config.
+
+After fixing, run `kb-rebuild-indexes` to update the shelf-index before proceeding to Step 0.
+
+If `--auto-fix` was NOT passed, skip this step entirely.
+
+### 0. Layer compliance check (always runs)
+
+Run the pure-Python layer compliance check:
+
+```bash
+python3 -c "
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts', INIT,
+        submodule_search_locations=[SCRIPTS])
+    if spec and spec.loader:
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = mod
+        spec.loader.exec_module(mod)
+from sdlc_knowledge_base_scripts.kb_config import allowed_layers, check_layer_compliance
+from pathlib import Path
+layers = allowed_layers(Path('.'))
+violations = check_layer_compliance(Path('<library_path>'), layers)
+if violations:
+    for path, msg in violations:
+        print(f'  {path}: {msg}')
+    sys.exit(1)
+else:
+    sys.exit(0)
+"
+```
+
+Replace `<library_path>` with the resolved library path from the KB config.
+
+If this exits non-zero **AND** `--strict-layer` was passed: stop and report the Layer Compliance violations. Do not proceed to Step 1. Exit non-zero.
+
+If this exits non-zero but `--strict-layer` was NOT passed: record the violations as warnings and continue to Step 1 — include them in the "Layer Compliance" section of the lint report.
+
+If this exits zero: no layer issues. Continue to Step 1.
+
+Also run confidence compliance in the same Step 0 pass:
+
+```bash
+python3 -c "
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts', INIT,
+        submodule_search_locations=[SCRIPTS])
+    if spec and spec.loader:
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = mod
+        spec.loader.exec_module(mod)
+from sdlc_knowledge_base_scripts.confidence import check_confidence_compliance
+from pathlib import Path
+conf_violations = check_confidence_compliance(Path('<library_path>'))
+if conf_violations:
+    for path, msg in conf_violations:
+        print(f'  {path}: {msg}')
+    sys.exit(1 if <strict_confidence> else 0)
+else:
+    print('Confidence compliance: OK')
+    sys.exit(0)
+"
+```
+
+Replace `<library_path>` with the resolved path. Replace `<strict_confidence>` with `True` if `--strict-confidence` was passed.
+
+If this exits non-zero AND `--strict-confidence` was passed: stop and report the confidence violations. Otherwise continue to Step 1.
 
 ### 1. Read the shelf-index
 
@@ -115,6 +230,7 @@ Output format:
 
 | Check | Issues found |
 |---|---|
+| 0. Layer compliance | L |
 | 1. Contradictions | C |
 | 2. Stale claims | S |
 | 3. Orphan files | O |
@@ -125,6 +241,12 @@ Output format:
 **Total issues:** TOTAL
 
 ---
+
+## 0. Layer Compliance
+
+Files with missing or invalid `layer:` values:
+
+(List each file with the specific violation, or "None" if all compliant)
 
 ## 1. Contradictions
 
@@ -228,3 +350,5 @@ For issues the user wants to fix, the workflow is:
 - **Shelf-index stale** — run `/sdlc-knowledge-base:kb-rebuild-indexes` first
 - **Library too small** — fewer than 3 files; lint produces little value at this scale. Add more files first.
 - **Scope pattern matches nothing** — verify the pattern matches at least one file in the library
+- **Layer violations in strict mode** — one or more library files have missing or invalid `layer:` field. Add `layer:` to each file and run `/sdlc-knowledge-base:kb-rebuild-indexes`. Run `/sdlc-knowledge-base:kb-layers` to see the project's allowed layer vocabulary.
+- **Confidence violations in strict mode** — files have missing or invalid `confidence:` field. Run `/sdlc-knowledge-base:kb-lint --auto-fix` to add `confidence: medium` to files missing it, then re-run with `--strict-confidence`.

@@ -15,6 +15,8 @@ This shelf-index ships as the starter pack for `sdlc-knowledge-base`. The three 
 ## 1. agent-suitability-rubric.md
 
 **Hash:** placeholder-regenerated-on-first-run-via-kb-rebuild-indexes
+**Layer:** methodology
+**Confidence:** high
 **Terms:** rubric, dora, evaluation, scoring, agent-suitability, methodology-comparison, BDD, TDD, specification-driven, continuous-delivery, trunk-based-development, scrum, kanban, waterfall, PRINCE2, mob-programming, VeriAct, AgentsWay, Spec-Kit-SDD, Phase 1 rubric, 14 dimensions, agent rework ratio, specification-ambiguity incidents
 **Facts:**
 - 14-dimension weighted rubric (140 total points), 4 highest-weight dimensions account for 49 points / 35% — Spec Formality, Task Decomposability, V&V Rigour, Feedback Loop Structure (Phase 1, 2026)
@@ -27,6 +29,8 @@ This shelf-index ships as the starter pack for `sdlc-knowledge-base`. The three 
 ## 2. agentic-sdlc-options.md
 
 **Hash:** placeholder-regenerated-on-first-run-via-kb-rebuild-indexes
+**Layer:** methodology
+**Confidence:** high
 **Terms:** sdlc, agentic, scrum, safe, formal-methods, solo-development, multi-team, assured, SpecFlow Solo, Agile-Native SDLC, SAFe-Lite Agentic, Assured Agentic, decision matrix, blast radius, regulatory burden, specification maturity, migration paths
 **Facts:**
 - Four distinct SDLC options span the scale/assurance/regulatory spectrum: SpecFlow Solo (1-2), Agile-Native (3-10), SAFe-Lite (multi-team), Assured (regulated) — Agentic SDLC research 2026
@@ -39,6 +43,8 @@ This shelf-index ships as the starter pack for `sdlc-knowledge-base`. The three 
 ## 3. specification-formality-and-agent-performance.md
 
 **Hash:** placeholder-regenerated-on-first-run-via-kb-rebuild-indexes
+**Layer:** evidence
+**Confidence:** high
 **Terms:** specifications, BDD, gherkin, openapi, formal-methods, TLA+, AWS, DynamoDB, Cosmos DB, Cloudflare, agent rework, specification-driven, narrative-stories, executable-contracts, Z notation, B method, VDM, AsyncAPI, protobuf, Coq, Isabelle
 **Facts:**
 - Specification formality is the highest-weighted dimension in the agent suitability rubric (14/140 points, Phase 1 2026)
