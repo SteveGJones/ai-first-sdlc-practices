@@ -6,8 +6,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from sdlc_knowledge_base_scripts.kb_config import (
     DEFAULT_LAYERS,
     allowed_layers,

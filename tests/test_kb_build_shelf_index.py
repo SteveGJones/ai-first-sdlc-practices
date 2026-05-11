@@ -1,11 +1,7 @@
 """Unit and integration tests for sdlc_knowledge_base_scripts.build_shelf_index."""
 from pathlib import Path
 
-import pytest
-
 from sdlc_knowledge_base_scripts.build_shelf_index import (
-    IndexEntry,
-    RebuildStats,
     build_entry,
     compute_hash,
     extract_facts,

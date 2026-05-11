@@ -1,11 +1,8 @@
 """Tests for sdlc_knowledge_base_scripts.kb_ingest_batch."""
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
-
-import pytest
 
 from sdlc_knowledge_base_scripts.kb_ingest_batch import (
     build_manifest,
