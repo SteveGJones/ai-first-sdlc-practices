@@ -8,6 +8,7 @@ run without real Agent calls — mirrors orchestrator.py.
 """
 from __future__ import annotations
 
+import glob as _glob
 import json
 import re
 from dataclasses import dataclass, field
@@ -43,3 +44,43 @@ class ReduceDispatchRequest:
 class RouteResult:
     targets: dict = field(default_factory=dict)
     oversized: list = field(default_factory=list)
+
+
+def discover_sources(spec) -> list[Path]:
+    """Resolve a glob string, a directory Path, or a list of paths to .md files.
+
+    - dir  -> all *.md directly in the dir (non-recursive), sorted by name
+    - glob -> files matching the pattern, sorted
+    - list -> each entry resolved; missing paths skipped; deduped, order-stable
+    Only files that exist are returned.
+    """
+    out: list[Path] = []
+    seen: set[Path] = set()
+
+    def _add(p: Path) -> None:
+        rp = p.resolve()
+        if rp in seen:
+            return
+        if p.is_file():
+            seen.add(rp)
+            out.append(p)
+
+    if isinstance(spec, (list, tuple)):
+        for entry in spec:
+            _add(Path(entry))
+        return out
+
+    if isinstance(spec, Path) and spec.is_dir():
+        for p in sorted(spec.glob("*.md")):
+            _add(p)
+        return out
+
+    # Treat as glob string (also handles a dir given as str via trailing match)
+    pattern = str(spec)
+    if Path(pattern).is_dir():
+        for p in sorted(Path(pattern).glob("*.md")):
+            _add(p)
+        return out
+    for match in sorted(_glob.glob(pattern)):
+        _add(Path(match))
+    return out
