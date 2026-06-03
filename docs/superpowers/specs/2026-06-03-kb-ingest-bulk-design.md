@@ -57,6 +57,19 @@ dependency — consistent with `kb-ingest-batch --parallel`).
 | `agents/agent-knowledge-updater.md` | agent (reused) | Reduce: one fresh-context Sonnet agent per target file |
 | `scripts/build_shelf_index.py` | Python (reused) | Single finalize rebuild |
 | `skills/kb-ingest-batch/SKILL.md` | skill (edit) | Deprecation banner → bulk |
+| `skills/kb-init/SKILL.md` + scaffolding | skill (edit) | Accept `--library <path>` to scaffold a library outside the project `CLAUDE.md` default |
+
+**Library resolution / `--library` override.** The KB Python layer already separates
+the library path from the project dir (`kb_config.py` takes an explicit `library_path`
+plus `--project-dir`); the single-destination assumption lives only in the skill
+convention ("read `CLAUDE.md` → one `library_path`"). `kb-ingest-bulk` and `kb-init`
+therefore accept an optional **`--library <path>`** that bypasses `CLAUDE.md`
+resolution and targets an explicit library. Default behaviour is unchanged
+(CLAUDE.md-resolved). This is the mechanism that lets bulk ingest be tested against a
+throwaway library without corrupting the project library. The broader multi-library /
+`--libraries` query-federation surface across the remaining KB skills is **out of scope
+here and tracked as #209** (building on EPIC #164's registry, which already ships
+cross-library *query* federation).
 
 **Concurrency:** `--parallel <N>`, **default 16, max 64** (raisable for capable
 machines). Python hands the skill rounds of ≤N items to dispatch concurrently and
@@ -166,6 +179,7 @@ valid, and skips already-`reduced` targets. New sources are appended to `pending
 | Argument | Description |
 |---|---|
 | `<glob \| file-list \| dir>` | Sources to ingest (e.g. `library/raw/*.md`, a dir, or a newline list) |
+| `--library <path>` | Target library path, bypassing `CLAUDE.md` resolution (default: CLAUDE.md-resolved). Enables isolated testing and multi-library projects (see #209) |
 | `--parallel <N>` | Concurrency for map and reduce rounds (default 16, max 64) |
 | `--extractor-model <id>` | Map model (default `claude-haiku-4-5`) |
 | `--size-threshold <tokens>` | Per-file reduce size guard (default conservative) |
@@ -183,11 +197,34 @@ valid, and skips already-`reduced` targets. New sources are appended to `pending
 - Dispatch — mocked via the injectable dispatcher callable (same as `orchestrator.py`
   tests); contract tests on extractor/updater JSON shape.
 
+### End-to-end validation against a throwaway library
+
+The single-destination problem (testing would corrupt the project library) is solved by
+`--library <path>` — every live test targets an isolated, disposable library, never the
+project's. A real corpus is symlinked at `tmp_texts/` (→ CRI texts, 887 `.md` files).
+Tiered, so we don't burn hours/$ per run:
+
+1. **Python unit/integration (mocked dispatcher)** — primary correctness coverage; runs in CI.
+2. **Live smoke (~15 files)** from `tmp_texts/` → fresh `tmp/cri-bulk-test/library/` via
+   `kb-init --library` then `kb-ingest-bulk --library`. Proves real wiring end-to-end:
+   parallel map, routing to existing + newly pre-allocated files, contention-free parallel
+   reduce, single finalize. Minutes; run during development, not CI.
+3. **Manual scale check (~100 files)** — observe throughput and size-guard behaviour on a
+   genuinely hot topic. Deliberate, not CI.
+4. **Full corpus (887 files)** — user-initiated production run; validates the headline
+   weeks→hours claim. Targets a dedicated library via `--library`, never the project library.
+
+`tmp/cri-bulk-test/` is disposable (`rm -rf` between runs); the project library is never a
+write target in any test tier.
+
 ## Out of scope (v1)
 
 - Chunk-and-merge reduce for pathological single-file topics (documented future work).
 - Workflow-tool-based orchestration (parallel Agent dispatch is the portable default).
 - Changes to `kb-prepare-batch` or single-source `kb-ingest`.
+- Multi-library `--library`/`--libraries` across the *remaining* KB skills and ad-hoc
+  query federation — tracked as **#209** (builds on EPIC #164's registry). #208 adds
+  `--library` to `kb-ingest-bulk` + `kb-init` only.
 
 ## Risks / open questions (resolved)
 
