@@ -121,3 +121,7 @@ agent_prompts/
 # Archon generated build artifacts
 .archon/teams/.generated/
 .archon/teams/.generated/
+
+# kb-ingest-bulk per-source extraction artefacts (resume tokens, regenerable)
+library/.extracts/
+**/library/.extracts/
