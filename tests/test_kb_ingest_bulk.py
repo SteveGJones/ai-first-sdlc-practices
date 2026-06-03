@@ -46,3 +46,25 @@ def test_discover_sources_missing_path_skipped(tmp_path: Path) -> None:
     f.write_text("a")
     found = discover_sources([str(f), str(tmp_path / "nope.md")])
     assert found == [f]
+
+
+from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
+    extract_path, persist_extract, slug_for_source,
+)
+
+
+def test_slug_for_source_stable_and_safe() -> None:
+    assert slug_for_source(Path("/x/02-03 Foo Bar.md")) == "02-03-foo-bar"
+    assert slug_for_source(Path("/x/Foo_Bar.md")) == "foo-bar"
+
+
+def test_persist_extract_writes_json(tmp_path: Path) -> None:
+    extract = {"source": "a.md", "findings": ["f1"], "confidence": "high", "targets": []}
+    p = persist_extract(tmp_path, "a", extract)
+    assert p == tmp_path / "a.json"
+    import json
+    assert json.loads(p.read_text())["findings"] == ["f1"]
+
+
+def test_extract_path() -> None:
+    assert extract_path(Path("/lib/.extracts"), "a") == Path("/lib/.extracts/a.json")

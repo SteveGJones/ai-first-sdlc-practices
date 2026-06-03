@@ -84,3 +84,27 @@ def discover_sources(spec) -> list[Path]:
     for match in sorted(_glob.glob(pattern)):
         _add(Path(match))
     return out
+
+
+_SLUG_RE = re.compile(r"[^a-z0-9]+")
+
+
+def slug_for_source(path: Path) -> str:
+    """Stable, filesystem-safe slug from a source filename (stem)."""
+    stem = Path(path).stem.lower()
+    return _SLUG_RE.sub("-", stem).strip("-")
+
+
+def extract_path(extracts_dir: Path, slug: str) -> Path:
+    return Path(extracts_dir) / f"{slug}.json"
+
+
+def persist_extract(extracts_dir: Path, slug: str, extract: dict) -> Path:
+    """Write one extract as JSON to extracts_dir/<slug>.json (atomic)."""
+    extracts_dir = Path(extracts_dir)
+    extracts_dir.mkdir(parents=True, exist_ok=True)
+    path = extract_path(extracts_dir, slug)
+    tmp = path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(extract, indent=2), encoding="utf-8")
+    tmp.rename(path)
+    return path
