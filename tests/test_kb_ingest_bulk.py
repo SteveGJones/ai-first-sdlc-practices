@@ -100,3 +100,28 @@ def test_mark_source_failed_records_error(tmp_path: Path) -> None:
     m = mark_source_failed(m, str(s[0]), "timeout")
     assert m["sources"][str(s[0])]["status"] == "failed"
     assert m["sources"][str(s[0])]["error"] == "timeout"
+
+
+from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
+    mark_target_reduced, mark_target_failed, retry_failed,
+)
+
+
+def test_target_transitions(tmp_path: Path) -> None:
+    m = build_bulk_manifest([tmp_path / "a.md"])
+    m["targets"]["topic.md"] = {"status": "pending", "source_count": 2, "is_new": False, "error": None}
+    m = mark_target_reduced(m, "topic.md")
+    assert m["targets"]["topic.md"]["status"] == "reduced"
+    m["targets"]["topic.md"] = {"status": "pending", "source_count": 2, "is_new": False, "error": None}
+    m = mark_target_failed(m, "topic.md", "context overflow")
+    assert m["targets"]["topic.md"]["status"] == "failed"
+    assert m["targets"]["topic.md"]["error"] == "context overflow"
+
+
+def test_retry_failed_requeues_both_phases(tmp_path: Path) -> None:
+    m = build_bulk_manifest([tmp_path / "a.md"])
+    m = mark_source_failed(m, str(tmp_path / "a.md"), "x")
+    m["targets"]["t.md"] = {"status": "failed", "source_count": 1, "is_new": True, "error": "y"}
+    m = retry_failed(m)
+    assert m["sources"][str(tmp_path / "a.md")]["status"] == "pending"
+    assert m["targets"]["t.md"]["status"] == "pending"

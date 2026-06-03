@@ -153,3 +153,30 @@ def mark_source_failed(manifest: dict, path: str, error: str) -> dict:
     manifest["sources"][path]["status"] = "failed"
     manifest["sources"][path]["error"] = error
     return manifest
+
+
+def mark_target_reduced(manifest: dict, target_file: str) -> dict:
+    """Mark a target as successfully reduced."""
+    manifest["targets"][target_file]["status"] = "reduced"
+    manifest["targets"][target_file]["error"] = None
+    return manifest
+
+
+def mark_target_failed(manifest: dict, target_file: str, error: str) -> dict:
+    """Mark a target as failed with an error message."""
+    manifest["targets"][target_file]["status"] = "failed"
+    manifest["targets"][target_file]["error"] = error
+    return manifest
+
+
+def retry_failed(manifest: dict) -> dict:
+    """Reset all failed sources and targets back to pending."""
+    for v in manifest["sources"].values():
+        if v["status"] == "failed":
+            v["status"] = "pending"
+            v["error"] = None
+    for v in manifest["targets"].values():
+        if v["status"] == "failed":
+            v["status"] = "pending"
+            v["error"] = None
+    return manifest
