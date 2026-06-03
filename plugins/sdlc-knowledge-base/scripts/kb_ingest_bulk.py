@@ -108,3 +108,48 @@ def persist_extract(extracts_dir: Path, slug: str, extract: dict) -> Path:
     tmp.write_text(json.dumps(extract, indent=2), encoding="utf-8")
     tmp.rename(path)
     return path
+
+
+def build_bulk_manifest(sources, existing=None, run_meta=None) -> dict:
+    """Build or update a two-phase bulk manifest.
+
+    Preserves prior source/target status from *existing*; appends new sources
+    as pending. run_meta is set only on first build.
+    """
+    if existing is not None:
+        manifest = {
+            "started_at": existing.get("started_at", _now()),
+            "run_meta": existing.get("run_meta", run_meta or {}),
+            "sources": dict(existing.get("sources", {})),
+            "targets": dict(existing.get("targets", {})),
+        }
+    else:
+        manifest = {
+            "started_at": _now(),
+            "run_meta": run_meta or {},
+            "sources": {},
+            "targets": {},
+        }
+    for p in sources:
+        key = str(p)
+        if key not in manifest["sources"]:
+            manifest["sources"][key] = {
+                "slug": slug_for_source(Path(p)),
+                "status": "pending",
+                "error": None,
+            }
+    return manifest
+
+
+def mark_source_extracted(manifest: dict, path: str) -> dict:
+    """Mark a source as successfully extracted."""
+    manifest["sources"][path]["status"] = "extracted"
+    manifest["sources"][path]["error"] = None
+    return manifest
+
+
+def mark_source_failed(manifest: dict, path: str, error: str) -> dict:
+    """Mark a source as failed with an error message."""
+    manifest["sources"][path]["status"] = "failed"
+    manifest["sources"][path]["error"] = error
+    return manifest

@@ -68,3 +68,35 @@ def test_persist_extract_writes_json(tmp_path: Path) -> None:
 
 def test_extract_path() -> None:
     assert extract_path(Path("/lib/.extracts"), "a") == Path("/lib/.extracts/a.json")
+
+
+from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
+    build_bulk_manifest, mark_source_extracted, mark_source_failed,
+)
+
+
+def test_build_bulk_manifest_initial(tmp_path: Path) -> None:
+    s = [tmp_path / "a.md", tmp_path / "b.md"]
+    m = build_bulk_manifest(s, run_meta={"parallel_n": 16})
+    assert set(m["sources"]) == {str(s[0]), str(s[1])}
+    assert all(v["status"] == "pending" for v in m["sources"].values())
+    assert m["run_meta"]["parallel_n"] == 16
+    assert m["targets"] == {}
+
+
+def test_build_bulk_manifest_resume_preserves_extracted(tmp_path: Path) -> None:
+    s = [tmp_path / "a.md", tmp_path / "b.md"]
+    m = build_bulk_manifest(s)
+    m = mark_source_extracted(m, str(s[0]))
+    s2 = s + [tmp_path / "c.md"]
+    m2 = build_bulk_manifest(s2, existing=m)
+    assert m2["sources"][str(s[0])]["status"] == "extracted"
+    assert m2["sources"][str(s2[2])]["status"] == "pending"
+
+
+def test_mark_source_failed_records_error(tmp_path: Path) -> None:
+    s = [tmp_path / "a.md"]
+    m = build_bulk_manifest(s)
+    m = mark_source_failed(m, str(s[0]), "timeout")
+    assert m["sources"][str(s[0])]["status"] == "failed"
+    assert m["sources"][str(s[0])]["error"] == "timeout"
