@@ -125,3 +125,18 @@ def test_retry_failed_requeues_both_phases(tmp_path: Path) -> None:
     m = retry_failed(m)
     assert m["sources"][str(tmp_path / "a.md")]["status"] == "pending"
     assert m["targets"]["t.md"]["status"] == "pending"
+
+
+from sdlc_knowledge_base_scripts.kb_ingest_bulk import estimate_tokens, normalize_slug
+
+
+def test_normalize_slug_collapses_variants() -> None:
+    assert normalize_slug("Carbon Accounting") == "carbon-accounting"
+    assert normalize_slug("carbon_accounting") == "carbon-accounting"
+    assert normalize_slug("carbon-accounting.md") == "carbon-accounting"
+    assert normalize_slug("  Carbon  Accounting  ") == "carbon-accounting"
+
+
+def test_estimate_tokens_chars_over_four() -> None:
+    assert estimate_tokens("a" * 400) == 100
+    assert estimate_tokens("") == 0

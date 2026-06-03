@@ -180,3 +180,17 @@ def retry_failed(manifest: dict) -> dict:
             v["status"] = "pending"
             v["error"] = None
     return manifest
+
+
+def normalize_slug(text: str) -> str:
+    """Normalise a topic name/slug for new-topic dedup: lowercase, strip .md,
+    collapse non-alphanumerics to single hyphens."""
+    s = str(text).lower()
+    if s.endswith(".md"):
+        s = s[:-3]
+    return _SLUG_RE.sub("-", s).strip("-")
+
+
+def estimate_tokens(text: str) -> int:
+    """Cheap token estimate: ~4 chars per token."""
+    return len(text) // 4
