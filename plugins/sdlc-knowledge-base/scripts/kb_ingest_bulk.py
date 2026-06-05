@@ -253,3 +253,54 @@ def route_extracts(extracts, existing_files, size_threshold) -> RouteResult:
             del targets[tfile]
 
     return RouteResult(targets=targets, oversized=sorted(oversized))
+
+
+def format_extract_prompt(req: ExtractDispatchRequest) -> str:
+    """Prompt for one knowledge-extractor (map phase). Read-only; returns JSON."""
+    return "\n".join([
+        "MAP_EXTRACT — read-only extraction, no library writes.",
+        "",
+        f"Source: {req.source_path}",
+        f"Library: {req.library_path}",
+        f"Shelf-index: {req.shelf_index_path}",
+        "",
+        "Read the source and the shelf-index (read-only — do NOT write any "
+        "library file). Emit ONLY a JSON object with this shape:",
+        "{",
+        '  "source": "<source path>",',
+        '  "findings": ["<concise finding>", ...],',
+        '  "statistics": ["<stat with number + context>", ...],',
+        '  "citations": ["<citation string>", ...],',
+        '  "confidence": "high|medium|low",',
+        '  "targets": [',
+        '    {"file": "<existing-shelf-index-file>.md", "finding_idx": [<int>, ...]},',
+        '    {"new_topic_slug": "<slug>", "title": "<Title>", "finding_idx": [<int>, ...]}',
+        "  ]",
+        "}",
+        "",
+        "Rules: keep findings SUMMARISED (no verbatim transcription); match "
+        "existing files by name from the shelf-index; propose a new_topic only "
+        "when no existing file fits; finding_idx are indices into findings[].",
+    ])
+
+
+def format_reduce_prompt(req: ReduceDispatchRequest) -> str:
+    """Prompt for one agent-knowledge-updater (reduce phase) for a single file."""
+    action = "CREATE this new file" if req.is_new else "UPDATE this existing file"
+    return "\n".join([
+        "BULK_REDUCE — synthesise all routed extracts into exactly one file.",
+        "Constraints: (1) write ONLY the target file; (2) Do NOT run "
+        "kb-rebuild-indexes; (3) Do NOT append to log.md.",
+        "",
+        f"Target file: {req.target_file} ({action})",
+        f"Library: {req.library_path}",
+        f"Shelf-index: {req.shelf_index_path}",
+        "",
+        "Apply the standard agent-knowledge-updater rules: extend-vs-create, "
+        "contradiction flagging, citation discipline, and confidence frontmatter. "
+        "You see ALL findings for this topic at once — dedupe and reconcile "
+        "contradictions across them.",
+        "",
+        "Extracts routed to this file (JSON):",
+        json.dumps(req.extracts, indent=2),
+    ])

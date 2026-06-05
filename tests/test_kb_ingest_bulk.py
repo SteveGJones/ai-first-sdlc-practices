@@ -208,3 +208,44 @@ def test_route_skips_target_with_no_identity() -> None:
     r = route_extracts(extracts, existing_files=set(), size_threshold=10_000_000)
     assert r.targets == {}
     assert ".md" not in r.targets
+
+
+from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
+    format_extract_prompt, format_reduce_prompt,
+)
+
+
+def test_format_extract_prompt_contains_contract() -> None:
+    req = ExtractDispatchRequest(
+        source_path="raw/a.md", library_path="library",
+        shelf_index_path="library/_shelf-index.md", extractor_model="claude-haiku-4-5",
+    )
+    p = format_extract_prompt(req)
+    assert "raw/a.md" in p
+    assert "library/_shelf-index.md" in p
+    assert "JSON" in p
+    assert "targets" in p
+    assert "read-only" in p.lower()
+
+
+def test_format_reduce_prompt_includes_extracts_and_mode() -> None:
+    req = ReduceDispatchRequest(
+        target_file="topic.md", is_new=False, library_path="library",
+        shelf_index_path="library/_shelf-index.md",
+        extracts=[{"source": "a.md", "findings": ["f1"], "targets": []}],
+    )
+    p = format_reduce_prompt(req)
+    assert "topic.md" in p
+    assert "f1" in p
+    assert "BULK_REDUCE" in p
+    assert "Do NOT run kb-rebuild-indexes" in p
+    assert "Do NOT append to log.md" in p
+
+
+def test_format_reduce_prompt_new_file_flag() -> None:
+    req = ReduceDispatchRequest(
+        target_file="new-topic.md", is_new=True, library_path="library",
+        shelf_index_path="library/_shelf-index.md", extracts=[],
+    )
+    p = format_reduce_prompt(req)
+    assert "create" in p.lower()
