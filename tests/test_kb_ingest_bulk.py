@@ -273,3 +273,79 @@ def test_write_log_entry_appends(tmp_path: Path) -> None:
     text = log.read_text()
     assert "ingest-bulk" in text
     assert text.startswith("# Log")
+
+
+import json as _json
+
+
+def _seed_library(tmp_path: Path) -> tuple[Path, Path, Path]:
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- existing.md\n")
+    (lib / "existing.md").write_text("---\nlayer: domain\nconfidence: medium\n---\n# Existing\n")
+    (lib / "log.md").write_text("# Log\n")
+    return lib, lib / "_shelf-index.md", lib / "log.md"
+
+
+def test_end_to_end_with_mock_dispatcher(tmp_path: Path) -> None:
+    lib, shelf, log = _seed_library(tmp_path)
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    (raw / "s1.md").write_text("source one")
+    (raw / "s2.md").write_text("source two")
+    extracts_dir = lib / ".extracts"
+
+    # --- MAP: mock extractor returns JSON keyed by source ---
+    def map_dispatch(req: ExtractDispatchRequest) -> str:
+        name = Path(req.source_path).name
+        target = ([{"file": "existing.md", "finding_idx": [0]}] if name == "s1.md"
+                  else [{"new_topic_slug": "fresh-topic", "title": "Fresh Topic", "finding_idx": [0]}])
+        return _json.dumps({
+            "source": req.source_path, "findings": [f"finding from {name}"],
+            "statistics": [], "citations": [], "confidence": "medium", "targets": target,
+        })
+
+    sources = discover_sources(raw)
+    manifest = build_bulk_manifest(sources, run_meta={"size_threshold": 10_000_000})
+    for src in sources:
+        result = map_dispatch(ExtractDispatchRequest(
+            source_path=str(src), library_path=str(lib),
+            shelf_index_path=str(shelf), extractor_model="claude-haiku-4-5"))
+        extract = _json.loads(result)
+        persist_extract(extracts_dir, slug_for_source(src), extract)
+        mark_source_extracted(manifest, str(src))
+
+    # --- ROUTE ---
+    loaded = [_json.loads(p.read_text()) for p in sorted(extracts_dir.glob("*.json"))]
+    route = route_extracts(loaded, existing_files={"existing.md"}, size_threshold=10_000_000)
+    assert set(route.targets) == {"existing.md", "fresh-topic.md"}
+    assert route.targets["fresh-topic.md"]["is_new"] is True
+
+    # --- REDUCE: mock updater writes the file ---
+    def reduce_dispatch(req: ReduceDispatchRequest) -> str:
+        path = Path(req.library_path) / req.target_file
+        path.write_text(f"# {req.target_file}\n" +
+                        "\n".join(f"- {e['findings'][0]}" for e in req.extracts) + "\n")
+        return "done"
+
+    for tfile, slot in route.targets.items():
+        manifest["targets"][tfile] = {
+            "status": "pending", "source_count": len(slot["extracts"]),
+            "is_new": slot["is_new"], "error": None}
+        reduce_dispatch(ReduceDispatchRequest(
+            target_file=tfile, is_new=slot["is_new"], library_path=str(lib),
+            shelf_index_path=str(shelf), extracts=slot["extracts"]))
+        mark_target_reduced(manifest, tfile)
+
+    # --- FINALIZE ---
+    summary = summarize_run(manifest, route.oversized)
+    write_log_entry(log, "## [test] ingest-bulk\n" + summary)
+
+    # Assertions
+    assert (lib / "fresh-topic.md").exists()
+    assert "finding from s2.md" in (lib / "fresh-topic.md").read_text()
+    assert "finding from s1.md" in (lib / "existing.md").read_text()
+    assert (log.read_text().count("ingest-bulk")) == 1
+    # resume: re-running build_bulk_manifest keeps extracted status
+    m2 = build_bulk_manifest(sources, existing=manifest)
+    assert all(v["status"] == "extracted" for v in m2["sources"].values())
