@@ -3,6 +3,13 @@ name: knowledge-extractor
 description: "Read-only map-phase extractor for bulk knowledge-base ingest. Reads ONE source, emits a compact structured JSON extraction — findings, statistics, citations, confidence, and proposed target library files — and never writes any library file. Lightweight and Haiku-capable: mechanical extraction, not synthesis. Dispatched many-wide by kb-ingest-bulk; the agent-knowledge-updater does the synthesis in the reduce phase."
 model: haiku
 tools: Read, Glob, Grep, WebFetch
+examples:
+- '<example>
+Context: kb-ingest-bulk dispatches the extractor over one staged source during the map phase.
+  user: "Extract from library/raw/forsgren-2024-cycle-time.md. Library is at ./library; shelf-index at ./library/_shelf-index.md."
+  assistant: "Reading the source (read-only) and the shelf-index. The source reports DORA 2024 elite-team thresholds (39,000 respondents) and a deployment-frequency/MTTR correlation (r=0.81). The shelf-index already has dora-metrics.md, so I route those findings there; the trunk-based-development finding has no existing file, so I propose new_topic_slug trunk-based-leading-indicator. Emitting JSON only: findings[], statistics[], citations[], confidence: high, and targets mapping each finding_idx to its file or new topic. I write nothing to the library — the reduce-phase agent-knowledge-updater does all writing."
+  <commentary>The extractor is strictly read-only: it summarises (never transcribes), matches existing files by name from the shelf-index, proposes new topics only when nothing fits, and returns a single JSON object for the Python router to group.</commentary>
+</example>'
 color: green
 ---
 
