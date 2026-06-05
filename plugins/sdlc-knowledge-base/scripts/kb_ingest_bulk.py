@@ -304,3 +304,35 @@ def format_reduce_prompt(req: ReduceDispatchRequest) -> str:
         "Extracts routed to this file (JSON):",
         json.dumps(req.extracts, indent=2),
     ])
+
+
+def summarize_run(manifest: dict, oversized: list) -> str:
+    """Produce a human-readable run summary (also embeddable in log.md)."""
+    sources = manifest["sources"]
+    targets = manifest["targets"]
+    total = len(sources)
+    extracted = sum(1 for v in sources.values() if v["status"] == "extracted")
+    failed_sources = [k for k, v in sources.items() if v["status"] == "failed"]
+    reduced = sum(1 for v in targets.values() if v["status"] == "reduced")
+    failed_targets = [k for k, v in targets.items() if v["status"] == "failed"]
+    new_files = sum(1 for v in targets.values() if v.get("is_new"))
+
+    lines = [
+        f"Sources: {total} total, {extracted} extracted, {len(failed_sources)} failed",
+        f"Files: {reduced} reduced ({new_files} new), {len(failed_targets)} failed",
+    ]
+    if failed_sources:
+        lines.append("Failed sources: " + ", ".join(sorted(failed_sources)))
+    if failed_targets:
+        lines.append("Failed files: " + ", ".join(sorted(failed_targets)))
+    if oversized:
+        lines.append("Oversized (skipped, run manually): " + ", ".join(sorted(oversized)))
+    return "\n".join(lines)
+
+
+def write_log_entry(log_path: Path, summary_line: str) -> None:
+    """Append a single consolidated entry to log.md (creates if absent)."""
+    log_path = Path(log_path)
+    existing = log_path.read_text(encoding="utf-8") if log_path.exists() else ""
+    sep = "" if existing.endswith("\n") or not existing else "\n"
+    log_path.write_text(existing + sep + summary_line + "\n", encoding="utf-8")

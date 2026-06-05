@@ -249,3 +249,27 @@ def test_format_reduce_prompt_new_file_flag() -> None:
     )
     p = format_reduce_prompt(req)
     assert "create" in p.lower()
+
+
+from sdlc_knowledge_base_scripts.kb_ingest_bulk import summarize_run, write_log_entry
+
+
+def test_summarize_run_counts(tmp_path: Path) -> None:
+    m = build_bulk_manifest([tmp_path / "a.md", tmp_path / "b.md", tmp_path / "c.md"])
+    m = mark_source_extracted(m, str(tmp_path / "a.md"))
+    m = mark_source_extracted(m, str(tmp_path / "b.md"))
+    m = mark_source_failed(m, str(tmp_path / "c.md"), "timeout")
+    m["targets"]["t1.md"] = {"status": "reduced", "source_count": 2, "is_new": True, "error": None}
+    summary = summarize_run(m, oversized=["hot.md"])
+    assert "3" in summary
+    assert "timeout" in summary or "1" in summary
+    assert "hot.md" in summary
+
+
+def test_write_log_entry_appends(tmp_path: Path) -> None:
+    log = tmp_path / "log.md"
+    log.write_text("# Log\n")
+    write_log_entry(log, "## [2026-06-03] ingest-bulk | 3 sources / 1 file / 1 failed")
+    text = log.read_text()
+    assert "ingest-bulk" in text
+    assert text.startswith("# Log")
