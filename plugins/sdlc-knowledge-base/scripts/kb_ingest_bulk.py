@@ -194,3 +194,55 @@ def normalize_slug(text: str) -> str:
 def estimate_tokens(text: str) -> int:
     """Cheap token estimate: ~4 chars per token."""
     return len(text) // 4
+
+
+def _target_key(target: dict, existing_files: set) -> tuple[str, bool]:
+    """Resolve a single target entry to (target_file, is_new).
+
+    Existing-file targets keep their filename. New-topic proposals are
+    slug-normalised; if the normalised slug matches an existing file it routes
+    there (is_new=False), else it becomes "<slug>.md" (is_new=True).
+    """
+    if "file" in target:
+        return target["file"], False
+    norm = normalize_slug(target.get("new_topic_slug", target.get("title", "")))
+    candidate = f"{norm}.md"
+    if candidate in existing_files:
+        return candidate, False
+    return candidate, True
+
+
+def route_extracts(extracts, existing_files, size_threshold) -> RouteResult:
+    """Group extracts by target library file.
+
+    - existing-file targets group by filename
+    - new-topic proposals are slug-normalised and fuzzy-merged (variants of the
+      same slug collapse to one pre-allocated "<slug>.md")
+    - a source touching multiple targets is added to each group
+    - per-file: estimate combined token size; files exceeding size_threshold are
+      moved to .oversized and excluded from .targets
+    """
+    existing_files = set(existing_files)
+    targets: dict[str, dict] = {}
+
+    for extract in extracts:
+        for target in extract.get("targets", []):
+            tfile, is_new = _target_key(target, existing_files)
+            slot = targets.setdefault(
+                tfile, {"extracts": [], "is_new": is_new, "est_tokens": 0}
+            )
+            # an existing-file resolution wins over a new-topic guess
+            if not is_new:
+                slot["is_new"] = False
+            slot["extracts"].append(extract)
+
+    # size estimate per target (sum of its extracts' serialized size)
+    oversized: list[str] = []
+    for tfile, slot in list(targets.items()):
+        est = sum(estimate_tokens(json.dumps(e)) for e in slot["extracts"])
+        slot["est_tokens"] = est
+        if est > size_threshold:
+            oversized.append(tfile)
+            del targets[tfile]
+
+    return RouteResult(targets=targets, oversized=sorted(oversized))

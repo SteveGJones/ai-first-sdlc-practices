@@ -140,3 +140,58 @@ def test_normalize_slug_collapses_variants() -> None:
 def test_estimate_tokens_chars_over_four() -> None:
     assert estimate_tokens("a" * 400) == 100
     assert estimate_tokens("") == 0
+
+
+from sdlc_knowledge_base_scripts.kb_ingest_bulk import route_extracts
+
+
+def _extract(source, targets):
+    return {"source": source, "findings": ["f"], "statistics": [], "citations": [],
+            "confidence": "medium", "targets": targets}
+
+
+def test_route_groups_existing_files_by_name() -> None:
+    extracts = [
+        _extract("a.md", [{"file": "topic.md", "finding_idx": [0]}]),
+        _extract("b.md", [{"file": "topic.md", "finding_idx": [0]}]),
+    ]
+    r = route_extracts(extracts, existing_files={"topic.md"}, size_threshold=10_000_000)
+    assert set(r.targets) == {"topic.md"}
+    assert len(r.targets["topic.md"]["extracts"]) == 2
+    assert r.targets["topic.md"]["is_new"] is False
+    assert r.oversized == []
+
+
+def test_route_fuzzy_merges_new_topic_variants() -> None:
+    extracts = [
+        _extract("a.md", [{"new_topic_slug": "Carbon Accounting", "title": "Carbon Accounting", "finding_idx": [0]}]),
+        _extract("b.md", [{"new_topic_slug": "carbon_accounting", "title": "Carbon Accounting", "finding_idx": [0]}]),
+    ]
+    r = route_extracts(extracts, existing_files=set(), size_threshold=10_000_000)
+    assert set(r.targets) == {"carbon-accounting.md"}
+    assert r.targets["carbon-accounting.md"]["is_new"] is True
+    assert len(r.targets["carbon-accounting.md"]["extracts"]) == 2
+
+
+def test_route_new_topic_colliding_with_existing_file_routes_to_existing() -> None:
+    extracts = [_extract("a.md", [{"new_topic_slug": "topic", "title": "Topic", "finding_idx": [0]}])]
+    r = route_extracts(extracts, existing_files={"topic.md"}, size_threshold=10_000_000)
+    assert set(r.targets) == {"topic.md"}
+    assert r.targets["topic.md"]["is_new"] is False
+
+
+def test_route_source_touching_multiple_files_fans_out() -> None:
+    extracts = [_extract("a.md", [
+        {"file": "x.md", "finding_idx": [0]},
+        {"file": "y.md", "finding_idx": [1]},
+    ])]
+    r = route_extracts(extracts, existing_files={"x.md", "y.md"}, size_threshold=10_000_000)
+    assert set(r.targets) == {"x.md", "y.md"}
+
+
+def test_route_flags_oversized_and_excludes_from_targets() -> None:
+    big = {"source": "a.md", "findings": ["x" * 4000], "statistics": [], "citations": [],
+           "confidence": "low", "targets": [{"file": "hot.md", "finding_idx": [0]}]}
+    r = route_extracts([big], existing_files={"hot.md"}, size_threshold=100)
+    assert "hot.md" in r.oversized
+    assert "hot.md" not in r.targets
