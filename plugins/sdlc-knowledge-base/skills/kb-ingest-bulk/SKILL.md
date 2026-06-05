@@ -33,8 +33,32 @@ one writer per file) → **finalize** (one rebuild + one log entry).
 
 ## Module bootstrap
 
-Use the same `CLAUDE_PLUGIN_ROOT` importlib loader block as
-`kb-ingest-batch/SKILL.md` to import `sdlc_knowledge_base_scripts.kb_ingest_bulk`.
+Use this `CLAUDE_PLUGIN_ROOT` importlib loader block to import the
+`sdlc_knowledge_base_scripts.kb_ingest_bulk` helpers. It is self-contained — no
+other file needs to be opened.
+
+```bash
+python3 -c "
+import sys, os, importlib.util, json
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts', INIT, submodule_search_locations=[SCRIPTS])
+    if spec and spec.loader:
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = mod
+        spec.loader.exec_module(mod)
+from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
+    discover_sources, build_bulk_manifest, load_manifest, save_manifest,
+    retry_failed, persist_extract, slug_for_source, mark_source_extracted,
+    mark_source_failed, route_extracts, format_extract_prompt,
+    format_reduce_prompt, ReduceDispatchRequest, mark_target_reduced,
+    mark_target_failed, summarize_run, write_log_entry, ExtractDispatchRequest
+)
+"
+```
 
 ## Phase 1 — Map (parallel ≤N)
 

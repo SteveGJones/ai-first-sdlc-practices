@@ -53,9 +53,14 @@ from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
 )
 
 
-def test_slug_for_source_stable_and_safe() -> None:
-    assert slug_for_source(Path("/x/02-03 Foo Bar.md")) == "02-03-foo-bar"
-    assert slug_for_source(Path("/x/Foo_Bar.md")) == "foo-bar"
+def test_slug_for_source_readable_stable_and_collision_free() -> None:
+    # readable base prefix preserved
+    assert slug_for_source(Path("/x/02-03 Foo Bar.md")).startswith("02-03-foo-bar-")
+    assert slug_for_source(Path("/x/Foo_Bar.md")).startswith("foo-bar-")
+    # deterministic: same path -> same slug (resume-safe)
+    assert slug_for_source(Path("/x/Foo_Bar.md")) == slug_for_source(Path("/x/Foo_Bar.md"))
+    # collision-free: same stem in different dirs -> different slugs
+    assert slug_for_source(Path("/a/report.md")) != slug_for_source(Path("/b/report.md"))
 
 
 def test_persist_extract_writes_json(tmp_path: Path) -> None:
@@ -349,3 +354,18 @@ def test_end_to_end_with_mock_dispatcher(tmp_path: Path) -> None:
     # resume: re-running build_bulk_manifest keeps extracted status
     m2 = build_bulk_manifest(sources, existing=manifest)
     assert all(v["status"] == "extracted" for v in m2["sources"].values())
+
+
+def test_write_log_entry_creates_if_absent(tmp_path: Path) -> None:
+    log = tmp_path / "log.md"
+    assert not log.exists()
+    write_log_entry(log, "## [test] ingest-bulk | 1 source")
+    assert log.exists()
+    assert "ingest-bulk" in log.read_text()
+
+
+def test_discover_sources_from_str_dir(tmp_path: Path) -> None:
+    (tmp_path / "a.md").write_text("a")
+    (tmp_path / "b.md").write_text("b")
+    found = discover_sources(str(tmp_path))  # directory given as a string, not Path
+    assert [p.name for p in found] == ["a.md", "b.md"]

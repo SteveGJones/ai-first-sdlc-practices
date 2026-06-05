@@ -9,6 +9,7 @@ run without real Agent calls — mirrors orchestrator.py.
 from __future__ import annotations
 
 import glob as _glob
+import hashlib
 import json
 import re
 from dataclasses import dataclass, field
@@ -90,9 +91,18 @@ _SLUG_RE = re.compile(r"[^a-z0-9]+")
 
 
 def slug_for_source(path: Path) -> str:
-    """Stable, filesystem-safe slug from a source filename (stem)."""
-    stem = Path(path).stem.lower()
-    return _SLUG_RE.sub("-", stem).strip("-")
+    """Stable, filesystem-safe, collision-free slug from a source path.
+
+    Combines the readable filename stem with a short hash of the full path so
+    that two sources sharing a filename stem in different directories produce
+    distinct slugs. Deterministic per path (resume-safe): the same path always
+    yields the same slug regardless of which other sources are in the run.
+    """
+    p = Path(path)
+    stem = p.stem.lower()
+    base = _SLUG_RE.sub("-", stem).strip("-")
+    digest = hashlib.sha1(str(p).encode("utf-8")).hexdigest()[:8]
+    return f"{base}-{digest}" if base else digest
 
 
 def extract_path(extracts_dir: Path, slug: str) -> Path:
