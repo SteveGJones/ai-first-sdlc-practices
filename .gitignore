@@ -125,3 +125,6 @@ agent_prompts/
 # kb-ingest-bulk per-source extraction artefacts (resume tokens, regenerable)
 library/.extracts/
 **/library/.extracts/
+
+# External test corpus symlink (CRI texts) for kb-ingest-bulk smoke tests
+tmp_texts
