@@ -195,3 +195,16 @@ def test_route_flags_oversized_and_excludes_from_targets() -> None:
     r = route_extracts([big], existing_files={"hot.md"}, size_threshold=100)
     assert "hot.md" in r.oversized
     assert "hot.md" not in r.targets
+
+
+def test_route_empty_extracts_returns_empty() -> None:
+    r = route_extracts([], existing_files=set(), size_threshold=10_000_000)
+    assert r.targets == {}
+    assert r.oversized == []
+
+
+def test_route_skips_target_with_no_identity() -> None:
+    extracts = [_extract("a.md", [{"finding_idx": [0]}])]  # no file/new_topic_slug/title
+    r = route_extracts(extracts, existing_files=set(), size_threshold=10_000_000)
+    assert r.targets == {}
+    assert ".md" not in r.targets

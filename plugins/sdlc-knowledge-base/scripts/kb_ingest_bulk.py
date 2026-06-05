@@ -42,8 +42,8 @@ class ReduceDispatchRequest:
 
 @dataclass
 class RouteResult:
-    targets: dict = field(default_factory=dict)
-    oversized: list = field(default_factory=list)
+    targets: dict[str, dict] = field(default_factory=dict)
+    oversized: list[str] = field(default_factory=list)
 
 
 def discover_sources(spec) -> list[Path]:
@@ -196,8 +196,9 @@ def estimate_tokens(text: str) -> int:
     return len(text) // 4
 
 
-def _target_key(target: dict, existing_files: set) -> tuple[str, bool]:
-    """Resolve a single target entry to (target_file, is_new).
+def _target_key(target: dict, existing_files: set) -> tuple[str, bool] | None:
+    """Resolve a single target entry to (target_file, is_new), or None if the
+    target carries no usable identity (no 'file'/'new_topic_slug'/'title').
 
     Existing-file targets keep their filename. New-topic proposals are
     slug-normalised; if the normalised slug matches an existing file it routes
@@ -205,7 +206,10 @@ def _target_key(target: dict, existing_files: set) -> tuple[str, bool]:
     """
     if "file" in target:
         return target["file"], False
-    norm = normalize_slug(target.get("new_topic_slug", target.get("title", "")))
+    raw = target.get("new_topic_slug") or target.get("title") or ""
+    norm = normalize_slug(raw)
+    if not norm:
+        return None
     candidate = f"{norm}.md"
     if candidate in existing_files:
         return candidate, False
@@ -227,14 +231,17 @@ def route_extracts(extracts, existing_files, size_threshold) -> RouteResult:
 
     for extract in extracts:
         for target in extract.get("targets", []):
-            tfile, is_new = _target_key(target, existing_files)
+            resolved = _target_key(target, existing_files)
+            if resolved is None:
+                continue
+            tfile, is_new = resolved
             slot = targets.setdefault(
                 tfile, {"extracts": [], "is_new": is_new, "est_tokens": 0}
             )
             # an existing-file resolution wins over a new-topic guess
             if not is_new:
                 slot["is_new"] = False
-            slot["extracts"].append(extract)
+            slot["extracts"].append(dict(extract))
 
     # size estimate per target (sum of its extracts' serialized size)
     oversized: list[str] = []
