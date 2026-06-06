@@ -111,3 +111,59 @@ class LibraryLock:
         if lf.exists():
             lf.unlink()
         self._token = None
+
+
+_RUNS_NAME = ".kb-offline/runs.json"
+
+RESUMABLE_STATES = {"running", "failed"}
+
+
+class RunRegistry:
+    """Manifest-backed registry of runs and their lifecycle states. Run IDs are
+    derived deterministically from a caller-supplied timestamp + fingerprint (no
+    Date.now/random at import or in pure logic — the caller passes the timestamp)."""
+
+    def __init__(self, library_path):
+        self.library_path = Path(library_path)
+
+    def _path(self) -> Path:
+        _kb_dir(self.library_path)
+        return self.library_path / _RUNS_NAME
+
+    def _load(self) -> dict:
+        p = self._path()
+        if not p.exists():
+            return {"runs": {}}
+        try:
+            return json.loads(p.read_text())
+        except (json.JSONDecodeError, OSError):
+            return {"runs": {}}
+
+    def _save(self, data: dict) -> None:
+        from .durability import atomic_write_text
+        atomic_write_text(self._path(), json.dumps(data, indent=2))
+
+    def start_run(self, timestamp: str, fingerprint: dict) -> str:
+        data = self._load()
+        run_id = content_hash(timestamp + json.dumps(fingerprint, sort_keys=True))[:16]
+        data["runs"][run_id] = {
+            "run_id": run_id, "started_at": timestamp, "state": "running",
+            "fingerprint": fingerprint, "seq": len(data["runs"]),
+        }
+        self._save(data)
+        return run_id
+
+    def set_state(self, run_id: str, state: str) -> None:
+        data = self._load()
+        data["runs"][run_id]["state"] = state
+        self._save(data)
+
+    def select_resumable(self, fingerprint: dict) -> str | None:
+        data = self._load()
+        candidates = [
+            r for r in data["runs"].values()
+            if r["state"] in RESUMABLE_STATES and r["fingerprint"] == fingerprint
+        ]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda r: r["seq"])["run_id"]

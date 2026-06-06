@@ -48,3 +48,33 @@ def test_stale_lock_reclaimed(tmp_path: Path):
     token = b.try_acquire()
     assert token is not None and token > 0
     b.release()
+
+
+from sdlc_knowledge_base_scripts.resume import RunRegistry
+
+
+def test_select_resumable_latest_compatible(tmp_path: Path):
+    reg = RunRegistry(tmp_path)
+    fp = {"operation": "ingest", "config": config_hash({"backend": "anthropic"})}
+    r1 = reg.start_run("2026-06-06T00:00:00Z", fp)
+    reg.set_state(r1, "failed")
+    r2 = reg.start_run("2026-06-06T01:00:00Z", fp)
+    reg.set_state(r2, "failed")
+    assert reg.select_resumable(fp) == r2
+
+
+def test_select_resumable_rejects_incompatible_config(tmp_path: Path):
+    reg = RunRegistry(tmp_path)
+    r1 = reg.start_run("2026-06-06T00:00:00Z",
+                       {"operation": "ingest", "config": config_hash({"backend": "anthropic"})})
+    reg.set_state(r1, "failed")
+    other = {"operation": "ingest", "config": config_hash({"backend": "ollama"})}
+    assert reg.select_resumable(other) is None
+
+
+def test_completed_run_not_resumable(tmp_path: Path):
+    reg = RunRegistry(tmp_path)
+    fp = {"operation": "ingest", "config": "c"}
+    r1 = reg.start_run("2026-06-06T00:00:00Z", fp)
+    reg.set_state(r1, "completed")
+    assert reg.select_resumable(fp) is None
