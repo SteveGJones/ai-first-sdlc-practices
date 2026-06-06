@@ -17,7 +17,34 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # Reuse the schema-agnostic atomic JSON helpers from the batch module.
+# Re-exported via __all__ so the kb-ingest-bulk skill imports the whole
+# orchestration surface from this one module.
 from .kb_ingest_batch import load_manifest, save_manifest
+
+__all__ = [
+    "ExtractDispatchRequest",
+    "ReduceDispatchRequest",
+    "RouteResult",
+    "discover_sources",
+    "slug_for_source",
+    "extract_path",
+    "persist_extract",
+    "build_bulk_manifest",
+    "mark_source_extracted",
+    "mark_source_failed",
+    "mark_target_reduced",
+    "mark_target_failed",
+    "retry_failed",
+    "normalize_slug",
+    "estimate_tokens",
+    "route_extracts",
+    "format_extract_prompt",
+    "format_reduce_prompt",
+    "summarize_run",
+    "write_log_entry",
+    "load_manifest",
+    "save_manifest",
+]
 
 
 def _now() -> str:
@@ -274,8 +301,8 @@ def format_extract_prompt(req: ExtractDispatchRequest) -> str:
         f"Library: {req.library_path}",
         f"Shelf-index: {req.shelf_index_path}",
         "",
-        "Read the source and the shelf-index (read-only — do NOT write any "
-        "library file). Emit ONLY a JSON object with this shape:",
+        ("Read the source and the shelf-index (read-only — do NOT write any "
+         + "library file). Emit ONLY a JSON object with this shape:"),
         "{",
         '  "source": "<source path>",',
         '  "findings": ["<concise finding>", ...],',
@@ -288,9 +315,9 @@ def format_extract_prompt(req: ExtractDispatchRequest) -> str:
         "  ]",
         "}",
         "",
-        "Rules: keep findings SUMMARISED (no verbatim transcription); match "
-        "existing files by name from the shelf-index; propose a new_topic only "
-        "when no existing file fits; finding_idx are indices into findings[].",
+        ("Rules: keep findings SUMMARISED (no verbatim transcription); match "
+         + "existing files by name from the shelf-index; propose a new_topic "
+         + "only when no existing file fits; finding_idx index into findings[]."),
     ])
 
 
@@ -299,17 +326,17 @@ def format_reduce_prompt(req: ReduceDispatchRequest) -> str:
     action = "CREATE this new file" if req.is_new else "UPDATE this existing file"
     return "\n".join([
         "BULK_REDUCE — synthesise all routed extracts into exactly one file.",
-        "Constraints: (1) write ONLY the target file; (2) Do NOT run "
-        "kb-rebuild-indexes; (3) Do NOT append to log.md.",
+        ("Constraints: (1) write ONLY the target file; (2) Do NOT run "
+         + "kb-rebuild-indexes; (3) Do NOT append to log.md."),
         "",
         f"Target file: {req.target_file} ({action})",
         f"Library: {req.library_path}",
         f"Shelf-index: {req.shelf_index_path}",
         "",
-        "Apply the standard agent-knowledge-updater rules: extend-vs-create, "
-        "contradiction flagging, citation discipline, and confidence frontmatter. "
-        "You see ALL findings for this topic at once — dedupe and reconcile "
-        "contradictions across them.",
+        ("Apply the standard agent-knowledge-updater rules: extend-vs-create, "
+         + "contradiction flagging, citation discipline, confidence frontmatter. "
+         + "You see ALL findings for this topic at once — dedupe and reconcile "
+         + "contradictions across them."),
         "",
         "Extracts routed to this file (JSON):",
         json.dumps(req.extracts, indent=2),
