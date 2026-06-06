@@ -138,12 +138,11 @@ def extract_path(extracts_dir: Path, slug: str) -> Path:
 
 def persist_extract(extracts_dir: Path, slug: str, extract: dict) -> Path:
     """Write one extract as JSON to extracts_dir/<slug>.json (atomic)."""
+    from .durability import atomic_write_text
     extracts_dir = Path(extracts_dir)
     extracts_dir.mkdir(parents=True, exist_ok=True)
     path = extract_path(extracts_dir, slug)
-    tmp = path.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(extract, indent=2), encoding="utf-8")
-    tmp.rename(path)
+    atomic_write_text(path, json.dumps(extract, indent=2))
     return path
 
 

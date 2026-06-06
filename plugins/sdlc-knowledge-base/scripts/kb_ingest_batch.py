@@ -63,14 +63,9 @@ def load_manifest(path: Path) -> dict[str, object] | None:
 
 
 def save_manifest(path: Path, manifest: dict[str, object]) -> None:
-    """Atomically write *manifest* as JSON to *path*.
-
-    Writes to a ``.tmp`` sibling first, then renames to ensure the manifest
-    is never left in a half-written state.
-    """
-    tmp_path = path.with_suffix(path.suffix + ".tmp")
-    tmp_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    tmp_path.rename(path)
+    """Atomically + durably write *manifest* as JSON to *path*."""
+    from .durability import atomic_write_text
+    atomic_write_text(path, json.dumps(manifest, indent=2))
 
 
 def build_manifest(
