@@ -2,7 +2,7 @@
 name: kb-init
 description: Initialise a project for knowledge base use. Appends the [Knowledge Base] section to the project's CLAUDE.md, creates the library/ directory structure, optionally seeds with three example library files from the Agentic SDLC research, and reports next steps. Run once after installing sdlc-knowledge-base.
 disable-model-invocation: false
-argument-hint: "[--with-starter-pack | --empty]"
+argument-hint: "[--with-starter-pack | --empty] [--library <path>]"
 ---
 
 # Initialise Knowledge Base
@@ -13,6 +13,9 @@ Set up a project to use the `sdlc-knowledge-base` plugin. This skill is idempote
 
 - `--with-starter-pack` (default) — Seed `library/` with three example library files synthesised from the Agentic SDLC research programme: `agentic-sdlc-options.md`, `agent-suitability-rubric.md`, `specification-formality-and-agent-performance.md`. New users get a queryable library on first install and can see the format end-to-end. The starter content is example only and meant to be replaced or extended.
 - `--empty` — Create the library directory structure but skip the starter pack. Use when you want a completely empty library to populate from scratch.
+- `--library <path>` — Initialise a library at this explicit path instead of `./library`
+  and skip the CLAUDE.md append (the section assumes one library at the default path).
+  Use for isolated testing or a secondary library. See #209.
 
 ## Steps
 
@@ -62,6 +65,8 @@ Appended [Knowledge Base] section to CLAUDE.md (XX lines).
 ### 5. Create the library directory structure
 
 Check whether `library/` exists. If it does, skip the directory creation step (the starter pack copy in step 6 is still useful and safe).
+
+If `--library <path>` is given, create the structure under `<path>` instead of `./library`, and skip steps 2-4 (the CLAUDE.md append).
 
 If it does not, create:
 

@@ -5,6 +5,10 @@ disable-model-invocation: false
 argument-hint: "[<dir-or-manifest>] [--parallel <N>] [--retry-failed]"
 ---
 
+> **Deprecated (v0.3.0+):** Prefer `/sdlc-knowledge-base:kb-ingest-bulk`, which adds a
+> parallel map-reduce path that can update existing shared files (this skill is
+> create-only). `kb-ingest-batch` remains functional for simple create-only batches.
+
 # Batch Ingestion
 
 Drive `agent-knowledge-updater` over every staged file in `library/raw/`, with progress tracking and resume support. Second stage of the batch workflow: **prepare** (`kb-prepare-batch`) then **ingest** (this skill).
