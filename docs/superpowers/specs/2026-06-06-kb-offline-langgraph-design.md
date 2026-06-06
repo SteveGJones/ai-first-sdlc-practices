@@ -106,6 +106,9 @@ Claim(text: str, cited_pages: PageRef[], evidence_spans: Span[], entailment_stat
 
 `synthesize` must emit claims with their cited pages and the supporting spans; the entailment check
 then verifies each claim against its spans, and `rendered_text` is derived from the claims.
+**`entailment_status` is assigned by the deterministic verifier, never trusted from synthesis-model
+output** — the model proposes `(text, cited_pages, evidence_spans)`; the verifier computes the status.
+Any model-supplied status is discarded.
 
 ### Safe mutation boundary (deterministic code owns all writes)
 
@@ -126,9 +129,21 @@ possibly answer/audit records**; a crash between those writes leaves inconsisten
 
 - An **operation journal** (append-only, under `library/.kb-offline/journal/`) records the intended
   mutation set with commit **stages**: `proposed → validated → staged → committed → indexed`.
-- **Expected-target hash (compare-and-swap):** an `extend` proposal records the hash of the target
-  page *as read during validation*; the writer commits only if the on-disk page still matches that
-  hash, else it aborts as `conflict` (prevents clobbering edits made since validation).
+- **Write-ahead ordering (durable):** each journal record is written **and fsync'd before** the
+  mutation it describes (write-ahead log discipline), and the stage transition for a step is fsync'd
+  **after** that step's file mutation is durable. Ordering invariant: journal-intent durable →
+  file mutation durable → journal-commit durable. Recovery can therefore always tell which stage a
+  step reached.
+- **Concurrency fencing (resolves the TTL-reclaim race):** lock acquisition stamps the run with a
+  **monotonic fencing token** (a counter persisted per library, incremented on every acquisition).
+  **Every commit re-reads the current token and aborts if it is not the holder's token** — so a
+  process that paused, lost its lease on TTL, and woke up to resume is fenced out at commit time even
+  though it once "held" the lock and a replacement run has started. (Heartbeat TTL detects staleness;
+  the fencing token makes reclaim *safe*.)
+- **Compare-and-swap per action:** `extend` records the target page hash *as read during validation*
+  and commits only if the on-disk page still matches (else `conflict`). `create` uses
+  **expected-absence / no-replace CAS** — commit only if the target path does **not** already exist
+  (else `conflict`), so two creators can't clobber.
 - **Durable staged commit:** write temp → **`fsync` the file** → atomic `rename` → **`fsync` the
   directory**. (This *extends* #208's `persist_extract`/`save_manifest`, which today rename *without*
   `fsync` — the spec earlier overclaimed "exactly as #208"; #208's helpers will be upgraded to fsync
@@ -164,8 +179,9 @@ with opaque graph checkpoints). Contracts:
   `abandoned` if its lock is stale (below); only `running`/`failed` runs are resumable.
 - **Per-library lock** with **stale-lock handling**: lockfile under `library/.kb-offline/` records
   PID + host + heartbeat timestamp; a lock is stale if the PID is dead or the heartbeat exceeds a TTL,
-  in which case the run is marked `abandoned` and the lock is reclaimed (with a logged warning). Two
-  live runs can never mutate one library concurrently.
+  in which case the run is marked `abandoned` and the lock is reclaimed (with a logged warning). Each
+  acquisition stamps a **monotonic fencing token** (see §mutation) so a reclaimed-from process is
+  fenced out at commit time, not merely warned. Two live runs can never mutate one library concurrently.
 - The LangGraph **checkpointer is an internal convenience only** (in-graph retry), never the resume
   authority; nodes that mutate tolerate replay (validate-then-commit + journal is idempotent).
 
@@ -203,14 +219,16 @@ Plus `tools/validation/check-prompt-parity.py` (the managed-block drift check) a
 ### Packaging corrections (verified against current `pyproject.toml`)
 
 Current distribution is **`sdlc-knowledge-base-scripts`** v0.1.0, dep `pyyaml` only, **no console
-scripts, no extras**, and **no pydantic**. This EPIC must:
-- add a **console-script** entry point `kb-offline = sdlc_knowledge_base_scripts.kb_offline_cli:main`;
-- add an **optional extra** `[offline]` → `langgraph`, `langgraph-checkpoint-sqlite`,
-  `langchain-ollama`, `ollama`, embeddings deps (sqlite-vec or numpy);
-- add **`pydantic`** to base deps (the typed contracts) — it is light and used by the validator too;
-- guard all offline imports so the base distribution still imports without the extra.
+scripts, no extras**, and **no pydantic**. This EPIC must (with milestone assignment, to resolve the M0-needs-vs-M4-packaging conflict):
+- **M0**: add **`pydantic`** to base deps (the typed contracts + validator need it); add the
+  **console-script** entry point `kb-offline = sdlc_knowledge_base_scripts.kb_offline_cli:main`. These
+  are what M0's CLI-provable resume/mutation requires — they cannot wait for M4.
+- **M1**: add the **optional extra** `[offline]` → `langgraph`, `langgraph-checkpoint-sqlite`,
+  `langchain-ollama`, `ollama` (these arrive only when the Ollama backend + graphs do); **M3** adds the
+  embeddings dep (sqlite-vec or numpy) to the extra.
+- Guard all offline imports so the base distribution still imports without the extra (M0 onward).
 - Install line is `pip install "sdlc-knowledge-base-scripts[offline]"` (corrected from the earlier
-  `sdlc-knowledge-base[offline]`).
+  `sdlc-knowledge-base[offline]`). The base install (no extra) is sufficient for M0's Anthropic path.
 
 ### CLI surface
 
@@ -329,11 +347,11 @@ gate before the next begins**.
 
 | Milestone | Delivers | Gate |
 |---|---|---|
-| **M0 — Foundation & contracts** (planned & built first, on its own; M1–M4 are *not* detail-planned until M0's contracts are resolved) | `contracts.py` (incl. **claim-structured `Answer`**); `mutation.py` (proposal + validator + **operation journal + expected-hash CAS + durable fsync commit + recovery + shelf-index reconciliation**); `resume.py` (IDs, hashing, invalidation, **lifecycle states, `--resume`/latest-compatible selection, stale-lock TTL/PID**); `pipeline.py`; `prompts.py` + `check-prompt-parity.py`; `#208` fsync upgrade; narrow `generate/embed` backend base + `AnthropicBackend` + `FakeBackend`; eval-harness skeleton + ratified thresholds | The four contracts resolved & unit-proven (claim/evidence schema, mutation journal/recovery, resume-selection, backend ownership); pipeline runs existing operations via `AnthropicBackend`/`FakeBackend`; prompt-parity check green; thresholds ratified |
-| **M1 — Ollama ingest/query** | `OllamaBackend`, `ingest_graph`, `query_graph`, structured-output ladder; CLI `init`/`ingest`/`ingest-bulk`/`query`; provenance/layer (#4) | **Eval gate**: Ollama meets the agreed thresholds on fact recall, routing, abstention, citation entailment, JSON validity — *before* Ollama is defaulted |
+| **M0 — Foundation & contracts** (planned & built first, on its own; M1–M4 are *not* detail-planned until M0's contracts are resolved) | `contracts.py` (incl. **claim-structured `Answer`**); `mutation.py` (proposal + validator + **operation journal + expected-hash CAS + durable fsync commit + recovery + shelf-index reconciliation**); `resume.py` (IDs, hashing, invalidation, **lifecycle states, `--resume`/latest-compatible selection, stale-lock TTL/PID**); `pipeline.py`; `prompts.py` + `check-prompt-parity.py`; `#208` fsync upgrade; narrow `generate/embed` backend base + `AnthropicBackend` + `FakeBackend`; **`pydantic` base dep + console-script + minimal `kb-offline` CLI (`init`, `ingest`/`query` via `--backend anthropic`, `--resume`)**; eval-harness skeleton + ratified thresholds | The four contracts resolved & unit-proven (claim/evidence schema, mutation journal/recovery/fencing, resume-selection, backend ownership); pipeline runs existing operations via `AnthropicBackend`/`FakeBackend`; **resume + journal + fencing are CLI-provable end-to-end on the Anthropic path** (not API-only); prompt-parity check green; thresholds ratified |
+| **M1 — Ollama backend** | `OllamaBackend` + `[offline]` extra (langgraph/ollama), `ingest_graph`, `query_graph`, structured-output ladder; `--backend ollama` + `ingest-bulk`; provenance/layer (#4) | **Eval gate**: Ollama meets the agreed thresholds on fact recall, routing, abstention, citation entailment, JSON validity — *before* Ollama is defaulted |
 | **M2 — Promotion + federation** | compounding `promote` (#1); federation query, attribution, priming, audit (#2); cross-library hygiene `lint` (#5) | Eval gate on federation attribution + promotion-mutation validation |
 | **M3 — Embeddings + scale** | optional accelerator (#3): `index`, sqlite-vec, page+section fallback, RRF federation merge, index-compat rejection | Eval gate: retrieval recall@k with accelerator ≥ shelf-index baseline at scale; off-by-default preserved |
-| **M4 — Ship** | `[offline]` extra + console script + pydantic/langgraph deps; CRI-scale manual run; release-mapping; version bump; README | packaging check, full validation, retrospective |
+| **M4 — Ship** | embeddings dep folded into `[offline]` extra; CRI-scale manual run; release-mapping; version bump; README (console-script/pydantic already landed M0, langgraph/ollama extra M1) | packaging check, full validation, retrospective |
 
 ## Testing strategy
 
@@ -400,3 +418,11 @@ gate before the next begins**.
 17. **Two eval suites** (smoke ~15; frozen release 75–100 incl. ≥20 no-evidence, pinned config, 3×).
     Safety floors (rejection/citation-validity/attribution/post-repair-JSON = 100%) baked now;
     model-quality thresholds proposed now, ratified at M0 exit before M1 tuning.
+18. **Concurrency fencing**: monotonic fencing token checked before *every* commit (TTL detects
+    staleness; the token makes reclaim safe); `create` uses expected-absence/no-replace CAS;
+    journal records are write-ahead-ordered and fsync'd (intent durable → mutation durable →
+    commit durable).
+19. **`entailment_status` is verifier-assigned, never trusted from synthesis output.**
+20. **M0 is CLI-provable, not API-only**: `pydantic` + console-script + a minimal `kb-offline` CLI
+    (`init`, `ingest`/`query` via `--backend anthropic`, `--resume`) move into M0 so resume/journal/
+    fencing are proven end-to-end; the `[offline]` (langgraph/ollama) extra stays at M1, embeddings dep at M3.
