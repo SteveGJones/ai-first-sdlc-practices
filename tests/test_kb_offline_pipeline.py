@@ -27,8 +27,14 @@ def _shelf(tmp_path):
 def test_extract_parses_valid_json(tmp_path):
     src = tmp_path / "a.md"
     src.write_text("source text")
-    payload = json.dumps({"source": "a.md", "findings": ["f"], "confidence": "medium",
-                          "targets": [{"file": "topic.md", "finding_idx": [0]}]})
+    payload = json.dumps(
+        {
+            "source": "a.md",
+            "findings": ["f"],
+            "confidence": "medium",
+            "targets": [{"file": "topic.md", "finding_idx": [0]}],
+        }
+    )
     be = FakeBackend()
     be.generate = lambda prompt, schema=None: payload  # type: ignore
     result = extract(str(src), _shelf(tmp_path), backend=be)
@@ -39,7 +45,9 @@ def test_extract_parses_valid_json(tmp_path):
 def test_extract_repairs_then_succeeds(tmp_path):
     src = tmp_path / "a.md"
     src.write_text("source text")
-    good = json.dumps({"source": "a.md", "findings": ["f"], "confidence": "low", "targets": []})
+    good = json.dumps(
+        {"source": "a.md", "findings": ["f"], "confidence": "low", "targets": []}
+    )
     seq = ["not json at all", good]
     be = FakeBackend()
     be.generate = lambda prompt, schema=None: seq.pop(0)  # type: ignore
@@ -53,5 +61,35 @@ def test_extract_fails_after_repair_budget(tmp_path):
     be = FakeBackend()
     be.generate = lambda prompt, schema=None: "still not json"  # type: ignore
     import pytest
+
     with pytest.raises(ValueError):
         extract(str(src), _shelf(tmp_path), backend=be, max_repairs=1)
+
+
+def test_reduce_returns_validatable_create_proposal(tmp_path):
+    from sdlc_knowledge_base_scripts.contracts import MutationAction
+    from sdlc_knowledge_base_scripts.pipeline import reduce_to_proposal
+
+    proposal_json = json.dumps(
+        {
+            "target_file": "fresh.md",
+            "action": "create",
+            "frontmatter": {"layer": "domain", "confidence": "medium"},
+            "body": "# Fresh\n- finding",
+            "citations": ["Src 2026"],
+            "cross_refs": [],
+            "expected_hash": None,
+        }
+    )
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: proposal_json  # type: ignore
+    proposal = reduce_to_proposal(
+        target_file="fresh.md",
+        is_new=True,
+        extracts=[{"source": "a.md", "findings": ["finding"]}],
+        existing_content=None,
+        backend=be,
+    )
+    assert proposal.action == MutationAction.create
+    assert proposal.target_file == "fresh.md"
+    assert proposal.expected_hash is None

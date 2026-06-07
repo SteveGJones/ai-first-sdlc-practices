@@ -3,12 +3,13 @@ model step, then OWNS parsing + the validate->repair->fail ladder + (for writers
 mutation proposal. Backends never validate or write."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from pydantic import ValidationError
 
 from . import prompts
-from .contracts import ExtractJSON
+from .contracts import ExtractJSON, MutationProposal
 
 
 def _extract_schema() -> dict:
@@ -39,3 +40,34 @@ def extract(
                 "Return ONLY a valid JSON object conforming to the schema."
             )
     raise ValueError(f"extract failed after {max_repairs} repair(s): {last_error}")
+
+
+def _proposal_schema() -> dict:
+    return MutationProposal.model_json_schema()
+
+
+def reduce_to_proposal(
+    *, target_file, is_new, extracts, existing_content, backend, max_repairs: int = 1
+) -> MutationProposal:
+    """Reduce operation: synthesise routed extracts into a typed MutationProposal
+    (NOT a final file). The caller validates + commits it deterministically."""
+    action = "create" if is_new else "extend"
+    base_prompt = (
+        f"{prompts.REDUCE_FRAGMENT}\n\nTarget file: {target_file} ({action})\n"
+        f"Existing content:\n{existing_content or '(none — new file)'}\n\n"
+        f"Routed extracts (JSON):\n{json.dumps(extracts, indent=2)}"
+    )
+    schema = _proposal_schema()
+    prompt = base_prompt
+    last_error = ""
+    for _ in range(max_repairs + 1):
+        raw = backend.generate(prompt, schema=schema)
+        try:
+            return MutationProposal.model_validate_json(raw)
+        except (ValidationError, ValueError) as exc:
+            last_error = str(exc)
+            prompt = (
+                f"{base_prompt}\n\nPrevious output invalid: {last_error}\n"
+                "Return valid JSON only."
+            )
+    raise ValueError(f"reduce failed after {max_repairs} repair(s): {last_error}")
