@@ -22,7 +22,8 @@ addendum resolves the M1 areas the parent spec left thin; the parent's decisions
 
 - **M1a** — `OllamaBackend` + `[offline]` extra + structured-output ladder + `ingest_graph` + single
   ingest on `--backend ollama`.
-- **M1b** — `ingest-bulk` parallel map-reduce: widen `ingest_graph`'s map node to `Send` fan-out.
+- **M1b** — `ingest-bulk` parallel map-reduce (see "M1b concurrency contract" below): bounded `Send`
+  fan-out for map AND parallel reduce-by-target.
 - **M1c** — query path (`select`/`synthesize` + entailment verifier + provenance/layer + `query_graph`)
   + the eval gate vs ratified thresholds (Ollama not defaulted until it passes).
 
@@ -35,18 +36,51 @@ addendum resolves the M1 areas the parent spec left thin; the parent's decisions
 - `embed(texts) -> list[list[float]]`: `ollama.embed(model=embed_model, input=texts)` (used in M3).
 - Default text model `gpt-oss:20b` (installed), configurable via flag/config; eval (M1c) ratifies the
   final default. Deferred `import ollama` (guarded) so the base distribution imports without the extra.
+- **Local-endpoint contract (enforces the parent's offline/private claim):** the backend resolves its
+  host from `OLLAMA_HOST` (default `http://localhost:11434`) and runs in **strict-offline mode by
+  default** — a non-loopback host (anything but `localhost`/`127.0.0.1`/`::1`) is **rejected** at
+  construction unless `--allow-remote-ollama` is explicitly passed. Offline/private is thus enforced,
+  not assumed.
 
 **ingest_graph** — built now (one node per existing pipeline stage), widened in M1b:
 - `IngestState` TypedDict carrying library/run context + accumulators.
 - Nodes (thin wrappers over the existing deterministic core / pipeline ops): `discover` →
   `map_extract` → `route` → `reduce_commit` → `finalize_recover`. Edges `START→discover→…→finalize→END`.
 - `map_extract` in M1a iterates sources sequentially (single-ingest); **M1b** replaces the
-  `discover→map_extract` edge with a conditional edge returning `[Send("extract_one", {...})]` and an
-  `Annotated[list, add]` reducer collecting per-source extracts.
-- Compiled with `SqliteSaver` under `library/.kb-offline/` for in-graph retry only.
-- **The manifest + journal remain the resume source of truth** (M0 contract). The checkpointer is the
-  in-graph convenience the parent spec designated, never the resume authority. Run lifecycle, fencing,
-  CAS, and recovery are unchanged — graph nodes call the same `commit_mutation`/`recover`.
+  `discover→map_extract` edge with a conditional edge fanning out to `extract_one` workers and an
+  `Annotated[list, add]` reducer collecting per-source extracts (see the concurrency contract below).
+
+**M1b concurrency contract (resolves the unbounded-fan-out risk):**
+- **Bounded map concurrency** — never dispatch all N sources at once (887 simultaneous local-model
+  calls would crush the Ollama server). Bound to `--parallel <N>` (default 16, max 64, same knob as
+  #208) via LangGraph's `config={"max_concurrency": N}` if honored, else by **chunking the `Send`
+  batch into rounds of N** (deterministic fallback). The chosen mechanism is verified against the
+  installed LangGraph version during M1b, not assumed.
+- **Reduce is parallel-by-target, one writer per file** — not sequential. Group routed extracts by
+  target file (the #208 `route_extracts` model), then fan out reduce workers bounded by the same
+  `--parallel N`, with **exactly one writer per target file** (the M0 `commit_mutation` per-file
+  fencing/CAS already enforces single-writer safety). Distinct journal `run_step` per
+  `(run_id, target)`.
+- **Heartbeat during long calls** — the map/reduce loops call `lock.heartbeat()` each round so a
+  long-running bulk job (many slow local-model calls) does not exceed the lock TTL and get falsely
+  reclaimed; the fencing token still makes any genuine reclaim safe.
+- Compiled with `SqliteSaver` under `library/.kb-offline/`. **A checkpointer provides *persistence*,
+  not retries** — any per-node retry is configured explicitly via a LangGraph `RetryPolicy` on the
+  node (we add one only where a transient model/IO failure warrants it, e.g. the extract node), not
+  implied by the checkpointer.
+
+**Graph identity & replay (explicitly tied to the M0 run identity):**
+- **`thread_id == manifest run_id`** — the graph's checkpoint thread IS the run, so a resumed run
+  reattaches to its own checkpoint.
+- **Stable step IDs** are derived deterministically from `(run_id, stage, item)` — the same scheme the
+  M0 `commit_mutation(run_step=...)` already uses (`f"{run_id}-{target}"`), so a replayed
+  `reduce_commit` node passes the **original journal step ID**, keeping journal records idempotent
+  (no duplicate/clobbered records on replay).
+- **Manifest/journal recovery runs BEFORE graph continuation:** on resume, `recover(library)` replays
+  the journal (reindex committed/staged-existing, surface conflicts) first; only then does the graph
+  continue. The manifest + journal remain the **resume source of truth**; the checkpointer is the
+  in-graph convenience the parent spec designated, never the authority. Fencing, CAS, lifecycle are
+  unchanged — graph nodes call the same `commit_mutation`/`recover`.
 
 ## M1c — query path + entailment verifier
 
@@ -64,7 +98,23 @@ Entailment verifier — `verify_entailment(answer, pages) -> Answer` — *assign
 2. **Judge grade (LLM, per grounded claim):** a `backend.generate` judge call ("does this span support
    this claim? supported|partial|unsupported") sets the grade. The judge is a backend call (Ollama or
    Anthropic) → eval-measurable, model-swappable. Model-supplied status is always discarded.
-- High-impact claims with non-`supported` status are surfaced; `promote` (M2) requires all-`supported`.
+
+**`high_impact` is verifier/policy-owned, never model-controlled (resolves the gaming risk).** If
+synthesis set `high_impact`, it could mark everything low-impact and make "zero unsupported
+high-impact" meaningless. So a **deterministic classifier in the verifier assigns `high_impact`**
+(any model-supplied value is discarded): a claim is high-impact if it contains a number/statistic/unit,
+a recommendation/modal directive ("should", "must", "recommend"), or safety/compliance/regulatory
+terms. Conservative bias — when uncertain, classify high-impact.
+
+**Query output publication policy (resolves "unsupported claims could still be published").** The
+verifier's status drives what the answer actually contains — not merely "surfaced":
+- `supported` → **published** in the answer.
+- `partial` → published **only with an explicit caveat marker** (e.g. "(partially supported)"); never
+  silently mixed with supported claims.
+- `unsupported` → **excluded from the answer body** and listed in a separate `rejected_claims` report
+  with the reason. A high-impact `unsupported` claim additionally flags the whole answer as degraded.
+- `promote` (M2) requires **all published claims `supported`** (no `partial`).
+This makes the published answer's support guarantee enforceable, not advisory.
 
 **Provenance/layer (#4):** `select`/`synthesize` honor `--layer` (filter candidate pages by frontmatter
 `layer`) and `--min-confidence` (drop weak pages); synthesis weights higher-confidence pages and
@@ -78,12 +128,18 @@ no-evidence) over a fixed library fixture, **pinned model+config, run 3×**. Wir
 to real pipeline runs on both backends; score against the ratified thresholds:
 - Safety floors (deterministic, must = 100%): invalid-mutation rejection, citation grounding validity,
   post-repair JSON validity.
-- Model-quality gate: citation entailment ≥98% + zero unsupported high-impact; first-pass JSON ≥95%;
-  fact recall ≥85%; routing ≥90%/≥80%; abstention ≥95%/≥90%.
+- **Entailment is TWO distinct metrics (do not conflate):**
+  - **Verifier accuracy** — precision/recall of `verify_entailment` against a labelled supported/
+    partial/unsupported set (does the verifier classify correctly?). Gate: precision ≥98%, recall ≥95%.
+  - **Published-claim support rate** — of claims actually *published* in answers, the fraction that
+    are `supported`. Gate: **100%** (enforced by the publication policy — `unsupported` is never
+    published; `partial` is caveated, not counted as a clean support). This is answer faithfulness.
+- Other model-quality gates: first-pass JSON ≥95%; fact recall ≥85% (macro); routing ≥90%/≥80%;
+  abstention ≥95%/≥90%.
 - Cloud-vs-local agreement = secondary drift report only.
 `kb-offline eval release` emits the comparison report. **Ollama becomes the default backend only after
-the chosen model clears the model-quality bar**; otherwise report the gap and keep Anthropic default /
-pull a stronger model.
+the chosen model clears BOTH the verifier-accuracy and the model-quality bars**; otherwise report the
+gap and keep Anthropic default / pull a stronger model.
 
 ## Dependency / packaging delta
 
@@ -99,7 +155,12 @@ pull a stronger model.
 - Grounding floor tested adversarially (fabricated span / fabricated cited page → reject).
 - Live Ollama smoke behind the skip-if-absent marker (now runnable — Ollama v0.30.6 present with
   `gpt-oss:20b`, `nomic-embed-text`).
-- Eval release suite runs in CI on the fixture; the full 3×-pinned run is a deliberate manual/gated step.
+- **Eval execution is two separate things (not contradictory):**
+  - **CI** runs only the *scorer correctness* tests (the metric functions on tiny synthetic inputs)
+    and the smoke fixture — fast, no real models, no thresholds gated.
+  - **The gated release run** is a deliberate, manual/CI-dispatched step: real pinned backends, the
+    75–100-question frozen suite, run 3×, producing a **persisted report that is required to pass
+    M1c** (and to flip the default to Ollama). CI never runs the pinned 3× model evaluation.
 - All runs use the project `.venv` (`.venv/bin/python`).
 
 ## Decisions log (M1 delta)
@@ -113,3 +174,22 @@ pull a stronger model.
    `[offline]` extra = langgraph + langgraph-checkpoint-sqlite + ollama.
 5. Default model `gpt-oss:20b` (configurable), ratified by the M1c eval gate before Ollama is defaulted.
 6. Query path single-library in M1c; federation fan-out deferred to a later milestone.
+7. **Query output publication policy**: `supported` published; `partial` published only with an
+   explicit caveat; `unsupported` excluded + reported in `rejected_claims`; `promote` requires all
+   published claims `supported`. Published-claim support guarantee is enforced, not advisory.
+8. **Entailment gate is two metrics**: verifier accuracy (precision ≥98% / recall ≥95% vs labelled)
+   AND published-claim support rate (=100%, enforced by the publication policy). Not conflated.
+9. **`high_impact` is verifier/policy-assigned** by a deterministic classifier (numbers/units,
+   recommendation/modal, safety/compliance terms; conservative bias to high-impact); never trusted
+   from synthesis output — so "zero unsupported high-impact" can't be gamed.
+10. **Graph identity tied to M0 run identity**: `thread_id == manifest run_id`; step IDs from
+    `(run_id, stage, item)`; replayed `reduce_commit` reuses the original journal step ID;
+    `recover()` runs before graph continuation; manifest+journal stay the resume authority. A
+    checkpointer is persistence, not retries — retries are explicit LangGraph `RetryPolicy` on nodes.
+11. **M1b bounded concurrency**: map fan-out bounded by `--parallel N` (default 16, max 64) via
+    `max_concurrency` or chunked `Send` rounds; **reduce is parallel-by-target, one writer per file**
+    (#208 model + M0 per-file fencing/CAS); `lock.heartbeat()` each round during long runs.
+12. **Local-endpoint contract**: `OllamaBackend` defaults to `localhost`, strict-offline by default,
+    rejects non-loopback hosts unless `--allow-remote-ollama` — enforces the offline/private claim.
+13. **Eval execution split**: CI = scorer-correctness + smoke fixture only (no gated thresholds);
+    gated release run = real pinned backends, 3×, persisted report required to pass M1c.
