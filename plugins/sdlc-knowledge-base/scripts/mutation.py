@@ -12,7 +12,7 @@ _REQUIRED_FRONTMATTER = ("layer", "confidence")
 
 def validate_proposal(
     proposal: MutationProposal,
-    library_path,
+    library_path: str | Path,
     allowed_layers: list[str],
     known_citations: set[str],
 ) -> list[str]:
@@ -21,7 +21,9 @@ def validate_proposal(
     library_path = Path(library_path).resolve()
 
     # 1. Path containment + shape
-    if proposal.target_file != Path(proposal.target_file).name or proposal.target_file.startswith("."):
+    if (not proposal.target_file
+            or proposal.target_file != Path(proposal.target_file).name
+            or proposal.target_file.startswith(".")):
         errors.append(f"path: target_file must be a bare library page name, got {proposal.target_file!r}")
     else:
         resolved = (library_path / proposal.target_file).resolve()

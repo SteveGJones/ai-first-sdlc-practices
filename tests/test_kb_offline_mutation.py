@@ -50,3 +50,10 @@ def test_create_with_expected_hash_rejected(tmp_path: Path):
     errs = validate_proposal(_proposal(expected_hash="deadbeef"), library_path=tmp_path,
                              allowed_layers=["domain"], known_citations={"DORA 2024"})
     assert any("expected_hash" in e.lower() for e in errs)
+
+
+def test_extend_without_expected_hash_rejected(tmp_path: Path):
+    errs = validate_proposal(
+        _proposal(action=MutationAction.extend),
+        library_path=tmp_path, allowed_layers=["domain"], known_citations={"DORA 2024"})
+    assert any("expected_hash" in e.lower() for e in errs)
