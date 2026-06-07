@@ -58,6 +58,9 @@ def _cmd_ingest(args: argparse.Namespace, backend_override, allowed_layers: list
 
     extracts_dir = lib / ".kb-offline" / "extracts"
     lock = LibraryLock(lib)
+    # M0 ingest is single-source and sub-second « the 120s lock TTL, so no heartbeat is
+    # needed here; the fencing token makes any reclaim safe regardless. M1's long-running
+    # ingest-bulk loop wires lock.heartbeat() per round.
     token = lock.acquire()
     try:
         sources = kbb.discover_sources([args.source])
