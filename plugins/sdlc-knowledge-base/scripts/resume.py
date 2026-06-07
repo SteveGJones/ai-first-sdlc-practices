@@ -170,3 +170,12 @@ class RunRegistry:
         if not candidates:
             return None
         return max(candidates, key=lambda r: r["seq"])["run_id"]
+
+
+def step_id(run_id: str, stage: str, item: str) -> str:
+    """Canonical journal/graph step identifier: f"{run_id}:{stage}:{item}".
+
+    Single scheme across the CLI, ingest_graph, and commit_mutation so a replayed
+    node passes the identical journal step ID (idempotent replay). stage e.g.
+    'extract'/'reduce'; item is the source slug or target filename."""
+    return f"{run_id}:{stage}:{item}"

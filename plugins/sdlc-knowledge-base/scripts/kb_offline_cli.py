@@ -13,7 +13,7 @@ from . import kb_ingest_bulk as kbb
 from .contracts import MutationAction
 from .mutation import CommitConflict, FenceError, commit_mutation, recover, validate_proposal
 from .pipeline import extract, reduce_to_proposal
-from .resume import LibraryLock, RunRegistry, config_hash
+from .resume import LibraryLock, RunRegistry, config_hash, step_id
 
 
 def _make_backend(name: str, override):
@@ -108,7 +108,7 @@ def _cmd_ingest(args: argparse.Namespace, backend_override, allowed_layers: list
                     library_path=lib,
                     fencing_token=token,
                     lock=lock,
-                    run_step=f"{run_id}-{tfile}",
+                    run_step=step_id(run_id, "reduce", tfile),
                 )
                 committed += 1
             except CommitConflict as exc:

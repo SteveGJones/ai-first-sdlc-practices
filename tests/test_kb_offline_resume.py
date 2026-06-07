@@ -78,3 +78,12 @@ def test_completed_run_not_resumable(tmp_path: Path):
     r1 = reg.start_run("2026-06-06T00:00:00Z", fp)
     reg.set_state(r1, "completed")
     assert reg.select_resumable(fp) is None
+
+
+from sdlc_knowledge_base_scripts.resume import step_id
+
+
+def test_step_id_canonical_formula():
+    assert step_id("run123", "reduce", "topic.md") == "run123:reduce:topic.md"
+    assert step_id("run123", "extract", "src-slug") == "run123:extract:src-slug"
+    assert step_id("r", "reduce", "t.md") == step_id("r", "reduce", "t.md")
