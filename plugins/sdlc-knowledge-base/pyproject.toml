@@ -15,6 +15,13 @@ dependencies = [
 [project.scripts]
 kb-offline = "sdlc_knowledge_base_scripts.kb_offline_cli:main"
 
+[project.optional-dependencies]
+offline = [
+  "langgraph",
+  "langgraph-checkpoint-sqlite",
+  "ollama",
+]
+
 [tool.setuptools]
 packages = ["sdlc_knowledge_base_scripts"]
 

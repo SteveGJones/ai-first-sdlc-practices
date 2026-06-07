@@ -185,3 +185,19 @@ def test_pyproject_declares_pydantic_and_script():
     data = tomllib.loads(pp.read_text())
     assert any("pydantic" in d for d in data["project"]["dependencies"])
     assert "kb-offline" in data["project"]["scripts"]
+
+
+def test_pyproject_declares_offline_extra():
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        import tomli as tomllib
+    from pathlib import Path
+    pp = Path(__file__).resolve().parents[1] / "plugins/sdlc-knowledge-base/pyproject.toml"
+    data = tomllib.loads(pp.read_text())
+    extra = data["project"]["optional-dependencies"]["offline"]
+    joined = " ".join(extra)
+    assert "langgraph" in joined
+    assert "langgraph-checkpoint-sqlite" in joined
+    assert "ollama" in joined
+    assert "langchain-ollama" not in joined
