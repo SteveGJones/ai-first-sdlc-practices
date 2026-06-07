@@ -157,3 +157,42 @@ def commit_mutation(
         {"stage": "committed", "target": proposal.target_file, "token": fencing_token},
     )
     return target
+
+
+def recover(library_path) -> dict:
+    """Replay the journal after a crash. Reindex committed targets AND staged targets
+    whose page exists on disk (crash after page-write, before committed record).
+    build_shelf_index is idempotent + hash-based, so reindex is deterministic.
+    staged-without-page = incomplete pre-write crash (reported, not reindexed).
+    conflict/fenced are surfaced for the run summary."""
+    from .build_shelf_index import main as rebuild_index
+
+    library_path = Path(library_path)
+    jdir = library_path / ".kb-offline" / "journal"
+    needs_reindex: list[str] = []
+    conflicts = 0
+    incomplete = 0
+    if jdir.exists():
+        for rec_path in sorted(jdir.glob("*.json")):
+            try:
+                rec = json.loads(rec_path.read_text())
+            except (json.JSONDecodeError, OSError):
+                continue
+            stage = rec.get("stage")
+            target = rec.get("target")
+            if stage == "committed" and target:
+                needs_reindex.append(target)
+            elif stage == "staged" and target:
+                if (library_path / target).exists():
+                    needs_reindex.append(target)   # durable page, missing only its commit record
+                else:
+                    incomplete += 1                # crashed before the page was written
+            elif stage in ("conflict", "fenced"):
+                conflicts += 1
+
+    reindexed = False
+    if needs_reindex:
+        rebuild_index([str(library_path)])
+        reindexed = True
+    return {"needs_reindex": needs_reindex, "conflicts": conflicts,
+            "incomplete": incomplete, "reindexed": reindexed}

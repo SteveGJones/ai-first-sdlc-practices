@@ -243,3 +243,38 @@ def test_render_page_escapes_colon_in_frontmatter(tmp_path: Path):
         assert fm["title"] == "Cost: a study"
     finally:
         lock.release()
+
+
+from sdlc_knowledge_base_scripts.mutation import recover
+
+
+def test_recover_reindexes_committed_and_staged_existing(tmp_path: Path):
+    lib = _seed_library(tmp_path)
+    (lib / "a.md").write_text("# A\n")          # committed page exists
+    (lib / "b.md").write_text("# B\n")          # staged page exists (crash before committed record)
+    jdir = lib / ".kb-offline" / "journal"
+    jdir.mkdir(parents=True)
+    (jdir / "s1.json").write_text('{"stage": "committed", "target": "a.md"}')
+    (jdir / "s2.json").write_text('{"stage": "staged", "target": "b.md"}')
+    (jdir / "s3.json").write_text('{"stage": "conflict", "reason": "hash"}')
+    report = recover(lib)
+    assert "a.md" in report["needs_reindex"]
+    assert "b.md" in report["needs_reindex"]     # staged-with-existing-page is reindexed (I1 fix)
+    assert report["conflicts"] == 1
+    assert report["reindexed"] is True
+
+
+def test_recover_reports_incomplete_staged_without_page(tmp_path: Path):
+    lib = _seed_library(tmp_path)
+    jdir = lib / ".kb-offline" / "journal"
+    jdir.mkdir(parents=True)
+    (jdir / "s1.json").write_text('{"stage": "staged", "target": "missing.md"}')
+    report = recover(lib)
+    assert "missing.md" not in report["needs_reindex"]   # page never written -> not reindexed
+    assert report["incomplete"] == 1
+
+
+def test_recover_clean_when_no_journal(tmp_path: Path):
+    lib = _seed_library(tmp_path)
+    report = recover(lib)
+    assert report["needs_reindex"] == [] and report["reindexed"] is False
