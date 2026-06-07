@@ -127,6 +127,12 @@ Ingest complete: <source>
 Next steps (if any): <e.g., "Review the new file trunk-based-leading-indicator.md for accuracy">
 ```
 
+### Reduce phase
+
+<!-- BEGIN managed:prompt-fragment REDUCE_FRAGMENT -->
+Synthesise all routed extracts into exactly one file. Propose a mutation (target, frontmatter, body, citations, cross-refs); do not write files yourself. Apply extend-vs-create, contradiction flagging, citation discipline, confidence frontmatter.
+<!-- END managed:prompt-fragment REDUCE_FRAGMENT -->
+
 ## Decision rules
 
 When deciding what to do with a finding, follow these rules:
