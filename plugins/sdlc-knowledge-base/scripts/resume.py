@@ -153,6 +153,9 @@ class RunRegistry:
         self._save(data)
         return run_id
 
+    def exists(self, run_id: str) -> bool:
+        return run_id in self._load().get("runs", {})
+
     def set_state(self, run_id: str, state: str) -> None:
         data = self._load()
         data["runs"][run_id]["state"] = state

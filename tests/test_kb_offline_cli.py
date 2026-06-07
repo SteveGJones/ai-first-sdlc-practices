@@ -96,3 +96,75 @@ def test_cli_resume_skips_completed_source(tmp_path):
     be2.generate = boom  # type: ignore
     rc = cli.main(args + ["--resume", "latest"], backend_override=be2, allowed_layers=["domain"])
     assert rc == 0
+
+
+def test_cli_ingest_rejected_proposal_reports_and_nonzero(tmp_path):
+    lib = _seed_lib(tmp_path)
+    src = tmp_path / "s1.md"
+    src.write_text("source one")
+    extract_payload = json.dumps(
+        {
+            "source": str(src),
+            "findings": ["f"],
+            "confidence": "medium",
+            "targets": [{"new_topic_slug": "t", "title": "T", "finding_idx": [0]}],
+        }
+    )
+    # reduce proposes layer 'domain' but allowed_layers is ['evidence'] -> validator rejects
+    reduce_payload = json.dumps(
+        {
+            "target_file": "t.md",
+            "action": "create",
+            "frontmatter": {"layer": "domain", "confidence": "medium"},
+            "body": "# T",
+            "citations": [],
+            "cross_refs": [],
+            "expected_hash": None,
+        }
+    )
+    be = _fake(extract_payload, reduce_payload)
+    rc = cli.main(
+        ["ingest", str(src), "--library", str(lib), "--backend", "fake", "--timestamp", "2026-06-06T00:00:00Z"],
+        backend_override=be,
+        allowed_layers=["evidence"],
+    )
+    assert rc == 1  # nothing committed, work attempted
+    assert not (lib / "t.md").exists()
+    runs = json.loads((lib / ".kb-offline" / "runs.json").read_text())
+    assert any(r["state"] == "completed_with_errors" for r in runs["runs"].values())
+
+
+def test_cli_unknown_resume_id_fails_fast(tmp_path):
+    lib = _seed_lib(tmp_path)
+    src = tmp_path / "s1.md"
+    src.write_text("x")
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: (_ for _ in ()).throw(AssertionError("no work"))  # type: ignore
+    import pytest
+
+    with pytest.raises(SystemExit):
+        cli.main(
+            [
+                "ingest",
+                str(src),
+                "--library",
+                str(lib),
+                "--backend",
+                "fake",
+                "--resume",
+                "deadbeef",
+                "--timestamp",
+                "2026-06-06T00:00:00Z",
+            ],
+            backend_override=be,
+            allowed_layers=["domain"],
+        )
+
+
+def test_cli_init_creates_structure(tmp_path):
+    lib = tmp_path / "lib"
+    rc = cli.main(["init", "--library", str(lib)])
+    assert rc == 0
+    assert (lib / "_shelf-index.md").exists()
+    assert (lib / "log.md").exists()
+    assert (lib / ".kb-offline").exists()

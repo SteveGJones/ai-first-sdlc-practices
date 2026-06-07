@@ -10,12 +10,13 @@ import sys
 from pathlib import Path
 
 from . import kb_ingest_bulk as kbb
+from .contracts import MutationAction
 from .mutation import CommitConflict, FenceError, commit_mutation, recover, validate_proposal
 from .pipeline import extract, reduce_to_proposal
 from .resume import LibraryLock, RunRegistry, config_hash
 
 
-def _make_backend(name, override):
+def _make_backend(name: str, override):
     if override is not None:
         return override
     if name == "anthropic":
@@ -25,7 +26,7 @@ def _make_backend(name, override):
     raise SystemExit(f"backend '{name}' is not available in M0 (use anthropic or fake)")
 
 
-def _cmd_init(args) -> int:
+def _cmd_init(args: argparse.Namespace) -> int:
     lib = Path(args.library)
     (lib / ".kb-offline").mkdir(parents=True, exist_ok=True)
     (lib / "raw").mkdir(parents=True, exist_ok=True)
@@ -39,7 +40,7 @@ def _cmd_init(args) -> int:
     return 0
 
 
-def _cmd_ingest(args, backend_override, allowed_layers) -> int:
+def _cmd_ingest(args: argparse.Namespace, backend_override, allowed_layers: list[str]) -> int:
     lib = Path(args.library)
     shelf = lib / "_shelf-index.md"
     backend = _make_backend(args.backend, backend_override)
@@ -49,6 +50,8 @@ def _cmd_ingest(args, backend_override, allowed_layers) -> int:
     if args.resume == "latest":
         run_id = reg.select_resumable(fingerprint) or reg.start_run(args.timestamp, fingerprint)
     elif args.resume:
+        if not reg.exists(args.resume):
+            raise SystemExit(f"--resume: unknown run id {args.resume!r}")
         run_id = args.resume
     else:
         run_id = reg.start_run(args.timestamp, fingerprint)
@@ -75,6 +78,8 @@ def _cmd_ingest(args, backend_override, allowed_layers) -> int:
             known_citations.update(ex.get("citations", []))
 
         committed = 0
+        rejected = 0
+        conflicts = 0
         for tfile, slot in route.targets.items():
             existing_content = (lib / tfile).read_text() if (lib / tfile).exists() else None
             proposal = reduce_to_proposal(
@@ -92,6 +97,7 @@ def _cmd_ingest(args, backend_override, allowed_layers) -> int:
             )
             if errors:
                 print(f"REJECTED {tfile}: {errors}", file=sys.stderr)
+                rejected += 1
                 continue
             try:
                 commit_mutation(
@@ -102,12 +108,28 @@ def _cmd_ingest(args, backend_override, allowed_layers) -> int:
                     run_step=f"{run_id}-{tfile}",
                 )
                 committed += 1
-            except (CommitConflict, FenceError) as exc:
+            except CommitConflict as exc:
+                # An idempotent re-create of a page already on disk (e.g. resuming a run
+                # that committed it on a prior attempt) is benign completion, not a
+                # partial failure — skip it without counting it against the run.
+                if proposal.action == MutationAction.create and (lib / tfile).exists():
+                    print(f"SKIPPED {tfile}: already committed", file=sys.stderr)
+                    continue
                 print(f"CONFLICT {tfile}: {exc}", file=sys.stderr)
+                conflicts += 1
+            except FenceError as exc:
+                print(f"CONFLICT {tfile}: {exc}", file=sys.stderr)
+                conflicts += 1
 
         report = recover(lib)
-        reg.set_state(run_id, "completed")
-        print(f"ingest complete: run={run_id} committed={committed} reindexed={report['reindexed']}")
+        had_errors = rejected > 0 or conflicts > 0
+        reg.set_state(run_id, "completed_with_errors" if had_errors else "completed")
+        print(
+            f"ingest: run={run_id} committed={committed} rejected={rejected} "
+            f"conflicts={conflicts} reindexed={report['reindexed']}"
+        )
+        if committed == 0 and had_errors:
+            return 1
         return 0
     except Exception:
         reg.set_state(run_id, "failed")
@@ -116,7 +138,7 @@ def _cmd_ingest(args, backend_override, allowed_layers) -> int:
         lock.release()
 
 
-def main(argv=None, *, backend_override=None, allowed_layers=None) -> int:
+def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None) -> int:
     allowed_layers = allowed_layers or ["methodology", "evidence", "domain", "development"]
     parser = argparse.ArgumentParser(prog="kb-offline")
     sub = parser.add_subparsers(dest="cmd", required=True)
