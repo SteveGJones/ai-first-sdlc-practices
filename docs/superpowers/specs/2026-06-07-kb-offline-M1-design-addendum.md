@@ -72,15 +72,34 @@ addendum resolves the M1 areas the parent spec left thin; the parent's decisions
 **Graph identity & replay (explicitly tied to the M0 run identity):**
 - **`thread_id == manifest run_id`** — the graph's checkpoint thread IS the run, so a resumed run
   reattaches to its own checkpoint.
-- **Stable step IDs** are derived deterministically from `(run_id, stage, item)` — the same scheme the
-  M0 `commit_mutation(run_step=...)` already uses (`f"{run_id}-{target}"`), so a replayed
-  `reduce_commit` node passes the **original journal step ID**, keeping journal records idempotent
+- **One canonical step-ID formula:** `step_id(run_id, stage, item) = f"{run_id}:{stage}:{item}"`
+  (stage ∈ {`extract`, `reduce`, …}; item = source slug for `extract`, target filename for `reduce`).
+  This supersedes M0's stage-less `f"{run_id}-{target}"` — **M1a updates the existing
+  `commit_mutation` caller to this formula** (`stage="reduce"`, `item=target_file`) so there is a
+  single scheme everywhere. Because the formula is pure-deterministic from `(run_id, stage, item)`, a
+  replayed `reduce_commit` node passes the **identical** step ID, keeping journal records idempotent
   (no duplicate/clobbered records on replay).
 - **Manifest/journal recovery runs BEFORE graph continuation:** on resume, `recover(library)` replays
   the journal (reindex committed/staged-existing, surface conflicts) first; only then does the graph
   continue. The manifest + journal remain the **resume source of truth**; the checkpointer is the
   in-graph convenience the parent spec designated, never the authority. Fencing, CAS, lifecycle are
   unchanged — graph nodes call the same `commit_mutation`/`recover`.
+
+**M1a retry policy (concrete):**
+- **Retryable (transport/transient only):** Ollama connection errors, timeouts, 5xx/`ResponseError`
+  from the endpoint. A LangGraph `RetryPolicy(max_attempts=3, backoff_factor=2.0, initial_interval≈1s,
+  jitter=True)` is attached to the **read-only model-call nodes** (`extract`; in M1c also
+  `select`/`synthesize`/judge).
+- **Non-retryable (content):** malformed/schema-invalid model output is **not** a RetryPolicy concern —
+  it's handled by the pipeline's bounded validate→repair→fail ladder; after the repair budget it is
+  **terminal**, recorded as `mark_source_failed`/`mark_target_failed` in the manifest (graceful partial
+  failure). No RetryPolicy wraps validation failure.
+- **No retry around the mutation commit:** the `reduce_commit` node carries **no `RetryPolicy`**. Its
+  durability/idempotency come from the journal + fencing + CAS; if it re-executes on resume it reuses
+  the **identical** canonical step ID (above), so the journal stays idempotent. (A retry that generated
+  a fresh step ID would be unsafe — hence none.)
+- Terminal failures (retries exhausted, or repair budget exhausted) are recorded in the manifest and
+  surfaced in the run summary.
 
 ## M1c — query path + entailment verifier
 
@@ -131,9 +150,12 @@ to real pipeline runs on both backends; score against the ratified thresholds:
 - **Entailment is TWO distinct metrics (do not conflate):**
   - **Verifier accuracy** — precision/recall of `verify_entailment` against a labelled supported/
     partial/unsupported set (does the verifier classify correctly?). Gate: precision ≥98%, recall ≥95%.
-  - **Published-claim support rate** — of claims actually *published* in answers, the fraction that
-    are `supported`. Gate: **100%** (enforced by the publication policy — `unsupported` is never
-    published; `partial` is caveated, not counted as a clean support). This is answer faithfulness.
+  - **Clean-published-claim support rate** — of claims published **without a caveat** (the
+    `supported` set; `partial` claims carry a caveat and are excluded from this set, `unsupported` are
+    not published at all), the fraction that are `supported`. Gate: **100%** — tautological-but-
+    enforced by the publication policy: only `supported` claims are published uncaveated. This is the
+    answer-faithfulness guarantee (distinct from verifier accuracy above). Caveated `partial` claims
+    are tracked/reported separately, not counted as clean support.
 - Other model-quality gates: first-pass JSON ≥95%; fact recall ≥85% (macro); routing ≥90%/≥80%;
   abstention ≥95%/≥90%.
 - Cloud-vs-local agreement = secondary drift report only.
@@ -178,14 +200,19 @@ gap and keep Anthropic default / pull a stronger model.
    explicit caveat; `unsupported` excluded + reported in `rejected_claims`; `promote` requires all
    published claims `supported`. Published-claim support guarantee is enforced, not advisory.
 8. **Entailment gate is two metrics**: verifier accuracy (precision ≥98% / recall ≥95% vs labelled)
-   AND published-claim support rate (=100%, enforced by the publication policy). Not conflated.
+   AND **clean-published-claim support rate** (=100%; the uncaveated/`supported` set — `partial` is
+   caveated and excluded, `unsupported` unpublished). Not conflated.
 9. **`high_impact` is verifier/policy-assigned** by a deterministic classifier (numbers/units,
    recommendation/modal, safety/compliance terms; conservative bias to high-impact); never trusted
    from synthesis output — so "zero unsupported high-impact" can't be gamed.
-10. **Graph identity tied to M0 run identity**: `thread_id == manifest run_id`; step IDs from
-    `(run_id, stage, item)`; replayed `reduce_commit` reuses the original journal step ID;
-    `recover()` runs before graph continuation; manifest+journal stay the resume authority. A
-    checkpointer is persistence, not retries — retries are explicit LangGraph `RetryPolicy` on nodes.
+10. **Graph identity tied to M0 run identity**: `thread_id == manifest run_id`; **one canonical step
+    ID `f"{run_id}:{stage}:{item}"`** (supersedes M0's stage-less form; M1a updates the caller);
+    replayed `reduce_commit` reuses the identical step ID; `recover()` runs before graph continuation;
+    manifest+journal stay the resume authority. A checkpointer is persistence, not retries.
+14. **M1a retry policy**: `RetryPolicy(max_attempts=3, backoff)` on read-only model-call nodes for
+    transport/transient errors only; content/validation failures go through the bounded
+    validate→repair→fail ladder → terminal `mark_*_failed`; **no RetryPolicy on `reduce_commit`**
+    (idempotency from journal+fencing+CAS; re-execution reuses the identical step ID).
 11. **M1b bounded concurrency**: map fan-out bounded by `--parallel N` (default 16, max 64) via
     `max_concurrency` or chunked `Send` rounds; **reduce is parallel-by-target, one writer per file**
     (#208 model + M0 per-file fencing/CAS); `lock.heartbeat()` each round during long runs.
