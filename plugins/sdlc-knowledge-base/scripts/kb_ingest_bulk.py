@@ -240,7 +240,7 @@ def _target_key(target: dict, existing_files: set) -> tuple[str, bool] | None:
     slug-normalised; if the normalised slug matches an existing file it routes
     there (is_new=False), else it becomes "<slug>.md" (is_new=True).
     """
-    if "file" in target:
+    if target.get("file"):
         return target["file"], False
     raw = target.get("new_topic_slug") or target.get("title") or ""
     norm = normalize_slug(raw)
