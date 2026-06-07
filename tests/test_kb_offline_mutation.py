@@ -13,7 +13,7 @@ from sdlc_knowledge_base_scripts.mutation import (
     commit_mutation,
     validate_proposal,
 )
-from sdlc_knowledge_base_scripts.resume import LibraryLock
+from sdlc_knowledge_base_scripts.resume import LibraryLock, content_hash
 
 
 def _proposal(**kw):
@@ -118,7 +118,7 @@ def test_commit_create_writes_page_and_journals(tmp_path: Path):
         frontmatter={"layer": "domain", "confidence": "medium"},
         body="# Topic\n",
     )
-    commit_mutation(p, library_path=lib, fencing_token=token, lock=lock)
+    commit_mutation(p, library_path=lib, fencing_token=token, lock=lock, run_step="s1")
     assert (lib / "topic.md").exists()
     journal = list((lib / ".kb-offline" / "journal").glob("*.json"))
     assert journal, "a journal record must be written"
@@ -138,7 +138,9 @@ def test_create_no_replace_conflict(tmp_path: Path):
     )
     try:
         with pytest.raises(CommitConflict):
-            commit_mutation(p, library_path=lib, fencing_token=token, lock=lock)
+            commit_mutation(
+                p, library_path=lib, fencing_token=token, lock=lock, run_step="s1"
+            )
     finally:
         lock.release()
 
@@ -157,7 +159,9 @@ def test_extend_hash_mismatch_conflict(tmp_path: Path):
     )
     try:
         with pytest.raises(CommitConflict):
-            commit_mutation(p, library_path=lib, fencing_token=token, lock=lock)
+            commit_mutation(
+                p, library_path=lib, fencing_token=token, lock=lock, run_step="s1"
+            )
     finally:
         lock.release()
 
@@ -177,6 +181,65 @@ def test_stale_fencing_token_fenced_out(tmp_path: Path):
     )
     try:
         with pytest.raises(FenceError):
-            commit_mutation(p, library_path=lib, fencing_token=old_token, lock=lock2)
+            commit_mutation(
+                p,
+                library_path=lib,
+                fencing_token=old_token,
+                lock=lock2,
+                run_step="s1",
+            )
     finally:
         lock2.release()
+
+
+def test_extend_success_overwrites_and_commits(tmp_path: Path):
+    lib = _seed_library(tmp_path)
+    (lib / "topic.md").write_text("v1 content")
+    lock = LibraryLock(lib)
+    token = lock.acquire()
+    p = MutationProposal(
+        target_file="topic.md",
+        action=MutationAction.extend,
+        frontmatter={"layer": "domain", "confidence": "medium"},
+        body="v1 content\nplus more\n",
+        expected_hash=content_hash("v1 content"),
+    )
+    try:
+        commit_mutation(
+            p, library_path=lib, fencing_token=token, lock=lock, run_step="s1"
+        )
+        text = (lib / "topic.md").read_text()
+        assert "plus more" in text and text.startswith("---")
+        import json as _j
+
+        rec = _j.loads((lib / ".kb-offline" / "journal" / "s1.json").read_text())
+        assert rec["stage"] == "committed"
+    finally:
+        lock.release()
+
+
+def test_render_page_escapes_colon_in_frontmatter(tmp_path: Path):
+    import yaml
+
+    lib = _seed_library(tmp_path)
+    lock = LibraryLock(lib)
+    token = lock.acquire()
+    p = MutationProposal(
+        target_file="t.md",
+        action=MutationAction.create,
+        frontmatter={
+            "layer": "domain",
+            "confidence": "medium",
+            "title": "Cost: a study",
+        },
+        body="# body\n",
+    )
+    try:
+        commit_mutation(
+            p, library_path=lib, fencing_token=token, lock=lock, run_step="s1"
+        )
+        raw = (lib / "t.md").read_text()
+        fm = yaml.safe_load(raw.split("---")[1])  # must parse without error
+        assert fm["title"] == "Cost: a study"
+    finally:
+        lock.release()

@@ -6,12 +6,20 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Protocol
+
+import yaml
 
 from .contracts import MutationAction, MutationProposal
 from .durability import atomic_write_text
 from .resume import content_hash
 
 _REQUIRED_FRONTMATTER = ("layer", "confidence")
+
+
+class _FencingLock(Protocol):
+    def current_token(self) -> int:
+        ...
 
 
 def validate_proposal(
@@ -85,16 +93,18 @@ def _write_journal(library_path: Path, run_step: str, record: dict) -> None:
 
 
 def _render_page(proposal: MutationProposal) -> str:
-    fm_lines = "\n".join(f"{k}: {v}" for k, v in proposal.frontmatter.items())
-    return f"---\n{fm_lines}\n---\n{proposal.body}"
+    fm = yaml.safe_dump(
+        proposal.frontmatter, sort_keys=False, default_flow_style=False
+    ).strip()
+    return f"---\n{fm}\n---\n{proposal.body}"
 
 
 def commit_mutation(
     proposal: MutationProposal,
-    library_path,
+    library_path: str | Path,
     fencing_token: int,
-    lock,
-    run_step: str = "step",
+    lock: _FencingLock,
+    run_step: str,
 ) -> Path:
     """Durably commit one validated proposal. Order: journal-intent (fsync) -> fence
     check -> CAS -> durable page write -> journal-commit (fsync). Replay-safe."""
@@ -137,6 +147,10 @@ def commit_mutation(
             )
 
     atomic_write_text(target, _render_page(proposal))
+    # Recovery contract: a crash AFTER this page write but BEFORE the committed record
+    # leaves a `staged` record with the target already on disk. recover() (Task 9) must
+    # treat staged-with-existing-target as needs-reindex (hash-guarded, idempotent),
+    # not a no-op — else the shelf-index silently drifts.
     _write_journal(
         library_path,
         run_step,
