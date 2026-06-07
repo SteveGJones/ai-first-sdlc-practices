@@ -26,3 +26,21 @@ def test_fake_embed_returns_fixed_dim_vectors():
     fb = FakeBackend()
     vecs = fb.embed(["a", "b"])
     assert len(vecs) == 2 and all(len(v) == 8 for v in vecs)
+
+
+def test_anthropic_backend_generate_with_injected_client():
+    from sdlc_knowledge_base_scripts.backends.anthropic_backend import AnthropicBackend
+
+    class _Msg:
+        def __init__(self, text):
+            self.content = [type("B", (), {"text": text})()]
+
+    class _Client:
+        def __init__(self):
+            self.messages = self
+
+        def create(self, **kw):
+            return _Msg('{"answer": "42"}')
+
+    be = AnthropicBackend(model="claude-sonnet-4-6", client=_Client())
+    assert be.generate("q", schema={"type": "object"}) == '{"answer": "42"}'
