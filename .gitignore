@@ -128,3 +128,6 @@ library/.extracts/
 
 # External test corpus symlink (CRI texts) for kb-ingest-bulk smoke tests
 tmp_texts
+
+# Python virtual environment
+.venv/
