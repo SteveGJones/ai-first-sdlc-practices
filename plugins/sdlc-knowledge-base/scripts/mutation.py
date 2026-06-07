@@ -1,11 +1,15 @@
 """Deterministic mutation validator, operation journal, durable committer, and
 recovery for kb-offline (#211, M0). Models propose; this module validates and writes.
 The validator is a safety floor — invalid proposals are rejected 100% of the time."""
+
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from .contracts import MutationAction, MutationProposal
+from .durability import atomic_write_text
+from .resume import content_hash
 
 _REQUIRED_FRONTMATTER = ("layer", "confidence")
 
@@ -21,10 +25,14 @@ def validate_proposal(
     library_path = Path(library_path).resolve()
 
     # 1. Path containment + shape
-    if (not proposal.target_file
-            or proposal.target_file != Path(proposal.target_file).name
-            or proposal.target_file.startswith(".")):
-        errors.append(f"path: target_file must be a bare library page name, got {proposal.target_file!r}")
+    if (
+        not proposal.target_file
+        or proposal.target_file != Path(proposal.target_file).name
+        or proposal.target_file.startswith(".")
+    ):
+        errors.append(
+            f"path: target_file must be a bare library page name, got {proposal.target_file!r}"
+        )
     else:
         resolved = (library_path / proposal.target_file).resolve()
         if library_path not in resolved.parents:
@@ -49,6 +57,89 @@ def validate_proposal(
     if proposal.action == MutationAction.create and proposal.expected_hash is not None:
         errors.append("expected_hash: must be None for a create proposal")
     if proposal.action == MutationAction.extend and proposal.expected_hash is None:
-        errors.append("expected_hash: required for an extend proposal (compare-and-swap)")
+        errors.append(
+            "expected_hash: required for an extend proposal (compare-and-swap)"
+        )
 
     return errors
+
+
+class CommitConflict(RuntimeError):
+    """CAS failed: target changed or already exists since validation."""
+
+
+class FenceError(RuntimeError):
+    """The caller's fencing token is no longer current — it was fenced out."""
+
+
+def _journal_dir(library_path: Path) -> Path:
+    d = Path(library_path) / ".kb-offline" / "journal"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _write_journal(library_path: Path, run_step: str, record: dict) -> None:
+    atomic_write_text(
+        _journal_dir(library_path) / f"{run_step}.json", json.dumps(record, indent=2)
+    )
+
+
+def _render_page(proposal: MutationProposal) -> str:
+    fm_lines = "\n".join(f"{k}: {v}" for k, v in proposal.frontmatter.items())
+    return f"---\n{fm_lines}\n---\n{proposal.body}"
+
+
+def commit_mutation(
+    proposal: MutationProposal,
+    library_path,
+    fencing_token: int,
+    lock,
+    run_step: str = "step",
+) -> Path:
+    """Durably commit one validated proposal. Order: journal-intent (fsync) -> fence
+    check -> CAS -> durable page write -> journal-commit (fsync). Replay-safe."""
+    library_path = Path(library_path)
+    target = library_path / proposal.target_file
+
+    # write-ahead: record intent durably BEFORE mutating
+    _write_journal(
+        library_path,
+        run_step,
+        {
+            "stage": "staged",
+            "target": proposal.target_file,
+            "action": proposal.action.value,
+            "token": fencing_token,
+        },
+    )
+
+    # fence: a stale (reclaimed-from) caller is rejected here even if it "held" the lock
+    if fencing_token != lock.current_token():
+        _write_journal(
+            library_path, run_step, {"stage": "fenced", "token": fencing_token}
+        )
+        raise FenceError(f"token {fencing_token} != current {lock.current_token()}")
+
+    # compare-and-swap
+    if proposal.action == MutationAction.create and target.exists():
+        _write_journal(
+            library_path, run_step, {"stage": "conflict", "reason": "exists"}
+        )
+        raise CommitConflict(f"create: {proposal.target_file} already exists")
+    if proposal.action == MutationAction.extend:
+        actual = content_hash(target.read_text()) if target.exists() else None
+        if actual != proposal.expected_hash:
+            _write_journal(
+                library_path, run_step, {"stage": "conflict", "reason": "hash"}
+            )
+            raise CommitConflict(
+                f"extend: {proposal.target_file} changed since validation"
+            )
+
+    atomic_write_text(target, _render_page(proposal))
+    _write_journal(
+        library_path,
+        run_step,
+        {"stage": "committed", "target": proposal.target_file, "token": fencing_token},
+    )
+    return target
