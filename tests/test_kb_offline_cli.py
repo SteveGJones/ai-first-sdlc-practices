@@ -168,3 +168,20 @@ def test_cli_init_creates_structure(tmp_path):
     assert (lib / "_shelf-index.md").exists()
     assert (lib / "log.md").exists()
     assert (lib / ".kb-offline").exists()
+
+
+def test_console_entry_point_importable():
+    from sdlc_knowledge_base_scripts.kb_offline_cli import main as entry
+    assert callable(entry)
+
+
+def test_pyproject_declares_pydantic_and_script():
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        import tomli as tomllib
+    from pathlib import Path
+    pp = Path(__file__).resolve().parents[1] / "plugins/sdlc-knowledge-base/pyproject.toml"
+    data = tomllib.loads(pp.read_text())
+    assert any("pydantic" in d for d in data["project"]["dependencies"])
+    assert "kb-offline" in data["project"]["scripts"]

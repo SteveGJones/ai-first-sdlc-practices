@@ -9,7 +9,11 @@ description = "Internal utility scripts for the sdlc-knowledge-base plugin (test
 requires-python = ">=3.9"
 dependencies = [
   "pyyaml",
+  "pydantic>=2",
 ]
+
+[project.scripts]
+kb-offline = "sdlc_knowledge_base_scripts.kb_offline_cli:main"
 
 [tool.setuptools]
 packages = ["sdlc_knowledge_base_scripts"]
