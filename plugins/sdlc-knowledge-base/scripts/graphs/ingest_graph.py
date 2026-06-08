@@ -13,7 +13,12 @@ things on top of the bare function pipeline:
 The idempotent-create-skip on `CommitConflict` mirrors the M0 CLI exactly so that when
 the CLI is later routed through this graph (Task 5) the existing resume-skip behaviour
 is preserved.
+
+NOTE: the lock is released in n_finalize; if an upstream node raises uncaught, finalize
+is skipped and the lock leaks until its TTL — the CLI wrapper (Task 5) wraps graph.invoke
+in try/finally to release from _LOCKS and set the run failed, restoring M0's guarantee.
 """
+
 from __future__ import annotations
 
 import json
@@ -41,15 +46,13 @@ from ..resume import LibraryLock, step_id
 
 # Locks cannot live in the (checkpointed) state — they are live OS resources keyed by
 # run_id and released in the finalize node.
-_LOCKS: dict = {}
+_LOCKS: dict[str, LibraryLock] = {}
 
 
 class IngestState(TypedDict, total=False):
     library_path: str
     source_spec: str
     run_id: str
-    timestamp: str
-    backend_name: str
     fencing_token: Optional[int]
     committed: int
     rejected: int
@@ -58,11 +61,11 @@ class IngestState(TypedDict, total=False):
 
 
 def build_ingest_graph(
-    backend,
+    backend,  # duck-typed backend seam (Fake/Anthropic/Ollama); exposes .generate
     *,
-    allowed_layers,
+    allowed_layers: list[str],
     checkpoint_path=None,
-    retry_attempts=3,
+    retry_attempts: int = 3,
 ):
     """Compile and return the ingest graph. ``backend`` is the (Fake/Anthropic/Ollama)
     backend instance the extract and reduce nodes generate against."""
@@ -161,6 +164,7 @@ def build_ingest_graph(
 
     builder = StateGraph(IngestState)
     builder.add_node("discover", n_discover)
+    # retry re-runs the whole extract loop; cheap because extract-exists skip makes re-runs idempotent
     builder.add_node("map_extract", n_map_extract, retry_policy=RetryPolicy(max_attempts=retry_attempts))
     builder.add_node("route_reduce_commit", n_route_reduce_commit)
     builder.add_node("finalize", n_finalize)
@@ -172,6 +176,7 @@ def build_ingest_graph(
     builder.add_edge("finalize", END)
 
     if checkpoint_path is not None:
+        Path(checkpoint_path).parent.mkdir(parents=True, exist_ok=True)
         saver = SqliteSaver(sqlite3.connect(str(checkpoint_path), check_same_thread=False))
     else:
         saver = MemorySaver()
