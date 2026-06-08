@@ -201,3 +201,41 @@ def test_pyproject_declares_offline_extra():
     assert "langgraph-checkpoint-sqlite" in joined
     assert "ollama" in joined
     assert "langchain-ollama" not in joined
+
+
+def test_make_backend_ollama_strict_offline_default():
+    from sdlc_knowledge_base_scripts import kb_offline_cli as c
+    from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+    be = c._make_backend("ollama", None)
+    assert isinstance(be, OllamaBackend)
+    assert be.host == "http://localhost:11434"
+
+
+def test_cli_releases_lock_and_marks_failed_on_graph_error(tmp_path):
+    # If the graph raises mid-run, the CLI must release the lock and set run 'failed'
+    import json as _j
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    lib = _seed_lib(tmp_path)
+    src = tmp_path / "s1.md"
+    src.write_text("source one")
+    # extract returns valid JSON, but make reduce raise a non-conflict error inside the graph
+    extract_payload = _j.dumps({"source": str(src), "findings": ["f"], "confidence": "low",
+                                "targets": [{"new_topic_slug": "t", "title": "T", "finding_idx": [0]}]})
+    be = FakeBackend()
+
+    def gen(prompt, schema=None):
+        if "Routed extracts" in prompt:
+            raise RuntimeError("boom in reduce")
+        return extract_payload
+
+    be.generate = gen
+    import pytest
+    with pytest.raises(RuntimeError):
+        cli.main(["ingest", str(src), "--library", str(lib), "--backend", "fake",
+                  "--timestamp", "2026-06-07T00:00:00Z"],
+                 backend_override=be, allowed_layers=["domain"])
+    # lock must be released (no lock.json left), run marked failed, and a NEW run can acquire
+    assert not (lib / ".kb-offline" / "lock.json").exists(), "lock leaked after graph error"
+    runs = _j.loads((lib / ".kb-offline" / "runs.json").read_text())
+    assert any(r["state"] == "failed" for r in runs["runs"].values())
