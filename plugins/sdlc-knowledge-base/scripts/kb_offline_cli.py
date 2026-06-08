@@ -54,7 +54,7 @@ def _cmd_ingest(args: argparse.Namespace, backend_override, allowed_layers: list
     else:
         run_id = reg.start_run(args.timestamp, fingerprint)
 
-    from .graphs.ingest_graph import build_ingest_graph, _LOCKS
+    from .graphs.ingest_graph import build_ingest_graph, release_lock
 
     checkpoint = lib / ".kb-offline" / "graph-checkpoint.sqlite"
     graph = build_ingest_graph(backend, allowed_layers=allowed_layers, checkpoint_path=checkpoint)
@@ -66,9 +66,7 @@ def _cmd_ingest(args: argparse.Namespace, backend_override, allowed_layers: list
     except Exception:
         # the graph acquires the lock in n_discover and releases it in n_finalize;
         # on an uncaught node error n_finalize is skipped, so release here + mark failed.
-        leaked = _LOCKS.pop(run_id, None)
-        if leaked is not None:
-            leaked.release()
+        release_lock(run_id)
         reg.set_state(run_id, "failed")
         raise
     committed = out.get("committed", 0)

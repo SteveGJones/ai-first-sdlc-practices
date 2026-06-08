@@ -49,6 +49,13 @@ from ..resume import LibraryLock, step_id
 _LOCKS: dict[str, LibraryLock] = {}
 
 
+def release_lock(run_id: str) -> None:
+    """Release + forget the lock held for `run_id`, if any (idempotent)."""
+    lock = _LOCKS.pop(run_id, None)
+    if lock is not None:
+        lock.release()
+
+
 class IngestState(TypedDict, total=False):
     library_path: str
     source_spec: str
@@ -157,9 +164,7 @@ def build_ingest_graph(
     def n_finalize(state: IngestState) -> dict:
         lib = Path(state["library_path"])
         report = recover(lib)
-        lock = _LOCKS.pop(state["run_id"], None)
-        if lock is not None:
-            lock.release()
+        release_lock(state["run_id"])
         return {"reindexed": report["reindexed"]}
 
     builder = StateGraph(IngestState)
