@@ -213,6 +213,15 @@ gap and keep Anthropic default / pull a stronger model.
     transport/transient errors only; content/validation failures go through the bounded
     validate→repair→fail ladder → terminal `mark_*_failed`; **no RetryPolicy on `reduce_commit`**
     (idempotency from journal+fencing+CAS; re-execution reuses the identical step ID).
+15. **M1c is two sub-plans**: M1c-1 query path (select/synthesize + entailment verifier +
+    provenance/layer + query_graph + CLI query), then M1c-2 eval gate (frozen release suite +
+    labelled fixture + gated 3× run + threshold ratification + Ollama-default decision).
+16. **Grounding composition (entailment verifier deterministic floor)**: a cited_page not in the
+    read set is a hard reject; a verbatim normalized-substring span caps the claim at `supported`;
+    a fuzzy-only span (≥ token-overlap threshold) caps it at `partial` (caveated, not discarded);
+    no match → `unsupported`. The LLM-judge then grades within the cap — **final status =
+    min(grounding cap, judge grade)**; the judge can lower, never raise. Preserves the 100%
+    no-fabrication floor while not discarding near-miss real quotes.
 11. **M1b bounded concurrency**: map fan-out bounded by `--parallel N` (default 16, max 64) via
     `max_concurrency` or chunked `Send` rounds; **reduce is parallel-by-target, one writer per file**
     (#208 model + M0 per-file fencing/CAS); `lock.heartbeat()` each round during long runs.
