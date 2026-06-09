@@ -67,3 +67,22 @@ def test_bulk_map_fans_out_over_all_sources(tmp_path):
     )
     extracts = list((lib / ".kb-offline" / "extracts").glob("*.json"))
     assert len(extracts) == 3
+
+
+def test_bulk_end_to_end_commits_all_targets(tmp_path):
+    lib = _seed(tmp_path)
+    srcs = []
+    for i in range(3):
+        p = tmp_path / f"s{i}.md"
+        p.write_text(f"source {i}")
+        srcs.append(p)
+    be = _multi_source_backend(srcs)
+    graph = build_bulk_ingest_graph(be, allowed_layers=["domain"])
+    out = graph.invoke(
+        {"library_path": str(lib), "source_specs": [str(p) for p in srcs], "run_id": "b1"},
+        config={"configurable": {"thread_id": "b1"}, "max_concurrency": 8},
+    )
+    assert out["committed"] == 3
+    pages = [p.name for p in lib.glob("*.md") if p.name not in {"_shelf-index.md", "log.md"}]
+    assert len(pages) == 3
+    assert out.get("reindexed")
