@@ -147,3 +147,38 @@ def test_bulk_mixed_outcomes_sum_via_reducer(tmp_path):
     # 2 fresh creates committed, 1 idempotent-skip (uncounted) -> committed==2, conflicts==0
     assert out["committed"] == 2
     assert out.get("conflicts", 0) == 0
+
+
+def test_bulk_zero_targets_releases_lock_and_finalizes(tmp_path):
+    # an extract with NO targets -> route yields zero targets -> fan_reduce empty.
+    # finalize must still run: lock released, reindexed present.
+    lib = _seed(tmp_path)
+    s = tmp_path / "s0.md"
+    s.write_text("source 0")
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    import json as _j
+
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: _j.dumps(
+        {"source": str(s), "findings": ["f"], "confidence": "low", "targets": []}
+    )
+    out = build_bulk_ingest_graph(be, allowed_layers=["domain"]).invoke(
+        {"library_path": str(lib), "source_specs": [str(s)], "run_id": "z1"},
+        config={"configurable": {"thread_id": "z1"}, "max_concurrency": 4},
+    )
+    assert "reindexed" in out  # finalize ran
+    assert not (lib / ".kb-offline" / "lock.json").exists()  # lock released
+    assert out.get("committed", 0) == 0
+
+
+def test_bulk_empty_source_specs_releases_lock(tmp_path):
+    lib = _seed(tmp_path)
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+
+    be = FakeBackend()  # never called — no sources
+    out = build_bulk_ingest_graph(be, allowed_layers=["domain"]).invoke(
+        {"library_path": str(lib), "source_specs": [], "run_id": "z2"},
+        config={"configurable": {"thread_id": "z2"}, "max_concurrency": 4},
+    )
+    assert "reindexed" in out
+    assert not (lib / ".kb-offline" / "lock.json").exists()

@@ -37,7 +37,7 @@ from ..mutation import recover  # noqa: E402
 from ..pipeline import extract  # noqa: E402
 from ..resume import LibraryLock  # noqa: E402
 from ._reduce import reduce_one_target  # noqa: E402
-from .ingest_graph import _LOCKS, release_lock  # noqa: E402, F401
+from .ingest_graph import _LOCKS, release_lock  # noqa: E402
 
 
 class BulkIngestState(TypedDict, total=False):
@@ -77,6 +77,11 @@ def build_bulk_ingest_graph(
         return {"fencing_token": token}
 
     def fan_map(state: BulkIngestState):
+        sources = state.get("source_specs") or []
+        if not sources:
+            # No sources to map: skip extract, proceed to route -> empty
+            # fan_reduce -> finalize (so the lock is still released).
+            return "route"
         return [
             Send(
                 "extract_one",
@@ -86,7 +91,7 @@ def build_bulk_ingest_graph(
                     "source": s,
                 },
             )
-            for s in state["source_specs"]
+            for s in sources
         ]
 
     def n_extract_one(state) -> dict:
@@ -117,6 +122,11 @@ def build_bulk_ingest_graph(
         return {"targets": targets, "known_citations": sorted(known_citations)}
 
     def fan_reduce(state: BulkIngestState):
+        targets = state.get("targets") or []
+        if not targets:
+            # Zero routable targets: skip reduce, go straight to finalize
+            # so the lock is released and the reindex still happens.
+            return "finalize"
         return [
             Send(
                 "reduce_one",
@@ -129,7 +139,7 @@ def build_bulk_ingest_graph(
                     "target": t,
                 },
             )
-            for t in state["targets"]
+            for t in targets
         ]
 
     def n_reduce_one(state) -> dict:
@@ -159,9 +169,9 @@ def build_bulk_ingest_graph(
     builder.add_node("finalize", n_finalize)
 
     builder.add_edge(START, "discover")
-    builder.add_conditional_edges("discover", fan_map, ["extract_one"])
+    builder.add_conditional_edges("discover", fan_map, ["extract_one", "route"])
     builder.add_edge("extract_one", "route")
-    builder.add_conditional_edges("route", fan_reduce, ["reduce_one"])
+    builder.add_conditional_edges("route", fan_reduce, ["reduce_one", "finalize"])
     builder.add_edge("reduce_one", "finalize")
     builder.add_edge("finalize", END)
 
