@@ -53,3 +53,29 @@ def test_live_ollama_single_ingest(tmp_path):
     assert extracts, "no extract produced"
     data = json.loads(extracts[0].read_text())   # must be valid JSON (structured-output path)
     assert "findings" in data
+
+
+@pytest.mark.skipif(not _ollama_ready(), reason="ollama daemon/model not available")
+def test_live_ollama_bulk_ingest_three_sources(tmp_path):
+    from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+    from sdlc_knowledge_base_scripts.graphs.bulk_ingest_graph import build_bulk_ingest_graph
+
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n")
+    (lib / "log.md").write_text("# Log\n")
+    corpus = sorted((REPO / "tmp_texts").glob("*.md"))[:3]
+    if len(corpus) < 3:
+        pytest.skip("need >=3 tmp_texts sources")
+
+    be = OllamaBackend(model="gpt-oss:20b")
+    graph = build_bulk_ingest_graph(
+        be, allowed_layers=["methodology", "evidence", "domain", "development"],
+        checkpoint_path=lib / ".kb-offline" / "bulk.sqlite")
+    out = graph.invoke(
+        {"library_path": str(lib), "source_specs": [str(p) for p in corpus], "run_id": "bulk-live"},
+        config={"configurable": {"thread_id": "bulk-live"}, "max_concurrency": 3})
+    extracts = list((lib / ".kb-offline" / "extracts").glob("*.json"))
+    assert len(extracts) == 3
+    for e in extracts:
+        json.loads(e.read_text())  # each is valid JSON (parallel map structured-output path)
