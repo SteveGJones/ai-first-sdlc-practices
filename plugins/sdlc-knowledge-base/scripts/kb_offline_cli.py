@@ -25,6 +25,42 @@ def _make_backend(name: str, override):
     raise SystemExit(f"backend '{name}' is not available (use anthropic, ollama, or fake)")
 
 
+def _resolve_run_id(reg, args, fingerprint: dict) -> str:
+    """Resume-id resolution shared by ingest + ingest-bulk."""
+    if args.resume == "latest":
+        return reg.select_resumable(fingerprint) or reg.start_run(args.timestamp, fingerprint)
+    if args.resume:
+        if not reg.exists(args.resume):
+            raise SystemExit(f"--resume: unknown run id {args.resume!r}")
+        return args.resume
+    return reg.start_run(args.timestamp, fingerprint)
+
+
+def _run_through_graph(reg, run_id: str, graph, state: dict, config: dict, *, label: str, extra: str = "") -> int:
+    """Invoke a compiled ingest graph and apply the shared run-lifecycle + return-code
+    policy. On any graph error: release the lock (graph's finalize is skipped) and mark
+    the run failed, then re-raise. Otherwise set completed[_with_errors] and return the
+    exit code (1 only if nothing committed but work was attempted)."""
+    from .graphs.ingest_graph import release_lock
+
+    try:
+        out = graph.invoke(state, config=config)
+    except Exception:
+        release_lock(run_id)
+        reg.set_state(run_id, "failed")
+        raise
+    committed = out.get("committed", 0)
+    rejected = out.get("rejected", 0)
+    conflicts = out.get("conflicts", 0)
+    had_errors = rejected > 0 or conflicts > 0
+    reg.set_state(run_id, "completed_with_errors" if had_errors else "completed")
+    print(
+        f"{label}: run={run_id} {extra}committed={committed} "
+        f"rejected={rejected} conflicts={conflicts} reindexed={out.get('reindexed')}"
+    )
+    return 1 if (committed == 0 and had_errors) else 0
+
+
 def _cmd_init(args: argparse.Namespace) -> int:
     lib = Path(args.library)
     (lib / ".kb-offline").mkdir(parents=True, exist_ok=True)
@@ -44,87 +80,49 @@ def _cmd_ingest(args: argparse.Namespace, backend_override, allowed_layers: list
     backend = _make_backend(args.backend, backend_override)
     reg = RunRegistry(lib)
     fingerprint = {"operation": "ingest", "config": config_hash({"backend": args.backend})}
+    run_id = _resolve_run_id(reg, args, fingerprint)
 
-    if args.resume == "latest":
-        run_id = reg.select_resumable(fingerprint) or reg.start_run(args.timestamp, fingerprint)
-    elif args.resume:
-        if not reg.exists(args.resume):
-            raise SystemExit(f"--resume: unknown run id {args.resume!r}")
-        run_id = args.resume
-    else:
-        run_id = reg.start_run(args.timestamp, fingerprint)
-
-    from .graphs.ingest_graph import build_ingest_graph, release_lock
+    from .graphs.ingest_graph import build_ingest_graph
 
     checkpoint = lib / ".kb-offline" / "graph-checkpoint.sqlite"
     graph = build_ingest_graph(backend, allowed_layers=allowed_layers, checkpoint_path=checkpoint)
-    try:
-        out = graph.invoke(
-            {"library_path": str(lib), "source_spec": args.source, "run_id": run_id},
-            config={"configurable": {"thread_id": run_id}},
-        )
-    except Exception:
-        # the graph acquires the lock in n_discover and releases it in n_finalize;
-        # on an uncaught node error n_finalize is skipped, so release here + mark failed.
-        release_lock(run_id)
-        reg.set_state(run_id, "failed")
-        raise
-    committed = out.get("committed", 0)
-    rejected = out.get("rejected", 0)
-    conflicts = out.get("conflicts", 0)
-    had_errors = rejected > 0 or conflicts > 0
-    reg.set_state(run_id, "completed_with_errors" if had_errors else "completed")
-    print(
-        f"ingest: run={run_id} committed={committed} rejected={rejected} "
-        f"conflicts={conflicts} reindexed={out.get('reindexed')}"
+    return _run_through_graph(
+        reg,
+        run_id,
+        graph,
+        {"library_path": str(lib), "source_spec": args.source, "run_id": run_id},
+        {"configurable": {"thread_id": run_id}},
+        label="ingest",
     )
-    return 1 if (committed == 0 and had_errors) else 0
 
 
 def _cmd_ingest_bulk(args: argparse.Namespace, backend_override, allowed_layers: list[str]) -> int:
     from . import kb_ingest_bulk as kbb
     from .graphs.bulk_ingest_graph import build_bulk_ingest_graph
-    from .graphs.ingest_graph import release_lock
 
     lib = Path(args.library)
     backend = _make_backend(args.backend, backend_override)
     reg = RunRegistry(lib)
     parallel = max(1, min(64, args.parallel))
+    # parallel in fingerprint: changing --parallel intentionally starts a fresh run
     fingerprint = {
         "operation": "ingest-bulk",
         "config": config_hash({"backend": args.backend, "parallel": parallel}),
     }
-    if args.resume == "latest":
-        run_id = reg.select_resumable(fingerprint) or reg.start_run(args.timestamp, fingerprint)
-    elif args.resume:
-        if not reg.exists(args.resume):
-            raise SystemExit(f"--resume: unknown run id {args.resume!r}")
-        run_id = args.resume
-    else:
-        run_id = reg.start_run(args.timestamp, fingerprint)
+    run_id = _resolve_run_id(reg, args, fingerprint)
 
     source_specs = [str(p) for p in kbb.discover_sources(args.source)]
     checkpoint = lib / ".kb-offline" / "bulk-graph-checkpoint.sqlite"
     graph = build_bulk_ingest_graph(backend, allowed_layers=allowed_layers, checkpoint_path=checkpoint)
-    try:
-        out = graph.invoke(
-            {"library_path": str(lib), "source_specs": source_specs, "run_id": run_id},
-            config={"configurable": {"thread_id": run_id}, "max_concurrency": parallel},
-        )
-    except Exception:
-        release_lock(run_id)
-        reg.set_state(run_id, "failed")
-        raise
-    committed = out.get("committed", 0)
-    rejected = out.get("rejected", 0)
-    conflicts = out.get("conflicts", 0)
-    had_errors = rejected > 0 or conflicts > 0
-    reg.set_state(run_id, "completed_with_errors" if had_errors else "completed")
-    print(
-        f"ingest-bulk: run={run_id} sources={len(source_specs)} committed={committed} "
-        f"rejected={rejected} conflicts={conflicts} reindexed={out.get('reindexed')}"
+    return _run_through_graph(
+        reg,
+        run_id,
+        graph,
+        {"library_path": str(lib), "source_specs": source_specs, "run_id": run_id},
+        {"configurable": {"thread_id": run_id}, "max_concurrency": parallel},
+        label="ingest-bulk",
+        extra=f"sources={len(source_specs)} ",
     )
-    return 1 if (committed == 0 and had_errors) else 0
 
 
 def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None) -> int:
