@@ -3,12 +3,14 @@
 The manifest is the operator-visible source of run truth; the LangGraph checkpointer
 (M1+) is only an internal retry convenience.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import os
 import socket
+import threading
 import time
 from pathlib import Path
 
@@ -23,6 +25,13 @@ def config_hash(config: dict) -> str:
 
 _LOCK_NAME = ".kb-offline/lock.json"
 _FENCE_NAME = ".kb-offline/fence.txt"
+
+# Guards the heartbeat read-modify-write: langgraph fan-out runs worker nodes as
+# threads in ONE process, so concurrent heartbeats on the same lock.json must be
+# serialized. NOTE: heartbeat is currently the ONLY field mutated concurrently during
+# a run (acquire happens once pre-fan-out, release once post); if any future code
+# writes other lock.json fields concurrently it must also hold this lock.
+_HEARTBEAT_RMW = threading.Lock()
 
 
 def _kb_dir(library_path: Path) -> Path:
@@ -49,6 +58,7 @@ class LibraryLock:
 
     def _next_token(self) -> int:
         from .durability import atomic_write_text
+
         _kb_dir(self.library_path)
         f = self._fencefile()
         current = int(f.read_text()) if f.exists() else 0
@@ -82,15 +92,23 @@ class LibraryLock:
 
     def try_acquire(self) -> int | None:
         from .durability import atomic_write_text
+
         now = time.time()
         existing = self._read_lock()
         if existing is not None and not self._is_stale(existing, now):
             return None
         token = self._next_token()
-        atomic_write_text(self._lockfile(), json.dumps({
-            "pid": os.getpid(), "host": socket.gethostname(),
-            "heartbeat": now, "token": token,
-        }))
+        atomic_write_text(
+            self._lockfile(),
+            json.dumps(
+                {
+                    "pid": os.getpid(),
+                    "host": socket.gethostname(),
+                    "heartbeat": now,
+                    "token": token,
+                }
+            ),
+        )
         self._token = token
         return token
 
@@ -102,9 +120,11 @@ class LibraryLock:
 
     def heartbeat(self) -> None:
         from .durability import atomic_write_text
-        lock = self._read_lock() or {}
-        lock["heartbeat"] = time.time()
-        atomic_write_text(self._lockfile(), json.dumps(lock))
+
+        with _HEARTBEAT_RMW:
+            lock = self._read_lock() or {}
+            lock["heartbeat"] = time.time()
+            atomic_write_text(self._lockfile(), json.dumps(lock))
 
     def release(self) -> None:
         lf = self._lockfile()
@@ -141,14 +161,18 @@ class RunRegistry:
 
     def _save(self, data: dict) -> None:
         from .durability import atomic_write_text
+
         atomic_write_text(self._path(), json.dumps(data, indent=2))
 
     def start_run(self, timestamp: str, fingerprint: dict) -> str:
         data = self._load()
         run_id = content_hash(timestamp + json.dumps(fingerprint, sort_keys=True))[:16]
         data["runs"][run_id] = {
-            "run_id": run_id, "started_at": timestamp, "state": "running",
-            "fingerprint": fingerprint, "seq": len(data["runs"]),
+            "run_id": run_id,
+            "started_at": timestamp,
+            "state": "running",
+            "fingerprint": fingerprint,
+            "seq": len(data["runs"]),
         }
         self._save(data)
         return run_id
@@ -163,10 +187,7 @@ class RunRegistry:
 
     def select_resumable(self, fingerprint: dict) -> str | None:
         data = self._load()
-        candidates = [
-            r for r in data["runs"].values()
-            if r["state"] in RESUMABLE_STATES and r["fingerprint"] == fingerprint
-        ]
+        candidates = [r for r in data["runs"].values() if r["state"] in RESUMABLE_STATES and r["fingerprint"] == fingerprint]
         if not candidates:
             return None
         return max(candidates, key=lambda r: r["seq"])["run_id"]
