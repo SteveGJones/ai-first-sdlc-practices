@@ -86,3 +86,64 @@ def test_bulk_end_to_end_commits_all_targets(tmp_path):
     pages = [p.name for p in lib.glob("*.md") if p.name not in {"_shelf-index.md", "log.md"}]
     assert len(pages) == 3
     assert out.get("reindexed")
+
+
+def test_bulk_resume_skips_extracted_sources(tmp_path):
+    lib = _seed(tmp_path)
+    s = tmp_path / "s0.md"
+    s.write_text("source 0")
+    be = _multi_source_backend([s])
+    build_bulk_ingest_graph(be, allowed_layers=["domain"]).invoke(
+        {"library_path": str(lib), "source_specs": [str(s)], "run_id": "b1"},
+        config={"configurable": {"thread_id": "b1"}, "max_concurrency": 4},
+    )
+    # second run: extract already on disk -> extract() not called again
+    calls = {"n": 0}
+    be2 = _multi_source_backend([s])
+    inner = be2.generate
+
+    def counting(prompt, schema=None):
+        if "Routed extracts" not in prompt:
+            calls["n"] += 1
+        return inner(prompt, schema)
+
+    be2.generate = counting
+    build_bulk_ingest_graph(be2, allowed_layers=["domain"]).invoke(
+        {"library_path": str(lib), "source_specs": [str(s)], "run_id": "b2"},
+        config={"configurable": {"thread_id": "b2"}, "max_concurrency": 4},
+    )
+    assert calls["n"] == 0
+
+
+def test_bulk_rejected_target_counted(tmp_path):
+    lib = _seed(tmp_path)
+    s = tmp_path / "s0.md"
+    s.write_text("source 0")
+    be = _multi_source_backend([s])
+    out = build_bulk_ingest_graph(be, allowed_layers=["evidence"]).invoke(  # 'domain' proposal rejected
+        {"library_path": str(lib), "source_specs": [str(s)], "run_id": "b1"},
+        config={"configurable": {"thread_id": "b1"}, "max_concurrency": 4},
+    )
+    assert out.get("rejected", 0) == 1 and out.get("committed", 0) == 0
+
+
+def test_bulk_mixed_outcomes_sum_via_reducer(tmp_path):
+    # 3 sources -> 3 distinct new-topic targets; pre-create ONE target page so its
+    # create -> CommitConflict+exists -> SKIPPED (uncounted), and constrain allowed_layers
+    # so the design works: here all 3 are valid 'domain' creates, but one already exists.
+    lib = _seed(tmp_path)
+    srcs = []
+    for i in range(3):
+        p = tmp_path / f"s{i}.md"
+        p.write_text(f"source {i}")
+        srcs.append(p)
+    be = _multi_source_backend(srcs)
+    # pre-seed the page that source s0 (slug 's0') will target, so its create is an idempotent skip
+    (lib / "s0.md").write_text("---\nlayer: domain\nconfidence: low\n---\n# s0\n")
+    out = build_bulk_ingest_graph(be, allowed_layers=["domain"]).invoke(
+        {"library_path": str(lib), "source_specs": [str(p) for p in srcs], "run_id": "b1"},
+        config={"configurable": {"thread_id": "b1"}, "max_concurrency": 8},
+    )
+    # 2 fresh creates committed, 1 idempotent-skip (uncounted) -> committed==2, conflicts==0
+    assert out["committed"] == 2
+    assert out.get("conflicts", 0) == 0

@@ -174,7 +174,7 @@ def test_reextract_skipped_on_second_run(tmp_path):
 
 
 def test_fence_error_counted_as_conflict(tmp_path, monkeypatch):
-    import sdlc_knowledge_base_scripts.graphs.ingest_graph as ig
+    import sdlc_knowledge_base_scripts.graphs._reduce as red
     from sdlc_knowledge_base_scripts.mutation import FenceError
 
     lib = _seed(tmp_path)
@@ -203,7 +203,7 @@ def test_fence_error_counted_as_conflict(tmp_path, monkeypatch):
     def boom(*a, **k):
         raise FenceError("fenced")
 
-    monkeypatch.setattr(ig, "commit_mutation", boom)
+    monkeypatch.setattr(red, "commit_mutation", boom)
     be = _fake(extract_payload, reduce_payload)
     out = build_ingest_graph(be, allowed_layers=["domain"]).invoke(
         {"library_path": str(lib), "source_spec": str(src), "run_id": "r1"}, config={"configurable": {"thread_id": "r1"}}

@@ -23,7 +23,6 @@ os.environ.setdefault("LANGCHAIN_TRACING_V2", "false")
 
 import json  # noqa: E402
 import sqlite3  # noqa: E402
-import sys  # noqa: E402
 from operator import add  # noqa: E402
 from pathlib import Path  # noqa: E402
 from typing import Annotated, Optional, TypedDict  # noqa: E402
@@ -34,16 +33,10 @@ from langgraph.graph import END, START, StateGraph  # noqa: E402
 from langgraph.types import Send  # noqa: E402
 
 from .. import kb_ingest_bulk as kbb  # noqa: E402
-from ..contracts import MutationAction  # noqa: E402
-from ..mutation import (  # noqa: E402
-    CommitConflict,
-    FenceError,
-    commit_mutation,
-    recover,
-    validate_proposal,
-)
-from ..pipeline import extract, reduce_to_proposal  # noqa: E402
-from ..resume import LibraryLock, step_id  # noqa: E402
+from ..mutation import recover  # noqa: E402
+from ..pipeline import extract  # noqa: E402
+from ..resume import LibraryLock  # noqa: E402
+from ._reduce import reduce_one_target  # noqa: E402
 from .ingest_graph import _LOCKS, release_lock  # noqa: E402, F401
 
 
@@ -57,7 +50,7 @@ class BulkIngestState(TypedDict, total=False):
     committed: Annotated[int, add]
     rejected: Annotated[int, add]
     conflicts: Annotated[int, add]
-    reindexed: int
+    reindexed: bool
 
 
 def build_bulk_ingest_graph(
@@ -140,49 +133,18 @@ def build_bulk_ingest_graph(
         ]
 
     def n_reduce_one(state) -> dict:
-        lib = Path(state["library_path"])
         run_id = state["run_id"]
         _LOCKS[run_id].heartbeat()
-        target = state["target"]
-        tfile = target["target_file"]
-        existing_content = (lib / tfile).read_text() if (lib / tfile).exists() else None
-        proposal = reduce_to_proposal(
-            target_file=tfile,
-            is_new=target["is_new"],
-            extracts=target["extracts"],
-            existing_content=existing_content,
+        return reduce_one_target(
+            state["target"],
+            library_path=state["library_path"],
+            run_id=run_id,
+            lock=_LOCKS[run_id],
+            fencing_token=state["fencing_token"],
+            allowed_layers=state["allowed_layers"],
+            known_citations=state["known_citations"],
             backend=backend,
         )
-        errors = validate_proposal(
-            proposal,
-            library_path=lib,
-            allowed_layers=state["allowed_layers"],
-            known_citations=set(state["known_citations"]),
-        )
-        if errors:
-            print(f"REJECTED {tfile}: {errors}", file=sys.stderr)
-            return {"rejected": 1}
-        try:
-            commit_mutation(
-                proposal,
-                library_path=lib,
-                fencing_token=state["fencing_token"],
-                lock=_LOCKS[run_id],
-                run_step=step_id(run_id, "reduce", tfile),
-            )
-            return {"committed": 1}
-        except CommitConflict as exc:
-            # An idempotent re-create of a page already on disk (e.g. resuming a run that
-            # committed it on a prior attempt) is benign completion, not a partial
-            # failure — skip it without counting it against the run.
-            if proposal.action == MutationAction.create and (lib / tfile).exists():
-                print(f"SKIPPED {tfile}: already committed", file=sys.stderr)
-                return {}
-            print(f"CONFLICT {tfile}: {exc}", file=sys.stderr)
-            return {"conflicts": 1}
-        except FenceError as exc:
-            print(f"CONFLICT {tfile}: {exc}", file=sys.stderr)
-            return {"conflicts": 1}
 
     def n_finalize(state: BulkIngestState) -> dict:
         report = recover(Path(state["library_path"]))

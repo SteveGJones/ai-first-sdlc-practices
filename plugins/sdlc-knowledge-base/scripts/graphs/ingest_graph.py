@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import json
 import sqlite3
-import sys
 from pathlib import Path
 from typing import Optional, TypedDict
 
@@ -33,16 +32,10 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import RetryPolicy
 
 from .. import kb_ingest_bulk as kbb
-from ..contracts import MutationAction
-from ..mutation import (
-    CommitConflict,
-    FenceError,
-    commit_mutation,
-    recover,
-    validate_proposal,
-)
-from ..pipeline import extract, reduce_to_proposal
-from ..resume import LibraryLock, step_id
+from ..mutation import recover
+from ..pipeline import extract
+from ..resume import LibraryLock
+from ._reduce import reduce_one_target
 
 # Locks cannot live in the (checkpointed) state — they are live OS resources keyed by
 # run_id and released in the finalize node.
@@ -64,7 +57,7 @@ class IngestState(TypedDict, total=False):
     committed: int
     rejected: int
     conflicts: int
-    reindexed: int
+    reindexed: bool
 
 
 def build_ingest_graph(
@@ -119,45 +112,20 @@ def build_ingest_graph(
         rejected = 0
         conflicts = 0
         for tfile, slot in route.targets.items():
-            existing_content = (lib / tfile).read_text() if (lib / tfile).exists() else None
-            proposal = reduce_to_proposal(
-                target_file=tfile,
-                is_new=slot["is_new"],
-                extracts=slot["extracts"],
-                existing_content=existing_content,
-                backend=backend,
-            )
-            errors = validate_proposal(
-                proposal,
+            t_dict = {"target_file": tfile, "is_new": slot["is_new"], "extracts": slot["extracts"]}
+            delta = reduce_one_target(
+                t_dict,
                 library_path=lib,
+                run_id=run_id,
+                lock=lock,
+                fencing_token=token,
                 allowed_layers=allowed_layers,
                 known_citations=known_citations,
+                backend=backend,
             )
-            if errors:
-                print(f"REJECTED {tfile}: {errors}", file=sys.stderr)
-                rejected += 1
-                continue
-            try:
-                commit_mutation(
-                    proposal,
-                    library_path=lib,
-                    fencing_token=token,
-                    lock=lock,
-                    run_step=step_id(run_id, "reduce", tfile),
-                )
-                committed += 1
-            except CommitConflict as exc:
-                # An idempotent re-create of a page already on disk (e.g. resuming a run
-                # that committed it on a prior attempt) is benign completion, not a
-                # partial failure — skip it without counting it against the run.
-                if proposal.action == MutationAction.create and (lib / tfile).exists():
-                    print(f"SKIPPED {tfile}: already committed", file=sys.stderr)
-                    continue
-                print(f"CONFLICT {tfile}: {exc}", file=sys.stderr)
-                conflicts += 1
-            except FenceError as exc:
-                print(f"CONFLICT {tfile}: {exc}", file=sys.stderr)
-                conflicts += 1
+            committed += delta.get("committed", 0)
+            rejected += delta.get("rejected", 0)
+            conflicts += delta.get("conflicts", 0)
 
         return {"committed": committed, "rejected": rejected, "conflicts": conflicts}
 
