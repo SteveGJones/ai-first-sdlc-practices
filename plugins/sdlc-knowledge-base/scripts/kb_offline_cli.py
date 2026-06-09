@@ -81,6 +81,52 @@ def _cmd_ingest(args: argparse.Namespace, backend_override, allowed_layers: list
     return 1 if (committed == 0 and had_errors) else 0
 
 
+def _cmd_ingest_bulk(args: argparse.Namespace, backend_override, allowed_layers: list[str]) -> int:
+    from . import kb_ingest_bulk as kbb
+    from .graphs.bulk_ingest_graph import build_bulk_ingest_graph
+    from .graphs.ingest_graph import release_lock
+
+    lib = Path(args.library)
+    backend = _make_backend(args.backend, backend_override)
+    reg = RunRegistry(lib)
+    parallel = max(1, min(64, args.parallel))
+    fingerprint = {
+        "operation": "ingest-bulk",
+        "config": config_hash({"backend": args.backend, "parallel": parallel}),
+    }
+    if args.resume == "latest":
+        run_id = reg.select_resumable(fingerprint) or reg.start_run(args.timestamp, fingerprint)
+    elif args.resume:
+        if not reg.exists(args.resume):
+            raise SystemExit(f"--resume: unknown run id {args.resume!r}")
+        run_id = args.resume
+    else:
+        run_id = reg.start_run(args.timestamp, fingerprint)
+
+    source_specs = [str(p) for p in kbb.discover_sources(args.source)]
+    checkpoint = lib / ".kb-offline" / "bulk-graph-checkpoint.sqlite"
+    graph = build_bulk_ingest_graph(backend, allowed_layers=allowed_layers, checkpoint_path=checkpoint)
+    try:
+        out = graph.invoke(
+            {"library_path": str(lib), "source_specs": source_specs, "run_id": run_id},
+            config={"configurable": {"thread_id": run_id}, "max_concurrency": parallel},
+        )
+    except Exception:
+        release_lock(run_id)
+        reg.set_state(run_id, "failed")
+        raise
+    committed = out.get("committed", 0)
+    rejected = out.get("rejected", 0)
+    conflicts = out.get("conflicts", 0)
+    had_errors = rejected > 0 or conflicts > 0
+    reg.set_state(run_id, "completed_with_errors" if had_errors else "completed")
+    print(
+        f"ingest-bulk: run={run_id} sources={len(source_specs)} committed={committed} "
+        f"rejected={rejected} conflicts={conflicts} reindexed={out.get('reindexed')}"
+    )
+    return 1 if (committed == 0 and had_errors) else 0
+
+
 def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None) -> int:
     allowed_layers = allowed_layers or ["methodology", "evidence", "domain", "development"]
     parser = argparse.ArgumentParser(prog="kb-offline")
@@ -96,11 +142,21 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_ing.add_argument("--resume", default=None)
     p_ing.add_argument("--timestamp", required=True)
 
+    p_bulk = sub.add_parser("ingest-bulk")
+    p_bulk.add_argument("source")
+    p_bulk.add_argument("--library", default="library")
+    p_bulk.add_argument("--backend", default="anthropic")
+    p_bulk.add_argument("--parallel", type=int, default=16)
+    p_bulk.add_argument("--resume", default=None)
+    p_bulk.add_argument("--timestamp", required=True)
+
     args = parser.parse_args(argv)
     if args.cmd == "init":
         return _cmd_init(args)
     if args.cmd == "ingest":
         return _cmd_ingest(args, backend_override, allowed_layers)
+    if args.cmd == "ingest-bulk":
+        return _cmd_ingest_bulk(args, backend_override, allowed_layers)
     return 2
 
 

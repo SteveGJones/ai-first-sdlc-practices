@@ -1,4 +1,5 @@
 """Tests for the kb-offline CLI skeleton (in-process, FakeBackend)."""
+
 from __future__ import annotations
 
 import json
@@ -172,6 +173,7 @@ def test_cli_init_creates_structure(tmp_path):
 
 def test_console_entry_point_importable():
     from sdlc_knowledge_base_scripts.kb_offline_cli import main as entry
+
     assert callable(entry)
 
 
@@ -181,6 +183,7 @@ def test_pyproject_declares_pydantic_and_script():
     except ModuleNotFoundError:
         import tomli as tomllib
     from pathlib import Path
+
     pp = Path(__file__).resolve().parents[1] / "plugins/sdlc-knowledge-base/pyproject.toml"
     data = tomllib.loads(pp.read_text())
     assert any("pydantic" in d for d in data["project"]["dependencies"])
@@ -193,6 +196,7 @@ def test_pyproject_declares_offline_extra():
     except ModuleNotFoundError:
         import tomli as tomllib
     from pathlib import Path
+
     pp = Path(__file__).resolve().parents[1] / "plugins/sdlc-knowledge-base/pyproject.toml"
     data = tomllib.loads(pp.read_text())
     extra = data["project"]["optional-dependencies"]["offline"]
@@ -206,6 +210,7 @@ def test_pyproject_declares_offline_extra():
 def test_make_backend_ollama_strict_offline_default():
     from sdlc_knowledge_base_scripts import kb_offline_cli as c
     from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+
     be = c._make_backend("ollama", None)
     assert isinstance(be, OllamaBackend)
     assert be.host == "http://localhost:11434"
@@ -216,12 +221,19 @@ def test_cli_releases_lock_and_marks_failed_on_graph_error(tmp_path):
     import json as _j
     from sdlc_knowledge_base_scripts import kb_offline_cli as cli
     from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+
     lib = _seed_lib(tmp_path)
     src = tmp_path / "s1.md"
     src.write_text("source one")
     # extract returns valid JSON, but make reduce raise a non-conflict error inside the graph
-    extract_payload = _j.dumps({"source": str(src), "findings": ["f"], "confidence": "low",
-                                "targets": [{"new_topic_slug": "t", "title": "T", "finding_idx": [0]}]})
+    extract_payload = _j.dumps(
+        {
+            "source": str(src),
+            "findings": ["f"],
+            "confidence": "low",
+            "targets": [{"new_topic_slug": "t", "title": "T", "finding_idx": [0]}],
+        }
+    )
     be = FakeBackend()
 
     def gen(prompt, schema=None):
@@ -231,11 +243,129 @@ def test_cli_releases_lock_and_marks_failed_on_graph_error(tmp_path):
 
     be.generate = gen
     import pytest
+
     with pytest.raises(RuntimeError):
-        cli.main(["ingest", str(src), "--library", str(lib), "--backend", "fake",
-                  "--timestamp", "2026-06-07T00:00:00Z"],
-                 backend_override=be, allowed_layers=["domain"])
+        cli.main(
+            ["ingest", str(src), "--library", str(lib), "--backend", "fake", "--timestamp", "2026-06-07T00:00:00Z"],
+            backend_override=be,
+            allowed_layers=["domain"],
+        )
     # lock must be released (no lock.json left), run marked failed, and a NEW run can acquire
     assert not (lib / ".kb-offline" / "lock.json").exists(), "lock leaked after graph error"
+    runs = _j.loads((lib / ".kb-offline" / "runs.json").read_text())
+    assert any(r["state"] == "failed" for r in runs["runs"].values())
+
+
+def test_cli_ingest_bulk_creates_pages(tmp_path):
+    import json as _j
+    import re
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+
+    lib = _seed_lib(tmp_path)
+    srcs = []
+    for i in range(2):
+        p = tmp_path / f"s{i}.md"
+        p.write_text(f"source {i}")
+        srcs.append(p)
+
+    def gen(prompt, schema=None):
+        if "Routed extracts" in prompt:
+            m = re.search(r"Target file: (\S+)", prompt)
+            tfile = m.group(1) if m else "t.md"
+            return _j.dumps(
+                {
+                    "target_file": tfile,
+                    "action": "create",
+                    "frontmatter": {"layer": "domain", "confidence": "low"},
+                    "body": "# x",
+                    "citations": [],
+                    "cross_refs": [],
+                    "expected_hash": None,
+                }
+            )
+        for s in srcs:
+            if str(s) in prompt:
+                slug = s.stem.lower()
+                return _j.dumps(
+                    {
+                        "source": str(s),
+                        "findings": ["f"],
+                        "confidence": "low",
+                        "targets": [{"new_topic_slug": slug, "title": slug, "finding_idx": [0]}],
+                    }
+                )
+        return _j.dumps({"source": "?", "findings": [], "confidence": "low", "targets": []})
+
+    be = FakeBackend()
+    be.generate = gen
+    rc = cli.main(
+        [
+            "ingest-bulk",
+            str(tmp_path / "*.md"),
+            "--library",
+            str(lib),
+            "--backend",
+            "fake",
+            "--parallel",
+            "4",
+            "--timestamp",
+            "2026-06-08T00:00:00Z",
+        ],
+        backend_override=be,
+        allowed_layers=["domain"],
+    )
+    assert rc == 0
+    runs = _j.loads((lib / ".kb-offline" / "runs.json").read_text())
+    assert any(r["state"] in ("completed", "completed_with_errors") for r in runs["runs"].values())
+    # both sources' pages created
+    pages = {p.name for p in lib.glob("*.md")} - {"_shelf-index.md", "log.md"}
+    assert len(pages) == 2
+
+
+def test_cli_ingest_bulk_clamps_parallel_and_cleans_up_on_error(tmp_path):
+    import json as _j
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+
+    lib = _seed_lib(tmp_path)
+    s = tmp_path / "s0.md"
+    s.write_text("source 0")
+    extract_payload = _j.dumps(
+        {
+            "source": str(s),
+            "findings": ["f"],
+            "confidence": "low",
+            "targets": [{"new_topic_slug": "t", "title": "t", "finding_idx": [0]}],
+        }
+    )
+    be = FakeBackend()
+
+    def gen(prompt, schema=None):
+        if "Routed extracts" in prompt:
+            raise RuntimeError("boom in reduce")
+        return extract_payload
+
+    be.generate = gen
+    import pytest
+
+    with pytest.raises(RuntimeError):
+        cli.main(
+            [
+                "ingest-bulk",
+                str(s),
+                "--library",
+                str(lib),
+                "--backend",
+                "fake",
+                "--parallel",
+                "999",
+                "--timestamp",
+                "2026-06-08T00:00:00Z",
+            ],
+            backend_override=be,
+            allowed_layers=["domain"],
+        )
+    assert not (lib / ".kb-offline" / "lock.json").exists(), "lock leaked"
     runs = _j.loads((lib / ".kb-offline" / "runs.json").read_text())
     assert any(r["state"] == "failed" for r in runs["runs"].values())
