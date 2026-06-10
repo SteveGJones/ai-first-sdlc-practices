@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
 from sdlc_knowledge_base_scripts.graphs.query_graph import build_query_graph
