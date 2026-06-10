@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
-from sdlc_knowledge_base_scripts.contracts import Claim, EntailmentStatus, PageRef, Span
-from sdlc_knowledge_base_scripts.entailment import classify_high_impact, ground_claim, judge_claim
+from sdlc_knowledge_base_scripts.contracts import Answer, Claim, EntailmentStatus, PageRef, Span
+from sdlc_knowledge_base_scripts.entailment import (
+    classify_high_impact,
+    ground_claim,
+    judge_claim,
+    verify_entailment,
+)
 
 
 def _claim(span_text, page="a.md"):
@@ -65,3 +70,46 @@ def test_judge_invalid_grade_defaults_unsupported():
     be = FakeBackend()
     be.generate = lambda prompt, schema=None: '{"status": "bogus"}'
     assert judge_claim(_claim("x"), PAGES, backend=be) == EntailmentStatus.unsupported
+
+
+def _claim_with_text(text, span_text, page="a.md"):
+    return Claim(
+        text=text,
+        cited_pages=[PageRef(library="local", page=page)],
+        evidence_spans=[Span(page=page, text=span_text)],
+    )
+
+
+def test_verify_caps_below_judge(tmp_path):
+    # span only fuzzy-matches (cap=partial); judge says supported; final = min = partial
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: '{"status": "supported"}'
+    claim = _claim_with_text("cost fell 30% over two years", "cost fell by thirty percent over two years")
+    ans = Answer(claims=[claim], rendered_text="")
+    out = verify_entailment(ans, PAGES, backend=be)
+    assert out.claims[0].entailment_status == EntailmentStatus.partial
+    assert out.claims[0].high_impact is True   # has a number/percent word
+
+
+def test_verify_judge_lowers_within_cap(tmp_path):
+    # verbatim span (cap=supported); judge says unsupported; final = unsupported
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: '{"status": "unsupported"}'
+    ans = Answer(claims=[_claim("cost fell 30%")], rendered_text="")
+    out = verify_entailment(ans, PAGES, backend=be)
+    assert out.claims[0].entailment_status == EntailmentStatus.unsupported
+
+
+def test_verify_skips_judge_when_grounding_unsupported(tmp_path):
+    calls = {"n": 0}
+    be = FakeBackend()
+
+    def gen(prompt, schema=None):
+        calls["n"] += 1
+        return '{"status": "supported"}'
+
+    be.generate = gen
+    ans = Answer(claims=[_claim("revenue tripled")], rendered_text="")   # no grounding -> unsupported
+    out = verify_entailment(ans, PAGES, backend=be)
+    assert out.claims[0].entailment_status == EntailmentStatus.unsupported
+    assert calls["n"] == 0   # judge not called when grounding already unsupported

@@ -8,7 +8,7 @@ import json
 import re
 
 from .backends.base import Backend
-from .contracts import Claim, EntailmentStatus
+from .contracts import Answer, Claim, EntailmentStatus
 
 _RANK = {EntailmentStatus.unsupported: 0, EntailmentStatus.partial: 1, EntailmentStatus.supported: 2}
 _WORD = re.compile(r"\w+")
@@ -93,3 +93,18 @@ def judge_claim(claim: Claim, pages: dict[str, str], *, backend: Backend) -> Ent
         return EntailmentStatus(status)
     except ValueError:
         return EntailmentStatus.unsupported
+
+
+def verify_entailment(answer: Answer, pages: dict[str, str], *, backend: Backend) -> Answer:
+    """Assign each claim's entailment_status = min(grounding cap, LLM-judge grade), and set
+    high_impact deterministically. Skips the judge call when grounding already caps at
+    unsupported. Mutates and returns the same Answer (it belongs to the pipeline)."""
+    for claim in answer.claims:
+        claim.high_impact = classify_high_impact(claim.text)
+        cap = ground_claim(claim, pages)
+        if cap == EntailmentStatus.unsupported:
+            claim.entailment_status = EntailmentStatus.unsupported
+            continue
+        grade = judge_claim(claim, pages, backend=backend)
+        claim.entailment_status = _min_status(cap, grade)
+    return answer
