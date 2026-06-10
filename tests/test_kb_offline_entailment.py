@@ -36,3 +36,12 @@ def test_cited_page_not_in_read_set_unsupported():
         evidence_spans=[Span(page="ghost.md", text="anything")],
     )
     assert ground_claim(c, PAGES) == EntailmentStatus.unsupported
+
+
+def test_span_pointing_at_uncited_page_does_not_ground():
+    # claim cites a.md but its span points at b.md (which IS in the read set) — must NOT ground off b.md
+    from sdlc_knowledge_base_scripts.contracts import Claim as _C, PageRef as _P, Span as _S
+    pages = {"a.md": "nothing relevant here", "b.md": "cost fell 30%"}
+    c = _C(text="c", cited_pages=[_P(library="local", page="a.md")],
+           evidence_spans=[_S(page="b.md", text="cost fell 30%")])
+    assert ground_claim(c, pages) == EntailmentStatus.unsupported
