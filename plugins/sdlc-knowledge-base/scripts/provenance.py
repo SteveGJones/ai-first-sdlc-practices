@@ -1,0 +1,39 @@
+"""Provenance/layer filtering for query candidate pages (#211, M1c-1)."""
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+_FRONTMATTER = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
+_CONFIDENCE_RANK = {"low": 0, "medium": 1, "high": 2}
+
+
+def page_frontmatter(library_path, page_name) -> dict:
+    """Return the page's YAML frontmatter as a dict (empty if absent/unreadable)."""
+    import yaml
+    p = Path(library_path) / page_name
+    if not p.is_file():
+        return {}
+    m = _FRONTMATTER.match(p.read_text(encoding="utf-8"))
+    if not m:
+        return {}
+    try:
+        data = yaml.safe_load(m.group(1))
+    except yaml.YAMLError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def filter_pages(library_path, page_names, *, layer=None, min_confidence=None) -> list[str]:
+    """Keep pages whose frontmatter satisfies the layer and min-confidence filters.
+    Pages missing the relevant field are dropped when a filter is active."""
+    min_rank = _CONFIDENCE_RANK.get(min_confidence) if min_confidence else None
+    kept = []
+    for name in page_names:
+        fm = page_frontmatter(library_path, name)
+        if layer is not None and fm.get("layer") != layer:
+            continue
+        if min_rank is not None and _CONFIDENCE_RANK.get(fm.get("confidence"), -1) < min_rank:
+            continue
+        kept.append(name)
+    return kept
