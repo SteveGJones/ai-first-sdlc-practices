@@ -23,7 +23,7 @@ def _tokens(text: str) -> list[str]:
 
 
 def _min_status(a: EntailmentStatus, b: EntailmentStatus) -> EntailmentStatus:
-    # reserved for verify_entailment's min(cap, judge) — used in the verify step
+    # min over the supported>partial>unsupported rank; used by verify_entailment
     return a if _RANK[a] <= _RANK[b] else b
 
 

@@ -80,7 +80,7 @@ def _claim_with_text(text, span_text, page="a.md"):
     )
 
 
-def test_verify_caps_below_judge(tmp_path):
+def test_verify_caps_below_judge():
     # span only fuzzy-matches (cap=partial); judge says supported; final = min = partial
     be = FakeBackend()
     be.generate = lambda prompt, schema=None: '{"status": "supported"}'
@@ -91,7 +91,7 @@ def test_verify_caps_below_judge(tmp_path):
     assert out.claims[0].high_impact is True   # has a number/percent word
 
 
-def test_verify_judge_lowers_within_cap(tmp_path):
+def test_verify_judge_lowers_within_cap():
     # verbatim span (cap=supported); judge says unsupported; final = unsupported
     be = FakeBackend()
     be.generate = lambda prompt, schema=None: '{"status": "unsupported"}'
@@ -100,7 +100,7 @@ def test_verify_judge_lowers_within_cap(tmp_path):
     assert out.claims[0].entailment_status == EntailmentStatus.unsupported
 
 
-def test_verify_skips_judge_when_grounding_unsupported(tmp_path):
+def test_verify_skips_judge_when_grounding_unsupported():
     calls = {"n": 0}
     be = FakeBackend()
 
