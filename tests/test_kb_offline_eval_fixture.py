@@ -59,3 +59,22 @@ def test_full_fixture_meets_release_spec():
                 assert sp.page in page_text, f"{lb.id} cites unknown page {sp.page}"
                 assert norm(sp.text) in page_text[sp.page], \
                     f"{lb.id} supported span not verbatim in {sp.page}"
+
+
+def test_full_fixture_fact_questions_are_answerable():
+    """Every non-abstention question's expected_facts must appear (normalized) in its
+    routing-target page bodies — else the live fact-recall metric would measure fixture
+    bugs, not the model."""
+    def norm(s):
+        return " ".join(s.lower().split())
+    lib = SUITE / "library"
+    page_text = {p.name: norm(p.read_text(encoding="utf-8")) for p in lib.glob("*.md")}
+    broken = []
+    for q in load_questions(SUITE / "questions.jsonl"):
+        if q.no_evidence:
+            continue
+        corpus = " ".join(page_text.get(t, "") for t in q.expected_routing_targets)
+        for fact in q.expected_facts:
+            if norm(fact) not in corpus:
+                broken.append(f"{q.id}: {fact!r} not in {q.expected_routing_targets}")
+    assert not broken, "unanswerable fact questions:\n" + "\n".join(broken)
