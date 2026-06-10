@@ -17,3 +17,7 @@ ROUTING_PRECISION = 0.80
 ABSTENTION_PRECISION = 0.95
 ABSTENTION_RECALL = 0.90
 FIRST_PASS_JSON_VALIDITY = 0.95
+
+# 3x-run reproducibility cap (M1c-2): a model-quality metric passes only if its
+# per-metric sample stddev across the 3 pinned runs stays at/below this.
+MAX_METRIC_STDDEV = 0.05
