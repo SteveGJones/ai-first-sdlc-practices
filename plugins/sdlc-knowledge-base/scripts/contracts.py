@@ -63,6 +63,10 @@ class Answer(BaseModel):
     rendered_text: str = ""
 
 
+class SelectResult(BaseModel):
+    page_ids: list[str] = Field(default_factory=list)
+
+
 class MutationAction(str, Enum):
     create = "create"
     extend = "extend"
