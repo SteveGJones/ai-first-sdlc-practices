@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ..contracts import Claim, EntailmentStatus, PageRef, Span
+from ..contracts import Claim, EntailmentStatus
 from ..entailment import ground_claim, judge_claim, _min_status
 from ..graphs.query_graph import build_query_graph
 from . import harness
@@ -76,8 +76,8 @@ def run_verifier_labels(library_path: str, labels, *, backend) -> list[dict]:
     rows = []
     for lb in labels:
         claim = Claim(text=lb.claim_text,
-                      cited_pages=[PageRef(library=r.library, page=r.page) for r in lb.cited_pages],
-                      evidence_spans=[Span(page=s.page, text=s.text) for s in lb.evidence_spans])
+                      cited_pages=lb.cited_pages,
+                      evidence_spans=lb.evidence_spans)
         cap = ground_claim(claim, pages)
         if cap == EntailmentStatus.unsupported:
             predicted = EntailmentStatus.unsupported
