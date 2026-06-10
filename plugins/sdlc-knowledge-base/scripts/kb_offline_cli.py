@@ -147,8 +147,7 @@ def _cmd_query(args: argparse.Namespace, backend_override) -> int:
     return 0
 
 
-def _cmd_eval(args: argparse.Namespace, backend_override, allowed_layers) -> int:
-    from pathlib import Path
+def _cmd_eval(args: argparse.Namespace, backend_override) -> int:
     from .eval import report as report_mod
     from .eval.runner import score_run
     from .eval.suite import load_questions, load_verifier_labels
@@ -182,8 +181,14 @@ def _cmd_eval(args: argparse.Namespace, backend_override, allowed_layers) -> int
     report_dir.mkdir(parents=True, exist_ok=True)
     stem = report_dir / f"release-{args.model.replace(':', '_')}-{args.stamp}"
     stem.with_suffix(".md").write_text(text, encoding="utf-8")
+    import json as _json
+    stem.with_suffix(".json").write_text(
+        _json.dumps({"model": args.model, "stamp": args.stamp, "pin": pin,
+                     "verdict": verdict, "metrics": agg}, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
     print(text)
-    print(f"\n[report written to {stem.with_suffix('.md')}]")
+    print(f"\n[report written to {stem.with_suffix('.md')} (+ .json)]")
     return 0 if verdict["passed"] else 1
 
 
@@ -241,7 +246,7 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     if args.cmd == "query":
         return _cmd_query(args, backend_override)
     if args.cmd == "eval":
-        return _cmd_eval(args, backend_override, allowed_layers)
+        return _cmd_eval(args, backend_override)
     return 2
 
 
