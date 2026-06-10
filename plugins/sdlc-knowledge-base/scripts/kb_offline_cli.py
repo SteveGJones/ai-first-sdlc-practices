@@ -12,7 +12,7 @@ from pathlib import Path
 from .resume import RunRegistry, config_hash
 
 
-def _make_backend(name: str, override):
+def _make_backend(name: str, override, *, options=None):
     if override is not None:
         return override
     if name == "anthropic":
@@ -22,7 +22,7 @@ def _make_backend(name: str, override):
     if name == "ollama":
         from .backends.ollama_backend import OllamaBackend
 
-        return OllamaBackend()
+        return OllamaBackend(options=options)
     raise SystemExit(f"backend '{name}' is not available (use anthropic, ollama, or fake)")
 
 
@@ -147,6 +147,46 @@ def _cmd_query(args: argparse.Namespace, backend_override) -> int:
     return 0
 
 
+def _cmd_eval(args: argparse.Namespace, backend_override, allowed_layers) -> int:
+    from pathlib import Path
+    from .eval import report as report_mod
+    from .eval.runner import score_run
+    from .eval.suite import load_questions, load_verifier_labels
+
+    suite_root = Path(args.suite)
+    base = suite_root / "smoke" if args.eval_cmd == "smoke" else suite_root
+    library = base / "library"
+    questions = load_questions(base / "questions.jsonl")
+    labels = load_verifier_labels(base / "verifier_labels.jsonl")
+
+    if args.eval_cmd == "smoke":
+        backend = _make_backend(args.backend, backend_override)
+        metrics = score_run(str(library), questions, labels, backend=backend)
+        print(f"eval smoke — suite={base} ({len(questions)} questions, {len(labels)} verifier labels)")
+        for k in sorted(metrics):
+            print(f"  {k}: {metrics[k]:.4f}")
+        return 0
+
+    pin = {"temperature": 0, "seed": 7, "top_p": 1}
+    backend = _make_backend(args.backend, backend_override, options=pin)
+    runs = [score_run(str(library), questions, labels, backend=backend) for _ in range(args.runs)]
+    agg = report_mod.aggregate(runs)
+    verdict = report_mod.gate(agg)
+    drift = None
+    if args.compare == "anthropic":
+        a_backend = _make_backend("anthropic", None)
+        a_runs = [score_run(str(library), questions, labels, backend=a_backend)]
+        drift = report_mod.aggregate(a_runs)
+    text = report_mod.render_report(agg, verdict, model=args.model, drift=drift, pin=pin)
+    report_dir = Path(args.report_dir)
+    report_dir.mkdir(parents=True, exist_ok=True)
+    stem = report_dir / f"release-{args.model.replace(':', '_')}-{args.stamp}"
+    stem.with_suffix(".md").write_text(text, encoding="utf-8")
+    print(text)
+    print(f"\n[report written to {stem.with_suffix('.md')}]")
+    return 0 if verdict["passed"] else 1
+
+
 def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None) -> int:
     allowed_layers = allowed_layers or ["methodology", "evidence", "domain", "development"]
     parser = argparse.ArgumentParser(prog="kb-offline")
@@ -177,6 +217,20 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_q.add_argument("--layer", default=None)
     p_q.add_argument("--min-confidence", default=None)
 
+    p_eval = sub.add_parser("eval")
+    eval_sub = p_eval.add_subparsers(dest="eval_cmd", required=True)
+    p_smoke = eval_sub.add_parser("smoke")
+    p_smoke.add_argument("--suite", default="plugins/sdlc-knowledge-base/eval/suite")
+    p_smoke.add_argument("--backend", default="fake")
+    p_rel = eval_sub.add_parser("release")
+    p_rel.add_argument("--suite", default="plugins/sdlc-knowledge-base/eval/suite")
+    p_rel.add_argument("--backend", default="ollama")
+    p_rel.add_argument("--model", default="gpt-oss:20b")
+    p_rel.add_argument("--runs", type=int, default=3)
+    p_rel.add_argument("--compare", default=None, choices=["anthropic"])
+    p_rel.add_argument("--report-dir", default="research/kb-offline-eval")
+    p_rel.add_argument("--stamp", required=True)
+
     args = parser.parse_args(argv)
     if args.cmd == "init":
         return _cmd_init(args)
@@ -186,6 +240,8 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
         return _cmd_ingest_bulk(args, backend_override, allowed_layers)
     if args.cmd == "query":
         return _cmd_query(args, backend_override)
+    if args.cmd == "eval":
+        return _cmd_eval(args, backend_override, allowed_layers)
     return 2
 
 
