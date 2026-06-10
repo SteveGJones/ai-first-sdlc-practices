@@ -1,0 +1,4 @@
+{"id":"sv1","claim_text":"Elite teams deploy multiple times per day.","cited_pages":[{"library":"local","page":"dora.md"}],"evidence_spans":[{"page":"dora.md","text":"deploy multiple times per day"}],"gold_status":"supported"}
+{"id":"sv2","claim_text":"Lead time is under one hour.","cited_pages":[{"library":"local","page":"dora.md"}],"evidence_spans":[{"page":"dora.md","text":"Lead time for changes is under one hour"}],"gold_status":"supported"}
+{"id":"sv3","claim_text":"Revenue tripled last quarter.","cited_pages":[{"library":"local","page":"dora.md"}],"evidence_spans":[{"page":"dora.md","text":"revenue tripled last quarter"}],"gold_status":"unsupported"}
+{"id":"sv4","claim_text":"Change failure rate is around 15 percent for elite teams.","cited_pages":[{"library":"local","page":"dora.md"}],"evidence_spans":[{"page":"dora.md","text":"change failure rate is roughly fifteen percent for the best teams"}],"gold_status":"partial"}

@@ -1,0 +1,6 @@
+{"id":"s1","question":"How often do elite teams deploy?","kind":"fact","expected_facts":["multiple times per day"],"expected_routing_targets":["dora.md"],"no_evidence":false,"expected_layer":"evidence"}
+{"id":"s2","question":"What is the elite change failure rate?","kind":"fact","expected_facts":["15 percent"],"expected_routing_targets":["dora.md"],"no_evidence":false}
+{"id":"s3","question":"When are tests written in TDD?","kind":"fact","expected_facts":["before the implementation"],"expected_routing_targets":["testing.md"],"no_evidence":false}
+{"id":"s4","question":"What does code review check?","kind":"routing","expected_facts":["correctness"],"expected_routing_targets":["review.md"],"no_evidence":false}
+{"id":"s5","question":"What is the company travel reimbursement policy?","kind":"abstention","expected_facts":[],"expected_routing_targets":[],"no_evidence":true}
+{"id":"s6","question":"How do I configure the payroll system?","kind":"abstention","expected_facts":[],"expected_routing_targets":[],"no_evidence":true}
