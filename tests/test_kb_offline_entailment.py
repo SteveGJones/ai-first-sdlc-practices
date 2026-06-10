@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
 from sdlc_knowledge_base_scripts.contracts import Claim, EntailmentStatus, PageRef, Span
-from sdlc_knowledge_base_scripts.entailment import ground_claim
+from sdlc_knowledge_base_scripts.entailment import classify_high_impact, ground_claim, judge_claim
 
 
 def _claim(span_text, page="a.md"):
@@ -45,10 +46,6 @@ def test_span_pointing_at_uncited_page_does_not_ground():
     c = _C(text="c", cited_pages=[_P(library="local", page="a.md")],
            evidence_spans=[_S(page="b.md", text="cost fell 30%")])
     assert ground_claim(c, pages) == EntailmentStatus.unsupported
-
-
-from sdlc_knowledge_base_scripts.entailment import classify_high_impact, judge_claim
-from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
 
 
 def test_high_impact_numbers_and_modals():

@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import re
 
+from .backends.base import Backend
 from .contracts import Claim, EntailmentStatus
 
 _RANK = {EntailmentStatus.unsupported: 0, EntailmentStatus.partial: 1, EntailmentStatus.supported: 2}
@@ -72,7 +73,7 @@ def classify_high_impact(claim_text: str) -> bool:
     return bool(_HIGH_IMPACT_RE.search(claim_text))
 
 
-def judge_claim(claim: Claim, pages: dict[str, str], *, backend) -> EntailmentStatus:
+def judge_claim(claim: Claim, pages: dict[str, str], *, backend: Backend) -> EntailmentStatus:
     """LLM-judge: does the cited page text SUPPORT the claim? Returns supported/partial/
     unsupported. Any non-conforming output defaults to unsupported (conservative)."""
     cited = "\n".join(f"<page id={r.page}>\n{pages.get(r.page, '')}\n</page>" for r in claim.cited_pages)
