@@ -79,3 +79,23 @@ def test_live_ollama_bulk_ingest_three_sources(tmp_path):
     assert len(extracts) == 3
     for e in extracts:
         json.loads(e.read_text())  # each is valid JSON (parallel map structured-output path)
+
+
+@pytest.mark.skipif(not _ollama_ready(), reason="ollama daemon/model not available")
+def test_live_ollama_query(tmp_path):
+    from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+    from sdlc_knowledge_base_scripts.graphs.query_graph import build_query_graph
+
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- dora.md\n")
+    (lib / "dora.md").write_text(
+        "---\nlayer: evidence\nconfidence: high\n---\n"
+        "# DORA\nElite teams deploy multiple times per day.\n"
+    )
+    graph = build_query_graph(OllamaBackend(model="gpt-oss:20b"))
+    out = graph.invoke(
+        {"library_path": str(lib), "question": "How often do elite teams deploy?"},
+        config={"configurable": {"thread_id": "ql"}},
+    )
+    assert "rendered_text" in out and "rejected_claims" in out

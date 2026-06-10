@@ -6,6 +6,7 @@ Ollama/graphs/bulk/query-synthesis arrive in M1+."""
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from .resume import RunRegistry, config_hash
@@ -125,6 +126,27 @@ def _cmd_ingest_bulk(args: argparse.Namespace, backend_override, allowed_layers:
     )
 
 
+def _cmd_query(args: argparse.Namespace, backend_override) -> int:
+    from .graphs.query_graph import build_query_graph
+
+    backend = _make_backend(args.backend, backend_override)
+    graph = build_query_graph(backend)
+    out = graph.invoke(
+        {
+            "library_path": args.library,
+            "question": args.question,
+            "layer": args.layer,
+            "min_confidence": args.min_confidence,
+        },
+        config={"configurable": {"thread_id": "query"}},
+    )
+    print(out.get("rendered_text", ""))
+    rejected = out.get("rejected_claims", [])
+    if rejected:
+        print(f"\n[{len(rejected)} claim(s) excluded as unsupported]", file=sys.stderr)
+    return 0
+
+
 def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None) -> int:
     allowed_layers = allowed_layers or ["methodology", "evidence", "domain", "development"]
     parser = argparse.ArgumentParser(prog="kb-offline")
@@ -148,6 +170,13 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_bulk.add_argument("--resume", default=None)
     p_bulk.add_argument("--timestamp", required=True)
 
+    p_q = sub.add_parser("query")
+    p_q.add_argument("question")
+    p_q.add_argument("--library", default="library")
+    p_q.add_argument("--backend", default="anthropic")
+    p_q.add_argument("--layer", default=None)
+    p_q.add_argument("--min-confidence", default=None)
+
     args = parser.parse_args(argv)
     if args.cmd == "init":
         return _cmd_init(args)
@@ -155,6 +184,8 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
         return _cmd_ingest(args, backend_override, allowed_layers)
     if args.cmd == "ingest-bulk":
         return _cmd_ingest_bulk(args, backend_override, allowed_layers)
+    if args.cmd == "query":
+        return _cmd_query(args, backend_override)
     return 2
 
 
