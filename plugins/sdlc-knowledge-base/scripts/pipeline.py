@@ -9,7 +9,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from . import prompts
-from .contracts import ExtractJSON, MutationProposal, SelectResult
+from .contracts import Answer, ExtractJSON, MutationProposal, SelectResult
 
 
 def _extract_schema() -> dict:
@@ -88,3 +88,31 @@ def select(question, shelf_index_path, *, backend, known_pages, max_repairs: int
             continue
         return SelectResult(page_ids=[p for p in result.page_ids if p in set(known_pages)])
     raise ValueError(f"select failed after {max_repairs} repair(s): {last_error}")
+
+
+def _answer_schema() -> dict:
+    return Answer.model_json_schema()
+
+
+def synthesize(question, pages, *, backend, max_repairs: int = 1) -> Answer:
+    """Answer using only the supplied pages. Returns claims with cited_pages + verbatim
+    evidence_spans. The model NEVER sets entailment_status/high_impact — both are stripped
+    here so only the verifier assigns them."""
+    pages_block = "\n\n".join(f"<page id={p['page']}>\n{p['content']}\n</page>" for p in pages)
+    base = f"{prompts.SYNTHESIZE_FRAGMENT}\n\nQuestion: {question}\n\nPages:\n{pages_block}"
+    schema = _answer_schema()
+    prompt = base
+    last_error = ""
+    for _ in range(max_repairs + 1):
+        raw = backend.generate(prompt, schema=schema)
+        try:
+            ans = Answer.model_validate_json(raw)
+        except (ValidationError, ValueError) as exc:
+            last_error = str(exc)
+            prompt = f"{base}\n\nPrevious output invalid: {last_error}\nReturn valid JSON only."
+            continue
+        for c in ans.claims:
+            c.entailment_status = None
+            c.high_impact = False
+        return ans
+    raise ValueError(f"synthesize failed after {max_repairs} repair(s): {last_error}")
