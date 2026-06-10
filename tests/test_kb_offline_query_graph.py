@@ -61,3 +61,52 @@ def test_query_graph_excludes_unsupported_claim(tmp_path):
     assert out["rendered_text"] == ""
     assert len(out["rejected_claims"]) == 1
     assert out["rejected_claims"][0]["reason"] == "unsupported"
+
+
+def test_query_graph_layer_filter_drops_wrong_layer(tmp_path):
+    """End-to-end proof that the layer provenance filter is wired through
+    build_query_graph (closes a whole-slice coverage gap).
+
+    Mechanism chain: n_select globs both pages, filter_pages keeps only the
+    evidence-layer page (keep.md) so known_pages == {"keep.md"}; even though the
+    model tries to select BOTH pages, select() drops drop.md (not in known_pages);
+    n_read therefore never reads drop.md; when synthesize emits a claim citing
+    drop.md, ground_claim sees drop.md absent from the read pages dict and marks it
+    unsupported, so publish excludes it. keep.md survives, is read, and grounds.
+    """
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- keep.md\n- drop.md\n")
+    (lib / "keep.md").write_text(
+        "---\nlayer: evidence\nconfidence: high\n---\n# Keep\nlatency dropped 40% after caching\n"
+    )
+    (lib / "drop.md").write_text(
+        "---\nlayer: domain\nconfidence: high\n---\n# Drop\nrevenue tripled in Q3\n"
+    )
+
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge"):
+            return '{"status": "supported"}'
+        if "Shelf-index" in prompt:                       # select: model tries both
+            return json.dumps({"page_ids": ["keep.md", "drop.md"]})
+        return json.dumps({"claims": [                     # synthesize
+            {"text": "Latency dropped 40%.",
+             "cited_pages": [{"library": "local", "page": "keep.md"}],
+             "evidence_spans": [{"page": "keep.md", "text": "latency dropped 40%"}]},
+            {"text": "Revenue tripled.",
+             "cited_pages": [{"library": "local", "page": "drop.md"}],
+             "evidence_spans": [{"page": "drop.md", "text": "revenue tripled in Q3"}]},
+        ], "rendered_text": ""})
+    be = FakeBackend()
+    be.generate = gen
+    graph = build_query_graph(be)
+    out = graph.invoke(
+        {"library_path": str(lib), "question": "what changed?", "layer": "evidence"},
+        config={"configurable": {"thread_id": "qf"}})
+    # keep.md survived the evidence-layer filter, was read, claim grounded + published
+    assert "Latency dropped 40%." in out["rendered_text"]
+    # drop.md was filtered out (domain layer) -> never in known_pages -> dropped by
+    # select -> never read -> its claim cannot ground -> excluded from the body
+    assert "Revenue tripled." not in out["rendered_text"]
+    # and that claim should be recorded as rejected (unsupported) rather than silently lost
+    assert any(c["reason"] == "unsupported" for c in out["rejected_claims"])
