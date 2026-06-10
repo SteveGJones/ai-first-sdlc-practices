@@ -9,9 +9,11 @@ from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
 class _FakeClient:
     def __init__(self):
         self.calls = []
+        self.last = None
 
-    def chat(self, *, model, messages, format=None, stream=False):
-        self.calls.append({"model": model, "messages": messages, "format": format})
+    def chat(self, **kwargs):
+        self.last = kwargs
+        self.calls.append({"model": kwargs.get("model"), "messages": kwargs.get("messages"), "format": kwargs.get("format")})
         return {"message": {"content": '{"ok": true}'}}
 
     def embed(self, *, model, input):
@@ -47,3 +49,22 @@ def test_remote_host_allowed_when_opted_in():
 def test_localhost_variants_accepted():
     for h in ("http://localhost:11434", "http://127.0.0.1:11434", "http://[::1]:11434"):
         OllamaBackend(model="m", host=h, client=_FakeClient())
+
+
+# --- pinning tests (M1c-2 Task 6) ---
+
+def test_generate_forwards_pinned_options():
+    fc = _FakeClient()
+    be = OllamaBackend(model="gpt-oss:20b", client=fc,
+                       options={"temperature": 0, "seed": 7, "top_p": 1})
+    be.generate("hi", schema={"type": "object"})
+    assert fc.last["options"] == {"temperature": 0, "seed": 7, "top_p": 1}
+    assert fc.last["model"] == "gpt-oss:20b"
+    assert fc.last["format"] == {"type": "object"}
+
+
+def test_generate_without_options_omits_or_empties_them():
+    fc = _FakeClient()
+    be = OllamaBackend(model="m", client=fc)
+    be.generate("hi")
+    assert fc.last.get("options") in (None, {})

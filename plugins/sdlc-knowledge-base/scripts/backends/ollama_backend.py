@@ -22,6 +22,7 @@ class OllamaBackend:
         embed_model: str = "nomic-embed-text",
         allow_remote: bool = False,
         client=None,
+        options: dict | None = None,
     ):
         if not allow_remote and not _is_loopback(host):
             raise ValueError(
@@ -31,6 +32,7 @@ class OllamaBackend:
         self.model = model
         self.embed_model = embed_model
         self.host = host
+        self.options = options
         if client is not None:
             self._client = client
         else:
@@ -44,6 +46,7 @@ class OllamaBackend:
             messages=[{"role": "user", "content": prompt}],
             format=schema,
             stream=False,
+            options=self.options,
         )
         return resp["message"]["content"]
 
