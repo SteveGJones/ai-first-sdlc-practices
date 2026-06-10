@@ -6,6 +6,12 @@ import statistics
 
 from . import thresholds
 
+# Absorbs float rounding when an averaged metric lands exactly on its bar. Under pinned
+# temperature=0 + fixed seed the 3 runs can be byte-identical, so a metric at its threshold
+# (e.g. 0.95 on all 3) sums to 0.9499999999999998 < 0.95 and would spuriously FAIL. Far
+# smaller than any real metric step, so it never masks a genuine miss.
+_GATE_EPSILON = 1e-9
+
 _GATED_MINIMUMS = {
     "fact_recall": thresholds.FACT_RECALL,
     "routing_recall": thresholds.ROUTING_RECALL,
@@ -38,9 +44,10 @@ def aggregate(runs: list[dict]) -> dict:
 
 def gate(agg: dict) -> dict:
     """Pass iff every gated metric has mean >= minimum AND stddev <= MAX_METRIC_STDDEV, and
-    every safety floor == 1.0 on every run. `failures` is a list of bare metric/floor keys
-    that failed (so membership tests work); `failure_details` carries the human-readable
-    reasons."""
+    every safety floor == 1.0 on every run. The mean comparison carries a tiny epsilon
+    (_GATE_EPSILON) so a metric landing exactly on its bar across identical pinned runs is
+    not failed by float rounding. `failures` is a list of bare metric/floor keys that failed
+    (so membership tests work); `failure_details` carries the human-readable reasons."""
     failures = []
     details = []
     for key, minimum in _GATED_MINIMUMS.items():
@@ -50,7 +57,7 @@ def gate(agg: dict) -> dict:
             details.append(f"{key}: missing")
             continue
         failed = False
-        if m["mean"] < minimum:
+        if m["mean"] < minimum - _GATE_EPSILON:
             details.append(f"{key}: mean {m['mean']:.4f} < {minimum}")
             failed = True
         if m["stddev"] > thresholds.MAX_METRIC_STDDEV:

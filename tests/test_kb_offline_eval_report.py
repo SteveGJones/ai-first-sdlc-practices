@@ -33,6 +33,18 @@ def test_gate_passes_when_means_clear_and_variance_low():
     assert verdict["passed"] is True
 
 
+def test_gate_passes_when_metric_lands_exactly_on_threshold_across_identical_runs():
+    # Pinned temperature=0 + fixed seed can make the 3 runs byte-identical. A metric at its
+    # exact bar (first_pass_json_validity == 0.95) sums to 0.9499999999999998; the gate must
+    # absorb that float-rounding artifact and PASS, not spuriously FAIL.
+    runs = [_run(0.90, 0.95, 0.85, 0.97, 0.95, 0.99, 0.97, 0.95)] * 3
+    agg = aggregate(runs)
+    assert agg["first_pass_json_validity"]["mean"] < 0.95  # the artifact is present
+    verdict = gate(agg)
+    assert verdict["passed"] is True
+    assert "first_pass_json_validity" not in verdict["failures"]
+
+
 def test_gate_fails_on_high_variance_even_if_mean_clears():
     runs = [_run(0.99, 0.92, 0.82, 0.96, 0.91, 0.99, 0.96, 0.96),
             _run(0.99, 0.91, 0.81, 0.96, 0.92, 0.99, 0.96, 0.97),
