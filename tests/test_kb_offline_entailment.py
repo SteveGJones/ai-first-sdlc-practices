@@ -45,3 +45,26 @@ def test_span_pointing_at_uncited_page_does_not_ground():
     c = _C(text="c", cited_pages=[_P(library="local", page="a.md")],
            evidence_spans=[_S(page="b.md", text="cost fell 30%")])
     assert ground_claim(c, pages) == EntailmentStatus.unsupported
+
+
+from sdlc_knowledge_base_scripts.entailment import classify_high_impact, judge_claim
+from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+
+
+def test_high_impact_numbers_and_modals():
+    assert classify_high_impact("Cost fell 30% in 2024.") is True
+    assert classify_high_impact("Teams should adopt trunk-based dev.") is True
+    assert classify_high_impact("This must meet ISO 26262 compliance.") is True
+    assert classify_high_impact("The topic is broadly discussed.") is False
+
+
+def test_judge_claim_maps_backend_grade():
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: '{"status": "partial"}'
+    assert judge_claim(_claim("cost fell 30%"), PAGES, backend=be) == EntailmentStatus.partial
+
+
+def test_judge_invalid_grade_defaults_unsupported():
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: '{"status": "bogus"}'
+    assert judge_claim(_claim("x"), PAGES, backend=be) == EntailmentStatus.unsupported

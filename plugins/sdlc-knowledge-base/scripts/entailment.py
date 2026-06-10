@@ -4,6 +4,7 @@ The model never sets these — see pipeline.synthesize which strips them."""
 
 from __future__ import annotations
 
+import json
 import re
 
 from .contracts import Claim, EntailmentStatus
@@ -55,3 +56,39 @@ def ground_claim(claim: Claim, pages: dict[str, str], *, fuzzy_threshold: float 
             if overlap >= fuzzy_threshold:
                 best = EntailmentStatus.partial
     return best
+
+
+_HIGH_IMPACT_RE = re.compile(
+    r"\d|%|\bshould\b|\bmust\b|\brecommend|\brequire|\bsafety\b|\bcomplian|\bregulat|"
+    r"\bISO\s?\d|\bIEC\b|\bFDA\b|\bDO-178|\b62304\b|\b26262\b",
+    re.IGNORECASE,
+)
+
+
+def classify_high_impact(claim_text: str) -> bool:
+    """Verifier-owned (never model-supplied): a claim is high-impact if it carries a
+    number/statistic/unit, a recommendation/modal directive, or safety/compliance/regulatory
+    language. Conservative: when these markers appear, treat as high-impact."""
+    return bool(_HIGH_IMPACT_RE.search(claim_text))
+
+
+def judge_claim(claim: Claim, pages: dict[str, str], *, backend) -> EntailmentStatus:
+    """LLM-judge: does the cited page text SUPPORT the claim? Returns supported/partial/
+    unsupported. Any non-conforming output defaults to unsupported (conservative)."""
+    cited = "\n".join(f"<page id={r.page}>\n{pages.get(r.page, '')}\n</page>" for r in claim.cited_pages)
+    prompt = (
+        "Judge whether the cited page text SUPPORTS the claim. Reply ONLY a JSON object "
+        '{"status": "supported"|"partial"|"unsupported"}.\n\n'
+        f"Claim: {claim.text}\n\nCited pages:\n{cited}"
+    )
+    raw = backend.generate(
+        prompt, schema={"type": "object", "properties": {"status": {"type": "string"}}, "required": ["status"]}
+    )
+    try:
+        status = json.loads(raw).get("status", "")
+    except (json.JSONDecodeError, ValueError, TypeError, AttributeError):
+        return EntailmentStatus.unsupported
+    try:
+        return EntailmentStatus(status)
+    except ValueError:
+        return EntailmentStatus.unsupported
