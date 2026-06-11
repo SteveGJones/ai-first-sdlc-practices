@@ -169,7 +169,11 @@ def _cmd_eval(args: argparse.Namespace, backend_override) -> int:
             print(f"  {k}: {metrics[k]:.4f}")
         return 0
 
-    pin = {"temperature": 0, "seed": 7, "top_p": 1}
+    # num_ctx pinned to a right-sized window: eval prompts (shelf-index select, 2-4 page
+    # synthesize, single-page judge) fit well under 8k tokens. The model's default 131072
+    # context reserves a huge KV-cache that drives the host into swap; pinning it keeps the
+    # run memory-bounded and reproducible.
+    pin = {"temperature": 0, "seed": 7, "top_p": 1, "num_ctx": 8192}
     backend = _make_backend(args.backend, backend_override, options=pin, model=args.model)
     runs = [score_run(str(library), questions, labels, backend=backend) for _ in range(args.runs)]
     agg = report_mod.aggregate(runs)
