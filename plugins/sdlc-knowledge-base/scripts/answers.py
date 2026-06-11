@@ -17,7 +17,6 @@ class SavedAnswer(BaseModel):
     libraries: list[str] = Field(default_factory=list)
     page_ids: list[str] = Field(default_factory=list)
     answer: Answer
-    rendered_text: str = ""
 
 
 def compute_ref(question: str, rendered_text: str) -> str:
@@ -33,7 +32,7 @@ def save_answer(library_path, question: str, answer: Answer, *, libraries, page_
     """Persist a verified Answer + provenance; return its ref."""
     ref = compute_ref(question, answer.rendered_text)
     saved = SavedAnswer(ref=ref, question=question, libraries=list(libraries),
-                        page_ids=list(page_ids), answer=answer, rendered_text=answer.rendered_text)
+                        page_ids=list(page_ids), answer=answer)
     d = _answers_dir(library_path)
     d.mkdir(parents=True, exist_ok=True)
     atomic_write_text(d / f"{ref}.json", saved.model_dump_json(indent=2))

@@ -123,6 +123,8 @@ def build_promote_graph(backend, *, checkpoint_path=None, allowed_layers=None):
         proposal = MutationProposal(target_file=tfile, action=action, frontmatter=state["frontmatter"],
                                     body=state["body"], citations=list(state["citations"]),
                                     cross_refs=[], expected_hash=expected)
+        # Grounding is upstream: state["citations"] are the supported claims' cited pages (n_load),
+        # so this known_citations check is self-referential by design — the invariant lives in n_load.
         errors = validate_proposal(proposal, library_path=lib, allowed_layers=allowed_layers,
                                    known_citations=set(state["citations"]))
         if errors:
