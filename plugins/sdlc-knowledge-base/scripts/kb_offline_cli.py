@@ -147,6 +147,14 @@ def _cmd_query(args: argparse.Namespace, backend_override) -> int:
     rejected = out.get("rejected_claims", [])
     if rejected:
         print(f"\n[{len(rejected)} claim(s) excluded as unsupported]", file=sys.stderr)
+    if args.save:
+        from .answers import save_answer
+        from .contracts import Answer
+
+        verified = Answer.model_validate(out["_answer"])
+        ref = save_answer(args.library, args.question, verified,
+                          libraries=["local"], page_ids=list(out.get("page_ids", [])))
+        print(f"saved: {ref}")
     return 0
 
 
@@ -228,6 +236,7 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_q.add_argument("--backend", default="anthropic")
     p_q.add_argument("--layer", default=None)
     p_q.add_argument("--min-confidence", default=None)
+    p_q.add_argument("--save", action="store_true", help="persist the verified answer; print its ref")
 
     p_eval = sub.add_parser("eval")
     eval_sub = p_eval.add_subparsers(dest="eval_cmd", required=True)

@@ -406,3 +406,33 @@ def test_cli_query_prints_answer(tmp_path, capsys):
     )
     assert rc == 0
     assert "Cost fell 30%." in capsys.readouterr().out
+
+
+def test_cli_query_save_persists_ref(tmp_path, capsys):
+    import json as _j
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    from sdlc_knowledge_base_scripts.answers import load_answer
+    lib = _seed_lib(tmp_path)
+    (lib / "a.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# A\ncost fell 30%\n")
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- a.md\n")
+
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge"):
+            return '{"status": "supported"}'
+        if "Shelf-index" in prompt:
+            return _j.dumps({"page_ids": ["a.md"]})
+        return _j.dumps({"claims": [{"text": "Cost fell 30%.",
+                                     "cited_pages": [{"library": "local", "page": "a.md"}],
+                                     "evidence_spans": [{"page": "a.md", "text": "cost fell 30%"}]}],
+                         "rendered_text": ""})
+    be = FakeBackend()
+    be.generate = gen
+    rc = cli.main(["query", "what about cost?", "--library", str(lib), "--backend", "fake", "--save"],
+                  backend_override=be)
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "saved:" in out
+    ref = out.split("saved:")[1].split()[0].strip()
+    saved = load_answer(str(lib), ref)
+    assert saved.answer.claims[0].text == "Cost fell 30%."

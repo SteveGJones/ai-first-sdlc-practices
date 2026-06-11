@@ -36,6 +36,7 @@ class QueryState(TypedDict, total=False):
     _synth: dict
     rendered_text: str
     rejected_claims: list
+    _answer: dict
 
 
 def build_query_graph(backend):
@@ -76,7 +77,8 @@ def build_query_graph(backend):
         pages_by_name = {p["page"]: p["content"] for p in state["pages"]}
         verified = verify_entailment(ans, pages_by_name, backend=backend)
         rendered, rejected = publish(verified)
-        return {"rendered_text": rendered, "rejected_claims": rejected}
+        return {"rendered_text": rendered, "rejected_claims": rejected,
+                "_answer": verified.model_dump()}
 
     builder = StateGraph(QueryState)
     builder.add_node("select", n_select)

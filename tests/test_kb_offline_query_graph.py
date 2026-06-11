@@ -110,3 +110,25 @@ def test_query_graph_layer_filter_drops_wrong_layer(tmp_path):
     assert "Revenue tripled." not in out["rendered_text"]
     # and that claim should be recorded as rejected (unsupported) rather than silently lost
     assert any(c["reason"] == "unsupported" for c in out["rejected_claims"])
+
+
+def test_query_graph_returns_verified_answer_dict(tmp_path):
+    lib = _lib(tmp_path)
+
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge"):
+            return '{"status": "supported"}'
+        if "Shelf-index" in prompt:
+            return json.dumps({"page_ids": ["a.md"]})
+        return json.dumps({"claims": [{"text": "Cost fell 30%.",
+                                       "cited_pages": [{"library": "local", "page": "a.md"}],
+                                       "evidence_spans": [{"page": "a.md", "text": "cost fell 30%"}]}],
+                           "rendered_text": ""})
+    be = FakeBackend()
+    be.generate = gen
+    graph = build_query_graph(be)
+    out = graph.invoke({"library_path": str(lib), "question": "what about cost?"},
+                       config={"configurable": {"thread_id": "qa1"}})
+    assert "_answer" in out
+    assert out["_answer"]["claims"][0]["entailment_status"] == "supported"
+    assert out["_answer"]["claims"][0]["text"] == "Cost fell 30%."
