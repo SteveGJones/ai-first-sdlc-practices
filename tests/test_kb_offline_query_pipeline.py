@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
 from sdlc_knowledge_base_scripts.pipeline import select, synthesize
@@ -26,6 +25,36 @@ def test_select_drops_unknown_page_ids(tmp_path):
     be.generate = lambda prompt, schema=None: json.dumps({"page_ids": ["a.md", "ghost.md"]})
     res = select("q", _shelf(tmp_path), backend=be, known_pages={"a.md", "b.md"})
     assert res.page_ids == ["a.md"]
+
+
+def test_select_without_priming_prompt_unchanged(tmp_path):
+    from sdlc_knowledge_base_scripts.priming import PrimingBundle  # noqa: F401 (import-shape check)
+    captured = {}
+
+    def gen(prompt, schema=None):
+        captured["prompt"] = prompt
+        return json.dumps({"page_ids": ["a.md"]})
+    be = FakeBackend()
+    be.generate = gen
+    select("q", _shelf(tmp_path), backend=be, known_pages={"a.md"})   # no priming
+    assert "PRIMING" not in captured["prompt"]
+
+
+def test_select_with_priming_prepends_block(tmp_path):
+    from sdlc_knowledge_base_scripts.priming import PrimingBundle
+    captured = {}
+
+    def gen(prompt, schema=None):
+        captured["prompt"] = prompt
+        return json.dumps({"page_ids": ["a.md"]})
+    be = FakeBackend()
+    be.generate = gen
+    bundle = PrimingBundle(question="q", local_kb_config_excerpt="Brazilian semiconductor packaging",
+                           local_shelf_index_terms=["wirebond", "yield"])
+    select("q", _shelf(tmp_path), backend=be, known_pages={"a.md"}, priming=bundle)
+    assert "PRIMING" in captured["prompt"]
+    assert "Brazilian semiconductor packaging" in captured["prompt"]
+    assert "wirebond" in captured["prompt"]
 
 
 def test_synthesize_returns_claims_and_strips_model_status(tmp_path):

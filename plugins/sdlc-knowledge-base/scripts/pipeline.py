@@ -70,11 +70,21 @@ def _select_schema() -> dict:
     return SelectResult.model_json_schema()
 
 
-def select(question, shelf_index_path, *, backend, known_pages, max_repairs: int = 1) -> SelectResult:
+def select(question, shelf_index_path, *, backend, known_pages, max_repairs: int = 1, priming=None) -> SelectResult:
     """Pick the 2-4 most relevant library pages for the question by reasoning over the
-    shelf-index. Drops any returned id that is not a known page (no fabricated targets)."""
+    shelf-index. Drops any returned id that is not a known page (no fabricated targets).
+    When `priming` (a PrimingBundle) is given, a PRIMING block biases selection toward the
+    local project's vocabulary — used for NON-local libraries in federated query."""
     shelf = Path(shelf_index_path).read_text(encoding="utf-8")
-    base = f"{prompts.SELECT_FRAGMENT}\n\nQuestion: {question}\n\nShelf-index:\n{shelf}"
+    prime_block = ""
+    if priming is not None:
+        terms = ", ".join(priming.local_shelf_index_terms)
+        prime_block = (
+            "PRIMING (interpret findings under the local project's lens; prefer pages whose "
+            f"terms overlap this vocabulary):\n{priming.local_kb_config_excerpt}\n"
+            f"Local terms: {terms}\n\n"
+        )
+    base = f"{prime_block}{prompts.SELECT_FRAGMENT}\n\nQuestion: {question}\n\nShelf-index:\n{shelf}"
     schema = _select_schema()
     prompt = base
     last_error = ""
