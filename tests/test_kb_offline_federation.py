@@ -6,7 +6,7 @@ import json
 from sdlc_knowledge_base_scripts.audit import VALID_EVENT_TYPES
 from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
 from sdlc_knowledge_base_scripts.contracts import Answer, Claim, EntailmentStatus, PageRef, Span
-from sdlc_knowledge_base_scripts.federation import merge_answers, query_one_library, render_federated
+from sdlc_knowledge_base_scripts.federation import _norm, merge_answers, query_one_library, render_federated
 
 
 def test_cross_library_query_is_a_valid_event_type():
@@ -55,10 +55,23 @@ def test_merge_dedupes_identical_and_unions_handles():
     merged, handle_sets = merge_answers([("dora-corp", a1), ("acme-kb", a2)])
     texts = [c.text for c in merged.claims]
     assert texts.count("Deploy daily.") == 1
-    assert set(handle_sets["Deploy daily."]) == {"dora-corp", "acme-kb"}
+    assert set(handle_sets[_norm("Deploy daily.")]) == {"dora-corp", "acme-kb"}
     assert "Use canary." in texts
     deploy = next(c for c in merged.claims if c.text == "Deploy daily.")
     assert {r.library for r in deploy.cited_pages} == {"dora-corp", "acme-kb"}
+
+
+def test_merge_attribution_survives_case_whitespace_variants():
+    # same claim, different casing/whitespace across libraries -> one merged claim,
+    # BOTH handles attributed in BOTH cited_pages AND the rendered suffix.
+    from sdlc_knowledge_base_scripts.federation import _norm
+    a1 = Answer(claims=[_claim("Deploy daily.", "dora.md", EntailmentStatus.supported)], rendered_text="")
+    a2 = Answer(claims=[_claim("deploy  daily.", "ops.md", EntailmentStatus.supported)], rendered_text="")
+    merged, handle_sets = merge_answers([("dora-corp", a1), ("acme-kb", a2)])
+    assert len(merged.claims) == 1                                  # deduped despite variant
+    assert set(handle_sets[_norm("Deploy daily.")]) == {"dora-corp", "acme-kb"}
+    rendered, _ = render_federated(merged, handle_sets)
+    assert "dora-corp" in rendered and "acme-kb" in rendered        # BOTH handles in the suffix
 
 
 def test_render_federated_attributes_and_applies_policy():

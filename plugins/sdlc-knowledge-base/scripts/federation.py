@@ -9,6 +9,7 @@ from .contracts import Answer, PageRef
 from .entailment import verify_entailment
 from .pipeline import select, synthesize
 from .provenance import filter_pages
+from .publication import published_line
 
 _META = {"_shelf-index.md", "log.md", "_index.md"}
 
@@ -36,12 +37,13 @@ def _norm(text: str) -> str:
 def merge_answers(per_library):
     """per_library = [(handle, verified Answer)]. Returns (merged Answer, handle_sets). Claims
     with identical normalized text dedupe to one entry whose cited_pages carry the union of
-    source handles; handle_sets maps claim.text -> ordered-unique source handles. Never re-grades."""
+    source handles; handle_sets maps NORMALIZED claim text -> ordered-unique source handles.
+    Never re-grades."""
     order, by_key, handle_sets = [], {}, {}
     for handle, ans in per_library:
         for c in ans.claims:
             key = _norm(c.text)
-            handles = handle_sets.setdefault(c.text, [])
+            handles = handle_sets.setdefault(key, [])
             if handle not in handles:
                 handles.append(handle)
             if key not in by_key:
@@ -60,10 +62,9 @@ def merge_answers(per_library):
 def render_federated(merged, handle_sets):
     """Apply the publication policy with a per-claim source-attribution suffix (e.g.
     '  [dora-corp, acme-kb]'). Returns (rendered_text, rejected_claims)."""
-    from .publication import published_line
     lines, rejected = [], []
     for c in merged.claims:
-        suffix = f"  [{', '.join(handle_sets.get(c.text, []))}]"
+        suffix = f"  [{', '.join(handle_sets.get(_norm(c.text), []))}]"
         line, rej = published_line(c, suffix=suffix)
         if line is not None:
             lines.append(line)
