@@ -82,3 +82,32 @@ def test_score_run_aggregates_into_metric_dict():
                 "post_repair_json_validity_floor"):
         assert key in metrics
         assert 0.0 <= metrics[key] <= 1.0
+
+
+def test_run_questions_survives_per_question_failure(capsys):
+    # A backend whose select returns '' (invalid JSON) makes pipeline.select raise after
+    # repairs are exhausted. run_questions must record a zeroed error row, not crash.
+    from sdlc_knowledge_base_scripts.eval.suite import load_questions
+    qs = load_questions(SMOKE / "questions.jsonl")[:1]   # one question is enough
+
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: ""   # always empty -> select raises
+    rows = run_questions(str(SMOKE / "library"), qs, backend=be)
+    assert len(rows) == 1
+    assert rows[0]["error"] is True
+    assert rows[0]["found_facts"] == [] and rows[0]["predicted_routing"] == []
+    assert rows[0]["did_abstain"] is False
+    err = capsys.readouterr().err
+    assert "errored" in err and rows[0]["id"] in err
+
+
+def test_score_run_completes_when_some_questions_error():
+    # score_run must complete (return the 12-key metric dict) even if every question errors.
+    from sdlc_knowledge_base_scripts.eval.suite import load_questions, load_verifier_labels
+    qs = load_questions(SMOKE / "questions.jsonl")
+    labels = load_verifier_labels(SMOKE / "verifier_labels.jsonl")
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: ""   # everything fails
+    metrics = score_run(str(SMOKE / "library"), qs, labels, backend=be)
+    assert "fact_recall" in metrics and 0.0 <= metrics["fact_recall"] <= 1.0
+    # all questions errored -> no facts found -> fact_recall 0.0 (over non-abstention rows)

@@ -5,6 +5,7 @@ and reported as such."""
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 from ..contracts import Claim, EntailmentStatus
@@ -51,10 +52,22 @@ def run_questions(library_path: str, questions, *, backend) -> list[dict]:
     rows = []
     for q in questions:
         graph = build_query_graph(backend)
-        out = graph.invoke(
-            {"library_path": library_path, "question": q.question,
-             "layer": q.expected_layer, "min_confidence": None},
-            config={"configurable": {"thread_id": q.id}})
+        try:
+            out = graph.invoke(
+                {"library_path": library_path, "question": q.question,
+                 "layer": q.expected_layer, "min_confidence": None},
+                config={"configurable": {"thread_id": q.id}})
+        except Exception as exc:  # noqa: BLE001 - one bad question must not abort the run
+            print(f"[eval] question {q.id} errored: {exc!r}", file=sys.stderr)
+            rows.append({
+                "id": q.id,
+                "expected_facts": q.expected_facts, "found_facts": [],
+                "expected_routing": q.expected_routing_targets,
+                "predicted_routing": [],
+                "should_abstain": q.no_evidence, "did_abstain": False,
+                "error": True, "error_msg": str(exc)[:200],
+            })
+            continue
         rendered = out.get("rendered_text", "")
         norm_rendered = _norm(rendered)
         found = [f for f in q.expected_facts if _norm(f) in norm_rendered]
@@ -64,6 +77,7 @@ def run_questions(library_path: str, questions, *, backend) -> list[dict]:
             "expected_routing": q.expected_routing_targets,
             "predicted_routing": list(out.get("page_ids", [])),
             "should_abstain": q.no_evidence, "did_abstain": (rendered.strip() == ""),
+            "error": False,
         })
     return rows
 
