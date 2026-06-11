@@ -2,10 +2,19 @@
 import json
 from pathlib import Path
 from sdlc_knowledge_base_scripts.audit import (
+    VALID_EVENT_TYPES,
     AuditEvent,
     log_event,
     read_log,
 )
+
+
+def test_promotion_event_types_are_valid() -> None:
+    # Federated promotion (finding moved into a corporate library) and
+    # single-library promotion (answer filed back into its own project
+    # library) are distinct events with distinct kb-audit-query semantics.
+    assert "cross_library_promotion" in VALID_EVENT_TYPES
+    assert "answer_promotion" in VALID_EVENT_TYPES
 
 
 def test_log_event_appends_jsonline(tmp_path: Path) -> None:

@@ -1,8 +1,10 @@
 """Audit log for confidentiality-relevant events in cross-library kb-query.
 
 Events written here are durable trails of: attribution drops, synthesis
-aborts, dispatcher failures, no-evidence markers, and cross-library
-promotions. The trail enables a consulting practice to answer questions
+aborts, dispatcher failures, no-evidence markers, cross-library
+promotions (a finding moved into a corporate library across the
+federation), and single-library answer promotions (an answer filed back
+into its own project library). The trail enables a consulting practice to answer questions
 like "show me all attribution drops in the last 90 days" — questions
 that today require re-running every query.
 
@@ -25,6 +27,7 @@ VALID_EVENT_TYPES = frozenset(
         "source_dispatch_failed",
         "no_evidence_marker",
         "cross_library_promotion",
+        "answer_promotion",
     }
 )
 

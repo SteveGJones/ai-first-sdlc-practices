@@ -143,7 +143,7 @@ def build_promote_graph(backend, *, checkpoint_path=None, allowed_layers=None):
             rebuild_shelf_index(lib, lib / "_shelf-index.md")
         log_event(lib / ".kb-offline" / "audit.log", AuditEvent(
             timestamp=datetime.now(timezone.utc).isoformat(),
-            event_type="cross_library_promotion",
+            event_type="answer_promotion",
             query=load_answer(str(lib), state["ref"]).question if not state.get("failed") else "",
             source_handle=None,
             reason=f"promote {state.get('action')} -> {state.get('target_file')}",
