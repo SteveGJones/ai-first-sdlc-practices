@@ -1,0 +1,135 @@
+{
+  "metrics": {
+    "abstention_precision": {
+      "mean": 0.5594017094017094,
+      "runs": [
+        0.5641025641025641,
+        0.55,
+        0.5641025641025641
+      ],
+      "stddev": 0.00814211918087931
+    },
+    "abstention_recall": {
+      "mean": 1.0,
+      "runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "citation_validity_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "clean_published_support_rate": {
+      "mean": 1.0,
+      "runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "fact_recall": {
+      "mean": 0.5155555555555555,
+      "runs": [
+        0.49333333333333335,
+        0.5466666666666666,
+        0.5066666666666667
+      ],
+      "stddev": 0.027755546659548408
+    },
+    "first_pass_json_validity": {
+      "mean": 0.9129528342657315,
+      "runs": [
+        0.9178571428571428,
+        0.9049429657794676,
+        0.916058394160584
+      ],
+      "stddev": 0.00699481015423399
+    },
+    "invalid_mutation_rejection_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "post_repair_json_validity_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "routing_precision": {
+      "mean": 0.7431801361366787,
+      "runs": [
+        0.711340206185567,
+        0.7790697674418605,
+        0.7391304347826086
+      ],
+      "stddev": 0.03404590177665104
+    },
+    "routing_recall": {
+      "mean": 0.9066666666666666,
+      "runs": [
+        0.92,
+        0.8933333333333333,
+        0.9066666666666666
+      ],
+      "stddev": 0.013333333333333364
+    },
+    "verifier_precision": {
+      "mean": 1.0,
+      "runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "verifier_recall": {
+      "mean": 1.0,
+      "runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "stddev": 0.0
+    }
+  },
+  "model": "gpt-oss:20b",
+  "pin": {
+    "num_ctx": 8192,
+    "seed": 7,
+    "temperature": 0,
+    "top_p": 1
+  },
+  "stamp": "20260611T144710Z",
+  "verdict": {
+    "failure_details": [
+      "fact_recall: mean 0.5156 < 0.85",
+      "routing_precision: mean 0.7432 < 0.8",
+      "abstention_precision: mean 0.5594 < 0.95",
+      "first_pass_json_validity: mean 0.9130 < 0.95"
+    ],
+    "failures": [
+      "fact_recall",
+      "routing_precision",
+      "abstention_precision",
+      "first_pass_json_validity"
+    ],
+    "passed": false
+  }
+}

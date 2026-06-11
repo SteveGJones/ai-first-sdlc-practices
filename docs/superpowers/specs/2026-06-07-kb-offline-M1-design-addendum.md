@@ -229,3 +229,41 @@ gap and keep Anthropic default / pull a stronger model.
     rejects non-loopback hosts unless `--allow-remote-ollama` — enforces the offline/private claim.
 13. **Eval execution split**: CI = scorer-correctness + smoke fixture only (no gated thresholds);
     gated release run = real pinned backends, 3×, persisted report required to pass M1c.
+
+## M1c-2 ratification outcome (2026-06-11) — VERDICT: FAIL → keep Anthropic default
+
+The gated release run executed: `gpt-oss:20b`, 3 pinned runs (`temperature=0, seed=7, top_p=1,
+num_ctx=8192`), full frozen suite (97 questions / 22 verifier labels). Persisted artifact:
+`research/kb-offline-eval/release-gpt-oss_20b-20260611T144710Z.{md,json}`.
+
+| metric | bar | mean | stddev | verdict |
+|---|---|---|---|---|
+| verifier_precision | ≥0.98 | 1.000 | 0.000 | PASS |
+| verifier_recall | ≥0.95 | 1.000 | 0.000 | PASS |
+| routing_recall | ≥0.90 | 0.907 | 0.013 | PASS |
+| abstention_recall | ≥0.90 | 1.000 | 0.000 | PASS |
+| clean_published_support_rate | =1.00 | 1.000 | 0.000 | PASS |
+| fact_recall | ≥0.85 | 0.516 | 0.028 | **FAIL** |
+| routing_precision | ≥0.80 | 0.743 | 0.034 | **FAIL** |
+| abstention_precision | ≥0.95 | 0.559 | 0.008 | **FAIL** |
+| first_pass_json_validity | ≥0.95 | 0.913 | 0.007 | **FAIL** |
+
+Safety floors (invalid-mutation rejection / citation validity / post-repair JSON) = 1.0 on every run.
+All stddevs ≤ 0.034 (< the 0.05 variance cap) — runs are reproducible; the failures are genuine
+mean-misses, not instability.
+
+**Decision: Ollama is NOT made the default backend; Anthropic remains the default.** `gpt-oss:20b`
+clears the safety-critical bars (the deterministic entailment verifier scores a perfect 1.0/1.0
+precision/recall — that component carries the no-fabrication guarantee regardless of backend) but
+misses four model-quality bars. Failure profile: it **over-abstains** (abstention recall 1.0 but
+precision 0.56 — it answers "no evidence" even when the library covers the question), depressing
+fact_recall (0.52); it over-selects pages (routing precision 0.74); and it occasionally emits prose
+or empty output instead of grammar-constrained JSON (first-pass JSON 0.91 — three questions, q051/
+q059 empty `select`, q075 reasoning-prose-not-JSON, errored per-question and were scored as failures
+by the resilient runner rather than aborting the run).
+
+**Path to passing (future work, not blocking):** pull a stronger/instruct-tuned local model and
+re-run `kb-offline eval release`; or add a select/synthesize abstention-calibration prompt nudge and
+a stricter JSON-only system instruction. The gate, fixture, and runner are in place — re-ratifying a
+new model is a single command. The offline backend remains fully usable via `--backend ollama`; it is
+simply not the default until a local model clears the bars.
