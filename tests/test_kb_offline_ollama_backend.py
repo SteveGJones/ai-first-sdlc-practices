@@ -68,3 +68,18 @@ def test_generate_without_options_omits_or_empties_them():
     be = OllamaBackend(model="m", client=fc)
     be.generate("hi")
     assert fc.last.get("options") in (None, {})
+
+
+# --- _make_backend model threading (whole-slice-review Fix 1) ---
+
+def test_make_backend_forwards_model_to_ollama():
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    be = cli._make_backend("ollama", None, options={"temperature": 0}, model="llama3:70b")
+    assert be.model == "llama3:70b"
+    assert be.options == {"temperature": 0}
+
+
+def test_make_backend_ollama_defaults_model_when_none():
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    be = cli._make_backend("ollama", None)
+    assert be.model == "gpt-oss:20b"   # OllamaBackend default preserved

@@ -12,7 +12,7 @@ from pathlib import Path
 from .resume import RunRegistry, config_hash
 
 
-def _make_backend(name: str, override, *, options=None):
+def _make_backend(name: str, override, *, options=None, model=None):
     if override is not None:
         return override
     if name == "anthropic":
@@ -22,7 +22,10 @@ def _make_backend(name: str, override, *, options=None):
     if name == "ollama":
         from .backends.ollama_backend import OllamaBackend
 
-        return OllamaBackend(options=options)
+        kwargs = {"options": options}
+        if model:
+            kwargs["model"] = model
+        return OllamaBackend(**kwargs)
     raise SystemExit(f"backend '{name}' is not available (use anthropic, ollama, or fake)")
 
 
@@ -167,7 +170,7 @@ def _cmd_eval(args: argparse.Namespace, backend_override) -> int:
         return 0
 
     pin = {"temperature": 0, "seed": 7, "top_p": 1}
-    backend = _make_backend(args.backend, backend_override, options=pin)
+    backend = _make_backend(args.backend, backend_override, options=pin, model=args.model)
     runs = [score_run(str(library), questions, labels, backend=backend) for _ in range(args.runs)]
     agg = report_mod.aggregate(runs)
     verdict = report_mod.gate(agg)

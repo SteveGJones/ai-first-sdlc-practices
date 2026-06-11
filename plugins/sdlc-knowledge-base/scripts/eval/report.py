@@ -19,7 +19,7 @@ _GATED_MINIMUMS = {
     "abstention_precision": thresholds.ABSTENTION_PRECISION,
     "abstention_recall": thresholds.ABSTENTION_RECALL,
     "verifier_precision": thresholds.CITATION_ENTAILMENT,
-    "verifier_recall": 0.95,
+    "verifier_recall": thresholds.VERIFIER_RECALL,
     "first_pass_json_validity": thresholds.FIRST_PASS_JSON_VALIDITY,
     "clean_published_support_rate": 1.0,
 }

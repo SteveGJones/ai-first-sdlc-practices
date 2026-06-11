@@ -11,6 +11,7 @@ POST_REPAIR_JSON_VALIDITY = 1.0
 
 # Model-quality thresholds (release-suite gate before Ollama default)
 CITATION_ENTAILMENT = 0.98
+VERIFIER_RECALL = 0.95
 FACT_RECALL = 0.85
 ROUTING_RECALL = 0.90
 ROUTING_PRECISION = 0.80
