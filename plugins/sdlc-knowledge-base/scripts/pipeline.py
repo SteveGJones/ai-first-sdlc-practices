@@ -9,7 +9,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from . import prompts
-from .contracts import Answer, ExtractJSON, MutationProposal, SelectResult
+from .contracts import Answer, EntailmentStatus, ExtractJSON, MutationProposal, SelectResult
 
 
 def _extract_schema() -> dict:
@@ -116,3 +116,39 @@ def synthesize(question, pages, *, backend, max_repairs: int = 1) -> Answer:
             c.high_impact = False
         return ans
     raise ValueError(f"synthesize failed after {max_repairs} repair(s): {last_error}")
+
+
+def _promote_body_schema() -> dict:
+    return {"type": "object", "properties": {"body": {"type": "string"}}, "required": ["body"]}
+
+
+def promote(saved, *, target_file, action, existing_content, backend, max_repairs: int = 1) -> str:
+    """Draft page BODY prose from the saved answer's `supported` claims ONLY. Returns the body
+    string (the graph assembles the typed MutationProposal + deterministic frontmatter). Raises
+    ValueError if there are zero supported claims, or if the model output stays invalid after
+    repairs."""
+    supported = [c for c in saved.answer.claims if c.entailment_status == EntailmentStatus.supported]
+    if not supported:
+        raise ValueError("promote: no supported claims to promote")
+    claims_block = "\n".join(
+        f"- {c.text}  [sources: {', '.join(r.page for r in c.cited_pages)}]" for c in supported
+    )
+    base = (f"{prompts.PROMOTE_FRAGMENT}\n\nQuestion: {saved.question}\n\n"
+            f"Verified claims:\n{claims_block}")
+    if action == "extend":
+        base += f"\n\nExisting page content to extend (preserve it, append coherently):\n{existing_content or ''}"
+    schema = _promote_body_schema()
+    prompt = base
+    last_error = ""
+    for _ in range(max_repairs + 1):
+        raw = backend.generate(prompt, schema=schema)
+        try:
+            data = json.loads(raw)
+            body = data["body"]
+            if not isinstance(body, str) or not body.strip():
+                raise ValueError("empty body")
+            return body
+        except (json.JSONDecodeError, ValueError, TypeError, KeyError) as exc:
+            last_error = str(exc)
+            prompt = f"{base}\n\nPrevious output invalid: {last_error}\nReturn valid JSON only."
+    raise ValueError(f"promote failed after {max_repairs} repair(s): {last_error}")

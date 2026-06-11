@@ -25,3 +25,10 @@ REDUCE_FRAGMENT = (
     "frontmatter, body, citations, cross-refs); do not write files yourself. Apply "
     "extend-vs-create, contradiction flagging, citation discipline, confidence frontmatter."
 )
+
+PROMOTE_FRAGMENT = (
+    "You are writing a single curated knowledge-base page from a set of VERIFIED claims "
+    "(each already grounded in cited source pages). Write coherent, well-structured Markdown "
+    "body prose that states these claims faithfully and cites nothing beyond the given sources. "
+    "Do NOT invent facts, statistics, or citations. Return ONLY a JSON object: {\"body\": \"<markdown>\"}."
+)
