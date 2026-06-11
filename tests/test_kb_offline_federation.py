@@ -5,8 +5,8 @@ import json
 
 from sdlc_knowledge_base_scripts.audit import VALID_EVENT_TYPES
 from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
-from sdlc_knowledge_base_scripts.contracts import EntailmentStatus
-from sdlc_knowledge_base_scripts.federation import query_one_library
+from sdlc_knowledge_base_scripts.contracts import Answer, Claim, EntailmentStatus, PageRef, Span
+from sdlc_knowledge_base_scripts.federation import merge_answers, query_one_library, render_federated
 
 
 def test_cross_library_query_is_a_valid_event_type():
@@ -39,3 +39,35 @@ def test_query_one_library_returns_verified_answer(tmp_path):
     answer, page_ids = query_one_library(str(lib), "how often deploy?", backend=be, priming=None)
     assert page_ids == ["dora.md"]
     assert answer.claims[0].entailment_status == EntailmentStatus.supported
+
+
+def _claim(text, page, status):
+    c = Claim(text=text, cited_pages=[PageRef(library="local", page=page)],
+              evidence_spans=[Span(page=page, text="x")])
+    c.entailment_status = status
+    return c
+
+
+def test_merge_dedupes_identical_and_unions_handles():
+    a1 = Answer(claims=[_claim("Deploy daily.", "dora.md", EntailmentStatus.supported)], rendered_text="")
+    a2 = Answer(claims=[_claim("Deploy daily.", "ops.md", EntailmentStatus.supported),
+                        _claim("Use canary.", "ops.md", EntailmentStatus.supported)], rendered_text="")
+    merged, handle_sets = merge_answers([("dora-corp", a1), ("acme-kb", a2)])
+    texts = [c.text for c in merged.claims]
+    assert texts.count("Deploy daily.") == 1
+    assert set(handle_sets["Deploy daily."]) == {"dora-corp", "acme-kb"}
+    assert "Use canary." in texts
+    deploy = next(c for c in merged.claims if c.text == "Deploy daily.")
+    assert {r.library for r in deploy.cited_pages} == {"dora-corp", "acme-kb"}
+
+
+def test_render_federated_attributes_and_applies_policy():
+    a = Answer(claims=[_claim("Deploy daily.", "dora.md", EntailmentStatus.supported),
+                       _claim("Maybe canary.", "dora.md", EntailmentStatus.partial),
+                       _claim("Unfounded.", "dora.md", EntailmentStatus.unsupported)], rendered_text="")
+    merged, handle_sets = merge_answers([("dora-corp", a)])
+    rendered, rejected = render_federated(merged, handle_sets)
+    assert "Deploy daily." in rendered and "[dora-corp]" in rendered
+    assert "partially supported" in rendered.lower()
+    assert "Unfounded." not in rendered
+    assert any("Unfounded." in r["text"] for r in rejected)

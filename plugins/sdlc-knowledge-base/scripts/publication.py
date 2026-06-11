@@ -6,6 +6,17 @@ from __future__ import annotations
 from .contracts import Answer, EntailmentStatus
 
 
+def published_line(claim, *, suffix: str = "") -> tuple[str | None, dict | None]:
+    """Apply the publication policy to ONE claim. Returns (body_line, rejected_entry) with
+    exactly one non-None: supported -> (text+suffix, None); partial -> (text+' (partially
+    supported)'+suffix, None); unsupported/other -> (None, {text, reason, high_impact})."""
+    if claim.entailment_status == EntailmentStatus.supported:
+        return (f"{claim.text}{suffix}", None)
+    if claim.entailment_status == EntailmentStatus.partial:
+        return (f"{claim.text} (partially supported){suffix}", None)
+    return (None, {"text": claim.text, "reason": "unsupported", "high_impact": claim.high_impact})
+
+
 def publish(answer: Answer) -> tuple[str, list[dict]]:
     """Return (rendered_text, rejected_claims). supported claims are published as-is;
     partial claims are published with a '(partially supported)' caveat; unsupported claims
@@ -13,11 +24,9 @@ def publish(answer: Answer) -> tuple[str, list[dict]]:
     lines: list[str] = []
     rejected: list[dict] = []
     for c in answer.claims:
-        if c.entailment_status == EntailmentStatus.supported:
-            lines.append(c.text)
-        elif c.entailment_status == EntailmentStatus.partial:
-            lines.append(f"{c.text} (partially supported)")
-        else:
-            rejected.append({"text": c.text, "reason": "unsupported",
-                             "high_impact": c.high_impact})
+        line, rej = published_line(c)
+        if line is not None:
+            lines.append(line)
+        if rej is not None:
+            rejected.append(rej)
     return "\n".join(lines), rejected
