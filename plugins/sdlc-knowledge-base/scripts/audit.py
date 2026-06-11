@@ -26,6 +26,7 @@ VALID_EVENT_TYPES = frozenset(
         "synthesis_aborted_dispatcher_error",
         "source_dispatch_failed",
         "no_evidence_marker",
+        "cross_library_query",
         "cross_library_promotion",
         "answer_promotion",
     }
