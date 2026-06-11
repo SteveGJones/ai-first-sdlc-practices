@@ -436,3 +436,29 @@ def test_cli_query_save_persists_ref(tmp_path, capsys):
     ref = out.split("saved:")[1].split()[0].strip()
     saved = load_answer(str(lib), ref)
     assert saved.answer.claims[0].text == "Cost fell 30%."
+
+
+def test_cli_promote_creates_page(tmp_path, capsys):
+    import json as _j
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    from sdlc_knowledge_base_scripts.answers import save_answer
+    from sdlc_knowledge_base_scripts.contracts import Answer, Claim, EntailmentStatus, PageRef, Span
+    lib = _seed_lib(tmp_path)
+    (lib / "dora.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# DORA\n"
+                                 "Elite teams deploy multiple times per day.\n")
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- dora.md\n")
+    c = Claim(text="Elite teams deploy multiple times per day.",
+              cited_pages=[PageRef(library="local", page="dora.md")],
+              evidence_spans=[Span(page="dora.md", text="deploy multiple times per day")])
+    c.entailment_status = EntailmentStatus.supported
+    ref = save_answer(str(lib), "how often deploy?", Answer(claims=[c], rendered_text="..."),
+                      libraries=["local"], page_ids=["dora.md"])
+
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: _j.dumps({"body": "# Deploy\n\nElite teams deploy multiple times per day."})
+    rc = cli.main(["promote", ref, "--new", "deploy", "--library", str(lib),
+                   "--backend", "fake", "--timestamp", "20260611T000000Z"], backend_override=be)
+    assert rc == 0
+    assert (lib / "deploy.md").is_file()
+    assert "promoted 1" in capsys.readouterr().out

@@ -12,6 +12,12 @@ from pathlib import Path
 from .resume import RunRegistry, config_hash
 
 
+def _slugify(text: str) -> str:
+    import re
+    s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    return s or "promoted-answer"
+
+
 def _make_backend(name: str, override, *, options=None, model=None):
     if override is not None:
         return override
@@ -207,6 +213,45 @@ def _cmd_eval(args: argparse.Namespace, backend_override) -> int:
     return 0 if verdict["passed"] else 1
 
 
+def _cmd_promote(args: argparse.Namespace, backend_override) -> int:
+    from .graphs.promote_graph import build_promote_graph, release_lock
+    lib = Path(args.library)
+    backend = _make_backend(args.backend, backend_override)
+    if args.new and args.into:
+        raise SystemExit("promote: pass only one of --new / --into")
+    if args.into:
+        target_file, action = args.into, "extend"
+        if not (lib / target_file).is_file():
+            raise SystemExit(f"promote --into: page {target_file!r} does not exist")
+    else:
+        slug = args.new or _slugify(args.ref)
+        target_file = slug if slug.endswith(".md") else f"{slug}.md"
+        action = "create"
+    reg = RunRegistry(lib)
+    fingerprint = {"operation": "promote", "config": config_hash({"ref": args.ref, "target": target_file})}
+    run_id = reg.start_run(args.timestamp, fingerprint)
+    checkpoint = lib / ".kb-offline" / "promote-graph-checkpoint.sqlite"
+    graph = build_promote_graph(backend, checkpoint_path=checkpoint)
+    try:
+        out = graph.invoke(
+            {"library_path": str(lib), "ref": args.ref, "target_file": target_file, "action": action,
+             "layer": args.layer, "confidence": args.confidence, "run_id": run_id},
+            config={"configurable": {"thread_id": run_id}})
+    except Exception:
+        release_lock(run_id)
+        reg.set_state(run_id, "failed")
+        raise
+    committed = out.get("committed", 0)
+    reg.set_state(run_id, "completed" if committed else "completed_with_errors")
+    if out.get("failed"):
+        print(f"promote: no supported claims in {args.ref} — nothing promoted")
+        return 1
+    print(f"promote: run={run_id} target={target_file} committed={committed} "
+          f"rejected={out.get('rejected', 0)} promoted {out.get('promoted', 0)} claim(s), "
+          f"dropped {out.get('dropped', 0)}")
+    return 0 if committed else 1
+
+
 def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None) -> int:
     allowed_layers = allowed_layers or ["methodology", "evidence", "domain", "development"]
     parser = argparse.ArgumentParser(prog="kb-offline")
@@ -252,6 +297,16 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_rel.add_argument("--report-dir", default="research/kb-offline-eval")
     p_rel.add_argument("--stamp", required=True)
 
+    p_promote = sub.add_parser("promote")
+    p_promote.add_argument("ref")
+    p_promote.add_argument("--new", default=None, help="create a new page with this slug")
+    p_promote.add_argument("--into", default=None, help="extend an existing page")
+    p_promote.add_argument("--library", default="library")
+    p_promote.add_argument("--backend", default="anthropic")
+    p_promote.add_argument("--layer", default=None)
+    p_promote.add_argument("--confidence", default=None, choices=["low", "medium", "high"])
+    p_promote.add_argument("--timestamp", required=True)
+
     args = parser.parse_args(argv)
     if args.cmd == "init":
         return _cmd_init(args)
@@ -263,6 +318,8 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
         return _cmd_query(args, backend_override)
     if args.cmd == "eval":
         return _cmd_eval(args, backend_override)
+    if args.cmd == "promote":
+        return _cmd_promote(args, backend_override)
     return 2
 
 

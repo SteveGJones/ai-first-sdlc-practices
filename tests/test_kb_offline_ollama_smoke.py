@@ -72,7 +72,7 @@ def test_live_ollama_bulk_ingest_three_sources(tmp_path):
     graph = build_bulk_ingest_graph(
         be, allowed_layers=["methodology", "evidence", "domain", "development"],
         checkpoint_path=lib / ".kb-offline" / "bulk.sqlite")
-    out = graph.invoke(
+    graph.invoke(
         {"library_path": str(lib), "source_specs": [str(p) for p in corpus], "run_id": "bulk-live"},
         config={"configurable": {"thread_id": "bulk-live"}, "max_concurrency": 3})
     extracts = list((lib / ".kb-offline" / "extracts").glob("*.json"))
@@ -99,3 +99,28 @@ def test_live_ollama_query(tmp_path):
         config={"configurable": {"thread_id": "ql"}},
     )
     assert "rendered_text" in out and "rejected_claims" in out
+
+
+@pytest.mark.skipif(not _ollama_ready(), reason="ollama daemon/model not available")
+def test_live_ollama_promote(tmp_path):
+    from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+    from sdlc_knowledge_base_scripts.graphs.query_graph import build_query_graph
+    from sdlc_knowledge_base_scripts.graphs.promote_graph import build_promote_graph
+    from sdlc_knowledge_base_scripts.answers import save_answer
+    from sdlc_knowledge_base_scripts.contracts import Answer
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- dora.md\n")
+    (lib / "dora.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# DORA\n"
+                                 "Elite teams deploy multiple times per day.\n")
+    be = OllamaBackend(model="gpt-oss:20b", options={"temperature": 0, "seed": 7, "num_ctx": 8192})
+    qout = build_query_graph(be).invoke(
+        {"library_path": str(lib), "question": "How often do elite teams deploy?"},
+        config={"configurable": {"thread_id": "ql"}})
+    ref = save_answer(str(lib), "How often do elite teams deploy?", Answer.model_validate(qout["_answer"]),
+                      libraries=["local"], page_ids=list(qout.get("page_ids", [])))
+    out = build_promote_graph(be).invoke(
+        {"library_path": str(lib), "ref": ref, "target_file": "deploy.md", "action": "create",
+         "layer": None, "confidence": None, "run_id": "p-live"},
+        config={"configurable": {"thread_id": "p-live"}})
+    assert "committed" in out
