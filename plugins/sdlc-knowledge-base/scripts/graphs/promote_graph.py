@@ -4,6 +4,10 @@ for run-lifecycle/journal/checkpoint traceability. Reuses M0 mutation machinery 
 
 OFFLINE INTEGRITY: this is an offline tool. We disable LangSmith/LangChain tracing
 BEFORE importing langgraph so it never tries to phone home to api.smith.langchain.com.
+
+NOTE: the lock is acquired late in n_commit; a raise before acquisition leaks nothing on
+disk. An unexpected raise after lock.acquire() relies on the CLI wrapper's try/finally to
+release_lock and mark the run failed, since n_finalize is skipped on node exception.
 """
 from __future__ import annotations
 
