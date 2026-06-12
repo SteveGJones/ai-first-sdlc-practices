@@ -8,6 +8,8 @@ from sdlc_knowledge_base_scripts.lint import (  # noqa: F401 (import-shape check
     StalenessResult,  # noqa: F401
     check_frontmatter,
     check_staleness,
+    lint_libraries,
+    render_lint_report,
 )
 from sdlc_knowledge_base_scripts.registry import LibrarySource
 
@@ -76,3 +78,37 @@ def test_staleness_corp_threshold(tmp_path):
     src = LibrarySource(name="corp-x", type="filesystem", path=str(lib))
     res = check_staleness(src, now=_NOW)
     assert res.state == "fresh" and res.threshold_days == 90
+
+
+def test_lint_libraries_aggregates_and_flags(tmp_path):
+    local = _lib_with_rebuilt(tmp_path, "local", (_NOW - timedelta(days=2)).isoformat())
+    _page(local, "partial.md", "---\nlayer: evidence\n---\n# P\nbody\n")
+    corp = _lib_with_rebuilt(tmp_path, "corp-x", (_NOW - timedelta(days=200)).isoformat())
+    _page(corp, "ok.md", "---\nlayer: evidence\nconfidence: high\ncross_references: []\n---\n# OK\n")
+    sources = [LibrarySource(name="local", type="filesystem", path=str(local)),
+               LibrarySource(name="corp-x", type="filesystem", path=str(corp))]
+    report = lint_libraries(sources, now=_NOW)
+    assert report.has_issues is True
+    by_handle = {r.handle: r for r in report.libraries}
+    assert by_handle["local"].frontmatter_issues
+    assert by_handle["local"].staleness.state == "fresh"
+    assert by_handle["corp-x"].staleness.state == "stale"
+    assert by_handle["corp-x"].frontmatter_issues == []
+
+
+def test_render_lint_report_clean_has_no_issues(tmp_path):
+    lib = _lib_with_rebuilt(tmp_path, "local", (_NOW - timedelta(days=1)).isoformat())
+    _page(lib, "a.md", "---\nlayer: evidence\nconfidence: high\ncross_references: []\n---\n# A\n")
+    report = lint_libraries([LibrarySource(name="local", type="filesystem", path=str(lib))], now=_NOW)
+    text, has_issues = render_lint_report(report)
+    assert has_issues is False
+    assert "local" in text and "fresh" in text.lower()
+
+
+def test_unknown_staleness_does_not_fail_gate(tmp_path):
+    lib = _lib_with_rebuilt(tmp_path, "local", None)
+    _page(lib, "a.md", "---\nlayer: evidence\nconfidence: high\ncross_references: []\n---\n# A\n")
+    report = lint_libraries([LibrarySource(name="local", type="filesystem", path=str(lib))], now=_NOW)
+    assert report.has_issues is False
+    text, has_issues = render_lint_report(report)
+    assert "unknown" in text.lower() and has_issues is False

@@ -3,7 +3,7 @@ frontmatter completeness + cross-library staleness. Semantic conflict detection 
 to M3 (needs embeddings for reliable same-claim matching)."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -56,6 +56,64 @@ def check_staleness(source, *, now=None) -> StalenessResult:
 class FrontmatterIssue:
     page: str
     detail: str
+
+
+@dataclass
+class LibraryLintResult:
+    handle: str
+    path: str
+    frontmatter_issues: list = field(default_factory=list)
+    staleness: StalenessResult = None
+
+
+@dataclass
+class LintReport:
+    libraries: list = field(default_factory=list)
+
+    @property
+    def has_issues(self) -> bool:
+        return any(r.frontmatter_issues or r.staleness.state == "stale" for r in self.libraries)
+
+
+def lint_libraries(sources, *, now=None) -> LintReport:
+    """Per source: frontmatter issues + staleness. now injected for determinism."""
+    now = now or datetime.now(timezone.utc)
+    results = []
+    for src in sources:
+        results.append(LibraryLintResult(
+            handle=src.name, path=src.path,
+            frontmatter_issues=check_frontmatter(src.path),
+            staleness=check_staleness(src, now=now)))
+    return LintReport(libraries=results)
+
+
+def render_lint_report(report) -> tuple:
+    """Markdown report + has_issues, with a summary line."""
+    lines = ["# kb-offline lint report", ""]
+    n_fm = n_stale = 0
+    for r in report.libraries:
+        s = r.staleness
+        if r.frontmatter_issues:
+            n_fm += 1
+        if s.state == "stale":
+            n_stale += 1
+        stale_desc = {
+            "fresh": f"fresh ({s.age_days}d / {s.threshold_days}d)",
+            "stale": f"STALE ({s.age_days}d > {s.threshold_days}d threshold)",
+            "unknown": "unknown (no last_rebuilt header)",
+        }[s.state]
+        lines.append(f"## {r.handle}  ({r.path})")
+        lines.append(f"- staleness: {stale_desc}")
+        if r.frontmatter_issues:
+            lines.append(f"- frontmatter: {len(r.frontmatter_issues)} issue(s)")
+            for iss in r.frontmatter_issues:
+                lines.append(f"    - {iss.page}: {iss.detail}")
+        else:
+            lines.append("- frontmatter: clean")
+        lines.append("")
+    lines.append(f"## Summary: {len(report.libraries)} libraries, "
+                 f"{n_fm} with frontmatter issues, {n_stale} stale")
+    return "\n".join(lines) + "\n", report.has_issues
 
 
 def check_frontmatter(library_path) -> list:
