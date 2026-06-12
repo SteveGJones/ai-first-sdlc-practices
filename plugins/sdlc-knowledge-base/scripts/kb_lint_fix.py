@@ -25,6 +25,10 @@ _FRONTMATTER_RE = re.compile(r"^(---[ \t]*\r?\n)(.*?)(\r?\n---[ \t]*\r?\n)", re.
 _EXCLUDED_NAMES = frozenset({"_shelf-index.md", "_index.md", "log.md"})
 _EXCLUDED_DIRS = frozenset({"raw"})
 
+# Required frontmatter fields on a page that ALREADY has a frontmatter block. Shared with
+# lint.check_frontmatter so the read-only lint and the fixer never disagree on completeness.
+REQUIRED_EXISTING_FIELDS = ("layer", "confidence", "cross_references")
+
 
 @dataclass
 class FixResult:
@@ -77,15 +81,11 @@ def _fix_existing_frontmatter(text: str, path: Path) -> tuple[str, list[str]]:
     additions: list[str] = []
     new_field_lines: list[str] = []
 
-    if "layer" not in fm:
-        new_field_lines.append("layer: uncategorized")
-        additions.append("layer")
-    if "confidence" not in fm:
-        new_field_lines.append("confidence: medium")
-        additions.append("confidence")
-    if "cross_references" not in fm:
-        new_field_lines.append("cross_references: []")
-        additions.append("cross_references")
+    _DEFAULTS = {"layer": "uncategorized", "confidence": "medium", "cross_references": "[]"}
+    for fieldname in REQUIRED_EXISTING_FIELDS:
+        if fieldname not in fm:
+            new_field_lines.append(f"{fieldname}: {_DEFAULTS[fieldname]}")
+            additions.append(fieldname)
 
     if not new_field_lines:
         return text, []
