@@ -191,8 +191,12 @@ def _cmd_query(args: argparse.Namespace, backend_override, library_specs_overrid
         print("no libraries resolved — run kb-init / check ~/.sdlc/global-libraries.json", file=sys.stderr)
         return 1
     graph = build_federation_query_graph(backend)
+    # Priming reads <project>/CLAUDE.md and <project>/library/_shelf-index.md, so
+    # local_project_dir must be the PROJECT ROOT, not the library dir. The library is
+    # conventionally <project>/library, so the project root is its parent.
+    project_dir = local_lib.parent
     out = graph.invoke(
-        {"library_specs": specs, "local_project_dir": str(local_lib), "question": args.question,
+        {"library_specs": specs, "local_project_dir": str(project_dir), "question": args.question,
          "layer": args.layer, "min_confidence": args.min_confidence},
         config={"configurable": {"thread_id": "federated-query"}, "max_concurrency": 8})
     print(out.get("rendered_text", ""))

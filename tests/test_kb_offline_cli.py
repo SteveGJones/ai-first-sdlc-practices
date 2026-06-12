@@ -501,3 +501,35 @@ def test_cli_query_libraries_federates(tmp_path, capsys):
     out = capsys.readouterr().out
     assert "queried 2 libraries" in out
     assert "Use canary deploys for safety." in out and "acme-kb" in out
+
+
+def test_cli_federation_passes_project_root_for_priming(tmp_path, monkeypatch):
+    # Regression: local_project_dir must be the PROJECT ROOT (parent of the library
+    # dir), not the library dir itself — otherwise build_priming_bundle looks for
+    # <library>/CLAUDE.md and <library>/library/_shelf-index.md and priming is silently
+    # a no-op in the real CLI path.
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    from sdlc_knowledge_base_scripts.graphs import federation_query_graph as fqg
+
+    project = tmp_path / "proj"
+    project.mkdir()
+    lib = project / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- dora.md\n")
+    (lib / "dora.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# DORA\nx\n")
+
+    captured = {}
+
+    class _StubGraph:
+        def invoke(self, state, config=None):
+            captured["local_project_dir"] = state["local_project_dir"]
+            return {"rendered_text": "", "rejected_claims": [], "_answer": {"claims": []},
+                    "queried": 1, "deduped": 0}
+
+    monkeypatch.setattr(fqg, "build_federation_query_graph", lambda *a, **k: _StubGraph())
+    be = FakeBackend()
+    rc = cli.main(["query", "q?", "--library", str(lib), "--libraries", "acme-kb", "--backend", "fake"],
+                  backend_override=be, library_specs_override=[["local", str(lib)]])
+    assert rc == 0
+    assert captured["local_project_dir"] == str(project)  # project root, not the library dir
