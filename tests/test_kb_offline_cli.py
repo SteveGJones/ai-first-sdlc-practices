@@ -462,3 +462,42 @@ def test_cli_promote_creates_page(tmp_path, capsys):
     assert rc == 0
     assert (lib / "deploy.md").is_file()
     assert "promoted 1" in capsys.readouterr().out
+
+
+def test_cli_query_libraries_federates(tmp_path, capsys):
+    import json as _j
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+
+    def _seed(name, page, body):
+        lib = tmp_path / name
+        lib.mkdir()
+        (lib / "_shelf-index.md").write_text(f"<!-- format_version: 1 -->\n# Shelf\n- {page}\n")
+        (lib / page).write_text(f"---\nlayer: evidence\nconfidence: high\n---\n# {page}\n{body}\n")
+        return lib
+    local = _seed("local", "dora.md", "Elite teams deploy multiple times per day.")
+    ext = _seed("acme", "ops.md", "Use canary deploys for safety.")
+
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge"):
+            return '{"status": "supported"}'
+        if "Shelf-index" in prompt:
+            return _j.dumps({"page_ids": ["dora.md"]}) if "dora.md" in prompt else _j.dumps({"page_ids": ["ops.md"]})
+        if "dora.md" in prompt:
+            return _j.dumps({"claims": [{"text": "Elite teams deploy multiple times per day.",
+                                         "cited_pages": [{"library": "local", "page": "dora.md"}],
+                                         "evidence_spans": [{"page": "dora.md", "text": "deploy multiple times per day"}]}],
+                             "rendered_text": ""})
+        return _j.dumps({"claims": [{"text": "Use canary deploys for safety.",
+                                     "cited_pages": [{"library": "local", "page": "ops.md"}],
+                                     "evidence_spans": [{"page": "ops.md", "text": "canary deploys for safety"}]}],
+                         "rendered_text": ""})
+    be = FakeBackend()
+    be.generate = gen
+    rc = cli.main(["query", "how do teams deploy?", "--library", str(local),
+                   "--libraries", "acme-kb", "--backend", "fake"],
+                  backend_override=be, library_specs_override=[["local", str(local)], ["acme-kb", str(ext)]])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "queried 2 libraries" in out
+    assert "Use canary deploys for safety." in out and "acme-kb" in out

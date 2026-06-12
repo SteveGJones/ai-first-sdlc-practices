@@ -135,10 +135,18 @@ def _cmd_ingest_bulk(args: argparse.Namespace, backend_override, allowed_layers:
     )
 
 
-def _cmd_query(args: argparse.Namespace, backend_override) -> int:
+def _resolve_libraries(local_lib: Path, handles: list[str]):
+    import os
+    from .registry import ProjectActivation, load_global_registry, resolve_dispatch_list
+    registry = load_global_registry(Path(os.path.expanduser("~/.sdlc/global-libraries.json")))
+    activation = ProjectActivation(activated_sources=handles)
+    dispatch = resolve_dispatch_list(registry, activation, local_lib)
+    return [[s.name, s.path] for s in dispatch.sources], dispatch.warnings
+
+
+def _query_single(args: argparse.Namespace, backend) -> int:
     from .graphs.query_graph import build_query_graph
 
-    backend = _make_backend(args.backend, backend_override)
     graph = build_query_graph(backend)
     out = graph.invoke(
         {
@@ -160,6 +168,46 @@ def _cmd_query(args: argparse.Namespace, backend_override) -> int:
         verified = Answer.model_validate(out["_answer"])
         ref = save_answer(args.library, args.question, verified,
                           libraries=["local"], page_ids=list(out.get("page_ids", [])))
+        print(f"saved: {ref}")
+    return 0
+
+
+def _cmd_query(args: argparse.Namespace, backend_override, library_specs_override=None) -> int:
+    backend = _make_backend(args.backend, backend_override)
+    if not getattr(args, "libraries", None) and library_specs_override is None:
+        return _query_single(args, backend)
+
+    from .graphs.federation_query_graph import build_federation_query_graph
+
+    local_lib = Path(args.library)
+    if library_specs_override is not None:
+        specs, warnings = library_specs_override, []
+    else:
+        handles = [h.strip() for h in args.libraries.split(",") if h.strip()]
+        specs, warnings = _resolve_libraries(local_lib, handles)
+    for w in warnings:
+        print(f"warning: {w}", file=sys.stderr)
+    if not specs:
+        print("no libraries resolved — run kb-init / check ~/.sdlc/global-libraries.json", file=sys.stderr)
+        return 1
+    graph = build_federation_query_graph(backend)
+    out = graph.invoke(
+        {"library_specs": specs, "local_project_dir": str(local_lib), "question": args.question,
+         "layer": args.layer, "min_confidence": args.min_confidence},
+        config={"configurable": {"thread_id": "federated-query"}, "max_concurrency": 8})
+    print(out.get("rendered_text", ""))
+    rejected = out.get("rejected_claims", [])
+    if rejected:
+        print(f"\n[{len(rejected)} claim(s) excluded as unsupported]", file=sys.stderr)
+    claims_n = len(out.get("_answer", {}).get("claims", []))
+    print(f"\nqueried {out.get('queried', 0)} libraries ({claims_n} claims, {out.get('deduped', 0)} deduped)")
+    if args.save:
+        from .answers import save_answer
+        from .contracts import Answer
+
+        verified = Answer.model_validate(out["_answer"])
+        ref = save_answer(args.library, args.question, verified,
+                          libraries=[h for h, _ in specs], page_ids=[])
         print(f"saved: {ref}")
     return 0
 
@@ -252,7 +300,8 @@ def _cmd_promote(args: argparse.Namespace, backend_override) -> int:
     return 0 if committed else 1
 
 
-def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None,
+         library_specs_override=None) -> int:
     allowed_layers = allowed_layers or ["methodology", "evidence", "domain", "development"]
     parser = argparse.ArgumentParser(prog="kb-offline")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -281,6 +330,7 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_q.add_argument("--backend", default="anthropic")
     p_q.add_argument("--layer", default=None)
     p_q.add_argument("--min-confidence", default=None)
+    p_q.add_argument("--libraries", default=None, help="comma-separated external library handles to federate")
     p_q.add_argument("--save", action="store_true", help="persist the verified answer; print its ref")
 
     p_eval = sub.add_parser("eval")
@@ -315,7 +365,7 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     if args.cmd == "ingest-bulk":
         return _cmd_ingest_bulk(args, backend_override, allowed_layers)
     if args.cmd == "query":
-        return _cmd_query(args, backend_override)
+        return _cmd_query(args, backend_override, library_specs_override)
     if args.cmd == "eval":
         return _cmd_eval(args, backend_override)
     if args.cmd == "promote":

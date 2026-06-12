@@ -124,3 +124,25 @@ def test_live_ollama_promote(tmp_path):
          "layer": None, "confidence": None, "run_id": "p-live"},
         config={"configurable": {"thread_id": "p-live"}})
     assert "committed" in out
+
+
+@pytest.mark.skipif(not _ollama_ready(), reason="ollama daemon/model not available")
+def test_live_ollama_federation(tmp_path):
+    from sdlc_knowledge_base_scripts.graphs.federation_query_graph import build_federation_query_graph
+    from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+
+    def _seed(name, page, body):
+        lib = tmp_path / name
+        lib.mkdir()
+        (lib / "_shelf-index.md").write_text(f"<!-- format_version: 1 -->\n# Shelf\n- {page}\n")
+        (lib / page).write_text(f"---\nlayer: evidence\nconfidence: high\n---\n# {page}\n{body}\n")
+        return lib
+    local = _seed("local", "dora.md", "Elite teams deploy multiple times per day.")
+    _seed("acme", "ops.md", "Canary deploys reduce blast radius.")
+    be = OllamaBackend(model="gpt-oss:20b", options={"temperature": 0, "seed": 7, "num_ctx": 8192})
+    graph = build_federation_query_graph(be)
+    out = graph.invoke(
+        {"library_specs": [["local", str(local)], ["acme-kb", str(tmp_path / "acme")]],
+         "local_project_dir": str(tmp_path), "question": "How do teams deploy safely?"},
+        config={"configurable": {"thread_id": "fq-live"}, "max_concurrency": 2})
+    assert "rendered_text" in out and out["queried"] == 2
