@@ -110,3 +110,38 @@ def test_save_is_generation_pointer(tmp_path):
     gen = manifest["active"]
     assert (d / f"embeddings.{gen}.npy").is_file()
     assert (d / f"embeddings.{gen}.meta.json").is_file()
+
+
+def test_load_unsupported_schema_version_returns_none(tmp_path):
+    import json
+    store = _store([[1, 0, 0], [0, 1, 0]], ["a.md", "b.md"])
+    store.save(tmp_path)
+    d = tmp_path / ".kb-offline"
+    manifest = json.loads((d / "embeddings.manifest.json").read_text())
+    manifest["schema_version"] = 2
+    (d / "embeddings.manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    assert EmbeddingStore.load(tmp_path) is None
+
+
+def test_load_wrong_dtype_or_dims_returns_none(tmp_path):
+    import json
+    store = _store([[1, 0, 0], [0, 1, 0]], ["a.md", "b.md"])
+    store.save(tmp_path)
+    d = tmp_path / ".kb-offline"
+    gen = json.loads((d / "embeddings.manifest.json").read_text())["active"]
+    # float64 (provenance.dims=3 still satisfied) — dtype guard alone must reject.
+    np.save(d / f"embeddings.{gen}.npy", np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float64), allow_pickle=False)
+    assert EmbeddingStore.load(tmp_path) is None
+    # shape[1] != provenance.dims (2 cols vs declared 3).
+    np.save(d / f"embeddings.{gen}.npy", np.array([[1, 0], [0, 1]], dtype=np.float32), allow_pickle=False)
+    assert EmbeddingStore.load(tmp_path) is None
+
+
+def test_load_non_finite_matrix_returns_none(tmp_path):
+    import json
+    store = _store([[1, 0, 0], [0, 1, 0]], ["a.md", "b.md"])
+    store.save(tmp_path)
+    d = tmp_path / ".kb-offline"
+    gen = json.loads((d / "embeddings.manifest.json").read_text())["active"]
+    np.save(d / f"embeddings.{gen}.npy", np.array([[np.nan, 0, 0], [0, np.inf, 0]], dtype=np.float32), allow_pickle=False)
+    assert EmbeddingStore.load(tmp_path) is None
