@@ -62,6 +62,11 @@ def build_federation_query_graph(backend, *, checkpoint_path=None):
         priming = None
         if not state["is_local"]:
             priming = build_priming_bundle(state["question"], Path(state["local_project_dir"]))
+            # Concurrency note: parallel Send workers append to the shared local
+            # audit.log without a lock. Safe only because each line is a single
+            # write() under PIPE_BUF (queries truncated to 500 chars in log_event)
+            # and POSIX guarantees small appends are atomic. Do NOT widen audit
+            # lines past PIPE_BUF or add concurrency here without adding a lock.
             log_event(Path(state["audit_lib"]) / ".kb-offline" / "audit.log", AuditEvent(
                 timestamp=datetime.now(timezone.utc).isoformat(),
                 event_type="cross_library_query", query=state["question"],
