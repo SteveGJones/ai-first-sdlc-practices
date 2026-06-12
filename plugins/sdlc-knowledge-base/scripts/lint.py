@@ -4,11 +4,52 @@ to M3 (needs embeddings for reliable same-claim matching)."""
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
 from .kb_lint_fix import REQUIRED_EXISTING_FIELDS, _FRONTMATTER_RE, _is_library_file
+from .registry import staleness_threshold_for
+from .shelf_index_header import parse_shelf_index_header
+
+
+@dataclass
+class StalenessResult:
+    handle: str
+    state: str          # "fresh" | "stale" | "unknown"
+    age_days: Optional[int]
+    threshold_days: int
+    last_rebuilt: Optional[str]
+
+
+def _parse_iso_utc(value: str) -> datetime:
+    """Parse an ISO 8601 string to tz-aware UTC; naive inputs assumed UTC."""
+    dt = datetime.fromisoformat(value)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def check_staleness(source, *, now=None) -> StalenessResult:
+    """Compare the library's shelf-index last_rebuilt against staleness_threshold_for(source).
+    last_rebuilt absent/malformed -> state 'unknown' (reported, non-failing)."""
+    now = now or datetime.now(timezone.utc)
+    threshold = staleness_threshold_for(source)
+    shelf = Path(source.path) / "_shelf-index.md"
+    last = parse_shelf_index_header(shelf).last_rebuilt if shelf.is_file() else None
+    if not last:
+        return StalenessResult(handle=source.name, state="unknown", age_days=None,
+                               threshold_days=threshold, last_rebuilt=None)
+    try:
+        age_days = (now - _parse_iso_utc(last)).days
+    except (ValueError, TypeError):
+        return StalenessResult(handle=source.name, state="unknown", age_days=None,
+                               threshold_days=threshold, last_rebuilt=last)
+    state = "stale" if age_days > threshold else "fresh"
+    return StalenessResult(handle=source.name, state=state, age_days=age_days,
+                           threshold_days=threshold, last_rebuilt=last)
 
 
 @dataclass
