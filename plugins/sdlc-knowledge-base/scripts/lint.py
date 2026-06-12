@@ -62,8 +62,8 @@ class FrontmatterIssue:
 class LibraryLintResult:
     handle: str
     path: str
+    staleness: StalenessResult
     frontmatter_issues: list = field(default_factory=list)
-    staleness: StalenessResult = None
 
 
 @dataclass
