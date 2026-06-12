@@ -304,8 +304,32 @@ def _cmd_promote(args: argparse.Namespace, backend_override) -> int:
     return 0 if committed else 1
 
 
+def _cmd_lint(args: argparse.Namespace, sources_override=None) -> int:
+    from datetime import datetime, timezone
+    from .lint import lint_libraries, render_lint_report
+    local_lib = Path(args.library)
+    if sources_override is not None:
+        sources, warnings = sources_override, []
+    else:
+        import os
+        from .registry import ProjectActivation, load_global_registry, resolve_dispatch_list
+        handles = [h.strip() for h in (args.libraries or "").split(",") if h.strip()]
+        registry = load_global_registry(Path(os.path.expanduser("~/.sdlc/global-libraries.json")))
+        dispatch = resolve_dispatch_list(registry, ProjectActivation(activated_sources=handles), local_lib)
+        sources, warnings = dispatch.sources, dispatch.warnings
+    for w in warnings:
+        print(f"warning: {w}", file=sys.stderr)
+    if not sources:
+        print("no libraries resolved — run kb-init / check ~/.sdlc/global-libraries.json", file=sys.stderr)
+        return 1
+    report = lint_libraries(sources, now=datetime.now(timezone.utc))
+    text, has_issues = render_lint_report(report)
+    print(text)
+    return 1 if has_issues else 0
+
+
 def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None,
-         library_specs_override=None) -> int:
+         library_specs_override=None, sources_override=None) -> int:
     allowed_layers = allowed_layers or ["methodology", "evidence", "domain", "development"]
     parser = argparse.ArgumentParser(prog="kb-offline")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -361,6 +385,10 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_promote.add_argument("--confidence", default=None, choices=["low", "medium", "high"])
     p_promote.add_argument("--timestamp", required=True)
 
+    p_lint = sub.add_parser("lint")
+    p_lint.add_argument("--library", default="library")
+    p_lint.add_argument("--libraries", default=None, help="comma-separated external library handles")
+
     args = parser.parse_args(argv)
     if args.cmd == "init":
         return _cmd_init(args)
@@ -374,6 +402,8 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
         return _cmd_eval(args, backend_override)
     if args.cmd == "promote":
         return _cmd_promote(args, backend_override)
+    if args.cmd == "lint":
+        return _cmd_lint(args, sources_override)
     return 2
 
 

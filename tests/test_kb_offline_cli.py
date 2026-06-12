@@ -533,3 +533,40 @@ def test_cli_federation_passes_project_root_for_priming(tmp_path, monkeypatch):
                   backend_override=be, library_specs_override=[["local", str(lib)]])
     assert rc == 0
     assert captured["local_project_dir"] == str(project)  # project root, not the library dir
+
+
+def test_cli_lint_reports_and_exit_code(tmp_path, capsys):
+    from datetime import datetime, timedelta, timezone
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.registry import LibrarySource
+
+    def _lib(name, rebuilt_days_ago, page_body):
+        lib = tmp_path / name
+        lib.mkdir()
+        rebuilt = (datetime.now(timezone.utc) - timedelta(days=rebuilt_days_ago)).isoformat()
+        (lib / "_shelf-index.md").write_text(f"<!-- format_version: 1 -->\n<!-- last_rebuilt: {rebuilt} -->\n# Shelf\n")
+        (lib / "a.md").write_text(page_body)
+        return lib
+    local = _lib("local", 1, "---\nlayer: evidence\nconfidence: high\ncross_references: []\n---\n# A\n")
+    corp = _lib("corp-x", 200, "---\nlayer: evidence\nconfidence: high\ncross_references: []\n---\n# A\n")
+    sources = [LibrarySource(name="local", type="filesystem", path=str(local)),
+               LibrarySource(name="corp-x", type="filesystem", path=str(corp))]
+    rc = cli.main(["lint", "--library", str(local), "--libraries", "corp-x"], sources_override=sources)
+    out = capsys.readouterr().out
+    assert "corp-x" in out and "STALE" in out
+    assert rc == 1
+
+
+def test_cli_lint_clean_exits_zero(tmp_path, capsys):
+    from datetime import datetime, timedelta, timezone
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.registry import LibrarySource
+    lib = tmp_path / "local"
+    lib.mkdir()
+    rebuilt = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    (lib / "_shelf-index.md").write_text(f"<!-- format_version: 1 -->\n<!-- last_rebuilt: {rebuilt} -->\n# Shelf\n")
+    (lib / "a.md").write_text("---\nlayer: evidence\nconfidence: high\ncross_references: []\n---\n# A\n")
+    rc = cli.main(["lint", "--library", str(lib)],
+                  sources_override=[LibrarySource(name="local", type="filesystem", path=str(lib))])
+    assert rc == 0
+    assert "clean" in capsys.readouterr().out.lower()
