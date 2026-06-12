@@ -58,3 +58,55 @@ def test_search_handles_zero_row_vector_without_nan():
     res = store.search([1, 0, 0], k=2)
     assert res[0][0] == "b.md"
     assert all(not np.isnan(s) for _, s in res)
+
+
+def test_save_load_round_trip(tmp_path):
+    store = _store([[1, 0, 0], [0, 1, 0]], ["a.md", "b.md"])
+    store.save(tmp_path)
+    loaded = EmbeddingStore.load(tmp_path)
+    assert loaded is not None
+    assert [r.page_id for r in loaded.rows] == ["a.md", "b.md"]
+    assert loaded.provenance.model == "fake-embed" and loaded.provenance.dims == 3
+    np.testing.assert_allclose(loaded.matrix, store.matrix, rtol=1e-6)
+
+
+def test_load_absent_returns_none(tmp_path):
+    assert EmbeddingStore.load(tmp_path) is None
+
+
+def test_load_invalid_manifest_returns_none(tmp_path):
+    d = tmp_path / ".kb-offline"
+    d.mkdir(parents=True)
+    (d / "embeddings.manifest.json").write_text("not json{", encoding="utf-8")
+    assert EmbeddingStore.load(tmp_path) is None
+
+
+def test_load_missing_generation_returns_none(tmp_path):
+    d = tmp_path / ".kb-offline"
+    d.mkdir(parents=True)
+    (d / "embeddings.manifest.json").write_text('{"active": "ghostgen", "schema_version": 1}', encoding="utf-8")
+    assert EmbeddingStore.load(tmp_path) is None
+
+
+def test_load_rowcount_mismatch_returns_none(tmp_path):
+    import json
+    store = _store([[1, 0, 0], [0, 1, 0]], ["a.md", "b.md"])
+    store.save(tmp_path)
+    d = tmp_path / ".kb-offline"
+    manifest = json.loads((d / "embeddings.manifest.json").read_text())
+    meta_path = d / f"embeddings.{manifest['active']}.meta.json"
+    meta = json.loads(meta_path.read_text())
+    meta["rows"] = meta["rows"][:1]
+    meta_path.write_text(json.dumps(meta), encoding="utf-8")
+    assert EmbeddingStore.load(tmp_path) is None
+
+
+def test_save_is_generation_pointer(tmp_path):
+    import json
+    store = _store([[1, 0, 0]], ["a.md"])
+    store.save(tmp_path)
+    d = tmp_path / ".kb-offline"
+    manifest = json.loads((d / "embeddings.manifest.json").read_text())
+    gen = manifest["active"]
+    assert (d / f"embeddings.{gen}.npy").is_file()
+    assert (d / f"embeddings.{gen}.meta.json").is_file()
