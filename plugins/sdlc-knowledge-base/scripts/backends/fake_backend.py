@@ -19,3 +19,6 @@ class FakeBackend:
             base = float(len(t))
             out.append([base + i + float(sum(ord(c) for c in t) % 7) for i in range(8)])
         return out
+
+    def embedding_model_id(self) -> str:
+        return "fake-embed"

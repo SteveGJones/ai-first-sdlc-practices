@@ -14,3 +14,8 @@ class Backend(Protocol):
     def embed(self, texts: list[str]) -> list[list[float]]:
         """Return one embedding vector per input text."""
         ...
+    # Embedding-capable backends ALSO expose:
+    #   def embedding_model_id(self) -> str
+    # which returns the identifier of the embedding model in use.
+    # Backends whose embed() is unsupported (e.g. AnthropicBackend) OMIT this
+    # method entirely — absence is the capability signal checked by the index gate.

@@ -53,3 +53,6 @@ class OllamaBackend:
     def embed(self, texts: list[str]) -> list[list[float]]:
         resp = self._client.embed(model=self.embed_model, input=texts)
         return resp["embeddings"]
+
+    def embedding_model_id(self) -> str:
+        return self.embed_model
