@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 
 from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
-from sdlc_knowledge_base_scripts.embeddings import EmbeddingStore, IndexRow, Provenance
+from sdlc_knowledge_base_scripts.embeddings import EmbeddingStore, IndexRow, Provenance, chunk_pages, corpus_hash
 
 
 def test_fake_backend_advertises_embedding_model_id():
@@ -145,3 +145,34 @@ def test_load_non_finite_matrix_returns_none(tmp_path):
     gen = json.loads((d / "embeddings.manifest.json").read_text())["active"]
     np.save(d / f"embeddings.{gen}.npy", np.array([[np.nan, 0, 0], [0, np.inf, 0]], dtype=np.float32), allow_pickle=False)
     assert EmbeddingStore.load(tmp_path) is None
+
+
+def _mk(lib, rel, body):
+    p = lib / rel
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(body, encoding="utf-8")
+
+
+def test_chunk_pages_page_id_is_relative_posix_and_strips_frontmatter(tmp_path):
+    lib = tmp_path / "library"
+    lib.mkdir()
+    _mk(lib, "dora.md", "---\nlayer: evidence\n---\n# DORA\nDeploy often.\n")
+    _mk(lib, "sub/ops.md", "# Ops\nCanary.\n")
+    _mk(lib, "_shelf-index.md", "<!-- format_version: 1 -->\n# Shelf\n")
+    _mk(lib, "raw/src.md", "raw source")
+    rows = {pid: (text, h) for pid, text, h in chunk_pages(lib)}
+    assert set(rows) == {"dora.md", "sub/ops.md"}
+    assert "layer: evidence" not in rows["dora.md"][0]
+    assert "# DORA" in rows["dora.md"][0] and "Deploy often." in rows["dora.md"][0]
+
+
+def test_corpus_hash_changes_on_rename():
+    rows_a = [("a.md", "h1"), ("b.md", "h2")]
+    rows_b = [("a.md", "h1"), ("renamed.md", "h2")]
+    assert corpus_hash(rows_a) != corpus_hash(rows_b)
+
+
+def test_corpus_hash_order_independent():
+    rows_a = [("a.md", "h1"), ("b.md", "h2")]
+    rows_b = [("b.md", "h2"), ("a.md", "h1")]
+    assert corpus_hash(rows_a) == corpus_hash(rows_b)

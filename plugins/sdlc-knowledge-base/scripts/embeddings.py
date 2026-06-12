@@ -13,6 +13,8 @@ from pathlib import Path
 import numpy as np
 
 from .durability import atomic_write_text
+from .resume import content_hash
+from .kb_lint_fix import _FRONTMATTER_RE, _is_library_file
 
 
 @dataclass
@@ -134,3 +136,30 @@ class EmbeddingStore:
             print("[index] index matrix invalid (shape/dtype/dims/finite); rebuild required", file=sys.stderr)
             return None
         return cls(matrix, rows, prov)
+
+
+def _strip_frontmatter(text: str) -> str:
+    m = _FRONTMATTER_RE.match(text)
+    return text[m.end():] if m else text
+
+
+def chunk_pages(library_path) -> list:
+    """Page-level rows: (page_id, embed_text, content_hash). page_id = library-relative POSIX
+    path; embed_text = page with YAML frontmatter stripped; content_hash over embed_text.
+    Reuses the fixer's _is_library_file exclusions (skips meta files + raw/, non-.md)."""
+    lib = Path(library_path)
+    out = []
+    for md in sorted(lib.rglob("*.md")):
+        if not _is_library_file(md, lib):
+            continue
+        page_id = md.relative_to(lib).as_posix()
+        embed_text = _strip_frontmatter(md.read_text(encoding="utf-8"))
+        out.append((page_id, embed_text, content_hash(embed_text)))
+    return out
+
+
+def corpus_hash(page_hash_pairs) -> str:
+    """content_hash over sorted (page_id, content_hash) pairs — a content-preserving RENAME
+    (page_id changes) still changes it; order-independent."""
+    joined = "\n".join(f"{pid}\x00{h}" for pid, h in sorted(page_hash_pairs))
+    return content_hash(joined)
