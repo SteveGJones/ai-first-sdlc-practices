@@ -146,3 +146,26 @@ def test_live_ollama_federation(tmp_path):
          "local_project_dir": str(tmp_path), "question": "How do teams deploy safely?"},
         config={"configurable": {"thread_id": "fq-live"}, "max_concurrency": 2})
     assert "rendered_text" in out and out["queried"] == 2
+
+
+@pytest.mark.skipif(not _ollama_ready(), reason="ollama daemon/model not available")
+def test_live_ollama_index(tmp_path):
+    import numpy as np
+    from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+    from sdlc_knowledge_base_scripts.embeddings import (EmbeddingStore, IndexRow, Provenance, chunk_pages, corpus_hash)
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- dora.md\n")
+    (lib / "dora.md").write_text("---\nlayer: evidence\n---\n# DORA\nElite teams deploy multiple times per day.\n")
+    be = OllamaBackend()
+    pages = chunk_pages(lib)
+    vecs = np.array(be.embed([t for _, t, _ in pages]), dtype=np.float32)
+    rows = [IndexRow(page_id=p, content_hash=h) for p, _, h in pages]
+    prov = Provenance(model=be.embedding_model_id(), dims=vecs.shape[1], normalization="l2",
+                      corpus_hash=corpus_hash([(p, h) for p, _, h in pages]))
+    EmbeddingStore.from_rows(vecs, rows, prov).save(lib)
+    loaded = EmbeddingStore.load(lib)
+    assert loaded is not None and loaded.provenance.model == "nomic-embed-text"
+    assert loaded.provenance.dims > 0
+    hit = loaded.search(be.embed(["how often do elite teams deploy?"])[0], k=1)
+    assert hit and hit[0][0] == "dora.md"

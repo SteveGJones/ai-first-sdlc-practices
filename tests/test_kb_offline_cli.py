@@ -570,3 +570,35 @@ def test_cli_lint_clean_exits_zero(tmp_path, capsys):
                   sources_override=[LibrarySource(name="local", type="filesystem", path=str(lib))])
     assert rc == 0
     assert "clean" in capsys.readouterr().out.lower()
+
+
+def test_cli_index_builds_and_is_incremental(tmp_path, capsys):
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    from sdlc_knowledge_base_scripts.embeddings import EmbeddingStore
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n")
+    (lib / "a.md").write_text("---\nlayer: evidence\n---\n# A\nAlpha content.\n")
+    (lib / "b.md").write_text("# B\nBeta content.\n")
+    be = FakeBackend()
+    rc = cli.main(["index", "--library", str(lib), "--backend", "fake"], backend_override=be)
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "indexed" in out.lower() and "2" in out
+    store = EmbeddingStore.load(lib)
+    assert store is not None and {r.page_id for r in store.rows} == {"a.md", "b.md"}
+    assert store.provenance.model == "fake-embed"
+    rc2 = cli.main(["index", "--library", str(lib), "--backend", "fake"], backend_override=be)
+    assert rc2 == 0
+    assert "0 re-embedded" in capsys.readouterr().out
+
+
+def test_cli_index_rejects_anthropic(tmp_path):
+    import pytest
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "a.md").write_text("# A\n")
+    with pytest.raises(SystemExit, match="does not support embeddings"):
+        cli.main(["index", "--library", str(lib), "--backend", "anthropic"])

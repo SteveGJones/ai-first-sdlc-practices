@@ -304,6 +304,65 @@ def _cmd_promote(args: argparse.Namespace, backend_override) -> int:
     return 0 if committed else 1
 
 
+def _cmd_index(args: argparse.Namespace, backend_override) -> int:
+    import numpy as np
+    from .embeddings import EmbeddingStore, IndexRow, Provenance, chunk_pages, corpus_hash
+    # Capability gate before construction: embedding-capable backends expose
+    # embedding_model_id(); AnthropicBackend does not. Gating on the class avoids
+    # constructing a backend (e.g. importing the anthropic SDK) only to reject it.
+    if backend_override is None:
+        from .backends.anthropic_backend import AnthropicBackend
+        backend_classes = {"anthropic": AnthropicBackend}
+        cls = backend_classes.get(args.backend)
+        if cls is not None and getattr(cls, "embedding_model_id", None) is None:
+            raise SystemExit(f"backend '{args.backend}' does not support embeddings; use ollama or fake")
+    backend = _make_backend(args.backend, backend_override)
+    if getattr(backend, "embedding_model_id", None) is None:
+        raise SystemExit(f"backend '{args.backend}' does not support embeddings; use ollama or fake")
+    lib = Path(args.library)
+    model = backend.embedding_model_id()
+    pages = chunk_pages(lib)
+
+    existing = EmbeddingStore.load(lib)
+    compatible = existing is not None and existing.provenance.model == model
+    prior = {}
+    if compatible:
+        prior = {r.page_id: (r.content_hash, i) for i, r in enumerate(existing.rows)}
+
+    final_rows, vec_slots, to_embed, reembedded, unchanged = [], [], [], 0, 0
+    for page_id, text, chash in pages:
+        if page_id in prior and prior[page_id][0] == chash:
+            final_rows.append(IndexRow(page_id=page_id, content_hash=chash))
+            vec_slots.append(("reuse", prior[page_id][1]))
+            unchanged += 1
+        else:
+            final_rows.append(IndexRow(page_id=page_id, content_hash=chash))
+            vec_slots.append(("new", len(to_embed)))
+            to_embed.append(text)
+            reembedded += 1
+    removed = max(0, len(prior) - unchanged) if compatible else 0
+
+    new_vecs = np.array(backend.embed(to_embed), dtype=np.float32) if to_embed else None
+    if new_vecs is not None and new_vecs.shape[0]:
+        dims = new_vecs.shape[1]
+    elif compatible:
+        dims = existing.provenance.dims
+    else:
+        dims = 0
+    if dims:
+        matrix = np.zeros((len(final_rows), dims), dtype=np.float32)
+        for row_i, (kind, idx) in enumerate(vec_slots):
+            matrix[row_i] = existing.matrix[idx] if kind == "reuse" else new_vecs[idx]
+    else:
+        matrix = np.zeros((0, 0), dtype=np.float32)
+    prov = Provenance(model=model, dims=dims, normalization="l2",
+                      corpus_hash=corpus_hash([(r.page_id, r.content_hash) for r in final_rows]))
+    EmbeddingStore.from_rows(matrix, final_rows, prov).save(lib)
+    print(f"indexed {len(final_rows)} pages ({reembedded} re-embedded, {unchanged} unchanged, "
+          f"{removed} removed); index at {lib / '.kb-offline'}")
+    return 0
+
+
 def _cmd_lint(args: argparse.Namespace, sources_override=None) -> int:
     from datetime import datetime, timezone
     from .lint import lint_libraries, render_lint_report
@@ -385,6 +444,10 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_promote.add_argument("--confidence", default=None, choices=["low", "medium", "high"])
     p_promote.add_argument("--timestamp", required=True)
 
+    p_index = sub.add_parser("index")
+    p_index.add_argument("--library", default="library")
+    p_index.add_argument("--backend", default="ollama")
+
     p_lint = sub.add_parser("lint")
     p_lint.add_argument("--library", default="library")
     p_lint.add_argument("--libraries", default=None, help="comma-separated external library handles")
@@ -402,6 +465,8 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
         return _cmd_eval(args, backend_override)
     if args.cmd == "promote":
         return _cmd_promote(args, backend_override)
+    if args.cmd == "index":
+        return _cmd_index(args, backend_override)
     if args.cmd == "lint":
         return _cmd_lint(args, sources_override)
     return 2
