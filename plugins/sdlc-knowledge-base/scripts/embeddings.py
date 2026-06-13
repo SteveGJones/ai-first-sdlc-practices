@@ -5,6 +5,7 @@ Index is derived/gitignored/rebuildable."""
 from __future__ import annotations
 
 import json
+import re
 import sys
 import uuid
 from dataclasses import dataclass
@@ -143,18 +144,30 @@ def _strip_frontmatter(text: str) -> str:
     return text[m.end():] if m else text
 
 
-def chunk_pages(library_path) -> list:
-    """Page-level rows: (page_id, embed_text, content_hash). page_id = library-relative POSIX
-    path; embed_text = page with YAML frontmatter stripped; content_hash over embed_text.
-    Reuses the fixer's _is_library_file exclusions (skips meta files + raw/, non-.md)."""
+def _split_sections(body: str) -> list:
+    """Split a page body into a preamble part (before the first '## ' heading) + one part per
+    '## ' section (heading included). Returns the stripped-nonempty parts."""
+    parts = re.split(r"(?m)^(?=\#\# )", body)
+    return [p for p in parts if p.strip()]
+
+
+def chunk_pages(library_path, *, section_threshold: int = 2000) -> list:
+    """Rows (page_id, embed_text, content_hash). Body <= section_threshold chars -> ONE
+    page-level row. Over threshold -> '##'-section rows (preamble + per-section), all sharing
+    the page's page_id, each with its own content_hash (a section hit resolves to the whole
+    page in EmbeddingStore.search via best-per-page dedupe)."""
     lib = Path(library_path)
     out = []
     for md in sorted(lib.rglob("*.md")):
         if not _is_library_file(md, lib):
             continue
         page_id = md.relative_to(lib).as_posix()
-        embed_text = _strip_frontmatter(md.read_text(encoding="utf-8"))
-        out.append((page_id, embed_text, content_hash(embed_text)))
+        body = _strip_frontmatter(md.read_text(encoding="utf-8"))
+        if len(body) <= section_threshold:
+            out.append((page_id, body, content_hash(body)))
+        else:
+            for section in _split_sections(body):
+                out.append((page_id, section, content_hash(section)))
     return out
 
 

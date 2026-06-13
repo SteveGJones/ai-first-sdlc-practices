@@ -176,3 +176,31 @@ def test_corpus_hash_order_independent():
     rows_a = [("a.md", "h1"), ("b.md", "h2")]
     rows_b = [("b.md", "h2"), ("a.md", "h1")]
     assert corpus_hash(rows_a) == corpus_hash(rows_b)
+
+
+def test_chunk_pages_small_page_is_single_row(tmp_path):
+    lib = tmp_path / "library"
+    lib.mkdir()
+    _mk(lib, "small.md", "# Small\nshort body\n")
+    rows = chunk_pages(lib)
+    assert len([r for r in rows if r[0] == "small.md"]) == 1
+
+
+def test_chunk_pages_oversized_splits_into_section_rows(tmp_path):
+    lib = tmp_path / "library"
+    lib.mkdir()
+    big = "# Big\n" + ("preamble. " * 50) + "\n## Section A\n" + ("aaa " * 80) + "\n## Section B\n" + ("bbb " * 80) + "\n"
+    _mk(lib, "big.md", big)
+    rows = [r for r in chunk_pages(lib, section_threshold=200) if r[0] == "big.md"]
+    assert len(rows) >= 3
+    assert all(pid == "big.md" for pid, _, _ in rows)
+    texts = " | ".join(t for _, t, _ in rows)
+    assert "Section A" in texts and "Section B" in texts
+    assert len({h for _, _, h in rows}) == len(rows)
+
+
+def test_chunk_pages_default_threshold_keeps_normal_pages_single(tmp_path):
+    lib = tmp_path / "library"
+    lib.mkdir()
+    _mk(lib, "dora.md", "---\nlayer: evidence\n---\n# DORA\nElite teams deploy multiple times per day.\n")
+    assert len(chunk_pages(lib)) == 1
