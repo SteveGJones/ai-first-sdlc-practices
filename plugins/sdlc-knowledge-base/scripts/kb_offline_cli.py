@@ -317,6 +317,9 @@ def _cmd_index(args: argparse.Namespace, backend_override) -> int:
         if cls is not None and getattr(cls, "embedding_model_id", None) is None:
             raise SystemExit(f"backend '{args.backend}' does not support embeddings; use ollama or fake")
     backend = _make_backend(args.backend, backend_override)
+    # Instance gate (in addition to the class pre-check above): catches the
+    # backend_override path the class map can't see, and any future named
+    # embedding-less backend.
     if getattr(backend, "embedding_model_id", None) is None:
         raise SystemExit(f"backend '{args.backend}' does not support embeddings; use ollama or fake")
     lib = Path(args.library)
@@ -357,6 +360,10 @@ def _cmd_index(args: argparse.Namespace, backend_override) -> int:
         matrix = np.zeros((0, 0), dtype=np.float32)
     prov = Provenance(model=model, dims=dims, normalization="l2",
                       corpus_hash=corpus_hash([(r.page_id, r.content_hash) for r in final_rows]))
+    # from_rows re-L2-normalizes the whole matrix, including reused (already unit-norm)
+    # rows. This does NOT accumulate: re-normalizing a float32 unit vector is a fixed
+    # point (the norm rounds to 1.0), so drift saturates at ~1 ULP (~1.5e-08) regardless
+    # of incremental-cycle count — orders of magnitude below cosine ranking sensitivity.
     EmbeddingStore.from_rows(matrix, final_rows, prov).save(lib)
     print(f"indexed {len(final_rows)} pages ({reembedded} re-embedded, {unchanged} unchanged, "
           f"{removed} removed); index at {lib / '.kb-offline'}")
