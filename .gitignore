@@ -126,6 +126,10 @@ agent_prompts/
 library/.extracts/
 **/library/.extracts/
 
+# kb-offline derived artifacts (embeddings index, graph checkpoints, lock.json — regenerable)
+library/.kb-offline/
+**/library/.kb-offline/
+
 # External test corpus symlink (CRI texts) for kb-ingest-bulk smoke tests
 tmp_texts
 

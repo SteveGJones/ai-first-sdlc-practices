@@ -343,7 +343,8 @@ def _cmd_index(args: argparse.Namespace, backend_override) -> int:
             vec_slots.append(("new", len(to_embed)))
             to_embed.append(text)
             reembedded += 1
-    removed = max(0, len(prior) - unchanged) if compatible else 0
+    current_ids = {r.page_id for r in final_rows}
+    removed = len(set(prior) - current_ids)   # prior is {} when not compatible -> 0
 
     new_vecs = np.array(backend.embed(to_embed), dtype=np.float32) if to_embed else None
     if new_vecs is not None and new_vecs.shape[0]:

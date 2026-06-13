@@ -594,6 +594,28 @@ def test_cli_index_builds_and_is_incremental(tmp_path, capsys):
     assert "0 re-embedded" in capsys.readouterr().out
 
 
+def test_cli_index_removed_count(tmp_path, capsys):
+    """Deleting a page produces an exact removed=1 in the summary, not a conflated count."""
+    from sdlc_knowledge_base_scripts import kb_offline_cli as cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n")
+    (lib / "a.md").write_text("# A\nAlpha content.\n")
+    (lib / "b.md").write_text("# B\nBeta content.\n")
+    be = FakeBackend()
+    rc = cli.main(["index", "--library", str(lib), "--backend", "fake"], backend_override=be)
+    assert rc == 0
+    capsys.readouterr()  # discard initial build output
+
+    # Remove b.md and re-index — should report exactly 1 removed
+    (lib / "b.md").unlink()
+    rc2 = cli.main(["index", "--library", str(lib), "--backend", "fake"], backend_override=be)
+    assert rc2 == 0
+    out = capsys.readouterr().out
+    assert "1 removed" in out, f"expected '1 removed' in: {out!r}"
+
+
 def test_cli_index_rejects_anthropic(tmp_path):
     import pytest
     from sdlc_knowledge_base_scripts import kb_offline_cli as cli
