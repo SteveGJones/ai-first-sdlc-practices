@@ -70,12 +70,17 @@ def _select_schema() -> dict:
     return SelectResult.model_json_schema()
 
 
-def select(question, shelf_index_path, *, backend, known_pages, max_repairs: int = 1, priming=None) -> SelectResult:
+def select(  # noqa: PLR0913
+    question, shelf_index_path, *, backend, known_pages,
+    max_repairs: int = 1, priming=None, shelf_text=None,
+) -> SelectResult:
     """Pick the 2-4 most relevant library pages for the question by reasoning over the
     shelf-index. Drops any returned id that is not a known page (no fabricated targets).
     When `priming` (a PrimingBundle) is given, a PRIMING block biases selection toward the
-    local project's vocabulary — used for NON-local libraries in federated query."""
-    shelf = Path(shelf_index_path).read_text(encoding="utf-8")
+    local project's vocabulary — used for NON-local libraries in federated query.
+    When `shelf_text` is given, reason over it instead of reading shelf_index_path (the
+    accelerated reduced-shelf path); None reads the file (default, byte-identical)."""
+    shelf = shelf_text if shelf_text is not None else Path(shelf_index_path).read_text(encoding="utf-8")
     prime_block = ""
     if priming is not None:
         terms = ", ".join(priming.local_shelf_index_terms)

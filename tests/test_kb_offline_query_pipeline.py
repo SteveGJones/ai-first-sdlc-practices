@@ -57,6 +57,33 @@ def test_select_with_priming_prepends_block(tmp_path):
     assert "wirebond" in captured["prompt"]
 
 
+def test_select_uses_shelf_text_when_given(tmp_path):
+    captured = {}
+
+    def gen(prompt, schema=None):
+        captured["prompt"] = prompt
+        return json.dumps({"page_ids": ["a.md"]})
+    be = FakeBackend()
+    be.generate = gen
+    select("q", _shelf(tmp_path), backend=be, known_pages={"a.md"},
+           shelf_text="REDUCED-SHELF-MARKER\n- a.md")
+    assert "REDUCED-SHELF-MARKER" in captured["prompt"]
+
+
+def test_select_reads_file_when_shelf_text_none(tmp_path):
+    captured = {}
+
+    def gen(prompt, schema=None):
+        captured["prompt"] = prompt
+        return json.dumps({"page_ids": ["a.md"]})
+    be = FakeBackend()
+    be.generate = gen
+    shelf = _shelf(tmp_path)
+    select("q", shelf, backend=be, known_pages={"a.md"})
+    assert "REDUCED-SHELF-MARKER" not in captured["prompt"]
+    assert "Shelf-index:" in captured["prompt"]
+
+
 def test_synthesize_returns_claims_and_strips_model_status(tmp_path):
     payload = json.dumps({
         "claims": [{
