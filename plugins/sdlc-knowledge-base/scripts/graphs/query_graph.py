@@ -56,6 +56,8 @@ def build_query_graph(backend):
             from ..embeddings import EmbeddingStore, chunk_pages, corpus_hash
             from ..retrieval import accelerated_candidates
             store = EmbeddingStore.load(lib)
+            # Re-derive the corpus hash each query to detect a stale index (a page changed since indexing);
+            # a stale index must fall back, never serve stale candidates. Per-query cost is the price of that guard.
             fresh = store is not None and store.provenance.corpus_hash == corpus_hash(
                 [(p, h) for p, _, h in chunk_pages(lib)])
             if fresh:
