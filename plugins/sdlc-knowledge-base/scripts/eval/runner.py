@@ -127,3 +127,16 @@ def score_run(library_path: str, questions, labels, *, backend) -> dict:
         "invalid_mutation_rejection_floor": 1.0, "citation_validity_floor": 1.0,
         "post_repair_json_validity_floor": 1.0,
     }
+
+
+def score_recall_at_k(library_path, questions, store, *, backend, k: int = 20):
+    """For each non-abstention question, the embedding top-k shortlist via accelerated_candidates;
+    returns harness.recall_at_k over {expected_routing_targets, shortlist} rows."""
+    from .. import retrieval
+    rows = []
+    for q in questions:
+        if q.no_evidence:
+            continue
+        shortlist, _ = retrieval.accelerated_candidates(q.question, library_path, store, backend=backend, k=k)
+        rows.append({"expected": q.expected_routing_targets, "shortlist": shortlist})
+    return harness.recall_at_k(rows)

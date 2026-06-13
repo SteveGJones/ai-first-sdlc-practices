@@ -22,3 +22,7 @@ FIRST_PASS_JSON_VALIDITY = 0.95
 # 3x-run reproducibility cap (M1c-2): a model-quality metric passes only if its
 # per-metric sample stddev across the 3 pinned runs stays at/below this.
 MAX_METRIC_STDDEV = 0.05
+
+# M3b: embedding-prefilter recall floor — the accelerator's top-N shortlist must contain at
+# least this fraction of expected routing targets (proves the prefilter rarely drops a needed page).
+EMBEDDING_RECALL_AT_K = 0.95

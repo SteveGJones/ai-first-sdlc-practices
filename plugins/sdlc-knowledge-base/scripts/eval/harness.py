@@ -70,3 +70,18 @@ def clean_published_support_rate(rows: list[dict]) -> float:
     if not uncaveated:
         return 1.0
     return sum(1 for r in uncaveated if r["status"] == "supported") / len(uncaveated)
+
+
+def recall_at_k(rows: list[dict]) -> float:
+    """Macro mean over rows of |expected ∩ shortlist| / |expected| (1.0 when expected is empty).
+    rows = [{expected: list[str], shortlist: list[str]}]."""
+    if not rows:
+        return 1.0
+    per = []
+    for r in rows:
+        expected = set(r["expected"])
+        if not expected:
+            per.append(1.0)
+            continue
+        per.append(len(expected & set(r["shortlist"])) / len(expected))
+    return sum(per) / len(per)

@@ -4,9 +4,11 @@ from __future__ import annotations
 from sdlc_knowledge_base_scripts.eval.harness import (
     clean_published_support_rate,
     first_pass_json_validity,
+    recall_at_k,
     verifier_accuracy,
 )
 from sdlc_knowledge_base_scripts.eval import thresholds
+from sdlc_knowledge_base_scripts.eval import thresholds as _thr
 
 
 def test_max_metric_stddev_ratified():
@@ -53,3 +55,16 @@ def test_clean_published_support_rate_detects_leak():
         {"published_uncaveated": True, "status": "partial"},   # a leak: drops below 1.0
     ]
     assert clean_published_support_rate(rows) == 0.5
+
+
+def test_embedding_recall_at_k_threshold_ratified():
+    assert _thr.EMBEDDING_RECALL_AT_K == 0.95
+
+
+def test_recall_at_k_macro_mean():
+    rows = [
+        {"expected": ["a.md"], "shortlist": ["a.md", "x.md"]},
+        {"expected": ["b.md", "c.md"], "shortlist": ["b.md", "z.md"]},
+        {"expected": [], "shortlist": ["q.md"]},
+    ]
+    assert abs(recall_at_k(rows) - (1.0 + 0.5 + 1.0) / 3) < 1e-9

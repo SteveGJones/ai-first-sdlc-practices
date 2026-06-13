@@ -46,3 +46,17 @@ def test_reduced_shelf_synthesizes_entry_when_shelf_has_no_bullet(tmp_path):
     page_ids, reduced = accelerated_candidates("q", str(lib), store, backend=be, k=1)
     assert page_ids == ["a.md"]
     assert "a.md" in reduced
+
+
+def test_score_recall_at_k_over_built_index(tmp_path):
+    from sdlc_knowledge_base_scripts.eval.runner import score_recall_at_k
+    from sdlc_knowledge_base_scripts.eval.suite import EvalQuestion
+    store = _store([[1, 0], [0, 1]], ["a.md", "b.md"])
+    qs = [EvalQuestion(id="q1", question="alpha", kind="fact", expected_facts=[],
+                       expected_routing_targets=["a.md"], no_evidence=False),
+          EvalQuestion(id="q2", question="none", kind="abstention", expected_facts=[],
+                       expected_routing_targets=[], no_evidence=True)]
+    be = FakeBackend()
+    be.embed = lambda texts: [[1.0, 0.0]]
+    r = score_recall_at_k(str(tmp_path), qs, store, backend=be, k=1)
+    assert r == 1.0
