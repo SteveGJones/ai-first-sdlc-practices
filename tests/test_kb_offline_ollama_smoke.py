@@ -169,3 +169,28 @@ def test_live_ollama_index(tmp_path):
     assert loaded.provenance.dims > 0
     hit = loaded.search(be.embed(["how often do elite teams deploy?"])[0], k=1)
     assert hit and hit[0][0] == "dora.md"
+
+
+@pytest.mark.skipif(not _ollama_ready(), reason="ollama daemon/model not available")
+def test_live_ollama_query_accelerate(tmp_path):
+    import numpy as np
+    from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+    from sdlc_knowledge_base_scripts.embeddings import (EmbeddingStore, IndexRow, Provenance,
+                                                        chunk_pages, corpus_hash)
+    from sdlc_knowledge_base_scripts.graphs.query_graph import build_query_graph
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- dora.md — DORA metrics\n")
+    (lib / "dora.md").write_text(
+        "---\nlayer: evidence\nconfidence: high\n---\n# DORA\nElite teams deploy multiple times per day.\n")
+    be = OllamaBackend()
+    pages = chunk_pages(lib)
+    vecs = np.array(be.embed([t for _, t, _ in pages]), dtype=np.float32)
+    rows = [IndexRow(page_id=p, content_hash=h) for p, _, h in pages]
+    ch = corpus_hash([(p, h) for p, _, h in pages])
+    EmbeddingStore.from_rows(vecs, rows, Provenance(model=be.embedding_model_id(), dims=vecs.shape[1],
+                             normalization="l2", corpus_hash=ch)).save(lib)
+    out = build_query_graph(be).invoke(
+        {"library_path": str(lib), "question": "How often do elite teams deploy?", "accelerate": True, "accelerate_k": 5},
+        config={"configurable": {"thread_id": "acc-live"}})
+    assert "rendered_text" in out and "rejected_claims" in out

@@ -132,3 +132,58 @@ def test_query_graph_returns_verified_answer_dict(tmp_path):
     assert "_answer" in out
     assert out["_answer"]["claims"][0]["entailment_status"] == "supported"
     assert out["_answer"]["claims"][0]["text"] == "Cost fell 30%."
+
+
+def test_query_graph_accelerate_uses_reduced_shelf(tmp_path):
+    import numpy as np
+    from sdlc_knowledge_base_scripts.embeddings import (EmbeddingStore, IndexRow, Provenance,
+                                                        chunk_pages, corpus_hash)
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- a.md — alpha\n- b.md — beta\n")
+    (lib / "a.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# A\nalpha body\n")
+    (lib / "b.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# B\nbeta body\n")
+    rows = [IndexRow(page_id=p, content_hash=h) for p, _, h in chunk_pages(lib)]
+    ch = corpus_hash([(p, h) for p, _, h in chunk_pages(lib)])
+    vec = {"a.md": [1.0, 0.0], "b.md": [0.0, 1.0]}
+    matrix = np.array([vec[r.page_id] for r in rows], dtype=np.float32)
+    EmbeddingStore(matrix, rows, Provenance(model="fake-embed", dims=2, normalization="l2", corpus_hash=ch)).save(lib)
+
+    seen = {}
+
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge"):
+            return '{"status": "supported"}'
+        if "Question" in prompt and "Shelf" in prompt:
+            seen["select_prompt"] = prompt
+            return json.dumps({"page_ids": ["a.md"]})
+        return json.dumps({"claims": [], "rendered_text": ""})
+    be = FakeBackend()
+    be.generate = gen
+    be.embed = lambda texts: [[1.0, 0.0]]
+    graph = build_query_graph(be)
+    graph.invoke({"library_path": str(lib), "question": "about alpha?", "accelerate": True, "accelerate_k": 1},
+                 config={"configurable": {"thread_id": "acc1"}})
+    assert "a.md" in seen["select_prompt"]
+    assert "beta" not in seen["select_prompt"]
+
+
+def test_query_graph_accelerate_falls_back_without_index(tmp_path, capsys):
+    lib = _lib(tmp_path)
+
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge"):
+            return '{"status": "supported"}'
+        if "Shelf-index" in prompt:
+            return json.dumps({"page_ids": ["a.md"]})
+        return json.dumps({"claims": [{"text": "Cost fell 30%.",
+                                       "cited_pages": [{"library": "local", "page": "a.md"}],
+                                       "evidence_spans": [{"page": "a.md", "text": "cost fell 30%"}]}],
+                           "rendered_text": ""})
+    be = FakeBackend()
+    be.generate = gen
+    graph = build_query_graph(be)
+    out = graph.invoke({"library_path": str(lib), "question": "what about cost?", "accelerate": True},
+                       config={"configurable": {"thread_id": "acc2"}})
+    assert "Cost fell 30%." in out["rendered_text"]
+    assert "no fresh index" in capsys.readouterr().err.lower()

@@ -31,6 +31,8 @@ class QueryState(TypedDict, total=False):
     question: str
     layer: Optional[str]
     min_confidence: Optional[str]
+    accelerate: bool
+    accelerate_k: int
     page_ids: list
     pages: list
     _synth: dict
@@ -46,16 +48,28 @@ def build_query_graph(backend):
     checkpointer serializes channel state."""
 
     def n_select(state: QueryState) -> dict:
+        import sys
         lib = Path(state["library_path"])
         shelf = lib / "_shelf-index.md"
-        known = {
-            p.name
-            for p in lib.glob("*.md")
-            if p.name not in {"_shelf-index.md", "log.md", "_index.md"}
-        }
-        candidates = filter_pages(
-            lib, sorted(known), layer=state.get("layer"), min_confidence=state.get("min_confidence")
-        )
+        known = {p.name for p in lib.glob("*.md") if p.name not in {"_shelf-index.md", "log.md", "_index.md"}}
+        if state.get("accelerate"):
+            from ..embeddings import EmbeddingStore, chunk_pages, corpus_hash
+            from ..retrieval import accelerated_candidates
+            store = EmbeddingStore.load(lib)
+            fresh = store is not None and store.provenance.corpus_hash == corpus_hash(
+                [(p, h) for p, _, h in chunk_pages(lib)])
+            if fresh:
+                cand_ids, reduced = accelerated_candidates(
+                    state["question"], str(lib), store, backend=backend, k=state.get("accelerate_k") or 20)
+                candidates = filter_pages(lib, cand_ids, layer=state.get("layer"),
+                                          min_confidence=state.get("min_confidence"))
+                res = select(state["question"], shelf, backend=backend, known_pages=set(candidates),
+                             shelf_text=reduced)
+                return {"page_ids": res.page_ids}
+            print("[query] accelerate: no fresh index (run kb-offline index); falling back to full-shelf select",
+                  file=sys.stderr)
+        candidates = filter_pages(lib, sorted(known), layer=state.get("layer"),
+                                  min_confidence=state.get("min_confidence"))
         res = select(state["question"], shelf, backend=backend, known_pages=set(candidates))
         return {"page_ids": res.page_ids}
 

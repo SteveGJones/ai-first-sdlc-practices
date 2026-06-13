@@ -154,6 +154,8 @@ def _query_single(args: argparse.Namespace, backend) -> int:
             "question": args.question,
             "layer": args.layer,
             "min_confidence": args.min_confidence,
+            "accelerate": getattr(args, "accelerate", False),
+            "accelerate_k": getattr(args, "accelerate_k", 20),
         },
         config={"configurable": {"thread_id": "query"}},
     )
@@ -427,6 +429,8 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_q.add_argument("--min-confidence", default=None)
     p_q.add_argument("--libraries", default=None, help="comma-separated external library handles to federate")
     p_q.add_argument("--save", action="store_true", help="persist the verified answer; print its ref")
+    p_q.add_argument("--accelerate", action="store_true", help="use the embedding index to pre-filter candidates")
+    p_q.add_argument("--accelerate-k", type=int, default=20)
 
     p_eval = sub.add_parser("eval")
     eval_sub = p_eval.add_subparsers(dest="eval_cmd", required=True)
