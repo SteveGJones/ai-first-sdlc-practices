@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from sdlc_knowledge_base_scripts.contracts import (
-    Answer, Claim, Confidence, EntailmentStatus, ExtractJSON, ExtractTarget,
+    Answer, Claim, Confidence, ExtractJSON, ExtractTarget,
     MutationAction, MutationProposal, PageRef, Span,
 )
 
@@ -42,3 +42,12 @@ def test_mutation_proposal_requires_action_and_target():
 def test_invalid_confidence_rejected():
     with pytest.raises(ValidationError):
         ExtractJSON(source="a.md", confidence="bogus")
+
+
+def test_span_library_defaults_to_none_and_is_optional():
+    # backward compatible: existing two-arg construction unaffected
+    s = Span(page="a.md", text="x")
+    assert s.library is None
+    # new optional field accepts a handle
+    s2 = Span(library="acme-kb", page="a.md", text="x")
+    assert s2.library == "acme-kb"

@@ -39,6 +39,7 @@ class PageRef(BaseModel):
 
 
 class Span(BaseModel):
+    library: str | None = None
     page: str
     text: str
 
