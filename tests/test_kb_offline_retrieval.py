@@ -60,3 +60,19 @@ def test_score_recall_at_k_over_built_index(tmp_path):
     be.embed = lambda texts: [[1.0, 0.0]]
     r = score_recall_at_k(str(tmp_path), qs, store, backend=be, k=1)
     assert r == 1.0
+
+
+def test_reduced_shelf_exact_id_match_no_substring_collision(tmp_path):
+    # candidate "a.md" must NOT match the "data.md" entry (substring collision)
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text(
+        "<!-- format_version: 1 -->\n# Shelf Index\n\n- data.md — about data\n- a.md — about a\n",
+        encoding="utf-8")
+    store = _store([[1, 0], [0, 1]], ["data.md", "a.md"])
+    be = FakeBackend()
+    be.embed = lambda texts: [[0.0, 1.0]]      # nearest a.md
+    page_ids, reduced = accelerated_candidates("q", str(lib), store, backend=be, k=1)
+    assert page_ids == ["a.md"]
+    assert "about a" in reduced                # a.md's OWN entry chosen
+    assert "about data" not in reduced         # NOT data.md's entry (no substring collision)

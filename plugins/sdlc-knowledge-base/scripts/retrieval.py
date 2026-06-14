@@ -6,6 +6,15 @@ from __future__ import annotations
 from pathlib import Path
 
 
+def _entry_id(line: str) -> str | None:
+    """The page-id token of a shelf bullet line ('- <id> — desc' / '- <id>: desc' / '- <id>'),
+    or None if the line isn't a bullet."""
+    s = line.lstrip()
+    if not s.startswith("- "):
+        return None
+    return s[2:].split(" ", 1)[0].rstrip(" \t—-:")
+
+
 def _reduce_shelf(shelf_path: Path, page_ids: list) -> str:
     """Header (lines before the first '- ' bullet) + the matching entry line for each candidate
     in discovery-rank order (synthetic '- <page_id>' if the shelf has no entry for it)."""
@@ -18,7 +27,7 @@ def _reduce_shelf(shelf_path: Path, page_ids: list) -> str:
     chosen = []
     for pid in page_ids:
         base = pid.rsplit("/", 1)[-1]
-        match = next((ln for ln in entries if pid in ln or base in ln), None)
+        match = next((ln for ln in entries if _entry_id(ln) in (pid, base)), None)
         chosen.append(match if match is not None else f"- {pid}")
     return "\n".join(header + chosen) + "\n"
 
