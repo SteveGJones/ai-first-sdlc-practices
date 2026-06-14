@@ -204,3 +204,48 @@ def test_chunk_pages_default_threshold_keeps_normal_pages_single(tmp_path):
     lib.mkdir()
     _mk(lib, "dora.md", "---\nlayer: evidence\n---\n# DORA\nElite teams deploy multiple times per day.\n")
     assert len(chunk_pages(lib)) == 1
+
+
+# ---------------------------------------------------------------------------
+# extract_entry_block tests — kb-offline M3c-2 Task 3
+# ---------------------------------------------------------------------------
+
+from sdlc_knowledge_base_scripts.build_shelf_index import extract_entry_block  # noqa: E402
+
+_SHELF = (
+    "<!-- format_version: 1 -->\n# Knowledge Base Shelf-Index\n\n---\n\n"
+    "## 1. data.md\n\n**Hash:** aaa\n**Layer:** evidence\n**Confidence:** high\n"
+    "**Terms:** data\n**Facts:**\n- data fact\n**Links:** \n\n"
+    "## 2. a.md\n\n**Hash:** bbb\n**Layer:** domain\n**Confidence:** low\n"
+    "**Terms:** alpha\n**Facts:**\n- a fact\n**Links:** \n\n"
+    "## 3. sub/x.md\n\n**Hash:** ccc\n**Layer:** domain\n**Confidence:** medium\n"
+    "**Terms:** nested\n**Facts:**\n- nested fact\n**Links:** \n"
+)
+
+
+def test_extract_entry_block_exact_id_no_substring_collision():
+    block = extract_entry_block(_SHELF, "a.md")
+    assert block is not None
+    assert "## 2. a.md" in block
+    assert "a fact" in block and "Layer:** domain" in block
+    # exact-id match: 'a.md' must not pull in the 'data.md' block (of whose id it is a suffix)
+    assert "data fact" not in block
+    # block ends before the next entry header
+    assert "## 3." not in block
+
+
+def test_extract_entry_block_does_not_match_data_for_a():
+    # asking for 'data.md' returns data's block, not a.md's
+    block = extract_entry_block(_SHELF, "data.md")
+    assert "## 1. data.md" in block and "data fact" in block
+    assert "## 2." not in block
+
+
+def test_extract_entry_block_nested_path_whole():
+    block = extract_entry_block(_SHELF, "sub/x.md")
+    assert block is not None
+    assert "## 3. sub/x.md" in block and "nested fact" in block
+
+
+def test_extract_entry_block_returns_none_when_absent():
+    assert extract_entry_block(_SHELF, "missing.md") is None

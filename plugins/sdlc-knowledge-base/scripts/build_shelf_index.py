@@ -231,6 +231,27 @@ def parse_existing_index(index_path: Path) -> dict[str, str]:
     return result
 
 
+def extract_entry_block(shelf_text: str, file_path: str) -> Optional[str]:
+    """Return the '## N. <file_path>' entry block (header line through the line before the next
+    entry header or EOF), or None if no header's captured path EQUALS file_path exactly.
+    Exact-id match: 'a.md' must not match 'data.md'; nested paths ('sub/x.md') compared whole."""
+    lines = shelf_text.splitlines()
+    start = None
+    for i, line in enumerate(lines):
+        m = _ENTRY_PATH_RE.match(line)
+        if m and m.group(1).strip() == file_path:
+            start = i
+            break
+    if start is None:
+        return None
+    end = len(lines)
+    for j in range(start + 1, len(lines)):
+        if _ENTRY_PATH_RE.match(lines[j]):
+            end = j
+            break
+    return "\n".join(lines[start:end]).rstrip("\n") + "\n"
+
+
 def build_entry(file_path: Path, library_root: Path) -> IndexEntry:
     """Parse one library file and return its shelf-index entry."""
     text = file_path.read_text(encoding="utf-8")
