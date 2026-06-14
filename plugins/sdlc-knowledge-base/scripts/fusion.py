@@ -27,3 +27,19 @@ def compatible(prov_a, prov_b) -> bool:
     corpus_hash is deliberately NOT compared (different corpora federate fine)."""
     return (prov_a.model == prov_b.model and prov_a.dims == prov_b.dims
             and prov_a.normalization == prov_b.normalization)
+
+
+def fuse_compatible(reference_prov, entries, *, k_const: int = 60) -> tuple:
+    """entries = [(handle, provenance, ranked_page_ids)]. Keep entries whose provenance is
+    compatible(reference_prov, ·); RRF-fuse the survivors over handle-qualified (handle, page_id)
+    keys. Returns (fused, rejected_handles): fused = [((handle, page_id), score)] best-first;
+    rejected_handles = the incompatible (skipped) handles, in input order. The reject/warn UX is
+    the caller's (M3c-2); this only reports which handles were skipped."""
+    ranked_lists = []
+    rejected = []
+    for handle, prov, ranked_page_ids in entries:
+        if compatible(reference_prov, prov):
+            ranked_lists.append([(handle, pid) for pid in ranked_page_ids])
+        else:
+            rejected.append(handle)
+    return rrf_fuse(ranked_lists, k_const=k_const), rejected
