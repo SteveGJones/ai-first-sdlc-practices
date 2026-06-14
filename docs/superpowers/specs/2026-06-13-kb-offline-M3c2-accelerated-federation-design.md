@@ -43,6 +43,7 @@ Each fused item `(handle, page_id)` belongs to exactly one library, so **no item
 ## §3 All-or-nothing gate (no TOCTOU)
 
 The linear function validates EVERY resolved library **once**, before searching, and uses the loaded stores directly (no later reload — closes the gate/worker TOCTOU):
+- **backend is embedding-capable** — `getattr(backend, "embedding_model_id", None)` is not None (AnthropicBackend, the query CLI default, intentionally OMITS it → this is a GATE FAILURE returning `None`, NOT an AttributeError; the CLI then runs M2b, which is LLM-based and needs no embeddings);
 - local reference index exists (`EmbeddingStore.load(local_lib)` not None → reference provenance);
 - each library index loads;
 - each is **fresh** (`store.provenance.corpus_hash == corpus_hash(chunk_pages(lib) pairs)`);
@@ -50,6 +51,8 @@ The linear function validates EVERY resolved library **once**, before searching,
 - backend `embedding_model_id()` == local reference `provenance.model`.
 
 All pass → proceed with the in-hand stores. Any fail → return `None` (fallback sentinel) with the reason(s) on stderr; the CLI runs the M2b `federation_query_graph` (queries every library — full coverage). Because the stores are loaded once and reused, no index can change between validation and use within the call. (A library re-indexed mid-call is out of scope — single-process offline tool; the manifest-generation immutability from M3a further bounds it.)
+
+**Query-vector validity** (after embedding, before any `store.search`): the single `backend.embed([question])` must return exactly one vector, all-finite, of length == the reference `provenance.dims`. Otherwise → `return None` (M2b fallback) — so a malformed embedding fails cleanly up front, not mid-query in a matrix multiply.
 
 ## §4 `Span.library` + post-verify canonicalization
 
@@ -69,10 +72,10 @@ def accelerated_federation_query(local_lib, library_specs, question, *, backend,
 ```
 Steps (sequential, library order):
 1. **Gate (§3)** — load every library's store once; validate all; on any failure print reason + `return None`.
-2. **Embed once** — `qvec = backend.embed([question])[0]` (one call; reused for every library).
-3. **Per-library search + filter** — for each `(handle, path)` in `library_specs` order: `hits = store.search(qvec, k=search_k)`; `ranked = filter_pages(path, [pid for pid,_ in hits], layer=layer, min_confidence=min_confidence)` (honors --layer/--min-confidence per library). Audit one `cross_library_query` event per NON-local library (reuse M2b's pattern).
-4. **Fuse (deterministic + coverage)** — `fused, rejected = fuse_compatible(local_prov, [(handle, prov, ranked) ...in library_specs order...])` (rejected is empty — gate already ensured compatibility). Build the reduced-shelf id list = fused order, then **enforce minimum-one-per-library**: if any gate-passing library has no item in the cut, append its top-ranked fused item (so truncation never drops a library). Final cut width = `max(search_k, len(library_specs))` so every library's rank-1 survives.
-5. **Cross-library reduced shelf** — entries are `qualify(handle, page_id)` for each id in the fused-cut order; each entry's descriptor is that page's line from its own library's shelf (reuse M3b `_reduce_shelf` per library to fetch the descriptor), header once. Known set = the qualified ids.
+2. **Embed once + validate** — `qvec = backend.embed([question])[0]` (one call; reused for every library), after the query-vector validity check (§3: exactly one finite vector, dim == reference dims; else `return None`).
+3. **Per-library search + filter, with a coverage guard** — for each `(handle, path)` in `library_specs` order: `hits = store.search(qvec, k=search_k)`; `ranked = filter_pages(path, [pid for pid,_ in hits], layer=layer, min_confidence=min_confidence)`. **Coverage guard:** if `ranked` is empty BUT the library has eligible pages (`filter_pages(path, <all the lib's content page_ids>, layer, min_confidence)` is non-empty), the embedding cut (`search_k`) missed this library's eligible pages — accelerated federation cannot preserve its coverage, so **`return None` (M2b fallback)**. (If a library has NO eligible pages under the filter, it legitimately contributes nothing — not a coverage loss.) Audit one `cross_library_query` event per NON-local library (reuse M2b's pattern).
+4. **Fuse (deterministic, in library order)** — `fused, _ = fuse_compatible(local_prov, [(handle, prov, ranked) ...in library_specs order...])` (rejected is empty — gate ensured compatibility). Take the fused top-`max(search_k, len(library_specs))` so every library's rank-1 (interleaved first, §2) survives the cut; the step-3 coverage guard already guarantees every eligible library has ≥1 fused item, so this width preserves the per-library coverage promise.
+5. **Cross-library reduced shelf** — entries built from the REAL shelf entry blocks (not bullets): for each fused qualified id, `handle, page_id = split_qualified(qid)`; `block = build_shelf_index.extract_entry_block(<handle's shelf text>, page_id)` (the `## N. page_id` block via `_ENTRY_PATH_RE`); **rewrite the block's `## N. page_id` header to `## N. handle/page_id`** (the qualified id, so `select`'s reasoning + return are over qualified ids); if no block is found, synthesize `## N. handle/page_id`. Concatenate a one-line header + the rewritten blocks in fused-cut order. Known set = the qualified ids.
 6. **Priming** — `priming = build_priming_bundle(question, <local project dir = local_lib.parent>)` (M2b semantics).
 7. **One reasoned select** — `select(question, None, backend=backend, known_pages=set(qualified_ids), priming=priming, shelf_text=reduced_shelf)`.
 8. **Read across libraries** — for each chosen qualified id: `handle, page_id = split_qualified(qid)`; read `<path_for_handle>/<page_id>`; pages keyed by the qualified id.
@@ -94,6 +97,7 @@ Steps (sequential, library order):
 |---|---|
 | `scripts/fusion.py` (modify) | `qualify`, `split_qualified` |
 | `scripts/contracts.py` (modify) | `Span.library: str|None = None` |
+| `scripts/build_shelf_index.py` (modify) | `extract_entry_block(shelf_text, file_path) -> str|None` (the real `## N. <path>` block, via `_ENTRY_PATH_RE`) |
 | `scripts/federation.py` (modify) | `canonicalize_attribution(answer)` |
 | `scripts/federation_accel.py` (new) | `accelerated_federation_query` (linear: gate→embed-once→search+filter→fuse+coverage→reduced shelf→prime→select→read→synth/verify→attributed publish) |
 | `scripts/kb_offline_cli.py` (modify) | route `--libraries --accelerate` → accel fn, fallback to M2b on `None` |
@@ -116,3 +120,10 @@ Steps (sequential, library order):
 7. One local priming bundle into the cross-library select.
 8. `Span.library` optional + post-verify `canonicalize_attribution`; `handle_sets` from canonicalized `cited_pages`.
 9. Embed once before searching; reused across libraries.
+
+### Spec-review round-2 resolutions
+
+- **[P1] reduced shelf vs real shelf format** → `build_shelf_index.extract_entry_block` parses the REAL `## N. <path>` blocks (M3b's `_reduce_shelf` only matched hand-written `- ` bullets); rewrite each block's header to the qualified id, emit in fused order, synthesize if absent. (Note: M3b single-lib `_reduce_shelf` degrades to synthetic entries on real shelves — functional but description-less; a future M3b touch-up could adopt `extract_entry_block`. Out of scope here.)
+- **[P1] min-one-per-library impossible after filtering empties a shortlist** → step-3 coverage guard: a library whose filtered shortlist is empty BUT which has eligible pages (filter over ALL its pages non-empty) → `return None` → M2b fallback (embedding cut missed eligible pages). A library with zero eligible pages contributes nothing legitimately.
+- **[P1] embedding-less backend** → gate checks `getattr(backend, "embedding_model_id", None)`; missing → gate failure → `None` → M2b fallback (not AttributeError). `--backend anthropic --accelerate` cleanly falls back to LLM-based M2b.
+- **[P2] query-vector validity** → after the one embed, require exactly one finite vector of dim == reference dims; else `None` → M2b fallback (no mid-query matrix-mult failure).
