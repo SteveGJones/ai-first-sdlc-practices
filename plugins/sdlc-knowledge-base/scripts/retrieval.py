@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .build_shelf_index import _ENTRY_PATH_RE, extract_entry_block
+
 
 def _entry_id(line: str) -> str | None:
     """The page-id token of a shelf bullet line ('- <id> — desc' / '- <id>: desc' / '- <id>'),
@@ -15,19 +17,29 @@ def _entry_id(line: str) -> str | None:
     return s[2:].split(" ", 1)[0].rstrip(" \t—-:")
 
 
-def _reduce_shelf(shelf_path: Path, page_ids: list) -> str:
-    """Header (lines before the first '- ' bullet) + the matching entry line for each candidate
-    in discovery-rank order (synthetic '- <page_id>' if the shelf has no entry for it)."""
+def _reduce_shelf(shelf_path: Path, page_ids: list[str]) -> str:
+    """Header + the matching entry for each candidate in discovery-rank order. Per page: a real
+    '## N. <id>' block (via extract_entry_block, keeping Hash/Layer/Confidence/Terms/Facts), else
+    the legacy '- <id>' bullet line, else a synthetic '- <page_id>'. Header runs up to the first
+    real '## N.' entry header; on a pure-legacy bullet shelf (no real headers) up to the first
+    '- ' bullet instead."""
     text = shelf_path.read_text(encoding="utf-8") if shelf_path.is_file() else ""
     lines = text.splitlines()
-    i = 0
-    while i < len(lines) and not lines[i].lstrip().startswith("- "):
-        i += 1
-    header, entries = lines[:i], lines[i:]
+    hdr_end = next((i for i, ln in enumerate(lines) if _ENTRY_PATH_RE.match(ln)), None)
+    if hdr_end is None:
+        hdr_end = next((i for i, ln in enumerate(lines) if ln.lstrip().startswith("- ")), len(lines))
+    header, entries = lines[:hdr_end], lines[hdr_end:]
     chosen = []
     for pid in page_ids:
+        block = extract_entry_block(text, pid)
+        if block is not None:
+            chosen.append(block.rstrip("\n"))
+            continue
+        # nested pid must match its whole path; a flat root pid may also match by basename
+        # (base == pid there, so this is a no-op for flat ids and load-bearing for nested ones)
         base = pid.rsplit("/", 1)[-1]
-        match = next((ln for ln in entries if _entry_id(ln) in (pid, base)), None)
+        allowed = {pid} if "/" in pid else {pid, base}
+        match = next((ln for ln in entries if _entry_id(ln) in allowed), None)
         chosen.append(match if match is not None else f"- {pid}")
     return "\n".join(header + chosen) + "\n"
 

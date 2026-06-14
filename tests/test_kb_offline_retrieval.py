@@ -76,3 +76,63 @@ def test_reduced_shelf_exact_id_match_no_substring_collision(tmp_path):
     assert page_ids == ["a.md"]
     assert "about a" in reduced                # a.md's OWN entry chosen
     assert "about data" not in reduced         # NOT data.md's entry (no substring collision)
+
+
+from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index  # noqa: E402
+
+
+def _real_shelf_lib(tmp_path, pages):
+    # pages: {page_id: (layer, body)}
+    lib = tmp_path / "library"
+    lib.mkdir()
+    for pid, (layer, body) in pages.items():
+        (lib / pid).write_text(f"---\nlayer: {layer}\nconfidence: high\n---\n# {pid}\n{body}\n",
+                               encoding="utf-8")
+    rebuild_shelf_index(lib, lib / "_shelf-index.md", full=True)
+    return lib
+
+
+def test_reduce_shelf_keeps_layer_and_facts_on_real_generated_shelf(tmp_path):
+    from sdlc_knowledge_base_scripts.retrieval import _reduce_shelf
+    lib = _real_shelf_lib(tmp_path, {"a.md": ("evidence", "Alpha deploys daily."),
+                                     "b.md": ("domain", "Beta uses canary.")})
+    reduced = _reduce_shelf(lib / "_shelf-index.md", ["b.md"])
+    # the selected entry keeps its structured metadata (was stripped before this fix)
+    assert "## " in reduced and "b.md" in reduced
+    assert "Layer:** domain" in reduced
+    # the UNSELECTED first entry is entirely absent (header boundary fix)
+    assert "a.md" not in reduced
+    assert "Alpha deploys daily." not in reduced
+
+
+def test_reduce_shelf_bullet_format_still_works(tmp_path):
+    from sdlc_knowledge_base_scripts.retrieval import _reduce_shelf
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text(
+        "<!-- format_version: 1 -->\n# Shelf Index\n\nIntro.\n- a.md — about a\n- b.md — about b\n",
+        encoding="utf-8")
+    reduced = _reduce_shelf(lib / "_shelf-index.md", ["b.md"])
+    assert "Intro." in reduced and "about b" in reduced
+    assert "about a" not in reduced
+
+
+def test_reduce_shelf_synthesizes_when_neither_matches(tmp_path):
+    from sdlc_knowledge_base_scripts.retrieval import _reduce_shelf
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf Index\n", encoding="utf-8")
+    reduced = _reduce_shelf(lib / "_shelf-index.md", ["ghost.md"])
+    assert "- ghost.md" in reduced
+
+
+def test_reduce_shelf_bullet_basename_not_overmatched_for_nested(tmp_path):
+    from sdlc_knowledge_base_scripts.retrieval import _reduce_shelf
+    lib = tmp_path / "library"
+    lib.mkdir()
+    # candidate 'sub/a.md' must NOT match a root '- a.md' bullet (basename over-match guard)
+    (lib / "_shelf-index.md").write_text(
+        "<!-- format_version: 1 -->\n# Shelf Index\n\n- a.md — root a\n", encoding="utf-8")
+    reduced = _reduce_shelf(lib / "_shelf-index.md", ["sub/a.md"])
+    assert "- sub/a.md" in reduced     # synthesized, not matched to root a.md
+    assert "root a" not in reduced
