@@ -43,3 +43,15 @@ def fuse_compatible(reference_prov, entries, *, k_const: int = 60) -> tuple:
         else:
             rejected.append(handle)
     return rrf_fuse(ranked_lists, k_const=k_const), rejected
+
+
+def qualify(handle: str, page_id: str) -> str:
+    """'handle/page_id'. Handles match ^[a-z][a-z0-9-]*$ (no '/'), so the handle is recoverable
+    by splitting on the FIRST '/' even when page_id is nested (e.g. 'sub/x.md')."""
+    return f"{handle}/{page_id}"
+
+
+def split_qualified(qid: str) -> tuple:
+    """Inverse of qualify: split on the first '/'. Returns (handle, page_id)."""
+    handle, _, page_id = qid.partition("/")
+    return handle, page_id

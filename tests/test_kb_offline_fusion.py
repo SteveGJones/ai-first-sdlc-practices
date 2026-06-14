@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from sdlc_knowledge_base_scripts.embeddings import Provenance
-from sdlc_knowledge_base_scripts.fusion import compatible, fuse_compatible, rrf_fuse
+from sdlc_knowledge_base_scripts.fusion import compatible, fuse_compatible, qualify, rrf_fuse, split_qualified
 
 
 def test_rrf_item_in_two_lists_outranks_item_in_one():
@@ -74,3 +74,11 @@ def test_fuse_compatible_ranks_cross_library():
     assert rejected == []
     top2 = {item for item, _ in fused[:2]}
     assert top2 == {("l1", "a.md"), ("l2", "a.md")}
+
+
+def test_qualify_round_trips_flat_and_nested_page_ids():
+    assert qualify("acme-kb", "a.md") == "acme-kb/a.md"
+    assert split_qualified("acme-kb/a.md") == ("acme-kb", "a.md")
+    # nested page id: handle recovered by splitting on the FIRST '/'
+    assert qualify("acme-kb", "sub/x.md") == "acme-kb/sub/x.md"
+    assert split_qualified("acme-kb/sub/x.md") == ("acme-kb", "sub/x.md")
