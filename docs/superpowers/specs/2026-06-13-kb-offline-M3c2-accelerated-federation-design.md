@@ -82,6 +82,15 @@ Steps (sequential, library order):
 9. **Synthesize + verify** — `synthesize(question, pages, backend)` → `verify_entailment(answer, {qid: content}, backend)` → `canonicalize_attribution(...)`.
 10. **Attributed publish** — `handle_sets` per claim = ordered-unique library handles from its canonicalized `cited_pages`; `render_federated(canonical_answer, handle_sets)` (reuse M2b's renderer + publication policy).
 
+## §5.1 `extract_entry_block` contract + M3b `_reduce_shelf` adoption
+
+`extract_entry_block(shelf_text, file_path) -> str | None`:
+- Scan `shelf_text` with `_ENTRY_PATH_RE` (`^## \d+\.\s+(.+)$`); a header matches only when its captured path **equals `file_path` exactly** (string equality — `a.md` must NOT match `data.md`; nested paths like `sub/x.md` compared whole).
+- The returned block runs **from the matched header line up to (but not including) the next entry header that matches `_ENTRY_PATH_RE`, or EOF** — so the block carries that entry's Hash/Layer/Confidence/Terms/Facts.
+- Returns `None` if no exact match.
+
+**M3b `_reduce_shelf` adoption (in scope):** `retrieval._reduce_shelf` is updated to, per page, try `extract_entry_block` (real `## N.` generated format) first, then the existing `- <path> —` bullet line (legacy/fixture format, preserved so existing tests stay green), and only synthesize `- <page_id>` when neither is found. This fixes M3b's single-library accelerate path, which on real generated shelves currently strips all Terms/Facts/Layer/Confidence before the "reasoned" select — undermining its own contract. A test using an actual `build_shelf_index`-generated shelf is added. The M3c-2 cross-library builder uses `extract_entry_block` directly and rewrites the header to the qualified id (§5 step 5); M3b's `_reduce_shelf` uses the block unqualified. One shared parser, two consumers.
+
 ## §6 CLI routing + width
 
 - `query "<q>" --libraries a,b,c --accelerate [--accelerate-k 20]`:
@@ -89,6 +98,7 @@ Steps (sequential, library order):
   - `--libraries`, no `--accelerate` → M2b (unchanged).
   - `--accelerate` only → M3b single-lib (unchanged).
   - neither → M1c-1 single-lib (unchanged).
+- **`--accelerate-k` validated `>= 1`** (argparse custom type rejecting `< 1`, on the shared flag used by M3b + M3c-2); `accelerated_federation_query` also guards `search_k >= 1` defensively — prevents an invalid `argpartition`/width.
 - `library_specs_override` test seam (as M2b/M3b) keeps tests hermetic.
 
 ## §7 Components & isolation
@@ -97,11 +107,12 @@ Steps (sequential, library order):
 |---|---|
 | `scripts/fusion.py` (modify) | `qualify`, `split_qualified` |
 | `scripts/contracts.py` (modify) | `Span.library: str|None = None` |
-| `scripts/build_shelf_index.py` (modify) | `extract_entry_block(shelf_text, file_path) -> str|None` (the real `## N. <path>` block, via `_ENTRY_PATH_RE`) |
+| `scripts/build_shelf_index.py` (modify) | `extract_entry_block(shelf_text, file_path) -> str|None` (exact-id `## N. <path>` block; see §5.1) |
+| `scripts/retrieval.py` (modify, M3b touch-up — in scope) | `_reduce_shelf` uses `extract_entry_block` (real `## N.` format) with the existing `- ` bullet format preserved as a fallback; synthetic entry only when neither matches |
 | `scripts/federation.py` (modify) | `canonicalize_attribution(answer)` |
 | `scripts/federation_accel.py` (new) | `accelerated_federation_query` (linear: gate→embed-once→search+filter→fuse+coverage→reduced shelf→prime→select→read→synth/verify→attributed publish) |
 | `scripts/kb_offline_cli.py` (modify) | route `--libraries --accelerate` → accel fn, fallback to M2b on `None` |
-| Tests | `test_kb_offline_fusion.py` (qualify/split + interleave-in-order), `test_kb_offline_federation.py` (canonicalize), `test_kb_offline_federation_accel.py` (e2e + gate→M2b fallback + min-one-per-library + comparative claim + layer filter), `test_kb_offline_cli.py` (routing), existing contracts test (`Span.library` default), `test_kb_offline_ollama_smoke.py` (live) |
+| Tests | `test_kb_offline_fusion.py` (qualify/split + interleave-in-order), `test_kb_offline_embeddings.py` or a shelf test (`extract_entry_block` exact-id match incl. nested paths + `a.md`/`data.md` prefix collision; block boundary to next header/EOF), `test_kb_offline_retrieval.py` (`_reduce_shelf` over a REAL generated shelf keeps Layer/Facts; bullet-format still works; synthetic fallback), `test_kb_offline_federation.py` (canonicalize), `test_kb_offline_federation_accel.py` (e2e + gate→M2b fallback incl. anthropic-backend + filtered-empty-but-eligible + min-one-per-library + comparative claim + layer filter + qvec-invalid fallback), `test_kb_offline_cli.py` (routing + `--accelerate-k < 1` rejected), existing contracts test (`Span.library` default), `test_kb_offline_ollama_smoke.py` (live) |
 
 ## Out of scope (deferred)
 
@@ -123,7 +134,13 @@ Steps (sequential, library order):
 
 ### Spec-review round-2 resolutions
 
-- **[P1] reduced shelf vs real shelf format** → `build_shelf_index.extract_entry_block` parses the REAL `## N. <path>` blocks (M3b's `_reduce_shelf` only matched hand-written `- ` bullets); rewrite each block's header to the qualified id, emit in fused order, synthesize if absent. (Note: M3b single-lib `_reduce_shelf` degrades to synthetic entries on real shelves — functional but description-less; a future M3b touch-up could adopt `extract_entry_block`. Out of scope here.)
+- **[P1] reduced shelf vs real shelf format** → `build_shelf_index.extract_entry_block` parses the REAL `## N. <path>` blocks (M3b's `_reduce_shelf` only matched hand-written `- ` bullets); rewrite each block's header to the qualified id, emit in fused order, synthesize if absent. **M3b's own `_reduce_shelf` is ALSO fixed in this slice** (round-3) to adopt the shared parser — see §5.1.
 - **[P1] min-one-per-library impossible after filtering empties a shortlist** → step-3 coverage guard: a library whose filtered shortlist is empty BUT which has eligible pages (filter over ALL its pages non-empty) → `return None` → M2b fallback (embedding cut missed eligible pages). A library with zero eligible pages contributes nothing legitimately.
 - **[P1] embedding-less backend** → gate checks `getattr(backend, "embedding_model_id", None)`; missing → gate failure → `None` → M2b fallback (not AttributeError). `--backend anthropic --accelerate` cleanly falls back to LLM-based M2b.
 - **[P2] query-vector validity** → after the one embed, require exactly one finite vector of dim == reference dims; else `None` → M2b fallback (no mid-query matrix-mult failure).
+
+### Spec-review round-3 resolutions
+
+- **[P1] M3b real-shelf fix in scope** → `retrieval._reduce_shelf` adopts the shared `extract_entry_block` (real `## N.` format) with bullet-format fallback + synthetic only when neither matches; a real-generated-shelf test added. One parser, two consumers — no two-implementations divergence (§5.1).
+- **[P2] `extract_entry_block` exact contract** → exact-id header match (no `a.md`/`data.md` substring collision; nested paths whole), block = header → next entry header or EOF; nested + prefix-collision tests (§5.1).
+- **[P2] `search_k` validation** → `--accelerate-k` argparse-validated `>= 1` + a defensive `search_k >= 1` guard in `accelerated_federation_query` (§6).
