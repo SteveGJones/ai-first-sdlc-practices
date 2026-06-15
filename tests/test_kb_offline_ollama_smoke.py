@@ -11,7 +11,7 @@ import pytest
 REPO = Path(__file__).resolve().parents[1]
 
 
-def _ollama_ready(model="gpt-oss:20b"):
+def _ollama_ready(model="gemma4:12b"):
     if shutil.which("ollama") is None:
         return False
     try:
@@ -42,7 +42,7 @@ def test_live_ollama_single_ingest(tmp_path):
         pytest.skip("no tmp_texts corpus available")
     src = corpus[0]
 
-    be = OllamaBackend(model="gpt-oss:20b")
+    be = OllamaBackend(model="gemma4:12b")
     graph = build_ingest_graph(
         be, allowed_layers=["methodology", "evidence", "domain", "development"],
         checkpoint_path=lib / ".kb-offline" / "ck.sqlite")
@@ -68,7 +68,7 @@ def test_live_ollama_bulk_ingest_three_sources(tmp_path):
     if len(corpus) < 3:
         pytest.skip("need >=3 tmp_texts sources")
 
-    be = OllamaBackend(model="gpt-oss:20b")
+    be = OllamaBackend(model="gemma4:12b")
     graph = build_bulk_ingest_graph(
         be, allowed_layers=["methodology", "evidence", "domain", "development"],
         checkpoint_path=lib / ".kb-offline" / "bulk.sqlite")
@@ -93,7 +93,7 @@ def test_live_ollama_query(tmp_path):
         "---\nlayer: evidence\nconfidence: high\n---\n"
         "# DORA\nElite teams deploy multiple times per day.\n"
     )
-    graph = build_query_graph(OllamaBackend(model="gpt-oss:20b"))
+    graph = build_query_graph(OllamaBackend(model="gemma4:12b"))
     out = graph.invoke(
         {"library_path": str(lib), "question": "How often do elite teams deploy?"},
         config={"configurable": {"thread_id": "ql"}},
@@ -113,7 +113,7 @@ def test_live_ollama_promote(tmp_path):
     (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n- dora.md\n")
     (lib / "dora.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# DORA\n"
                                  "Elite teams deploy multiple times per day.\n")
-    be = OllamaBackend(model="gpt-oss:20b", options={"temperature": 0, "seed": 7, "num_ctx": 8192})
+    be = OllamaBackend(model="gemma4:12b", options={"temperature": 0, "seed": 7, "num_ctx": 8192})
     qout = build_query_graph(be).invoke(
         {"library_path": str(lib), "question": "How often do elite teams deploy?"},
         config={"configurable": {"thread_id": "ql"}})
@@ -139,7 +139,7 @@ def test_live_ollama_federation(tmp_path):
         return lib
     local = _seed("local", "dora.md", "Elite teams deploy multiple times per day.")
     _seed("acme", "ops.md", "Canary deploys reduce blast radius.")
-    be = OllamaBackend(model="gpt-oss:20b", options={"temperature": 0, "seed": 7, "num_ctx": 8192})
+    be = OllamaBackend(model="gemma4:12b", options={"temperature": 0, "seed": 7, "num_ctx": 8192})
     graph = build_federation_query_graph(be)
     out = graph.invoke(
         {"library_specs": [["local", str(local)], ["acme-kb", str(tmp_path / "acme")]],

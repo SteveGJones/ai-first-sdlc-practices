@@ -440,7 +440,7 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_rel = eval_sub.add_parser("release")
     p_rel.add_argument("--suite", default="plugins/sdlc-knowledge-base/eval/suite")
     p_rel.add_argument("--backend", default="ollama")
-    p_rel.add_argument("--model", default="gpt-oss:20b")
+    p_rel.add_argument("--model", default="gemma4:12b")
     p_rel.add_argument("--runs", type=int, default=3)
     p_rel.add_argument("--compare", default=None, choices=["anthropic"])
     p_rel.add_argument("--report-dir", default="research/kb-offline-eval")

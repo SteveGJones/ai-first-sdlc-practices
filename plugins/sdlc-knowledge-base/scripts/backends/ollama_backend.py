@@ -16,7 +16,7 @@ def _is_loopback(host: str) -> bool:
 class OllamaBackend:
     def __init__(
         self,
-        model: str = "gpt-oss:20b",
+        model: str = "gemma4:12b",
         *,
         host: str = "http://localhost:11434",
         embed_model: str = "nomic-embed-text",

@@ -82,4 +82,4 @@ def test_make_backend_forwards_model_to_ollama():
 def test_make_backend_ollama_defaults_model_when_none():
     from sdlc_knowledge_base_scripts import kb_offline_cli as cli
     be = cli._make_backend("ollama", None)
-    assert be.model == "gpt-oss:20b"   # OllamaBackend default preserved
+    assert be.model == "gemma4:12b"   # OllamaBackend default preserved
