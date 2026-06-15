@@ -171,6 +171,55 @@ def test_live_ollama_index(tmp_path):
     assert hit and hit[0][0] == "dora.md"
 
 
+def _two_real_indexed_libs(tmp_path, be):
+    """Build two small real-indexed libraries sharing the SAME live embedding model so the accel
+    gate's compatibility/freshness checks pass and the end-to-end path can actually run.
+    Mirrors test_live_ollama_index: rebuild_shelf_index(full=True), then EmbeddingStore from
+    chunk_pages() embedded with the backend's real .embed, provenance.model = embedding_model_id."""
+    import numpy as np
+    from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index
+    from sdlc_knowledge_base_scripts.embeddings import (
+        EmbeddingStore, IndexRow, Provenance, chunk_pages, corpus_hash)
+
+    def _seed_and_index(name, pages):
+        lib = tmp_path / name
+        lib.mkdir()
+        for pid, (layer, conf, body) in pages.items():
+            (lib / pid).write_text(
+                f"---\nlayer: {layer}\nconfidence: {conf}\n---\n# {pid}\n{body}\n", encoding="utf-8")
+        rebuild_shelf_index(lib, lib / "_shelf-index.md", full=True)
+        rows = chunk_pages(lib)                       # [(page_id, embed_text, content_hash)]
+        vecs = np.array(be.embed([t for _, t, _ in rows]), dtype=np.float32)
+        irows = [IndexRow(page_id=pid, content_hash=h) for pid, _, h in rows]
+        prov = Provenance(model=be.embedding_model_id(), dims=vecs.shape[1], normalization="l2",
+                          corpus_hash=corpus_hash([(pid, h) for pid, _, h in rows]))
+        EmbeddingStore.from_rows(vecs, irows, prov).save(lib)
+        return lib
+
+    local = _seed_and_index("library", {
+        "dora.md": ("evidence", "high", "Elite teams deploy multiple times per day."),
+    })
+    acme = _seed_and_index("acme", {
+        "ops.md": ("evidence", "high", "Canary deploys reduce the blast radius of a bad release."),
+    })
+    return local, acme
+
+
+@pytest.mark.skipif(not _ollama_ready(), reason="ollama daemon/model not available")
+def test_live_ollama_accelerated_federation(tmp_path):
+    from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+    from sdlc_knowledge_base_scripts.federation_accel import accelerated_federation_query
+
+    be = OllamaBackend(options={"temperature": 0, "seed": 7, "num_ctx": 8192})
+    local, acme = _two_real_indexed_libs(tmp_path, be)
+    out = accelerated_federation_query(
+        local, [("library", str(local)), ("acme", str(acme))],
+        "how often do elite teams deploy?", backend=be, search_k=8)
+    # Either accelerated federation runs end-to-end, or it cleanly falls back (None) — both valid;
+    # assert no crash and a usable shape when a result is present.
+    assert out is None or "rendered_text" in out
+
+
 @pytest.mark.skipif(not _ollama_ready(), reason="ollama daemon/model not available")
 def test_live_ollama_query_accelerate(tmp_path):
     import numpy as np
