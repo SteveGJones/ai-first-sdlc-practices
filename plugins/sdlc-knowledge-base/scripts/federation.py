@@ -5,7 +5,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .contracts import Answer, PageRef
+from .contracts import Answer, PageRef, Span
+from .fusion import split_qualified
 from .entailment import verify_entailment
 from .pipeline import select, synthesize
 from .provenance import filter_pages
@@ -71,3 +72,25 @@ def render_federated(merged, handle_sets):
         if rej is not None:
             rejected.append(rej)
     return "\n".join(lines), rejected
+
+
+def canonicalize_attribution(answer):
+    """Rewrite each claim's qualified-id references to per-library attribution: cited_pages ->
+    PageRef(library=handle, page=page_id) and evidence_spans -> Span(library=handle, page=page_id,
+    text=...), splitting each 'handle/page_id' on the first '/'. Verifier grading is preserved.
+    Precondition: every cited_pages/evidence_spans page must be a qualified id; a bare id (no '/')
+    splits to (handle=id, page_id='') and would be mis-attributed (the accelerated path guarantees
+    qualified ids end-to-end, so this only matters for callers outside that pipeline)."""
+    out_claims = []
+    for c in answer.claims:
+        nc = c.model_copy(deep=True)
+        nc.cited_pages = []
+        for r in c.cited_pages:
+            handle, page_id = split_qualified(r.page)
+            nc.cited_pages.append(PageRef(library=handle, page=page_id))
+        nc.evidence_spans = []
+        for s in c.evidence_spans:
+            handle, page_id = split_qualified(s.page)
+            nc.evidence_spans.append(Span(library=handle, page=page_id, text=s.text))
+        out_claims.append(nc)
+    return Answer(claims=out_claims, rendered_text=answer.rendered_text)

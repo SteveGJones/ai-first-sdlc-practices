@@ -6,7 +6,9 @@ import json
 from sdlc_knowledge_base_scripts.audit import VALID_EVENT_TYPES
 from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
 from sdlc_knowledge_base_scripts.contracts import Answer, Claim, EntailmentStatus, PageRef, Span
-from sdlc_knowledge_base_scripts.federation import _norm, merge_answers, query_one_library, render_federated
+from sdlc_knowledge_base_scripts.federation import (
+    _norm, canonicalize_attribution, merge_answers, query_one_library, render_federated,
+)
 
 
 def test_cross_library_query_is_a_valid_event_type():
@@ -84,3 +86,21 @@ def test_render_federated_attributes_and_applies_policy():
     assert "partially supported" in rendered.lower()
     assert "Unfounded." not in rendered
     assert any("Unfounded." in r["text"] for r in rejected)
+
+
+def test_canonicalize_attribution_splits_qualified_ids():
+    c = Claim(
+        text="Teams deploy daily.",
+        cited_pages=[PageRef(library="x", page="acme-kb/a.md"),
+                     PageRef(library="x", page="dora-corp/ops.md")],
+        evidence_spans=[Span(page="acme-kb/a.md", text="deploy daily")],
+    )
+    c.entailment_status = EntailmentStatus.supported
+    out = canonicalize_attribution(Answer(claims=[c], rendered_text=""))
+    refs = out.claims[0].cited_pages
+    assert (refs[0].library, refs[0].page) == ("acme-kb", "a.md")
+    assert (refs[1].library, refs[1].page) == ("dora-corp", "ops.md")
+    span = out.claims[0].evidence_spans[0]
+    assert (span.library, span.page, span.text) == ("acme-kb", "a.md", "deploy daily")
+    # grading preserved (never re-graded)
+    assert out.claims[0].entailment_status == EntailmentStatus.supported
