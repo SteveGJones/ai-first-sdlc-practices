@@ -106,3 +106,88 @@ def test_accelerated_falls_back_when_index_incompatible(tmp_path):
     specs = [("library", str(local)), ("acme", str(other))]
     out = accelerated_federation_query(local, specs, "q", backend=be, search_k=5)
     assert out is None
+
+
+def test_path_containment_rejects_traversal_and_symlink_escape(tmp_path):
+    from sdlc_knowledge_base_scripts.federation_accel import _resolve_in_root
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "a.md").write_text("ok", encoding="utf-8")
+    # legit page resolves inside
+    assert _resolve_in_root(lib, "a.md") == (lib / "a.md").resolve()
+    # parent traversal rejected
+    assert _resolve_in_root(lib, "../secret.md") is None
+    # symlink escaping the library rejected (resolve() follows the link)
+    outside = tmp_path / "secret.md"
+    outside.write_text("secret", encoding="utf-8")
+    (lib / "link.md").symlink_to(outside)
+    assert _resolve_in_root(lib, "link.md") is None
+
+
+def test_live_corpus_intersection_drops_tampered_index_row(tmp_path):
+    # a '../secret.md' row is injected into the store WITHOUT changing corpus_hash; it ranks first
+    # but must be dropped by the live-corpus intersection before search results are used.
+    local = _build_lib(tmp_path, "library",
+                       {"a.md": ("evidence", "high", "Alpha deploys daily.")},
+                       {"a.md": [0.0, 1.0, 0.0]},
+                       extra_rows=[("../secret.md", "tampered", [1.0, 0.0, 0.0])])
+    (tmp_path / "secret.md").write_text("TOP SECRET", encoding="utf-8")
+    be = FakeBackend()
+    be.embed = lambda texts: [[1.0, 0.0, 0.0]]   # nearest the tampered row
+    be.generate = _gen_factory(["library/a.md"], "Alpha deploys daily.",
+                               ["library/a.md"], "library/a.md")
+    out = accelerated_federation_query(local, [("library", str(local))], "q", backend=be, search_k=5)
+    assert out is not None
+    assert "TOP SECRET" not in out["rendered_text"]
+
+
+def test_duplicate_handle_is_deduped_with_warning(tmp_path, capsys):
+    local = _build_lib(tmp_path, "library",
+                       {"a.md": ("evidence", "high", "Alpha deploys daily.")},
+                       {"a.md": [1.0, 0.0, 0.0]})
+    be = FakeBackend()
+    be.embed = lambda texts: [[1.0, 0.0, 0.0]]
+    be.generate = _gen_factory(["library/a.md"], "Alpha deploys daily.",
+                               ["library/a.md"], "library/a.md")
+    specs = [("library", str(local)), ("library", str(local))]   # duplicate handle
+    out = accelerated_federation_query(local, specs, "q", backend=be, search_k=5)
+    assert out is not None
+    assert out["queried"] == 1
+    assert "duplicate library handle" in capsys.readouterr().err
+
+
+def test_coverage_guard_falls_back_when_filter_empties_eligible_library(tmp_path):
+    # the library HAS an eligible (evidence) page, but search_k=1 surfaces only the domain page,
+    # which the layer=evidence filter drops -> filtered-empty-but-eligible -> fall back.
+    local = _build_lib(tmp_path, "library",
+                       {"ev.md": ("evidence", "high", "Evidence page."),
+                        "dom.md": ("domain", "high", "Domain page.")},
+                       {"ev.md": [0.0, 1.0, 0.0], "dom.md": [1.0, 0.0, 0.0]})
+    be = FakeBackend()
+    be.embed = lambda texts: [[1.0, 0.0, 0.0]]   # nearest dom.md (filtered out by layer)
+    out = accelerated_federation_query(local, [("library", str(local))], "q",
+                                       backend=be, search_k=1, layer="evidence")
+    assert out is None
+
+
+def test_layer_filter_selects_only_matching_pages(tmp_path):
+    local = _build_lib(tmp_path, "library",
+                       {"ev.md": ("evidence", "high", "Evidence deploys daily."),
+                        "dom.md": ("domain", "high", "Domain note.")},
+                       {"ev.md": [1.0, 0.0, 0.0], "dom.md": [0.0, 1.0, 0.0]})
+    be = FakeBackend()
+    be.embed = lambda texts: [[1.0, 0.0, 0.0]]
+    be.generate = _gen_factory(["library/ev.md"], "Evidence deploys daily.",
+                               ["library/ev.md"], "library/ev.md")
+    out = accelerated_federation_query(local, [("library", str(local))], "q",
+                                       backend=be, search_k=5, layer="evidence")
+    assert out is not None and "Evidence deploys daily." in out["rendered_text"]
+
+
+def test_invalid_query_vector_falls_back(tmp_path):
+    local = _build_lib(tmp_path, "library",
+                       {"a.md": ("evidence", "high", "x")}, {"a.md": [1.0, 0.0, 0.0]})
+    be = FakeBackend()
+    be.embed = lambda texts: [[1.0, 0.0]]        # wrong dim (2 != 3) -> fall back
+    out = accelerated_federation_query(local, [("library", str(local))], "q", backend=be, search_k=5)
+    assert out is None
