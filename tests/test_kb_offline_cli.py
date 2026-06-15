@@ -649,3 +649,71 @@ def test_cli_query_accelerate_flag_threads_through(tmp_path, capsys):
                   backend_override=be)
     assert rc == 0
     assert "Cost fell 30%." in capsys.readouterr().out
+
+
+def test_accelerate_k_below_one_is_rejected():
+    import pytest as _pytest
+    from sdlc_knowledge_base_scripts.kb_offline_cli import main
+    with _pytest.raises(SystemExit):
+        main(["query", "q", "--libraries", "acme", "--accelerate", "--accelerate-k", "0"])
+
+
+def test_accelerate_routes_to_accel_then_falls_back_to_m2b(tmp_path, monkeypatch, capsys):
+    from sdlc_knowledge_base_scripts import kb_offline_cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+
+    calls = {"accel": 0, "m2b": 0}
+    captured_kw = {}
+
+    def fake_accel(local_lib, specs, question, **kw):
+        calls["accel"] += 1
+        captured_kw.update(kw)
+        return None                      # force the fallback path
+
+    class _Graph:
+        def invoke(self, state, config=None):
+            calls["m2b"] += 1
+            return {"rendered_text": "FELL BACK", "rejected_claims": [],
+                    "_answer": {"claims": []}, "queried": 1, "deduped": 0}
+
+    monkeypatch.setattr("sdlc_knowledge_base_scripts.federation_accel.accelerated_federation_query",
+                        fake_accel)
+    monkeypatch.setattr(
+        "sdlc_knowledge_base_scripts.graphs.federation_query_graph.build_federation_query_graph",
+        lambda backend: _Graph())
+
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("<!-- format_version: 1 -->\n# Shelf\n", encoding="utf-8")
+    specs = [["library", str(lib)], ["acme", str(lib)]]
+    rc = kb_offline_cli.main(
+        ["query", "q", "--library", str(lib), "--libraries", "acme", "--accelerate",
+         "--accelerate-k", "7", "--layer", "evidence", "--min-confidence", "medium"],
+        backend_override=FakeBackend(), library_specs_override=specs)
+    assert rc == 0
+    assert calls["accel"] == 1 and calls["m2b"] == 1
+    assert "FELL BACK" in capsys.readouterr().out
+    # _cmd_query must forward the non-default flags into accelerated_federation_query
+    assert captured_kw["search_k"] == 7          # from --accelerate-k 7 (default is 20)
+    assert captured_kw["layer"] == "evidence"    # from --layer
+    assert captured_kw["min_confidence"] == "medium"  # from --min-confidence
+
+
+def test_accelerate_uses_accel_result_when_not_none(tmp_path, monkeypatch, capsys):
+    from sdlc_knowledge_base_scripts import kb_offline_cli
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+
+    def fake_accel(local_lib, specs, question, **kw):
+        return {"rendered_text": "ACCEL ANSWER", "rejected_claims": [],
+                "_answer": {"claims": []}, "queried": 2, "deduped": 0}
+
+    monkeypatch.setattr("sdlc_knowledge_base_scripts.federation_accel.accelerated_federation_query",
+                        fake_accel)
+    lib = tmp_path / "library"
+    lib.mkdir()
+    specs = [["library", str(lib)], ["acme", str(lib)]]
+    rc = kb_offline_cli.main(
+        ["query", "q", "--library", str(lib), "--libraries", "acme", "--accelerate"],
+        backend_override=FakeBackend(), library_specs_override=specs)
+    assert rc == 0
+    assert "ACCEL ANSWER" in capsys.readouterr().out

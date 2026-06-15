@@ -18,6 +18,13 @@ def _slugify(text: str) -> str:
     return s or "promoted-answer"
 
 
+def _positive_int(s: str) -> int:
+    v = int(s)
+    if v < 1:
+        raise argparse.ArgumentTypeError("--accelerate-k must be >= 1")
+    return v
+
+
 def _make_backend(name: str, override, *, options=None, model=None):
     if override is not None:
         return override
@@ -174,12 +181,29 @@ def _query_single(args: argparse.Namespace, backend) -> int:
     return 0
 
 
+def _emit_federation_result(args, out, specs) -> int:
+    print(out.get("rendered_text", ""))
+    rejected = out.get("rejected_claims", [])
+    if rejected:
+        print(f"\n[{len(rejected)} claim(s) excluded as unsupported]", file=sys.stderr)
+    claims_n = len(out.get("_answer", {}).get("claims", []))
+    print(f"\nqueried {out.get('queried', 0)} libraries ({claims_n} claims, "
+          f"{out.get('deduped', 0)} deduped)")
+    if args.save:
+        from .answers import save_answer
+        from .contracts import Answer
+
+        verified = Answer.model_validate(out["_answer"])
+        ref = save_answer(args.library, args.question, verified,
+                          libraries=[h for h, _ in specs], page_ids=[])
+        print(f"saved: {ref}")
+    return 0
+
+
 def _cmd_query(args: argparse.Namespace, backend_override, library_specs_override=None) -> int:
     backend = _make_backend(args.backend, backend_override)
     if not getattr(args, "libraries", None) and library_specs_override is None:
         return _query_single(args, backend)
-
-    from .graphs.federation_query_graph import build_federation_query_graph
 
     local_lib = Path(args.library)
     if library_specs_override is not None:
@@ -192,30 +216,30 @@ def _cmd_query(args: argparse.Namespace, backend_override, library_specs_overrid
     if not specs:
         print("no libraries resolved — run kb-init / check ~/.sdlc/global-libraries.json", file=sys.stderr)
         return 1
+
+    specs = [tuple(s) for s in specs]
+    if getattr(args, "accelerate", False):
+        from .federation_accel import accelerated_federation_query
+        result = accelerated_federation_query(
+            local_lib, specs, args.question, backend=backend,
+            search_k=getattr(args, "accelerate_k", 20),
+            layer=args.layer, min_confidence=args.min_confidence)
+        if result is not None:
+            return _emit_federation_result(args, result, specs)
+        print("accelerate: falling back to full federation", file=sys.stderr)
+
+    from .graphs.federation_query_graph import build_federation_query_graph
+
     graph = build_federation_query_graph(backend)
     # Priming reads <project>/CLAUDE.md and <project>/library/_shelf-index.md, so
     # local_project_dir must be the PROJECT ROOT, not the library dir. The library is
     # conventionally <project>/library, so the project root is its parent.
     project_dir = local_lib.parent
     out = graph.invoke(
-        {"library_specs": specs, "local_project_dir": str(project_dir), "question": args.question,
-         "layer": args.layer, "min_confidence": args.min_confidence},
+        {"library_specs": [list(s) for s in specs], "local_project_dir": str(project_dir),
+         "question": args.question, "layer": args.layer, "min_confidence": args.min_confidence},
         config={"configurable": {"thread_id": "federated-query"}, "max_concurrency": 8})
-    print(out.get("rendered_text", ""))
-    rejected = out.get("rejected_claims", [])
-    if rejected:
-        print(f"\n[{len(rejected)} claim(s) excluded as unsupported]", file=sys.stderr)
-    claims_n = len(out.get("_answer", {}).get("claims", []))
-    print(f"\nqueried {out.get('queried', 0)} libraries ({claims_n} claims, {out.get('deduped', 0)} deduped)")
-    if args.save:
-        from .answers import save_answer
-        from .contracts import Answer
-
-        verified = Answer.model_validate(out["_answer"])
-        ref = save_answer(args.library, args.question, verified,
-                          libraries=[h for h, _ in specs], page_ids=[])
-        print(f"saved: {ref}")
-    return 0
+    return _emit_federation_result(args, out, specs)
 
 
 def _cmd_eval(args: argparse.Namespace, backend_override) -> int:
@@ -430,7 +454,7 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_q.add_argument("--libraries", default=None, help="comma-separated external library handles to federate")
     p_q.add_argument("--save", action="store_true", help="persist the verified answer; print its ref")
     p_q.add_argument("--accelerate", action="store_true", help="use the embedding index to pre-filter candidates")
-    p_q.add_argument("--accelerate-k", type=int, default=20)
+    p_q.add_argument("--accelerate-k", type=_positive_int, default=20)
 
     p_eval = sub.add_parser("eval")
     eval_sub = p_eval.add_subparsers(dest="eval_cmd", required=True)
