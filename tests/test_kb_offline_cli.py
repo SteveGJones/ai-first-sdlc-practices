@@ -775,3 +775,51 @@ def test_fingerprint_export_freshness_gate(tmp_path):
                      "--out", str(out)]) == 1            # stale -> refuse
     assert cli.main(["fingerprint", "export", "--library", str(lib), "--tier", "page",
                      "--out", str(out), "--allow-stale"]) == 0
+
+
+# ---------------------------------------------------------------------------
+# discover subcommand tests
+# ---------------------------------------------------------------------------
+
+def _fake_embed_backend(vec):
+    be = FakeBackend()
+    be.embed = lambda texts: [list(vec)]      # type: ignore
+    return be
+
+
+def _cli_fp(vectors, *, handle, model="fake-embed", tier="page", owner="Acme", contact=None):
+    import numpy as np
+    from sdlc_knowledge_base_scripts.embeddings import Provenance
+    from sdlc_knowledge_base_scripts.fingerprint import Fingerprint, Manifest
+    return Fingerprint(
+        tier=tier, manifest=Manifest(handle=handle, owner=owner, contact=contact),
+        provenance=Provenance(model=model, dims=len(vectors[0]), normalization="l2", corpus_hash=""),
+        vectors=np.array(vectors, dtype=np.float32))
+
+
+def test_discover_prints_ranked_list(tmp_path, capsys):
+    fps = [_cli_fp([[0.0, 0.0, 1.0]], handle="off-topic"),
+           _cli_fp([[1.0, 0.0, 0.0]], handle="on-topic", contact="kb@acme.example")]
+    rc = cli.main(["discover", "how often deploy?"],
+                  backend_override=_fake_embed_backend([1.0, 0.0, 0.0]),
+                  fingerprints_override=fps)
+    assert rc == 0
+    out = capsys.readouterr().out
+    # on-topic ranked first, contact + tier rendered
+    assert out.index("on-topic") < out.index("off-topic")
+    assert "kb@acme.example" in out and "page" in out
+
+
+def test_discover_no_fingerprints_exits_zero(capsys):
+    rc = cli.main(["discover", "q"], backend_override=_fake_embed_backend([1.0, 0.0]),
+                  fingerprints_override=[])
+    assert rc == 0
+    assert "no covering libraries" in capsys.readouterr().out.lower()
+
+
+def test_discover_requires_embedding_backend():
+    class _NoEmbed:                            # like AnthropicBackend: no embedding_model_id
+        def generate(self, prompt, schema=None):
+            return "{}"
+    rc = cli.main(["discover", "q"], backend_override=_NoEmbed(), fingerprints_override=[])
+    assert rc == 2

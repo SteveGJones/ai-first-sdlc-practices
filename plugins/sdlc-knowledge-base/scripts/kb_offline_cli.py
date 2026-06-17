@@ -425,6 +425,47 @@ def _cmd_fingerprint(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_discover(args: argparse.Namespace, backend_override, fingerprints_override=None) -> int:
+    from .embeddings import Provenance
+    from .fingerprint import discover, load_fingerprint
+
+    backend = _make_backend(args.backend, backend_override)
+    model_fn = getattr(backend, "embedding_model_id", None)
+    if model_fn is None or getattr(backend, "embed", None) is None:
+        print("discover: backend has no embedding capability — discovery requires an "
+              "embedding-capable backend (e.g. --backend ollama)", file=sys.stderr)
+        return 2
+
+    if fingerprints_override is not None:
+        fingerprints = fingerprints_override
+    else:
+        paths = list(args.fingerprint_paths)
+        fp_dir = Path(args.fingerprints) if args.fingerprints else Path.home() / ".sdlc" / "fingerprints"
+        if fp_dir.is_dir():
+            paths.extend(sorted(str(p) for p in fp_dir.glob("*.kbfp.json")))
+        fingerprints = [fp for fp in (load_fingerprint(p) for p in paths) if fp is not None]
+    if not fingerprints:
+        print("discover: no usable fingerprints found (use --fingerprint/--fingerprints)", file=sys.stderr)
+        print("no covering libraries found")
+        return 0
+
+    qvecs = backend.embed([args.question])
+    if len(qvecs) != 1:
+        print("discover: embedding did not return exactly one vector", file=sys.stderr)
+        return 2
+    qvec = list(qvecs[0])
+    qprov = Provenance(model=model_fn(), dims=len(qvec), normalization="l2", corpus_hash="")
+    hits = discover(qvec, fingerprints, query_provenance=qprov,
+                    min_score=args.min_score, hit_threshold=args.hit_threshold, top=args.top)
+    if not hits:
+        print("no covering libraries found")
+        return 0
+    for h in hits:
+        pages = f"{h.n_hits} pages" if h.n_hits is not None else "—"
+        print(f"{h.handle} · {h.owner or '—'} · {h.contact or '—'} · {h.score:.4f} · {h.tier} · {pages}")
+    return 0
+
+
 def _cmd_lint(args: argparse.Namespace, sources_override=None) -> int:
     from datetime import datetime, timezone
     from .lint import lint_libraries, render_lint_report
@@ -450,7 +491,7 @@ def _cmd_lint(args: argparse.Namespace, sources_override=None) -> int:
 
 
 def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers: list[str] | None = None,
-         library_specs_override=None, sources_override=None) -> int:
+         library_specs_override=None, sources_override=None, fingerprints_override=None) -> int:
     allowed_layers = allowed_layers or ["methodology", "evidence", "domain", "development"]
     parser = argparse.ArgumentParser(prog="kb-offline")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -547,6 +588,19 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
         "--allow-stale", action="store_true",
         help="export even if the index is stale (corpus changed since last index)")
 
+    p_disc = sub.add_parser("discover")
+    p_disc.add_argument("question", help="natural-language question to find covering libraries for")
+    p_disc.add_argument("--backend", default="ollama", help="model backend (default: ollama)")
+    p_disc.add_argument("--fingerprint", action="append", default=[], dest="fingerprint_paths",
+                        help="path to a .kbfp.json fingerprint (repeatable)")
+    p_disc.add_argument("--fingerprints", default=None,
+                        help="directory of .kbfp.json fingerprints (default: ~/.sdlc/fingerprints)")
+    p_disc.add_argument("--min-score", type=float, default=0.0,
+                        help="drop hits scoring below this cosine")
+    p_disc.add_argument("--top", type=int, default=None, help="show at most N ranked hits")
+    p_disc.add_argument("--hit-threshold", type=float, default=0.5,
+                        help="page-tier coverage threshold for the n_hits count")
+
     args = parser.parse_args(argv)
     if args.cmd == "init":
         return _cmd_init(args)
@@ -566,6 +620,8 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
         return _cmd_lint(args, sources_override)
     if args.cmd == "fingerprint":
         return _cmd_fingerprint(args)
+    if args.cmd == "discover":
+        return _cmd_discover(args, backend_override, fingerprints_override)
     return 2
 
 
