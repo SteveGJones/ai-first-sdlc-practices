@@ -51,6 +51,41 @@ def test_run_questions_scores_fact_and_abstention_on_smoke():
     assert deploy_row["should_abstain"] is False
 
 
+def _working_gen():
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge"):
+            return '{"status": "supported"}'
+        if "Shelf-index" in prompt:
+            return json.dumps({"page_ids": ["dora.md"]}) if "deploy" in prompt else json.dumps({"page_ids": []})
+        return json.dumps({"claims": [], "rendered_text": ""})
+    return gen
+
+
+def test_run_questions_emits_progress_per_question_when_enabled(capsys):
+    # With progress=True the runner prints one trackable line per question to stderr — so a
+    # long live run is observable (and a stall is obvious) instead of silent until the report.
+    qs = load_questions(SMOKE / "questions.jsonl")
+    be = FakeBackend()
+    be.generate = _working_gen()
+    run_questions(str(SMOKE / "library"), qs, backend=be, progress=True, run_label="run 1/3")
+    err = capsys.readouterr().err
+    prog = [ln for ln in err.splitlines() if ln.startswith("[eval run 1/3] q ")]
+    assert len(prog) == len(qs)                      # exactly one progress line per question
+    assert f"/{len(qs)} " in prog[0]                 # index/total shown
+    assert qs[0].id in prog[0]                       # question id shown
+    assert "s" in prog[0]                            # per-question elapsed seconds
+
+
+def test_run_questions_silent_without_progress(capsys):
+    # Default (progress off) keeps the existing quiet behaviour — no progress lines.
+    qs = load_questions(SMOKE / "questions.jsonl")
+    be = FakeBackend()
+    be.generate = _working_gen()
+    run_questions(str(SMOKE / "library"), qs, backend=be)
+    err = capsys.readouterr().err
+    assert "[eval run" not in err and "] q " not in err
+
+
 def test_run_verifier_labels_uses_deterministic_verifier():
     labels = load_verifier_labels(SMOKE / "verifier_labels.jsonl")
     be = FakeBackend()

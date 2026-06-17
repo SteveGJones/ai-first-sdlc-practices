@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import sys
+import time
 from pathlib import Path
 
 from ..contracts import Claim, EntailmentStatus
@@ -47,10 +48,21 @@ def _norm(s: str) -> str:
     return " ".join(s.lower().split())
 
 
-def run_questions(library_path: str, questions, *, backend) -> list[dict]:
-    """One row per question with scorer-ready fields. did_abstain = empty published body."""
+def _progress_tag(run_label: str) -> str:
+    return f"[eval {run_label}]" if run_label else "[eval]"
+
+
+def run_questions(library_path: str, questions, *, backend, progress: bool = False,
+                  run_label: str = "") -> list[dict]:
+    """One row per question with scorer-ready fields. did_abstain = empty published body.
+    When progress=True, emit one trackable stderr line per question (index/total, id, status,
+    per-question elapsed) so a long live run is observable and a stall is obvious — otherwise
+    the run is silent until the final report."""
     rows = []
-    for q in questions:
+    total = len(questions)
+    tag = _progress_tag(run_label)
+    for idx, q in enumerate(questions, 1):
+        t0 = time.monotonic()
         graph = build_query_graph(backend)
         try:
             out = graph.invoke(
@@ -67,18 +79,24 @@ def run_questions(library_path: str, questions, *, backend) -> list[dict]:
                 "should_abstain": q.no_evidence, "did_abstain": False,
                 "error": True, "error_msg": str(exc)[:200],
             })
+            if progress:
+                print(f"{tag} q {idx}/{total} {q.id} ERROR {time.monotonic() - t0:.1f}s", file=sys.stderr)
             continue
         rendered = out.get("rendered_text", "")
         norm_rendered = _norm(rendered)
         found = [f for f in q.expected_facts if _norm(f) in norm_rendered]
+        did_abstain = rendered.strip() == ""
         rows.append({
             "id": q.id,
             "expected_facts": q.expected_facts, "found_facts": found,
             "expected_routing": q.expected_routing_targets,
             "predicted_routing": list(out.get("page_ids", [])),
-            "should_abstain": q.no_evidence, "did_abstain": (rendered.strip() == ""),
+            "should_abstain": q.no_evidence, "did_abstain": did_abstain,
             "error": False,
         })
+        if progress:
+            status = "abstain" if did_abstain else f"ok facts {len(found)}/{len(q.expected_facts)}"
+            print(f"{tag} q {idx}/{total} {q.id} {status} {time.monotonic() - t0:.1f}s", file=sys.stderr)
     return rows
 
 
@@ -101,11 +119,15 @@ def run_verifier_labels(library_path: str, labels, *, backend) -> list[dict]:
     return rows
 
 
-def score_run(library_path: str, questions, labels, *, backend) -> dict:
+def score_run(library_path: str, questions, labels, *, backend, progress: bool = False,
+              run_label: str = "") -> dict:
     """Run the whole suite once and return a flat metric->value dict (the shape report.py
-    aggregates). Wraps the backend to capture first-pass JSON validity."""
+    aggregates). Wraps the backend to capture first-pass JSON validity. progress/run_label
+    flow to run_questions for live trackability of long release runs."""
     rec = RecordingBackend(backend)
-    q_rows = run_questions(library_path, questions, backend=rec)
+    q_rows = run_questions(library_path, questions, backend=rec, progress=progress, run_label=run_label)
+    if progress:
+        print(f"{_progress_tag(run_label)} verifier: scoring {len(labels)} labels", file=sys.stderr)
     v_rows = run_verifier_labels(library_path, labels, backend=rec)
 
     fact = harness.fact_recall([{"expected": r["expected_facts"], "found": r["found_facts"]}

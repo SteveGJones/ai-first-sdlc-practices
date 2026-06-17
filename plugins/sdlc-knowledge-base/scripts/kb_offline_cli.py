@@ -267,7 +267,12 @@ def _cmd_eval(args: argparse.Namespace, backend_override) -> int:
     # run memory-bounded and reproducible.
     pin = {"temperature": 0, "seed": 7, "top_p": 1, "num_ctx": 8192}
     backend = _make_backend(args.backend, backend_override, options=pin, model=args.model)
-    runs = [score_run(str(library), questions, labels, backend=backend) for _ in range(args.runs)]
+    runs = []
+    for i in range(args.runs):
+        print(f"[eval] starting run {i + 1}/{args.runs} — {len(questions)} questions, "
+              f"{len(labels)} verifier labels (model={args.model})", file=sys.stderr)
+        runs.append(score_run(str(library), questions, labels, backend=backend,
+                              progress=True, run_label=f"run {i + 1}/{args.runs}"))
     agg = report_mod.aggregate(runs)
     verdict = report_mod.gate(agg)
     drift = None
