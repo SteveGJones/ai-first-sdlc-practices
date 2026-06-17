@@ -96,3 +96,17 @@ def test_kmeans_weights_sum_to_row_count_and_centroids_normalized():
     assert sum(weights) == 5
     norms = np.linalg.norm(centroids, axis=1)
     assert np.allclose(norms, 1.0, atol=1e-5)
+
+
+def test_kmeans_k1_antipodal_centroid_is_nonzero_unit():
+    vecs = _norm_rows([[1.0, 0.0], [-1.0, 0.0]])
+    centroids, weights = _kmeans(vecs, 1, seed=7)
+    assert centroids.shape == (1, 2)
+    assert abs(float(np.linalg.norm(centroids[0])) - 1.0) < 1e-5   # unit, not zero
+    assert weights == [2]
+
+
+def test_kmeans_separable_clusters_assign_correctly():
+    vecs = _norm_rows([[1, 0, 0], [0.99, 0.01, 0], [0, 1, 0], [0.01, 0.99, 0]])
+    centroids, weights = _kmeans(vecs, 2, seed=7)
+    assert sorted(weights) == [2, 2]

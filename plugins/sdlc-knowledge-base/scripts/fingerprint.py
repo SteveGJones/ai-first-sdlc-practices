@@ -103,7 +103,7 @@ def _kmeans(vectors: np.ndarray, k: int, seed: int) -> tuple:
     n = vectors.shape[0]
     k = min(k, n)
     if k == 0:
-        return np.zeros((0, vectors.shape[1] if vectors.ndim == 2 else 0), dtype=np.float32), []
+        return np.zeros((0, vectors.shape[1]), dtype=np.float32), []
     rng = np.random.default_rng(seed)
     init = rng.choice(n, size=k, replace=False)
     centroids = vectors[init].astype(np.float32).copy()
@@ -118,6 +118,10 @@ def _kmeans(vectors: np.ndarray, k: int, seed: int) -> tuple:
             members = vectors[labels == j]
             if members.shape[0]:
                 centroids[j] = members.mean(axis=0)
+        centroids = _l2_normalize(centroids)
+    zero = np.linalg.norm(centroids, axis=1) == 0
+    if zero.any():
+        centroids[zero] = vectors[init[zero]]   # restore distinct unit seed vectors
         centroids = _l2_normalize(centroids)
     weights = [int((labels == j).sum()) for j in range(k)]
     return centroids, weights
