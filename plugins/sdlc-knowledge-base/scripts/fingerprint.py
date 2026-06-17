@@ -164,10 +164,10 @@ def _kmeans(vectors: np.ndarray, k: int, seed: int) -> tuple:
 class DiscoverHit:
     handle: str
     owner: str
-    contact: "str | None"
+    contact: str | None
     tier: str
     score: float
-    n_hits: "int | None"
+    n_hits: int | None
 
 
 def score_fingerprint(qvec, fp: Fingerprint, *, hit_threshold: float = 0.5) -> tuple:

@@ -9,7 +9,7 @@ import pytest
 from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index
 from sdlc_knowledge_base_scripts.embeddings import (
     EmbeddingStore, IndexRow, Provenance, chunk_pages, corpus_hash)
-from sdlc_knowledge_base_scripts.fingerprint import (  # noqa: F401 (DiscoverHit: public API)
+from sdlc_knowledge_base_scripts.fingerprint import (
     FORMAT_VERSION, DiscoverHit, Fingerprint, Manifest, _kmeans, _vectors_sha256,
     discover, export_fingerprint, load_fingerprint, score_fingerprint, write_fingerprint)
 
@@ -210,6 +210,7 @@ def test_discover_ranks_on_topic_above_off_topic():
     on = _fp([[1.0, 0.0, 0.0]], handle="on-topic")
     off = _fp([[0.0, 0.0, 1.0]], handle="off-topic")
     hits = discover([1.0, 0.0, 0.0], [off, on], query_provenance=qprov)
+    assert isinstance(hits[0], DiscoverHit)
     assert [h.handle for h in hits] == ["on-topic", "off-topic"]
     assert hits[0].score > hits[1].score
 
