@@ -3,7 +3,7 @@
 
 # Core dependencies
 PyYAML>=6.0
-requests>=2.31.0
+requests>=2.32.5
 click>=8.1.0
 
 # Development dependencies
