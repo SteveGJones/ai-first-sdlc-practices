@@ -104,7 +104,7 @@ def export_fingerprint(store, *, tier: str, manifest: Manifest, clusters: int = 
     vectors — equal to pages when no page exceeds the section threshold (the common case)."""
     if tier not in ("coarse", "page"):
         raise ValueError(f"tier must be 'coarse' or 'page', got {tier!r}")
-    matrix = np.ascontiguousarray(store.matrix, dtype=np.float32)
+    matrix = _l2_normalize(np.ascontiguousarray(store.matrix, dtype=np.float32))
     weights_field = None
     if tier == "page":
         vecs = matrix

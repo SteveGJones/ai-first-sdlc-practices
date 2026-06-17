@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 
 import numpy as np
+import pytest
 
 from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index
 from sdlc_knowledge_base_scripts.embeddings import (
@@ -178,8 +179,7 @@ def test_export_coarse_no_weights_omits_field(tmp_path):
 
 
 def test_export_rejects_unknown_tier(tmp_path):
-    import pytest as _pytest
     lib = _build_store_lib(tmp_path, "library", {"a.md": "x"}, {"a.md": [1.0, 0.0]})
     store = EmbeddingStore.load(lib)
-    with _pytest.raises(ValueError):
+    with pytest.raises(ValueError):
         export_fingerprint(store, tier="bogus", manifest=Manifest(handle="acme"))
