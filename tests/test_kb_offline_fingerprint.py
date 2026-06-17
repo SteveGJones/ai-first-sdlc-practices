@@ -5,8 +5,12 @@ import json
 
 import numpy as np
 
+from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index
+from sdlc_knowledge_base_scripts.embeddings import (
+    EmbeddingStore, IndexRow, Provenance, chunk_pages, corpus_hash)
 from sdlc_knowledge_base_scripts.fingerprint import (
-    FORMAT_VERSION, _kmeans, _vectors_sha256, load_fingerprint, write_fingerprint)
+    FORMAT_VERSION, Manifest, _kmeans, _vectors_sha256, export_fingerprint,
+    load_fingerprint, write_fingerprint)
 
 
 def _artifact(vectors, *, tier="page", weights=None):
@@ -110,3 +114,72 @@ def test_kmeans_separable_clusters_assign_correctly():
     vecs = _norm_rows([[1, 0, 0], [0.99, 0.01, 0], [0, 1, 0], [0.01, 0.99, 0]])
     centroids, weights = _kmeans(vecs, 2, seed=7)
     assert sorted(weights) == [2, 2]
+
+
+def _build_store_lib(tmp_path, name, pages, vectors, *, model="nomic-embed-text"):
+    """pages: {page_id: body}; vectors: {page_id: [floats]}. Builds a library with a real
+    EmbeddingStore whose corpus_hash matches its pages (fresh)."""
+    lib = tmp_path / name
+    lib.mkdir()
+    for pid, body in pages.items():
+        (lib / pid).write_text(f"---\nlayer: evidence\nconfidence: high\n---\n# {pid}\n{body}\n",
+                               encoding="utf-8")
+    rebuild_shelf_index(lib, lib / "_shelf-index.md", full=True)
+    rows = chunk_pages(lib)
+    ch = corpus_hash([(pid, h) for pid, _, h in rows])
+    dims = len(next(iter(vectors.values())))
+    mat = np.array([vectors[pid] for pid, _, _ in rows], dtype=np.float32)
+    irows = [IndexRow(page_id=pid, content_hash=h) for pid, _, h in rows]
+    prov = Provenance(model=model, dims=dims, normalization="l2", corpus_hash=ch)
+    EmbeddingStore.from_rows(mat, irows, prov).save(lib)
+    return lib
+
+
+def test_export_page_tier_ships_all_vectors_no_ids(tmp_path):
+    lib = _build_store_lib(tmp_path, "library",
+                           {"deploys.md": "Elite teams deploy daily.", "safety.md": "Safety cases."},
+                           {"deploys.md": [1.0, 0.0, 0.0], "safety.md": [0.0, 1.0, 0.0]})
+    store = EmbeddingStore.load(lib)
+    art = export_fingerprint(store, tier="page", manifest=Manifest(handle="acme", owner="Acme"))
+    assert art["tier"] == "page" and len(art["vectors"]) == 2
+    assert "weights" not in art
+    blob = json.dumps(art)
+    # privacy: no filenames, no content, no corpus_hash, no shelf
+    assert "deploys.md" not in blob and "safety.md" not in blob
+    assert "Elite teams" not in blob and "corpus_hash" not in blob
+    assert "Shelf" not in blob and "layer" not in blob
+
+
+def test_export_coarse_tier_centroids_and_weights(tmp_path):
+    lib = _build_store_lib(
+        tmp_path, "library",
+        {"a.md": "x", "b.md": "y", "c.md": "z", "d.md": "w"},
+        {"a.md": [1.0, 0.0, 0.0], "b.md": [0.95, 0.05, 0.0],
+         "c.md": [0.0, 1.0, 0.0], "d.md": [0.0, 0.0, 1.0]})
+    store = EmbeddingStore.load(lib)
+    art = export_fingerprint(store, tier="coarse",
+                             manifest=Manifest(handle="acme"), clusters=2)
+    assert art["tier"] == "coarse" and len(art["vectors"]) == 2
+    assert sum(art["weights"]) == 4
+    # round-trips and verifies
+    p = tmp_path / "acme.kbfp.json"
+    write_fingerprint(p, art)
+    assert load_fingerprint(p) is not None
+
+
+def test_export_coarse_no_weights_omits_field(tmp_path):
+    lib = _build_store_lib(tmp_path, "library",
+                           {"a.md": "x", "b.md": "y"},
+                           {"a.md": [1.0, 0.0], "b.md": [0.0, 1.0]})
+    store = EmbeddingStore.load(lib)
+    art = export_fingerprint(store, tier="coarse", manifest=Manifest(handle="acme"),
+                             clusters=2, weights=False)
+    assert "weights" not in art
+
+
+def test_export_rejects_unknown_tier(tmp_path):
+    import pytest as _pytest
+    lib = _build_store_lib(tmp_path, "library", {"a.md": "x"}, {"a.md": [1.0, 0.0]})
+    store = EmbeddingStore.load(lib)
+    with _pytest.raises(ValueError):
+        export_fingerprint(store, tier="bogus", manifest=Manifest(handle="acme"))

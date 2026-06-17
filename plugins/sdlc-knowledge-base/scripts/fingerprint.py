@@ -95,6 +95,39 @@ def load_fingerprint(path) -> "Fingerprint | None":
                        vectors=vectors, weights=raw.get("weights"))
 
 
+def export_fingerprint(store, *, tier: str, manifest: Manifest, clusters: int = 8,
+                       weights: bool = True, seed: int = 7) -> dict:
+    """Build a *.kbfp.json artifact dict from a built EmbeddingStore. tier 'page' ships the
+    store's L2-normalized row vectors with page_ids stripped; tier 'coarse' ships k-means
+    centroids (+ per-centroid page counts unless weights=False). Emits no page_ids, no content,
+    no corpus_hash, no shelf (see the threat model). 'page' n_hits at discovery counts matching
+    vectors — equal to pages when no page exceeds the section threshold (the common case)."""
+    if tier not in ("coarse", "page"):
+        raise ValueError(f"tier must be 'coarse' or 'page', got {tier!r}")
+    matrix = np.ascontiguousarray(store.matrix, dtype=np.float32)
+    weights_field = None
+    if tier == "page":
+        vecs = matrix
+    else:
+        vecs, w = _kmeans(matrix, clusters, seed)
+        if weights:
+            weights_field = w
+    vec_list = vecs.tolist()
+    artifact = {
+        "version": FORMAT_VERSION,
+        "tier": tier,
+        "manifest": {"handle": manifest.handle, "owner": manifest.owner,
+                     "contact": manifest.contact},
+        "provenance": {"model": store.provenance.model, "dims": store.provenance.dims,
+                       "normalization": store.provenance.normalization},
+        "vectors": vec_list,
+        "data_sha256": _vectors_sha256(vec_list),
+    }
+    if weights_field is not None:
+        artifact["weights"] = weights_field
+    return artifact
+
+
 def _kmeans(vectors: np.ndarray, k: int, seed: int) -> tuple:
     """Seeded Lloyd's k-means over (already L2-normalized) row vectors. Returns
     (centroids, weights): min(k, n) L2-normalized centroids and the integer page count assigned
