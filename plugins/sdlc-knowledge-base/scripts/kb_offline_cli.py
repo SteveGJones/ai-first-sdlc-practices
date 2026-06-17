@@ -519,15 +519,33 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_fp = sub.add_parser("fingerprint")
     fp_sub = p_fp.add_subparsers(dest="fp_cmd", required=True)
     p_fpx = fp_sub.add_parser("export")
-    p_fpx.add_argument("--library", default="library")
-    p_fpx.add_argument("--tier", required=True, choices=["coarse", "page"])
-    p_fpx.add_argument("--out", default=None)
-    p_fpx.add_argument("--handle", default=None)
-    p_fpx.add_argument("--owner", default="")
-    p_fpx.add_argument("--contact", default=None)
-    p_fpx.add_argument("--clusters", type=int, default=8)
-    p_fpx.add_argument("--no-weights", action="store_true")
-    p_fpx.add_argument("--allow-stale", action="store_true")
+    p_fpx.add_argument(
+        "--library", default="library",
+        help="library directory holding the built embedding index (default: library)")
+    p_fpx.add_argument(
+        "--tier", required=True, choices=["coarse", "page"],
+        help="fingerprint granularity: 'coarse' k-means centroids, or 'page' per-page vectors")
+    p_fpx.add_argument(
+        "--out", default=None,
+        help="output path for the .kbfp.json artifact (default: <handle>.kbfp.json)")
+    p_fpx.add_argument(
+        "--handle", default=None,
+        help="short publisher handle for the fingerprint (default: library dir name)")
+    p_fpx.add_argument(
+        "--owner", default="",
+        help="human-readable owner/org name recorded in the manifest")
+    p_fpx.add_argument(
+        "--contact", default=None,
+        help="contact string (e.g. email) recorded in the manifest for 'who to ask'")
+    p_fpx.add_argument(
+        "--clusters", type=int, default=8,
+        help="number of k-means centroids for the coarse tier (default: 8)")
+    p_fpx.add_argument(
+        "--no-weights", action="store_true",
+        help="omit per-centroid page-count weights from the coarse artifact")
+    p_fpx.add_argument(
+        "--allow-stale", action="store_true",
+        help="export even if the index is stale (corpus changed since last index)")
 
     args = parser.parse_args(argv)
     if args.cmd == "init":
