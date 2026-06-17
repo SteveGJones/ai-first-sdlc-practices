@@ -431,7 +431,7 @@ def _cmd_discover(args: argparse.Namespace, backend_override, fingerprints_overr
 
     backend = _make_backend(args.backend, backend_override)
     model_fn = getattr(backend, "embedding_model_id", None)
-    if model_fn is None or getattr(backend, "embed", None) is None:
+    if model_fn is None:
         print("discover: backend has no embedding capability — discovery requires an "
               "embedding-capable backend (e.g. --backend ollama)", file=sys.stderr)
         return 2
@@ -445,6 +445,7 @@ def _cmd_discover(args: argparse.Namespace, backend_override, fingerprints_overr
             paths.extend(sorted(str(p) for p in fp_dir.glob("*.kbfp.json")))
         fingerprints = [fp for fp in (load_fingerprint(p) for p in paths) if fp is not None]
     if not fingerprints:
+        # operator hint on stderr; stdout stays the machine-readable summary line
         print("discover: no usable fingerprints found (use --fingerprint/--fingerprints)", file=sys.stderr)
         print("no covering libraries found")
         return 0
