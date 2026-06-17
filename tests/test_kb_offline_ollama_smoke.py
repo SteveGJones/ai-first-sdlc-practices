@@ -243,3 +243,53 @@ def test_live_ollama_query_accelerate(tmp_path):
         {"library_path": str(lib), "question": "How often do elite teams deploy?", "accelerate": True, "accelerate_k": 5},
         config={"configurable": {"thread_id": "acc-live"}})
     assert "rendered_text" in out and "rejected_claims" in out
+
+
+@pytest.mark.skipif(not _ollama_ready(), reason="ollama daemon/model not available")
+def test_live_ollama_fingerprint_discover(tmp_path):
+    import numpy as np
+    from sdlc_knowledge_base_scripts.backends.ollama_backend import OllamaBackend
+    from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index
+    from sdlc_knowledge_base_scripts.embeddings import (
+        EmbeddingStore, IndexRow, Provenance, chunk_pages, corpus_hash)
+    from sdlc_knowledge_base_scripts.fingerprint import (
+        Manifest, discover, export_fingerprint, load_fingerprint, write_fingerprint)
+
+    be = OllamaBackend()  # defaults: nomic-embed-text embeddings
+
+    def _index(lib, pages):
+        lib.mkdir()
+        for pid, body in pages.items():
+            (lib / pid).write_text(
+                f"---\nlayer: evidence\nconfidence: high\n---\n# {pid}\n{body}\n", encoding="utf-8")
+        rebuild_shelf_index(lib, lib / "_shelf-index.md", full=True)
+        rows = chunk_pages(lib)
+        texts = [t for _, t, _ in rows]
+        mat = np.array(be.embed(texts), dtype=np.float32)
+        ch = corpus_hash([(pid, h) for pid, _, h in rows])
+        prov = Provenance(model=be.embedding_model_id(), dims=mat.shape[1],
+                          normalization="l2", corpus_hash=ch)
+        irows = [IndexRow(page_id=pid, content_hash=h) for pid, _, h in rows]
+        EmbeddingStore.from_rows(mat, irows, prov).save(lib)
+        return EmbeddingStore.load(lib)
+
+    acme = _index(tmp_path / "acme",
+                  {"deploys.md": "Elite teams deploy multiple times per day."})
+    dora = _index(tmp_path / "dora",
+                  {"culture.md": "Generative culture improves software delivery performance."})
+
+    pa = tmp_path / "acme.kbfp.json"
+    pd = tmp_path / "dora.kbfp.json"
+    write_fingerprint(pa, export_fingerprint(acme, tier="page", manifest=Manifest(handle="acme")))
+    write_fingerprint(pd, export_fingerprint(dora, tier="coarse",
+                                             manifest=Manifest(handle="dora"), clusters=2))
+    fps = [load_fingerprint(pa), load_fingerprint(pd)]
+    assert all(f is not None for f in fps)
+
+    qvec = be.embed(["how often do elite teams deploy?"])[0]
+    qprov = Provenance(model=be.embedding_model_id(), dims=len(qvec),
+                       normalization="l2", corpus_hash="")
+    hits = discover(qvec, fps, query_provenance=qprov)
+    # both fingerprints are compatible (same model) -> both ranked; no crash
+    assert len(hits) == 2
+    assert {h.handle for h in hits} == {"acme", "dora"}
