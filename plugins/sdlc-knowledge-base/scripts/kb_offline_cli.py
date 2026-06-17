@@ -397,6 +397,34 @@ def _cmd_index(args: argparse.Namespace, backend_override) -> int:
     return 0
 
 
+def _cmd_fingerprint(args: argparse.Namespace) -> int:
+    if args.fp_cmd != "export":
+        return 2
+    from .embeddings import EmbeddingStore, chunk_pages, corpus_hash
+    from .fingerprint import Manifest, export_fingerprint, write_fingerprint
+
+    if args.clusters < 1:
+        raise SystemExit("fingerprint export: --clusters must be >= 1")
+    lib = Path(args.library)
+    store = EmbeddingStore.load(lib)
+    if store is None:
+        print("fingerprint export: no embedding index — run `kb-offline index` first", file=sys.stderr)
+        return 1
+    fresh = corpus_hash([(pid, h) for pid, _, h in chunk_pages(lib)])
+    if store.provenance.corpus_hash != fresh and not args.allow_stale:
+        print("fingerprint export: index is stale (corpus changed since last index) — "
+              "re-run `kb-offline index`, or pass --allow-stale", file=sys.stderr)
+        return 1
+    handle = args.handle or lib.name
+    manifest = Manifest(handle=handle, owner=args.owner, contact=args.contact)
+    artifact = export_fingerprint(store, tier=args.tier, manifest=manifest,
+                                  clusters=args.clusters, weights=not args.no_weights)
+    out = Path(args.out) if args.out else Path(f"{handle}.kbfp.json")
+    write_fingerprint(out, artifact)
+    print(f"wrote {out} (tier={args.tier}, {len(artifact['vectors'])} vectors)")
+    return 0
+
+
 def _cmd_lint(args: argparse.Namespace, sources_override=None) -> int:
     from datetime import datetime, timezone
     from .lint import lint_libraries, render_lint_report
@@ -488,6 +516,19 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_lint.add_argument("--library", default="library")
     p_lint.add_argument("--libraries", default=None, help="comma-separated external library handles")
 
+    p_fp = sub.add_parser("fingerprint")
+    fp_sub = p_fp.add_subparsers(dest="fp_cmd", required=True)
+    p_fpx = fp_sub.add_parser("export")
+    p_fpx.add_argument("--library", default="library")
+    p_fpx.add_argument("--tier", required=True, choices=["coarse", "page"])
+    p_fpx.add_argument("--out", default=None)
+    p_fpx.add_argument("--handle", default=None)
+    p_fpx.add_argument("--owner", default="")
+    p_fpx.add_argument("--contact", default=None)
+    p_fpx.add_argument("--clusters", type=int, default=8)
+    p_fpx.add_argument("--no-weights", action="store_true")
+    p_fpx.add_argument("--allow-stale", action="store_true")
+
     args = parser.parse_args(argv)
     if args.cmd == "init":
         return _cmd_init(args)
@@ -505,6 +546,8 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
         return _cmd_index(args, backend_override)
     if args.cmd == "lint":
         return _cmd_lint(args, sources_override)
+    if args.cmd == "fingerprint":
+        return _cmd_fingerprint(args)
     return 2
 
 

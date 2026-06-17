@@ -717,3 +717,61 @@ def test_accelerate_uses_accel_result_when_not_none(tmp_path, monkeypatch, capsy
         backend_override=FakeBackend(), library_specs_override=specs)
     assert rc == 0
     assert "ACCEL ANSWER" in capsys.readouterr().out
+
+
+def _build_store_lib_cli(tmp_path, pages, vectors):
+    import numpy as np
+    from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index
+    from sdlc_knowledge_base_scripts.embeddings import (
+        EmbeddingStore, IndexRow, Provenance, chunk_pages, corpus_hash)
+    lib = tmp_path / "library"
+    lib.mkdir()
+    for pid, body in pages.items():
+        (lib / pid).write_text(f"---\nlayer: evidence\nconfidence: high\n---\n# {pid}\n{body}\n",
+                               encoding="utf-8")
+    rebuild_shelf_index(lib, lib / "_shelf-index.md", full=True)
+    rows = chunk_pages(lib)
+    ch = corpus_hash([(pid, h) for pid, _, h in rows])
+    dims = len(next(iter(vectors.values())))
+    mat = np.array([vectors[pid] for pid, _, _ in rows], dtype=np.float32)
+    irows = [IndexRow(page_id=pid, content_hash=h) for pid, _, h in rows]
+    EmbeddingStore.from_rows(mat, irows,
+                             Provenance(model="m", dims=dims, normalization="l2",
+                                        corpus_hash=ch)).save(lib)
+    return lib
+
+
+def test_fingerprint_export_writes_artifact(tmp_path):
+    lib = _build_store_lib_cli(tmp_path, {"a.md": "x", "b.md": "y"},
+                               {"a.md": [1.0, 0.0], "b.md": [0.0, 1.0]})
+    out = tmp_path / "acme.kbfp.json"
+    rc = cli.main(["fingerprint", "export", "--library", str(lib), "--tier", "page",
+                   "--handle", "acme", "--out", str(out)])
+    assert rc == 0 and out.is_file()
+    art = json.loads(out.read_text())
+    assert art["tier"] == "page" and art["manifest"]["handle"] == "acme"
+    assert len(art["vectors"]) == 2
+
+
+def test_fingerprint_export_requires_tier(tmp_path):
+    import pytest as _pytest
+    with _pytest.raises(SystemExit):
+        cli.main(["fingerprint", "export", "--library", str(tmp_path)])
+
+
+def test_fingerprint_export_no_store_errors(tmp_path):
+    lib = tmp_path / "library"
+    lib.mkdir()
+    rc = cli.main(["fingerprint", "export", "--library", str(lib), "--tier", "page"])
+    assert rc == 1
+
+
+def test_fingerprint_export_freshness_gate(tmp_path):
+    lib = _build_store_lib_cli(tmp_path, {"a.md": "x"}, {"a.md": [1.0, 0.0]})
+    (lib / "a.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# a\nCHANGED\n",
+                              encoding="utf-8")          # corpus drifts from the index
+    out = tmp_path / "a.kbfp.json"
+    assert cli.main(["fingerprint", "export", "--library", str(lib), "--tier", "page",
+                     "--out", str(out)]) == 1            # stale -> refuse
+    assert cli.main(["fingerprint", "export", "--library", str(lib), "--tier", "page",
+                     "--out", str(out), "--allow-stale"]) == 0
