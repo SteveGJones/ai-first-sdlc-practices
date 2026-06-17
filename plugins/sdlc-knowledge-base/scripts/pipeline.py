@@ -4,12 +4,27 @@ mutation proposal. Backends never validate or write."""
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from pydantic import ValidationError
 
 from . import prompts
 from .contracts import Answer, EntailmentStatus, ExtractJSON, MutationProposal, SelectResult
+
+# Chat-template sentinel tokens (e.g. <|tool_response>, <|tool_response|>, <|im_end|>) that
+# some local models — gemma4:12b in particular — emit around grammar-constrained JSON, breaking
+# the parse with "Extra data"/"trailing characters". Stripped before parsing (#211, M3 finding).
+# Anchored at start/end only so legitimate JSON-string content is never touched.
+_SENTINEL_TOKEN = r"\s*<\|[^>]*>\s*"
+_LEADING_SENTINELS = re.compile(rf"^(?:{_SENTINEL_TOKEN})+")
+_TRAILING_SENTINELS = re.compile(rf"(?:{_SENTINEL_TOKEN})+$")
+
+
+def _sanitize_json(raw: str) -> str:
+    """Strip leading/trailing chat-template sentinel tokens and surrounding whitespace so
+    model-output contamination does not spuriously fail an otherwise-valid JSON parse."""
+    return _TRAILING_SENTINELS.sub("", _LEADING_SENTINELS.sub("", raw)).strip()
 
 
 def _extract_schema() -> dict:
@@ -28,7 +43,7 @@ def extract(source_path, shelf_index_path, *, backend, max_repairs: int = 1) -> 
     prompt = base_prompt
     last_error = ""
     for _ in range(max_repairs + 1):
-        raw = backend.generate(prompt, schema=schema)
+        raw = _sanitize_json(backend.generate(prompt, schema=schema))
         try:
             return ExtractJSON.model_validate_json(raw)
         except (ValidationError, ValueError) as exc:
@@ -57,7 +72,7 @@ def reduce_to_proposal(*, target_file, is_new, extracts, existing_content, backe
     prompt = base_prompt
     last_error = ""
     for _ in range(max_repairs + 1):
-        raw = backend.generate(prompt, schema=schema)
+        raw = _sanitize_json(backend.generate(prompt, schema=schema))
         try:
             return MutationProposal.model_validate_json(raw)
         except (ValidationError, ValueError) as exc:
@@ -94,7 +109,7 @@ def select(  # noqa: PLR0913
     prompt = base
     last_error = ""
     for _ in range(max_repairs + 1):
-        raw = backend.generate(prompt, schema=schema)
+        raw = _sanitize_json(backend.generate(prompt, schema=schema))
         try:
             result = SelectResult.model_validate_json(raw)
         except (ValidationError, ValueError) as exc:
@@ -119,7 +134,7 @@ def synthesize(question, pages, *, backend, max_repairs: int = 1) -> Answer:
     prompt = base
     last_error = ""
     for _ in range(max_repairs + 1):
-        raw = backend.generate(prompt, schema=schema)
+        raw = _sanitize_json(backend.generate(prompt, schema=schema))
         try:
             ans = Answer.model_validate_json(raw)
         except (ValidationError, ValueError) as exc:
@@ -156,7 +171,7 @@ def promote(saved, *, target_file, action, existing_content, backend, max_repair
     prompt = base
     last_error = ""
     for _ in range(max_repairs + 1):
-        raw = backend.generate(prompt, schema=schema)
+        raw = _sanitize_json(backend.generate(prompt, schema=schema))
         try:
             data = json.loads(raw)
             body = data["body"]
