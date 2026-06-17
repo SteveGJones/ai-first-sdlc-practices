@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .embeddings import Provenance, _l2_normalize  # noqa: F401  (used in Tasks 3/4)
+from .embeddings import Provenance, _l2_normalize
 from .fusion import compatible  # noqa: F401  (used in Task 4)
 
 FORMAT_VERSION = 1
@@ -93,3 +93,31 @@ def load_fingerprint(path) -> "Fingerprint | None":
         return None
     return Fingerprint(tier=tier, manifest=manifest, provenance=provenance,
                        vectors=vectors, weights=raw.get("weights"))
+
+
+def _kmeans(vectors: np.ndarray, k: int, seed: int) -> tuple:
+    """Seeded Lloyd's k-means over (already L2-normalized) row vectors. Returns
+    (centroids, weights): min(k, n) L2-normalized centroids and the integer page count assigned
+    to each. Deterministic for a given (vectors, k, seed); empty clusters keep their centroid."""
+    vectors = np.ascontiguousarray(vectors, dtype=np.float32)
+    n = vectors.shape[0]
+    k = min(k, n)
+    if k == 0:
+        return np.zeros((0, vectors.shape[1] if vectors.ndim == 2 else 0), dtype=np.float32), []
+    rng = np.random.default_rng(seed)
+    init = rng.choice(n, size=k, replace=False)
+    centroids = vectors[init].astype(np.float32).copy()
+    labels = np.full(n, -1, dtype=np.int64)
+    for _ in range(50):
+        sims = vectors @ centroids.T          # (n, k) cosine — all rows normalized
+        new_labels = np.argmax(sims, axis=1)
+        if np.array_equal(new_labels, labels):
+            break
+        labels = new_labels
+        for j in range(k):
+            members = vectors[labels == j]
+            if members.shape[0]:
+                centroids[j] = members.mean(axis=0)
+        centroids = _l2_normalize(centroids)
+    weights = [int((labels == j).sum()) for j in range(k)]
+    return centroids, weights
