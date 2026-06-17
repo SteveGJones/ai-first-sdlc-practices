@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 
 from .embeddings import Provenance, _l2_normalize
-from .fusion import compatible  # noqa: F401  (used in Task 4)
+from .fusion import compatible
 
 FORMAT_VERSION = 1
 
@@ -158,3 +158,53 @@ def _kmeans(vectors: np.ndarray, k: int, seed: int) -> tuple:
         centroids = _l2_normalize(centroids)
     weights = [int((labels == j).sum()) for j in range(k)]
     return centroids, weights
+
+
+@dataclass
+class DiscoverHit:
+    handle: str
+    owner: str
+    contact: "str | None"
+    tier: str
+    score: float
+    n_hits: "int | None"
+
+
+def score_fingerprint(qvec, fp: Fingerprint, *, hit_threshold: float = 0.5) -> tuple:
+    """(score, n_hits) for a fingerprint vs a query vector. score = max cosine over the
+    fingerprint's vectors (centroids for coarse, pages for page). n_hits = #vectors >=
+    hit_threshold for the page tier (None for coarse). q is L2-normalized here."""
+    q = np.asarray(qvec, dtype=np.float32)
+    qn = np.linalg.norm(q)
+    if qn:
+        q = q / qn
+    if fp.vectors.shape[0] == 0:
+        return float("-inf"), (0 if fp.tier == "page" else None)
+    sims = fp.vectors @ q
+    score = float(sims.max())
+    n_hits = int((sims >= hit_threshold).sum()) if fp.tier == "page" else None
+    return score, n_hits
+
+
+def discover(qvec, fingerprints, *, query_provenance, min_score: float = 0.0,
+             hit_threshold: float = 0.5, top=None) -> list:
+    """Rank compatible fingerprints by coverage score (desc). Incompatible
+    (model/dims/normalization) fingerprints are dropped with a stderr warning — never scored.
+    min_score filters; top truncates."""
+    hits = []
+    for fp in fingerprints:
+        if not compatible(query_provenance, fp.provenance):
+            print(f"[discover] {fp.manifest.handle}: incompatible embedding "
+                  f"({fp.provenance.model}/{fp.provenance.dims}/{fp.provenance.normalization})"
+                  "; skipping", file=sys.stderr)
+            continue
+        score, n_hits = score_fingerprint(qvec, fp, hit_threshold=hit_threshold)
+        if score < min_score:
+            continue
+        hits.append(DiscoverHit(handle=fp.manifest.handle, owner=fp.manifest.owner,
+                                contact=fp.manifest.contact, tier=fp.tier,
+                                score=score, n_hits=n_hits))
+    hits.sort(key=lambda h: h.score, reverse=True)
+    if top is not None:
+        hits = hits[:top]
+    return hits

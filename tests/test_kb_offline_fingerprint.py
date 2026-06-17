@@ -9,9 +9,9 @@ import pytest
 from sdlc_knowledge_base_scripts.build_shelf_index import rebuild_shelf_index
 from sdlc_knowledge_base_scripts.embeddings import (
     EmbeddingStore, IndexRow, Provenance, chunk_pages, corpus_hash)
-from sdlc_knowledge_base_scripts.fingerprint import (
-    FORMAT_VERSION, Manifest, _kmeans, _vectors_sha256, export_fingerprint,
-    load_fingerprint, write_fingerprint)
+from sdlc_knowledge_base_scripts.fingerprint import (  # noqa: F401 (DiscoverHit: public API)
+    FORMAT_VERSION, DiscoverHit, Fingerprint, Manifest, _kmeans, _vectors_sha256,
+    discover, export_fingerprint, load_fingerprint, score_fingerprint, write_fingerprint)
 
 
 def _artifact(vectors, *, tier="page", weights=None):
@@ -183,3 +183,50 @@ def test_export_rejects_unknown_tier(tmp_path):
     store = EmbeddingStore.load(lib)
     with pytest.raises(ValueError):
         export_fingerprint(store, tier="bogus", manifest=Manifest(handle="acme"))
+
+
+def _fp(vectors, *, handle="acme", tier="page", model="m", owner="Acme", contact=None):
+    return Fingerprint(
+        tier=tier, manifest=Manifest(handle=handle, owner=owner, contact=contact),
+        provenance=Provenance(model=model, dims=len(vectors[0]), normalization="l2", corpus_hash=""),
+        vectors=np.array(vectors, dtype=np.float32))
+
+
+def test_score_page_tier_max_cosine_and_n_hits():
+    fp = _fp([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.7071, 0.7071, 0.0]])
+    score, n_hits = score_fingerprint([1.0, 0.0, 0.0], fp, hit_threshold=0.5)
+    assert abs(score - 1.0) < 1e-5
+    assert n_hits == 2          # vec0 (1.0) and vec2 (~0.707) >= 0.5
+
+
+def test_score_coarse_tier_n_hits_none():
+    fp = _fp([[1.0, 0.0], [0.0, 1.0]], tier="coarse")
+    score, n_hits = score_fingerprint([1.0, 0.0], fp)
+    assert abs(score - 1.0) < 1e-5 and n_hits is None
+
+
+def test_discover_ranks_on_topic_above_off_topic():
+    qprov = Provenance(model="m", dims=3, normalization="l2", corpus_hash="")
+    on = _fp([[1.0, 0.0, 0.0]], handle="on-topic")
+    off = _fp([[0.0, 0.0, 1.0]], handle="off-topic")
+    hits = discover([1.0, 0.0, 0.0], [off, on], query_provenance=qprov)
+    assert [h.handle for h in hits] == ["on-topic", "off-topic"]
+    assert hits[0].score > hits[1].score
+
+
+def test_discover_drops_incompatible_with_warning(capsys):
+    qprov = Provenance(model="nomic-embed-text", dims=3, normalization="l2", corpus_hash="")
+    good = _fp([[1.0, 0.0, 0.0]], handle="good", model="nomic-embed-text")
+    bad = _fp([[1.0, 0.0, 0.0]], handle="bad", model="other-model")
+    hits = discover([1.0, 0.0, 0.0], [good, bad], query_provenance=qprov)
+    assert [h.handle for h in hits] == ["good"]
+    assert "incompatible" in capsys.readouterr().err
+
+
+def test_discover_min_score_and_top():
+    qprov = Provenance(model="m", dims=3, normalization="l2", corpus_hash="")
+    a = _fp([[1.0, 0.0, 0.0]], handle="a")
+    b = _fp([[0.0, 0.0, 1.0]], handle="b")
+    assert [h.handle for h in discover([1.0, 0.0, 0.0], [a, b], query_provenance=qprov,
+                                       min_score=0.5)] == ["a"]
+    assert len(discover([1.0, 0.0, 0.0], [a, b], query_provenance=qprov, top=1)) == 1
