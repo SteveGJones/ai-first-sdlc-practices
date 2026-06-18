@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from sdlc_knowledge_base_scripts.contracts import Answer, Claim, EntailmentStatus, PageRef, Span
-from sdlc_knowledge_base_scripts.provenance import filter_pages
+from sdlc_knowledge_base_scripts.provenance import filter_pages, known_page_ids
 from sdlc_knowledge_base_scripts.publication import publish
 
 
@@ -40,3 +40,15 @@ def test_publish_policy_splits_claims():
     assert "partial one" in rendered and "partially supported" in rendered.lower()
     assert "unsupported one" not in rendered
     assert any("unsupported one" in r["text"] for r in rejected)
+
+
+def test_known_page_ids_roots_only_excludes_index_files(tmp_path):
+    (tmp_path / "dora.md").write_text("x", encoding="utf-8")
+    (tmp_path / "ci-cd.md").write_text("x", encoding="utf-8")
+    (tmp_path / "_shelf-index.md").write_text("x", encoding="utf-8")
+    (tmp_path / "log.md").write_text("x", encoding="utf-8")
+    (tmp_path / "_index.md").write_text("x", encoding="utf-8")
+    sub = tmp_path / "sub"
+    sub.mkdir()
+    (sub / "nested.md").write_text("x", encoding="utf-8")  # nested must NOT be known
+    assert known_page_ids(tmp_path) == {"dora.md", "ci-cd.md"}

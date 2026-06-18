@@ -7,6 +7,14 @@ from pathlib import Path
 
 _FRONTMATTER = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)  # assumes LF-terminated, framework-generated frontmatter
 _CONFIDENCE_RANK = {"low": 0, "medium": 1, "high": 2}
+_INDEX_FILES = {"_shelf-index.md", "log.md", "_index.md"}
+
+
+def known_page_ids(lib) -> set[str]:
+    """The set of routable library page ids: root-level *.md minus the index/log files.
+    Single source of truth shared by the query graph's select node and the eval trace
+    (root glob only — nested files are not routable). (#211)"""
+    return {p.name for p in Path(lib).glob("*.md") if p.name not in _INDEX_FILES}
 
 
 def page_frontmatter(library_path: Path, page_name: str) -> dict:

@@ -22,7 +22,7 @@ from langgraph.graph import END, START, StateGraph  # noqa: E402
 from ..contracts import Answer  # noqa: E402
 from ..entailment import verify_entailment  # noqa: E402
 from ..pipeline import select, synthesize  # noqa: E402
-from ..provenance import filter_pages  # noqa: E402
+from ..provenance import filter_pages, known_page_ids  # noqa: E402
 from ..publication import publish  # noqa: E402
 
 
@@ -51,7 +51,7 @@ def build_query_graph(backend):
         import sys
         lib = Path(state["library_path"])
         shelf = lib / "_shelf-index.md"
-        known = {p.name for p in lib.glob("*.md") if p.name not in {"_shelf-index.md", "log.md", "_index.md"}}
+        known = known_page_ids(lib)
         if state.get("accelerate"):
             from ..embeddings import EmbeddingStore, chunk_pages, corpus_hash
             from ..retrieval import accelerated_candidates
