@@ -2,7 +2,7 @@
 
 **Issue:** EPIC #211 (kb-offline), M3/M4 hardening item #1 (highest priority — enabler for #2/#4/#5).
 **Date:** 2026-06-18
-**Status:** design, pending review. (Rev 3 — incorporates two review rounds: R1 P1–P3, R2 P1–P3.)
+**Status:** design, pending review. (Rev 4 — three review rounds: R1 P1–P3, R2 P1–P3, R3 P2–P3.)
 
 ## Goal
 
@@ -34,28 +34,31 @@ Motivation: the `fact_recall = 0.000` root cause (empty `cited_pages` orphaned b
 
 ## Architecture — non-invasive capture
 
-### Unit A — `RecordingBackend` records stage, invocation, attempt, raw, timing
-Each record becomes:
+### Unit A — `RecordingBackend` stays dumb: stateless per-call records (R3-P2)
+`RecordingBackend.generate()` sees only the prompt and the raw output string. It records **only** what it can know statelessly, per call:
 ```
-{stage, stage_invocation, repair_attempt, first_pass, json_parse_ok, accepted, elapsed_ms, raw}
+{stage, first_pass, json_parse_ok, elapsed_ms, raw}
 ```
 - `stage` ∈ `select | synthesize | judge | other`, from the prompt (substring-match `prompts.SELECT_FRAGMENT` / `SYNTHESIZE_FRAGMENT`; judge prompt begins `"Judge whether"`).
 - `first_pass` = the prompt does **not** contain the repair marker `"Previous output invalid:"`.
-- **`stage_invocation` vs `repair_attempt` (R2-P1).** Distinguishing "another judge call" from "a repair":
-  - A `first_pass` call **starts a new stage_invocation** of that stage (invocation counter per `(question, stage)` increments; `repair_attempt` resets to 1).
-  - A non-`first_pass` (repair) call belongs to the **same** invocation; `repair_attempt` increments.
-  - Result: select = invocation 1 with repair_attempts 1..N; synthesize = invocation 1 with repair_attempts 1..N; **judge = invocations 1,2,3… (one per judged claim), each repair_attempt 1** — no judge is ever mislabelled a repair.
-- `json_parse_ok` (R2-P3, renamed from `valid_json` for honesty) = `json.loads` succeeded. It is **not** schema acceptance.
-- **`accepted` is positional, not parse-based (R2-P3).** = the call whose output the pipeline actually used for its `stage_invocation`: the **last `repair_attempt` of a successful invocation** (the repair loop returns on the first accepted parse, so the last call of a non-erroring invocation is the accepted one — correct regardless of json-vs-schema). For `judge`, the single call is `accepted: true` (its result is always used, defaulting to `unsupported` if `json_parse_ok` is false). If an invocation exhausted its repair budget (→ the operation raised), **no** call is `accepted`.
+- `json_parse_ok` (R2-P3, renamed from `valid_json`) = `json.loads` succeeded — **not** schema acceptance.
 - `elapsed_ms` = wall time of the one `generate` call (`time.monotonic` around `self._inner.generate`).
-- Existing first-pass/json semantics preserved; `harness.first_pass_json_validity` is updated to read `json_parse_ok` (mechanical rename; computed value identical) and its test asserts the value is unchanged.
 
-This list is the trace's **raw-I/O source of truth** — every attempt of every stage (raw select repairs P-R1b, raw synthesize pre-normalization P-R1a, every judge call), each timed (P-R1/P2c).
+**The wrapper does NOT compute `stage_invocation`, `repair_attempt`, or `accepted`.** Those require knowledge it does not have — schema acceptance happens later in `select`/`synthesize`, graph errors happen outside the wrapper, and question/label boundaries are unknown to it. Trying to infer them in the wrapper would get schema-failure and error cases wrong. They are derived in post-processing (Unit B). No counters, no `begin_trace_scope()` API — the wrapper is stateless.
 
-### Unit B — per-question trace assembly in `run_questions`
+`harness.first_pass_json_validity` is updated to read `json_parse_ok` (mechanical rename; computed value identical) with a guard test. Existing first-pass/json semantics preserved.
+
+This list is the trace's **raw-I/O source of truth** — every attempt of every stage (raw select repairs R1-P1b, raw synthesize pre-normalization R1-P1a, every judge call), each timed (R1-P2c).
+
+### Unit B — per-question trace assembly in `run_questions` (owns the derived fields)
 `run_questions` gains `trace: list | None = None` (default `None` = current behaviour exactly).
 
-- **Per-question call slice.** Snapshot `len(backend.records)` before each `graph.invoke`; after, `backend.records[before:after]` is that question's `model_calls`. The invocation counters in Unit A reset at the per-question boundary (a fresh `first_pass` select always opens invocation 1).
+- **Per-question call slice = the boundary (R3-P2).** Snapshot `n0 = len(backend.records)` before each `graph.invoke`; after, `backend.records[n0:]` is exactly that question's calls. The slice *is* the boundary — no wrapper-side counter or reset signal. The same snapshot-per-iteration pattern is applied **per verifier label** in `run_verifier_labels` (R3-P3), so each label row captures only its own judge call(s).
+- **Derive `stage_invocation` / `repair_attempt` from the slice (R3-P2).** Walk the slice in order, per `stage`: a `first_pass` call opens a new `stage_invocation` (counter++ within this slice, `repair_attempt`=1); a non-`first_pass` call continues the current invocation (`repair_attempt`++). Within one question this yields: select = invocation 1, attempts 1..N; synthesize = invocation 1, attempts 1..N; **judge = invocations 1,2,3…**, each `repair_attempt` 1. Because numbering is derived from the per-question slice, it can never leak run-global.
+- **Derive `accepted` positionally, post-success/error (R3-P2).** Acceptance is annotated by the trace assembler, not the wrapper:
+  - **Success** (no `graph.invoke` exception): mark the **last call of each `stage_invocation`** `accepted: true` (the repair loop returns on its first accepted parse, so the terminal call of every completed invocation is the one the pipeline used; each judge invocation's single call is accepted).
+  - **Error**: the failing stage is the **terminal invocation** in the slice (the graph raises from it and nothing runs after). Mark the last call of every invocation `accepted: true` **except the terminal invocation**, which produced no usable output → all its calls `accepted: false`. (No need to parse `error_msg`.)
+  - All other calls are `accepted: false`.
 - **Known-page helper (R2-P2 — drift guard).** Extract `n_select`'s known-page computation into a shared `known_page_ids(lib) -> set[str]` (root `glob("*.md")` minus `{_shelf-index.md, log.md, _index.md}`) and have **both** `n_select` and the trace call it. This is a pure refactor — `n_select` behaviour is byte-identical. (Fallback if a zero-graph-touch is preferred: inline the identical logic in the trace with a "must match n_select" comment. Recommend the shared helper.)
 - **Drop classification (R1-P2a, corrected by R2-P2a).** Recompute `eligible_page_ids = filter_pages(lib, sorted(known_page_ids(lib)), layer=q.expected_layer, min_confidence=None)` — the same call `n_select` makes on the default path. Parse the `accepted` select attempt's raw ids (`model_selected`). Then:
   - `dropped` = `model_selected − page_ids`, each classified: `unknown_id` (not in `known_page_ids`) or `filtered_out` (in known but not in `eligible`). **`not_selected` is removed** — `select` preserves eligible ids, so it cannot occur.
@@ -65,7 +68,7 @@ This list is the trace's **raw-I/O source of truth** — every attempt of every 
 - **Error path (R1-P2b).** In the existing `graph.invoke` except branch, when tracing, append a `type:"question"` row with `error: true`, `error_msg`, `elapsed_s`, and the `model_calls` slice captured since the snapshot (raw call history is most valuable here). A failure while *assembling* a non-error row is caught and written as `{type:"question", id, trace_error}`.
 - Return value unchanged; the trace is a side-channel.
 
-`run_verifier_labels` gains the same side-channel: per label `{type:"verifier", id, claim_text, ground_cap, judge_raw, predicted_status, gold_status, model_calls}` (its single judge call is one `stage_invocation`).
+`run_verifier_labels` gains the same side-channel with a **per-label snapshot** (R3-P3): snapshot `len(backend.records)` before each label's grounding+judge, slice after, and derive that label's `model_calls` (its one judge call = `stage_invocation` 1) from that slice alone — so no label's row absorbs another's calls. Row: `{type:"verifier", id, claim_text, ground_cap, judge_raw, predicted_status, gold_status, model_calls}`.
 
 ### Unit C — `score_run` + `_cmd_eval` wiring + filename safety
 - `score_run(..., trace=None)` threads the list into both runners.
@@ -138,7 +141,9 @@ Notes:
 - Non-`RecordingBackend` backend (defensive) → tracing degrades to `out`-derived + recomputed fields only (no `model_calls`), no error.
 
 ## Testing (TDD, `FakeBackend` — no Ollama)
-1. `RecordingBackend`: tags `stage`; sets `first_pass` from the repair marker; assigns `stage_invocation`/`repair_attempt` correctly — **a select first-pass+repair = invocation 1 / attempts 1,2; two judge calls = invocations 1,2 each attempt 1** (R2-P1 regression); `json_parse_ok` + `elapsed_ms` present; `accepted` = last attempt of a successful invocation, every judge `accepted`.
+1. `RecordingBackend` (stateless, R3-P2): records exactly `{stage, first_pass, json_parse_ok, elapsed_ms, raw}` per call — tags `stage`, sets `first_pass` from the repair marker, `json_parse_ok` + `elapsed_ms` present — and does **not** emit `stage_invocation`/`repair_attempt`/`accepted` (those are absent from wrapper records).
+1b. Derivation from a per-question slice (R3-P2): given a recorded slice [select fp, select repair, synthesize fp, judge, judge], post-processing yields select=invocation 1/attempts 1,2; synthesize=invocation 1/attempt 1; judge=invocations 1,2/attempt 1 each; on **success** the last call of every invocation is `accepted:true`; on **error** the terminal invocation's calls are `accepted:false` and all prior invocations' last calls `accepted:true` (R2-P1 + R3-P2).
+1c. Per-label isolation (R3-P3): two verifier labels processed in sequence each yield a row whose `model_calls` contains only that label's judge call (no bleed), numbered from its own slice.
 2. `harness.first_pass_json_validity` reads `json_parse_ok` and returns the same value as before the rename (guard).
 3. Raw synthesize surfaced: an empty-`cited_pages` synthesized claim shows `cited_pages:[]` in the synthesize `raw` and the back-filled page in `claims[].cited_pages` (R1-P1a visibility guard).
 4. Drop classification: a select returning a known-eligible id + an unknown id + a layer-filtered id → `dropped` reasons `unknown_id` / `filtered_out`; **no `not_selected`** ever produced (R2-P2a); `eligible_unselected` lists an eligible page the model omitted.
@@ -155,3 +160,4 @@ Notes:
 - **Consistency:** strictly additive to behaviour except the one byte-identical `known_page_ids` extraction and the suppressible file write; return values, metrics, and the (renamed-but-equal) first-pass-json metric unchanged.
 - **Scope:** single implementation plan; bounded to `runner.py`, a shared `known_page_ids` + `safe_model_name` helper, a one-line `n_select` refactor, a CLI arg, and tests.
 - **Ambiguity resolved:** `accepted` is positional (the call the pipeline returned on), independent of `json_parse_ok`; multi-judge questions use `stage_invocation` (not `repair_attempt`); `dropped` is classified against the recomputed eligible set with `not_selected` removed as impossible and `eligible_unselected` added as the distinct recall signal; the known set is a shared helper to prevent trace/graph drift; accelerated candidates are an explicit recorded limitation.
+- **Ownership (R3):** `RecordingBackend` is stateless (records only `{stage, first_pass, json_parse_ok, elapsed_ms, raw}`); `stage_invocation`/`repair_attempt`/`accepted` are derived by `run_questions`/`run_verifier_labels` post-processing of each per-question/per-label record slice. The slice is the boundary — no wrapper counters or scope API; numbering cannot leak across questions/labels.
