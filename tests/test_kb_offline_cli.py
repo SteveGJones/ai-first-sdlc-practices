@@ -823,3 +823,43 @@ def test_discover_requires_embedding_backend():
             return "{}"
     rc = cli.main(["discover", "q"], backend_override=_NoEmbed(), fingerprints_override=[])
     assert rc == 2
+
+
+# ---------------------------------------------------------------------------
+# eval release trace tests (Task 8)
+# ---------------------------------------------------------------------------
+
+def _eval_smoke_gen():
+    import json as _j
+
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge"):
+            return '{"status": "supported"}'
+        if "Shelf-index" in prompt:
+            return _j.dumps({"page_ids": ["dora.md"]}) if "deploy" in prompt else _j.dumps({"page_ids": []})
+        return _j.dumps({"claims": [], "rendered_text": ""})
+    return gen
+
+
+def test_eval_release_writes_trace_by_default(tmp_path):
+    be = FakeBackend()
+    be.generate = _eval_smoke_gen()
+    rc = cli.main(["eval", "release", "--suite", "plugins/sdlc-knowledge-base/eval/suite/smoke",
+                   "--runs", "1", "--stamp", "T1", "--report-dir", str(tmp_path), "--model", "gemma4:12b"],
+                  backend_override=be)
+    assert rc in (0, 1)
+    traces = list(tmp_path.glob("trace-gemma4_12b-T1-run1.jsonl"))
+    assert len(traces) == 1
+    lines = [json.loads(x) for x in traces[0].read_text().splitlines() if x.strip()]
+    assert any(r["type"] == "question" for r in lines)
+    assert any(r["type"] == "verifier" for r in lines)
+
+
+def test_eval_release_no_trace_suppresses(tmp_path):
+    be = FakeBackend()
+    be.generate = _eval_smoke_gen()
+    cli.main(["eval", "release", "--suite", "plugins/sdlc-knowledge-base/eval/suite/smoke",
+              "--runs", "1", "--stamp", "T2", "--report-dir", str(tmp_path), "--model", "gemma4:12b",
+              "--no-trace"], backend_override=be)
+    assert list(tmp_path.glob("trace-*.jsonl")) == []
+    assert list(tmp_path.glob("release-gemma4_12b-T2.md"))

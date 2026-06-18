@@ -265,14 +265,25 @@ def _cmd_eval(args: argparse.Namespace, backend_override) -> int:
     # synthesize, single-page judge) fit well under 8k tokens. The model's default 131072
     # context reserves a huge KV-cache that drives the host into swap; pinning it keeps the
     # run memory-bounded and reproducible.
+    import json as _json
     pin = {"temperature": 0, "seed": 7, "top_p": 1, "num_ctx": 8192}
     backend = _make_backend(args.backend, backend_override, options=pin, model=args.model)
+    safe = report_mod.safe_model_name(args.model)
+    report_dir = Path(args.report_dir)
+    report_dir.mkdir(parents=True, exist_ok=True)
     runs = []
     for i in range(args.runs):
         print(f"[eval] starting run {i + 1}/{args.runs} — {len(questions)} questions, "
               f"{len(labels)} verifier labels (model={args.model})", file=sys.stderr)
+        trace = None if args.no_trace else []
         runs.append(score_run(str(library), questions, labels, backend=backend,
-                              progress=True, run_label=f"run {i + 1}/{args.runs}"))
+                              progress=True, run_label=f"run {i + 1}/{args.runs}", trace=trace))
+        if trace is not None:
+            tp = report_dir / f"trace-{safe}-{args.stamp}-run{i + 1}.jsonl"
+            try:
+                tp.write_text("".join(_json.dumps(r) + "\n" for r in trace), encoding="utf-8")
+            except OSError as exc:
+                print(f"[eval] warning: failed to write trace {tp}: {exc}", file=sys.stderr)
     agg = report_mod.aggregate(runs)
     verdict = report_mod.gate(agg)
     drift = None
@@ -281,9 +292,7 @@ def _cmd_eval(args: argparse.Namespace, backend_override) -> int:
         a_runs = [score_run(str(library), questions, labels, backend=a_backend)]
         drift = report_mod.aggregate(a_runs)
     text = report_mod.render_report(agg, verdict, model=args.model, drift=drift, pin=pin)
-    report_dir = Path(args.report_dir)
-    report_dir.mkdir(parents=True, exist_ok=True)
-    stem = report_dir / f"release-{args.model.replace(':', '_')}-{args.stamp}"
+    stem = report_dir / f"release-{safe}-{args.stamp}"
     stem.with_suffix(".md").write_text(text, encoding="utf-8")
     import json as _json
     stem.with_suffix(".json").write_text(
@@ -544,6 +553,8 @@ def main(argv: list[str] | None = None, *, backend_override=None, allowed_layers
     p_rel.add_argument("--compare", default=None, choices=["anthropic"])
     p_rel.add_argument("--report-dir", default="research/kb-offline-eval")
     p_rel.add_argument("--stamp", required=True)
+    p_rel.add_argument("--no-trace", action="store_true",
+                       help="skip writing the per-question diagnostic trace JSONL")
 
     p_promote = sub.add_parser("promote")
     p_promote.add_argument("ref")
