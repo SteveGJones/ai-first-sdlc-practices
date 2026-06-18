@@ -2,7 +2,7 @@
 
 **Issue:** EPIC #211 (kb-offline), M3/M4 hardening item #1 (highest priority — enabler for #2/#4/#5).
 **Date:** 2026-06-18
-**Status:** design, pending review. (Rev 4 — three review rounds: R1 P1–P3, R2 P1–P3, R3 P2–P3.)
+**Status:** design, approved pending this last refinement. (Rev 5 — review rounds R1–R4; R4 = narrow the error-path `accepted` rule to model-stage failures.)
 
 ## Goal
 
@@ -57,7 +57,8 @@ This list is the trace's **raw-I/O source of truth** — every attempt of every 
 - **Derive `stage_invocation` / `repair_attempt` from the slice (R3-P2).** Walk the slice in order, per `stage`: a `first_pass` call opens a new `stage_invocation` (counter++ within this slice, `repair_attempt`=1); a non-`first_pass` call continues the current invocation (`repair_attempt`++). Within one question this yields: select = invocation 1, attempts 1..N; synthesize = invocation 1, attempts 1..N; **judge = invocations 1,2,3…**, each `repair_attempt` 1. Because numbering is derived from the per-question slice, it can never leak run-global.
 - **Derive `accepted` positionally, post-success/error (R3-P2).** Acceptance is annotated by the trace assembler, not the wrapper:
   - **Success** (no `graph.invoke` exception): mark the **last call of each `stage_invocation`** `accepted: true` (the repair loop returns on its first accepted parse, so the terminal call of every completed invocation is the one the pipeline used; each judge invocation's single call is accepted).
-  - **Error**: the failing stage is the **terminal invocation** in the slice (the graph raises from it and nothing runs after). Mark the last call of every invocation `accepted: true` **except the terminal invocation**, which produced no usable output → all its calls `accepted: false`. (No need to parse `error_msg`.)
+  - **Error from `select`/`synthesize` repair-exhaustion** (the model-failure case — a `ValueError` whose message starts `"select failed after"` / `"synthesize failed after"`): the failing stage is the **terminal invocation** in the slice (the graph raises from it, nothing runs after). Mark the last call of every invocation `accepted: true` **except the terminal invocation**, whose calls are `accepted: false` (it produced no usable output).
+  - **Any other exception** (R4 — a non-model failure: `read`/`verify`/`publish`/file-I/O/unexpected, possibly *after* a model output was already used): every model invocation in the slice completed before the failure → mark the **last call of each invocation** `accepted: true`. This avoids falsely marking a genuinely-used model call unaccepted when the error came from outside the model stages.
   - All other calls are `accepted: false`.
 - **Known-page helper (R2-P2 — drift guard).** Extract `n_select`'s known-page computation into a shared `known_page_ids(lib) -> set[str]` (root `glob("*.md")` minus `{_shelf-index.md, log.md, _index.md}`) and have **both** `n_select` and the trace call it. This is a pure refactor — `n_select` behaviour is byte-identical. (Fallback if a zero-graph-touch is preferred: inline the identical logic in the trace with a "must match n_select" comment. Recommend the shared helper.)
 - **Drop classification (R1-P2a, corrected by R2-P2a).** Recompute `eligible_page_ids = filter_pages(lib, sorted(known_page_ids(lib)), layer=q.expected_layer, min_confidence=None)` — the same call `n_select` makes on the default path. Parse the `accepted` select attempt's raw ids (`model_selected`). Then:
@@ -142,7 +143,7 @@ Notes:
 
 ## Testing (TDD, `FakeBackend` — no Ollama)
 1. `RecordingBackend` (stateless, R3-P2): records exactly `{stage, first_pass, json_parse_ok, elapsed_ms, raw}` per call — tags `stage`, sets `first_pass` from the repair marker, `json_parse_ok` + `elapsed_ms` present — and does **not** emit `stage_invocation`/`repair_attempt`/`accepted` (those are absent from wrapper records).
-1b. Derivation from a per-question slice (R3-P2): given a recorded slice [select fp, select repair, synthesize fp, judge, judge], post-processing yields select=invocation 1/attempts 1,2; synthesize=invocation 1/attempt 1; judge=invocations 1,2/attempt 1 each; on **success** the last call of every invocation is `accepted:true`; on **error** the terminal invocation's calls are `accepted:false` and all prior invocations' last calls `accepted:true` (R2-P1 + R3-P2).
+1b. Derivation from a per-question slice (R3-P2): given a recorded slice [select fp, select repair, synthesize fp, judge, judge], post-processing yields select=invocation 1/attempts 1,2; synthesize=invocation 1/attempt 1; judge=invocations 1,2/attempt 1 each; on **success** the last call of every invocation is `accepted:true`; on a **select/synthesize repair-exhaustion error** the terminal invocation's calls are `accepted:false` and all prior invocations' last calls `accepted:true`; on a **non-model error** (e.g. a `publish`/read failure raised after synthesize was used) the last call of *every* invocation is `accepted:true` (R2-P1 + R3-P2 + R4).
 1c. Per-label isolation (R3-P3): two verifier labels processed in sequence each yield a row whose `model_calls` contains only that label's judge call (no bleed), numbered from its own slice.
 2. `harness.first_pass_json_validity` reads `json_parse_ok` and returns the same value as before the rename (guard).
 3. Raw synthesize surfaced: an empty-`cited_pages` synthesized claim shows `cited_pages:[]` in the synthesize `raw` and the back-filled page in `claims[].cited_pages` (R1-P1a visibility guard).
