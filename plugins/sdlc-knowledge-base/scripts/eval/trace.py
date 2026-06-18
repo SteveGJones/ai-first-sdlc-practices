@@ -43,3 +43,21 @@ def derive_model_calls(records: list[dict], *, errored: bool, error_msg: str) ->
             continue
         out[idx]["accepted"] = True
     return out
+
+
+def classify_select_drops(model_selected, final_page_ids, known, eligible):
+    """Classify each model-selected id absent from the final routed set, and list eligible
+    pages the model did not pick. Returns (dropped, eligible_unselected):
+      dropped: [{"id", "reason"}] reason ∈ {"unknown_id" (not a known page),
+               "filtered_out" (known but not eligible — layer/confidence)};
+      eligible_unselected: sorted eligible ids the model never selected (recall signal).
+    'not_selected' cannot occur: select preserves eligible ids."""
+    final = set(final_page_ids)
+    dropped = []
+    for pid in model_selected:
+        if pid in final:
+            continue
+        reason = "unknown_id" if pid not in known else "filtered_out"
+        dropped.append({"id": pid, "reason": reason})
+    eligible_unselected = sorted(set(eligible) - set(model_selected))
+    return dropped, eligible_unselected

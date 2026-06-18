@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from sdlc_knowledge_base_scripts.eval.trace import derive_model_calls
+from sdlc_knowledge_base_scripts.eval.trace import classify_select_drops
 
 
 def _rec(stage, first_pass, ok=True):
@@ -52,3 +53,19 @@ def test_derive_non_model_error_with_repair_accepts_completed_tail():
     assert calls[0]["accepted"] is False           # first select attempt (not the tail)
     assert calls[1]["accepted"] is True            # select invocation tail
     assert calls[2]["accepted"] is True            # synthesize tail
+
+
+def test_classify_select_drops_unknown_and_filtered():
+    known = {"dora.md", "ci-cd.md", "sdlc-assured.md"}
+    eligible = {"dora.md", "ci-cd.md"}                     # sdlc-assured filtered out by layer
+    model_selected = ["dora.md", "telemetry.md", "sdlc-assured.md"]
+    final = ["dora.md"]
+    dropped, eligible_unselected = classify_select_drops(model_selected, final, known, eligible)
+    by_id = {d["id"]: d["reason"] for d in dropped}
+    assert by_id == {"telemetry.md": "unknown_id", "sdlc-assured.md": "filtered_out"}
+    assert eligible_unselected == ["ci-cd.md"]             # eligible but the model didn't pick it
+
+
+def test_classify_select_drops_empty_when_all_final():
+    dropped, unsel = classify_select_drops(["dora.md"], ["dora.md"], {"dora.md"}, {"dora.md"})
+    assert dropped == [] and unsel == []
