@@ -294,7 +294,6 @@ def _cmd_eval(args: argparse.Namespace, backend_override) -> int:
     text = report_mod.render_report(agg, verdict, model=args.model, drift=drift, pin=pin)
     stem = report_dir / f"release-{safe}-{args.stamp}"
     stem.with_suffix(".md").write_text(text, encoding="utf-8")
-    import json as _json
     stem.with_suffix(".json").write_text(
         _json.dumps({"model": args.model, "stamp": args.stamp, "pin": pin,
                      "verdict": verdict, "metrics": agg}, indent=2, sort_keys=True),
