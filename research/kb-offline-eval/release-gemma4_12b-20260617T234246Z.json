@@ -1,0 +1,109 @@
+{
+  "metrics": {
+    "abstention_precision": {
+      "mean": 0.2268041237113402,
+      "runs": [
+        0.2268041237113402
+      ],
+      "stddev": 0.0
+    },
+    "abstention_recall": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "citation_validity_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "clean_published_support_rate": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "fact_recall": {
+      "mean": 0.0,
+      "runs": [
+        0.0
+      ],
+      "stddev": 0.0
+    },
+    "first_pass_json_validity": {
+      "mean": 0.9569377990430622,
+      "runs": [
+        0.9569377990430622
+      ],
+      "stddev": 0.0
+    },
+    "invalid_mutation_rejection_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "post_repair_json_validity_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "routing_precision": {
+      "mean": 0.7954545454545454,
+      "runs": [
+        0.7954545454545454
+      ],
+      "stddev": 0.0
+    },
+    "routing_recall": {
+      "mean": 0.9333333333333333,
+      "runs": [
+        0.9333333333333333
+      ],
+      "stddev": 0.0
+    },
+    "verifier_precision": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "verifier_recall": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    }
+  },
+  "model": "gemma4:12b",
+  "pin": {
+    "num_ctx": 8192,
+    "seed": 7,
+    "temperature": 0,
+    "top_p": 1
+  },
+  "stamp": "20260617T234246Z",
+  "verdict": {
+    "failure_details": [
+      "fact_recall: mean 0.0000 < 0.85",
+      "routing_precision: mean 0.7955 < 0.8",
+      "abstention_precision: mean 0.2268 < 0.95"
+    ],
+    "failures": [
+      "fact_recall",
+      "routing_precision",
+      "abstention_precision"
+    ],
+    "passed": false
+  }
+}

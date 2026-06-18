@@ -1,0 +1,97 @@
+{
+  "backend": "claude-code",
+  "metrics": {
+    "abstention_precision": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "abstention_recall": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "citation_validity_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "clean_published_support_rate": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "fact_recall": {
+      "mean": 0.9066666666666666,
+      "runs": [
+        0.9066666666666666
+      ],
+      "stddev": 0.0
+    },
+    "first_pass_json_validity": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "invalid_mutation_rejection_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "post_repair_json_validity_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "routing_precision": {
+      "mean": 0.9868421052631579,
+      "runs": [
+        0.9868421052631579
+      ],
+      "stddev": 0.0
+    },
+    "routing_recall": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "verifier_precision": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "verifier_recall": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    }
+  },
+  "missing_questions": [],
+  "missing_verifier": [],
+  "stamp": "claude-20260618T035356Z",
+  "verdict": {
+    "failure_details": [],
+    "failures": [],
+    "passed": true
+  }
+}
