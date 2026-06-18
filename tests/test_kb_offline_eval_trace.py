@@ -109,6 +109,7 @@ def test_run_questions_emits_trace_rows():
     claim = t["claims"][0]
     assert claim["ground_cap"] == "supported" and claim["final_status"] == "supported"
     assert claim["evidence_spans"][0]["verbatim_in_page"] is True
+    assert claim["judge_raw"] == '{"status": "supported"}'
     assert "elapsed_s" in t
 
 

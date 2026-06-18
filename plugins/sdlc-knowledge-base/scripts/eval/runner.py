@@ -90,10 +90,17 @@ def _build_question_trace(q, out, slice_records, elapsed_s, lib):
     eligible = set(filter_pages(lib, sorted(known), layer=q.expected_layer, min_confidence=None))
     dropped, eligible_unselected = trace_mod.classify_select_drops(
         model_selected, out.get("page_ids", []), known, eligible)
+    judge_raws = [c["raw"] for c in model_calls if c["stage"] == "judge"]
+    ji = 0
     claim_rows = []
     for idx, c in enumerate(synth.claims):
         cap = ground_claim(c, pages)
         final = verified.claims[idx].entailment_status if idx < len(verified.claims) else None
+        if cap == EntailmentStatus.unsupported:
+            judge_raw = None
+        else:
+            judge_raw = judge_raws[ji] if ji < len(judge_raws) else None
+            ji += 1
         claim_rows.append({
             "text": c.text, "cited_pages": [r.page for r in c.cited_pages],
             "evidence_spans": [{"page": s.page, "text": s.text,
@@ -101,6 +108,7 @@ def _build_question_trace(q, out, slice_records, elapsed_s, lib):
                                for s in c.evidence_spans],
             "ground_cap": cap.value,
             "final_status": final.value if isinstance(final, EntailmentStatus) else None,
+            "judge_raw": judge_raw,
         })
     rendered = out.get("rendered_text", "")
     return {
