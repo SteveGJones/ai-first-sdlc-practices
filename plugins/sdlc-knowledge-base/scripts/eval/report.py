@@ -2,9 +2,19 @@
 render the persisted report. kb-offline M1c-2 (#211)."""
 from __future__ import annotations
 
+import re
 import statistics
 
 from . import thresholds
+
+_UNSAFE_NAME = re.compile(r"[^A-Za-z0-9._-]+")
+
+
+def safe_model_name(model: str) -> str:
+    """Filesystem-safe form of a model id for report/trace filenames: collapse any run of
+    characters outside [A-Za-z0-9._-] (e.g. ':' '/' whitespace) to a single underscore."""
+    return _UNSAFE_NAME.sub("_", model)
+
 
 # Absorbs float rounding when an averaged metric lands exactly on its bar. Under pinned
 # temperature=0 + fixed seed the 3 runs can be byte-identical, so a metric at its threshold
