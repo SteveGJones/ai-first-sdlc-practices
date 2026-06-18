@@ -38,3 +38,17 @@ def test_derive_accepted_on_non_model_error_keeps_all_invocation_tails():
     slice_ = [_rec("select", True), _rec("synthesize", True)]
     calls = derive_model_calls(slice_, errored=True, error_msg="publish exploded")
     assert calls[0]["accepted"] is True and calls[1]["accepted"] is True
+
+
+def test_derive_empty_records_returns_empty():
+    assert derive_model_calls([], errored=False, error_msg="") == []
+
+
+def test_derive_non_model_error_with_repair_accepts_completed_tail():
+    # a completed select that had a repair, then a non-model (e.g. publish) error
+    slice_ = [_rec("select", True, ok=False), _rec("select", False), _rec("synthesize", True)]
+    calls = derive_model_calls(slice_, errored=True, error_msg="publish exploded")
+    # select repair tail accepted, synthesize accepted (model stages completed before the downstream error)
+    assert calls[0]["accepted"] is False           # first select attempt (not the tail)
+    assert calls[1]["accepted"] is True            # select invocation tail
+    assert calls[2]["accepted"] is True            # synthesize tail

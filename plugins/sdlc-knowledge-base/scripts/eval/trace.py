@@ -24,8 +24,9 @@ def derive_model_calls(records: list[dict], *, errored: bool, error_msg: str) ->
             inv_counter[stage] = inv_counter.get(stage, 0) + 1
             cur_attempt[(stage, inv_counter[stage])] = 1
         else:
+            # A repair always follows a first_pass of the same stage in real RecordingBackend
+            # output, so this stage's invocation counter is already open.
             inv = inv_counter.get(stage, 1)
-            inv_counter.setdefault(stage, inv)
             cur_attempt[(stage, inv)] = cur_attempt.get((stage, inv), 1) + 1
         inv = inv_counter.get(stage, 1)
         out.append({**rec, "stage_invocation": inv,
