@@ -1,8 +1,16 @@
 """Pure eval-trace derivation helpers (#211)."""
 from __future__ import annotations
 
+import json as _json
+from pathlib import Path
+
 from sdlc_knowledge_base_scripts.eval.trace import derive_model_calls
 from sdlc_knowledge_base_scripts.eval.trace import classify_select_drops
+from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+from sdlc_knowledge_base_scripts.eval.runner import RecordingBackend, run_questions
+from sdlc_knowledge_base_scripts.eval.suite import load_questions
+
+SMOKE = Path("plugins/sdlc-knowledge-base/eval/suite/smoke")
 
 
 def _rec(stage, first_pass, ok=True):
@@ -69,3 +77,44 @@ def test_classify_select_drops_unknown_and_filtered():
 def test_classify_select_drops_empty_when_all_final():
     dropped, unsel = classify_select_drops(["dora.md"], ["dora.md"], {"dora.md"}, {"dora.md"})
     assert dropped == [] and unsel == []
+
+
+def _smoke_gen():
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge"):
+            return '{"status": "supported"}'
+        if "Shelf-index" in prompt:
+            return _json.dumps({"page_ids": ["dora.md"]}) if "deploy" in prompt else _json.dumps({"page_ids": []})
+        return _json.dumps({"claims": [{"text": "Elite teams deploy multiple times per day.",
+                                        "cited_pages": [{"library": "local", "page": "dora.md"}],
+                                        "evidence_spans": [{"page": "dora.md",
+                                                            "text": "deploy multiple times per day"}]}],
+                            "rendered_text": "Elite teams deploy multiple times per day."})
+    return gen
+
+
+def test_run_questions_emits_trace_rows():
+    qs = load_questions(SMOKE / "questions.jsonl")
+    rec = RecordingBackend(FakeBackend())
+    rec._inner.generate = _smoke_gen()
+    trace: list = []
+    rows = run_questions(str(SMOKE / "library"), qs, backend=rec, trace=trace)
+    assert len(rows) == len(qs)
+    assert len(trace) == len(qs)
+    t = next(r for r in trace if r["id"] == "s1")
+    assert t["type"] == "question"
+    assert t["page_ids"] == ["dora.md"]
+    assert any(c["stage"] == "select" for c in t["model_calls"])
+    assert any(c["stage"] == "synthesize" for c in t["model_calls"])
+    claim = t["claims"][0]
+    assert claim["ground_cap"] == "supported" and claim["final_status"] == "supported"
+    assert claim["evidence_spans"][0]["verbatim_in_page"] is True
+    assert "elapsed_s" in t
+
+
+def test_run_questions_no_trace_unchanged():
+    qs = load_questions(SMOKE / "questions.jsonl")
+    rec = RecordingBackend(FakeBackend())
+    rec._inner.generate = _smoke_gen()
+    rows = run_questions(str(SMOKE / "library"), qs, backend=rec)
+    assert len(rows) == len(qs) and all("error" in r for r in rows)

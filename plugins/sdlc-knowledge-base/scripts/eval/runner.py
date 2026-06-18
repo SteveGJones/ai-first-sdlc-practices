@@ -9,11 +9,13 @@ import sys
 import time
 from pathlib import Path
 
-from ..contracts import Claim, EntailmentStatus
+from ..contracts import Answer, Claim, EntailmentStatus
 from ..entailment import ground_claim, judge_claim, _min_status
 from ..graphs.query_graph import build_query_graph
+from ..provenance import filter_pages, known_page_ids
 from .. import prompts
 from . import harness
+from . import trace as trace_mod
 
 _REPAIR_MARKER = "Previous output invalid:"
 _SELECT_KEY = prompts.SELECT_FRAGMENT[:24]
@@ -71,8 +73,52 @@ def _progress_tag(run_label: str) -> str:
     return f"[eval {run_label}]" if run_label else "[eval]"
 
 
+def _build_question_trace(q, out, slice_records, elapsed_s, lib):
+    """Assemble a type:'question' trace row from graph output and recording slice."""
+    synth = Answer.model_validate(out["_synth"]) if "_synth" in out else Answer()
+    verified = Answer.model_validate(out["_answer"]) if "_answer" in out else Answer()
+    pages = {p["page"]: p["content"] for p in out.get("pages", [])}
+    model_calls = trace_mod.derive_model_calls(slice_records, errored=False, error_msg="")
+    sel_raw = next((c["raw"] for c in model_calls if c["stage"] == "select" and c["accepted"]), None)
+    select_parse_ok, model_selected = True, []
+    if sel_raw is not None:
+        try:
+            model_selected = list(json.loads(sel_raw).get("page_ids", []))
+        except (json.JSONDecodeError, ValueError, TypeError, AttributeError):
+            select_parse_ok = False
+    known = known_page_ids(lib)
+    eligible = set(filter_pages(lib, sorted(known), layer=q.expected_layer, min_confidence=None))
+    dropped, eligible_unselected = trace_mod.classify_select_drops(
+        model_selected, out.get("page_ids", []), known, eligible)
+    claim_rows = []
+    for idx, c in enumerate(synth.claims):
+        cap = ground_claim(c, pages)
+        final = verified.claims[idx].entailment_status if idx < len(verified.claims) else None
+        claim_rows.append({
+            "text": c.text, "cited_pages": [r.page for r in c.cited_pages],
+            "evidence_spans": [{"page": s.page, "text": s.text,
+                                "verbatim_in_page": _norm(s.text) in _norm(pages.get(s.page, ""))}
+                               for s in c.evidence_spans],
+            "ground_cap": cap.value,
+            "final_status": final.value if isinstance(final, EntailmentStatus) else None,
+        })
+    rendered = out.get("rendered_text", "")
+    return {
+        "type": "question", "id": q.id, "kind": q.kind, "no_evidence": q.no_evidence,
+        "expected_facts": q.expected_facts, "expected_routing": q.expected_routing_targets,
+        "model_calls": model_calls,
+        "eligible_page_ids": sorted(eligible), "page_ids": list(out.get("page_ids", [])),
+        "dropped": dropped, "eligible_unselected": eligible_unselected,
+        "select_parse_ok": select_parse_ok, "pages_read": list(pages.keys()),
+        "claims": claim_rows, "rendered_text": rendered,
+        "did_abstain": rendered.strip() == "",
+        "found_facts": [f for f in q.expected_facts if _norm(f) in _norm(rendered)],
+        "elapsed_s": round(elapsed_s, 1),
+    }
+
+
 def run_questions(library_path: str, questions, *, backend, progress: bool = False,
-                  run_label: str = "") -> list[dict]:
+                  run_label: str = "", trace: list | None = None) -> list[dict]:
     """One row per question with scorer-ready fields. did_abstain = empty published body.
     When progress=True, emit one trackable stderr line per question (index/total, id, status,
     per-question elapsed) so a long live run is observable and a stall is obvious — otherwise
@@ -80,8 +126,11 @@ def run_questions(library_path: str, questions, *, backend, progress: bool = Fal
     rows = []
     total = len(questions)
     tag = _progress_tag(run_label)
+    lib = Path(library_path)
+    rec_backend = backend if isinstance(backend, RecordingBackend) else None
     for idx, q in enumerate(questions, 1):
         t0 = time.monotonic()
+        snap = len(rec_backend.records) if rec_backend is not None else 0
         graph = build_query_graph(backend)
         try:
             out = graph.invoke(
@@ -98,6 +147,16 @@ def run_questions(library_path: str, questions, *, backend, progress: bool = Fal
                 "should_abstain": q.no_evidence, "did_abstain": False,
                 "error": True, "error_msg": str(exc)[:200],
             })
+            if trace is not None:
+                sl = rec_backend.records[snap:] if rec_backend is not None else []
+                try:
+                    mc = trace_mod.derive_model_calls(sl, errored=True, error_msg=str(exc))
+                except Exception as terr:  # noqa: BLE001
+                    trace.append({"type": "question", "id": q.id, "trace_error": str(terr)[:200]})
+                else:
+                    trace.append({"type": "question", "id": q.id, "error": True,
+                                  "error_msg": str(exc)[:200], "elapsed_s": round(time.monotonic() - t0, 1),
+                                  "model_calls": mc})
             if progress:
                 print(f"{tag} q {idx}/{total} {q.id} ERROR {time.monotonic() - t0:.1f}s", file=sys.stderr)
             continue
@@ -113,6 +172,12 @@ def run_questions(library_path: str, questions, *, backend, progress: bool = Fal
             "should_abstain": q.no_evidence, "did_abstain": did_abstain,
             "error": False,
         })
+        if trace is not None:
+            sl = rec_backend.records[snap:] if rec_backend is not None else []
+            try:
+                trace.append(_build_question_trace(q, out, sl, time.monotonic() - t0, lib))
+            except Exception as terr:  # noqa: BLE001
+                trace.append({"type": "question", "id": q.id, "trace_error": str(terr)[:200]})
         if progress:
             status = "abstain" if did_abstain else f"ok facts {len(found)}/{len(q.expected_facts)}"
             print(f"{tag} q {idx}/{total} {q.id} {status} {time.monotonic() - t0:.1f}s", file=sys.stderr)
