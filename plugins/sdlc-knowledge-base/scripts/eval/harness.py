@@ -53,12 +53,12 @@ def verifier_accuracy(rows: list[dict]) -> tuple[float, float]:
 
 def first_pass_json_validity(rows: list[dict]) -> float:
     """Fraction of FIRST-attempt model calls whose raw output was valid JSON, before any
-    repair. rows = [{first_pass: bool, valid_json: bool}]; repair calls (first_pass False)
+    repair. rows = [{first_pass: bool, json_parse_ok: bool}]; repair calls (first_pass False)
     are excluded from both numerator and denominator."""
     first = [r for r in rows if r["first_pass"]]
     if not first:
         return 1.0
-    return sum(1 for r in first if r["valid_json"]) / len(first)
+    return sum(1 for r in first if r["json_parse_ok"]) / len(first)
 
 
 def clean_published_support_rate(rows: list[dict]) -> float:

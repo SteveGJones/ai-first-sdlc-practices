@@ -12,9 +12,22 @@ from pathlib import Path
 from ..contracts import Claim, EntailmentStatus
 from ..entailment import ground_claim, judge_claim, _min_status
 from ..graphs.query_graph import build_query_graph
+from .. import prompts
 from . import harness
 
 _REPAIR_MARKER = "Previous output invalid:"
+_SELECT_KEY = prompts.SELECT_FRAGMENT[:24]
+_SYNTH_KEY = prompts.SYNTHESIZE_FRAGMENT[:24]
+
+
+def _classify_stage(prompt: str) -> str:
+    if prompt.startswith("Judge whether"):
+        return "judge"
+    if _SELECT_KEY in prompt:
+        return "select"
+    if _SYNTH_KEY in prompt:
+        return "synthesize"
+    return "other"
 
 
 def _valid_json(text: str) -> bool:
@@ -35,9 +48,15 @@ class RecordingBackend:
         self.records: list[dict] = []
 
     def generate(self, prompt: str, *, schema=None) -> str:
+        t0 = time.monotonic()
         out = self._inner.generate(prompt, schema=schema)
-        self.records.append({"first_pass": _REPAIR_MARKER not in prompt,
-                             "valid_json": _valid_json(out)})
+        self.records.append({
+            "stage": _classify_stage(prompt),
+            "first_pass": _REPAIR_MARKER not in prompt,
+            "json_parse_ok": _valid_json(out),
+            "elapsed_ms": round((time.monotonic() - t0) * 1000, 1),
+            "raw": out,
+        })
         return out
 
     def embed(self, texts):

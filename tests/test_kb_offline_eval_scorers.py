@@ -33,9 +33,9 @@ def test_verifier_accuracy_empty_is_vacuously_one():
 
 def test_first_pass_json_validity():
     rows = [
-        {"first_pass": True, "valid_json": True},
-        {"first_pass": True, "valid_json": False},
-        {"first_pass": False, "valid_json": True},   # repair call — ignored
+        {"first_pass": True, "json_parse_ok": True},
+        {"first_pass": True, "json_parse_ok": False},
+        {"first_pass": False, "json_parse_ok": True},   # repair call — ignored
     ]
     assert first_pass_json_validity(rows) == 0.5   # of 2 first-pass calls, 1 valid
 

@@ -23,8 +23,27 @@ def test_recording_backend_flags_first_pass_and_json_validity():
     rec = RecordingBackend(inner)
     rec.generate("first attempt")
     rec.generate("retry\n\nPrevious output invalid: x")
-    assert rec.records[0]["first_pass"] is True and rec.records[0]["valid_json"] is False
-    assert rec.records[1]["first_pass"] is False and rec.records[1]["valid_json"] is True
+    assert rec.records[0]["first_pass"] is True and rec.records[0]["json_parse_ok"] is False
+    assert rec.records[1]["first_pass"] is False and rec.records[1]["json_parse_ok"] is True
+
+
+def test_recording_backend_records_stage_rawtiming_jsonparse():
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    from sdlc_knowledge_base_scripts import prompts
+    inner = FakeBackend()
+    seq = iter(["not json", '{"page_ids": ["dora.md"]}', "Judge response not json"])
+    inner.generate = lambda prompt, schema=None: next(seq)
+    rec = RecordingBackend(inner)
+    rec.generate(prompts.SELECT_FRAGMENT + "\n\nQuestion: q\n\nShelf-index:\n...")
+    rec.generate(prompts.SELECT_FRAGMENT + "\n...\n\nPrevious output invalid: x\n...")
+    rec.generate("Judge whether the cited page text SUPPORTS the claim. ...")
+    r0, r1, r2 = rec.records
+    assert r0["stage"] == "select" and r0["first_pass"] is True and r0["json_parse_ok"] is False
+    assert r1["stage"] == "select" and r1["first_pass"] is False and r1["json_parse_ok"] is True
+    assert r2["stage"] == "judge" and r2["first_pass"] is True
+    assert all("elapsed_ms" in r and isinstance(r["elapsed_ms"], (int, float)) for r in rec.records)
+    assert r1["raw"] == '{"page_ids": ["dora.md"]}'
+    assert all("valid_json" not in r for r in rec.records)
 
 
 def test_run_questions_scores_fact_and_abstention_on_smoke():
