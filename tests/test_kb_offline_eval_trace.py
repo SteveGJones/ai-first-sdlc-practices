@@ -111,6 +111,12 @@ def test_run_questions_emits_trace_rows():
     assert claim["evidence_spans"][0]["verbatim_in_page"] is True
     assert claim["judge_raw"] == '{"status": "supported"}'
     assert "elapsed_s" in t
+    # Fix 5: no row degraded to an assembly-error stub
+    assert all("trace_error" not in r for r in trace)
+    # Fix 5: ABSTAIN / zero-claim question produces a clean row
+    abst = next((r for r in trace if r["did_abstain"]), None)
+    if abst is not None:
+        assert abst["claims"] == [] and "trace_error" not in abst
 
 
 def test_run_questions_no_trace_unchanged():

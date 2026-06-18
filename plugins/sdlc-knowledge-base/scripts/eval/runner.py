@@ -73,25 +73,27 @@ def _progress_tag(run_label: str) -> str:
     return f"[eval {run_label}]" if run_label else "[eval]"
 
 
-def _build_question_trace(q, out, slice_records, elapsed_s, lib):
+def _build_question_trace(q, out, slice_records, elapsed_s, *, known, eligible, found, did_abstain, rendered):
     """Assemble a type:'question' trace row from graph output and recording slice."""
     synth = Answer.model_validate(out["_synth"]) if "_synth" in out else Answer()
     verified = Answer.model_validate(out["_answer"]) if "_answer" in out else Answer()
     pages = {p["page"]: p["content"] for p in out.get("pages", [])}
     model_calls = trace_mod.derive_model_calls(slice_records, errored=False, error_msg="")
     sel_raw = next((c["raw"] for c in model_calls if c["stage"] == "select" and c["accepted"]), None)
-    select_parse_ok, model_selected = True, []
-    if sel_raw is not None:
+    # Fix 2: None when there is no accepted select call (nothing to parse)
+    if sel_raw is None:
+        select_parse_ok, model_selected = None, []
+    else:
         try:
             model_selected = list(json.loads(sel_raw).get("page_ids", []))
+            select_parse_ok = True
         except (json.JSONDecodeError, ValueError, TypeError, AttributeError):
             select_parse_ok = False
-    known = known_page_ids(lib)
-    eligible = set(filter_pages(lib, sorted(known), layer=q.expected_layer, min_confidence=None))
+            model_selected = []
     dropped, eligible_unselected = trace_mod.classify_select_drops(
         model_selected, out.get("page_ids", []), known, eligible)
-    judge_raws = [c["raw"] for c in model_calls if c["stage"] == "judge"]
-    ji = 0
+    # Fix 6: iterator-based judge cursor so skipped claims never advance it
+    judge_iter = iter(c["raw"] for c in model_calls if c["stage"] == "judge")
     claim_rows = []
     for idx, c in enumerate(synth.claims):
         cap = ground_claim(c, pages)
@@ -99,8 +101,7 @@ def _build_question_trace(q, out, slice_records, elapsed_s, lib):
         if cap == EntailmentStatus.unsupported:
             judge_raw = None
         else:
-            judge_raw = judge_raws[ji] if ji < len(judge_raws) else None
-            ji += 1
+            judge_raw = next(judge_iter, None)
         claim_rows.append({
             "text": c.text, "cited_pages": [r.page for r in c.cited_pages],
             "evidence_spans": [{"page": s.page, "text": s.text,
@@ -110,7 +111,6 @@ def _build_question_trace(q, out, slice_records, elapsed_s, lib):
             "final_status": final.value if isinstance(final, EntailmentStatus) else None,
             "judge_raw": judge_raw,
         })
-    rendered = out.get("rendered_text", "")
     return {
         "type": "question", "id": q.id, "kind": q.kind, "no_evidence": q.no_evidence,
         "expected_facts": q.expected_facts, "expected_routing": q.expected_routing_targets,
@@ -119,8 +119,8 @@ def _build_question_trace(q, out, slice_records, elapsed_s, lib):
         "dropped": dropped, "eligible_unselected": eligible_unselected,
         "select_parse_ok": select_parse_ok, "pages_read": list(pages.keys()),
         "claims": claim_rows, "rendered_text": rendered,
-        "did_abstain": rendered.strip() == "",
-        "found_facts": [f for f in q.expected_facts if _norm(f) in _norm(rendered)],
+        "did_abstain": did_abstain,
+        "found_facts": found,
         "elapsed_s": round(elapsed_s, 1),
     }
 
@@ -136,6 +136,9 @@ def run_questions(library_path: str, questions, *, backend, progress: bool = Fal
     tag = _progress_tag(run_label)
     lib = Path(library_path)
     rec_backend = backend if isinstance(backend, RecordingBackend) else None
+    # Fix 1: hoist page IO outside the question loop; memoize eligible by layer
+    known = known_page_ids(lib)
+    eligible_by_layer: dict = {}
     for idx, q in enumerate(questions, 1):
         t0 = time.monotonic()
         snap = len(rec_backend.records) if rec_backend is not None else 0
@@ -182,8 +185,15 @@ def run_questions(library_path: str, questions, *, backend, progress: bool = Fal
         })
         if trace is not None:
             sl = rec_backend.records[snap:] if rec_backend is not None else []
+            eligible = eligible_by_layer.setdefault(
+                q.expected_layer,
+                set(filter_pages(lib, sorted(known), layer=q.expected_layer, min_confidence=None)),
+            )
             try:
-                trace.append(_build_question_trace(q, out, sl, time.monotonic() - t0, lib))
+                trace.append(_build_question_trace(
+                    q, out, sl, time.monotonic() - t0,
+                    known=known, eligible=eligible, found=found, did_abstain=did_abstain, rendered=rendered,
+                ))
             except Exception as terr:  # noqa: BLE001
                 trace.append({"type": "question", "id": q.id, "trace_error": str(terr)[:200]})
         if progress:
