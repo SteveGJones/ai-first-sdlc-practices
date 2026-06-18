@@ -7,8 +7,8 @@ from pathlib import Path
 from sdlc_knowledge_base_scripts.eval.trace import derive_model_calls
 from sdlc_knowledge_base_scripts.eval.trace import classify_select_drops
 from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
-from sdlc_knowledge_base_scripts.eval.runner import RecordingBackend, run_questions
-from sdlc_knowledge_base_scripts.eval.suite import load_questions
+from sdlc_knowledge_base_scripts.eval.runner import RecordingBackend, run_questions, run_verifier_labels, score_run
+from sdlc_knowledge_base_scripts.eval.suite import load_questions, load_verifier_labels
 
 SMOKE = Path("plugins/sdlc-knowledge-base/eval/suite/smoke")
 
@@ -125,3 +125,27 @@ def test_run_questions_no_trace_unchanged():
     rec._inner.generate = _smoke_gen()
     rows = run_questions(str(SMOKE / "library"), qs, backend=rec)
     assert len(rows) == len(qs) and all("error" in r for r in rows)
+
+
+def test_run_verifier_labels_emits_isolated_trace_rows():
+    labels = load_verifier_labels(SMOKE / "verifier_labels.jsonl")
+    rec = RecordingBackend(FakeBackend())
+    rec._inner.generate = lambda prompt, schema=None: '{"status": "supported"}'
+    trace: list = []
+    run_verifier_labels(str(SMOKE / "library"), labels, backend=rec, trace=trace)
+    assert len(trace) == len(labels)
+    for row in trace:
+        assert row["type"] == "verifier"
+        assert all(c["stage"] == "judge" for c in row["model_calls"])   # only this label's call(s)
+        assert "predicted_status" in row and "gold_status" in row
+
+
+def test_score_run_threads_trace_to_both():
+    qs = load_questions(SMOKE / "questions.jsonl")
+    labels = load_verifier_labels(SMOKE / "verifier_labels.jsonl")
+    be = FakeBackend()
+    be.generate = _smoke_gen()
+    trace: list = []
+    score_run(str(SMOKE / "library"), qs, labels, backend=be, trace=trace)
+    assert any(r["type"] == "question" for r in trace)
+    assert any(r["type"] == "verifier" for r in trace)

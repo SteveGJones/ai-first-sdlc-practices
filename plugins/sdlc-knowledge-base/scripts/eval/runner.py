@@ -202,35 +202,44 @@ def run_questions(library_path: str, questions, *, backend, progress: bool = Fal
     return rows
 
 
-def run_verifier_labels(library_path: str, labels, *, backend) -> list[dict]:
+def run_verifier_labels(library_path: str, labels, *, backend, trace: list | None = None) -> list[dict]:
     """Score the verifier set directly: build a Claim per label and run the deterministic
     grounding cap + judge composition against the fixture pages. No synthesis."""
     lib = Path(library_path)
     pages = {p.name: p.read_text(encoding="utf-8") for p in lib.glob("*.md")}
+    rec_backend = backend if isinstance(backend, RecordingBackend) else None
     rows = []
     for lb in labels:
-        claim = Claim(text=lb.claim_text,
-                      cited_pages=lb.cited_pages,
-                      evidence_spans=lb.evidence_spans)
+        snap = len(rec_backend.records) if rec_backend is not None else 0
+        claim = Claim(text=lb.claim_text, cited_pages=lb.cited_pages, evidence_spans=lb.evidence_spans)
         cap = ground_claim(claim, pages)
         if cap == EntailmentStatus.unsupported:
             predicted = EntailmentStatus.unsupported
         else:
             predicted = _min_status(cap, judge_claim(claim, pages, backend=backend))
         rows.append({"id": lb.id, "predicted_status": predicted.value, "gold_status": lb.gold_status})
+        if trace is not None:
+            sl = rec_backend.records[snap:] if rec_backend is not None else []
+            mc = trace_mod.derive_model_calls(sl, errored=False, error_msg="")
+            judge_raw = next((c["raw"] for c in mc if c["stage"] == "judge"), None)
+            trace.append({"type": "verifier", "id": lb.id, "claim_text": lb.claim_text,
+                          "ground_cap": cap.value, "judge_raw": judge_raw,
+                          "predicted_status": predicted.value, "gold_status": lb.gold_status,
+                          "model_calls": mc})
     return rows
 
 
 def score_run(library_path: str, questions, labels, *, backend, progress: bool = False,
-              run_label: str = "") -> dict:
+              run_label: str = "", trace: list | None = None) -> dict:
     """Run the whole suite once and return a flat metric->value dict (the shape report.py
     aggregates). Wraps the backend to capture first-pass JSON validity. progress/run_label
     flow to run_questions for live trackability of long release runs."""
     rec = RecordingBackend(backend)
-    q_rows = run_questions(library_path, questions, backend=rec, progress=progress, run_label=run_label)
+    q_rows = run_questions(library_path, questions, backend=rec, progress=progress, run_label=run_label,
+                           trace=trace)
     if progress:
         print(f"{_progress_tag(run_label)} verifier: scoring {len(labels)} labels", file=sys.stderr)
-    v_rows = run_verifier_labels(library_path, labels, backend=rec)
+    v_rows = run_verifier_labels(library_path, labels, backend=rec, trace=trace)
 
     fact = harness.fact_recall([{"expected": r["expected_facts"], "found": r["found_facts"]}
                                 for r in q_rows if not r["should_abstain"]])
