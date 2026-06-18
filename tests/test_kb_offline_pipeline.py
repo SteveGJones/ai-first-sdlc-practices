@@ -66,6 +66,51 @@ def test_extract_fails_after_repair_budget(tmp_path):
         extract(str(src), _shelf(tmp_path), backend=be, max_repairs=1)
 
 
+def test_synthesize_backfills_cited_pages_from_spans_when_empty():
+    """Root cause of gemma4:12b fact_recall=0.0 (#211): the model attributes the page via
+    evidence_spans and leaves claims[].cited_pages empty, so ground_claim (which requires
+    span.page in cited_pages) orphans every span -> unsupported -> empty answer. synthesize
+    must back-fill cited_pages from the spans' declared pages so grounding can attribute it."""
+    from sdlc_knowledge_base_scripts.contracts import EntailmentStatus
+    from sdlc_knowledge_base_scripts.entailment import ground_claim
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+
+    payload = json.dumps({
+        "claims": [{
+            "text": "Elite teams deploy multiple times per day.",
+            "cited_pages": [],
+            "evidence_spans": [{"page": "dora.md", "text": "deploy multiple times per day"}],
+        }],
+        "rendered_text": "Elite teams deploy multiple times per day.",
+    })
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: payload  # type: ignore
+    pages = [{"page": "dora.md", "content": "Elite teams deploy multiple times per day."}]
+    ans = synthesize("q", pages, backend=be)
+    assert [r.page for r in ans.claims[0].cited_pages] == ["dora.md"]  # back-filled from span
+    cap = ground_claim(ans.claims[0], {"dora.md": "Elite teams deploy multiple times per day."})
+    assert cap == EntailmentStatus.supported  # grounding now attributes the verbatim span
+
+
+def test_synthesize_preserves_explicit_cited_pages():
+    """When the model DOES populate cited_pages, synthesize must not overwrite it — the
+    anti-mis-attribution rule (span grounds only against a cited page) must be preserved."""
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+
+    payload = json.dumps({
+        "claims": [{
+            "text": "x",
+            "cited_pages": [{"library": "local", "page": "a.md"}],
+            "evidence_spans": [{"page": "b.md", "text": "y"}],
+        }],
+        "rendered_text": "x",
+    })
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: payload  # type: ignore
+    ans = synthesize("q", [{"page": "a.md", "content": "..."}], backend=be)
+    assert [r.page for r in ans.claims[0].cited_pages] == ["a.md"]  # unchanged
+
+
 def test_synthesize_strips_trailing_sentinel_token_first_attempt(tmp_path):
     """gemma4:12b emits a trailing <|tool_response> sentinel after its JSON. The pipeline
     must strip known chat-template sentinels before parsing so a valid answer is NOT

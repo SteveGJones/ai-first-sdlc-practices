@@ -10,7 +10,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from . import prompts
-from .contracts import Answer, EntailmentStatus, ExtractJSON, MutationProposal, SelectResult
+from .contracts import Answer, EntailmentStatus, ExtractJSON, MutationProposal, PageRef, SelectResult
 
 # Chat-template sentinel tokens (e.g. <|tool_response>, <|tool_response|>, <|im_end|>) that
 # some local models — gemma4:12b in particular — emit around grammar-constrained JSON, breaking
@@ -144,6 +144,21 @@ def synthesize(question, pages, *, backend, max_repairs: int = 1) -> Answer:
         for c in ans.claims:
             c.entailment_status = None
             c.high_impact = False
+            # Contract normalization (#211): some models (e.g. gemma4:12b) attribute the page
+            # via evidence_spans and leave cited_pages empty. ground_claim requires a span's
+            # page to be in cited_pages, so an empty list orphans every span -> unsupported ->
+            # empty answer. Back-fill cited_pages from the spans' declared pages when (and only
+            # when) the model left it empty, so deterministic grounding can attribute the
+            # evidence. Preserves the anti-mis-attribution rule when cited_pages IS populated.
+            if not c.cited_pages and c.evidence_spans:
+                seen: list[PageRef] = []
+                keys = set()
+                for s in c.evidence_spans:
+                    key = (s.library or "local", s.page)
+                    if key not in keys:
+                        keys.add(key)
+                        seen.append(PageRef(library=s.library or "local", page=s.page))
+                c.cited_pages = seen
         return ans
     raise ValueError(f"synthesize failed after {max_repairs} repair(s): {last_error}")
 
