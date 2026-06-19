@@ -1,240 +1,212 @@
-# kb-offline Offline-Backend Ratification — Findings & Improvement Report
+# kb-offline Offline-Backend Ratification — Findings & Improvement Report (rev 2)
 
-**Date:** 2026-06-18
-**Scope:** EPIC #211 (kb-offline), M3 ratification of the local Ollama backend (`gemma4:12b`) against the frozen release eval suite, including a root-cause investigation of an anomalous `fact_recall = 0.000` and a Claude Code (Sonnet) reference baseline.
-**Audience:** maintainers + external technical reviewers. This report is self-contained; you do not need prior knowledge of the codebase to follow it or to suggest improvements. **Feedback explicitly invited** on §7 (Improvement avenues) and §8 (Open questions).
+**Date:** 2026-06-18 (rev 2: 2026-06-19, after external review)
+**Scope:** EPIC #211 (kb-offline), M3 ratification of the local Ollama backend (`gemma4:12b`) against the frozen release eval suite — the `fact_recall = 0.000` root cause, the corrected verdict, a Claude Code agentic reference, and a trace-driven analysis of the residual failures.
+**Audience:** maintainers + external technical reviewers. Self-contained. **Feedback invited** on §8–§9.
+**Auditable evidence:** `harness/` (diagnostic + reference scorer + the 9 reference subagent outputs), `trace-gemma4_12b-20260619T044923Z-run1.jsonl` (the per-question trace this report analyses), and the `release-*.{md,json}` reports — all committed alongside this file.
 
 ---
 
 ## 1. Executive summary
 
-- We ratify an **optional, off-by-default offline backend** for the `sdlc-knowledge-base` plugin: a LangGraph query pipeline driven by a local Ollama model (`gemma4:12b`) instead of the cloud default (Anthropic **Claude Sonnet 4.6**).
-- The first ratification scored **`fact_recall = 0.000`** — a literal zero across ~75 evidence questions. That is the signature of an implementation artifact, not a capable 12B model.
-- **Root cause (confirmed against the real pipeline):** `gemma4:12b` produces correct, verbatim-grounded answers but leaves the claim's `cited_pages` list **empty** (it attributes the page inside the evidence *span* instead). The deterministic grounding step requires a span's page to appear in `cited_pages`, so **every span was orphaned → every claim marked unsupported → every answer dropped → recall 0**.
-- **Fix (commit `32424c6`):** normalize the synthesized answer — back-fill `cited_pages` from the evidence spans when the model leaves it empty. **`fact_recall` recovered 0.000 → 0.787.**
-- **Corrected verdict: still FAIL, but on genuine single-digit quality margins** (`fact_recall 0.787` vs 0.85; `routing_precision 0.795` vs 0.80; `abstention_precision 0.900` vs 0.95; `abstention_recall 0.818` vs 0.90). The model went from *catastrophic/unusable* to *near-miss*.
-- The residual gaps trace **predominantly to a second issue — `select`-instability** (the page-selection step occasionally returns an empty or over-broad page set). This is the highest-leverage next investigation.
-- **Decision:** keep Anthropic/Sonnet as the default backend for now — but for the *right* reason (a true ~6-point quality gap), not the phantom zero. Given the enterprise economics (local inference is ~1/10,000th the marginal cost of metered API), a near-miss is worth pursuing, not abandoning.
+- We assess an **optional, off-by-default offline backend** for `sdlc-knowledge-base`: a 5-stage LangGraph query pipeline driven by local `gemma4:12b` instead of the cloud default (`AnthropicBackend`, `claude-sonnet-4-6`).
+- The first ratification scored **`fact_recall = 0.000`** — an implementation artifact, not model incapacity. **Root cause:** gemma emits correct, verbatim-grounded claims but leaves `claims[].cited_pages` empty; `ground_claim` requires a span's page to be in `cited_pages`, so every claim was capped `unsupported` and dropped. **Fix** (commit `32424c6`): back-fill `cited_pages` from the evidence spans. `fact_recall` recovered **0.000 → 0.787**.
+- **Corrected verdict: still FAIL** on four margins — `fact_recall 0.787` (vs 0.85), `routing_precision 0.795` (vs 0.80), `abstention_precision 0.900` (vs 0.95), `abstention_recall 0.818` (vs 0.90). Reproduced identically across two corrected runs; the specified **3-run variance gate has not been run**, so this is consistent-but-not-yet-variance-ratified.
+- The residual failures are now traced to two distinct problems: **`select` discipline** (over-selection, and a degenerate "select the whole shelf" on irrelevant questions) and a **verifier vulnerability** (an absence-claim grounded on an irrelevant verbatim span was published as `supported`).
+- **Decision: keep `AnthropicBackend` as the default.** gemma independently fails the existing gate. This holds regardless of cost arguments (see §7, which no longer asserts an unverified cost ratio).
 
 ---
 
 ## 2. System under test
 
 ### 2.1 The query pipeline (LangGraph, read-only)
-A KB question is answered by a five-node graph (`graphs/query_graph.py`):
-
+Four nodes, five logical stages:
 ```
-select → read → synthesize → verify → publish
+select → read → synthesize → verify_publish   (verify + publish are one node)
 ```
+- **select** — the model reads a compact *shelf-index* (one line/page) and returns 2–4 page ids. The select node passes the model the full shelf but accepts only ids in the **layer-filtered eligible set**; ids outside it are silently dropped (see §6.5 — this is a contract mismatch).
+- **read** — selected pages loaded from disk.
+- **synthesize** — the model answers using only those pages, returning `claims` (each `text` + `cited_pages` + verbatim `evidence_spans`). The pipeline now back-fills empty `cited_pages` from the spans (the §4 fix).
+- **verify** — per claim: `ground_claim` caps status (verbatim span on a cited page → `supported`; fuzzy ≥0.6 token overlap → `partial`; else `unsupported`); an LLM `judge_claim` (same model) grades; final = `min(cap, judge)`.
+- **publish** — `supported` as-is, `partial` caveated, `unsupported` excluded. Empty published text = abstention.
 
-- **select** — the model reads a compact *shelf-index* (one line per library page) and returns the 2–4 most relevant page ids. Ids not in the known page set are dropped.
-- **read** — the selected pages are loaded from disk.
-- **synthesize** — the model answers using only those pages, returning an `Answer` of `claims`, each with `text`, `cited_pages`, and verbatim `evidence_spans`.
-- **verify** — deterministic + model hybrid. For each claim: `ground_claim` computes a *grounding cap* (verbatim span on a cited page → `supported`; fuzzy ≥0.6 token overlap → `partial`; else `unsupported`); an LLM `judge_claim` then grades entailment; final status = `min(cap, judge)`.
-- **publish** — `supported` claims are rendered as-is, `partial` with a caveat, `unsupported` excluded. The concatenation is `rendered_text`. **Empty `rendered_text` = the system abstained.**
-
-The same backend drives select, synthesize, and judge (one model does all three) — true for both the local and cloud paths.
+The **same model** drives select, synthesize, and judge (so the judge self-grades).
 
 ### 2.2 The release gate (`eval/`)
-- **Frozen suite:** 97 questions (`fact` / `routing` / `abstention` kinds; ≥20 `no_evidence`) + 22 verifier labels, over a 16-page software-engineering library.
-- **Pinned config:** `temperature=0, seed=7, top_p=1, num_ctx=8192`. `num_ctx` is pinned to 8192 because the model default (131072) reserves a KV cache large enough to drive the host into swap; pages are tiny (~200 tokens), so 8192 never truncates.
-- **Thresholds** (`eval/thresholds.py`): `fact_recall ≥ 0.85`, `routing_recall ≥ 0.90`, `routing_precision ≥ 0.80`, `abstention_precision ≥ 0.95`, `abstention_recall ≥ 0.90`, `verifier_recall ≥ 0.95`, `citation_entailment ≥ 0.98`, `first_pass_json ≥ 0.95`; safety floors = 1.0; 3-run sample-stddev cap 0.05.
-- **Scorers** (`eval/harness.py`):
-  - `fact_recall` — macro recall of expected facts, where a fact is "found" iff its normalized phrase is a **substring** of the published `rendered_text` (lowercased, whitespace-collapsed; punctuation preserved). *Strict.*
-  - `routing_recall/precision` — micro P/R of `select`'s page ids vs expected routing targets (evidence questions only).
-  - `abstention_precision/recall` — over `(should_abstain, did_abstain)`; `did_abstain = empty rendered_text`.
-  - `verifier_precision/recall` — the verifier's `supported` decision vs gold labels (the 22-label set).
+- **Frozen suite:** 97 questions (`fact`/`routing`/`abstention`; 22 `no_evidence`) + 22 verifier labels, over a 16-page library (page bodies **613–841 bytes**; full prompts are larger but still well under the pinned context).
+- **Pinned config:** `temperature=0, seed=7, top_p=1, num_ctx=8192` (8192 chosen to avoid the default 131072 KV cache that swaps this host).
+- **Gated thresholds** (`report._GATED_MINIMUMS`, 8 metrics): `fact_recall ≥0.85`, `routing_recall ≥0.90`, `routing_precision ≥0.80`, `abstention_precision ≥0.95`, `abstention_recall ≥0.90`, `verifier_precision ≥0.98` (vs `CITATION_ENTAILMENT`), `verifier_recall ≥0.95`, `first_pass_json ≥0.95`; plus a 3-run sample-stddev cap of 0.05. **Not gated** (despite existing as constants): `EMBEDDING_RECALL_AT_K`, `FEDERATION_ATTRIBUTION` (see §6.6).
+- **Scorers** (`eval/harness.py`): `fact_recall` (macro recall; a fact is "found" iff its normalized phrase is a **substring** of published text — strict); routing micro-P/R (over `select` ids, evidence questions only); abstention P/R over `(should_abstain, did_abstain=empty-published)`; verifier P/R over the 22 fixed labels.
 
-### 2.3 Models
-- **Local:** `gemma4:12b` — 11.9B params, Q4_K_M, ~7.8 GB in VRAM, Metal GPU, ChatML template, 8192 ctx. (Switched from `gpt-oss:20b`, which swapped this host.)
-- **Cloud baseline:** **Claude Sonnet 4.6** (`claude-sonnet-4-6`), the documented default backend.
+### 2.3 Models / references
+- **Local:** `gemma4:12b` (11.9B, Q4_K_M, ~7.8 GB VRAM, Metal, ChatML, 8192 ctx).
+- **Cloud default:** `AnthropicBackend` → `claude-sonnet-4-6`.
+- **Reference (NOT the cloud backend):** a **Claude Code agentic reference** — see §3.1 for exactly what it is and is not.
 
 ---
 
 ## 3. Methodology
 
-### 3.1 The Claude Code (Sonnet) baseline — and why it isn't the metered API
-The natural reference is "how well does the cloud default do the same task?" The eval ships a `--compare anthropic` path that calls the Anthropic API — but on a flat-rate Claude Code Max plan that bills per token *only for API accounts*, the apt comparison is **Claude Code itself**, run in-session at flat rate. (For an enterprise API account the model-selector route would be cheaper than `--compare`; either way, paying per-token to baseline against ourselves is the wrong instrument here.)
+### 3.1 The Claude Code agentic reference (what it is, and is not)
+To gauge "how well could a strong model do this task on the same scorers," we produced a reference using **9 Claude Code subagents** (8 question slices + 1 verifier, each pinned to `sonnet`) that replicated the `select → synthesize → self-judge` steps and wrote final structured JSON, scored by the **real `ground_claim`/`publish`/harness** functions. Outputs and scorer are committed under `harness/`.
 
-A Python eval process cannot call back into the agent session, so the baseline was produced by **in-session parallel subagents** (8 question agents + 1 verifier agent, all Sonnet) replicating the real `select → synthesize → self-judge` per question, writing structured JSON. Those outputs were then scored by **the real `ground_claim` / `publish` / harness functions** — so Sonnet's claims faced the identical verbatim-grounding gate gemma faced.
+**This is a Claude Code agentic reference, not a `claude-sonnet-4-6` cloud-backend baseline.** It does **not** exercise `AnthropicBackend`'s prompts, schema delivery, model calls, repair ladder, latency path, or orchestration. The persisted artifact records only `model: claude (Max plan)`. Treat its score (§5) as an **agentic upper-bound reference**, not a controlled measurement of the cloud default. For a true cloud-backend baseline, run the literal `eval release --compare anthropic` path (not yet done).
 
-**Baseline caveats (do not over-read):** it uses subagents writing structured files, *not* the literal LangGraph machinery + repair ladder; `first_pass_json = 1.0` is "valid by construction," not a measured grammar-constrained number; single run; self-judge (faithful to gemma's single-backend design but still self-grading). It is a fair **quality** comparison, not a byte-identical pipeline run.
-
-### 3.2 The diagnostic
-To find the `0.000`, we ran the **real** `build_query_graph(OllamaBackend gemma4:12b)` on 10 evidence questions and dumped every stage boundary: selected page ids, raw synthesized claims, per-claim `ground_claim` cap, final entailment status, published text, and found-vs-expected facts. This is the authoritative instrument (not the subagent reconstruction).
+### 3.2 Diagnostic
+The `0.000` was found by running the **real** `build_query_graph(OllamaBackend gemma4:12b)` over evidence questions and dumping every stage boundary (`harness/diagnose_gemma.py`). The release runner now writes equivalent per-question traces by default (`trace-*.jsonl`), which this report's §6 analyses.
 
 ---
 
-## 4. Investigation & root cause
+## 4. Root cause of `fact_recall = 0.000` and the fix
 
-### 4.1 What was ruled out
-- **Scorer too strict / phrase absent from source** — ruled out: all 60 evidence fact-questions have their expected phrase **verbatim in the source page**, and Sonnet scored 0.907 through the identical scorer.
-- **`num_ctx` truncation** — ruled out: pages are 688–841 bytes (~200 tokens); 8192 is never approached.
-- **The model-output sentinel bug** — ruled out: the corrected run had **0 errored questions** (a prior fix, commit `a74e2e9`, strips gemma's trailing `<|tool_response>` sentinel before JSON parsing in the pipeline paths).
+Ruled out first: the scorer (all 60 evidence fact-questions have their expected phrase verbatim in-source; the reference scored 0.907 through the same scorer), `num_ctx` truncation (tiny pages), and the model-output sentinel bug (commit `a74e2e9`; 0 errored questions in the corrected runs).
 
-### 4.2 The real-pipeline trace
-On all 10 evidence questions: `select` routed correctly, `synthesize` produced a claim, the evidence span was a **verbatim substring** of the page — yet `ground_claim` capped **every** claim `unsupported`, so every answer was dropped → abstain → `found = 0`.
+**Cause:** gemma's claims were correct and carried verbatim spans naming the right page, but `claims[].cited_pages` was **empty** — it attributed the page via the *span* only. `ground_claim` requires `span.page ∈ cited_pages`, so every span was orphaned → every claim `unsupported` → dropped → empty answers → recall 0. Confirmed end-to-end: ground-cap was `unsupported` for claims whose span was verbatim; injecting the span's page into `cited_pages` flipped the same claim to `supported`.
 
-A claim with a verbatim span on the right page can only fail grounding via its two guards. The trace showed the cause:
-
-```
-q001  claim.text: "The four DORA key metrics are deployment frequency, lead time for changes, change failure rate, and time to restore service."  (correct)
-      evidence span: "...deployment frequency, lead time for changes, change failure rate, and..."  (verbatim in dora.md)
-      cited_pages: []          ← EMPTY
-      ground_cap: unsupported
-```
-
-`ground_claim` builds `cited = {ref.page for ref in claim.cited_pages}` (empty), then for each span requires `span.page in cited` ("a span may only ground against a page the claim actually cited"). With `cited_pages = []`, **every span is skipped** and the claim falls through to `unsupported`. This was **10/10 claims** — gemma never populates `cited_pages`; it puts the page in the span only.
-
-### 4.3 Minimal confirmation
-```
-q001 ground_claim AS-IS (cited_pages=[]):        unsupported
-q001 ground_claim BACK-FILLED (cite span.page):  supported     ← one change flips it
-```
-
-### 4.4 The fix (commit `32424c6`)
-In `pipeline.synthesize`, after validation: for any claim with evidence spans but **empty** `cited_pages`, set `cited_pages` to the unique pages declared by its spans (dedup; default library `"local"`). This restores grounding for span-attributing models and also repairs downstream `promote` citations (which read `cited_pages`). The anti-mis-attribution rule is preserved when `cited_pages` *is* populated (back-fill fires only on an empty list). TDD: a failing test (empty `cited_pages` + verbatim span → `supported` after `synthesize`) and a guard test (explicit `cited_pages` not overwritten).
-
-### 4.5 Recovery
-| | broken | fixed |
-|---|---|---|
-| `fact_recall` (10-q diagnostic) | 0.000 | 0.900 |
-| `fact_recall` (full 97) | 0.000 | **0.787** |
-
-The 10-q sample (0.900) was front-loaded with easy DORA/CI-CD questions; 0.787 is the honest full-suite number.
+**Fix (commit `32424c6`):** in `pipeline.synthesize`, when a claim has spans but empty `cited_pages`, back-fill `cited_pages` from the spans' pages (preserving the anti-mis-attribution rule when `cited_pages` is populated). TDD'd. Result: `fact_recall 0.000 → 0.787`.
 
 ---
 
 ## 5. Results
 
-Bars are the release thresholds. "broken" = pre-fix; "fixed" = post-fix (the true numbers); "Sonnet" = the in-session Claude Code baseline (§3.1 caveats apply).
-
-| metric | bar | gemma broken | **gemma fixed** | Sonnet baseline |
+| metric | gate | gemma (broken) | **gemma (fixed)** | CC agentic reference¹ |
 |---|---|---|---|---|
-| fact_recall | 0.85 | 0.000 | **0.787** ❌ | 0.907 ✅ |
-| routing_recall | 0.90 | 0.933 | 0.933 ✅ | 1.000 ✅ |
-| routing_precision | 0.80 | 0.795 | 0.795 ❌ | 0.987 ✅ |
-| abstention_precision | 0.95 | 0.227 | 0.900 ❌ | 1.000 ✅ |
-| abstention_recall | 0.90 | 1.000\* | 0.818 ❌ | 1.000 ✅ |
-| verifier_precision | 0.98 | 1.000 | 1.000 ✅ | 1.000 ✅ |
-| verifier_recall | 0.95 | 1.000 | 1.000 ✅ | 1.000 ✅ |
-| first_pass_json | 0.95 | 0.957 | 0.969 ✅ | 1.000\*\* |
-| **VERDICT** | | FAIL | **FAIL** | PASS |
+| fact_recall | 0.85 | 0.000 | **0.787** ❌ | 0.907 |
+| routing_recall | 0.90 | 0.933 | 0.933 ✅ | 1.000 |
+| routing_precision | 0.80 | 0.795 | 0.795 ❌ | 0.987 |
+| abstention_precision | 0.95 | 0.227 | 0.900 ❌ | 1.000 |
+| abstention_recall | 0.90 | 1.000² | 0.818 ❌ | 1.000 |
+| verifier_precision | 0.98 | 1.000³ | 1.000³ | 1.000³ |
+| verifier_recall | 0.95 | 1.000³ | 1.000³ | 1.000³ |
+| first_pass_json | 0.95 | 0.957 | 0.969 ✅ | n/a⁴ |
+| **VERDICT** | | FAIL | **FAIL** | (reference) |
 
-\* The broken run's `abstention_recall = 1.0` is itself an artifact — it "abstained" on everything because every answer was dropped. \*\* "by construction" for the baseline (structured subagent output), not a measured grammar-constrained value.
+¹ Agentic reference, not a cloud-backend measurement (§3.1). ² Artifact of abstaining on everything (all claims dropped). ³ `verifier_precision/recall` are over the **22 fixed labels only** — they do **not** cover generated absence-claims (§6.2). ⁴ "valid by construction" for the structured-output reference, not a measured number.
 
-**Latency / cost.** `gemma4:12b`: ~93–102 s/question average, range **37.5 s – 394 s** (≈10× spread; a fat tail). Sonnet baseline: ~3–4 s/question. So the local path is ~25× slower per query — but at roughly **1/10,000th the marginal token cost**, which inverts the trade for cost-sensitive / high-volume / air-gapped enterprise deployments. Latency alone is not disqualifying; quality is the gate.
+**Not measured (reported as deterministic invariants, not observations):** `clean_published_support_rate` is computed as `clean_published_support_rate([])` → vacuously `1.0` every run; the three safety floors (`invalid_mutation_rejection`, `citation_validity`, `post_repair_json_validity`) are **hardcoded `1.0`** in the query-only runner, not measured this run. They are deterministic guarantees of the query path, not release-suite measurements.
 
----
+**Gap framing:** the `~6-point` shortfall is against the **0.85 gate**; against the agentic reference (0.907) the `fact_recall` gap is `~12 points`.
 
-## 6. Remaining-gap analysis (corrected run)
-
-Exact arithmetic from the fixed run (22 no-evidence questions; 20 total abstentions observed):
-- **18/22** no-evidence questions correctly abstained; **4** were wrongly answered (gemma found spurious relevance) → `abstention_recall = 0.818`.
-- Of 20 total abstentions, **18 correct + 2 wrong** (2 evidence questions got an empty page set → empty answer → counted as a wrong abstention) → `abstention_precision = 0.900`.
-
-Attribution of each failing metric:
-
-| failing metric | value/bar | dominant cause |
-|---|---|---|
-| `routing_precision` | 0.795 / 0.80 | `select` **over-selects** (returns extra pages beyond the one needed) |
-| `abstention_precision` | 0.900 / 0.95 | 2 `select`-**empties** on evidence questions → empty answers counted as wrong abstentions |
-| `abstention_recall` | 0.818 / 0.90 | `select`/synthesize find **spurious relevance** on 4 no-evidence questions → answered instead of abstained |
-| `fact_recall` | 0.787 / 0.85 | partly the `select`-empties above; partly harder questions; partly strict substring matching of multi-item facts |
-
-**Unifying observation.** Three of four failures are downstream of the **`select` step** (empty sets, over-broad sets, spurious relevance on no-evidence). And the original 0.000 bug plus the `select`-empties share a deeper theme: **the deterministic layers are strict about output *shape*, and a semantically-capable model loses credit for minor format deviations** (empty `cited_pages`; page ids that don't exactly match known names). That theme is the most promising lever.
+**Reproducibility:** two corrected runs produced identical numbers (seed-pinned). The **3-run variance gate has not been run**, so we say "consistent across two runs," not "deterministic/ratified."
 
 ---
 
-## 7. Improvement avenues (feedback invited)
+## 6. Trace-driven analysis of the residual failures
 
-### 7.1 `select`-instability (highest leverage — gates 3 of 4 failing metrics)
-**Symptom:** `select` sometimes returns `[]` (empty) or over-broad sets. Not yet root-caused (next investigation). Leading hypotheses, by analogy to the `cited_pages` bug:
-- gemma returns page ids in a slightly-off format (missing `.md`, different case, a descriptive phrase) → the strict `id in known_pages` filter drops them → `[]`.
-- gemma returns malformed JSON that survives repair as an empty `SelectResult`.
+From `trace-gemma4_12b-20260619T044923Z-run1.jsonl` (119 rows: 97 question + 22 verifier).
 
-**Candidate fixes:**
-- **Format-tolerant id matching** in `select` (normalize case, add `.md`, fuzzy-match returned ids to known page names) — mirrors the `cited_pages` tolerance fix; likely removes most empties.
-- **Embedding-accelerator-bounded select.** M3 already ships an embedding prefilter (`accelerated_candidates`). Constrain `select` to the top-k embedding shortlist and/or seed it with those candidates so it never returns nothing relevant. (Recall@k floor is already gated at 0.95.)
-- First: **capture `select`'s raw output** on the empty/over-broad cases to confirm the cause before fixing.
+### 6.1 `select` relevance failure on no-evidence questions: 22/22 (not 4/22)
+**Every** no-evidence question selected ~the whole library: 21 selected all 15 valid pages (plus the typo `release--management.md`), `q079` selected all 16. The correct taxonomy:
+- **Selector relevance failure: 22/22** — the model never abstains at `select`; it dumps the shelf.
+- **Non-empty publication failure: 4/22** — `q076/q078/q086/q088` leaked a published answer.
+- **Metric "abstention success": 18/22** — these passed `abstention_recall` only because *verification dropped the claims*, not because the selector abstained.
 
-### 7.2 Precision (`routing_precision`, `abstention_precision`)
-- **Tighten the `select` prompt** to prefer the *fewest* sufficient pages (currently "2–4 most relevant") — trades a little recall for precision. Needs A/B on the suite.
-- **Prune to contributing pages.** Today `predicted_routing` = `select`'s raw output. Deriving routing from the pages actually cited by *published* claims would raise precision and arguably measures the real signal ("pages used to answer") rather than "pages glanced at." This is a **metric-definition choice** — reviewer input wanted.
-- **Embedding re-rank + similarity threshold** to drop low-relevance selections.
-- `abstention_precision` is mostly gated by the `select`-empties (§7.1) — fixing those should lift it toward 1.0.
+This strengthens the case for a **select-level abstention contract**: the metric understates a pervasive selector failure that verification happens to mask 18 times out of 22.
 
-### 7.3 Abstention recall (don't answer no-evidence questions)
-- **Relevance floor on select:** return an empty set when nothing clears an embedding-similarity threshold → correct abstention on genuinely-unanswerable questions (fixes the 4 spurious answers).
-- **Explicit abstention instruction in synthesize:** "if the supplied pages do not answer the question, return no claims." gemma currently synthesizes a claim even from off-topic pages.
+### 6.2 Verifier vulnerability: an absence-claim graded `supported` (NEW — serious)
+The 4 leaked answers are **semantic abstentions expressed as claims**, e.g. `q076` → *"The company payroll schedule is not mentioned in the provided documents."* — but the claim **cites `dora.md` with span `"DORA Metrics"`** (irrelevant to the claim) and is graded **`final=supported`**. All four follow this pattern.
 
-### 7.4 Fact recall
-- Largely downstream of §7.1–7.3 (recover the `select`-empties; stop dropping grounded claims).
-- **Scorer strictness:** `fact_recall` requires the expected phrase as a normalized **substring**. Multi-item facts (e.g., a 4-item DORA list in an exact order) are brittle — a correct answer with reordered items scores zero. Consider token-overlap or set-membership matching for list-type facts. **Scorer-design question — reviewer input wanted** (changing it changes what "0.85" means).
+Implications:
+- gemma *understood* evidence was absent — but violated the structural abstention contract by emitting it as a claim.
+- `ground_claim` accepted an **irrelevant** verbatim span (the string "DORA Metrics" is present on the page) → **verbatim-span presence does not imply claim support**.
+- the **self-judge** did not catch the mismatch (the same model graded its own absence-claim "supported").
+- an **unsupported claim reached publication as fully supported**. `verifier_precision = 1.0` covers only the 22 fixed labels and entirely misses this generated failure class.
 
-### 7.5 Cross-cutting: make deterministic layers format-tolerant
-The `cited_pages` back-fill is one instance; tolerant `select` id-matching is another. A small, principled "normalize model output before the strict deterministic gate" layer would harden the pipeline for *any* capable-but-format-imperfect model, not just gemma — while preserving the safety properties (verbatim grounding, anti-mis-attribution) when the model *does* comply.
+This is more serious than "spurious relevance." Mitigations in §7.
+
+### 6.3 Over-selection (routing_precision 0.795)
+**13** evidence questions select the right page **plus** extras (q006, q008–q010, q018–q020, q034, q045, q047, q058, q069, q074). A separate **3** (q011, q039, q060) select extras **without** the expected page (a routing-recall miss, not over-selection). The 2–4-page prompt encourages breadth → precision loss.
+
+### 6.4 Typo'd page ids (24 `unknown_id`, 4 distinct)
+All are typos of real pages, fuzzy-mapping to their true page (nearest `difflib` ratio):
+- `release--management.md` (double hyphen) → `release-management.md` (**0.977**), ×21 — **all on no-evidence questions**.
+- `sdl-solo.md` → `sdlc-solo.md` (**0.957**); `sdl-single-team.md` → `sdlc-single-team.md` (**0.973**).
+- `ci-cd.d` → `ci-cd.md` (**0.933**).
+
+Because the 21 `release--management` typos are all on **no-evidence** questions (excluded from routing scoring), recovering them **cannot worsen routing_precision** — it would only increase pages-read and could affect abstention behaviour. The one routing-relevant recovery is `q032` (`sdl-solo` → the expected `sdlc-solo.md`).
+
+### 6.5 Empty selects (2): one is a pipeline-input bug
+- **`q032`** selected two `sdl-*` typos → both `unknown_id` → `page_ids=[]`. Fuzzy normalization would recover the expected page here.
+- **`q005`** selected real but **wrong-layer** pages (`incident-response.md`, `observability.md` on an `evidence`-layer question); the deterministic layer filter silently dropped both → `page_ids=[]`. This is partly a **pipeline-input contract bug**: the non-accelerated path shows the model the *full* shelf but accepts only *layer-filtered* ids. The selector should receive a shelf of **eligible candidates only** (as the accelerated path already does), instead of being asked to infer an invisible layer restriction.
+
+### 6.6 Empty selection wastes the synthesis budget
+After `q032`'s empty select, the graph **still calls synthesis**: gemma spends ~321 s across failed+repaired synthesis (inventing a `"Page 1"` citation, eventually rejected); total question latency **396.7 s**. An empty `page_ids` should **short-circuit** to an empty published answer — a correctness, latency, and predictability win independent of fuzzy normalization.
+
+### 6.7 fact_recall miss decomposition (16 misses — "largely downstream of select" was overstated)
+- **5 routing-caused:** `q005`, `q011`, `q032`, `q039`, `q060`.
+- **11 select-the-right-page-but-miss**, split into:
+  - **scorer artifacts** (answer essentially right, scorer strict): `q015` (Oxford comma), `q051` (compound phrase split across claims), `q072` ("and" vs "or"), `q074` (article substitution).
+  - **genuinely incomplete answers:** `q023` (omits the 400-line limit), `q040` (omits "complex systems at scale"), `q045` (omits "remove stale flags"), `q064`, `q071`, `q075` (omit the requested fact).
+
+So fixing **all five routing-caused** misses could move recall to at most `64/75 = 0.853` — and only if the recovered answers also satisfy the (strict) scorer. Real headroom is mixed model-quality + scorer-strictness, not purely selection.
+
+### 6.8 Not gated despite existing as constants
+`EMBEDDING_RECALL_AT_K` (the embedding prefilter floor) and `FEDERATION_ATTRIBUTION` are threshold constants but are **not** in `_GATED_MINIMUMS` and are **not** invoked by `eval release`. Any prior claim that recall@k is "already gated at 0.95" is **incorrect** — it is unenforced. If the prefilter floor is intended as a gate, it must be wired into `gate()`.
 
 ---
 
-## 8. Open questions for reviewers
+## 7. Improvement avenues (revised by §6 + reviewer answers)
 
-1. **Routing metric definition** — should `predicted_routing` be `select`'s raw output (current) or the pages actually cited by published claims? The latter rewards "used the page," not "considered the page."
-2. **Fact-matching strictness** — is normalized-substring the right `fact_recall` definition, given multi-item / ordered facts? What would you use?
-3. **Where to enforce abstention** — at `select` (relevance floor) or `synthesize` (explicit instruction) or both?
-4. **Format-tolerance vs strictness** — how much output normalization is acceptable before it masks genuine model weakness the gate is meant to catch?
-5. **Is 0.85 `fact_recall` the right bar** for a *cost-1/10,000th* backend, or should an offline tier have its own (lower, clearly-labelled) threshold profile?
+**Highest leverage — #4 abstention + selection discipline, enforced at three levels** (hits over-selection, the 22/22 selector failure, and the absence-claim vulnerability):
+1. **`select`:** allow/encourage an explicit "no relevant page" result; bias toward the *fewest* sufficient pages.
+2. **graph control-flow:** short-circuit an empty selection to an empty answer (§6.6).
+3. **`synthesize`/verify:** return no claims when pages don't answer; **reject absence-claims** or represent abstention outside `Answer.claims`.
+
+**Verifier hardening (from §6.2):** add negative/absence-claim tests; recognize that verbatim-span presence ≠ support; either reject absence-shaped claims at synthesis or have the judge require the span to be *about* the claim. The current self-judge + verbatim-grounding both miss this.
+
+**`q005` contract fix (§6.5):** feed `select` a shelf of eligible (layer/confidence-filtered) candidates only — remove the prompt/validator mismatch.
+
+**#2 fuzzy id-normalization — narrow, not blind:** normalize only **unambiguous syntax** (case/`.md`/basename) deterministically; fuzzy page matching must require a **unique winner, a strong score, and a margin over the runner-up**, with every correction **logged**. Net gain is modest (~1 routing-relevant recovery, `q032`); pair it with the abstention discipline above.
+
+**Scorer evolution (versioned, not redefined in place):** keep raw `select` output as the routing metric and **add** a separate *published-citation-utilization* metric (don't replace routing precision); keep exact normalized matching as a lexical metric and **add** list/set-equivalence + semantic-coverage scorers. Any change to the frozen suite/thresholds must be **versioned**, not silently applied after observing failures.
+
+**Cost/quality:** do **not** lower the ratification bar on cost grounds. A separate **offline tier** is reasonable only with an explicit degraded-quality product contract and risk-appropriate acceptance tests (its own versioned thresholds).
+
+---
+
+## 8. Open questions
+
+1. Routing metric: keep `select`-output-based routing precision, and add citation-utilization separately? (Reviewer: yes — add, don't replace.)
+2. fact-recall matching: lexical substring is brittle for lists/ordering — add set/semantic scorers under suite versioning? (Reviewer: yes — add, version, don't redefine.)
+3. Abstention enforcement layer(s)? (Reviewer: all three — select / control-flow / synthesize+verify.)
+4. How much output normalization before it masks real weakness? (Reviewer: unambiguous syntax only; fuzzy needs unique winner + margin + logging.)
+5. Should a 1/10,000-cost backend get a lower bar? (Reviewer: not without a verified cost model and a separate, contract-bound offline tier.)
 
 ---
 
 ## 9. Threats to validity
-
-- **Single run** (`--runs 1`); the 3-run variance cap (0.05) has not been applied to the corrected numbers. (The pre-fix runs were 3× consistent.)
-- **Sample vs full** — the 10-q diagnostic (0.900) overstated the full-suite `fact_recall` (0.787); always trust the full suite.
-- **Baseline is a reconstruction** — the Sonnet baseline used in-session subagents + the real scorers, not the literal LangGraph machinery; treat it as a quality reference, not a pipeline-identical run.
-- **Quantization / hardware** — `gemma4:12b` is Q4_K_M on a single Metal host; a higher-precision quant or different hardware may move both quality and latency.
-- **Frozen suite size** — 97 questions; small per-metric denominators mean a few questions move a metric by points.
+- **Two identical corrected runs, but the 3-run variance gate has not run** — consistent, not variance-ratified.
+- **The reference is a Claude Code agentic reference, not a cloud-backend baseline** (§3.1) — do not read its 0.907 as `claude-sonnet-4-6` via `AnthropicBackend`.
+- **No measured cost or latency comparison.** Local latency is logged; the reference's per-question time came from *parallel* subagents and is not comparable to sequential pipeline latency. No token/price/energy/hardware model exists, so no cost ratio is asserted in this report.
+- **Some "safety" numbers are deterministic invariants, not observations** (§5): `clean_published_support_rate` is vacuous; the floors are hardcoded; recall@k/federation-attribution are unenforced.
+- **Quantization/hardware:** Q4_K_M on a single Metal host; another quant/host may move quality and latency.
+- **Small suite** (97 Q / 22 labels): a few questions move a metric by points.
 
 ---
 
 ## 10. Recommendations
-
-1. **Keep Anthropic / Claude Sonnet 4.6 as the default backend** (gemma fails the gate on real margins). Offline stays off-by-default by design.
-2. **Investigate `select`-instability next** (capture raw output → format-tolerant matching and/or embedding-bounded select). Highest leverage: it gates `routing_precision`, both abstention metrics, and some `fact_recall`. gemma is within single digits of all four bars; this could plausibly clear the gate.
-3. **Re-ratify after the `select` fix**, then run the full **3-run** gate if `--runs 1` clears.
-4. **Review the routing-metric and fact-matching definitions** (§8) — some of the gap may be measurement, not model.
-5. **Consider an offline-tier threshold profile** if a cost-1/10,000th backend warrants different bars.
-
----
-
-## 11. Appendix — artifacts & reproduction
-
-- **Fix commit:** `32424c6` (`pipeline.synthesize` cited_pages back-fill). Related: `a74e2e9` (sentinel strip), `1ee138a` (per-question progress logging).
-- **Reports (`research/kb-offline-eval/`):**
-  - `release-gemma4_12b-20260617T234246Z.md` — broken (fact_recall 0.000)
-  - `release-gemma4_12b-20260618T044924Z.md` — fixed (fact_recall 0.787)
-  - `baseline-claude-code-claude-20260618T035356Z.md` — Sonnet baseline (PASS)
-- **Diagnostic + baseline harness:** `tmp/cc_baseline/` (`diagnose_gemma.py` real-pipeline tracer; `score.py` baseline scorer; `gemma_trace.json` per-stage trace). *(tmp/ is gitignored — promote into the repo if we want these as durable evidence.)*
-- **Reproduce a single ratification:**
-  `PYTHONUNBUFFERED=1 .venv/bin/kb-offline eval release --stamp <STAMP> --runs 1 --report-dir research/kb-offline-eval`
-  (per-question progress streams to stderr; pin is applied automatically).
-- **Reproduce the diagnostic:** `.venv/bin/python tmp/cc_baseline/diagnose_gemma.py 10`
+1. **Keep `AnthropicBackend` (`claude-sonnet-4-6`) as the default** — gemma fails the existing gate on four margins.
+2. **Build the three-level abstention contract (§7) first** — highest leverage; it addresses the 22/22 selector failure, over-selection, and the no-evidence answers.
+3. **Fix the verifier vulnerability (§6.2)** — add absence-claim tests; reject/relocate absence claims; don't treat verbatim presence as support.
+4. **Short-circuit empty selects** (§6.6) and **feed `select` the eligible shelf** (§6.5) — cheap correctness/latency wins.
+5. **Add #2 fuzzy normalization narrowly** (unique-winner + margin + logged), paired with the abstention work.
+6. **Evolve scorers under versioning** (citation-utilization; list/semantic fact coverage) and **wire recall@k/federation-attribution into the gate** if they are meant to be enforced.
+7. **Run the full 3-run variance gate** before any ratification claim, and the literal `--compare anthropic` path if a cloud-backend baseline is wanted.
+8. **Correct the report-template line** in the generated reference report (it currently prints "recommend making Ollama the default backend" for the reference — a template error keyed on PASS/FAIL).
 
 ---
 
-## Addendum (2026-06-19): trace-driven select-instability investigation
+## 11. What is strong (unchanged)
+- The `0.000` diagnosis is convincing; the `cited_pages` repair is narrow, tested, and explains the measured recovery.
+- The primary gemma metrics and abstention arithmetic are correct.
+- Keeping Anthropic as default is justified independently of any cost argument.
+- The trace instrument turns "gemma is close" into a concrete, sourced work-list.
 
-With the eval-traces feature shipped, a fresh traced `--runs 1` ratification reproduced the verdict **exactly** (deterministic, seed-pinned): `fact_recall 0.787`, `routing_precision 0.795`, `abstention_precision 0.900`, `abstention_recall 0.818` — FAIL on the same 4 margins. The per-question trace (`trace-gemma4_12b-20260619T044923Z-run1.jsonl`) lets us attribute each failing metric to a concrete `select` behaviour:
+---
 
-### Select failure taxonomy (from the trace)
-1. **Typo'd page ids (24 `dropped.reason=unknown_id`, 4 distinct):** `release--management.md` (double hyphen) ×21, `sdl-solo.md` / `sdl-single-team.md` (missing the "c" in "sdlc"), `ci-cd.d` (truncated `.md`). **These are typos of real pages, not semantic errors** — every one fuzzy-maps to its true page at `difflib` ratio ≥ 0.93 (0.96/0.97/0.93/0.98). A cutoff ~0.90 recovers all four with no cross-map risk (the 16 page names aren't that close to each other).
-2. **Empty selects (2 evidence Qs):** `q005` selected real-but-wrong-layer pages (`incident-response`, `observability` on an `evidence`-layer question) → removed by the layer filter → `page_ids=[]`; `q032` selected two `sdl-*` typos → both `unknown_id` → `page_ids=[]`. These two empties are the 2 wrong abstentions dragging `abstention_precision` (0.900).
-3. **Over-selection (16 / 75 evidence Qs):** picks the right page **plus** extras (e.g. `q006`: dora + observability; `q011`: trunk-based + release-management, missing the expected ci-cd entirely). This is the dominant `routing_precision` (0.795) drag.
-4. **No-evidence "select-all" (4 / 22):** `q076/078/086/088` selected **all 15 library pages** rather than abstaining → synthesize then answers → the `abstention_recall` (0.818) failure.
-
-### Design implications (revises §7 priorities)
-- **#4 (abstention + selection discipline) is higher-leverage than #2 for the gate.** The biggest drags are over-selection (precision) and the no-evidence select-all (recall) — both addressed by tightening `select` to the *fewest relevant* pages and adding a relevance/abstain gate so an irrelevant question yields an empty set (or an explicit `no_relevant_page`) instead of the whole shelf.
-- **#2 `normalize_select_result` must be FUZZY, not simple normalization.** The planned case/`.md`/basename normalization would NOT catch `release--management.md`, `sdl-solo.md`, or `ci-cd.d` — these need edit-distance matching to the known set (validated cutoff ~0.90). *But* net gain is modest (≈1 expected-page recovery, `q032`) and recovering an *over-selected* typo (e.g. the 21 `release--management`) would **worsen** precision — so fuzzy recovery must be coupled with the precision/abstention discipline of #4, not applied blindly.
-- **Layer interaction (`q005`):** a real-but-wrong-layer pick becomes an empty select. The abstention contract (#4) should distinguish "nothing relevant" from "relevant pages exist but were filtered by layer" — the trace's `dropped.reason=filtered_out` already surfaces this.
-
-**Net:** the gate failure is ~6 points of `fact_recall` plus precision/abstention gaps that are now precisely sourced. The trace converts "gemma is close" into a concrete work-list: (a) tighten/abstain-gate `select` (#4), (b) fuzzy id-normalization as paired cleanup (#2), (c) consider layer-aware abstention messaging.
+## Appendix — artifacts
+- Report ↔ code fidelity: this rev integrates the prior addendum into the body (no separate contradictory section).
+- `trace-gemma4_12b-20260619T044923Z-run1.jsonl` — per-question trace (this report's §6 source).
+- `release-gemma4_12b-20260619T044923Z.{md,json}` — the analysed run's verdict.
+- `harness/diagnose_gemma.py`, `harness/baseline_score.py`, `harness/claude-baseline-outputs/`, `harness/README.md` — diagnostic + reference scorer + reference outputs + identity/timing caveats.
+- Fix: commit `32424c6`. Sentinel fix: `a74e2e9`. Eval-traces feature: `dd6cfd1..b476a5e`.
