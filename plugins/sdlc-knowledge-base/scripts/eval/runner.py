@@ -115,6 +115,8 @@ def _build_question_trace(q, out, slice_records, elapsed_s, *, known, eligible, 
         "type": "question", "id": q.id, "kind": q.kind, "no_evidence": q.no_evidence,
         "expected_facts": q.expected_facts, "expected_routing": q.expected_routing_targets,
         "model_calls": model_calls,
+        # NOTE: eligible_page_ids reflects the full-shelf (non-accelerate) candidate set — the
+        # eval-release ratification path. It is NOT the embedding shortlist for --accelerate runs.
         "eligible_page_ids": sorted(eligible), "page_ids": list(out.get("page_ids", [])),
         "dropped": dropped, "eligible_unselected": eligible_unselected,
         "select_parse_ok": select_parse_ok, "pages_read": list(pages.keys()),

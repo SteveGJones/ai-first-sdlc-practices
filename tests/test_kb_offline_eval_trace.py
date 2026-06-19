@@ -149,3 +149,59 @@ def test_score_run_threads_trace_to_both():
     score_run(str(SMOKE / "library"), qs, labels, backend=be, trace=trace)
     assert any(r["type"] == "question" for r in trace)
     assert any(r["type"] == "verifier" for r in trace)
+
+
+def test_trace_surfaces_pre_normalization_empty_cited_pages():
+    # synthesize emits cited_pages:[] (the gemma bug); pipeline back-fills from the span.
+    # The trace must show BOTH: raw with cited_pages:[] AND claims[].cited_pages back-filled.
+    def gen(prompt, schema=None):
+        if prompt.startswith("Judge whether"):
+            return '{"status": "supported"}'
+        if "Shelf-index" in prompt:
+            return _json.dumps({"page_ids": ["dora.md"]}) if "deploy" in prompt else _json.dumps({"page_ids": []})
+        return _json.dumps({"claims": [{"text": "Elite teams deploy multiple times per day.",
+                                        "cited_pages": [],
+                                        "evidence_spans": [{"page": "dora.md",
+                                                            "text": "deploy multiple times per day"}]}],
+                            "rendered_text": "Elite teams deploy multiple times per day."})
+    qs = [q for q in load_questions(SMOKE / "questions.jsonl") if q.id == "s1"]
+    rec = RecordingBackend(FakeBackend())
+    rec._inner.generate = gen
+    trace: list = []
+    run_questions(str(SMOKE / "library"), qs, backend=rec, trace=trace)
+    t = trace[0]
+    synth_raw = next(c["raw"] for c in t["model_calls"] if c["stage"] == "synthesize")
+    assert '"cited_pages": []' in synth_raw            # pre-normalization output visible
+    assert t["claims"][0]["cited_pages"] == ["dora.md"]  # back-filled in the normalized claim
+    assert t["claims"][0]["ground_cap"] == "supported"   # grounding now attributes the span
+
+
+def test_trace_error_row_carries_model_calls():
+    # select succeeds, synthesize returns invalid JSON -> synthesize repair-exhausts -> raises.
+    def gen(prompt, schema=None):
+        if "Shelf-index" in prompt:
+            return _json.dumps({"page_ids": ["dora.md"]})
+        return "not json at all"     # synthesize never validates -> ValueError
+    qs = [q for q in load_questions(SMOKE / "questions.jsonl") if q.id == "s1"][:1]
+    rec = RecordingBackend(FakeBackend())
+    rec._inner.generate = gen
+    trace: list = []
+    rows = run_questions(str(SMOKE / "library"), qs, backend=rec, trace=trace)
+    assert rows[0]["error"] is True
+    t = trace[0]
+    assert t["type"] == "question" and t.get("error") is True
+    assert "synthesize failed" in t["error_msg"]
+    assert any(c["stage"] == "select" for c in t["model_calls"])   # raw call history captured
+
+
+def test_run_questions_rows_identical_with_and_without_trace():
+    qs = load_questions(SMOKE / "questions.jsonl")
+    rec1 = RecordingBackend(FakeBackend())
+    rec1._inner.generate = _smoke_gen()
+    rows_no_trace = run_questions(str(SMOKE / "library"), qs, backend=rec1)
+    rec2 = RecordingBackend(FakeBackend())
+    rec2._inner.generate = _smoke_gen()
+    trace: list = []
+    rows_traced = run_questions(str(SMOKE / "library"), qs, backend=rec2, trace=trace)
+    assert rows_no_trace == rows_traced            # return value byte-identical
+    assert len(trace) == len(qs)                   # trace populated only as a side-channel
