@@ -27,6 +27,12 @@ def _sanitize_json(raw: str) -> str:
     return _TRAILING_SENTINELS.sub("", _LEADING_SENTINELS.sub("", raw)).strip()
 
 
+def _normalize_reason(text, fallback: str) -> str:
+    """Collapse whitespace/newlines, strip, cap at 200 chars; fallback for None/blank."""
+    s = " ".join(text.split()) if isinstance(text, str) else ""
+    return (s[:200] if s else fallback)
+
+
 def _extract_schema() -> dict:
     return ExtractJSON.model_json_schema()
 
