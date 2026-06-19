@@ -2,7 +2,7 @@
 
 **Issue:** EPIC #211, select/verifier-hardening roadmap. Slice 1 of 3 (Slice 2 = fuzzy id-normalize; Slice 3 = scorer evolution + gate wiring — both deferred).
 **Date:** 2026-06-19
-**Status:** design, pending review. (Rev 4 — round 4: P1 renderer-agnostic finalizer + exact per-path order + canonicalize_attribution metadata preservation for accel-federation; P2 normalized one-line reasons, reject-all regression semantics, entry-block shelf test; P3 22@0.0 count.)
+**Status:** design, pending review. (Rev 5 — round 5 semantic polish: reason None-on-success, guard covers all observed forms, finalizer reconciles success too, truthful federated reason.)
 **Grounded in:** `research/kb-offline-eval/2026-06-18-gemma-ratification-findings.md` (rev2) + `trace-gemma4_12b-20260619T044923Z-run1.jsonl`.
 
 ## Goal
@@ -36,7 +36,7 @@ class Answer(BaseModel):
 - After id/layer filtering, if `page_ids` becomes empty and `no_relevant_page` is not already set ⇒ treat as abstention with a **deterministic fallback reason** (`"no eligible pages after id/layer filtering"`).
 - `Answer.abstained=True` ⇒ `rendered_text=""` and **no published (supported/partial) claims**. The `claims` list **may** still contain `unsupported` entries (the §6c guard and §6d reject-all keep them for audit + claim-index alignment). (P1-1 — this is the unified invariant that reconciles §6c/§6d: "abstained" means *nothing was published*, not *the claim list is literally empty*. Select- and synthesize-origin abstentions happen to carry `claims=[]`; reject-all carries the rejected `unsupported` claims.)
 - If verification rejects **every** claim ⇒ the final `Answer` is marked `abstained=True`, `abstention_reason="no supported claims"`.
-- **`abstention_reason` is always a normalized non-empty single line (P2-1).** A shared `_normalize_reason(text, fallback) -> str` collapses whitespace/newlines, strips, caps length (~200 chars), and substitutes the deterministic fallback when the model returns `None`/blank/multiline — applied to both the `select` and `synthesize` model-supplied reasons before they enter the contracts, so the CLI/trace diagnostic is never empty or malformed.
+- **`abstention_reason` is `None` on success, and a normalized non-empty single line when abstaining (P2-1):** when `abstained`/`no_relevant_page` is True it is normalized + non-empty; otherwise it is `None`. A shared `_normalize_reason(text, fallback) -> str` collapses whitespace/newlines, strips, caps length (~200 chars), and substitutes the deterministic fallback when the model returns `None`/blank/multiline — applied to both the `select` and `synthesize` model-supplied reasons before they enter the contracts, so an abstention's CLI/trace diagnostic is never empty or malformed.
 
 ## 2. Eligible shelf — all four paths (review #1)
 
@@ -61,7 +61,7 @@ Apply it on all four paths, passing the eligible ids **in the right order** (set
     filtered = [p for p in result.page_ids if p in set(known_pages)]
     if result.no_relevant_page:                 # explicit model abstention
         return SelectResult(page_ids=[], no_relevant_page=True,
-                            abstention_reason=result.abstention_reason or "model judged no page relevant")
+                            abstention_reason=_normalize_reason(result.abstention_reason, "model judged no page relevant"))
     if not result.page_ids:                     # model returned an empty selection
         return SelectResult(page_ids=[], no_relevant_page=True,
                             abstention_reason="no page selected by model")
@@ -128,34 +128,38 @@ def _claim_span_coverage(claim_text: str, span_text: str) -> float:
 The judge prompt receives the **declared evidence spans explicitly** (not only the full cited pages) and is asked to judge whether the spans actually *support* the claim. Final = `min(deterministic cap, judge)` as today.
 
 ### 6c. Epistemic-absence guard (defense-in-depth)
-A guard detects **epistemic corpus-absence** phrasing specifically — `"not mentioned"`, `"no information"`, `"do(es) not contain"`, `"documents contain no"`, `"not found in the (provided )?documents"` — **NOT** generic `not/no/without` (a broad guard would wrongly reject legitimate negative facts like "X does not require Y"). A matched claim is **marked `unsupported`** (its `entailment_status`), **not removed** from `Answer.claims` — preserving claim-index alignment and auditability.
+A guard detects **epistemic corpus-absence** phrasing specifically — the patterns must cover every form observed in the committed trace (P2-2): `"not mentioned"`, `"no information"`, `"do(es) not contain"`, `"documents contain no"`, `"not found in the (provided )?documents"`, **`"cannot find any information"`**, **`"not provided in the source"`**, **`"not provided in the (provided )?document"`** — all anchored to corpus/source language, **NOT** generic `not/no/without` (a broad guard would wrongly reject legitimate negative facts like "X does not require Y"). A matched claim is **marked `unsupported`** (its `entailment_status`), **not removed** from `Answer.claims` — preserving claim-index alignment and auditability. (The guard's pattern set is tested against all absence-shaped claim texts in the trace — see §9.)
 
 ### 6d. Reject-all ⇒ abstain, via a SHARED finalizer used on every path (P1-4 + P1-1)
 `publish()` and `render_federated()` both return `(rendered_text, rejected_claims)` and do **not** mutate the `Answer`. The renderers differ by path (single-lib uses `publish`; federation uses `render_federated`), so the shared finalizer takes the **already-rendered body** rather than calling a renderer itself (P1 — `federation_accel` does ONE cross-library synthesize rendered via `render_federated`, not per-library `publish`):
 ```python
 # publication.py — shared by the graph node and both federation paths
 def finalize_answer(answer: Answer, rendered: str, *, abstain_reason: str) -> None:
-    """Set the final rendered_text and, if nothing was published, the abstention fields.
-    Renderer-agnostic: the caller renders (publish OR render_federated) and passes the body."""
+    """Set the final rendered_text and reconcile the abstention fields BOTH ways (P2-3 — a
+    non-empty render must clear any stale abstained flag). Renderer-agnostic: the caller
+    renders (publish OR render_federated) and passes the body."""
     answer.rendered_text = rendered
     if not rendered.strip():
         answer.abstained = True
         answer.abstention_reason = abstain_reason
+    else:                                  # something published -> definitively not abstained
+        answer.abstained = False
+        answer.abstention_reason = None
 ```
 **Exact per-path order:**
 - **Graph (`n_verify_publish`):** `verify_entailment` (entailment_status + §6c guard) → `rendered, rejected = publish(verified)` → `finalize_answer(verified, rendered, abstain_reason=(ans.abstention_reason if ans.abstained else "no supported claims"))` → return `rendered_text`/`rejected_claims`/`_answer`/`abstained`/`abstention_reason`.
-- **Normal federation:** each `query_one_library` returns its verified Answer (the §7 no-page short-circuit returns an abstained one directly) → `merged, handle_sets = merge_answers(...)` → `rendered, rejected = render_federated(merged, handle_sets)` → `finalize_answer(merged, rendered, abstain_reason="no library had relevant evidence")`.
-- **Accelerated federation (`federation_accel`):** single cross-library `synthesize` → `verify_entailment` → `canonical = canonicalize_attribution(verified)` → `rendered, rejected = render_federated(canonical, handle_sets)` → `finalize_answer(canonical, rendered, abstain_reason="no library had relevant evidence")`. (The fused-select no-page case short-circuits to an abstained Answer *before* the synthesize.)
+- **Normal federation:** each `query_one_library` returns its verified Answer (the §7 no-page short-circuit returns an abstained one directly) → `merged, handle_sets = merge_answers(...)` → `rendered, rejected = render_federated(merged, handle_sets)` → `finalize_answer(merged, rendered, abstain_reason="no library produced a supported answer")`.
+- **Accelerated federation (`federation_accel`):** single cross-library `synthesize` → `verify_entailment` → `canonical = canonicalize_attribution(verified)` → `rendered, rejected = render_federated(canonical, handle_sets)` → `finalize_answer(canonical, rendered, abstain_reason="no library produced a supported answer")`. (The fused-select no-page case short-circuits to an abstained Answer *before* the synthesize.)
 
 **`canonicalize_attribution` must preserve metadata (P1):** it currently rebuilds `Answer(claims=…, rendered_text=…)` and would drop `abstained`/`abstention_reason`. Carry them through (and since finalize runs *after* canonicalize on the accel path, the canonical Answer is what gets finalized — order matters).
 
-Net: a **synthesize-origin** abstention keeps its model reason; a **reject-all** single-lib abstention gets `"no supported claims"`; a **federated** all-abstain gets `"no library had relevant evidence"`.
+Net (single-library): a **synthesize-origin** abstention keeps its model reason; a **reject-all** abstention gets `"no supported claims"`. In **federation**, the merged answer's reason is always the generic `"no library produced a supported answer"` (per-library model reasons are not surfaced on the merged result — they remain on each per-library Answer for the trace).
 
 ## 7. Output + federation merge (review #3)
 
 - **Single-lib / published output:** on abstain, `rendered_text=""` (frozen `did_abstain` scorer unchanged). `abstained`/`abstention_reason` ride on the `Answer` + are written to the trace; the CLI prints `[abstained: <reason>]` to stderr.
 - **Per-library / fused-select short-circuit (P2-5):** both federation paths are procedural (no graph), so they short-circuit themselves after `select`: if `no_relevant_page` or empty `page_ids`, skip `synthesize`. Normal federation does this **per library** (an abstaining library contributes nothing to the merge); accelerated federation does it on the **single fused cross-library select** (returns an abstained merged Answer directly). Same latency/correctness win as `n_abstain`.
-- **Merge & merged finalization:** a single library abstaining must **not** abstain the whole query. The merged Answer is rendered via `render_federated` and then **finalized via `finalize_answer(merged, rendered, abstain_reason="no library had relevant evidence")`** (§6d) — so it abstains **only when no library published a claim**. (Reject-all *within* a library is handled by the merge naturally: that library contributes zero published claims.)
+- **Merge & merged finalization:** a single library abstaining must **not** abstain the whole query. The merged Answer is rendered via `render_federated` and then **finalized via `finalize_answer(merged, rendered, abstain_reason="no library produced a supported answer")`** (§6d) — so it abstains **only when no library published a claim**. (Reject-all *within* a library is handled by the merge naturally: that library contributes zero published claims.)
 
 ## 8. Calibration vs regression evidence (review #5)
 
@@ -175,8 +179,8 @@ These are **separate** obligations:
 4. Graph: `no_relevant_page`/empty → `n_abstain`; complete state shape (`pages=[]`, `_synth`/`_answer` abstained dicts, `rendered_text=""`, `rejected_claims=[]`); `synthesize` NOT called (the q032 short-circuit).
 5. `synthesize`: abstain path forces `claims=[]`/`rendered_text=""`.
 6. `ground_claim` relevance floor: §6.2 absence-claim (coverage 0.0) → unsupported; **synthetic non-empty irrelevant-span fixture** (a real page string unrelated to the claim) → unsupported (the core regression guard — verbatim-but-irrelevant no longer grants support, and the check runs BEFORE the verbatim early-return); weakest legit (0.286) → supported; legitimate-negative fixture → supported; short-claim/narrow-span fixture → supported.
-7. Epistemic-absence guard: corpus-absence phrasing → unsupported (kept in claims); "X does not require Y" → NOT guarded.
-8. Reject-all ⇒ `abstained=True`/`"no supported claims"`.
+7. Epistemic-absence guard: **every** absence-shaped claim text in the committed trace → matched → unsupported (kept in claims) — incl. "not mentioned", "do(es) not contain", "no information", "cannot find any information", "not provided in the source text"; "X does not require Y" / "feature flags should be removed when stale" → NOT guarded.
+8. `finalize_answer` both outcomes (P2-3): empty render → `abstained=True` + given reason; non-empty render → `abstained=False`, `abstention_reason=None` (clears a stale flag). Reject-all ⇒ `abstained=True`/`"no supported claims"`. `_normalize_reason`: blank/None/multiline → fallback single line.
 9. Federation: per-library short-circuit — an abstaining/empty-select library returns an abstained Answer **without calling `synthesize`**; merge — one library abstains + another publishes → merged not abstained; all abstain → merged abstained.
 10. CLI surfacing: `[abstained: …]` on stderr; trace row carries `abstained`/`abstention_reason`.
 11. (pre-merge, live) fresh traced `eval release` ratification.
