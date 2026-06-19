@@ -101,6 +101,7 @@ One JSONL per run, `research/kb-offline-eval/trace-<safe_model>-<stamp>-run<k>.j
   "page_ids": ["dora.md"],
   "dropped": [{"id": "telemetry", "reason": "unknown_id"}],
   "eligible_unselected": ["observability.md"],
+  "select_parse_ok": true,
   "pages_read": ["dora.md"],
   "claims": [
     {"text": "...", "cited_pages": ["dora.md"],
