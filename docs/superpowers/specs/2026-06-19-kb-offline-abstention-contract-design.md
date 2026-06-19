@@ -2,7 +2,7 @@
 
 **Issue:** EPIC #211, select/verifier-hardening roadmap. Slice 1 of 3 (Slice 2 = fuzzy id-normalize; Slice 3 = scorer evolution + gate wiring — both deferred).
 **Date:** 2026-06-19
-**Status:** design, pending review.
+**Status:** design, pending review. (Rev 2 — incorporates design-review round 2: P1 invariant conflict, select-state propagation, shelf-helper reuse, final-Answer ownership; P2 federation short-circuits, calibration count.)
 **Grounded in:** `research/kb-offline-eval/2026-06-18-gemma-ratification-findings.md` (rev2) + `trace-gemma4_12b-20260619T044923Z-run1.jsonl`.
 
 ## Goal
@@ -34,25 +34,23 @@ class Answer(BaseModel):
 **Abstention invariants (enforced, not just documented):**
 - `SelectResult.no_relevant_page=True` ⇒ `page_ids=[]`.
 - After id/layer filtering, if `page_ids` becomes empty and `no_relevant_page` is not already set ⇒ treat as abstention with a **deterministic fallback reason** (`"no eligible pages after id/layer filtering"`).
-- `Answer.abstained=True` ⇒ `claims=[]` and `rendered_text=""`.
+- `Answer.abstained=True` ⇒ `rendered_text=""` and **no published (supported/partial) claims**. The `claims` list **may** still contain `unsupported` entries (the §6c guard and §6d reject-all keep them for audit + claim-index alignment). (P1-1 — this is the unified invariant that reconciles §6c/§6d: "abstained" means *nothing was published*, not *the claim list is literally empty*. Select- and synthesize-origin abstentions happen to carry `claims=[]`; reject-all carries the rejected `unsupported` claims.)
 - If verification rejects **every** claim ⇒ the final `Answer` is marked `abstained=True`, `abstention_reason="no supported claims"`.
 
 ## 2. Eligible shelf — all four paths (review #1)
 
-A shared helper builds the reduced shelf from the **post-filter eligible set**, so the model never sees a page it cannot pick:
+**Reuse the existing `retrieval._reduce_shelf`** (review #1/#3) — do NOT write a naive body-line filter. `_reduce_shelf(shelf_path, page_ids: list)` already keeps **complete entry blocks** (Hash/Layer/Confidence/Terms/Facts via `build_shelf_index.extract_entry_block`) and takes an **ordered list** (so it preserves rank). Generalize it minimally to accept either a path or shelf text, and make it the single source of truth for "what `select` is allowed to see," called with the **post-filter eligible ids in their meaningful order**:
 ```python
-# provenance.py (next to filter_pages / known_page_ids)
-def reduced_shelf(shelf_text: str, eligible_ids: set[str]) -> str:
-    """Keep only shelf-index body lines whose page id is in eligible_ids (header/comment
-    lines preserved). The single source of truth for 'what select is allowed to see'."""
+# retrieval.py — generalized signature (path OR text); ordered ids preserved as-is
+def reduce_shelf(shelf, ordered_ids: list[str]) -> str: ...   # rename/wrap _reduce_shelf
 ```
-Apply it in:
-- **normal single-library** (`query_graph.n_select`, non-accel): build `reduced_shelf(shelf_file_text, set(candidates))`, pass as `shelf_text`.
-- **accelerated single-library** (`query_graph.n_select`, accel): today it passes the embedding `reduced` shelf built from `cand_ids` but accepts only the further layer-filtered `candidates` — rebuild the reduced shelf from `candidates` (the final eligible set), not `cand_ids`.
-- **normal federation** (`federation.query_one_library`): currently passes the full `shelf` file with `known_pages=candidates` — switch to `reduced_shelf` over `candidates`.
-- **accelerated federation** (`federation_accel`): same — reduce to the final eligible set.
+Apply it on all four paths, passing the eligible ids **in the right order** (sets would drop accel rank):
+- **normal single-library** (`query_graph.n_select`, non-accel): `reduce_shelf(shelf_file, sorted(candidates))` → `shelf_text`.
+- **accelerated single-library** (`query_graph.n_select`, accel): rebuild from the **final eligible set in best-first order** = `[c for c in cand_ids if c in candidates]` (today it reduces over `cand_ids` but accepts only `candidates` — the mismatch).
+- **normal federation** (`federation.query_one_library`): replace the full `shelf` with `reduce_shelf(shelf, sorted(candidates))`.
+- **accelerated federation** (`federation_accel`): reduce over the final eligible set in best-first order.
 
-`select(...)` gains a `shelf_text` param if a path lacks it (the single-lib graph already has one); federation passes `shelf_text=reduced_shelf(...)`.
+`select(...)` already accepts a `shelf_text` param (the single-lib graph uses it); federation passes `shelf_text=reduce_shelf(...)`.
 
 ## 3. `select` may abstain + preserve fields (review #2)
 
@@ -70,10 +68,24 @@ Apply it in:
 
 ## 4. Graph short-circuit + complete terminal node (review #3)
 
-`query_graph`: a conditional edge after `select` — if `no_relevant_page` or empty `page_ids` → `n_abstain`, else → `read`. The `n_abstain` node populates the **complete** state shape so trace/`--save`/consumers need no missing-field handling:
+**`QueryState` gains the keys** (P1-2 — they must be declared and returned, or the selector reason is lost):
+```python
+class QueryState(TypedDict, total=False):
+    ...                       # existing keys
+    no_relevant_page: bool
+    abstained: bool
+    abstention_reason: Optional[str]
+```
+`n_select` **returns** them alongside `page_ids` (from the `SelectResult`):
+```python
+    res = select(...)         # SelectResult with page_ids/no_relevant_page/abstention_reason
+    return {"page_ids": res.page_ids, "no_relevant_page": res.no_relevant_page,
+            "abstention_reason": res.abstention_reason}
+```
+A **conditional edge** after `select` routes on that state — `n_abstain` if `state.get("no_relevant_page")` or `not state.get("page_ids")`, else `read`. The `n_abstain` node populates the **complete** state shape (so trace/`--save`/consumers need no missing-field handling), reading the propagated `abstention_reason`:
 ```python
 def n_abstain(state):
-    reason = state.get("_abstain_reason") or "no relevant page selected"
+    reason = state.get("abstention_reason") or "no relevant page selected"
     ans = Answer(abstained=True, abstention_reason=reason)  # claims=[], rendered_text=""
     d = ans.model_dump()
     return {"pages": [], "_synth": d, "_answer": d, "rendered_text": "",
@@ -95,7 +107,7 @@ def _claim_span_coverage(claim_text, span_text) -> float:
     return (sum(1 for t in c if t in s) / len(c)) if c else 0.0
 ```
 `_content_tokens` drops stopwords + tokens ≤2 chars. **The coverage check runs INSIDE the span loop BEFORE the verbatim early-return** (entailment.py:51): a span below `RELEVANCE_FLOOR` is skipped entirely (it can ground nothing); only spans at/above the floor can yield `supported` (verbatim) or `partial` (fuzzy page-overlap).
-- `RELEVANCE_FLOOR = 0.20` — **calibrated** against the committed trace: all 18 absence-shaped claims score **0.0**; all 76 legit supported claims score **≥ 0.286** (median 1.0). 0.20 sits clear of both with margin.
+- `RELEVANCE_FLOOR = 0.20` — **calibrated** against the committed trace, **but note the floor is only truly exercised by claims that HAVE a non-empty span** (P2-6): of the 18 absence-shaped claims, only **4** (q076/078/086/088) carry a non-empty *irrelevant* span ("DORA Metrics", coverage **0.0**) — these are the real adversarial cases; the other 14 have **no spans** (vacuously 0.0, they don't test relevance). All 76 legit supported claims (which DO have spans) score **≥ 0.286** (median 1.0). 0.20 sits clear with margin, but because only 4 natural adversarial cases exist, calibration MUST add **synthetic non-empty irrelevant-span fixtures** (see §8).
 
 ### 6b. `judge_claim` strengthening
 The judge prompt receives the **declared evidence spans explicitly** (not only the full cited pages) and is asked to judge whether the spans actually *support* the claim. Final = `min(deterministic cap, judge)` as today.
@@ -103,18 +115,36 @@ The judge prompt receives the **declared evidence spans explicitly** (not only t
 ### 6c. Epistemic-absence guard (defense-in-depth)
 A guard detects **epistemic corpus-absence** phrasing specifically — `"not mentioned"`, `"no information"`, `"do(es) not contain"`, `"documents contain no"`, `"not found in the (provided )?documents"` — **NOT** generic `not/no/without` (a broad guard would wrongly reject legitimate negative facts like "X does not require Y"). A matched claim is **marked `unsupported`** (its `entailment_status`), **not removed** from `Answer.claims` — preserving claim-index alignment and auditability.
 
-### 6d. Reject-all ⇒ abstain
-`verify_entailment`/`publish`: if no claim is `supported`/`partial` (published body empty) ⇒ set `Answer.abstained=True`, `abstention_reason="no supported claims"`.
+### 6d. Reject-all ⇒ abstain, and final-Answer ownership (P1-4)
+`publish()` today returns `(rendered_text, rejected_claims)` and does **not** mutate the `Answer`. **`n_verify_publish` owns writing the final fields onto the verified `Answer` before serializing `_answer`:**
+```python
+def n_verify_publish(state):
+    ans = Answer.model_validate(state["_synth"])
+    verified = verify_entailment(ans, pages_by_name, backend=backend)   # sets entailment_status + the §6c guard
+    rendered, rejected = publish(verified)                              # published = supported/partial only
+    verified.rendered_text = rendered
+    if not rendered.strip():                                           # nothing published
+        verified.abstained = True
+        # preserve a synthesis-declared reason; only invent "no supported claims" when claims
+        # were attempted and all rejected
+        verified.abstention_reason = (ans.abstention_reason if ans.abstained
+                                      else "no supported claims")
+    return {"rendered_text": rendered, "rejected_claims": rejected,
+            "_answer": verified.model_dump(),
+            "abstained": verified.abstained, "abstention_reason": verified.abstention_reason}
+```
+So: a **synthesize-origin** abstention keeps its model-given reason; a **reject-all** abstention (claims attempted, none survived) gets `"no supported claims"`. The `_answer` dict carries `abstained`/`abstention_reason` for the trace and `--save`.
 
 ## 7. Output + federation merge (review #3)
 
 - **Single-lib / published output:** on abstain, `rendered_text=""` (frozen `did_abstain` scorer unchanged). `abstained`/`abstention_reason` ride on the `Answer` + are written to the trace; the CLI prints `[abstained: <reason>]` to stderr.
-- **Federation (`merge_answers`):** a single library abstaining must **not** abstain the whole query. The merged `Answer.abstained=True` **only when no library published a claim** (i.e. every per-library answer abstained / contributed zero supported claims); `abstention_reason` summarises (e.g. `"no library had relevant evidence"`).
+- **Federation per-library short-circuit (P2-5):** `federation.query_one_library` and `federation_accel` are procedural (no graph), so they must short-circuit themselves — after `select`, if `no_relevant_page` or empty `page_ids`, return an **abstained `Answer`** (`abstained=True`, `claims=[]`, `rendered_text=""`, reason) **without calling `synthesize`** (the same latency/correctness win as the graph's `n_abstain`). They also run the §6 verify (so a reject-all per library yields an abstained per-library Answer).
+- **Federation merge (`merge_answers`):** a single library abstaining must **not** abstain the whole query. The merged `Answer.abstained=True` **only when no library published a claim** (every per-library answer abstained / contributed zero supported claims); `abstention_reason` summarises (e.g. `"no library had relevant evidence"`).
 
 ## 8. Calibration vs regression evidence (review #5)
 
 These are **separate** obligations:
-- **Calibration (offline):** set `RELEVANCE_FLOOR` from the committed trace, the 22 fixed verifier labels, **explicit legitimate-negative fixtures** ("X does not require Y", "feature flags should be removed when stale"), and **short-claim/narrow-span** fixtures. Calibration proves the *deterministic verifier* separates absence from support without dropping legit (incl. negative) claims.
+- **Calibration (offline):** set `RELEVANCE_FLOOR` from the committed trace (note: only **4** natural adversarial cases — non-empty irrelevant spans — exist; the other 14 absence claims are span-less and don't test the floor, per §6a/P2-6), so **add synthetic non-empty irrelevant-span fixtures** (a real verbatim page string that is unrelated to the claim), the 22 fixed verifier labels, **explicit legitimate-negative fixtures** ("X does not require Y", "feature flags should be removed when stale"), and **short-claim/narrow-span** fixtures. Calibration proves the *deterministic verifier* separates irrelevant-but-present spans from relevant ones without dropping legit (incl. negative / short) claims.
 - **Deterministic regression:** the FakeBackend fixture/smoke suite must show no `fact_recall` regression and the new abstention behaviour (no-evidence → `abstained`, empty body, zero claims; empty select → short-circuit).
 - **Fresh release ratification before merge:** the select/synthesize **prompts changed**, so model generation behaviour changed — a full traced `eval release` run is required pre-merge to confirm the gate metrics move the intended direction (abstention_recall/precision up, fact_recall not regressed) and nothing else regresses. (Calibration data cannot prove this; only a fresh run can.)
 
@@ -124,10 +154,10 @@ These are **separate** obligations:
 3. `select` abstains on model `no_relevant_page`; abstains on all-filtered.
 4. Graph: `no_relevant_page`/empty → `n_abstain`; complete state shape (`pages=[]`, `_synth`/`_answer` abstained dicts, `rendered_text=""`, `rejected_claims=[]`); `synthesize` NOT called (the q032 short-circuit).
 5. `synthesize`: abstain path forces `claims=[]`/`rendered_text=""`.
-6. `ground_claim` relevance floor: §6.2 absence-claim (coverage 0.0) → unsupported; weakest legit (0.286) → supported; legitimate-negative fixture → supported; short-claim/narrow-span fixture → supported; floor check runs before the verbatim return (a verbatim-but-irrelevant span no longer grants support).
+6. `ground_claim` relevance floor: §6.2 absence-claim (coverage 0.0) → unsupported; **synthetic non-empty irrelevant-span fixture** (a real page string unrelated to the claim) → unsupported (the core regression guard — verbatim-but-irrelevant no longer grants support, and the check runs BEFORE the verbatim early-return); weakest legit (0.286) → supported; legitimate-negative fixture → supported; short-claim/narrow-span fixture → supported.
 7. Epistemic-absence guard: corpus-absence phrasing → unsupported (kept in claims); "X does not require Y" → NOT guarded.
 8. Reject-all ⇒ `abstained=True`/`"no supported claims"`.
-9. Federation merge: one library abstains, another publishes → merged not abstained; all abstain → merged abstained.
+9. Federation: per-library short-circuit — an abstaining/empty-select library returns an abstained Answer **without calling `synthesize`**; merge — one library abstains + another publishes → merged not abstained; all abstain → merged abstained.
 10. CLI surfacing: `[abstained: …]` on stderr; trace row carries `abstained`/`abstention_reason`.
 11. (pre-merge, live) fresh traced `eval release` ratification.
 
