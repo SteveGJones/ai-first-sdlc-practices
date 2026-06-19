@@ -62,10 +62,14 @@ class Claim(BaseModel):
 class Answer(BaseModel):
     claims: list[Claim] = Field(default_factory=list)
     rendered_text: str = ""
+    abstained: bool = False
+    abstention_reason: str | None = None
 
 
 class SelectResult(BaseModel):
     page_ids: list[str] = Field(default_factory=list)
+    no_relevant_page: bool = False
+    abstention_reason: str | None = None
 
 
 class MutationAction(str, Enum):
