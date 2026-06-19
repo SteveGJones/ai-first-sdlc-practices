@@ -1,0 +1,133 @@
+[
+  {
+    "id": "q003",
+    "page_ids": ["dora.md"],
+    "claims": [
+      {
+        "text": "For elite teams, the lead time for changes is less than one hour.",
+        "cited_pages": [{"library": "local", "page": "dora.md"}],
+        "evidence_spans": [{"page": "dora.md", "text": "For elite teams the lead time for changes is less than one hour."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q011",
+    "page_ids": ["ci-cd.md", "trunk-based.md"],
+    "claims": [
+      {
+        "text": "The mainline should always be kept in a deployable state.",
+        "cited_pages": [{"library": "local", "page": "ci-cd.md"}],
+        "evidence_spans": [{"page": "ci-cd.md", "text": "A core principle of continuous delivery is to keep the mainline always in a deployable state."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q019",
+    "page_ids": ["trunk-based.md"],
+    "claims": [
+      {
+        "text": "Short-lived feature branches should live for no more than a couple of days before being merged.",
+        "cited_pages": [{"library": "local", "page": "trunk-based.md"}],
+        "evidence_spans": [{"page": "trunk-based.md", "text": "Short-lived feature branches are permitted but should live for no more than a couple of days before being merged."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q027",
+    "page_ids": ["incident-response.md"],
+    "claims": [
+      {
+        "text": "A blameless postmortem focuses on the systemic causes of failure rather than blaming individuals, so that people share information openly.",
+        "cited_pages": [{"library": "local", "page": "incident-response.md"}],
+        "evidence_spans": [{"page": "incident-response.md", "text": "A blameless postmortem focuses on the systemic causes of failure rather than blaming individuals, so that people share information openly."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q035",
+    "page_ids": ["sdlc-single-team.md"],
+    "claims": [
+      {
+        "text": "The single-team method is designed for one team of collaborating developers.",
+        "cited_pages": [{"library": "local", "page": "sdlc-single-team.md"}],
+        "evidence_spans": [{"page": "sdlc-single-team.md", "text": "The single-team method is designed for one team of collaborating developers."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q043",
+    "page_ids": ["feature-flags.md"],
+    "claims": [
+      {
+        "text": "A feature flag is a configuration switch that lets a team turn a feature on or off at runtime without deploying new code, decoupling deployment of code from release of functionality.",
+        "cited_pages": [{"library": "local", "page": "feature-flags.md"}],
+        "evidence_spans": [{"page": "feature-flags.md", "text": "A feature flag is a configuration switch that lets a team turn a feature on or off at runtime without deploying new code. Feature flags decouple deployment of code from release of functionality."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q051",
+    "page_ids": ["tech-debt.md"],
+    "claims": [
+      {
+        "text": "The zero technical debt policy forbids commented-out code, placeholder TODO markers, and unjustified suppression of warnings.",
+        "cited_pages": [{"library": "local", "page": "tech-debt.md"}],
+        "evidence_spans": [{"page": "tech-debt.md", "text": "There must be no commented-out code, no placeholder TODO markers, and no unjustified suppression of warnings."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q059",
+    "page_ids": ["ci-cd.md"],
+    "claims": [
+      {
+        "text": "Continuous delivery treats every change that passes the automated tests as a release candidate.",
+        "cited_pages": [{"library": "local", "page": "ci-cd.md"}],
+        "evidence_spans": [{"page": "ci-cd.md", "text": "Every change that passes the automated tests is a release candidate."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q067",
+    "page_ids": ["sdlc-solo.md"],
+    "claims": [
+      {
+        "text": "The solo SDLC method is described in sdlc-solo.md in the eval-suite library.",
+        "cited_pages": [{"library": "local", "page": "sdlc-solo.md"}],
+        "evidence_spans": [{"page": "sdlc-solo.md", "text": "The solo method is the lightest of the four SDLC methods and is designed for a single developer working alone."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q075",
+    "page_ids": ["sdlc-programme.md"],
+    "claims": [
+      {
+        "text": "Phase gates for multiple teams are described in sdlc-programme.md; the programme method introduces formal waterfall phase gates for requirements, design, test, and code, with four phase-gate validators that enforce the gates automatically.",
+        "cited_pages": [{"library": "local", "page": "sdlc-programme.md"}],
+        "evidence_spans": [{"page": "sdlc-programme.md", "text": "It introduces formal waterfall phase gates for requirements, design, test, and code."},
+                           {"page": "sdlc-programme.md", "text": "Four phase-gate validators enforce the gates automatically."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q083",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q091",
+    "page_ids": [],
+    "claims": []
+  }
+]

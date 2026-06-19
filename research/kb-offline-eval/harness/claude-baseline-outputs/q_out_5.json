@@ -1,0 +1,145 @@
+[
+  {
+    "id": "q005",
+    "page_ids": ["dora.md"],
+    "claims": [
+      {
+        "text": "For elite teams, the time to restore service is less than one hour.",
+        "cited_pages": [{"library": "local", "page": "dora.md"}],
+        "evidence_spans": [
+          {"page": "dora.md", "text": "Time to restore service for elite teams is less than one hour."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q013",
+    "page_ids": ["testing.md"],
+    "claims": [
+      {
+        "text": "Unit tests form the base of the test pyramid because they are cheap to write and fast to run.",
+        "cited_pages": [{"library": "local", "page": "testing.md"}],
+        "evidence_spans": [
+          {"page": "testing.md", "text": "Unit tests form the broad base of the pyramid because they are cheap to write and fast to run."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q021",
+    "page_ids": ["code-review.md"],
+    "claims": [
+      {
+        "text": "Code review is the practice of having a change examined by someone other than its author before it is merged, in order to catch defects and share knowledge across the team.",
+        "cited_pages": [{"library": "local", "page": "code-review.md"}],
+        "evidence_spans": [
+          {"page": "code-review.md", "text": "Code review is the practice of having a change examined by someone other than its author before it is merged. Every change should be reviewed before merge to catch defects and share knowledge across the team."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q029",
+    "page_ids": ["observability.md"],
+    "claims": [
+      {
+        "text": "The three pillars of observability are metrics, logs, and traces.",
+        "cited_pages": [{"library": "local", "page": "observability.md"}],
+        "evidence_spans": [
+          {"page": "observability.md", "text": "The three pillars of observability are metrics, logs, and traces."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q037",
+    "page_ids": ["sdlc-programme.md"],
+    "claims": [
+      {
+        "text": "The programme method coordinates multiple delivery teams working toward a shared goal, introducing formal waterfall phase gates for requirements, design, test, and code.",
+        "cited_pages": [{"library": "local", "page": "sdlc-programme.md"}],
+        "evidence_spans": [
+          {"page": "sdlc-programme.md", "text": "The programme method coordinates multiple delivery teams working toward a shared goal. It introduces formal waterfall phase gates for requirements, design, test, and code."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q045",
+    "page_ids": ["feature-flags.md"],
+    "claims": [
+      {
+        "text": "Stale feature flags accumulate as technical debt and should be removed once a feature is fully rolled out, because long-lived flags increase the number of code paths the team must test and maintain.",
+        "cited_pages": [{"library": "local", "page": "feature-flags.md"}],
+        "evidence_spans": [
+          {"page": "feature-flags.md", "text": "Stale feature flags accumulate as technical debt and should be removed once a feature is fully rolled out. Long-lived flags increase the number of code paths the team must test and maintain."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q053",
+    "page_ids": ["pair-programming.md"],
+    "claims": [
+      {
+        "text": "In pair programming, the navigator reviews each line of code as it is written by the driver.",
+        "cited_pages": [{"library": "local", "page": "pair-programming.md"}],
+        "evidence_spans": [
+          {"page": "pair-programming.md", "text": "One developer, the driver, writes the code while the other, the navigator, reviews each line as it is written."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q061",
+    "page_ids": ["dora.md"],
+    "claims": [
+      {
+        "text": "You would read about deployment frequency and lead time in the dora.md page, which covers DORA delivery performance metrics. Elite teams deploy on demand multiple times per day, and their lead time for changes is less than one hour.",
+        "cited_pages": [{"library": "local", "page": "dora.md"}],
+        "evidence_spans": [
+          {"page": "dora.md", "text": "The DORA program identifies four key metrics for software delivery performance. The four metrics are deployment frequency, lead time for changes, change failure rate, and time to restore service."},
+          {"page": "dora.md", "text": "Elite performing teams deploy on demand, multiple times per day. For elite teams the lead time for changes is less than one hour."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q069",
+    "page_ids": ["deployment-strategies.md"],
+    "claims": [
+      {
+        "text": "You would learn about canary and blue-green releases in the deployment-strategies.md page, which covers blue-green, canary, and rolling deployment strategies.",
+        "cited_pages": [{"library": "local", "page": "deployment-strategies.md"}],
+        "evidence_spans": [
+          {"page": "deployment-strategies.md", "text": "A blue-green deployment runs two identical production environments called blue and green. Traffic is switched from the old environment to the new one all at once, and the old environment is kept ready for an instant rollback."},
+          {"page": "deployment-strategies.md", "text": "A canary deployment releases the new version to a small subset of users before rolling it out to everyone."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q077",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q085",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q093",
+    "page_ids": [],
+    "claims": []
+  }
+]

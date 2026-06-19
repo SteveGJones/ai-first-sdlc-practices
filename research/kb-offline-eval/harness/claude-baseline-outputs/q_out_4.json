@@ -1,0 +1,143 @@
+[
+  {
+    "id": "q004",
+    "page_ids": ["dora.md"],
+    "claims": [
+      {
+        "text": "The change failure rate for elite performers is between zero and fifteen percent.",
+        "cited_pages": [{"library": "local", "page": "dora.md"}],
+        "evidence_spans": [
+          {"page": "dora.md", "text": "The change failure rate for elite performers is between zero and fifteen percent."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q012",
+    "page_ids": ["testing.md"],
+    "claims": [
+      {
+        "text": "The test pyramid recommends many fast unit tests, fewer integration tests, and a small number of slow end-to-end tests.",
+        "cited_pages": [{"library": "local", "page": "testing.md"}],
+        "evidence_spans": [
+          {"page": "testing.md", "text": "The test pyramid recommends many fast unit tests, fewer integration tests, and a small number of slow end-to-end tests."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q020",
+    "page_ids": ["trunk-based.md"],
+    "claims": [
+      {
+        "text": "Long-lived branches are discouraged because they cause painful merge conflicts and delay integration.",
+        "cited_pages": [{"library": "local", "page": "trunk-based.md"}],
+        "evidence_spans": [
+          {"page": "trunk-based.md", "text": "Long-lived branches are discouraged because they cause painful merge conflicts and delay integration."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q028",
+    "page_ids": ["observability.md"],
+    "claims": [
+      {
+        "text": "Observability is the ability to understand the internal state of a system from its external outputs.",
+        "cited_pages": [{"library": "local", "page": "observability.md"}],
+        "evidence_spans": [
+          {"page": "observability.md", "text": "Observability is the ability to understand the internal state of a system from its external outputs."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q036",
+    "page_ids": ["sdlc-single-team.md"],
+    "claims": [
+      {
+        "text": "The single-team method requires that every change is reviewed by another team member before merge.",
+        "cited_pages": [{"library": "local", "page": "sdlc-single-team.md"}],
+        "evidence_spans": [
+          {"page": "sdlc-single-team.md", "text": "The single-team method requires that every change is reviewed by another team member before merge."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q044",
+    "page_ids": ["feature-flags.md"],
+    "claims": [
+      {
+        "text": "Feature flags decouple deployment of code from release of functionality.",
+        "cited_pages": [{"library": "local", "page": "feature-flags.md"}],
+        "evidence_spans": [
+          {"page": "feature-flags.md", "text": "Feature flags decouple deployment of code from release of functionality."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q052",
+    "page_ids": ["pair-programming.md"],
+    "claims": [
+      {
+        "text": "Pair programming is a practice where two developers work together at one workstation, with one developer (the driver) writing the code while the other (the navigator) reviews each line as it is written.",
+        "cited_pages": [{"library": "local", "page": "pair-programming.md"}],
+        "evidence_spans": [
+          {"page": "pair-programming.md", "text": "Pair programming is a practice where two developers work together at one workstation. One developer, the driver, writes the code while the other, the navigator, reviews each line as it is written."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q060",
+    "page_ids": ["release-management.md"],
+    "claims": [
+      {
+        "text": "During a code freeze, teams allow only critical fixes while the codebase is stabilised before a release.",
+        "cited_pages": [{"library": "local", "page": "release-management.md"}],
+        "evidence_spans": [
+          {"page": "release-management.md", "text": "Teams often freeze the codebase before a release to stabilise it, allowing only critical fixes during the freeze."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q068",
+    "page_ids": ["sdlc-assured.md"],
+    "claims": [
+      {
+        "text": "The sdlc-assured.md page covers the assured method's regulatory exports, which include standard-specific evidence exports for DO-178C, IEC 62304, ISO 26262, and the FDA design history file.",
+        "cited_pages": [{"library": "local", "page": "sdlc-assured.md"}],
+        "evidence_spans": [
+          {"page": "sdlc-assured.md", "text": "It supports standard-specific evidence exports for DO-178C, IEC 62304, ISO 26262, and the FDA design history file."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q076",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q084",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q092",
+    "page_ids": [],
+    "claims": []
+  }
+]

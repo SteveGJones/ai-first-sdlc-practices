@@ -1,0 +1,144 @@
+[
+  {
+    "id": "q006",
+    "page_ids": ["dora.md"],
+    "claims": [
+      {
+        "text": "DORA research finds no trade-off between throughput and stability; rather, the same practices improve both throughput and stability simultaneously.",
+        "cited_pages": [{"library": "local", "page": "dora.md"}],
+        "evidence_spans": [
+          {"page": "dora.md", "text": "Research shows that the same practices improve both throughput and stability rather than forcing a trade-off between them."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q014",
+    "page_ids": ["testing.md"],
+    "claims": [
+      {
+        "text": "In test-driven development, the failing test is written before the implementation code.",
+        "cited_pages": [{"library": "local", "page": "testing.md"}],
+        "evidence_spans": [
+          {"page": "testing.md", "text": "In test-driven development the failing test is written before the implementation code."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q022",
+    "page_ids": ["code-review.md"],
+    "claims": [
+      {
+        "text": "Effective reviews check for correctness, adequate tests, readability, and adherence to the team's coding standards.",
+        "cited_pages": [{"library": "local", "page": "code-review.md"}],
+        "evidence_spans": [
+          {"page": "code-review.md", "text": "Effective reviews check for correctness, adequate tests, readability, and adherence to the team's coding standards."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q030",
+    "page_ids": ["observability.md"],
+    "claims": [
+      {
+        "text": "Distributed traces follow a single request as it travels across multiple services.",
+        "cited_pages": [{"library": "local", "page": "observability.md"}],
+        "evidence_spans": [
+          {"page": "observability.md", "text": "Distributed traces follow a single request as it travels across multiple services."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q038",
+    "page_ids": ["sdlc-programme.md"],
+    "claims": [
+      {
+        "text": "The programme method introduces formal waterfall phase gates for requirements, design, test, and code. Each phase gate must be passed before the next phase begins, and four phase-gate validators enforce the gates automatically.",
+        "cited_pages": [{"library": "local", "page": "sdlc-programme.md"}],
+        "evidence_spans": [
+          {"page": "sdlc-programme.md", "text": "It introduces formal waterfall phase gates for requirements, design, test, and code."},
+          {"page": "sdlc-programme.md", "text": "Four phase-gate validators enforce the gates automatically."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q046",
+    "page_ids": ["deployment-strategies.md"],
+    "claims": [
+      {
+        "text": "A blue-green deployment runs two identical production environments called blue and green. Traffic is switched from the old environment to the new one all at once, and the old environment is kept ready for an instant rollback.",
+        "cited_pages": [{"library": "local", "page": "deployment-strategies.md"}],
+        "evidence_spans": [
+          {"page": "deployment-strategies.md", "text": "A blue-green deployment runs two identical production environments called blue and green. Traffic is switched from the old environment to the new one all at once, and the old environment is kept ready for an instant rollback."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q054",
+    "page_ids": ["pair-programming.md"],
+    "claims": [
+      {
+        "text": "Pair programming is most valuable for complex or unfamiliar work. For routine tasks the cost of two people on one keyboard may outweigh the benefit.",
+        "cited_pages": [{"library": "local", "page": "pair-programming.md"}],
+        "evidence_spans": [
+          {"page": "pair-programming.md", "text": "Pair programming is most valuable for complex or unfamiliar work. For routine tasks the cost of two people on one keyboard may outweigh the benefit."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q062",
+    "page_ids": ["testing.md"],
+    "claims": [
+      {
+        "text": "The page testing.md covers the red, green, refactor cycle.",
+        "cited_pages": [{"library": "local", "page": "testing.md"}],
+        "evidence_spans": [
+          {"page": "testing.md", "text": "The cycle is red, green, refactor: write a failing test, write the minimal code to make it pass, then refactor while keeping the tests green."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q070",
+    "page_ids": ["observability.md"],
+    "claims": [
+      {
+        "text": "An error budget is the amount of unreliability a service is allowed to accumulate before the team must stop shipping features and focus on reliability.",
+        "cited_pages": [{"library": "local", "page": "observability.md"}],
+        "evidence_spans": [
+          {"page": "observability.md", "text": "An error budget is the amount of unreliability a service is allowed to accumulate before the team must stop shipping features and focus on reliability."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q078",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q086",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q094",
+    "page_ids": [],
+    "claims": []
+  }
+]

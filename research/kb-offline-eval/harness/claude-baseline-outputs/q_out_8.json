@@ -1,0 +1,128 @@
+[
+  {
+    "id": "q008",
+    "page_ids": ["ci-cd.md"],
+    "claims": [
+      {
+        "text": "Each integration is verified by an automated build and an automated test suite to detect integration errors as quickly as possible.",
+        "cited_pages": [{"library": "local", "page": "ci-cd.md"}],
+        "evidence_spans": [{"page": "ci-cd.md", "text": "Each integration is verified by an automated build and an automated test suite to detect integration errors as quickly as possible."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q016",
+    "page_ids": ["testing.md"],
+    "claims": [
+      {
+        "text": "Code coverage measures the percentage of lines exercised by the test suite.",
+        "cited_pages": [{"library": "local", "page": "testing.md"}],
+        "evidence_spans": [{"page": "testing.md", "text": "Code coverage measures the percentage of lines exercised by the test suite."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q024",
+    "page_ids": ["incident-response.md"],
+    "claims": [
+      {
+        "text": "An incident is an unplanned interruption or degradation of a service.",
+        "cited_pages": [{"library": "local", "page": "incident-response.md"}],
+        "evidence_spans": [{"page": "incident-response.md", "text": "An incident is an unplanned interruption or degradation of a service."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q032",
+    "page_ids": ["sdlc-solo.md"],
+    "claims": [
+      {
+        "text": "The solo method is designed for a single developer working alone. It is appropriate for prototypes, personal projects, and small tools.",
+        "cited_pages": [{"library": "local", "page": "sdlc-solo.md"}],
+        "evidence_spans": [
+          {"page": "sdlc-solo.md", "text": "The solo method is the lightest of the four SDLC methods and is designed for a single developer working alone."},
+          {"page": "sdlc-solo.md", "text": "The solo method is appropriate for prototypes, personal projects, and small tools."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q040",
+    "page_ids": ["sdlc-assured.md"],
+    "claims": [
+      {
+        "text": "The assured method is designed for regulated industries and for complex agentic systems at scale with ten or more bounded contexts.",
+        "cited_pages": [{"library": "local", "page": "sdlc-assured.md"}],
+        "evidence_spans": [{"page": "sdlc-assured.md", "text": "The assured method is designed for regulated industries and for complex agentic systems at scale with ten or more bounded contexts."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q048",
+    "page_ids": ["deployment-strategies.md"],
+    "claims": [
+      {
+        "text": "A rolling deployment gradually replaces instances of the old version with the new version a few at a time. Rolling deployments avoid downtime but make rollback slower than a blue-green switch.",
+        "cited_pages": [{"library": "local", "page": "deployment-strategies.md"}],
+        "evidence_spans": [{"page": "deployment-strategies.md", "text": "A rolling deployment gradually replaces instances of the old version with the new version a few at a time. Rolling deployments avoid downtime but make rollback slower than a blue-green switch."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q056",
+    "page_ids": ["release-management.md"],
+    "claims": [
+      {
+        "text": "A semantic version number takes the form major dot minor dot patch (three parts). The major version increases for incompatible changes, the minor version for backward-compatible features, and the patch version for backward-compatible bug fixes.",
+        "cited_pages": [{"library": "local", "page": "release-management.md"}],
+        "evidence_spans": [{"page": "release-management.md", "text": "Semantic versioning assigns a three-part version number of the form major dot minor dot patch. The major version increases for incompatible changes, the minor version for backward-compatible features, and the patch version for backward-compatible bug fixes."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q064",
+    "page_ids": ["code-review.md"],
+    "claims": [
+      {
+        "text": "The page code-review.md explains pull request sizing for reviews, noting that small pull requests are reviewed more thoroughly than large ones, and keeping a change under about four hundred lines helps reviewers stay focused and find more defects.",
+        "cited_pages": [{"library": "local", "page": "code-review.md"}],
+        "evidence_spans": [{"page": "code-review.md", "text": "Small pull requests are reviewed more thoroughly than large ones. Keeping a change under about four hundred lines helps reviewers stay focused and find more defects."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q072",
+    "page_ids": ["feature-flags.md"],
+    "claims": [
+      {
+        "text": "The page feature-flags.md covers turning features on and off at runtime, describing feature flags as configuration switches that let a team turn a feature on or off at runtime without deploying new code.",
+        "cited_pages": [{"library": "local", "page": "feature-flags.md"}],
+        "evidence_spans": [{"page": "feature-flags.md", "text": "A feature flag is a configuration switch that lets a team turn a feature on or off at runtime without deploying new code."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q080",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q088",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q096",
+    "page_ids": [],
+    "claims": []
+  }
+]

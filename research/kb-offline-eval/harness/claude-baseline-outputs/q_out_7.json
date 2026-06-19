@@ -1,0 +1,125 @@
+[
+  {
+    "id": "q007",
+    "page_ids": ["ci-cd.md"],
+    "claims": [
+      {
+        "text": "Continuous integration is the practice of merging all developer working copies to a shared mainline several times a day, with each integration verified by an automated build and automated test suite to detect integration errors as quickly as possible.",
+        "cited_pages": [{"library": "local", "page": "ci-cd.md"}],
+        "evidence_spans": [{"page": "ci-cd.md", "text": "Continuous integration is the practice of merging all developer working copies to a shared mainline several times a day. Each integration is verified by an automated build and an automated test suite to detect integration errors as quickly as possible."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q015",
+    "page_ids": ["testing.md"],
+    "claims": [
+      {
+        "text": "The TDD cycle is red, green, refactor: write a failing test, write the minimal code to make it pass, then refactor while keeping the tests green.",
+        "cited_pages": [{"library": "local", "page": "testing.md"}],
+        "evidence_spans": [{"page": "testing.md", "text": "The cycle is red, green, refactor: write a failing test, write the minimal code to make it pass, then refactor while keeping the tests green."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q023",
+    "page_ids": ["code-review.md"],
+    "claims": [
+      {
+        "text": "Pull requests should be kept under about four hundred lines to help reviewers stay focused and find more defects.",
+        "cited_pages": [{"library": "local", "page": "code-review.md"}],
+        "evidence_spans": [{"page": "code-review.md", "text": "Keeping a change under about four hundred lines helps reviewers stay focused and find more defects."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q031",
+    "page_ids": ["observability.md"],
+    "claims": [
+      {
+        "text": "An error budget is the amount of unreliability a service is allowed to accumulate before the team must stop shipping features and focus on reliability.",
+        "cited_pages": [{"library": "local", "page": "observability.md"}],
+        "evidence_spans": [{"page": "observability.md", "text": "An error budget is the amount of unreliability a service is allowed to accumulate before the team must stop shipping features and focus on reliability."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q039",
+    "page_ids": ["sdlc-programme.md"],
+    "claims": [
+      {
+        "text": "Four phase-gate validators enforce the gates automatically in the programme SDLC method.",
+        "cited_pages": [{"library": "local", "page": "sdlc-programme.md"}],
+        "evidence_spans": [{"page": "sdlc-programme.md", "text": "Four phase-gate validators enforce the gates automatically."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q047",
+    "page_ids": ["deployment-strategies.md"],
+    "claims": [
+      {
+        "text": "A canary deployment releases the new version to a small subset of users before rolling it out to everyone; if the canary shows elevated errors the team rolls back before most users are affected.",
+        "cited_pages": [{"library": "local", "page": "deployment-strategies.md"}],
+        "evidence_spans": [{"page": "deployment-strategies.md", "text": "A canary deployment releases the new version to a small subset of users before rolling it out to everyone. If the canary shows elevated errors the team rolls back before most users are affected."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q055",
+    "page_ids": ["release-management.md"],
+    "claims": [
+      {
+        "text": "Release management is the process of planning, scheduling, and controlling the movement of a software release through its stages to production, with the goal of delivering value safely and predictably.",
+        "cited_pages": [{"library": "local", "page": "release-management.md"}],
+        "evidence_spans": [{"page": "release-management.md", "text": "Release management is the process of planning, scheduling, and controlling the movement of a software release through its stages to production. Its goal is to deliver value safely and predictably."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q063",
+    "page_ids": ["trunk-based.md"],
+    "claims": [
+      {
+        "text": "The single-branch trunk model is documented in trunk-based.md, which describes trunk-based development as a branching model where developers collaborate on a single branch called trunk.",
+        "cited_pages": [{"library": "local", "page": "trunk-based.md"}],
+        "evidence_spans": [{"page": "trunk-based.md", "text": "Trunk-based development is a branching model where developers collaborate on a single branch called trunk."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q071",
+    "page_ids": ["release-management.md"],
+    "claims": [
+      {
+        "text": "Semantic versioning is explained in release-management.md: it assigns a three-part version number of the form major dot minor dot patch, where the major version increases for incompatible changes, the minor version for backward-compatible features, and the patch version for backward-compatible bug fixes.",
+        "cited_pages": [{"library": "local", "page": "release-management.md"}],
+        "evidence_spans": [{"page": "release-management.md", "text": "Semantic versioning assigns a three-part version number of the form major dot minor dot patch. The major version increases for incompatible changes, the minor version for backward-compatible features, and the patch version for backward-compatible bug fixes."}],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q079",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q087",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q095",
+    "page_ids": [],
+    "claims": []
+  }
+]

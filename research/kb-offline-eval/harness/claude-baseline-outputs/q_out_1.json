@@ -1,0 +1,157 @@
+[
+  {
+    "id": "q001",
+    "page_ids": ["dora.md"],
+    "claims": [
+      {
+        "text": "The four DORA key metrics are deployment frequency, lead time for changes, change failure rate, and time to restore service.",
+        "cited_pages": [{"library": "local", "page": "dora.md"}],
+        "evidence_spans": [
+          {"page": "dora.md", "text": "The four metrics are deployment frequency, lead time for changes, change failure rate, and time to restore service."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q009",
+    "page_ids": ["ci-cd.md"],
+    "claims": [
+      {
+        "text": "Continuous delivery ensures that the software can be released to production at any time, with every change that passes the automated tests being a release candidate.",
+        "cited_pages": [{"library": "local", "page": "ci-cd.md"}],
+        "evidence_spans": [
+          {"page": "ci-cd.md", "text": "Continuous delivery extends continuous integration by ensuring that the software can be released to production at any time. Every change that passes the automated tests is a release candidate."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q017",
+    "page_ids": ["trunk-based.md"],
+    "claims": [
+      {
+        "text": "Trunk-based development is a branching model where developers collaborate on a single branch called trunk, committing small changes to trunk at least once a day to avoid long-lived divergent branches.",
+        "cited_pages": [{"library": "local", "page": "trunk-based.md"}],
+        "evidence_spans": [
+          {"page": "trunk-based.md", "text": "Trunk-based development is a branching model where developers collaborate on a single branch called trunk. Developers commit small changes to trunk at least once a day to avoid long-lived divergent branches."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q025",
+    "page_ids": ["incident-response.md"],
+    "claims": [
+      {
+        "text": "The goal of incident response is to restore normal service operation as quickly as possible while minimizing impact on users.",
+        "cited_pages": [{"library": "local", "page": "incident-response.md"}],
+        "evidence_spans": [
+          {"page": "incident-response.md", "text": "The goal of incident response is to restore normal service operation as quickly as possible while minimizing impact on users."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q033",
+    "page_ids": ["sdlc-solo.md"],
+    "claims": [
+      {
+        "text": "The solo method still requires a feature proposal and a retrospective for each piece of work.",
+        "cited_pages": [{"library": "local", "page": "sdlc-solo.md"}],
+        "evidence_spans": [
+          {"page": "sdlc-solo.md", "text": "The solo method still requires a feature proposal and a retrospective for each piece of work."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q041",
+    "page_ids": ["sdlc-assured.md"],
+    "claims": [
+      {
+        "text": "The assured method supports standard-specific evidence exports for DO-178C, IEC 62304, ISO 26262, and the FDA design history file.",
+        "cited_pages": [{"library": "local", "page": "sdlc-assured.md"}],
+        "evidence_spans": [
+          {"page": "sdlc-assured.md", "text": "It supports standard-specific evidence exports for DO-178C, IEC 62304, ISO 26262, and the FDA design history file."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q049",
+    "page_ids": ["tech-debt.md"],
+    "claims": [
+      {
+        "text": "Technical debt is the implied cost of additional rework caused by choosing an easy short-term solution instead of a better approach that would take longer. The metaphor was coined by Ward Cunningham.",
+        "cited_pages": [{"library": "local", "page": "tech-debt.md"}],
+        "evidence_spans": [
+          {"page": "tech-debt.md", "text": "Technical debt is the implied cost of additional rework caused by choosing an easy short-term solution instead of a better approach that would take longer. The metaphor was coined by Ward Cunningham."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q057",
+    "page_ids": ["release-management.md"],
+    "claims": [
+      {
+        "text": "In semantic versioning, the major version increases for incompatible changes.",
+        "cited_pages": [{"library": "local", "page": "release-management.md"}],
+        "evidence_spans": [
+          {"page": "release-management.md", "text": "The major version increases for incompatible changes, the minor version for backward-compatible features, and the patch version for backward-compatible bug fixes."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q065",
+    "page_ids": ["incident-response.md"],
+    "claims": [
+      {
+        "text": "The role of the incident commander is documented in the incident-response.md page. The incident commander is the single person responsible for coordinating the response during an active incident, delegating tasks, tracking status, and making decisions.",
+        "cited_pages": [{"library": "local", "page": "incident-response.md"}],
+        "evidence_spans": [
+          {"page": "incident-response.md", "text": "The incident commander is the single person responsible for coordinating the response during an active incident. The incident commander delegates tasks, tracks status, and makes decisions, but does not necessarily fix the problem directly."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q073",
+    "page_ids": ["pair-programming.md"],
+    "claims": [
+      {
+        "text": "The driver and navigator practice is documented in the pair-programming.md page. The driver writes the code while the navigator reviews each line as it is written.",
+        "cited_pages": [{"library": "local", "page": "pair-programming.md"}],
+        "evidence_spans": [
+          {"page": "pair-programming.md", "text": "One developer, the driver, writes the code while the other, the navigator, reviews each line as it is written."}
+        ],
+        "judge_status": "supported"
+      }
+    ]
+  },
+  {
+    "id": "q081",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q089",
+    "page_ids": [],
+    "claims": []
+  },
+  {
+    "id": "q097",
+    "page_ids": [],
+    "claims": []
+  }
+]
