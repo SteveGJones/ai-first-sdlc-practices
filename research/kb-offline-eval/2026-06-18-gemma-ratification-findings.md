@@ -219,3 +219,22 @@ The `cited_pages` back-fill is one instance; tolerant `select` id-matching is an
   `PYTHONUNBUFFERED=1 .venv/bin/kb-offline eval release --stamp <STAMP> --runs 1 --report-dir research/kb-offline-eval`
   (per-question progress streams to stderr; pin is applied automatically).
 - **Reproduce the diagnostic:** `.venv/bin/python tmp/cc_baseline/diagnose_gemma.py 10`
+
+---
+
+## Addendum (2026-06-19): trace-driven select-instability investigation
+
+With the eval-traces feature shipped, a fresh traced `--runs 1` ratification reproduced the verdict **exactly** (deterministic, seed-pinned): `fact_recall 0.787`, `routing_precision 0.795`, `abstention_precision 0.900`, `abstention_recall 0.818` — FAIL on the same 4 margins. The per-question trace (`trace-gemma4_12b-20260619T044923Z-run1.jsonl`) lets us attribute each failing metric to a concrete `select` behaviour:
+
+### Select failure taxonomy (from the trace)
+1. **Typo'd page ids (24 `dropped.reason=unknown_id`, 4 distinct):** `release--management.md` (double hyphen) ×21, `sdl-solo.md` / `sdl-single-team.md` (missing the "c" in "sdlc"), `ci-cd.d` (truncated `.md`). **These are typos of real pages, not semantic errors** — every one fuzzy-maps to its true page at `difflib` ratio ≥ 0.93 (0.96/0.97/0.93/0.98). A cutoff ~0.90 recovers all four with no cross-map risk (the 16 page names aren't that close to each other).
+2. **Empty selects (2 evidence Qs):** `q005` selected real-but-wrong-layer pages (`incident-response`, `observability` on an `evidence`-layer question) → removed by the layer filter → `page_ids=[]`; `q032` selected two `sdl-*` typos → both `unknown_id` → `page_ids=[]`. These two empties are the 2 wrong abstentions dragging `abstention_precision` (0.900).
+3. **Over-selection (16 / 75 evidence Qs):** picks the right page **plus** extras (e.g. `q006`: dora + observability; `q011`: trunk-based + release-management, missing the expected ci-cd entirely). This is the dominant `routing_precision` (0.795) drag.
+4. **No-evidence "select-all" (4 / 22):** `q076/078/086/088` selected **all 15 library pages** rather than abstaining → synthesize then answers → the `abstention_recall` (0.818) failure.
+
+### Design implications (revises §7 priorities)
+- **#4 (abstention + selection discipline) is higher-leverage than #2 for the gate.** The biggest drags are over-selection (precision) and the no-evidence select-all (recall) — both addressed by tightening `select` to the *fewest relevant* pages and adding a relevance/abstain gate so an irrelevant question yields an empty set (or an explicit `no_relevant_page`) instead of the whole shelf.
+- **#2 `normalize_select_result` must be FUZZY, not simple normalization.** The planned case/`.md`/basename normalization would NOT catch `release--management.md`, `sdl-solo.md`, or `ci-cd.d` — these need edit-distance matching to the known set (validated cutoff ~0.90). *But* net gain is modest (≈1 expected-page recovery, `q032`) and recovering an *over-selected* typo (e.g. the 21 `release--management`) would **worsen** precision — so fuzzy recovery must be coupled with the precision/abstention discipline of #4, not applied blindly.
+- **Layer interaction (`q005`):** a real-but-wrong-layer pick becomes an empty select. The abstention contract (#4) should distinguish "nothing relevant" from "relevant pages exist but were filtered by layer" — the trace's `dropped.reason=filtered_out` already surfaces this.
+
+**Net:** the gate failure is ~6 points of `fact_recall` plus precision/abstention gaps that are now precisely sourced. The trace converts "gemma is close" into a concrete work-list: (a) tighten/abstain-gate `select` (#4), (b) fuzzy id-normalization as paired cleanup (#2), (c) consider layer-aware abstention messaging.
