@@ -13,6 +13,8 @@ EXTRACT_FRAGMENT = (
 SELECT_FRAGMENT = (
     "Read the shelf-index and identify the 2-4 most relevant library pages for the "
     "question. Return only their page ids."
+    " Return the fewest page ids that are actually relevant. If no page is relevant,"
+    " set no_relevant_page true with a one-line reason; do not pad the list."
 )
 
 SYNTHESIZE_FRAGMENT = (

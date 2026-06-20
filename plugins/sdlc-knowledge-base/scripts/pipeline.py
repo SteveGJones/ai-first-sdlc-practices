@@ -122,7 +122,17 @@ def select(  # noqa: PLR0913
             last_error = str(exc)
             prompt = f"{base}\n\nPrevious output invalid: {last_error}\n" "Return valid JSON only."
             continue
-        return SelectResult(page_ids=[p for p in result.page_ids if p in set(known_pages)])
+        filtered = [p for p in result.page_ids if p in set(known_pages)]
+        if result.no_relevant_page:                 # explicit model abstention
+            return SelectResult(page_ids=[], no_relevant_page=True,
+                                abstention_reason=_normalize_reason(result.abstention_reason, "model judged no page relevant"))
+        if not result.page_ids:                     # model returned an empty selection
+            return SelectResult(page_ids=[], no_relevant_page=True,
+                                abstention_reason="no page selected by model")
+        if not filtered:                            # model picked ids, all dropped by id/layer filter
+            return SelectResult(page_ids=[], no_relevant_page=True,
+                                abstention_reason="no eligible pages after id/layer filtering")
+        return SelectResult(page_ids=filtered, no_relevant_page=False, abstention_reason=None)
     raise ValueError(f"select failed after {max_repairs} repair(s): {last_error}")
 
 

@@ -218,3 +218,28 @@ def test_reduce_returns_validatable_create_proposal(tmp_path):
     assert proposal.action == MutationAction.create
     assert proposal.target_file == "fresh.md"
     assert proposal.expected_hash is None
+
+
+def test_select_explicit_abstention(tmp_path):
+    from sdlc_knowledge_base_scripts.pipeline import select
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: json.dumps(
+        {"page_ids": [], "no_relevant_page": True, "abstention_reason": "  nothing\n fits "})
+    r = select("q", _shelf(tmp_path), backend=be, known_pages={"topic.md"})
+    assert r.no_relevant_page is True and r.page_ids == [] and r.abstention_reason == "nothing fits"
+
+
+def test_select_all_filtered_abstains(tmp_path):
+    from sdlc_knowledge_base_scripts.pipeline import select
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: json.dumps({"page_ids": ["ghost.md"]})
+    r = select("q", _shelf(tmp_path), backend=be, known_pages={"topic.md"})
+    assert r.no_relevant_page is True and r.page_ids == [] and "id/layer" in r.abstention_reason
+
+
+def test_select_success_clears_reason(tmp_path):
+    from sdlc_knowledge_base_scripts.pipeline import select
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: json.dumps({"page_ids": ["topic.md"]})
+    r = select("q", _shelf(tmp_path), backend=be, known_pages={"topic.md"})
+    assert r.no_relevant_page is False and r.page_ids == ["topic.md"] and r.abstention_reason is None
