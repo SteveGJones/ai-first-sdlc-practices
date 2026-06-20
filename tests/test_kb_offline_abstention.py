@@ -117,3 +117,22 @@ def test_judge_claim_prompt_includes_declared_spans():
     judge_claim(c, {"dora.md": "Elite teams deploy multiple times per day."}, backend=B())
     assert "deploy multiple times per day" in seen["p"]      # declared span surfaced
     assert "relevan" in seen["p"].lower()                    # asks about relevance
+
+
+# ---------------------------------------------------------------------------
+# Task 7: shared finalize_answer (renderer-agnostic, both outcomes)
+# ---------------------------------------------------------------------------
+
+from sdlc_knowledge_base_scripts.publication import finalize_answer  # noqa: E402
+
+
+def test_finalize_answer_empty_render_abstains():
+    a = Answer(claims=[])
+    finalize_answer(a, "", abstain_reason="no supported claims")
+    assert a.abstained is True and a.rendered_text == "" and a.abstention_reason == "no supported claims"
+
+
+def test_finalize_answer_nonempty_render_clears_stale_flag():
+    a = Answer(claims=[], abstained=True, abstention_reason="stale")
+    finalize_answer(a, "Some answer text.", abstain_reason="x")
+    assert a.abstained is False and a.rendered_text == "Some answer text." and a.abstention_reason is None
