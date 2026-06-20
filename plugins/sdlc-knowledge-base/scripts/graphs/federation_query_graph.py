@@ -24,6 +24,7 @@ from ..audit import AuditEvent, log_event  # noqa: E402
 from ..contracts import Answer  # noqa: E402
 from ..federation import merge_answers, query_one_library, render_federated  # noqa: E402
 from ..priming import build_priming_bundle  # noqa: E402
+from ..publication import finalize_answer  # noqa: E402
 
 
 class FederationState(TypedDict, total=False):
@@ -38,6 +39,8 @@ class FederationState(TypedDict, total=False):
     _answer: dict
     queried: int
     deduped: int
+    abstained: bool
+    abstention_reason: Optional[str]
 
 
 def build_federation_query_graph(backend, *, checkpoint_path=None):
@@ -82,9 +85,11 @@ def build_federation_query_graph(backend, *, checkpoint_path=None):
         per = [(d["handle"], Answer.model_validate(d["answer"])) for d in state.get("per_library", [])]
         merged, handle_sets = merge_answers(per)
         rendered, rejected = render_federated(merged, handle_sets)
+        finalize_answer(merged, rendered, abstain_reason="no library produced a supported answer")
         deduped = sum(len(a.claims) for _, a in per) - len(merged.claims)
-        return {"rendered_text": rendered, "rejected_claims": rejected, "_answer": merged.model_dump(),
-                "queried": len(per), "deduped": deduped}
+        return {"rendered_text": merged.rendered_text, "rejected_claims": rejected,
+                "_answer": merged.model_dump(), "queried": len(per), "deduped": deduped,
+                "abstained": merged.abstained, "abstention_reason": merged.abstention_reason}
 
     builder = StateGraph(FederationState)
     builder.add_node("resolve", n_resolve)

@@ -43,6 +43,31 @@ def test_query_one_library_returns_verified_answer(tmp_path):
     assert answer.claims[0].entailment_status == EntailmentStatus.supported
 
 
+def test_query_one_library_abstains_without_synthesize(tmp_path):
+    lib = _lib(tmp_path, "doracorp", "dora.md", "Elite teams deploy multiple times per day.")
+
+    def gen(prompt, schema=None):
+        # An abstaining select must short-circuit BEFORE synthesize/judge are ever called.
+        if "Pages:" in prompt:
+            raise AssertionError("synthesize must not run when select abstains")
+        if prompt.startswith("Judge"):
+            raise AssertionError("judge must not run when select abstains")
+        if "Shelf-index" in prompt:
+            return json.dumps({"page_ids": [], "no_relevant_page": True, "abstention_reason": "nope"})
+        raise AssertionError(f"unexpected prompt: {prompt[:40]!r}")
+    be = FakeBackend()
+    be.generate = gen
+    answer, page_ids = query_one_library(str(lib), "how often deploy?", backend=be, priming=None)
+    assert answer.abstained is True
+    assert answer.claims == []
+    assert answer.abstention_reason == "nope"
+
+
+def test_canonicalize_attribution_preserves_abstention():
+    out = canonicalize_attribution(Answer(claims=[], rendered_text="", abstained=True, abstention_reason="x"))
+    assert out.abstained is True and out.abstention_reason == "x"
+
+
 def _claim(text, page, status):
     c = Claim(text=text, cited_pages=[PageRef(library="local", page=page)],
               evidence_spans=[Span(page=page, text="x")])
