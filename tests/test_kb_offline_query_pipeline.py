@@ -101,3 +101,103 @@ def test_synthesize_returns_claims_and_strips_model_status(tmp_path):
     assert ans.claims[0].text == "Widgets cut cost 30%."
     assert ans.claims[0].entailment_status is None
     assert ans.claims[0].high_impact is False
+
+
+def test_graph_abstains_on_no_relevant_page(tmp_path):
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    from sdlc_knowledge_base_scripts.graphs.query_graph import build_query_graph
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "a.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# a\nElite teams deploy daily.\n")
+    (lib / "_shelf-index.md").write_text(
+        "<!-- format_version: 1 -->\n# Shelf\n\n## 1. a.md\nLayer: evidence\nTerms: deploy\n")
+
+    def gen(prompt, schema=None):
+        if "Pages:" in prompt:   # synthesize prompt
+            raise AssertionError("synthesize must NOT be called after abstain")
+        return json.dumps({"page_ids": [], "no_relevant_page": True, "abstention_reason": "nope"})
+    be = FakeBackend()
+    be.generate = gen
+    out = build_query_graph(be).invoke(
+        {"library_path": str(lib), "question": "unrelated?", "layer": None, "min_confidence": None},
+        config={"configurable": {"thread_id": "t"}})
+    assert out["abstained"] is True
+    assert out["rendered_text"] == ""
+    assert out["pages"] == []
+    assert out["abstention_reason"] == "nope"
+
+
+def test_graph_publishes_supported_claim_end_to_end(tmp_path):
+    """Normal path: select picks a real page, synthesize returns a grounded+judged claim,
+    output is NOT abstained and rendered_text is non-empty."""
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    from sdlc_knowledge_base_scripts.graphs.query_graph import build_query_graph
+    lib = tmp_path / "library"
+    lib.mkdir()
+    page_content = "---\nlayer: evidence\nconfidence: high\n---\n# a\nElite teams deploy daily.\n"
+    (lib / "a.md").write_text(page_content)
+    (lib / "_shelf-index.md").write_text(
+        "<!-- format_version: 1 -->\n# Shelf\n\n## 1. a.md\nLayer: evidence\nTerms: deploy\n")
+
+    synth_payload = json.dumps({
+        "claims": [{
+            "text": "Elite teams deploy daily.",
+            "cited_pages": [{"library": "local", "page": "a.md"}],
+            "evidence_spans": [{"page": "a.md", "text": "Elite teams deploy daily."}],
+        }],
+        "rendered_text": "",
+    })
+
+    def gen(prompt, schema=None):
+        if "Pages:" in prompt:                       # synthesize
+            return synth_payload
+        if "Judge whether" in prompt:                # judge_claim
+            return json.dumps({"status": "supported"})
+        return json.dumps({"page_ids": ["a.md"]})    # select
+    be = FakeBackend()
+    be.generate = gen
+    out = build_query_graph(be).invoke(
+        {"library_path": str(lib), "question": "how often do elite teams deploy?",
+         "layer": None, "min_confidence": None},
+        config={"configurable": {"thread_id": "t"}})
+    assert out["abstained"] is False
+    assert "Elite teams deploy daily." in out["rendered_text"]
+    assert out["abstention_reason"] is None
+    assert [p["page"] for p in out["pages"]] == ["a.md"]
+
+
+def test_graph_abstains_when_verify_rejects_all_claims(tmp_path):
+    """select picks a page, synthesize returns a claim, but the judge/grounding reject it ->
+    publish renders empty -> finalize flips abstained=True with 'no supported claims'."""
+    from sdlc_knowledge_base_scripts.backends.fake_backend import FakeBackend
+    from sdlc_knowledge_base_scripts.graphs.query_graph import build_query_graph
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "a.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# a\nElite teams deploy daily.\n")
+    (lib / "_shelf-index.md").write_text(
+        "<!-- format_version: 1 -->\n# Shelf\n\n## 1. a.md\nLayer: evidence\nTerms: deploy\n")
+
+    # evidence span is NOT on the page -> grounding caps unsupported -> excluded by publish
+    synth_payload = json.dumps({
+        "claims": [{
+            "text": "Teams release hourly via blue-green.",
+            "cited_pages": [{"library": "local", "page": "a.md"}],
+            "evidence_spans": [{"page": "a.md", "text": "hourly blue-green releases everywhere"}],
+        }],
+        "rendered_text": "",
+    })
+
+    def gen(prompt, schema=None):
+        if "Pages:" in prompt:
+            return synth_payload
+        if "Judge whether" in prompt:
+            return json.dumps({"status": "unsupported"})
+        return json.dumps({"page_ids": ["a.md"]})
+    be = FakeBackend()
+    be.generate = gen
+    out = build_query_graph(be).invoke(
+        {"library_path": str(lib), "question": "release cadence?", "layer": None, "min_confidence": None},
+        config={"configurable": {"thread_id": "t"}})
+    assert out["abstained"] is True
+    assert out["rendered_text"] == ""
+    assert out["abstention_reason"] == "no supported claims"

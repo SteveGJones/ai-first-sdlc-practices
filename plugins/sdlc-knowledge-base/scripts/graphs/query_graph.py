@@ -23,7 +23,8 @@ from ..contracts import Answer  # noqa: E402
 from ..entailment import verify_entailment  # noqa: E402
 from ..pipeline import select, synthesize  # noqa: E402
 from ..provenance import filter_pages, known_page_ids  # noqa: E402
-from ..publication import publish  # noqa: E402
+from ..publication import finalize_answer, publish  # noqa: E402
+from ..retrieval import reduce_shelf  # noqa: E402
 
 
 class QueryState(TypedDict, total=False):
@@ -34,6 +35,9 @@ class QueryState(TypedDict, total=False):
     accelerate: bool
     accelerate_k: int
     page_ids: list
+    no_relevant_page: bool
+    abstained: bool
+    abstention_reason: Optional[str]
     pages: list
     _synth: dict
     rendered_text: str
@@ -65,15 +69,23 @@ def build_query_graph(backend):
                     state["question"], str(lib), store, backend=backend, k=state.get("accelerate_k") or 20)
                 candidates = filter_pages(lib, cand_ids, layer=state.get("layer"),
                                           min_confidence=state.get("min_confidence"))
-                res = select(state["question"], shelf, backend=backend, known_pages=set(candidates),
-                             shelf_text=reduced)
-                return {"page_ids": res.page_ids}
+                # `reduced` is over cand_ids (may include layer/confidence-filtered pages); rebuild
+                # the reduced shelf over ONLY eligible ids, best-first (cand_ids is already best-first).
+                eligible = set(candidates)
+                res = select(state["question"], shelf, backend=backend, known_pages=eligible,
+                             shelf_text=reduce_shelf(shelf, [c for c in cand_ids if c in eligible]))
+                return {"page_ids": res.page_ids, "no_relevant_page": res.no_relevant_page,
+                        "abstention_reason": res.abstention_reason}
             print("[query] accelerate: no fresh index (run kb-offline index); falling back to full-shelf select",
                   file=sys.stderr)
         candidates = filter_pages(lib, sorted(known), layer=state.get("layer"),
                                   min_confidence=state.get("min_confidence"))
-        res = select(state["question"], shelf, backend=backend, known_pages=set(candidates))
-        return {"page_ids": res.page_ids}
+        # Feed select ONLY eligible (layer/confidence-filtered) pages so wrong-layer pages are not
+        # silently presented then dropped (the q005 contract bug).
+        res = select(state["question"], shelf, backend=backend, known_pages=set(candidates),
+                     shelf_text=reduce_shelf(shelf, sorted(candidates)))
+        return {"page_ids": res.page_ids, "no_relevant_page": res.no_relevant_page,
+                "abstention_reason": res.abstention_reason}
 
     def n_read(state: QueryState) -> dict:
         lib = Path(state["library_path"])
@@ -88,21 +100,39 @@ def build_query_graph(backend):
         ans = synthesize(state["question"], state["pages"], backend=backend)
         return {"_synth": ans.model_dump()}
 
+    def n_abstain(state: QueryState) -> dict:
+        return {"pages": [], "rendered_text": "", "rejected_claims": [],
+                "abstained": True,
+                "abstention_reason": state.get("abstention_reason") or "no relevant page",
+                "_answer": Answer(abstained=True,
+                                  abstention_reason=state.get("abstention_reason") or "no relevant page").model_dump()}
+
     def n_verify_publish(state: QueryState) -> dict:
         ans = Answer.model_validate(state["_synth"])
         pages_by_name = {p["page"]: p["content"] for p in state["pages"]}
         verified = verify_entailment(ans, pages_by_name, backend=backend)
         rendered, rejected = publish(verified)
-        return {"rendered_text": rendered, "rejected_claims": rejected,
+        # finalize_answer mutates `verified` IN PLACE (sets rendered_text + reconciles abstained/
+        # reason). publish() yields an empty body when no claim survived verification, so this is
+        # also the "verify rejected everything" -> abstained path. Read verified.* below, not `rendered`.
+        finalize_answer(verified, rendered,
+                        abstain_reason=(verified.abstention_reason if verified.abstained else "no supported claims"))
+        return {"rendered_text": verified.rendered_text, "rejected_claims": rejected,
+                "abstained": verified.abstained, "abstention_reason": verified.abstention_reason,
                 "_answer": verified.model_dump()}
+
+    def _after_select(state: QueryState) -> str:
+        return "abstain" if (state.get("no_relevant_page") or not state.get("page_ids")) else "read"
 
     builder = StateGraph(QueryState)
     builder.add_node("select", n_select)
+    builder.add_node("abstain", n_abstain)
     builder.add_node("read", n_read)
     builder.add_node("synthesize", n_synthesize)
     builder.add_node("verify_publish", n_verify_publish)
     builder.add_edge(START, "select")
-    builder.add_edge("select", "read")
+    builder.add_conditional_edges("select", _after_select, {"abstain": "abstain", "read": "read"})
+    builder.add_edge("abstain", END)
     builder.add_edge("read", "synthesize")
     builder.add_edge("synthesize", "verify_publish")
     builder.add_edge("verify_publish", END)
