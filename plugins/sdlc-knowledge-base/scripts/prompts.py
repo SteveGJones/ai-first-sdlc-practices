@@ -20,6 +20,8 @@ SELECT_FRAGMENT = (
 SYNTHESIZE_FRAGMENT = (
     "Answer using only the supplied pages. Return claims, each with the pages it cites "
     "and the exact supporting spans. Do not assign entailment status; the verifier does."
+    " If the supplied pages do not answer the question, return zero claims and set abstained"
+    " true with a one-line reason. Never write a claim that merely states the answer is absent."
 )
 
 REDUCE_FRAGMENT = (

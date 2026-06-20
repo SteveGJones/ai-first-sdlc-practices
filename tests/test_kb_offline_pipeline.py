@@ -243,3 +243,32 @@ def test_select_success_clears_reason(tmp_path):
     be.generate = lambda prompt, schema=None: json.dumps({"page_ids": ["topic.md"]})
     r = select("q", _shelf(tmp_path), backend=be, known_pages={"topic.md"})
     assert r.no_relevant_page is False and r.page_ids == ["topic.md"] and r.abstention_reason is None
+
+
+def test_synthesize_abstains_zero_claims():
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: json.dumps(
+        {"claims": [], "rendered_text": "", "abstained": True, "abstention_reason": "pages don't answer"})
+    ans = synthesize("q", [{"page": "a.md", "content": "x"}], backend=be)
+    assert ans.abstained is True
+    assert ans.claims == [] and ans.rendered_text == "" and ans.abstention_reason == "pages don't answer"
+
+
+def test_synthesize_abstains_clears_claims_and_text():
+    """Invariant: Answer.abstained => claims=[], rendered_text="". Even if the model emits an
+    absence-claim alongside abstained=True, synthesize must clear both fields so no published
+    claim escapes under the abstention flag."""
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: json.dumps({
+        "claims": [{"text": "The answer is absent.", "cited_pages": [], "evidence_spans": []}],
+        "rendered_text": "The answer is absent from the pages.",
+        "abstained": True,
+        "abstention_reason": "  pages do not answer  ",
+    })
+    ans = synthesize("q", [{"page": "a.md", "content": "x"}], backend=be)
+    assert ans.abstained is True
+    assert ans.claims == []
+    assert ans.rendered_text == ""
+    assert ans.abstention_reason == "pages do not answer"

@@ -175,6 +175,13 @@ def synthesize(question, pages, *, backend, max_repairs: int = 1) -> Answer:
                         keys.add(key)
                         seen.append(PageRef(library=s.library or "local", page=s.page))
                 c.cited_pages = seen
+        # Abstention invariant (#211, Task 9): Answer.abstained => no published claims.
+        # Even if the model emits absence-claims alongside abstained=True, clear them here
+        # so the contract holds: abstained is the only signal, not claim text.
+        if ans.abstained:
+            ans.claims = []
+            ans.rendered_text = ""
+            ans.abstention_reason = _normalize_reason(ans.abstention_reason, "pages do not answer the question")
         return ans
     raise ValueError(f"synthesize failed after {max_repairs} repair(s): {last_error}")
 
