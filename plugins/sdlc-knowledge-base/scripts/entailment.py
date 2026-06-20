@@ -79,6 +79,18 @@ def ground_claim(claim: Claim, pages: dict[str, str], *, fuzzy_threshold: float 
     return best
 
 
+_ABSENCE_RE = re.compile(
+    r"not mentioned|no information|do(es)? not contain|documents contain no|"
+    r"not found in the (provided )?documents|cannot find any information|"
+    r"not provided in the source|not provided in the (provided )?document",
+    re.IGNORECASE)
+
+
+def is_epistemic_absence(claim_text: str) -> bool:
+    """True for corpus-relative epistemic-absence phrasing (NOT generic negation)."""
+    return bool(_ABSENCE_RE.search(claim_text))
+
+
 _HIGH_IMPACT_RE = re.compile(
     r"\d|%|\bshould\b|\bmust\b|\brecommend|\brequire|\bsafety\b|\bcomplian|\bregulat|"
     r"\bISO\s?\d|\bIEC\b|\bFDA\b|\bDO-178|\b62304\b|\b26262\b",
@@ -127,4 +139,6 @@ def verify_entailment(answer: Answer, pages: dict[str, str], *, backend: Backend
             continue
         grade = judge_claim(claim, pages, backend=backend)
         claim.entailment_status = _min_status(cap, grade)
+        if is_epistemic_absence(claim.text):
+            claim.entailment_status = EntailmentStatus.unsupported
     return answer

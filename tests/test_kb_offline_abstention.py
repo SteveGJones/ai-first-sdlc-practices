@@ -71,3 +71,28 @@ def test_ground_claim_supports_legitimate_negative():
 
 def test_relevance_floor_value():
     assert RELEVANCE_FLOOR == 0.20
+
+
+# ---------------------------------------------------------------------------
+# Task 5: epistemic-absence guard in verify_entailment
+# ---------------------------------------------------------------------------
+
+from sdlc_knowledge_base_scripts.entailment import is_epistemic_absence  # noqa: E402
+
+
+def test_epistemic_absence_matches_all_trace_forms():
+    yes = ["The payroll schedule is not mentioned in the provided documents.",
+           "The provided documents do not contain information regarding a CEO.",
+           "I cannot find any information regarding dental insurance in the provided documents.",
+           "The location of the London office is not provided in the source text.",
+           "No information regarding the gym opening time."]
+    for t in yes:
+        assert is_epistemic_absence(t) is True, t
+
+
+def test_epistemic_absence_ignores_legitimate_negatives():
+    no = ["The solo method does not require formal sign-off.",
+          "Feature flags should be removed when stale.",
+          "Trunk-based development avoids long-lived branches."]
+    for t in no:
+        assert is_epistemic_absence(t) is False, t
