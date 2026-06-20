@@ -96,3 +96,24 @@ def test_epistemic_absence_ignores_legitimate_negatives():
           "Trunk-based development avoids long-lived branches."]
     for t in no:
         assert is_epistemic_absence(t) is False, t
+
+
+# ---------------------------------------------------------------------------
+# Task 6: judge_claim receives declared spans + asks for relevance
+# ---------------------------------------------------------------------------
+
+from sdlc_knowledge_base_scripts.entailment import judge_claim  # noqa: E402
+
+
+def test_judge_claim_prompt_includes_declared_spans():
+    seen = {}
+
+    class B:
+        def generate(self, prompt, schema=None):
+            seen["p"] = prompt
+            return '{"status": "supported"}'
+
+    c = _claim("Elite teams deploy daily.", "dora.md", "deploy multiple times per day")
+    judge_claim(c, {"dora.md": "Elite teams deploy multiple times per day."}, backend=B())
+    assert "deploy multiple times per day" in seen["p"]      # declared span surfaced
+    assert "relevan" in seen["p"].lower()                    # asks about relevance

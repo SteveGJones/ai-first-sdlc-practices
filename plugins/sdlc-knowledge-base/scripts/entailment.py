@@ -106,13 +106,16 @@ def classify_high_impact(claim_text: str) -> bool:
 
 
 def judge_claim(claim: Claim, pages: dict[str, str], *, backend: Backend) -> EntailmentStatus:
-    """LLM-judge: does the cited page text SUPPORT the claim? Returns supported/partial/
-    unsupported. Any non-conforming output defaults to unsupported (conservative)."""
+    """LLM-judge: does the cited page text SUPPORT the claim AND are the declared spans
+    RELEVANT to the claim? Returns supported/partial/unsupported. Any non-conforming output
+    defaults to unsupported (conservative)."""
     cited = "\n".join(f"<page id={r.page}>\n{pages.get(r.page, '')}\n</page>" for r in claim.cited_pages)
+    spans = "; ".join(s.text for s in claim.evidence_spans) or "(none)"
     prompt = (
-        "Judge whether the cited page text SUPPORTS the claim. Reply ONLY a JSON object "
+        "Judge whether the cited page text SUPPORTS the claim AND the declared spans are "
+        "RELEVANT to the claim. Reply ONLY a JSON object "
         '{"status": "supported"|"partial"|"unsupported"}.\n\n'
-        f"Claim: {claim.text}\n\nCited pages:\n{cited}"
+        f"Claim: {claim.text}\n\nDeclared spans: {spans}\n\nCited pages:\n{cited}"
     )
     raw = backend.generate(
         prompt, schema={"type": "object", "properties": {"status": {"type": "string"}}, "required": ["status"]}
