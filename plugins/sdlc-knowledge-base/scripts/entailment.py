@@ -13,6 +13,24 @@ from .contracts import Answer, Claim, EntailmentStatus
 _RANK = {EntailmentStatus.unsupported: 0, EntailmentStatus.partial: 1, EntailmentStatus.supported: 2}
 _WORD = re.compile(r"\w+")
 
+RELEVANCE_FLOOR = 0.20
+_RELEVANCE_STOPWORDS = frozenset(
+    "a an the of to in on for and or is are was were be been being as that this these those it its "
+    "with by from at into not no does do did has have had will would can could should may might".split())
+_RELEVANCE_TOKEN_RE = re.compile(r"[a-z0-9]+")
+
+
+def _content_tokens(text: str) -> list[str]:
+    return [t for t in _RELEVANCE_TOKEN_RE.findall(text.lower())
+            if t not in _RELEVANCE_STOPWORDS and len(t) > 2]
+
+
+def _claim_span_coverage(claim_text: str, span_text: str) -> float:
+    c = _content_tokens(claim_text)
+    s = set(_content_tokens(span_text))
+    # vacuous pass: no content tokens in claim means floor cannot be applied meaningfully
+    return (sum(1 for t in c if t in s) / len(c)) if c else 1.0
+
 
 def _norm(text: str) -> str:
     return " ".join(text.lower().split())
@@ -48,6 +66,8 @@ def ground_claim(claim: Claim, pages: dict[str, str], *, fuzzy_threshold: float 
         page_text = pages.get(span.page)
         if page_text is None:
             continue  # cited-page presence already verified above; defensive
+        if _claim_span_coverage(claim.text, span.text) < RELEVANCE_FLOOR:
+            continue
         if _norm(span.text) in _norm(page_text):
             return EntailmentStatus.supported
         page_tokens = set(_tokens(page_text))

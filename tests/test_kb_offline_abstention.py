@@ -1,7 +1,8 @@
 """Slice 1 abstention contract + verifier hardening (#211)."""
 from __future__ import annotations
 
-from sdlc_knowledge_base_scripts.contracts import Answer, SelectResult
+from sdlc_knowledge_base_scripts.contracts import Answer, Claim, EntailmentStatus, PageRef, SelectResult, Span
+from sdlc_knowledge_base_scripts.entailment import RELEVANCE_FLOOR, ground_claim
 from sdlc_knowledge_base_scripts.pipeline import _normalize_reason
 from sdlc_knowledge_base_scripts.retrieval import reduce_shelf
 
@@ -39,3 +40,34 @@ def test_reduce_shelf_keeps_full_blocks_in_order_from_text():
     assert out.index("c.md") < out.index("a.md")      # order preserved
     assert "Terms: gamma" in out and "Terms: alpha" in out  # full entry blocks, not just headers
     assert "b.md" not in out                           # excluded
+
+
+# ---------------------------------------------------------------------------
+# Task 4: claim<->span relevance floor in ground_claim
+# ---------------------------------------------------------------------------
+
+def _claim(text, page, span):
+    return Claim(text=text, cited_pages=[PageRef(library="local", page=page)],
+                 evidence_spans=[Span(page=page, text=span)])
+
+
+def test_ground_claim_rejects_verbatim_but_irrelevant_span():
+    pages = {"dora.md": "DORA Metrics. Elite teams deploy multiple times per day."}
+    c = _claim("The company payroll schedule is not mentioned.", "dora.md", "DORA Metrics")
+    assert ground_claim(c, pages) == EntailmentStatus.unsupported
+
+
+def test_ground_claim_supports_relevant_verbatim_span():
+    pages = {"dora.md": "Elite teams deploy multiple times per day."}
+    c = _claim("Elite teams deploy multiple times per day.", "dora.md", "deploy multiple times per day")
+    assert ground_claim(c, pages) == EntailmentStatus.supported
+
+
+def test_ground_claim_supports_legitimate_negative():
+    pages = {"sdlc-solo.md": "The solo method uses feature branches and requires no formal sign-off."}
+    c = _claim("The solo method does not require formal sign-off.", "sdlc-solo.md", "requires no formal sign-off")
+    assert ground_claim(c, pages) == EntailmentStatus.supported
+
+
+def test_relevance_floor_value():
+    assert RELEVANCE_FLOOR == 0.20
