@@ -184,6 +184,56 @@ def test_layer_filter_selects_only_matching_pages(tmp_path):
     assert out is not None and "Evidence deploys daily." in out["rendered_text"]
 
 
+def test_accelerated_federation_fused_select_abstains(tmp_path):
+    # One valid library that passes every gate (valid index, fresh hash, in-dim vector matching a
+    # live eligible page so ranked is non-empty + coverage guard passes). The fused cross-library
+    # select abstains -> the merged Answer must short-circuit to abstained WITHOUT synthesizing.
+    local = _build_lib(tmp_path, "library",
+                       {"a.md": ("evidence", "high", "Alpha deploys daily.")},
+                       {"a.md": [1.0, 0.0, 0.0]})
+    be = FakeBackend()
+    be.embed = lambda texts: [[1.0, 0.0, 0.0]]
+
+    def gen(prompt, schema=None):
+        if "Pages:" in prompt:
+            raise AssertionError("synthesize must NOT run after a fused-select abstain")
+        if prompt.startswith("Judge"):
+            raise AssertionError("verify must NOT run after a fused-select abstain")
+        if "Shelf-index" in prompt:
+            return json.dumps({"page_ids": [], "no_relevant_page": True,
+                               "abstention_reason": "nope"})
+        raise AssertionError(f"unexpected prompt: {prompt[:40]!r}")
+
+    be.generate = gen
+    out = accelerated_federation_query(local, [("library", str(local))], "q",
+                                       backend=be, search_k=5)
+    assert out is not None
+    assert out["abstained"] is True
+    assert out["rendered_text"] == ""
+    assert out["abstention_reason"] == "no library produced a supported answer"
+
+
+def test_accelerated_federation_happy_path_not_abstained(tmp_path):
+    # A published cross-library answer must carry abstained=False / abstention_reason=None.
+    local = _build_lib(tmp_path, "library",
+                       {"local.md": ("evidence", "high", "Local note on deploys.")},
+                       {"local.md": [1.0, 0.0, 0.0]})
+    acme = _build_lib(tmp_path, "acme",
+                      {"a.md": ("evidence", "high", "Acme deploys daily.")},
+                      {"a.md": [1.0, 0.0, 0.0]})
+    be = FakeBackend()
+    be.embed = lambda texts: [[1.0, 0.0, 0.0]]
+    be.generate = _gen_factory(
+        ["library/local.md", "acme/a.md"], "Teams deploy daily.",
+        ["acme/a.md", "library/local.md"], "acme/a.md")
+    specs = [("library", str(local)), ("acme", str(acme))]
+    out = accelerated_federation_query(local, specs, "how often deploy?", backend=be, search_k=5)
+    assert out is not None
+    assert out["abstained"] is False
+    assert out["abstention_reason"] is None
+    assert "Teams deploy daily." in out["rendered_text"]
+
+
 def test_invalid_query_vector_falls_back(tmp_path):
     local = _build_lib(tmp_path, "library",
                        {"a.md": ("evidence", "high", "x")}, {"a.md": [1.0, 0.0, 0.0]})

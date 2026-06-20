@@ -13,6 +13,7 @@ from pathlib import Path
 
 from .audit import AuditEvent, log_event
 from .build_shelf_index import extract_entry_block
+from .contracts import Answer
 from .embeddings import EmbeddingStore, chunk_pages, corpus_hash
 from .entailment import verify_entailment
 from .federation import _norm, canonicalize_attribution, render_federated
@@ -20,6 +21,7 @@ from .fusion import compatible, fuse_compatible, qualify, split_qualified
 from .pipeline import select, synthesize
 from .priming import build_priming_bundle
 from .provenance import filter_pages
+from .publication import finalize_answer
 
 
 def _dedupe_specs(library_specs):
@@ -169,6 +171,17 @@ def accelerated_federation_query(local_lib, library_specs, question, *, backend,
     sel = select(question, None, backend=backend, known_pages=set(fused_qids),
                  priming=priming, shelf_text=reduced)
 
+    # Fused cross-library select abstained / returned nothing: no library has a relevant page.
+    # Short-circuit to an abstained merged Answer WITHOUT synthesizing (spec §7/§6d). The merged
+    # reason is always the generic federated reason (per-library reasons are not surfaced here).
+    if sel.no_relevant_page or not sel.page_ids:
+        reason = "no library produced a supported answer"
+        abstained = Answer(abstained=True, abstention_reason=reason)
+        return {"rendered_text": "", "rejected_claims": [],
+                "_answer": abstained.model_dump(), "queried": len(specs),
+                "fused": len(fused_qids), "deduped": 0,
+                "abstained": True, "abstention_reason": reason}
+
     # --- Read across libraries (path-containment enforced; symlinks resolved) ---
     path_for = {handle: Path(path) for handle, path in specs}
     pages = []
@@ -197,8 +210,10 @@ def accelerated_federation_query(local_lib, library_specs, question, *, backend,
             if r.library not in hs:
                 hs.append(r.library)
     rendered, rejected = render_federated(canonical, handle_sets)
-    return {"rendered_text": rendered, "rejected_claims": rejected,
+    finalize_answer(canonical, rendered, abstain_reason="no library produced a supported answer")
+    return {"rendered_text": canonical.rendered_text, "rejected_claims": rejected,
             "_answer": canonical.model_dump(), "queried": len(specs),
             # single cross-library synthesis (not per-library merge), so no claims are deduped;
             # reported for output-shape parity with the M2b federation result.
-            "fused": len(fused_qids), "deduped": 0}
+            "fused": len(fused_qids), "deduped": 0,
+            "abstained": canonical.abstained, "abstention_reason": canonical.abstention_reason}
