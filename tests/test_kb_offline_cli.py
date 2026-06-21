@@ -863,3 +863,52 @@ def test_eval_release_no_trace_suppresses(tmp_path):
               "--no-trace"], backend_override=be)
     assert list(tmp_path.glob("trace-*.jsonl")) == []
     assert list(tmp_path.glob("release-gemma4_12b-T2.md"))
+
+
+def test_cli_query_surfaces_abstention(tmp_path, capsys):
+    """A single-library query whose select abstains prints the answer (empty) then
+    `[abstained: <reason>]` to stderr and exits 0 (#211, Task 13)."""
+    lib = _seed_lib(tmp_path)
+    (lib / "a.md").write_text("---\nlayer: evidence\nconfidence: high\n---\n# A\nirrelevant\n")
+    (lib / "_shelf-index.md").write_text(
+        "<!-- format_version: 1 -->\n# Shelf\n\n## 1. a.md\nLayer: evidence\nTerms: x\n")
+
+    def gen(prompt, schema=None):
+        if "Pages:" in prompt or prompt.startswith("Judge"):
+            raise AssertionError("must not synthesize/judge after abstain")
+        return json.dumps({"page_ids": [], "no_relevant_page": True, "abstention_reason": "nothing fits"})
+
+    be = FakeBackend()
+    be.generate = gen
+    rc = cli.main(["query", "unrelated?", "--library", str(lib), "--backend", "fake"],
+                  backend_override=be)
+    assert rc == 0
+    err = capsys.readouterr().err
+    assert "[abstained: nothing fits]" in err
+
+
+def test_cli_federation_surfaces_abstention(tmp_path, capsys):
+    """When every library abstains, the federated CLI prints the generic federated reason
+    to stderr (#211, Task 13)."""
+    def _seed(name, page, body):
+        lib = tmp_path / name
+        lib.mkdir()
+        (lib / "_shelf-index.md").write_text(
+            f"<!-- format_version: 1 -->\n# Shelf\n\n## 1. {page}\nLayer: evidence\nTerms: x\n")
+        (lib / page).write_text(f"---\nlayer: evidence\nconfidence: high\n---\n# {page}\n{body}\n")
+        return lib
+    local = _seed("local", "dora.md", "Elite teams deploy daily.")
+    ext = _seed("acme", "ops.md", "Use canary deploys.")
+
+    def gen(prompt, schema=None):
+        if "Pages:" in prompt or prompt.startswith("Judge"):
+            raise AssertionError("must not synthesize/judge when all abstain")
+        return json.dumps({"page_ids": [], "no_relevant_page": True, "abstention_reason": "nope"})
+
+    be = FakeBackend()
+    be.generate = gen
+    rc = cli.main(["query", "unrelated?", "--library", str(local),
+                   "--libraries", "acme-kb", "--backend", "fake"],
+                  backend_override=be, library_specs_override=[["local", str(local)], ["acme-kb", str(ext)]])
+    assert rc == 0
+    assert "[abstained: no library produced a supported answer]" in capsys.readouterr().err

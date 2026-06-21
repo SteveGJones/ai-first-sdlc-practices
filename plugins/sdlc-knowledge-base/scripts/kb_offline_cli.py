@@ -167,6 +167,8 @@ def _query_single(args: argparse.Namespace, backend) -> int:
         config={"configurable": {"thread_id": "query"}},
     )
     print(out.get("rendered_text", ""))
+    if out.get("abstained"):
+        print(f"[abstained: {out.get('abstention_reason')}]", file=sys.stderr)
     rejected = out.get("rejected_claims", [])
     if rejected:
         print(f"\n[{len(rejected)} claim(s) excluded as unsupported]", file=sys.stderr)
@@ -183,6 +185,8 @@ def _query_single(args: argparse.Namespace, backend) -> int:
 
 def _emit_federation_result(args, out, specs) -> int:
     print(out.get("rendered_text", ""))
+    if out.get("abstained"):
+        print(f"[abstained: {out.get('abstention_reason')}]", file=sys.stderr)
     rejected = out.get("rejected_claims", [])
     if rejected:
         print(f"\n[{len(rejected)} claim(s) excluded as unsupported]", file=sys.stderr)
