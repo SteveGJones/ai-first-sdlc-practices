@@ -371,7 +371,6 @@ def test_synthesize_without_sink_still_recovers():
 
 def test_synthesize_safety_rewrite_target_always_in_read_set():
     """Invariant: any rewrite 'to' is a page actually read, same handle as 'from'."""
-    from sdlc_knowledge_base_scripts.cited_page_normalize import resolve_cited_page  # noqa: F401
     from sdlc_knowledge_base_scripts.pipeline import synthesize
 
     payload = json.dumps({
@@ -386,3 +385,35 @@ def test_synthesize_safety_rewrite_target_always_in_read_set():
     for r in sink:
         assert r["to"] in read
         assert (r["to"].split("/", 1)[0] if "/" in r["to"] else "") == r["handle"]
+
+
+def test_synthesize_recovers_both_span_and_citation_corruption():
+    """P1a regression guard: model populates a corrupted cited_page AND a corrupted span.
+    Both are normalized independently (back-fill is skipped since cited_pages is non-empty);
+    the sink records one evidence_span and one cited_page rewrite; grounding reaches supported."""
+    from sdlc_knowledge_base_scripts.contracts import EntailmentStatus
+    from sdlc_knowledge_base_scripts.entailment import ground_claim
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+
+    payload = json.dumps({
+        "claims": [{
+            "text": "The single-team method suits one collaborating team.",
+            "cited_pages": [{"library": "local", "page": "sdlc-single-formm.md"}],
+            "evidence_spans": [{"page": "sdlc-single-formm.md",
+                                "text": "The single-team method suits one collaborating team."}],
+        }],
+        "rendered_text": "ok",
+    })
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: payload  # type: ignore
+    pages = [{"page": "sdlc-single-team.md",
+              "content": "The single-team method suits one collaborating team."}]
+    sink: list = []
+    ans = synthesize("q", pages, backend=be, rewrites_sink=sink)
+    assert [s.page for s in ans.claims[0].evidence_spans] == ["sdlc-single-team.md"]
+    assert [r.page for r in ans.claims[0].cited_pages] == ["sdlc-single-team.md"]
+    cap = ground_claim(ans.claims[0],
+                       {"sdlc-single-team.md": "The single-team method suits one collaborating team."})
+    assert cap == EntailmentStatus.supported
+    kinds = sorted(r["reference_kind"] for r in sink)
+    assert kinds == ["cited_page", "evidence_span"]

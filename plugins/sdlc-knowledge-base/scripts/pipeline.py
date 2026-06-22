@@ -175,13 +175,14 @@ def synthesize(question, pages, *, backend, max_repairs: int = 1,
                 for ri, ref in enumerate(refs):
                     if ref.page in read_ids:
                         continue
-                    cands = [r for r in read_ids if _handle(r) == _handle(ref.page)]
+                    h = _handle(ref.page)
+                    cands = [r for r in read_ids if _handle(r) == h]
                     res = resolve_cited_page(ref.page, cands)
                     if res.page is not None and res.page != ref.page:
                         if rewrites_sink is not None:
                             rewrites_sink.append({
                                 "from": ref.page, "to": res.page,
-                                "score": round(res.score, 3), "handle": _handle(ref.page),
+                                "score": round(res.score, 3), "handle": h,
                                 "candidates": cands, "stage": "synthesize",
                                 "claim_index": ci, "reference_kind": kind, "reference_index": ri,
                             })
