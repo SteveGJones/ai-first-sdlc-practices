@@ -7,7 +7,7 @@
 
 ## Goal
 
-Recover model **citation id-corruption** that exact matching cannot — narrowly, on the synthesize side only, without reopening the anti-fabrication hole. When the model selects and reads the *right* page but then cites a corrupted version of that page's id, the claim is orphaned, dropped, and the answer abstains. A single high-confidence, logged rewrite of the corrupted id back to a page actually read repairs this. The headline case is **q035** (`sdlc-single-formm.md` → `sdlc-single-team.md`): the model read `sdlc-single-team.md`, then cited `sdlc-single-formm.md`, both claims went `unsupported`, and the answer abstained — a **false abstention** dragging `abstention_precision` (0.917, the failing gate margin).
+Recover model **citation id-corruption** that exact matching cannot — narrowly, on the synthesize side only, without reopening the anti-fabrication hole. When the model selects and reads the *right* page but then cites a corrupted version of that page's id, the claim is orphaned, dropped, and the answer abstains. A single high-confidence, logged rewrite of the corrupted id back to a page actually read repairs this. The headline case is **q035** (`sdlc-single-formm.md` → `sdlc-single-team.md`): the model read `sdlc-single-team.md`, then referenced `sdlc-single-formm.md` on **both** the claims' `cited_pages` and their `evidence_spans` — both claims went `unsupported`, and the answer abstained — a **false abstention** dragging `abstention_precision` (0.917, the failing gate margin). The fix must normalize page-id references consistently across spans *and* citations (see §3).
 
 ## Scope
 
@@ -53,7 +53,7 @@ def normalize_cited_page(
 1. Return an **exact** candidate immediately (string equality; opaque, **case-sensitive** — no basename, path, or case normalization).
 2. Otherwise score every candidate with `difflib.SequenceMatcher(None, cited_page, candidate).ratio()`.
 3. **Deduplicate and deterministically order** candidates before scoring (sorted), so duplicates cannot create false ambiguity and the result is input-order-independent.
-4. Return the single best candidate **only when** `best_score >= floor` **and** `best_score - runner_up_score >= margin`. When there is exactly one candidate, `runner_up_score = 0.0` (ratios are in `[0, 1]`), so the margin test reduces to `best_score >= margin` and is satisfied whenever the floor is — i.e. a single candidate has an effectively infinite margin.
+4. Return the single best candidate **only when** `best_score >= floor` **and** the margin test passes. When there is **exactly one distinct candidate**, the margin check is **explicitly bypassed** — recovery succeeds iff `best_score >= floor` (a single candidate has no runner-up, so it cannot be "ambiguous" regardless of how `floor`/`margin` relate). With two or more distinct candidates, require `best_score - runner_up_score >= margin`. (This avoids the contradiction that `runner_up_score = 0.0` would otherwise create when a caller passes `floor < margin`.)
 5. **Boundary semantics:** comparisons are `>=` — a score exactly at `floor` and a lead exactly at `margin` are **accepted**.
 6. Return `None` for empty candidates, ambiguous matches (lead `< margin`), or below-floor matches. **Decisions use the full float** (no pre-rounding); rounding happens only at trace serialization (§4).
 7. Page ids are opaque strings; the helper has **no** handle/library awareness (that lives in the hook, §3). This keeps it intentionally narrow and discourages accidental select-side reuse — the filename `cited_page_normalize.py` signals the same.
@@ -64,37 +64,45 @@ Exact-first preserves the common case at zero risk. The floor (0.75) is the cali
 
 ## 3. Hook point — `synthesize` (`pipeline.py`)
 
-`synthesize(question, pages, *, backend, max_repairs=1)` is called identically from all three paths (`graphs/query_graph.py`, `federation.py`, `federation_accel.py`); `pages` is a list of `{"page": <id>, "content": ...}` dicts where `<id>` is **bare** in the graph/per-library paths and **qualified `handle/page_id`** in the accelerated-federation path. `PageRef` is a Pydantic `BaseModel` (`library`, `page`).
+`synthesize(question, pages, *, backend, max_repairs=1)` is called identically from all three paths (`graphs/query_graph.py`, `federation.py`, `federation_accel.py`); `pages` is a list of `{"page": <id>, "content": ...}` dicts where `<id>` is **bare** in the graph/per-library paths and **qualified `handle/page_id`** in the accelerated-federation path. Both `PageRef` (`library`, `page`) and `Span` (`library`, `page`, `text`) are Pydantic `BaseModel`s.
 
-After the model returns claims, **before** the existing empty-list cited_pages back-fill (`pipeline.py:169`) and before grounding/entailment, run:
+**Why both reference kinds must be normalized (the P1 lesson).** `ground_claim` (entailment.py:48) rejects a claim if **any** `cited_pages` ref is absent from the read `pages` dict, *and then* only lets a span ground when `span.page` is in the cited set, loading content via `pages.get(span.page)`. In the motivating case (q035) the corrupted id `sdlc-single-formm.md` appears on **both** `cited_pages` and `evidence_spans[].page`. Normalizing only the `PageRef` is insufficient — the span still points at the corrupted id, fails the `span.page in cited` test, and the claim stays `unsupported`. **Page-id references must be normalized consistently across evidence spans and citations.** Equally, the existing empty-`cited_pages` back-fill (`pipeline.py:169`) copies `span.page` → `cited_pages`; if spans are normalized first, the back-fill propagates the corrected id automatically.
 
-1. Build the candidate set once: `read_ids = sorted({p["page"] for p in pages})`. This is exactly the pages read for this question — the structural guarantee that recovery can never introduce **unread** evidence.
-2. Define `handle(s) = s.split("/", 1)[0] if "/" in s else ""`. For each claim (index `ci`), for each cited `PageRef` (index `pi`):
+**Procedure** — in the existing per-claim loop, after stripping `entailment_status`/`high_impact` and **before** the back-fill (and therefore before grounding):
+
+1. Build the candidate set once per question: `read_ids = sorted({p["page"] for p in pages})` — exactly the pages read, the structural guarantee that recovery can never introduce **unread** evidence.
+2. Define `handle(s) = s.split("/", 1)[0] if "/" in s else ""`. For each claim (index `ci`), normalize **both** reference lists in order `evidence_spans` then `cited_pages`. For each reference list `kind ∈ {"evidence_span", "cited_page"}`, for each reference at index `ri` with page `ref.page`:
    - If `ref.page in read_ids` → unchanged.
-   - Else bucket candidates to the cited ref's handle: `cands = [r for r in read_ids if handle(r) == handle(ref.page)]`. Bare ids all fall in the `""` bucket (one namespace); qualified ids bucket by real handle. This makes **"never cross-library"** a structural, test-provable guarantee.
-   - `resolved = normalize_cited_page(ref.page, cands)`. On a hit: replace via `ref.model_copy(update={"page": resolved})` (preserves all other PageRef fields, changes only `page`) and append a rewrite record (§4). On `None`: **leave the ref untouched** — the existing grounding/judge rejection path stays authoritative and fails closed (so q052 stays dropped).
+   - Else bucket to the ref's handle: `cands = [r for r in read_ids if handle(r) == handle(ref.page)]`. Bare ids fall in the `""` bucket (one namespace); qualified ids bucket by real handle — making **"never cross-library"** structural and test-provable.
+   - `resolved = normalize_cited_page(ref.page, cands)`. On a hit (`resolved is not None and resolved != ref.page`): replace the list element via `ref.model_copy(update={"page": resolved})` (preserves all other fields, changes only `page`) and append a rewrite record (§4) to the diagnostics sink. On `None`: leave the ref untouched — the grounding/judge rejection path stays authoritative and fails closed (q052 stays dropped).
+3. **Then** run the existing back-fill (`if not c.cited_pages and c.evidence_spans`), which now copies already-normalized span pages.
 
-Because the rewrite happens before grounding, a recovered claim re-grounds against the correct page's spans and can legitimately reach `supported` — which flips q035 from abstain → supported, lifting `abstention_precision`. Candidates are scoped to **all pages read for the question, same library** — never to the claim's own spans (that would be circular: normalization precedes grounding, and the corrupted id is often *why* span linkage failed).
-
-The back-fill (`if not c.cited_pages and c.evidence_spans`) and the abstention invariant downstream are unchanged; normalization composes before them.
+Because normalization completes before grounding, a recovered claim re-grounds against the correct page's spans and can legitimately reach `supported` — flipping q035 from abstain → supported and lifting `abstention_precision`. Candidates are scoped to **all pages read for the question, same handle** — never to the claim's own spans (circular: normalization precedes grounding, and the corrupted id is often *why* span linkage failed). The abstention invariant downstream is unchanged.
 
 ## 4. Trace & CLI surfacing
 
 **CLI: no change — trace-only.** A normalized citation reads identically to one the model got right; surfacing "I fixed your typo" adds noise. This mirrors how dropped ids are diagnostics-only.
 
-Per-question trace gains **`id_rewrites: []`** (empty list when no rewrite occurs — always serialized). Each rewrite record:
+**Carrier (the P1b plumbing).** `synthesize` currently returns only `Answer`; the graph node `n_synthesize` (query_graph.py:99) stores `ans.model_dump()` under `_synth`, and `_build_question_trace` (runner.py:76) rebuilds the row from `out["_synth"]` + `out["pages"]`, re-deriving diagnostics in the harness. Rewrite records must reach the trace **without polluting the model-facing `Answer` schema**, so:
+
+- `synthesize` gains a keyword-only **diagnostics sink**: `synthesize(question, pages, *, backend, max_repairs=1, rewrites_sink: list | None = None)`. When `rewrites_sink is not None`, it appends one record per rewritten reference. Default `None` keeps the production federation/per-library callers untouched (recovery still happens there — just unrecorded, which is correct: those paths emit no per-question trace).
+- `n_synthesize` allocates a fresh `sink = []`, passes it, and returns `{"_synth": ans.model_dump(), "_id_rewrites": sink}`. `QueryState` gains an `_id_rewrites: list` channel (excluded from `Answer`).
+- `_build_question_trace` reads `out.get("_id_rewrites", [])` and writes it as the per-question **`id_rewrites`** field — **always serialized**, `[]` when no rewrite occurred (alongside the existing `dropped`/`eligible_unselected`).
+
+Each rewrite record identifies the exact reference site (P2c — q035's original corruption is on an evidence *span*, which has no citation index, so `reference_kind` + `reference_index` replace `citation_index`; and the namespace is a **handle**, not a page id):
 
 ```json
 {"from": "sdlc-single-formm.md", "to": "sdlc-single-team.md",
- "score": 0.821, "library": "sdlc-single-team.md",
+ "score": 0.821, "handle": "",
  "candidates": ["sdlc-single-team.md"],
- "stage": "synthesize", "claim_index": 0, "citation_index": 0}
+ "stage": "synthesize", "claim_index": 0,
+ "reference_kind": "evidence_span", "reference_index": 0}
 ```
 
+- `reference_kind ∈ {"evidence_span", "cited_page"}` and `reference_index` pin the exact list element; `claim_index` the claim. q035 thus emits four records (2 claims × {span, cited_page}).
+- `handle` is the effective namespace bucket — `""` for bare ids, the real handle for qualified ids (never a page id).
 - `score` serialized at **fixed 3-decimal precision** (decisions use the full float; only the recorded value is rounded).
-- `claim_index` **and** `citation_index` together make multiple citations within one claim unambiguous.
-- `candidates` records the same-handle candidate set actually scored (audit of what the rewrite chose among).
-- The field is produced in `synthesize` and threaded through to the JSONL trace writer alongside the existing `dropped`/`eligible_unselected` diagnostics.
+- `candidates` records the same-handle candidate set actually scored.
 
 ## 5. Metric-interaction guarantee
 
@@ -119,14 +127,20 @@ Recoveries can only help on the current corpus:
 - deterministic ordering: shuffled candidate input → identical result
 
 **Pipeline integration tests (`synthesize`):**
+- **q035 end-to-end:** a claim whose corrupted id is on **both** `cited_pages` and `evidence_spans[].page` re-grounds and reaches `supported` — proving span *and* citation are normalized consistently (the P1a regression guard); a span-only-corruption variant (empty `cited_pages`) also recovers via normalize-then-back-fill
 - cross-library guard: corrupted id whose only good match is in a different handle → untouched (`None`), claim drops
-- recovered claim re-grounds and reaches `supported`; trace shows the `id_rewrites` entry with `claim_index`/`citation_index`
+- sink/trace carrier: `n_synthesize` populates `_id_rewrites`; `_build_question_trace` emits `id_rewrites` with `reference_kind`/`reference_index`/`claim_index`/`handle` and 3-dp `score`
 - unresolved (q052-style) path unchanged — existing rejection authoritative
-- safety invariant assertion: no rewrite ever yields a page outside the read-set
+- safety invariant assertion: no rewrite ever yields a page outside the read-set, and `handle` of `to` equals `handle` of `from`
 - **trace serialization includes `id_rewrites: []`** when no rewrite occurs
+- production callers (`federation`, `federation_accel`) call `synthesize` without a sink and still recover (no crash, no record)
 - **select-side regression:** q034-style drop remains a drop — select behavior untouched
 
-**Calibration script** (`harness/calibrate_id_normalize.py`, analog to `calibrate_relevance_floor.py`): reloads the **frozen** helper, **recomputes** scores from committed inputs (the trace's two real cases + the perturbation/cross-match sweep over the shelf) rather than encoding 0.588/0.821 as fixtures, and asserts `0.588 < floor=0.75 < 0.821` with no distinct-id pair ≥ floor — making the threshold reproducible, not a magic number.
+**Calibration script** (`harness/calibrate_id_normalize.py`, analog to `calibrate_relevance_floor.py`): reloads the **frozen** helper and **recomputes** everything from committed inputs (no hardcoded 0.588/0.821 fixtures):
+
+- **Real cases:** replay the trace's two unresolved citations and assert q035 recovers (`normalize_cited_page("sdlc-single-formm.md", ["sdlc-single-team.md"]) == "sdlc-single-team.md"`) and q052 drops (`... is None`).
+- **Perturbation sweep (the corrected cross-match test):** for each shelf id, generate typo-style perturbations and **score each perturbation against the entire shelf** via the helper's own scoring. The hard invariant (must hold for **every** perturbation): `normalize_cited_page(perturbation, full_shelf)` returns **either the true source id or `None`** — **never a different id**. This is what proves a corrupted id cannot *prefer* a wrong candidate, which canonical-id pairwise separation alone does **not** establish (P2a). Separately, for the **realistic typo tier** (single-edit perturbations — the class the floor is calibrated to catch), assert recovery actually happens: the source is the unique best, clears the floor, and leads the runner-up by ≥ margin. Deeper synthetic corruptions are allowed to fail closed (`None`); the report counts recover-to-source vs fail-closed, and **recover-to-wrong must be zero**.
+- Emit the floor/margin and the score distributions so the threshold choice is reproducible, not a magic number.
 
 ## Workflow
 
