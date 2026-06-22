@@ -16,7 +16,7 @@ from typing import NamedTuple
 
 class Resolution(NamedTuple):
     page: str | None        # resolved candidate, or None when no confident match
-    score: float | None     # best ratio among candidates; None ONLY for an empty set.
+    score: float | None     # best ratio among candidates; None ONLY for an empty set
     runner_up: float | None  # second-best score, or None when <2 distinct candidates
 
 
@@ -54,5 +54,5 @@ def normalize_cited_page(
     floor: float = 0.75,
     margin: float = 0.10,
 ) -> str | None:
-    """Narrow str|None wrapper over resolve_cited_page (contract callers + unit tests)."""
+    """str | None convenience wrapper over resolve_cited_page; returns the resolved page or None."""
     return resolve_cited_page(cited_page, candidates, floor=floor, margin=margin).page

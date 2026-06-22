@@ -1,4 +1,6 @@
 """Frozen cited-page normalizer (#211, Slice 2). Opaque, case-sensitive, fail-closed."""
+import difflib
+
 import pytest
 
 from sdlc_knowledge_base_scripts.cited_page_normalize import (
@@ -21,7 +23,8 @@ def test_q035_recovers_above_floor():
 def test_q052_drops_below_floor_but_retains_score():
     res = resolve_cited_page("pair-summary.md", ["pair-programming.md"])
     assert res.page is None
-    assert res.score == pytest.approx(0.588, abs=0.01)
+    expected = difflib.SequenceMatcher(None, "pair-summary.md", "pair-programming.md").ratio()
+    assert res.score == pytest.approx(expected)
     assert res.runner_up is None  # single candidate
 
 
@@ -70,12 +73,22 @@ def test_duplicate_candidates_deduped_no_false_ambiguity():
 
 
 def test_case_sensitive_not_exact():
-    # different case is NOT an exact match; recovers only if ratio clears the floor
+    # different case is NOT an exact match; score < 1.0 and also below floor -> no recovery
     res = resolve_cited_page("SDLC-Single-Team.md", ["sdlc-single-team.md"])
     assert res.score is not None and res.score < 1.0
+    assert res.page is None  # below floor -> documents fail-closed on wrong-case
 
 
 def test_deterministic_order_independent_of_input_order():
     a = normalize_cited_page("sdlc-single-formm.md", ["tech-debt.md", "sdlc-single-team.md"])
     b = normalize_cited_page("sdlc-single-formm.md", ["sdlc-single-team.md", "tech-debt.md"])
     assert a == b == "sdlc-single-team.md"
+
+
+def test_equal_score_tie_broken_alphabetically():
+    # When two candidates share the best score, the alphabetically-earlier string wins,
+    # because the sort key is (-score, string). floor/margin relaxed to force a resolution.
+    res = resolve_cited_page("sdlc-single-tt.md",
+                             ["sdlc-single-tesm.md", "sdlc-single-team.md"],
+                             floor=0.0, margin=0.0)
+    assert res.page == "sdlc-single-team.md"  # 'team' < 'tesm' alphabetically
