@@ -1,0 +1,107 @@
+{
+  "metrics": {
+    "abstention_precision": {
+      "mean": 0.9166666666666666,
+      "runs": [
+        0.9166666666666666
+      ],
+      "stddev": 0.0
+    },
+    "abstention_recall": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "citation_validity_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "clean_published_support_rate": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "fact_recall": {
+      "mean": 0.8666666666666667,
+      "runs": [
+        0.8666666666666667
+      ],
+      "stddev": 0.0
+    },
+    "first_pass_json_validity": {
+      "mean": 0.9264214046822743,
+      "runs": [
+        0.9264214046822743
+      ],
+      "stddev": 0.0
+    },
+    "invalid_mutation_rejection_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "post_repair_json_validity_floor": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "routing_precision": {
+      "mean": 0.935064935064935,
+      "runs": [
+        0.935064935064935
+      ],
+      "stddev": 0.0
+    },
+    "routing_recall": {
+      "mean": 0.96,
+      "runs": [
+        0.96
+      ],
+      "stddev": 0.0
+    },
+    "verifier_precision": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    },
+    "verifier_recall": {
+      "mean": 1.0,
+      "runs": [
+        1.0
+      ],
+      "stddev": 0.0
+    }
+  },
+  "model": "gemma4:12b",
+  "pin": {
+    "num_ctx": 8192,
+    "seed": 7,
+    "temperature": 0,
+    "top_p": 1
+  },
+  "stamp": "20260621T183228Z",
+  "verdict": {
+    "failure_details": [
+      "abstention_precision: mean 0.9167 < 0.95",
+      "first_pass_json_validity: mean 0.9264 < 0.95"
+    ],
+    "failures": [
+      "abstention_precision",
+      "first_pass_json_validity"
+    ],
+    "passed": false
+  }
+}

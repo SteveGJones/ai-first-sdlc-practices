@@ -1,0 +1,130 @@
+[eval] starting run 1/1 — 97 questions, 22 verifier labels (model=gemma4:12b)
+[eval run 1/1] q 1/97 q001 ok facts 1/1 50.0s
+[eval run 1/1] q 2/97 q002 ok facts 1/1 70.0s
+[eval run 1/1] q 3/97 q003 ok facts 1/1 47.5s
+[eval run 1/1] q 4/97 q004 ok facts 1/1 56.4s
+[eval run 1/1] q 5/97 q005 ok facts 1/1 46.8s
+[eval run 1/1] q 6/97 q006 ok facts 1/1 56.8s
+[eval run 1/1] q 7/97 q007 ok facts 1/1 58.4s
+[eval run 1/1] q 8/97 q008 ok facts 1/1 57.3s
+[eval run 1/1] q 9/97 q009 ok facts 1/1 73.0s
+[eval run 1/1] q 10/97 q010 ok facts 1/1 64.0s
+[eval run 1/1] q 11/97 q011 ok facts 0/1 108.7s
+[eval run 1/1] q 12/97 q012 ok facts 1/1 59.7s
+[eval run 1/1] q 13/97 q013 ok facts 1/1 46.1s
+[eval run 1/1] q 14/97 q014 ok facts 1/1 59.0s
+[eval run 1/1] q 15/97 q015 ok facts 1/1 189.9s
+[eval run 1/1] q 16/97 q016 abstain 35.0s
+[eval run 1/1] q 17/97 q017 ok facts 1/1 118.7s
+[eval run 1/1] q 18/97 q018 ok facts 1/1 85.5s
+[eval run 1/1] q 19/97 q019 ok facts 1/1 94.6s
+[eval run 1/1] q 20/97 q020 ok facts 1/1 77.1s
+[eval run 1/1] q 21/97 q021 ok facts 1/1 81.1s
+[eval run 1/1] q 22/97 q022 ok facts 1/1 56.6s
+[eval run 1/1] q 23/97 q023 ok facts 0/1 48.8s
+[eval run 1/1] q 24/97 q024 ok facts 1/1 87.1s
+[eval run 1/1] q 25/97 q025 ok facts 1/1 61.8s
+[eval run 1/1] q 26/97 q026 ok facts 1/1 47.2s
+[eval run 1/1] q 27/97 q027 ok facts 1/1 50.2s
+[eval run 1/1] q 28/97 q028 ok facts 1/1 61.1s
+[eval run 1/1] q 29/97 q029 ok facts 1/1 52.4s
+[eval run 1/1] q 30/97 q030 ok facts 1/1 53.6s
+[eval run 1/1] q 31/97 q031 ok facts 1/1 54.2s
+[eval run 1/1] q 32/97 q032 ok facts 1/1 120.7s
+[eval run 1/1] q 33/97 q033 ok facts 1/1 57.8s
+[eval run 1/1] q 34/97 q034 ok facts 1/1 161.9s
+[eval run 1/1] q 35/97 q035 abstain 65.2s
+[eval run 1/1] q 36/97 q036 ok facts 1/1 54.1s
+[eval run 1/1] q 37/97 q037 ok facts 1/1 46.5s
+[eval run 1/1] q 38/97 q038 ok facts 1/1 83.8s
+[eval run 1/1] q 39/97 q039 ok facts 0/1 112.9s
+[eval run 1/1] q 40/97 q040 ok facts 0/1 148.7s
+[eval run 1/1] q 41/97 q041 ok facts 1/1 89.0s
+[eval run 1/1] q 42/97 q042 ok facts 1/1 100.4s
+[eval run 1/1] q 43/97 q043 ok facts 1/1 148.3s
+[eval run 1/1] q 44/97 q044 ok facts 1/1 53.8s
+[eval run 1/1] q 45/97 q045 ok facts 0/1 112.1s
+[eval run 1/1] q 46/97 q046 ok facts 1/1 170.6s
+[eval run 1/1] q 47/97 q047 ok facts 1/1 77.0s
+[eval run 1/1] q 48/97 q048 ok facts 1/1 224.3s
+[eval run 1/1] q 49/97 q049 ok facts 1/1 375.7s
+[eval run 1/1] q 50/97 q050 ok facts 1/1 228.7s
+[eval run 1/1] q 51/97 q051 ok facts 0/1 511.1s
+[eval run 1/1] q 52/97 q052 ok facts 1/1 312.4s
+[eval run 1/1] q 53/97 q053 ok facts 1/1 182.4s
+[eval run 1/1] q 54/97 q054 ok facts 1/1 59.4s
+[eval run 1/1] q 55/97 q055 ok facts 1/1 66.3s
+[eval run 1/1] q 56/97 q056 ok facts 1/1 55.6s
+[eval run 1/1] q 57/97 q057 ok facts 1/1 98.8s
+[eval run 1/1] q 58/97 q058 ok facts 1/1 58.0s
+[eval run 1/1] q 59/97 q059 ok facts 1/1 62.4s
+[eval run 1/1] q 60/97 q060 ok facts 1/1 93.3s
+[eval run 1/1] q 61/97 q061 ok facts 1/1 133.9s
+[eval run 1/1] q 62/97 q062 ok facts 1/1 57.6s
+[eval run 1/1] q 63/97 q063 ok facts 1/1 133.5s
+[eval run 1/1] q 64/97 q064 ok facts 0/1 49.3s
+[eval run 1/1] q 65/97 q065 ok facts 1/1 48.7s
+[eval run 1/1] q 66/97 q066 ok facts 1/1 82.8s
+[eval run 1/1] q 67/97 q067 ok facts 1/1 93.9s
+[eval run 1/1] q 68/97 q068 ok facts 1/1 122.6s
+[eval run 1/1] q 69/97 q069 ok facts 1/1 85.4s
+[eval run 1/1] q 70/97 q070 ok facts 1/1 43.8s
+[eval run 1/1] q 71/97 q071 ok facts 1/1 70.0s
+[eval run 1/1] q 72/97 q072 ok facts 1/1 48.5s
+[eval run 1/1] q 73/97 q073 ok facts 1/1 136.4s
+[eval run 1/1] q 74/97 q074 ok facts 1/1 157.0s
+[eval run 1/1] q 75/97 q075 ok facts 0/1 158.3s
+[eval run 1/1] q 76/97 q076 abstain 20.7s
+[eval run 1/1] q 77/97 q077 abstain 24.4s
+[eval run 1/1] q 78/97 q078 abstain 21.0s
+[eval run 1/1] q 79/97 q079 abstain 21.5s
+[eval run 1/1] q 80/97 q080 abstain 21.0s
+[eval run 1/1] q 81/97 q081 abstain 18.9s
+[eval run 1/1] q 82/97 q082 abstain 20.8s
+[eval run 1/1] q 83/97 q083 abstain 20.7s
+[eval run 1/1] q 84/97 q084 abstain 20.9s
+[eval run 1/1] q 85/97 q085 abstain 26.6s
+[eval run 1/1] q 86/97 q086 abstain 19.5s
+[eval run 1/1] q 87/97 q087 abstain 21.1s
+[eval run 1/1] q 88/97 q088 abstain 13.4s
+[eval run 1/1] q 89/97 q089 abstain 21.8s
+[eval run 1/1] q 90/97 q090 abstain 19.0s
+[eval run 1/1] q 91/97 q091 abstain 21.9s
+[eval run 1/1] q 92/97 q092 abstain 24.0s
+[eval run 1/1] q 93/97 q093 abstain 16.6s
+[eval run 1/1] q 94/97 q094 abstain 24.9s
+[eval run 1/1] q 95/97 q095 abstain 30.5s
+[eval run 1/1] q 96/97 q096 abstain 23.4s
+[eval run 1/1] q 97/97 q097 abstain 25.9s
+[eval run 1/1] verifier: scoring 22 labels
+# kb-offline eval release report — gemma4:12b
+
+**Pinned config:** `{'temperature': 0, 'seed': 7, 'top_p': 1, 'num_ctx': 8192}`
+
+| metric | min | mean | stddev | runs | pass |
+|---|---|---|---|---|---|
+| fact_recall | 0.85 | 0.8667 | 0.0000 | 0.867 | PASS |
+| routing_recall | 0.9 | 0.9600 | 0.0000 | 0.960 | PASS |
+| routing_precision | 0.8 | 0.9351 | 0.0000 | 0.935 | PASS |
+| abstention_precision | 0.95 | 0.9167 | 0.0000 | 0.917 | FAIL |
+| abstention_recall | 0.9 | 1.0000 | 0.0000 | 1.000 | PASS |
+| verifier_precision | 0.98 | 1.0000 | 0.0000 | 1.000 | PASS |
+| verifier_recall | 0.95 | 1.0000 | 0.0000 | 1.000 | PASS |
+| first_pass_json_validity | 0.95 | 0.9264 | 0.0000 | 0.926 | FAIL |
+| clean_published_support_rate | 1.0 | 1.0000 | 0.0000 | 1.000 | PASS |
+
+**Safety floors (must = 1.0 every run):**
+- invalid_mutation_rejection_floor: [1.0]
+- citation_validity_floor: [1.0]
+- post_repair_json_validity_floor: [1.0]
+
+## Verdict: FAIL
+
+**Failures:**
+- abstention_precision: mean 0.9167 < 0.95
+- first_pass_json_validity: mean 0.9264 < 0.95
+
+**Ollama-default recommendation:** gemma4:12b does not clear the bars — keep Anthropic as the default backend; report the gap and/or pull a stronger local model.
+
+
+[report written to research/kb-offline-eval/release-gemma4_12b-20260621T183228Z.md (+ .json)]
