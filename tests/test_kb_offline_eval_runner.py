@@ -165,3 +165,33 @@ def test_score_run_completes_when_some_questions_error():
     metrics = score_run(str(SMOKE / "library"), qs, labels, backend=be)
     assert "fact_recall" in metrics and 0.0 <= metrics["fact_recall"] <= 1.0
     # all questions errored -> no facts found -> fact_recall 0.0 (over non-abstention rows)
+
+
+def test_build_question_trace_surfaces_id_rewrites():
+    """The carrier: _build_question_trace emits id_rewrites from out['_id_rewrites']."""
+    from sdlc_knowledge_base_scripts.contracts import Answer
+    from sdlc_knowledge_base_scripts.eval.runner import _build_question_trace
+    from sdlc_knowledge_base_scripts.eval.suite import load_questions
+
+    q = load_questions(SMOKE / "questions.jsonl")[0]
+    rewrites = [{"from": "x.md", "to": "y.md", "score": 0.821, "handle": "",
+                 "candidates": ["y.md"], "stage": "synthesize",
+                 "claim_index": 0, "reference_kind": "evidence_span", "reference_index": 0}]
+    out = {"_synth": Answer().model_dump(), "pages": [], "page_ids": [],
+           "_id_rewrites": rewrites}
+    row = _build_question_trace(q, out, [], 1.0, known=set(), eligible=set(),
+                                found=[], did_abstain=True, rendered="")
+    assert row["id_rewrites"] == rewrites
+
+
+def test_build_question_trace_id_rewrites_defaults_empty():
+    """Always-serialized: absent _id_rewrites -> id_rewrites == []."""
+    from sdlc_knowledge_base_scripts.contracts import Answer
+    from sdlc_knowledge_base_scripts.eval.runner import _build_question_trace
+    from sdlc_knowledge_base_scripts.eval.suite import load_questions
+
+    q = load_questions(SMOKE / "questions.jsonl")[0]
+    out = {"_synth": Answer().model_dump(), "pages": [], "page_ids": []}
+    row = _build_question_trace(q, out, [], 1.0, known=set(), eligible=set(),
+                                found=[], did_abstain=True, rendered="")
+    assert row["id_rewrites"] == []

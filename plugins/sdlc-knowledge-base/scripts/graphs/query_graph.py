@@ -40,6 +40,7 @@ class QueryState(TypedDict, total=False):
     abstention_reason: Optional[str]
     pages: list
     _synth: dict
+    _id_rewrites: list
     rendered_text: str
     rejected_claims: list
     _answer: dict
@@ -97,8 +98,9 @@ def build_query_graph(backend):
         return {"pages": pages}
 
     def n_synthesize(state: QueryState) -> dict:
-        ans = synthesize(state["question"], state["pages"], backend=backend)
-        return {"_synth": ans.model_dump()}
+        sink: list = []
+        ans = synthesize(state["question"], state["pages"], backend=backend, rewrites_sink=sink)
+        return {"_synth": ans.model_dump(), "_id_rewrites": sink}
 
     def n_abstain(state: QueryState) -> dict:
         return {"pages": [], "rendered_text": "", "rejected_claims": [],
