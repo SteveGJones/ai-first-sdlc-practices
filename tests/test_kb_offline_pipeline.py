@@ -272,3 +272,117 @@ def test_synthesize_abstains_clears_claims_and_text():
     assert ans.claims == []
     assert ans.rendered_text == ""
     assert ans.abstention_reason == "pages do not answer"
+
+
+def test_synthesize_recovers_corrupted_span_id_and_backfills():
+    """q035 shape: raw cited_pages omitted, corrupted id only on the span. Normalizing the
+    span (before back-fill) lets the back-fill produce a correct citation and grounding pass."""
+    from sdlc_knowledge_base_scripts.contracts import EntailmentStatus
+    from sdlc_knowledge_base_scripts.entailment import ground_claim
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+
+    payload = json.dumps({
+        "claims": [{
+            "text": "The single-team method suits one collaborating team.",
+            "evidence_spans": [{"page": "sdlc-single-formm.md",
+                                "text": "The single-team method suits one collaborating team."}],
+        }],
+        "rendered_text": "ok",
+    })
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: payload  # type: ignore
+    pages = [{"page": "sdlc-single-team.md",
+              "content": "The single-team method suits one collaborating team."}]
+    sink: list = []
+    ans = synthesize("q", pages, backend=be, rewrites_sink=sink)
+    # span normalized, then back-fill -> correct citation
+    assert [s.page for s in ans.claims[0].evidence_spans] == ["sdlc-single-team.md"]
+    assert [r.page for r in ans.claims[0].cited_pages] == ["sdlc-single-team.md"]
+    cap = ground_claim(ans.claims[0],
+                       {"sdlc-single-team.md": "The single-team method suits one collaborating team."})
+    assert cap == EntailmentStatus.supported
+    # exactly one evidence_span rewrite, zero cited_page rewrites; 3-dp score
+    kinds = [r["reference_kind"] for r in sink]
+    assert kinds == ["evidence_span"]
+    r = sink[0]
+    assert (r["from"], r["to"]) == ("sdlc-single-formm.md", "sdlc-single-team.md")
+    assert r["handle"] == "" and r["claim_index"] == 0 and r["reference_index"] == 0
+    assert r["candidates"] == ["sdlc-single-team.md"] and r["stage"] == "synthesize"
+    assert r["score"] == round(r["score"], 3) and 0.75 <= r["score"] <= 1.0
+
+
+def test_synthesize_drops_genuinely_different_id_no_rewrite():
+    """q052 shape: corrupted id is genuinely different (below floor) -> untouched, no record."""
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+
+    payload = json.dumps({
+        "claims": [{
+            "text": "x",
+            "evidence_spans": [{"page": "pair-summary.md", "text": "y"}],
+        }],
+        "rendered_text": "x",
+    })
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: payload  # type: ignore
+    sink: list = []
+    ans = synthesize("q", [{"page": "pair-programming.md", "content": "..."}],
+                     backend=be, rewrites_sink=sink)
+    assert [s.page for s in ans.claims[0].evidence_spans] == ["pair-summary.md"]  # untouched
+    assert sink == []
+
+
+def test_synthesize_cross_handle_match_not_recovered():
+    """A qualified-id corruption whose only good match is under a DIFFERENT handle must drop."""
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+
+    payload = json.dumps({
+        "claims": [{
+            "text": "x",
+            "evidence_spans": [{"page": "alpha/sdlc-single-formm.md", "text": "y"}],
+        }],
+        "rendered_text": "x",
+    })
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: payload  # type: ignore
+    sink: list = []
+    # only candidate is under handle 'beta' -> different bucket -> no recovery
+    ans = synthesize("q", [{"page": "beta/sdlc-single-team.md", "content": "..."}],
+                     backend=be, rewrites_sink=sink)
+    assert [s.page for s in ans.claims[0].evidence_spans] == ["alpha/sdlc-single-formm.md"]
+    assert sink == []
+
+
+def test_synthesize_without_sink_still_recovers():
+    """Production callers (federation/accel) pass no sink: recovery still happens, no crash."""
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+
+    payload = json.dumps({
+        "claims": [{
+            "text": "z",
+            "evidence_spans": [{"page": "sdlc-single-formm.md", "text": "z"}],
+        }],
+        "rendered_text": "z",
+    })
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: payload  # type: ignore
+    ans = synthesize("q", [{"page": "sdlc-single-team.md", "content": "z"}], backend=be)
+    assert [s.page for s in ans.claims[0].evidence_spans] == ["sdlc-single-team.md"]
+
+
+def test_synthesize_safety_rewrite_target_always_in_read_set():
+    """Invariant: any rewrite 'to' is a page actually read, same handle as 'from'."""
+    from sdlc_knowledge_base_scripts.cited_page_normalize import resolve_cited_page  # noqa: F401
+    from sdlc_knowledge_base_scripts.pipeline import synthesize
+
+    payload = json.dumps({
+        "claims": [{"text": "z", "evidence_spans": [{"page": "sdlc-single-formm.md", "text": "z"}]}],
+        "rendered_text": "z",
+    })
+    be = FakeBackend()
+    be.generate = lambda prompt, schema=None: payload  # type: ignore
+    read = ["sdlc-single-team.md"]
+    sink: list = []
+    synthesize("q", [{"page": p, "content": "z"} for p in read], backend=be, rewrites_sink=sink)
+    for r in sink:
+        assert r["to"] in read
+        assert (r["to"].split("/", 1)[0] if "/" in r["to"] else "") == r["handle"]

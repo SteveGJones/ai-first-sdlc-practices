@@ -10,6 +10,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from . import prompts
+from .cited_page_normalize import resolve_cited_page
 from .contracts import Answer, EntailmentStatus, ExtractJSON, MutationProposal, PageRef, SelectResult
 
 # Chat-template sentinel tokens (e.g. <|tool_response>, <|tool_response|>, <|im_end|>) that
@@ -140,7 +141,13 @@ def _answer_schema() -> dict:
     return Answer.model_json_schema()
 
 
-def synthesize(question, pages, *, backend, max_repairs: int = 1) -> Answer:
+def _handle(page_id: str) -> str:
+    """Namespace bucket for same-library scoping: handle for qualified ids, '' for bare."""
+    return page_id.split("/", 1)[0] if "/" in page_id else ""
+
+
+def synthesize(question, pages, *, backend, max_repairs: int = 1,
+               rewrites_sink: list | None = None) -> Answer:
     """Answer using only the supplied pages. Returns claims with cited_pages + verbatim
     evidence_spans. The model NEVER sets entailment_status/high_impact — both are stripped
     here so only the verifier assigns them."""
@@ -157,9 +164,28 @@ def synthesize(question, pages, *, backend, max_repairs: int = 1) -> Answer:
             last_error = str(exc)
             prompt = f"{base}\n\nPrevious output invalid: {last_error}\nReturn valid JSON only."
             continue
-        for c in ans.claims:
+        read_ids = sorted({p["page"] for p in pages})
+        for ci, c in enumerate(ans.claims):
             c.entailment_status = None
             c.high_impact = False
+            # Slice 2 (#211): repair corrupted page-id references against the read-set --
+            # spans FIRST so the back-fill below propagates the corrected id into cited_pages.
+            # Same-handle scoped, unique-winner + margin, fail-closed. See cited_page_normalize.
+            for kind, refs in (("evidence_span", c.evidence_spans), ("cited_page", c.cited_pages)):
+                for ri, ref in enumerate(refs):
+                    if ref.page in read_ids:
+                        continue
+                    cands = [r for r in read_ids if _handle(r) == _handle(ref.page)]
+                    res = resolve_cited_page(ref.page, cands)
+                    if res.page is not None and res.page != ref.page:
+                        if rewrites_sink is not None:
+                            rewrites_sink.append({
+                                "from": ref.page, "to": res.page,
+                                "score": round(res.score, 3), "handle": _handle(ref.page),
+                                "candidates": cands, "stage": "synthesize",
+                                "claim_index": ci, "reference_kind": kind, "reference_index": ri,
+                            })
+                        refs[ri] = ref.model_copy(update={"page": res.page})
             # Contract normalization (#211): some models (e.g. gemma4:12b) attribute the page
             # via evidence_spans and leave cited_pages empty. ground_claim requires a span's
             # page to be in cited_pages, so an empty list orphans every span -> unsupported ->
