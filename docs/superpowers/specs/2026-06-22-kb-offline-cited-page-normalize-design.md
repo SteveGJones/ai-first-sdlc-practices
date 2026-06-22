@@ -7,7 +7,7 @@
 
 ## Goal
 
-Recover model **citation id-corruption** that exact matching cannot — narrowly, on the synthesize side only, without reopening the anti-fabrication hole. When the model selects and reads the *right* page but then cites a corrupted version of that page's id, the claim is orphaned, dropped, and the answer abstains. A single high-confidence, logged rewrite of the corrupted id back to a page actually read repairs this. The headline case is **q035** (`sdlc-single-formm.md` → `sdlc-single-team.md`): the model read `sdlc-single-team.md`, then referenced `sdlc-single-formm.md` on **both** the claims' `cited_pages` and their `evidence_spans` — both claims went `unsupported`, and the answer abstained — a **false abstention** dragging `abstention_precision` (0.917, the failing gate margin). The fix must normalize page-id references consistently across spans *and* citations (see §3).
+Recover model **citation id-corruption** that exact matching cannot — narrowly, on the synthesize side only, without reopening the anti-fabrication hole. When the model selects and reads the *right* page but then cites a corrupted version of that page's id, the claim is orphaned, dropped, and the answer abstains. A single high-confidence, logged rewrite of the corrupted id back to a page actually read repairs this. The headline case is **q035** (`sdlc-single-formm.md` → `sdlc-single-team.md`): the model read `sdlc-single-team.md`, then in its raw output **omitted `cited_pages`** (Pydantic parses the absent field to `[]` via `default_factory=list`) and placed the corrupted id `sdlc-single-formm.md` only on **both claims' `evidence_spans`**. The existing empty-`cited_pages` back-fill later copied that corrupted span id into `cited_pages`; grounding then rejected every claim (the span's page is absent from the read set), so both claims went `unsupported` and the answer abstained — a **false abstention** dragging `abstention_precision` (0.917, the failing gate margin). The fix must normalize page-id references on the **spans** (before back-fill) so the correction propagates to citations too (see §3).
 
 ## Scope
 
@@ -30,7 +30,7 @@ The whole trace contains exactly **two distinct corrupted-id cases** (a referenc
 
 - **Algorithm:** `difflib.SequenceMatcher(None, a, b).ratio()`, character-level. Token-set Jaccard separates the two cases by only 0.10 vs char-ratio's 0.233 — char ratio is the more discriminating metric and is frozen.
 - **Floor = 0.75** sits cleanly in the gap: `0.588 < 0.75 < 0.821`.
-- **Cross-match safety:** across the 16-page shelf, **no two distinct ids score ≥ 0.70** char ratio — the shelf is well-separated, so a corrupted citation cannot snap to a wrong *distinct* page at this floor.
+- **Shelf separation (supporting evidence, not the safety proof):** across the 16-page shelf, **no two distinct ids score ≥ 0.70** char ratio — the shelf is well-separated. This is consistent with safe recovery but does **not** by itself prove a *corrupted* string cannot prefer a wrong id (a corruption scores differently than the canonical id). The no-wrong-snap guarantee is established empirically by the runtime-subset perturbation sweep (§6), which scores actual corrupted strings against every 1–2 page subset.
 - **Perturbation:** the deepest realistic corruption bottoms out at 0.821; every other typo-style perturbation stays ≥ 0.90. The floor admits realistic typos with headroom while failing closed on genuine mismatches.
 - **Read-set size:** synthesis reads 1 page in 71/74 answer cases, 2 pages in 3, never more. The runner-up margin almost never binds, but is retained for the multi-page case.
 
@@ -42,7 +42,9 @@ from typing import NamedTuple
 
 class Resolution(NamedTuple):
     page: str | None        # resolved candidate, or None when no confident match
-    score: float | None     # winning SequenceMatcher ratio (None when page is None)
+    score: float | None     # best SequenceMatcher ratio among candidates; None ONLY when
+                            # the candidate set is empty. Retained even when page is None
+                            # (below-floor / ambiguous) so callers see the rejected score.
     runner_up: float | None  # second-best score, or None when <2 distinct candidates
 
 def resolve_cited_page(
@@ -72,18 +74,18 @@ def normalize_cited_page(
 3. **Deduplicate and deterministically order** candidates before scoring (sorted), so duplicates cannot create false ambiguity and the result is input-order-independent.
 4. Return the single best candidate **only when** `best_score >= floor` **and** the margin test passes. When there is **exactly one distinct candidate**, the margin check is **explicitly bypassed** — recovery succeeds iff `best_score >= floor` (a single candidate has no runner-up, so it cannot be "ambiguous" regardless of how `floor`/`margin` relate). With two or more distinct candidates, require `best_score - runner_up_score >= margin`. (This avoids the contradiction that `runner_up_score = 0.0` would otherwise create when a caller passes `floor < margin`.)
 5. **Boundary semantics:** comparisons are `>=` — a score exactly at `floor` and a lead exactly at `margin` are **accepted**.
-6. Resolve to `page=None` (so `normalize_cited_page` returns `None`) for empty candidates, ambiguous matches (lead `< margin`), or below-floor matches. **Decisions use the full float** (no pre-rounding); rounding happens only at trace serialization (§4).
+6. Resolve to `page=None` (so `normalize_cited_page` returns `None`) for empty candidates, ambiguous matches (lead `< margin`), or below-floor matches. On a **non-empty** rejection, **still return `score`/`runner_up`** (only an empty candidate set yields `score=None`) so the calibration script can read rejected scores — e.g. q052 resolves to `Resolution(page=None, score=0.588, runner_up=None)`. **Decisions use the full float** (no pre-rounding); rounding happens only at trace serialization (§4).
 7. Page ids are opaque strings; the helper has **no** handle/library awareness (that lives in the hook, §3). This keeps it intentionally narrow and discourages accidental select-side reuse — the filename `cited_page_normalize.py` signals the same.
 
 ## 2. Algorithm rationale
 
-Exact-first preserves the common case at zero risk. The floor (0.75) is the calibrated separator. The margin (0.10) guards the rare 2-page read-set: with distinct shelf ids < 0.70 apart and the floor at 0.75, a corruption of one read page scores ≥ ~0.82 against its source and < 0.70 against the other, so the lead comfortably exceeds 0.10 — while genuinely ambiguous inputs drop. Fail-closed is the safe default: a missed recovery merely reproduces today's behavior (claim drops → abstain), so the asymmetry favors a conservative floor over an aggressive one.
+Exact-first preserves the common case at zero risk. The floor (0.75) is the calibrated separator (q052 0.588 below, q035 0.821 above). The margin (0.10) guards the rare 2-page read-set against ambiguity between two near candidates. Well-separated canonical ids (< 0.70 apart) make wrong-snaps *unlikely*, but the guarantee that a corrupted string never resolves to a wrong id is what the §6 runtime-subset perturbation sweep verifies empirically — not an inference from canonical separation. Fail-closed is the safe default: a missed recovery merely reproduces today's behavior (claim drops → abstain), so the asymmetry favors a conservative floor over an aggressive one.
 
 ## 3. Hook point — `synthesize` (`pipeline.py`)
 
 `synthesize(question, pages, *, backend, max_repairs=1)` is called identically from all three paths (`graphs/query_graph.py`, `federation.py`, `federation_accel.py`); `pages` is a list of `{"page": <id>, "content": ...}` dicts where `<id>` is **bare** in the graph/per-library paths and **qualified `handle/page_id`** in the accelerated-federation path. Both `PageRef` (`library`, `page`) and `Span` (`library`, `page`, `text`) are Pydantic `BaseModel`s.
 
-**Why both reference kinds must be normalized (the P1 lesson).** `ground_claim` (entailment.py:48) rejects a claim if **any** `cited_pages` ref is absent from the read `pages` dict, *and then* only lets a span ground when `span.page` is in the cited set, loading content via `pages.get(span.page)`. In the motivating case (q035) the corrupted id `sdlc-single-formm.md` appears on **both** `cited_pages` and `evidence_spans[].page`. Normalizing only the `PageRef` is insufficient — the span still points at the corrupted id, fails the `span.page in cited` test, and the claim stays `unsupported`. **Page-id references must be normalized consistently across evidence spans and citations.** Equally, the existing empty-`cited_pages` back-fill (`pipeline.py:169`) copies `span.page` → `cited_pages`; if spans are normalized first, the back-fill propagates the corrected id automatically.
+**Why both reference kinds must be normalized (the P1 lesson).** `ground_claim` (entailment.py:48) rejects a claim if **any** `cited_pages` ref is absent from the read `pages` dict, *and then* only lets a span ground when `span.page` is in the cited set, loading content via `pages.get(span.page)`. In q035 the corruption originates on `evidence_spans[].page` (raw `cited_pages` was empty); the back-fill then copies it into `cited_pages`. Normalizing only the `PageRef` would be insufficient even when a model *does* populate citations directly — the span still points at the corrupted id, fails the `span.page in cited` test, and the claim stays `unsupported`. **Page-id references must be normalized consistently across evidence spans and citations.** Because the empty-`cited_pages` back-fill (`pipeline.py:169`) copies `span.page` → `cited_pages`, normalizing spans **first** makes the back-fill propagate the corrected id automatically (the q035 path).
 
 **Procedure** — in the existing per-claim loop, after stripping `entailment_status`/`high_impact` and **before** the back-fill (and therefore before grounding):
 
@@ -116,7 +118,7 @@ Each rewrite record identifies the exact reference site (P2c — q035's original
  "reference_kind": "evidence_span", "reference_index": 0}
 ```
 
-- `reference_kind ∈ {"evidence_span", "cited_page"}` and `reference_index` pin the exact list element; `claim_index` the claim. q035's raw output has `cited_pages=None` with the corrupted id only on each claim's single span, so it emits **two `evidence_span` records** (one per claim); the subsequent back-fill then creates already-correct citations and emits **no `cited_page` records**. (A `cited_page` record only appears when the model itself populates a corrupted citation, as opposed to leaving it for back-fill.)
+- `reference_kind ∈ {"evidence_span", "cited_page"}` and `reference_index` pin the exact list element; `claim_index` the claim. q035's raw output **omits `cited_pages`** (parsed to `[]`) with the corrupted id only on each claim's single span, so it emits **two `evidence_span` records** (one per claim); the subsequent back-fill then creates already-correct citations and emits **no `cited_page` records**. (A `cited_page` record only appears when the model itself populates a corrupted citation, as opposed to leaving it for back-fill.)
 - `handle` is the effective namespace bucket — `""` for bare ids, the real handle for qualified ids (never a page id).
 - `score` serialized at **fixed 3-decimal precision** (decisions use the full float; only the recorded value is rounded).
 - `candidates` records the same-handle candidate set actually scored.
@@ -156,12 +158,12 @@ Recoveries can only help on the current corpus:
 
 **Calibration script** (`harness/calibrate_id_normalize.py`, analog to `calibrate_relevance_floor.py`): reloads the **frozen** helper and **recomputes** everything from committed inputs (no hardcoded 0.588/0.821 fixtures):
 
-- **Real cases:** replay the trace's two unresolved citations and assert q035 recovers (`normalize_cited_page("sdlc-single-formm.md", ["sdlc-single-team.md"]) == "sdlc-single-team.md"`) and q052 drops (`... is None`).
+- **Real cases:** replay the trace's two corrupted-id cases through `resolve_cited_page` and assert q035 recovers (`resolve_cited_page("sdlc-single-formm.md", ["sdlc-single-team.md"]).page == "sdlc-single-team.md"`, `score ≈ 0.821`) and q052 drops with its score retained (`resolve_cited_page("pair-summary.md", ["pair-programming.md"])` → `page is None`, `score ≈ 0.588`) — exercising the rejected-score-preservation contract (§1.6).
 - **Perturbation sweep (the corrected cross-match test, P2 — model the runtime subset).** Runtime scores only the **1–2 pages actually read**, never the full shelf, so a full-shelf-only test can hide a subset misresolution: a perturbation may return `None` against the whole shelf (two wrong candidates mutually ambiguous) yet resolve to one **wrong** candidate when the competitor is absent — and the single-candidate margin bypass (§1.4) makes a lone wrong candidate especially dangerous. So for each shelf id `S` and each typo-style perturbation `P` of `S`, run the helper against **every runtime-shaped subset**:
   - singleton `{S}` and singleton `{X}` for every `X ≠ S`;
   - every pair `{S, X}` and (for completeness) every pair `{X, Y}` of non-source ids.
 
-  **Hard invariant (must hold for all):** the result is `S` when `S` is in the subset, else **`None`** — **never a different id**. Equivalently, `P` must score `< floor` against every non-source shelf id (no wrong singleton recovery) and never out-score `S` (no wrong pair recovery). Separately, for the **realistic typo tier** (single-edit perturbations — the class the floor is calibrated to catch), assert recovery actually happens on `{S}`: clears floor (and, on a pair, leads by ≥ margin). Deeper synthetic corruptions may fail closed (`None`); the report counts recover-to-source vs fail-closed, and **recover-to-wrong must be zero**.
+  **Safety invariant (must hold for all perturbations and all subsets):** the result is in `{S, None}` when `S` is in the subset, and is `None` when `S` is absent — i.e. the helper **never returns a non-source id**. This is what proves a corrupted string cannot snap to the wrong page; it holds whether or not `P` recovers, and allows fail-closed (`None`) even on source-present subsets. (A non-source may out-score `S` by `< margin` and still safely yield `None` via the ambiguity rule — so "never a wrong id" is the right, weaker invariant, not "always recovers `S`".) **Liveness, realistic tier only:** for single-edit perturbations — the class the floor is calibrated to catch — additionally assert recovery happens (`{S}` clears floor; `{S, X}` leads by ≥ margin → `S`). Deeper synthetic corruptions may fail closed; the report counts recover-to-source vs fail-closed, and **recover-to-wrong must be zero**.
 - Emit the floor/margin and the score distributions so the threshold choice is reproducible, not a magic number.
 
 ## Workflow
