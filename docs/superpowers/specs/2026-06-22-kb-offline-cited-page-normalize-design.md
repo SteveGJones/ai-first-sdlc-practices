@@ -21,7 +21,7 @@ Recover model **citation id-corruption** that exact matching cannot — narrowly
 
 ## Empirical calibration (from the committed trace)
 
-The whole trace contains exactly **two** unresolved citations (cited page not in `pages_read`):
+The whole trace contains exactly **two distinct corrupted-id cases** (a referenced page absent from `pages_read`) — q035's corruption recurs across its two claims' spans, q052's on one claim:
 
 | Case | cited | best read-page | char ratio | jaccard | decision |
 |------|-------|----------------|-----------|---------|----------|
@@ -38,6 +38,21 @@ The whole trace contains exactly **two** unresolved citations (cited page not in
 
 ```python
 from collections.abc import Collection
+from typing import NamedTuple
+
+class Resolution(NamedTuple):
+    page: str | None        # resolved candidate, or None when no confident match
+    score: float | None     # winning SequenceMatcher ratio (None when page is None)
+    runner_up: float | None  # second-best score, or None when <2 distinct candidates
+
+def resolve_cited_page(
+    cited_page: str,
+    candidates: Collection[str],
+    *,
+    floor: float = 0.75,
+    margin: float = 0.10,
+) -> Resolution:
+    ...
 
 def normalize_cited_page(
     cited_page: str,
@@ -46,16 +61,18 @@ def normalize_cited_page(
     floor: float = 0.75,
     margin: float = 0.10,
 ) -> str | None:
-    ...
+    return resolve_cited_page(cited_page, candidates, floor=floor, margin=margin).page
 ```
 
+`resolve_cited_page` is the single frozen scoring + decision function; `normalize_cited_page` is the narrow `str | None` convenience wrapper (the contract callers and unit tests use). The **hook** calls `resolve_cited_page` so it can record the winning `score` without re-deriving the algorithm; the **calibration script** uses the same function for its scores. An exact match returns `Resolution(page=cited_page, score=1.0, runner_up=None)`.
+
 **Contract (frozen):**
-1. Return an **exact** candidate immediately (string equality; opaque, **case-sensitive** — no basename, path, or case normalization).
+1. An **exact** candidate (string equality; opaque, **case-sensitive** — no basename, path, or case normalization) resolves immediately with `score=1.0`, bypassing fuzzy floor/margin evaluation entirely.
 2. Otherwise score every candidate with `difflib.SequenceMatcher(None, cited_page, candidate).ratio()`.
 3. **Deduplicate and deterministically order** candidates before scoring (sorted), so duplicates cannot create false ambiguity and the result is input-order-independent.
 4. Return the single best candidate **only when** `best_score >= floor` **and** the margin test passes. When there is **exactly one distinct candidate**, the margin check is **explicitly bypassed** — recovery succeeds iff `best_score >= floor` (a single candidate has no runner-up, so it cannot be "ambiguous" regardless of how `floor`/`margin` relate). With two or more distinct candidates, require `best_score - runner_up_score >= margin`. (This avoids the contradiction that `runner_up_score = 0.0` would otherwise create when a caller passes `floor < margin`.)
 5. **Boundary semantics:** comparisons are `>=` — a score exactly at `floor` and a lead exactly at `margin` are **accepted**.
-6. Return `None` for empty candidates, ambiguous matches (lead `< margin`), or below-floor matches. **Decisions use the full float** (no pre-rounding); rounding happens only at trace serialization (§4).
+6. Resolve to `page=None` (so `normalize_cited_page` returns `None`) for empty candidates, ambiguous matches (lead `< margin`), or below-floor matches. **Decisions use the full float** (no pre-rounding); rounding happens only at trace serialization (§4).
 7. Page ids are opaque strings; the helper has **no** handle/library awareness (that lives in the hook, §3). This keeps it intentionally narrow and discourages accidental select-side reuse — the filename `cited_page_normalize.py` signals the same.
 
 ## 2. Algorithm rationale
@@ -74,7 +91,7 @@ Exact-first preserves the common case at zero risk. The floor (0.75) is the cali
 2. Define `handle(s) = s.split("/", 1)[0] if "/" in s else ""`. For each claim (index `ci`), normalize **both** reference lists in order `evidence_spans` then `cited_pages`. For each reference list `kind ∈ {"evidence_span", "cited_page"}`, for each reference at index `ri` with page `ref.page`:
    - If `ref.page in read_ids` → unchanged.
    - Else bucket to the ref's handle: `cands = [r for r in read_ids if handle(r) == handle(ref.page)]`. Bare ids fall in the `""` bucket (one namespace); qualified ids bucket by real handle — making **"never cross-library"** structural and test-provable.
-   - `resolved = normalize_cited_page(ref.page, cands)`. On a hit (`resolved is not None and resolved != ref.page`): replace the list element via `ref.model_copy(update={"page": resolved})` (preserves all other fields, changes only `page`) and append a rewrite record (§4) to the diagnostics sink. On `None`: leave the ref untouched — the grounding/judge rejection path stays authoritative and fails closed (q052 stays dropped).
+   - `res = resolve_cited_page(ref.page, cands)`. On a hit (`res.page is not None and res.page != ref.page`): replace the list element via `ref.model_copy(update={"page": res.page})` (preserves all other fields, changes only `page`) and append a rewrite record (§4) carrying `res.score` to the diagnostics sink. On `res.page is None`: leave the ref untouched — the grounding/judge rejection path stays authoritative and fails closed (q052 stays dropped). (An already-correct ref is filtered earlier by the `ref.page in read_ids` check, so the exact-match `score=1.0` path is not reached here.)
 3. **Then** run the existing back-fill (`if not c.cited_pages and c.evidence_spans`), which now copies already-normalized span pages.
 
 Because normalization completes before grounding, a recovered claim re-grounds against the correct page's spans and can legitimately reach `supported` — flipping q035 from abstain → supported and lifting `abstention_precision`. Candidates are scoped to **all pages read for the question, same handle** — never to the claim's own spans (circular: normalization precedes grounding, and the corrupted id is often *why* span linkage failed). The abstention invariant downstream is unchanged.
@@ -99,7 +116,7 @@ Each rewrite record identifies the exact reference site (P2c — q035's original
  "reference_kind": "evidence_span", "reference_index": 0}
 ```
 
-- `reference_kind ∈ {"evidence_span", "cited_page"}` and `reference_index` pin the exact list element; `claim_index` the claim. q035 thus emits four records (2 claims × {span, cited_page}).
+- `reference_kind ∈ {"evidence_span", "cited_page"}` and `reference_index` pin the exact list element; `claim_index` the claim. q035's raw output has `cited_pages=None` with the corrupted id only on each claim's single span, so it emits **two `evidence_span` records** (one per claim); the subsequent back-fill then creates already-correct citations and emits **no `cited_page` records**. (A `cited_page` record only appears when the model itself populates a corrupted citation, as opposed to leaving it for back-fill.)
 - `handle` is the effective namespace bucket — `""` for bare ids, the real handle for qualified ids (never a page id).
 - `score` serialized at **fixed 3-decimal precision** (decisions use the full float; only the recorded value is rounded).
 - `candidates` records the same-handle candidate set actually scored.
@@ -115,12 +132,13 @@ Recoveries can only help on the current corpus:
 ## 6. Test matrix (TDD, `FakeBackend`, no Ollama)
 
 **Helper unit tests (`cited_page_normalize`):**
-- exact candidate returns immediately even when a closer fuzzy exists
+- exact match bypasses fuzzy floor/margin evaluation (`score=1.0`), even with other near candidates present
 - q035: `sdlc-single-formm.md` + `[sdlc-single-team.md]` → recovers (0.821 ≥ 0.75)
 - q052 negative: `pair-summary.md` + `[pair-programming.md]` → `None` (0.588 < 0.75)
 - empty candidates → `None`
 - ambiguous: two candidates within `margin` → `None`
-- single candidate above floor → recovers (infinite margin); below floor → `None`
+- single candidate above floor → recovers (margin bypassed); below floor → `None`
+- `resolve_cited_page` returns the winning `score` (full float) and `runner_up` (or `None` for <2 candidates); exact match → `score=1.0`
 - **boundary:** score exactly at `floor` accepted; lead exactly at `margin` accepted (`>=`)
 - **duplicate candidates** deduplicated — cannot create false ambiguity
 - case-sensitivity: `SDLC-Single-Team.md` vs `sdlc-single-team.md` is not exact and recovers only if ratio clears the floor (documents opaque-string contract)
@@ -129,7 +147,7 @@ Recoveries can only help on the current corpus:
 **Pipeline integration tests (`synthesize`):**
 - **q035 end-to-end:** a claim whose corrupted id is on **both** `cited_pages` and `evidence_spans[].page` re-grounds and reaches `supported` — proving span *and* citation are normalized consistently (the P1a regression guard); a span-only-corruption variant (empty `cited_pages`) also recovers via normalize-then-back-fill
 - cross-library guard: corrupted id whose only good match is in a different handle → untouched (`None`), claim drops
-- sink/trace carrier: `n_synthesize` populates `_id_rewrites`; `_build_question_trace` emits `id_rewrites` with `reference_kind`/`reference_index`/`claim_index`/`handle` and 3-dp `score`
+- sink/trace carrier: `n_synthesize` populates `_id_rewrites`; `_build_question_trace` emits `id_rewrites` with `reference_kind`/`reference_index`/`claim_index`/`handle` and 3-dp `score`. The q035-shaped fixture (empty `cited_pages`, corrupted span per claim) emits exactly **two `evidence_span` records and zero `cited_page` records**
 - unresolved (q052-style) path unchanged — existing rejection authoritative
 - safety invariant assertion: no rewrite ever yields a page outside the read-set, and `handle` of `to` equals `handle` of `from`
 - **trace serialization includes `id_rewrites: []`** when no rewrite occurs
@@ -139,7 +157,11 @@ Recoveries can only help on the current corpus:
 **Calibration script** (`harness/calibrate_id_normalize.py`, analog to `calibrate_relevance_floor.py`): reloads the **frozen** helper and **recomputes** everything from committed inputs (no hardcoded 0.588/0.821 fixtures):
 
 - **Real cases:** replay the trace's two unresolved citations and assert q035 recovers (`normalize_cited_page("sdlc-single-formm.md", ["sdlc-single-team.md"]) == "sdlc-single-team.md"`) and q052 drops (`... is None`).
-- **Perturbation sweep (the corrected cross-match test):** for each shelf id, generate typo-style perturbations and **score each perturbation against the entire shelf** via the helper's own scoring. The hard invariant (must hold for **every** perturbation): `normalize_cited_page(perturbation, full_shelf)` returns **either the true source id or `None`** — **never a different id**. This is what proves a corrupted id cannot *prefer* a wrong candidate, which canonical-id pairwise separation alone does **not** establish (P2a). Separately, for the **realistic typo tier** (single-edit perturbations — the class the floor is calibrated to catch), assert recovery actually happens: the source is the unique best, clears the floor, and leads the runner-up by ≥ margin. Deeper synthetic corruptions are allowed to fail closed (`None`); the report counts recover-to-source vs fail-closed, and **recover-to-wrong must be zero**.
+- **Perturbation sweep (the corrected cross-match test, P2 — model the runtime subset).** Runtime scores only the **1–2 pages actually read**, never the full shelf, so a full-shelf-only test can hide a subset misresolution: a perturbation may return `None` against the whole shelf (two wrong candidates mutually ambiguous) yet resolve to one **wrong** candidate when the competitor is absent — and the single-candidate margin bypass (§1.4) makes a lone wrong candidate especially dangerous. So for each shelf id `S` and each typo-style perturbation `P` of `S`, run the helper against **every runtime-shaped subset**:
+  - singleton `{S}` and singleton `{X}` for every `X ≠ S`;
+  - every pair `{S, X}` and (for completeness) every pair `{X, Y}` of non-source ids.
+
+  **Hard invariant (must hold for all):** the result is `S` when `S` is in the subset, else **`None`** — **never a different id**. Equivalently, `P` must score `< floor` against every non-source shelf id (no wrong singleton recovery) and never out-score `S` (no wrong pair recovery). Separately, for the **realistic typo tier** (single-edit perturbations — the class the floor is calibrated to catch), assert recovery actually happens on `{S}`: clears floor (and, on a pair, leads by ≥ margin). Deeper synthetic corruptions may fail closed (`None`); the report counts recover-to-source vs fail-closed, and **recover-to-wrong must be zero**.
 - Emit the floor/margin and the score distributions so the threshold choice is reproducible, not a magic number.
 
 ## Workflow
