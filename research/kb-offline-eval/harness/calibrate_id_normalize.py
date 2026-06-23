@@ -16,11 +16,11 @@ from __future__ import annotations
 
 import importlib.util
 import itertools
-import sys
 from pathlib import Path
 
 # Register the shipped scripts dir so the FROZEN resolver is imported (no reimplementation).
-SCRIPTS = Path(__file__).resolve().parents[3] / "plugins" / "sdlc-knowledge-base" / "scripts"
+_REPO = Path(__file__).resolve().parents[3]  # repo root (file is 3 dirs deep: research/kb-offline-eval/harness/)
+SCRIPTS = _REPO / "plugins" / "sdlc-knowledge-base" / "scripts"
 _spec = importlib.util.spec_from_file_location(
     "cited_page_normalize", SCRIPTS / "cited_page_normalize.py")
 _mod = importlib.util.module_from_spec(_spec)
@@ -56,7 +56,7 @@ def main() -> int:
     if q035.page != "sdlc-single-team.md":
         failures.append(f"q035 should recover, got {q035}")
     q052 = resolve_cited_page("pair-summary.md", ["pair-programming.md"])
-    if q052.page is not None or q052.score is None or not (0.55 <= q052.score <= 0.62):
+    if q052.page is not None or q052.score is None or not (0.55 <= q052.score <= 0.62):  # actual ~0.588
         failures.append(f"q052 should drop with retained score ~0.588, got {q052}")
 
     # 2) Runtime-subset safety sweep. For each S and each single-edit perturbation P of S,
@@ -97,4 +97,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
