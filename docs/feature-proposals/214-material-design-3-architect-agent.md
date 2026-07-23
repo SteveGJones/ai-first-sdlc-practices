@@ -9,7 +9,7 @@
 
 ---
 
-## Problem Statement
+## Motivation
 
 The plugin family ships exactly one UX agent — `ux-ui-architect` in `sdlc-team-fullstack`
 (source: `agents/core/ux-ui-architect.md`). By design it is **design-system-agnostic**: it is an
@@ -135,7 +135,7 @@ stay design-system-agnostic while still routing M3 work to an expert.
 
 ---
 
-## Acceptance Criteria
+## Success Criteria
 
 ```
 Given a user asks "how do I generate an M3 color scheme from a brand seed colour and apply it in Compose"

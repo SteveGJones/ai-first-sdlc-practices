@@ -9,7 +9,7 @@
 
 ---
 
-## Problem Statement
+## Motivation
 
 Adding `material-design-3-architect` (#214) gave the suite deep **Android/Material** mobile-UX
 coverage. An audit of mobile-UX capability then surfaced that coverage is **asymmetric** and seamed:
@@ -130,7 +130,7 @@ which the cross-references point to; this work stays on the same branch.
 
 ---
 
-## Acceptance Criteria
+## Success Criteria
 
 ```
 Given a user asks "how should the navigation and top bar work for our iOS app under iOS 26"
