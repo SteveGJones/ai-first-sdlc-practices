@@ -107,9 +107,9 @@ Look for `.sdlc/team-config.json` in the project root (or `.claude/team-config.j
    | C. Cloud | `sdlc-team-common`, `sdlc-team-cloud` |
    | D. API | `sdlc-team-common`, `sdlc-team-fullstack`, `sdlc-team-cloud` |
    | E. Security | `sdlc-team-common`, `sdlc-team-security` |
-   | G. iOS app | `sdlc-team-common`, `sdlc-team-ios`, `sdlc-team-mobile` |
+   | G. iOS app | `sdlc-team-common`, `sdlc-team-ios`, `sdlc-team-mobile`, `sdlc-lang-swift` |
    | H. Android app | `sdlc-team-common`, `sdlc-team-android`, `sdlc-team-mobile` |
-   | I. Cross-platform mobile | `sdlc-team-common`, `sdlc-team-ios`, `sdlc-team-android`, `sdlc-team-mobile` |
+   | I. Cross-platform mobile | `sdlc-team-common`, `sdlc-team-ios`, `sdlc-team-android`, `sdlc-team-mobile`, `sdlc-lang-swift` |
    | F. Custom | `sdlc-team-common` (pre-selected) + user picks additional team plugins |
 
    **Mobile plugins pair with the shared base.** `sdlc-team-ios` (Apple HIG) and `sdlc-team-android` (Material Design 3) each carry only their platform's design specialist; the cross-platform agents (`mobile-architect`, `mobile-ux-architect`) live once in `sdlc-team-mobile`. Always recommend the platform plugin **and** `sdlc-team-mobile` together — the marketplace has no hard dependency resolution, so this recommendation is the pairing mechanism. A cross-platform team installs both platform plugins + the single shared base (agents are never duplicated).

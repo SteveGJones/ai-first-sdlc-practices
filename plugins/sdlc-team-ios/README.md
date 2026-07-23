@@ -22,10 +22,14 @@ team isn't wading through web, backend, or data specialists.
 
 The four cover the iOS lifecycle: **design → architecture → release → performance**.
 
-## Skills (4)
+## Skills (5)
 
-Operational workflows for the release/distribution flow, encoding real TestFlight/App Store incidents:
+Operational workflows for scaffolding and the release/distribution flow, encoding real TestFlight/App
+Store incidents:
 
+- **`/sdlc-team-ios:ios-scaffold`** — scaffold a new iOS app with submission-safe defaults (diffable
+  project files, app + test targets, git-stamped build number, and the Info.plist keys the pre-flight
+  checker wants) so the project passes TestFlight from day one.
 - **`/sdlc-team-ios:ios-testflight-release`** — pre-flight checks → upload → confirm the build actually
   processed → internal-then-external beta distribution (with the metadata external Beta App Review needs).
 - **`/sdlc-team-ios:ios-appstore-submit`** — pre-submission audit across the three privacy surfaces and
@@ -46,7 +50,9 @@ ITMS-90683 class), missing `ITSAppUsesNonExemptEncryption` (export-questionnaire
 python -m ios_preflight.cli <ios-project-dir> [--uses-push]
 ```
 
-A Swift language expert is planned — see EPIC #217.
+For **Swift the language** (concurrency/`Sendable`, value semantics, generics, macros, SwiftPM),
+install the companion **`sdlc-lang-swift`** plugin (`language-swift-expert`) — `/sdlc-core:setup-team`
+recommends it for iOS projects.
 
 ## Install with the mobile base
 

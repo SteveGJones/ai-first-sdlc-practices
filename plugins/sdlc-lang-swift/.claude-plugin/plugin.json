@@ -1,0 +1,7 @@
+{
+  "name": "sdlc-lang-swift",
+  "version": "0.1.0",
+  "description": "Swift language expert agent — idiomatic Swift 6.2, strict concurrency, value semantics, generics, macros, SwiftPM, and API design. Pairs with sdlc-team-ios for Apple-platform work.",
+  "author": { "name": "SteveGJones" },
+  "keywords": ["sdlc", "swift", "language", "concurrency", "agents"]
+}

@@ -141,6 +141,7 @@ sdlc-team-ios:
     - source: agents/core/ios-release-engineer.md
     - source: agents/core/ios-performance-specialist.md
   skills:
+    - source: skills/ios-scaffold/SKILL.md
     - source: skills/ios-testflight-release/SKILL.md
     - source: skills/ios-appstore-submit/SKILL.md
     - source: skills/ios-signing-doctor/SKILL.md
@@ -191,6 +192,10 @@ sdlc-lang-python:
 sdlc-lang-javascript:
   agents:
     - source: agents/sdlc/language-javascript-expert.md
+
+sdlc-lang-swift:
+  agents:
+    - source: agents/sdlc/language-swift-expert.md
 
 # Knowledge base plugin — orthogonal to SDLC option choice. EPIC #105.
 # Components added incrementally by sub-features 3-12 of the EPIC. The agents,
