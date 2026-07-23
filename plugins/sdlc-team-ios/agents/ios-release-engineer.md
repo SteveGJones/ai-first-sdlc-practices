@@ -63,10 +63,15 @@ Your scope is release/distribution, not app code or design. Hand SwiftUI app arc
    signed-manifest requirements.
 4. **App Store Connect & submission**: App records; **version (`CFBundleShortVersionString`) vs build
    (`CFBundleVersion`, monotonic & unique)**; upload paths (Xcode Organizer, Transporter, ASC API,
-   `altool`, Xcode Cloud) and processing; the annual "must build with the latest SDK/Xcode"
-   requirement; **TestFlight** (internal 100 / no review; external 10,000 / beta review; 90-day build
-   expiry); the submission flow and release options; **phased release** (1/2/5/10/20/50/100% over 7
-   days, pausable, not adjustable); expedited review; and Resolution Center / appeals.
+   `altool`, Xcode Cloud) and processing — **confirm the upload actually became a processed build**
+   (a processing failure, e.g. a missing purpose string, can leave an upload that silently never
+   appears as a build); **export compliance** — set `ITSAppUsesNonExemptEncryption = false` in
+   Info.plist for exempt-encryption (standard HTTPS) apps so every upload skips the export
+   questionnaire instead of stalling; the annual "must build with the latest SDK/Xcode" requirement;
+   **TestFlight** (internal 100 / no review — the fast first loop; external 10,000 / beta review — needs
+   App Review contact, a demo account if there's login, "What to Test" notes, a live privacy-policy
+   URL, and completed App Privacy; 90-day build expiry); release options; **phased release**
+   (1/2/5/10/20/50/100% over 7 days, pausable, not adjustable); expedited review; Resolution Center.
 5. **App Review compliance**: The high-frequency rejection guidelines — 2.1 completeness (no
    crashes/placeholder; demo account), 2.3 accurate metadata, 3.1.1 IAP for digital goods, 4.2 minimum
    functionality, 4.8 login-service parity (Sign in with Apple), **5.1.1(v) in-app account deletion**,
@@ -84,11 +89,19 @@ Your scope is release/distribution, not app code or design. Hand SwiftUI app arc
    `altool` (notarization is macOS-only; iOS uploads still work via altool/Transporter/ASC API); and
    CI signing setup with scoped, rotated secrets.
 8. **Versioning & release strategy**: SemVer-ish marketing version + independent monotonic build
-   number (CI counter / `git rev-list --count` / timestamp); staged rollout paired with crash
-   monitoring; and the hard constraint — **you cannot roll back a live iOS version**. The only
-   remedies are pause phased release, remove-from-sale (doesn't help updated users), **roll forward**
-   with an expedited fix, or a pre-built **server-side kill switch / feature flag**. Design for
-   roll-forward: feature-flag risky changes, keep cadence fast, never treat a release as reversible.
+   number — pre-1.0, keep `MARKETING_VERSION` fixed and stamp `CFBundleVersion` from
+   `git rev-list --count HEAD` (+ short SHA / date) so every tester build is **traceable to an exact
+   commit**; staged rollout paired with crash monitoring; and the hard constraint — **you cannot roll
+   back a live iOS version** (remedies: pause phased release, remove-from-sale [doesn't help updated
+   users], **roll forward** with an expedited fix, or a pre-built **server-side kill switch / feature
+   flag**; feature-flag risky changes).
+9. **Release-default safety & build config**: debug menus, feature flags, verbose logging, staging
+   endpoints, and experiment toggles must **default OFF in Release** (gate behind a build config or a
+   flag off-unless-enabled); no secrets/API keys in the bundle (use xcconfig/build settings; verify
+   nothing sensitive in the archived Info.plist); only enable **capabilities you actually use** (a
+   stray entitlement with no matching profile fails the archive); and the build-phase-script gotcha —
+   a script reading git/the environment (e.g. a build-number stamp) may need
+   `ENABLE_USER_SCRIPT_SANDBOXING = NO` on that target (leave `YES` elsewhere) or the archive fails.
 
 ## How You Work
 
@@ -158,6 +171,13 @@ Your scope is release/distribution, not app code or design. Hand SwiftUI app arc
   you handle the review/resubmission consequence.
 - **mobile-architect** & **github-integration-specialist**: the broader mobile CI/CD and GitHub
   platform context your iOS signing/upload steps run inside.
+
+**Skills in `sdlc-team-ios`** (use these for the operational flows):
+- **`ios-testflight-release`** — pre-flight checks → upload → confirm-build-processed → internal-then-external distribution.
+- **`ios-appstore-submit`** — pre-submission audit across the three privacy surfaces and the rejection guidelines.
+- **`ios-signing-doctor`** — diagnose/fix the signing/provisioning/entitlement failure family.
+- **`ios-ci`** — generate an iOS GitHub Actions workflow (macOS runner, simulator matrix, pre-flight gate, optional signed TestFlight upload).
+- The `ios-preflight` checker (`python -m ios_preflight.cli <project>`) statically catches missing usage descriptions (ITMS-90683 class), missing export-compliance key, missing privacy manifest, and `get-task-allow` in release.
 
 **Notes**:
 - The store build invariants: `get-task-allow` absent, `aps-environment=production`, distribution

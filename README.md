@@ -94,7 +94,7 @@ The framework supports **four SDLC delivery structures**. The `setup-team` skill
 | [`sdlc-team-ai`](plugins/sdlc-team-ai/README.md) | 14 | — | AI/ML specialists — architects, prompt engineers, RAG designers |
 | [`sdlc-team-fullstack`](plugins/sdlc-team-fullstack/README.md) | 9 | — | Web full-stack — frontend, backend, API, data, DevOps, UX & integration architects |
 | [`sdlc-team-mobile`](plugins/sdlc-team-mobile/README.md) | 2 | — | Shared mobile base — cross-platform architecture + interaction UX (pairs with iOS/Android) |
-| [`sdlc-team-ios`](plugins/sdlc-team-ios/README.md) | 4 | — | iOS/iPadOS — Apple HIG design, SwiftUI architecture, release engineering & performance |
+| [`sdlc-team-ios`](plugins/sdlc-team-ios/README.md) | 4 | 4 | iOS/iPadOS — HIG, SwiftUI, release & performance agents + TestFlight/App Store skills |
 | [`sdlc-team-android`](plugins/sdlc-team-android/README.md) | 1 | — | Android — Google Material Design 3 specialist |
 | [`sdlc-team-cloud`](plugins/sdlc-team-cloud/README.md) | 3 | — | Cloud, container, SRE specialists |
 | [`sdlc-team-security`](plugins/sdlc-team-security/README.md) | 5 | — | Security, compliance, privacy specialists |

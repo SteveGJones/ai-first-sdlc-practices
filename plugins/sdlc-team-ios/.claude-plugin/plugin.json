@@ -1,7 +1,7 @@
 {
   "name": "sdlc-team-ios",
-  "version": "0.2.0",
-  "description": "iOS/iPadOS development agents \u2014 Apple HIG design, SwiftUI app architecture, release engineering (signing/App Store), and performance. Install with sdlc-team-mobile for cross-platform mobile architecture and interaction UX.",
+  "version": "0.3.0",
+  "description": "iOS/iPadOS development \u2014 Apple HIG design, SwiftUI architecture, release engineering & performance agents, plus TestFlight/App Store release skills and submission pre-flight checks. Install with sdlc-team-mobile.",
   "author": {
     "name": "SteveGJones"
   },
