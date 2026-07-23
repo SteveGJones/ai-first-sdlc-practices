@@ -20,8 +20,33 @@ team isn't wading through web, backend, or data specialists.
   Animation Hitches, SwiftUI & Swift Concurrency instruments), app launch, hitches/hangs, memory,
   energy/battery, MetricKit field metrics, app size/thinning, and XCTest performance regression gating.
 
-The four cover the iOS lifecycle: **design → architecture → release → performance**. A Swift language
-expert and iOS skills/validators are planned — see EPIC #217.
+The four cover the iOS lifecycle: **design → architecture → release → performance**.
+
+## Skills (4)
+
+Operational workflows for the release/distribution flow, encoding real TestFlight/App Store incidents:
+
+- **`/sdlc-team-ios:ios-testflight-release`** — pre-flight checks → upload → confirm the build actually
+  processed → internal-then-external beta distribution (with the metadata external Beta App Review needs).
+- **`/sdlc-team-ios:ios-appstore-submit`** — pre-submission audit across the three privacy surfaces and
+  the high-frequency App Review rejection guidelines.
+- **`/sdlc-team-ios:ios-signing-doctor`** — diagnose and fix the signing/provisioning/entitlement
+  failure family (`codesign`/`security` inspection + a symptom→cause table).
+- **`/sdlc-team-ios:ios-ci`** — generate an iOS GitHub Actions workflow (macOS runner, simulator matrix,
+  pre-flight gate, optional signed TestFlight upload).
+
+## Pre-flight checker
+
+`scripts/ios_preflight` is a static checker the release skills invoke — it catches the config that most
+often blocks uploads: missing usage descriptions (the CoreMotion→`NSMotionUsageDescription` /
+ITMS-90683 class), missing `ITSAppUsesNonExemptEncryption` (export-questionnaire stalls), missing
+`PrivacyInfo.xcprivacy` when required, and `get-task-allow` in a release build.
+
+```bash
+python -m ios_preflight.cli <ios-project-dir> [--uses-push]
+```
+
+A Swift language expert is planned — see EPIC #217.
 
 ## Install with the mobile base
 

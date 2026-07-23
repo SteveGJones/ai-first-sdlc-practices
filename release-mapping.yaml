@@ -140,6 +140,18 @@ sdlc-team-ios:
     - source: agents/core/swiftui-architect.md
     - source: agents/core/ios-release-engineer.md
     - source: agents/core/ios-performance-specialist.md
+  skills:
+    - source: skills/ios-testflight-release/SKILL.md
+    - source: skills/ios-appstore-submit/SKILL.md
+    - source: skills/ios-signing-doctor/SKILL.md
+    - source: skills/ios-ci/SKILL.md
+  scripts:
+    # Authored in-plugin (ship in-place); listed for packaging audit. Invoked by
+    # the ios-testflight-release / ios-appstore-submit / ios-ci skills.
+    - source: plugins/sdlc-team-ios/scripts/__init__.py
+    - source: plugins/sdlc-team-ios/scripts/ios_preflight/__init__.py
+    - source: plugins/sdlc-team-ios/scripts/ios_preflight/checks.py
+    - source: plugins/sdlc-team-ios/scripts/ios_preflight/cli.py
 
 sdlc-team-android:
   agents:
