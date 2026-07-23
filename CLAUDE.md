@@ -110,7 +110,7 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-core` | Rules, validators, enforcement, workflows (always install) |
 | `sdlc-team-common` | Cross-cutting architects, researchers, performance engineers |
 | `sdlc-team-ai` | AI/ML specialists (14 agents) |
-| `sdlc-team-fullstack` | Frontend, backend, API, DevOps (10 agents) |
+| `sdlc-team-fullstack` | Frontend, backend, API, DevOps, UX, Material Design 3, Apple HIG & mobile UX (13 agents) |
 | `sdlc-team-cloud` | Cloud, containers, SRE (3 agents) |
 | `sdlc-team-security` | Security, compliance, privacy (5 agents) |
 | `sdlc-team-pm` | Agile coach, delivery manager, tracking (5 agents) |

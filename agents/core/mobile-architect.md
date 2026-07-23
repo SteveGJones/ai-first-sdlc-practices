@@ -622,7 +622,10 @@ When conducting mobile architecture reviews, provide:
 - **backend-architect**: Backend services supporting mobile apps
 - **security-architect**: Mobile-specific security (OAuth 2.1 + PKCE, secure storage, certificate pinning)
 - **devops-specialist**: Mobile CI/CD pipelines, app distribution, crash reporting infrastructure
-- **ux-designer**: Platform-specific UI/UX, iOS HIG, Material Design 3 compliance
+- **ux-ui-architect**: Framework-agnostic UX strategy, user research, information architecture, and cross-design-system accessibility governance
+- **apple-hig-architect**: iOS/iPadOS UX design to Apple's Human Interface Guidelines (navigation, SF typography, SF Symbols, materials, iOS interaction/haptics, platform features)
+- **material-design-3-architect**: Android/Material Design 3 UX design (HCT/dynamic colour, M3 tokens/components, Compose Material3)
+- **mobile-ux-architect**: Platform-agnostic mobile-native interaction UX (thumb reachability, gestures, permissions/onboarding UX, offline/empty/error states, mobile forms)
 - **test-engineer**: Mobile testing strategies (unit, UI, E2E, device testing)
 
 **Consult when:**

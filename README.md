@@ -91,7 +91,7 @@ The framework supports **four SDLC delivery structures**. The `setup-team` skill
 | [`sdlc-core`](plugins/sdlc-core/README.md) | 4 | 9 | Rules, validators, enforcement, workflows, four-option commissioning (solo / single-team / programme / assured) — always install |
 | [`sdlc-team-common`](plugins/sdlc-team-common/README.md) | 8 | — | Cross-cutting architects, researchers, performance engineers |
 | [`sdlc-team-ai`](plugins/sdlc-team-ai/README.md) | 14 | — | AI/ML specialists — architects, prompt engineers, RAG designers |
-| [`sdlc-team-fullstack`](plugins/sdlc-team-fullstack/README.md) | 10 | — | Frontend, backend, API, DevOps architects |
+| [`sdlc-team-fullstack`](plugins/sdlc-team-fullstack/README.md) | 13 | — | Frontend, backend, API, DevOps, UX, Material Design 3, Apple HIG & mobile UX architects |
 | [`sdlc-team-cloud`](plugins/sdlc-team-cloud/README.md) | 3 | — | Cloud, container, SRE specialists |
 | [`sdlc-team-security`](plugins/sdlc-team-security/README.md) | 5 | — | Security, compliance, privacy specialists |
 | [`sdlc-team-pm`](plugins/sdlc-team-pm/README.md) | 5 | — | Agile coach, delivery manager, progress tracking |

@@ -52,6 +52,7 @@ sdlc-core:
     - source: plugins/sdlc-core/hooks/hooks.json
   data:
     - source: data/technology-registry/_index.yaml
+    - source: data/technology-registry/apple-hig.yaml
     - source: data/technology-registry/aws.yaml
     - source: data/technology-registry/azure.yaml
     - source: data/technology-registry/django.yaml
@@ -67,6 +68,7 @@ sdlc-core:
     - source: data/technology-registry/java.yaml
     - source: data/technology-registry/kafka.yaml
     - source: data/technology-registry/kubernetes.yaml
+    - source: data/technology-registry/material-design-3.yaml
     - source: data/technology-registry/mongodb.yaml
     - source: data/technology-registry/mysql.yaml
     - source: data/technology-registry/nextjs.yaml
@@ -119,6 +121,9 @@ sdlc-team-fullstack:
     - source: agents/core/api-architect.md
     - source: agents/core/devops-specialist.md
     - source: agents/core/ux-ui-architect.md
+    - source: agents/core/material-design-3-architect.md
+    - source: agents/core/apple-hig-architect.md
+    - source: agents/core/mobile-ux-architect.md
     - source: agents/core/mobile-architect.md
     - source: agents/core/frontend-security-specialist.md
     - source: agents/core/data-architect.md
