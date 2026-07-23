@@ -137,6 +137,9 @@ sdlc-team-mobile:
 sdlc-team-ios:
   agents:
     - source: agents/core/apple-hig-architect.md
+    - source: agents/core/swiftui-architect.md
+    - source: agents/core/ios-release-engineer.md
+    - source: agents/core/ios-performance-specialist.md
 
 sdlc-team-android:
   agents:

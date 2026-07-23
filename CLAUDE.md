@@ -112,7 +112,7 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-team-ai` | AI/ML specialists (14 agents) |
 | `sdlc-team-fullstack` | Web full-stack — frontend, backend, API, data, DevOps, UX & integration (9 agents; **v2.0.0** — mobile agents split out) |
 | `sdlc-team-mobile` | Shared mobile base — cross-platform `mobile-architect` + `mobile-ux-architect` (2 agents; pairs with the platform plugins below) |
-| `sdlc-team-ios` | iOS/iPadOS — Apple HIG specialist `apple-hig-architect` (1 agent; install with `sdlc-team-mobile`) |
+| `sdlc-team-ios` | iOS/iPadOS — Apple HIG design, SwiftUI architecture, release engineering & performance (4 agents; install with `sdlc-team-mobile`) |
 | `sdlc-team-android` | Android — Material Design 3 specialist `material-design-3-architect` (1 agent; install with `sdlc-team-mobile`) |
 | `sdlc-team-cloud` | Cloud, containers, SRE (3 agents) |
 | `sdlc-team-security` | Security, compliance, privacy (5 agents) |
