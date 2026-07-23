@@ -1,8 +1,8 @@
 # Agent Catalog Index
-*Generated: 2026-04-21T05:56:05.745671 (with manual notes added 2026-05-02 for SDLC method bundles)*
-*Total Agents: 128 (source directory) | 56 published in plugins (across 14 plugins)*
+*Generated: 2026-07-22T14:42:59.607040 (with manual notes re-added 2026-07-22 for SDLC method bundles)*
+*Total Agents: 138 (source directory) | 61 published in plugins (across 14 plugins; 12 ship agents)*
 
-> **Note:** This catalog indexes all agent files in the `agents/` source directory (128 agents across development categories) AND the `plugins/*/agents/` directories (56 agents packaged into the 14 published plugins). Many source agents appear in both the source category and a plugin category. The 56 agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
+> **Note:** This catalog indexes all agent files in the `agents/` source directory (138 agents across development categories) AND the `plugins/*/agents/` directories (61 agents packaged into the 14 published plugins; 12 of them ship agents). Many source agents appear in both the source category and a plugin category. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
 
 > **SDLC method bundles — `sdlc-programme` v0.1.0 and `sdlc-assured` v0.2.0 are skill+validator bundles by design and ship 0 agents.** They are not absent from the catalogue because they are unfinished; they are absent because they overlay the universal constitution with structured SDLC delivery methodology (phase gates for Programme; bidirectional traceability + DDD decomposition + KB-for-code for Assured) rather than introducing new specialist agent roles. The value is in their skills (5 for Programme, 8 for Assured), validators, and constitution articles. See [docs/METHODS-GUIDE.md](docs/METHODS-GUIDE.md) for when to use each method, and the bundle READMEs ([sdlc-programme](plugins/sdlc-programme/README.md), [sdlc-assured](plugins/sdlc-assured/README.md)) for skill catalogues and Getting Started walkthroughs.
 
@@ -130,7 +130,7 @@
   - name: Anthropic Console — Prompt Improver & Evaluator
   - name: Anthropic Console — Workbench
 
-### Core (30 agents)
+### Core (33 agents)
 
 #### `agent-builder`
 - **Path**: `agents/core/agent-builder.md`
@@ -146,6 +146,11 @@
 - **Key Capabilities**:
   - name: "Apollo MCP Server"
   - name: "OpenAPI/Zuplo MCP"
+
+#### `apple-hig-architect`
+- **Path**: `agents/core/apple-hig-architect.md`
+- **Description**: Specialist in Apple's Human Interface Guidelines (HIG) for iOS/iPadOS — Liquid Glass (iOS 26), navigation & modality, SF Pro type scale & Dynamic Type, semantic colors & materials, SF Symbols, gesture...
+- **Keywords**: api, architecture, auth, cd, ci, design, security, test
 
 #### `backend-architect`
 - **Path**: `agents/core/backend-architect.md`
@@ -256,6 +261,11 @@
 - **Description**: Expert in GitHub platform features, Actions workflows, Advanced Security, branch protection, PR automation, and organization governance. Use for GitHub repository configuration, CI/CD design, security...
 - **Keywords**: ai, api, architecture, auth, aws, azure, cd, ci, cloud, design
 
+#### `material-design-3-architect`
+- **Path**: `agents/core/material-design-3-architect.md`
+- **Description**: Specialist in Google Material Design 3 (M3 / Material You) — HCT/dynamic color, the md.ref/md.sys/md.comp token system, components, adaptive layout, tonal elevation, motion, and platform implementatio...
+- **Keywords**: angular, api, architecture, container, design, frontend, javascript, mcp, pipeline, quality
+
 #### `mobile-architect`
 - **Path**: `agents/core/mobile-architect.md`
 - **Description**: Expert in mobile app architecture (native iOS/Android, React Native, Flutter, KMP), cross-platform decisions, mobile performance optimization, mobile CI/CD, and platform-specific guidelines. Consult f...
@@ -263,6 +273,11 @@
 - **Key Capabilities**:
   - name: "Expo MCP Server"
   - name: "iOS Simulator MCP"
+
+#### `mobile-ux-architect`
+- **Path**: `agents/core/mobile-ux-architect.md`
+- **Description**: Specialist in platform-agnostic mobile-native interaction UX — thumb-zone ergonomics & reachability, touch targets & gestures, haptics, navigation patterns, onboarding, permission priming & notificati...
+- **Keywords**: architecture, cd, ci, design, frontend, quality, react, security, testing
 
 #### `observability-specialist`
 - **Path**: `agents/core/observability-specialist.md`
@@ -439,12 +454,17 @@
   - Starting fresh project setup
   - Specialized need not covered
 
-### Knowledge Base (2 agents)
+### Knowledge Base (4 agents)
 
 #### `agent-knowledge-updater`
 - **Path**: `agents/knowledge-base/agent-knowledge-updater.md`
 - **Description**: Proactively integrates new sources into a project knowledge base. Reads a raw source (file, URL, or conversation excerpt), identifies which existing library files it touches, updates them, creates new...
-- **Keywords**: architecture, claude, quality
+- **Keywords**: architecture, claude, devops, quality
+
+#### `knowledge-extractor`
+- **Path**: `agents/knowledge-base/knowledge-extractor.md`
+- **Description**: Read-only map-phase extractor for bulk knowledge-base ingest. Reads ONE source, emits a compact structured JSON extraction — findings, statistics, citations, confidence, and proposed target library fi...
+- **Keywords**: python
 
 #### `research-librarian`
 - **Path**: `agents/knowledge-base/research-librarian.md`
@@ -452,6 +472,11 @@
 - **Keywords**: architecture, aws, claude, database, design, devops, kubernetes, oauth, postgres, quality
 - **Key Capabilities**:
   - 'example
+
+#### `synthesis-librarian`
+- **Path**: `agents/knowledge-base/synthesis-librarian.md`
+- **Description**: Stateless cross-library synthesis agent. Receives pre-retrieved findings from multiple sources and produces a single attributed argument. Has NO file-reading tools — its only ground truth is the suppl...
+- **Keywords**: architecture, auth, design, test
 
 ### Languages (1 agents)
 
@@ -490,12 +515,17 @@
 - **Description**: Enforces documentation-code fidelity, test coverage, and runtime verification. Use at every phase transition to verify that docs match code, tests exist and pass, and the application actually runs. Ma...
 - **Keywords**: ai, api, architecture, auth, database, go, python, quality, test, testing
 
-### Plugin:Sdlc Knowledge Base (2 agents)
+### Plugin:Sdlc Knowledge Base (4 agents)
 
 #### `agent-knowledge-updater`
 - **Path**: `plugins/sdlc-knowledge-base/agents/agent-knowledge-updater.md`
 - **Description**: Proactively integrates new sources into a project knowledge base. Reads a raw source (file, URL, or conversation excerpt), identifies which existing library files it touches, updates them, creates new...
-- **Keywords**: architecture, claude, quality
+- **Keywords**: architecture, claude, devops, quality
+
+#### `knowledge-extractor`
+- **Path**: `plugins/sdlc-knowledge-base/agents/knowledge-extractor.md`
+- **Description**: Read-only map-phase extractor for bulk knowledge-base ingest. Reads ONE source, emits a compact structured JSON extraction — findings, statistics, citations, confidence, and proposed target library fi...
+- **Keywords**: python
 
 #### `research-librarian`
 - **Path**: `plugins/sdlc-knowledge-base/agents/research-librarian.md`
@@ -503,6 +533,11 @@
 - **Keywords**: architecture, aws, claude, database, design, devops, kubernetes, oauth, postgres, quality
 - **Key Capabilities**:
   - 'example
+
+#### `synthesis-librarian`
+- **Path**: `plugins/sdlc-knowledge-base/agents/synthesis-librarian.md`
+- **Description**: Stateless cross-library synthesis agent. Receives pre-retrieved findings from multiple sources and produces a single attributed argument. Has NO file-reading tools — its only ground truth is the suppl...
+- **Keywords**: architecture, auth, design, test
 
 ### Plugin:Sdlc Lang Javascript (1 agents)
 
@@ -754,7 +789,7 @@
   - name: Mintlify Writer
   - You are the Technical Writer, the specialist responsible for creating clear, accurate, and user-cent...
 
-### Plugin:Sdlc Team Fullstack (10 agents)
+### Plugin:Sdlc Team Fullstack (13 agents)
 
 #### `api-architect`
 - **Path**: `plugins/sdlc-team-fullstack/agents/api-architect.md`
@@ -763,6 +798,11 @@
 - **Key Capabilities**:
   - name: "Apollo MCP Server"
   - name: "OpenAPI/Zuplo MCP"
+
+#### `apple-hig-architect`
+- **Path**: `plugins/sdlc-team-fullstack/agents/apple-hig-architect.md`
+- **Description**: Specialist in Apple's Human Interface Guidelines (HIG) for iOS/iPadOS — Liquid Glass (iOS 26), navigation & modality, SF Pro type scale & Dynamic Type, semantic colors & materials, SF Symbols, gesture...
+- **Keywords**: api, architecture, auth, cd, ci, design, security, test
 
 #### `backend-architect`
 - **Path**: `plugins/sdlc-team-fullstack/agents/backend-architect.md`
@@ -816,6 +856,11 @@
   - name: PactFlow
   - You are the Integration Orchestrator, the specialist responsible for designing and managing integrat...
 
+#### `material-design-3-architect`
+- **Path**: `plugins/sdlc-team-fullstack/agents/material-design-3-architect.md`
+- **Description**: Specialist in Google Material Design 3 (M3 / Material You) — HCT/dynamic color, the md.ref/md.sys/md.comp token system, components, adaptive layout, tonal elevation, motion, and platform implementatio...
+- **Keywords**: angular, api, architecture, container, design, frontend, javascript, mcp, pipeline, quality
+
 #### `mobile-architect`
 - **Path**: `plugins/sdlc-team-fullstack/agents/mobile-architect.md`
 - **Description**: Expert in mobile app architecture (native iOS/Android, React Native, Flutter, KMP), cross-platform decisions, mobile performance optimization, mobile CI/CD, and platform-specific guidelines. Consult f...
@@ -823,6 +868,11 @@
 - **Key Capabilities**:
   - name: "Expo MCP Server"
   - name: "iOS Simulator MCP"
+
+#### `mobile-ux-architect`
+- **Path**: `plugins/sdlc-team-fullstack/agents/mobile-ux-architect.md`
+- **Description**: Specialist in platform-agnostic mobile-native interaction UX — thumb-zone ergonomics & reachability, touch targets & gestures, haptics, navigation patterns, onboarding, permission priming & notificati...
+- **Keywords**: architecture, cd, ci, design, frontend, quality, react, security, testing
 
 #### `ux-ui-architect`
 - **Path**: `plugins/sdlc-team-fullstack/agents/ux-ui-architect.md`

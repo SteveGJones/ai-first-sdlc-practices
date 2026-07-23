@@ -51,9 +51,9 @@ Install `sdlc-team-fullstack` when your project involves:
 
 ## Agent coverage
 
-The 10 agents are organized by layer:
+The 13 agents are organized by layer:
 
-- **Frontend** (4 agents) -- `frontend-architect` and `ux-ui-architect` handle UI architecture and design systems. `frontend-security-specialist` covers client-side security (XSS, CSP, auth flows). `mobile-architect` extends frontend coverage to native and cross-platform mobile apps.
+- **Frontend & UX** (7 agents) -- `frontend-architect` and `ux-ui-architect` handle UI architecture and framework-agnostic design systems. Three design-specialist agents give deep, platform-specific UX coverage: `material-design-3-architect` (Google Material Design 3 / Material You — HCT/dynamic colour, `md.sys.*` tokens, Compose/Web/Flutter), `apple-hig-architect` (Apple Human Interface Guidelines for iOS/iPadOS — Liquid Glass / iOS 26, SF typography, materials, SF Symbols, iOS platform features, SwiftUI), and `mobile-ux-architect` (platform-agnostic mobile-native interaction — thumb zones, gestures, permission priming, onboarding, mobile forms, offline states). `frontend-security-specialist` covers client-side security (XSS, CSP, auth flows). `mobile-architect` extends coverage to native and cross-platform mobile app *architecture*.
 - **Backend** (3 agents) -- `backend-architect` handles distributed system design and microservices. `api-architect` covers REST/GraphQL/gRPC contract design. `data-architect` manages data platforms, warehousing, and governance.
 - **Cross-cutting** (3 agents) -- `devops-specialist` and `github-integration-specialist` handle CI/CD, GitOps, and GitHub platform configuration. `integration-orchestrator` designs multi-service testing strategies with contract testing and service virtualization.
 
