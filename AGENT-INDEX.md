@@ -1,8 +1,8 @@
 # Agent Catalog Index
-*Generated: 2026-07-22T19:44:03.421957 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
-*Total Agents: 138 (source directory) | 61 published in plugins (across 17 plugins; 15 ship agents)*
+*Generated: 2026-07-23T15:43:41.649903 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
+*Total catalog entries: 144 | 80 in the `agents/` source directory | 64 published in plugins (across 17 plugins; 15 ship agents)*
 
-> **Note:** This catalog indexes all agent files in the `agents/` source directory (138 agents across development categories) AND the `plugins/*/agents/` directories (61 agents packaged into the 17 published plugins; 15 of them ship agents). Many source agents appear in both the source category and a plugin category. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
+> **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (64 agents packaged into the 17 published plugins; 15 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
 
 > **SDLC method bundles — `sdlc-programme` v0.1.0 and `sdlc-assured` v0.2.0 are skill+validator bundles by design and ship 0 agents.** They are not absent from the catalogue because they are unfinished; they are absent because they overlay the universal constitution with structured SDLC delivery methodology (phase gates for Programme; bidirectional traceability + DDD decomposition + KB-for-code for Assured) rather than introducing new specialist agent roles. The value is in their skills (5 for Programme, 8 for Assured), validators, and constitution articles. See [docs/METHODS-GUIDE.md](docs/METHODS-GUIDE.md) for when to use each method, and the bundle READMEs ([sdlc-programme](plugins/sdlc-programme/README.md), [sdlc-assured](plugins/sdlc-assured/README.md)) for skill catalogues and Getting Started walkthroughs.
 
@@ -130,7 +130,7 @@
   - name: Anthropic Console — Prompt Improver & Evaluator
   - name: Anthropic Console — Workbench
 
-### Core (33 agents)
+### Core (36 agents)
 
 #### `agent-builder`
 - **Path**: `agents/core/agent-builder.md`
@@ -150,7 +150,7 @@
 #### `apple-hig-architect`
 - **Path**: `agents/core/apple-hig-architect.md`
 - **Description**: Specialist in Apple's Human Interface Guidelines (HIG) for iOS/iPadOS — Liquid Glass (iOS 26), navigation & modality, SF Pro type scale & Dynamic Type, semantic colors & materials, SF Symbols, gesture...
-- **Keywords**: api, architecture, auth, cd, ci, design, security, test
+- **Keywords**: api, architecture, auth, cd, ci, design, test
 
 #### `backend-architect`
 - **Path**: `agents/core/backend-architect.md`
@@ -261,6 +261,20 @@
 - **Description**: Expert in GitHub platform features, Actions workflows, Advanced Security, branch protection, PR automation, and organization governance. Use for GitHub repository configuration, CI/CD design, security...
 - **Keywords**: ai, api, architecture, auth, aws, azure, cd, ci, cloud, design
 
+#### `ios-performance-specialist`
+- **Path**: `agents/core/ios-performance-specialist.md`
+- **Description**: Specialist in iOS app performance & diagnostics — Instruments (Time Profiler, Allocations/Leaks, Animation Hitches, SwiftUI & Swift Concurrency, os_signpost), app launch (~400ms), hitches & hangs (250...
+- **Keywords**: api, architecture, cd, ci, design, rest, test
+
+#### `ios-release-engineer`
+- **Path**: `agents/core/ios-release-engineer.md`
+- **Description**: Specialist in iOS release engineering & App Store distribution — code signing & provisioning, capabilities/entitlements, the three privacy surfaces (nutrition labels, PrivacyInfo.xcprivacy manifest, r...
+- **Keywords**: api, architecture, auth, cd, ci, cloud, design, jwt, security, testing
+- **Key Capabilities**:
+  - 'example
+  - MyApp.app before uploading."
+  - 'example
+
 #### `material-design-3-architect`
 - **Path**: `agents/core/material-design-3-architect.md`
 - **Description**: Specialist in Google Material Design 3 (M3 / Material You) — HCT/dynamic color, the md.ref/md.sys/md.comp token system, components, adaptive layout, tonal elevation, motion, and platform implementatio...
@@ -349,6 +363,11 @@
 - **Key Capabilities**:
   - name: "PagerDuty MCP Server"
   - name: "Grafana MCP Server"
+
+#### `swiftui-architect`
+- **Path**: `agents/core/swiftui-architect.md`
+- **Description**: Specialist in modern iOS app architecture with SwiftUI (iOS 26 / Swift 6.2) — the Observation framework (@Observable), MV vs MVVM vs TCA, NavigationStack & deep linking, SwiftData persistence, structu...
+- **Keywords**: api, architecture, cd, ci, container, design, react, test, testing
 
 #### `test-manager`
 - **Path**: `agents/core/test-manager.md`
@@ -867,12 +886,31 @@
   - name: "Storybook MCP Server"
   - You are the UX/UI Architect, the specialist responsible for transforming user needs into intuitive, ...
 
-### Plugin:Sdlc Team Ios (1 agents)
+### Plugin:Sdlc Team Ios (4 agents)
 
 #### `apple-hig-architect`
 - **Path**: `plugins/sdlc-team-ios/agents/apple-hig-architect.md`
 - **Description**: Specialist in Apple's Human Interface Guidelines (HIG) for iOS/iPadOS — Liquid Glass (iOS 26), navigation & modality, SF Pro type scale & Dynamic Type, semantic colors & materials, SF Symbols, gesture...
-- **Keywords**: api, architecture, auth, cd, ci, design, security, test
+- **Keywords**: api, architecture, auth, cd, ci, design, test
+
+#### `ios-performance-specialist`
+- **Path**: `plugins/sdlc-team-ios/agents/ios-performance-specialist.md`
+- **Description**: Specialist in iOS app performance & diagnostics — Instruments (Time Profiler, Allocations/Leaks, Animation Hitches, SwiftUI & Swift Concurrency, os_signpost), app launch (~400ms), hitches & hangs (250...
+- **Keywords**: api, architecture, cd, ci, design, rest, test
+
+#### `ios-release-engineer`
+- **Path**: `plugins/sdlc-team-ios/agents/ios-release-engineer.md`
+- **Description**: Specialist in iOS release engineering & App Store distribution — code signing & provisioning, capabilities/entitlements, the three privacy surfaces (nutrition labels, PrivacyInfo.xcprivacy manifest, r...
+- **Keywords**: api, architecture, auth, cd, ci, cloud, design, jwt, security, testing
+- **Key Capabilities**:
+  - 'example
+  - MyApp.app before uploading."
+  - 'example
+
+#### `swiftui-architect`
+- **Path**: `plugins/sdlc-team-ios/agents/swiftui-architect.md`
+- **Description**: Specialist in modern iOS app architecture with SwiftUI (iOS 26 / Swift 6.2) — the Observation framework (@Observable), MV vs MVVM vs TCA, NavigationStack & deep linking, SwiftData persistence, structu...
+- **Keywords**: api, architecture, cd, ci, container, design, react, test, testing
 
 ### Plugin:Sdlc Team Mobile (2 agents)
 
