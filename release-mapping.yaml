@@ -121,14 +121,26 @@ sdlc-team-fullstack:
     - source: agents/core/api-architect.md
     - source: agents/core/devops-specialist.md
     - source: agents/core/ux-ui-architect.md
-    - source: agents/core/material-design-3-architect.md
-    - source: agents/core/apple-hig-architect.md
-    - source: agents/core/mobile-ux-architect.md
-    - source: agents/core/mobile-architect.md
     - source: agents/core/frontend-security-specialist.md
     - source: agents/core/data-architect.md
     - source: agents/testing/integration-orchestrator.md
     - source: agents/core/github-integration-specialist.md
+
+# Shared mobile base — cross-platform agents used by both sdlc-team-ios and
+# sdlc-team-android. Kept here (not duplicated into each platform plugin) so a
+# team with both installed does not see these agents registered twice.
+sdlc-team-mobile:
+  agents:
+    - source: agents/core/mobile-architect.md
+    - source: agents/core/mobile-ux-architect.md
+
+sdlc-team-ios:
+  agents:
+    - source: agents/core/apple-hig-architect.md
+
+sdlc-team-android:
+  agents:
+    - source: agents/core/material-design-3-architect.md
 
 sdlc-team-cloud:
   agents:

@@ -52,6 +52,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Prerequisites section** in README.md (Claude Code, Python 3.10+, Git, optional Docker/gh)
 
 ### Changed
+- **Mobile plugin split (EPIC #217, Phase 1) — BREAKING for `sdlc-team-fullstack`.** The four mobile agents were split out of `sdlc-team-fullstack` (2.0.0) into focused plugins so mobile teams aren't wading through web/backend specialists:
+  - `mobile-architect` and `mobile-ux-architect` → new **`sdlc-team-mobile`** (0.1.0) shared base (cross-platform; not duplicated per platform)
+  - `apple-hig-architect` → new **`sdlc-team-ios`** (0.1.0)
+  - `material-design-3-architect` → new **`sdlc-team-android`** (0.1.0)
+  - `sdlc-team-fullstack` is now a 9-agent web bundle (2.0.0). **Migration:** if you build for mobile, install `sdlc-team-ios`/`sdlc-team-android` + `sdlc-team-mobile` (run `/sdlc-core:setup-team`, which now offers iOS/Android/cross-platform project types). Agents are invoked by name, so cross-references still resolve — only packaging changed. Callers using the qualified name `sdlc-team-fullstack:<mobile-agent>` must update to the new plugin. Agent *sources* did not move (`agents/core/`); this was a `release-mapping.yaml` re-map, no content duplication.
+  - `sdlc-core` → 1.2.0 (`setup-team` gained iOS/Android/cross-platform project types + mobile recommendation matrix)
 - **README.md**: Expanded plugin table to 12 entries with agent/skill counts, expanded skills section to 22 skills across 3 plugins, expanded agents section with per-plugin breakdown, linked CHANGELOG.md
 - **CLAUDE.md**: EPIC #96 marked merged, agent count corrected to 56 across 12 plugins, added rules skill to skills table
 - **docs/HOWTO.md**: Complete rewrite from legacy setup-smart.py workflow to plugin/skill-based workflow
