@@ -1,8 +1,8 @@
 # Agent Catalog Index
-*Generated: 2026-07-23T15:43:41.649903 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
-*Total catalog entries: 144 | 80 in the `agents/` source directory | 64 published in plugins (across 17 plugins; 15 ship agents)*
+*Generated: 2026-07-23T16:31:59.222412 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
+*Total catalog entries: 146 | 81 in the `agents/` source directory | 65 published in plugins (across 18 plugins; 16 ship agents)*
 
-> **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (64 agents packaged into the 17 published plugins; 15 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
+> **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (65 agents packaged into the 18 published plugins; 16 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
 
 > **SDLC method bundles — `sdlc-programme` v0.1.0 and `sdlc-assured` v0.2.0 are skill+validator bundles by design and ship 0 agents.** They are not absent from the catalogue because they are unfinished; they are absent because they overlay the universal constitution with structured SDLC delivery methodology (phase gates for Programme; bidirectional traceability + DDD decomposition + KB-for-code for Assured) rather than introducing new specialist agent roles. The value is in their skills (5 for Programme, 8 for Assured), validators, and constitution articles. See [docs/METHODS-GUIDE.md](docs/METHODS-GUIDE.md) for when to use each method, and the bundle READMEs ([sdlc-programme](plugins/sdlc-programme/README.md), [sdlc-assured](plugins/sdlc-assured/README.md)) for skill catalogues and Getting Started walkthroughs.
 
@@ -269,7 +269,7 @@
 #### `ios-release-engineer`
 - **Path**: `agents/core/ios-release-engineer.md`
 - **Description**: Specialist in iOS release engineering & App Store distribution — code signing & provisioning, capabilities/entitlements, the three privacy surfaces (nutrition labels, PrivacyInfo.xcprivacy manifest, r...
-- **Keywords**: api, architecture, auth, cd, ci, cloud, design, jwt, security, testing
+- **Keywords**: api, architecture, auth, cd, ci, cloud, design, jwt, python, security
 - **Key Capabilities**:
   - 'example
   - MyApp.app before uploading."
@@ -577,6 +577,13 @@
 - **Key Capabilities**:
   - name: MCP Python SDK
   - You are the Python Expert, the specialist responsible for Python-specific implementation excellence ...
+
+### Plugin:Sdlc Lang Swift (1 agents)
+
+#### `language-swift-expert`
+- **Path**: `plugins/sdlc-lang-swift/agents/language-swift-expert.md`
+- **Description**: Expert in the Swift language (Swift 6.2) — strict concurrency (async/await, actors, Sendable, Swift 6.2 approachable concurrency), value semantics & noncopyable types, typed throws, optionals/safety, ...
+- **Keywords**: api, architecture, design, javascript, python, quality, test, testing
 
 ### Plugin:Sdlc Team Ai (14 agents)
 
@@ -901,7 +908,7 @@
 #### `ios-release-engineer`
 - **Path**: `plugins/sdlc-team-ios/agents/ios-release-engineer.md`
 - **Description**: Specialist in iOS release engineering & App Store distribution — code signing & provisioning, capabilities/entitlements, the three privacy surfaces (nutrition labels, PrivacyInfo.xcprivacy manifest, r...
-- **Keywords**: api, architecture, auth, cd, ci, cloud, design, jwt, security, testing
+- **Keywords**: api, architecture, auth, cd, ci, cloud, design, jwt, python, security
 - **Key Capabilities**:
   - 'example
   - MyApp.app before uploading."
@@ -1056,7 +1063,7 @@
   - name: Sleuth
   - You are the Team Progress Tracker, a domain expert in team performance measurement, adoption trackin...
 
-### Sdlc (8 agents)
+### Sdlc (9 agents)
 
 #### `ai-first-kick-starter`
 - **Path**: `agents/sdlc/ai-first-kick-starter.md`
@@ -1096,6 +1103,11 @@
 - **Key Capabilities**:
   - name: MCP Python SDK
   - You are the Python Expert, the specialist responsible for Python-specific implementation excellence ...
+
+#### `language-swift-expert`
+- **Path**: `agents/sdlc/language-swift-expert.md`
+- **Description**: Expert in the Swift language (Swift 6.2) — strict concurrency (async/await, actors, Sendable, Swift 6.2 approachable concurrency), value semantics & noncopyable types, typed throws, optionals/safety, ...
+- **Keywords**: api, architecture, design, javascript, python, quality, test, testing
 
 #### `project-bootstrapper`
 - **Path**: `agents/sdlc/project-bootstrapper.md`

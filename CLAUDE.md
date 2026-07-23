@@ -121,6 +121,7 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-knowledge-base` | Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint operations. Orthogonal to SDLC option choice. |
 | `sdlc-lang-python` | Python language expert agent |
 | `sdlc-lang-javascript` | JavaScript/TypeScript language expert agent |
+| `sdlc-lang-swift` | Swift language expert agent — idiomatic Swift 6.2, strict concurrency, generics, macros, SwiftPM (pairs with `sdlc-team-ios`) |
 | `sdlc-workflows` | Containerised delegation — Archon-orchestrated DAG workflows in isolated Docker containers (6 skills) |
 | `sdlc-programme` | Method 1 SDLC bundle for multi-team programme work — formal waterfall phase gates (requirements/design/test/code), 4 phase-gate validators, mandatory cross-phase review (5 skills, EPIC #178 v0.1.0) |
 | `sdlc-assured` | Method 2 SDLC bundle for regulated-industry work **or** complex agentic systems at scale (10+ bounded contexts) — positional namespace IDs, bidirectional traceability, DDD decomposition with visibility rules, KB-for-code annotations, standard-specific exports (DO-178C / IEC 62304 / ISO 26262 / FDA DHF). 8 skills. **v0.2.0 audit-ready at tooling layer** (EPIC #188) — typed evidence statuses, multi-format evidence model (Python/markdown/YAML/satisfies-by-existence), platform-neutral dependency extractor, indirect DES-mediated coverage, REQ-quality lint candidate. |

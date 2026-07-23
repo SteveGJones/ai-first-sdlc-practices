@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "generated": "2026-07-23T15:43:41.649903",
-  "total_agents": 144,
+  "generated": "2026-07-23T16:31:59.222412",
+  "total_agents": 146,
   "categories": {
     "ai-builders": 5,
     "ai-development": 9,
@@ -12,13 +12,14 @@
     "knowledge-base": 4,
     "languages": 1,
     "project-management": 4,
-    "sdlc": 8,
+    "sdlc": 9,
     "general": 5,
     "testing": 4,
     "plugin:sdlc-core": 4,
     "plugin:sdlc-knowledge-base": 4,
     "plugin:sdlc-lang-javascript": 1,
     "plugin:sdlc-lang-python": 1,
+    "plugin:sdlc-lang-swift": 1,
     "plugin:sdlc-team-ai": 14,
     "plugin:sdlc-team-android": 1,
     "plugin:sdlc-team-cloud": 3,
@@ -1287,7 +1288,9 @@
         "cloud",
         "design",
         "jwt",
+        "python",
         "security",
+        "test",
         "testing"
       ],
       "capabilities": [
@@ -2300,6 +2303,27 @@
       "description": "Expert in Python 3.12+ features, type systems (mypy/pyright), async patterns, testing (pytest/hypothesis), web frameworks (FastAPI/Django/Flask), AI/ML development, and packaging. Use for Python proje..."
     },
     {
+      "name": "language-swift-expert",
+      "path": "agents/sdlc/language-swift-expert.md",
+      "category": "sdlc",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "javascript",
+        "python",
+        "quality",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "process-improvement",
+        "methodology"
+      ],
+      "description": "Expert in the Swift language (Swift 6.2) — strict concurrency (async/await, actors, Sendable, Swift 6.2 approachable concurrency), value semantics & noncopyable types, typed throws, optionals/safety, ..."
+    },
+    {
       "name": "project-bootstrapper",
       "path": "agents/sdlc/project-bootstrapper.md",
       "category": "sdlc",
@@ -2966,6 +2990,24 @@
       ],
       "domains": [],
       "description": "Expert in Python 3.12+ features, type systems (mypy/pyright), async patterns, testing (pytest/hypothesis), web frameworks (FastAPI/Django/Flask), AI/ML development, and packaging. Use for Python proje..."
+    },
+    {
+      "name": "language-swift-expert",
+      "path": "plugins/sdlc-lang-swift/agents/language-swift-expert.md",
+      "category": "plugin:sdlc-lang-swift",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "javascript",
+        "python",
+        "quality",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Expert in the Swift language (Swift 6.2) — strict concurrency (async/await, actors, Sendable, Swift 6.2 approachable concurrency), value semantics & noncopyable types, typed throws, optionals/safety, ..."
     },
     {
       "name": "a2a-architect",
@@ -4376,7 +4418,9 @@
         "cloud",
         "design",
         "jwt",
+        "python",
         "security",
+        "test",
         "testing"
       ],
       "capabilities": [

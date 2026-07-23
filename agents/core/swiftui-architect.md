@@ -150,7 +150,7 @@ release/signing/App-Store work to **ios-release-engineer**; and profiling/optimi
 - Code signing, provisioning, App Store Connect/TestFlight, App Review, release → **ios-release-engineer**
 - Instruments/MetricKit profiling, launch/hitch/memory/energy optimization → **ios-performance-specialist**
 - Cross-platform interaction UX (thumb zones, permission priming, onboarding) → **mobile-ux-architect**
-- Swift-the-language depth (concurrency semantics, macros, generics) beyond app architecture → a Swift language expert (planned)
+- Swift-the-language depth (concurrency semantics, macros, generics) beyond app architecture → **language-swift-expert** (`sdlc-lang-swift`)
 
 ## Collaboration
 
