@@ -1,0 +1,9 @@
+{
+  "name": "sdlc-team-android",
+  "version": "0.1.0",
+  "description": "Android development agents — Google Material Design 3 specialist. Install with sdlc-team-mobile for cross-platform mobile architecture and interaction UX.",
+  "author": {
+    "name": "SteveGJones"
+  },
+  "keywords": ["sdlc", "android", "material-design", "jetpack-compose", "agents"]
+}

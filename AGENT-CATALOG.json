@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-07-22T14:42:59.607040",
+  "generated": "2026-07-22T19:44:03.421957",
   "total_agents": 138,
   "categories": {
     "ai-builders": 5,
@@ -20,10 +20,13 @@
     "plugin:sdlc-lang-javascript": 1,
     "plugin:sdlc-lang-python": 1,
     "plugin:sdlc-team-ai": 14,
+    "plugin:sdlc-team-android": 1,
     "plugin:sdlc-team-cloud": 3,
     "plugin:sdlc-team-common": 8,
     "plugin:sdlc-team-docs": 2,
-    "plugin:sdlc-team-fullstack": 13,
+    "plugin:sdlc-team-fullstack": 9,
+    "plugin:sdlc-team-ios": 1,
+    "plugin:sdlc-team-mobile": 2,
     "plugin:sdlc-team-pm": 5,
     "plugin:sdlc-team-security": 5,
     "plugin:sdlc-workflows": 1
@@ -3441,6 +3444,27 @@
       "description": "RAG architecture specialist for vector databases, embeddings, chunking strategies, and retrieval optimization. Use for designing production RAG systems, selecting vector stores, or optimizing retrieva..."
     },
     {
+      "name": "material-design-3-architect",
+      "path": "plugins/sdlc-team-android/agents/material-design-3-architect.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "angular",
+        "api",
+        "architecture",
+        "container",
+        "design",
+        "frontend",
+        "javascript",
+        "mcp",
+        "pipeline",
+        "quality",
+        "security"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Google Material Design 3 (M3 / Material You) — HCT/dynamic color, the md.ref/md.sys/md.comp token system, components, adaptive layout, tonal elevation, motion, and platform implementatio..."
+    },
+    {
       "name": "cloud-architect",
       "path": "plugins/sdlc-team-cloud/agents/cloud-architect.md",
       "category": "plugin:sdlc-team-cloud",
@@ -3953,24 +3977,6 @@
       "description": "Expert in REST/GraphQL/gRPC API design, versioning strategies, security patterns, contract testing, and OpenAPI specifications. Consult for API design reviews, endpoint architecture, and integration c..."
     },
     {
-      "name": "apple-hig-architect",
-      "path": "plugins/sdlc-team-fullstack/agents/apple-hig-architect.md",
-      "category": "plugin:sdlc-team-fullstack",
-      "keywords": [
-        "api",
-        "architecture",
-        "auth",
-        "cd",
-        "ci",
-        "design",
-        "security",
-        "test"
-      ],
-      "capabilities": [],
-      "domains": [],
-      "description": "Specialist in Apple's Human Interface Guidelines (HIG) for iOS/iPadOS — Liquid Glass (iOS 26), navigation & modality, SF Pro type scale & Dynamic Type, semantic colors & materials, SF Symbols, gesture..."
-    },
-    {
       "name": "backend-architect",
       "path": "plugins/sdlc-team-fullstack/agents/backend-architect.md",
       "category": "plugin:sdlc-team-fullstack",
@@ -4222,30 +4228,59 @@
       "description": "Expert in integration testing strategies, API contract testing (Pact, Spring Cloud Contract), service virtualization (WireMock, Mountebank), and E2E test orchestration. Use for designing multi-service..."
     },
     {
-      "name": "material-design-3-architect",
-      "path": "plugins/sdlc-team-fullstack/agents/material-design-3-architect.md",
+      "name": "ux-ui-architect",
+      "path": "plugins/sdlc-team-fullstack/agents/ux-ui-architect.md",
       "category": "plugin:sdlc-team-fullstack",
       "keywords": [
+        "ai",
         "angular",
         "api",
         "architecture",
-        "container",
+        "cd",
+        "ci",
         "design",
         "frontend",
-        "javascript",
+        "go",
         "mcp",
-        "pipeline",
-        "quality",
-        "security"
+        "qa",
+        "react",
+        "rest",
+        "security",
+        "test",
+        "testing",
+        "typescript",
+        "vue"
+      ],
+      "capabilities": [
+        "name: \"Figma MCP Server\"",
+        "name: \"Storybook MCP Server\"",
+        "You are the UX/UI Architect, the specialist responsible for transforming user needs into intuitive, ..."
+      ],
+      "domains": [],
+      "description": "Expert in design systems, WCAG 2.2/3.0 accessibility, user research methods, and design-to-development handoff. Use for interface design, accessibility audits, and UX strategy."
+    },
+    {
+      "name": "apple-hig-architect",
+      "path": "plugins/sdlc-team-ios/agents/apple-hig-architect.md",
+      "category": "plugin:sdlc-team-ios",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "cd",
+        "ci",
+        "design",
+        "security",
+        "test"
       ],
       "capabilities": [],
       "domains": [],
-      "description": "Specialist in Google Material Design 3 (M3 / Material You) — HCT/dynamic color, the md.ref/md.sys/md.comp token system, components, adaptive layout, tonal elevation, motion, and platform implementatio..."
+      "description": "Specialist in Apple's Human Interface Guidelines (HIG) for iOS/iPadOS — Liquid Glass (iOS 26), navigation & modality, SF Pro type scale & Dynamic Type, semantic colors & materials, SF Symbols, gesture..."
     },
     {
       "name": "mobile-architect",
-      "path": "plugins/sdlc-team-fullstack/agents/mobile-architect.md",
-      "category": "plugin:sdlc-team-fullstack",
+      "path": "plugins/sdlc-team-mobile/agents/mobile-architect.md",
+      "category": "plugin:sdlc-team-mobile",
       "keywords": [
         "ai",
         "api",
@@ -4280,8 +4315,8 @@
     },
     {
       "name": "mobile-ux-architect",
-      "path": "plugins/sdlc-team-fullstack/agents/mobile-ux-architect.md",
-      "category": "plugin:sdlc-team-fullstack",
+      "path": "plugins/sdlc-team-mobile/agents/mobile-ux-architect.md",
+      "category": "plugin:sdlc-team-mobile",
       "keywords": [
         "architecture",
         "cd",
@@ -4296,38 +4331,6 @@
       "capabilities": [],
       "domains": [],
       "description": "Specialist in platform-agnostic mobile-native interaction UX — thumb-zone ergonomics & reachability, touch targets & gestures, haptics, navigation patterns, onboarding, permission priming & notificati..."
-    },
-    {
-      "name": "ux-ui-architect",
-      "path": "plugins/sdlc-team-fullstack/agents/ux-ui-architect.md",
-      "category": "plugin:sdlc-team-fullstack",
-      "keywords": [
-        "ai",
-        "angular",
-        "api",
-        "architecture",
-        "cd",
-        "ci",
-        "design",
-        "frontend",
-        "go",
-        "mcp",
-        "qa",
-        "react",
-        "rest",
-        "security",
-        "test",
-        "testing",
-        "typescript",
-        "vue"
-      ],
-      "capabilities": [
-        "name: \"Figma MCP Server\"",
-        "name: \"Storybook MCP Server\"",
-        "You are the UX/UI Architect, the specialist responsible for transforming user needs into intuitive, ..."
-      ],
-      "domains": [],
-      "description": "Expert in design systems, WCAG 2.2/3.0 accessibility, user research methods, and design-to-development handoff. Use for interface design, accessibility audits, and UX strategy."
     },
     {
       "name": "agile-coach",

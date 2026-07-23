@@ -64,7 +64,8 @@ This presents project types (Full-stack, AI/ML, Cloud, API, Security, Custom) an
 |--------|-------------|
 | `sdlc-core` | Rules, validators, enforcement, workflows (always installed) |
 | `sdlc-team-common` | Solution architect, research agent, performance engineer, database architect |
-| `sdlc-team-fullstack` | Frontend, backend, API, DevOps architects |
+| `sdlc-team-fullstack` | Web full-stack — frontend, backend, API, data, DevOps, UX, integration architects |
+| `sdlc-team-mobile` + `sdlc-team-ios` / `sdlc-team-android` | Mobile — shared base (architecture, interaction UX) + platform design (Apple HIG / Material Design 3) |
 
 **Step 3: Start working**
 ```
@@ -91,7 +92,10 @@ The framework supports **four SDLC delivery structures**. The `setup-team` skill
 | [`sdlc-core`](plugins/sdlc-core/README.md) | 4 | 9 | Rules, validators, enforcement, workflows, four-option commissioning (solo / single-team / programme / assured) — always install |
 | [`sdlc-team-common`](plugins/sdlc-team-common/README.md) | 8 | — | Cross-cutting architects, researchers, performance engineers |
 | [`sdlc-team-ai`](plugins/sdlc-team-ai/README.md) | 14 | — | AI/ML specialists — architects, prompt engineers, RAG designers |
-| [`sdlc-team-fullstack`](plugins/sdlc-team-fullstack/README.md) | 13 | — | Frontend, backend, API, DevOps, UX, Material Design 3, Apple HIG & mobile UX architects |
+| [`sdlc-team-fullstack`](plugins/sdlc-team-fullstack/README.md) | 9 | — | Web full-stack — frontend, backend, API, data, DevOps, UX & integration architects |
+| [`sdlc-team-mobile`](plugins/sdlc-team-mobile/README.md) | 2 | — | Shared mobile base — cross-platform architecture + interaction UX (pairs with iOS/Android) |
+| [`sdlc-team-ios`](plugins/sdlc-team-ios/README.md) | 1 | — | iOS/iPadOS — Apple Human Interface Guidelines specialist |
+| [`sdlc-team-android`](plugins/sdlc-team-android/README.md) | 1 | — | Android — Google Material Design 3 specialist |
 | [`sdlc-team-cloud`](plugins/sdlc-team-cloud/README.md) | 3 | — | Cloud, container, SRE specialists |
 | [`sdlc-team-security`](plugins/sdlc-team-security/README.md) | 5 | — | Security, compliance, privacy specialists |
 | [`sdlc-team-pm`](plugins/sdlc-team-pm/README.md) | 5 | — | Agile coach, delivery manager, progress tracking |
@@ -207,12 +211,15 @@ The framework provides 56 specialist agents across 12 plugins. Each plugin's REA
 | `code-review-specialist` | Code quality, security (OWASP), patterns |
 | `verification-enforcer` | Docs-code fidelity, test coverage, runtime proof |
 
-**Team plugins** (52 agents across 11 plugins):
+**Team plugins** (54 agents across 13 plugins):
 
 | Plugin | Agents | Highlights |
 |--------|--------|------------|
 | `sdlc-team-ai` | 14 | Prompt engineer, RAG designer, MCP architect, orchestration architect, context engineer |
-| `sdlc-team-fullstack` | 10 | Frontend/backend/API/mobile architects, DevOps, UX-UI, data architect |
+| `sdlc-team-fullstack` | 9 | Frontend/backend/API architects, DevOps, UX-UI, data architect, integration orchestrator |
+| `sdlc-team-mobile` | 2 | Mobile architect, mobile-UX architect (shared cross-platform base) |
+| `sdlc-team-ios` | 1 | Apple HIG architect |
+| `sdlc-team-android` | 1 | Material Design 3 architect |
 | `sdlc-team-common` | 8 | Solution architect, database architect, performance engineer, deep-research agent |
 | `sdlc-team-security` | 5 | Security architect, compliance auditor, data privacy officer |
 | `sdlc-team-pm` | 5 | Agile coach, delivery manager, retrospective miner |

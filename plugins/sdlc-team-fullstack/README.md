@@ -1,6 +1,11 @@
 # sdlc-team-fullstack
 
-Full-stack development specialists covering frontend, backend, API, DevOps, and more.
+Web full-stack development specialists covering frontend, backend, API, data, DevOps, UX, and integration.
+
+> **Moved in 2.0.0 — mobile agents split out.** `mobile-architect` and `mobile-ux-architect` now live
+> in **`sdlc-team-mobile`**; `apple-hig-architect` in **`sdlc-team-ios`**; `material-design-3-architect`
+> in **`sdlc-team-android`**. Building for mobile? Install those instead (run `/sdlc-core:setup-team`).
+> Agents are invoked by name, so any cross-references still resolve — only the packaging changed.
 
 ## Quick start
 
@@ -19,7 +24,6 @@ Requires `sdlc-core` to be installed first.
 | `frontend-architect` | Designs modern frontend architecture including component patterns, state management, performance optimization, accessibility, and SSR/SSG implementations |
 | `frontend-security-specialist` | Secures SPAs with XSS prevention, Content Security Policy, OAuth/OIDC flows, Subresource Integrity, and frontend threat modeling |
 | `ux-ui-architect` | Designs design systems, conducts WCAG 2.2/3.0 accessibility audits, applies user research methods, and manages design-to-development handoff |
-| `mobile-architect` | Architects mobile apps across native iOS/Android, React Native, Flutter, and KMP with platform-specific performance optimization and mobile CI/CD |
 
 ### Backend
 
@@ -44,26 +48,29 @@ Install `sdlc-team-fullstack` when your project involves:
 - **Web applications** -- React, Next.js, Vue, or other SPA/SSR frameworks
 - **Backend services** -- microservices, monoliths, event-driven architectures
 - **APIs** -- REST, GraphQL, or gRPC design and integration
-- **Mobile apps** -- native or cross-platform mobile development
 - **CI/CD and DevOps** -- deployment automation, GitOps, container orchestration
-- **Design systems** -- component libraries, accessibility compliance, UX strategy
+- **Web design systems** -- component libraries, accessibility compliance, UX strategy
 - **Data platforms** -- warehouses, lakehouses, data quality and governance
+
+For **mobile** work (iOS/Android/cross-platform), install `sdlc-team-ios`, `sdlc-team-android`, and/or
+the shared `sdlc-team-mobile` base instead — see the migration note at the top.
 
 ## Agent coverage
 
-The 13 agents are organized by layer:
+The 9 agents are organized by layer:
 
-- **Frontend & UX** (7 agents) -- `frontend-architect` and `ux-ui-architect` handle UI architecture and framework-agnostic design systems. Three design-specialist agents give deep, platform-specific UX coverage: `material-design-3-architect` (Google Material Design 3 / Material You — HCT/dynamic colour, `md.sys.*` tokens, Compose/Web/Flutter), `apple-hig-architect` (Apple Human Interface Guidelines for iOS/iPadOS — Liquid Glass / iOS 26, SF typography, materials, SF Symbols, iOS platform features, SwiftUI), and `mobile-ux-architect` (platform-agnostic mobile-native interaction — thumb zones, gestures, permission priming, onboarding, mobile forms, offline states). `frontend-security-specialist` covers client-side security (XSS, CSP, auth flows). `mobile-architect` extends coverage to native and cross-platform mobile app *architecture*.
+- **Frontend & UX** (3 agents) -- `frontend-architect` handles UI architecture, component patterns, state management, and performance. `ux-ui-architect` handles framework-agnostic design systems, WCAG accessibility, user research, and design-to-development handoff. `frontend-security-specialist` covers client-side security (XSS, CSP, auth flows).
 - **Backend** (3 agents) -- `backend-architect` handles distributed system design and microservices. `api-architect` covers REST/GraphQL/gRPC contract design. `data-architect` manages data platforms, warehousing, and governance.
 - **Cross-cutting** (3 agents) -- `devops-specialist` and `github-integration-specialist` handle CI/CD, GitOps, and GitHub platform configuration. `integration-orchestrator` designs multi-service testing strategies with contract testing and service virtualization.
 
 ## Relationship to other plugins
 
-`sdlc-team-fullstack` covers the core disciplines of product engineering. For
+`sdlc-team-fullstack` covers the core disciplines of **web** product engineering. For
 broader architecture concerns (performance engineering, cross-cutting research),
 install `sdlc-team-common`. For cloud infrastructure (AWS, GCP, Azure, SRE),
 see `sdlc-team-cloud`. For security beyond frontend concerns, see
-`sdlc-team-security`.
+`sdlc-team-security`. For **mobile** development, see `sdlc-team-ios`,
+`sdlc-team-android`, and the shared `sdlc-team-mobile` base.
 
 ## Part of the SDLC plugin family
 

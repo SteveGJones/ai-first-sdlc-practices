@@ -1,0 +1,9 @@
+{
+  "name": "sdlc-team-ios",
+  "version": "0.1.0",
+  "description": "iOS/iPadOS development agents — Apple Human Interface Guidelines specialist. Install with sdlc-team-mobile for cross-platform mobile architecture and interaction UX.",
+  "author": {
+    "name": "SteveGJones"
+  },
+  "keywords": ["sdlc", "ios", "ipados", "apple", "hig", "swiftui", "agents"]
+}
