@@ -26,8 +26,33 @@ Covering the Android lifecycle: **design → Compose UI → app architecture →
 
 > For **Kotlin the language** (coroutines/Flow, null-safety, sealed types, KSP), install the companion
 > **`sdlc-lang-kotlin`** plugin (`language-kotlin-expert`) — `/sdlc-core:setup-team` recommends it for
-> Android projects. Android **skills + validators** (scaffold, signing, play-release, CI;
-> manifest/SDK-policy/release-config checks) are a later phase of sub-epic #225.
+> Android projects.
+
+## Skills (4)
+
+Operational workflows for scaffolding and the Play release flow:
+
+- **`/sdlc-team-android:android-scaffold`** — new Kotlin/Compose project with Play-safe defaults
+  (version catalog, convention plugins, targetSdk at the Play minimum, R8, git-ignored signing) so it
+  passes the pre-flight checker from day one.
+- **`/sdlc-team-android:android-signing-setup`** — generate an upload keystore, enroll in Play App
+  Signing, and wire a Gradle release `signingConfig` reading secrets from a git-ignored file / CI.
+- **`/sdlc-team-android:android-play-release`** — pre-flight + Play policy gates → signed `.aab` →
+  track upload → staged rollout (with **halt/roll-forward**).
+- **`/sdlc-team-android:android-ci`** — Android GitHub Actions (Gradle caching, tests, lint, pre-flight
+  gate, optional signed Play upload).
+
+## Pre-flight checker
+
+`scripts/android_preflight` is a static checker the release skills invoke — it catches the config that
+most often blocks a Play submission or is a release-quality defect: sensitive permissions (background
+location), unguarded exported components, **targetSdk below the Play minimum**, and release-config
+issues (no R8, debug signing config, committed secrets). It shells out to `./gradlew lint` rather than
+reimplementing Android Lint.
+
+```bash
+python -m android_preflight.cli <android-project-dir> [--play-min-target N]
+```
 
 ## Install with the mobile base
 

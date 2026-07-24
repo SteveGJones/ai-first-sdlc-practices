@@ -113,7 +113,7 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-team-fullstack` | Web full-stack — frontend, backend, API, data, DevOps, UX & integration (9 agents; **v2.0.0** — mobile agents split out) |
 | `sdlc-team-mobile` | Shared mobile base — cross-platform `mobile-architect` + `mobile-ux-architect` (2 agents; pairs with the platform plugins below) |
 | `sdlc-team-ios` | iOS/iPadOS — HIG, SwiftUI, release & performance (4 agents) + TestFlight/App Store skills & pre-flight checks (install with `sdlc-team-mobile`) |
-| `sdlc-team-android` | Android — Material Design 3, Jetpack Compose, app architecture, Gradle, Play release & performance (6 agents; install with `sdlc-team-mobile`) |
+| `sdlc-team-android` | Android — MD3, Compose, app architecture, Gradle, Play release & performance (6 agents) + scaffold/signing/play-release skills & pre-flight checks (install with `sdlc-team-mobile`) |
 | `sdlc-team-cloud` | Cloud, containers, SRE (3 agents) |
 | `sdlc-team-security` | Security, compliance, privacy (5 agents) |
 | `sdlc-team-pm` | Agile coach, delivery manager, tracking (5 agents) |

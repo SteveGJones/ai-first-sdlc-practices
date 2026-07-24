@@ -1,7 +1,7 @@
 {
   "name": "sdlc-team-android",
-  "version": "0.2.0",
-  "description": "Android development \u2014 Material Design 3, Jetpack Compose, app architecture, Gradle/build, Play Store release & performance agents. Install with sdlc-team-mobile; pairs with sdlc-lang-kotlin.",
+  "version": "0.3.0",
+  "description": "Android development \u2014 Material Design 3, Jetpack Compose, app architecture, Gradle, Play Store release & performance agents, plus scaffold/signing/play-release skills and Play submission pre-flight checks. Install with sdlc-team-mobile; pairs with sdlc-lang-kotlin.",
   "author": {
     "name": "SteveGJones"
   },
