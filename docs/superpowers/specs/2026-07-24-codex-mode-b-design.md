@@ -1,3 +1,7 @@
+> **⚠️ STATUS: SUPERSEDED BY REPOSITIONING (issue #232, 2026-07-24).** The plugin pivoted to a cross-vendor orchestrator (`sdlc-simple-orchestration`, see `2026-07-24-sdlc-simple-orchestration-design.md`); the app-server per-action-approval engine below will **not** be built as designed. Nothing here is scheduled for implementation.
+>
+> **What survives as recorded knowledge:** (1) the §9.17-spike-proven app-server protocol facts + posture→(sandbox, approvalPolicy) table — ground truth for any future `rpc-server` adapter kind; (2) the §3 approval-policy decision tables + destructive deny-list — a reusable per-action policy design; (3) the request-file-spool IPC choice (§2.3). **Revival condition:** per-action approval returns only as an adapter capability (`per_action_approval: true`, `kind: rpc-server`) for a backend that natively exposes a typed approval protocol, and only where not redundant with that backend's own sibling-plugin gating.
+
 # Architecture Design: codex Mode B — persistent per-action-approval delegation via `codex app-server`
 
 **Issue:** #232 · **Branch:** `feature/external-agent-delegation` · **Plugin:** `sdlc-agent-delegation` · **Status:** Design v1 for implementation (Fable-tier) · **Date:** 2026-07-24

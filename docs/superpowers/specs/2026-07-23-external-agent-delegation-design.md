@@ -4,6 +4,8 @@
 
 > Provenance: produced by a Fable-tier architecture spike that probed both CLIs' read-only `--help`/state surfaces on the target machine (codex v0.145.0, agy v1.1.5), then hardened by a Fable-tier adversarial review that probed the machine directly.
 >
+> **⚠️ REPOSITIONING (2026-07-24):** the plugin pivoted to a cross-vendor orchestrator — see `2026-07-24-sdlc-simple-orchestration-design.md`. §7's plugin shape (two hardcoded runners) is superseded by that document; §4.2 (unified contract) and §9.1/§9.2/§9.8/§9.10/§9.14–§9.16 remain **authoritative** and become "the direct-CLI adapter engine". The plugin is renamed `sdlc-agent-delegation` → `sdlc-simple-orchestration`.
+>
 > **⚠️ §9 (Review-driven revisions) is AUTHORITATIVE and SUPERSEDES the earlier sections wherever they conflict.** The §1–§8 body is the original spike and is kept for its reasoning; the concrete recipes in §3.1 (spawn), §2.2/§6.4 (timeouts), §2.3 (agy id capture), and §4 (contract) are corrected in §9. Implement from §9 for anything it touches. Machine ground truth (macOS 26.5.1, arm64, bash 3.2.57): `jq`/`perl`/`shasum`/`sha1sum`/`mkfifo`/`/dev/urandom` present; **`setsid`, `timeout`, `gtimeout` ALL MISSING**; `PIPE_BUF` = **512 bytes**; `codex login status` works; detached `nohup` children and the FIFO-holder trick verified working across separate Bash tool calls.
 
 ## 1. Overview
