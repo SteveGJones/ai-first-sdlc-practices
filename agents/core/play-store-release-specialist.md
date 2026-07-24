@@ -144,6 +144,13 @@ Play-side signing and upload); app architecture to **android-app-architect**; Co
 - **android-app-architect**: in-app-update/account-deletion flows are wired in the app it structures.
 - **material-design-3-architect** / **jetpack-compose-architect**: store-listing and in-app-review UX.
 
+**Skills in `sdlc-team-android`** (use these for the operational flows):
+- **`android-play-release`** — pre-flight + policy gates → signed `.aab` → track upload → staged rollout (halt/roll-forward).
+- **`android-signing-setup`** — upload keystore + Play App Signing + git-ignored Gradle signing config.
+- **`android-scaffold`** — new project with Play-safe defaults (targetSdk at the Play minimum, R8, signing).
+- **`android-ci`** — Android GitHub Actions (Gradle caching, tests, lint, pre-flight gate, optional signed Play upload).
+- The `android-preflight` checker (`python -m android_preflight.cli <project>`) statically catches sensitive-permission/exported-component issues, targetSdk below the Play minimum, and release-config problems (no R8, debug signing, committed secrets).
+
 **Notes**:
 - Play has a real kill switch (halt + roll-forward) — design production releases as staged rollouts.
 - The gating gates are usually policy/console (Data Safety, target-API, sensitive permissions), not the

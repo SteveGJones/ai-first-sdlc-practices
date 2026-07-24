@@ -162,6 +162,18 @@ sdlc-team-android:
     - source: agents/core/gradle-build-specialist.md
     - source: agents/core/play-store-release-specialist.md
     - source: agents/core/android-performance-specialist.md
+  skills:
+    - source: skills/android-scaffold/SKILL.md
+    - source: skills/android-signing-setup/SKILL.md
+    - source: skills/android-play-release/SKILL.md
+    - source: skills/android-ci/SKILL.md
+  scripts:
+    # Authored in-plugin (ship in-place); listed for packaging audit. Invoked by
+    # the android-play-release / android-scaffold / android-ci skills.
+    - source: plugins/sdlc-team-android/scripts/__init__.py
+    - source: plugins/sdlc-team-android/scripts/android_preflight/__init__.py
+    - source: plugins/sdlc-team-android/scripts/android_preflight/checks.py
+    - source: plugins/sdlc-team-android/scripts/android_preflight/cli.py
 
 sdlc-team-cloud:
   agents:
