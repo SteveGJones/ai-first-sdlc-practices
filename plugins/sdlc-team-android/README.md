@@ -25,8 +25,9 @@ Covering the Android lifecycle: **design → Compose UI → app architecture →
   and the **Play Vitals thresholds** that gate store discoverability.
 
 > For **Kotlin the language** (coroutines/Flow, null-safety, sealed types, KSP), install the companion
-> `sdlc-lang-kotlin` plugin (planned — sub-epic #225). Android **skills + validators** (scaffold,
-> signing, play-release, CI; manifest/SDK-policy/release-config checks) are a later phase.
+> **`sdlc-lang-kotlin`** plugin (`language-kotlin-expert`) — `/sdlc-core:setup-team` recommends it for
+> Android projects. Android **skills + validators** (scaffold, signing, play-release, CI;
+> manifest/SDK-policy/release-config checks) are a later phase of sub-epic #225.
 
 ## Install with the mobile base
 

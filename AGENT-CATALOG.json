@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "generated": "2026-07-23T17:04:36.874292",
-  "total_agents": 156,
+  "generated": "2026-07-23T17:21:48.233214",
+  "total_agents": 158,
   "categories": {
     "ai-builders": 5,
     "ai-development": 9,
@@ -12,12 +12,13 @@
     "knowledge-base": 4,
     "languages": 1,
     "project-management": 4,
-    "sdlc": 9,
+    "sdlc": 10,
     "general": 5,
     "testing": 4,
     "plugin:sdlc-core": 4,
     "plugin:sdlc-knowledge-base": 4,
     "plugin:sdlc-lang-javascript": 1,
+    "plugin:sdlc-lang-kotlin": 1,
     "plugin:sdlc-lang-python": 1,
     "plugin:sdlc-lang-swift": 1,
     "plugin:sdlc-team-ai": 14,
@@ -2353,6 +2354,27 @@
       "description": "Expert in modern JavaScript/TypeScript, frontend/backend frameworks, build tooling, and JS ecosystem best practices. Use for framework selection, TypeScript config, bundle optimization, and Node.js de..."
     },
     {
+      "name": "language-kotlin-expert",
+      "path": "agents/sdlc/language-kotlin-expert.md",
+      "category": "sdlc",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "javascript",
+        "python",
+        "quality",
+        "rest",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "process-improvement",
+        "methodology"
+      ],
+      "description": "Expert in the Kotlin language (Kotlin 2.x, K2 compiler) — null-safety & scope functions, coroutines & structured concurrency, Flow (StateFlow/SharedFlow), the type system (data/sealed/value classes, d..."
+    },
+    {
       "name": "language-python-expert",
       "path": "agents/sdlc/language-python-expert.md",
       "category": "sdlc",
@@ -3043,6 +3065,24 @@
       ],
       "domains": [],
       "description": "Expert in modern JavaScript/TypeScript, frontend/backend frameworks, build tooling, and JS ecosystem best practices. Use for framework selection, TypeScript config, bundle optimization, and Node.js de..."
+    },
+    {
+      "name": "language-kotlin-expert",
+      "path": "plugins/sdlc-lang-kotlin/agents/language-kotlin-expert.md",
+      "category": "plugin:sdlc-lang-kotlin",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "javascript",
+        "python",
+        "quality",
+        "rest",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Expert in the Kotlin language (Kotlin 2.x, K2 compiler) — null-safety & scope functions, coroutines & structured concurrency, Flow (StateFlow/SharedFlow), the type system (data/sealed/value classes, d..."
     },
     {
       "name": "language-python-expert",

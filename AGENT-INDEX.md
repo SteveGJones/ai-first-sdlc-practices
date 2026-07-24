@@ -1,8 +1,8 @@
 # Agent Catalog Index
-*Generated: 2026-07-23T17:04:36.874292 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
-*Total catalog entries: 156 | 86 in the `agents/` source directory | 70 published in plugins (across 18 plugins; 16 ship agents)*
+*Generated: 2026-07-23T17:21:48.233214 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
+*Total catalog entries: 158 | 87 in the `agents/` source directory | 71 published in plugins (across 19 plugins; 17 ship agents)*
 
-> **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (70 agents packaged into the 18 published plugins; 16 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
+> **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (71 agents packaged into the 19 published plugins; 17 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
 
 > **SDLC method bundles — `sdlc-programme` v0.1.0 and `sdlc-assured` v0.2.0 are skill+validator bundles by design and ship 0 agents.** They are not absent from the catalogue because they are unfinished; they are absent because they overlay the universal constitution with structured SDLC delivery methodology (phase gates for Programme; bidirectional traceability + DDD decomposition + KB-for-code for Assured) rather than introducing new specialist agent roles. The value is in their skills (5 for Programme, 8 for Assured), validators, and constitution articles. See [docs/METHODS-GUIDE.md](docs/METHODS-GUIDE.md) for when to use each method, and the bundle READMEs ([sdlc-programme](plugins/sdlc-programme/README.md), [sdlc-assured](plugins/sdlc-assured/README.md)) for skill catalogues and Getting Started walkthroughs.
 
@@ -593,6 +593,13 @@
   - name: MCP TypeScript SDK
   - You are the JavaScript/TypeScript Expert, the specialist for all JavaScript ecosystem decisions incl...
 
+### Plugin:Sdlc Lang Kotlin (1 agents)
+
+#### `language-kotlin-expert`
+- **Path**: `plugins/sdlc-lang-kotlin/agents/language-kotlin-expert.md`
+- **Description**: Expert in the Kotlin language (Kotlin 2.x, K2 compiler) — null-safety & scope functions, coroutines & structured concurrency, Flow (StateFlow/SharedFlow), the type system (data/sealed/value classes, d...
+- **Keywords**: api, architecture, design, javascript, python, quality, rest, testing
+
 ### Plugin:Sdlc Lang Python (1 agents)
 
 #### `language-python-expert`
@@ -1113,7 +1120,7 @@
   - name: Sleuth
   - You are the Team Progress Tracker, a domain expert in team performance measurement, adoption trackin...
 
-### Sdlc (9 agents)
+### Sdlc (10 agents)
 
 #### `ai-first-kick-starter`
 - **Path**: `agents/sdlc/ai-first-kick-starter.md`
@@ -1145,6 +1152,11 @@
 - **Key Capabilities**:
   - name: MCP TypeScript SDK
   - You are the JavaScript/TypeScript Expert, the specialist for all JavaScript ecosystem decisions incl...
+
+#### `language-kotlin-expert`
+- **Path**: `agents/sdlc/language-kotlin-expert.md`
+- **Description**: Expert in the Kotlin language (Kotlin 2.x, K2 compiler) — null-safety & scope functions, coroutines & structured concurrency, Flow (StateFlow/SharedFlow), the type system (data/sealed/value classes, d...
+- **Keywords**: api, architecture, design, javascript, python, quality, rest, testing
 
 #### `language-python-expert`
 - **Path**: `agents/sdlc/language-python-expert.md`
