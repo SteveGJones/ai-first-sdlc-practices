@@ -157,6 +157,11 @@ sdlc-team-ios:
 sdlc-team-android:
   agents:
     - source: agents/core/material-design-3-architect.md
+    - source: agents/core/jetpack-compose-architect.md
+    - source: agents/core/android-app-architect.md
+    - source: agents/core/gradle-build-specialist.md
+    - source: agents/core/play-store-release-specialist.md
+    - source: agents/core/android-performance-specialist.md
 
 sdlc-team-cloud:
   agents:
