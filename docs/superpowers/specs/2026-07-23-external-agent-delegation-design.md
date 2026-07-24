@@ -480,6 +480,17 @@ One cheap live test before shipping agy: does `agy --print` under `--mode plan -
 - **m6** Policy skill: N wrappers = 3N processes (daemon+holder+watchdog each) — state it against the fan-out cap of 5.
 - **m9** DAEMON_DEAD messaging should mention harness-behavior-dependence (a future sandboxed-Bash/pgkill change could break detached survival).
 
+### 9.14 agy live-probe findings (2026-07-23, authoritative for Stage 3)
+
+Two real `agy --print` invocations (user-authorized) resolved the open agy questions:
+
+1. **plan+sandbox executes non-interactively — it does NOT hang.** `agy --mode plan --sandbox --print-timeout 60s --print '<prompt>'` returned a normal answer, exit 0, in ~11s. The §9.11 gate is PASSED: the `read-only` posture mapping (`--mode plan --sandbox`) is usable non-interactively. No permission hang observed for a no-tool prompt.
+2. **`--print` takes the prompt as its FLAG VALUE, not a trailing positional.** Ordering is load-bearing: **all other flags must precede `--print`, and the prompt must immediately follow `--print`.** Getting this wrong (interleaving `--mode` between `--print` and the prompt) made `--mode` the prompt and silently dropped the real one. `extdel.sh` MUST build the agy argv as `agy <all flags> --print "$(cat promptfile)"` with `--print` LAST. (Prefer stdin if a later agy supports `--print -`; v1.1.5 was tested with the value form.) Guard leading-dash prompts (§9.12 m3) — still relevant since the prompt is an argv value.
+3. **id-capture: `last_conversations.json[cwd]` is the ONLY reliable source; the metadata cross-check is UNAVAILABLE for delegation turns.** The fresh cwd→uuid entry appears in `last_conversations.json` immediately and correctly. But the new conversation is **entirely absent from `conversation_metadata.json`** even seconds later — that file's per-conversation `summary` (`ID/Title/Preview/NumSteps/UpdatedAt/WorkspaceURIs/…`) is populated by *interactive* agy use, not by `--print`. Therefore:
+   - **Supersede §9.6 / §2.3 capture:** the primary and effectively sole id source is `last_conversations.json` keyed by `pwd -P`-normalized cwd. Read it with the 3×/500 ms parse-retry (TOCTOU on the wholesale rewrite).
+   - The `UpdatedAt`/`WorkspaceURIs` cross-check and the metadata-based claimed-ids fallback in §9.6 are **moot for delegation turns** (no metadata entry to check). Do not gate id capture on them.
+   - Same-cwd fan-out disambiguation therefore rests entirely on the **mkdir-lock serialization** (§5.2) of first-calls, plus recording claimed ids under `./tmp/agent-delegation/*/session.id`. Cross-process/cross-project same-cwd races (another Claude project or the user's own interactive agy in the same cwd between our submit and our read) remain a documented residual — low likelihood, and the mkdir-lock cannot cover them; if `last_conversations.json[cwd]` changes identity between turns, surface it rather than resuming the wrong conversation.
+
 ### 9.13 Revised implementation order
 
 1. `extdel.sh` primitives: portable `spawn_daemon`, perl-alarm wrapper, handle grammar, meta.json, per-handle mutex, `reap`.
