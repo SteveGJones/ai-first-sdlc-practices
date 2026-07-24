@@ -95,7 +95,7 @@ The framework supports **four SDLC delivery structures**. The `setup-team` skill
 | [`sdlc-team-fullstack`](plugins/sdlc-team-fullstack/README.md) | 9 | — | Web full-stack — frontend, backend, API, data, DevOps, UX & integration architects |
 | [`sdlc-team-mobile`](plugins/sdlc-team-mobile/README.md) | 2 | — | Shared mobile base — cross-platform architecture + interaction UX (pairs with iOS/Android) |
 | [`sdlc-team-ios`](plugins/sdlc-team-ios/README.md) | 4 | 4 | iOS/iPadOS — HIG, SwiftUI, release & performance agents + TestFlight/App Store skills |
-| [`sdlc-team-android`](plugins/sdlc-team-android/README.md) | 1 | — | Android — Google Material Design 3 specialist |
+| [`sdlc-team-android`](plugins/sdlc-team-android/README.md) | 6 | — | Android — Material Design 3, Compose, app architecture, Gradle, Play release & performance |
 | [`sdlc-team-cloud`](plugins/sdlc-team-cloud/README.md) | 3 | — | Cloud, container, SRE specialists |
 | [`sdlc-team-security`](plugins/sdlc-team-security/README.md) | 5 | — | Security, compliance, privacy specialists |
 | [`sdlc-team-pm`](plugins/sdlc-team-pm/README.md) | 5 | — | Agile coach, delivery manager, progress tracking |
@@ -212,7 +212,7 @@ The framework provides 56 specialist agents across 12 plugins. Each plugin's REA
 | `code-review-specialist` | Code quality, security (OWASP), patterns |
 | `verification-enforcer` | Docs-code fidelity, test coverage, runtime proof |
 
-**Team plugins** (58 agents across 14 plugins):
+**Team plugins** (63 agents across 14 plugins):
 
 | Plugin | Agents | Highlights |
 |--------|--------|------------|
@@ -220,7 +220,7 @@ The framework provides 56 specialist agents across 12 plugins. Each plugin's REA
 | `sdlc-team-fullstack` | 9 | Frontend/backend/API architects, DevOps, UX-UI, data architect, integration orchestrator |
 | `sdlc-team-mobile` | 2 | Mobile architect, mobile-UX architect (shared cross-platform base) |
 | `sdlc-team-ios` | 4 | Apple HIG architect, SwiftUI architect, iOS release engineer, iOS performance specialist |
-| `sdlc-team-android` | 1 | Material Design 3 architect |
+| `sdlc-team-android` | 6 | Material Design 3, Jetpack Compose, app architecture, Gradle, Play release, performance |
 | `sdlc-team-common` | 8 | Solution architect, database architect, performance engineer, deep-research agent |
 | `sdlc-team-security` | 5 | Security architect, compliance auditor, data privacy officer |
 | `sdlc-team-pm` | 5 | Agile coach, delivery manager, retrospective miner |

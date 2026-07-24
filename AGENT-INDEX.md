@@ -1,8 +1,8 @@
 # Agent Catalog Index
-*Generated: 2026-07-23T16:31:59.222412 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
-*Total catalog entries: 146 | 81 in the `agents/` source directory | 65 published in plugins (across 18 plugins; 16 ship agents)*
+*Generated: 2026-07-23T17:04:36.874292 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
+*Total catalog entries: 156 | 86 in the `agents/` source directory | 70 published in plugins (across 18 plugins; 16 ship agents)*
 
-> **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (65 agents packaged into the 18 published plugins; 16 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
+> **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (70 agents packaged into the 18 published plugins; 16 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
 
 > **SDLC method bundles — `sdlc-programme` v0.1.0 and `sdlc-assured` v0.2.0 are skill+validator bundles by design and ship 0 agents.** They are not absent from the catalogue because they are unfinished; they are absent because they overlay the universal constitution with structured SDLC delivery methodology (phase gates for Programme; bidirectional traceability + DDD decomposition + KB-for-code for Assured) rather than introducing new specialist agent roles. The value is in their skills (5 for Programme, 8 for Assured), validators, and constitution articles. See [docs/METHODS-GUIDE.md](docs/METHODS-GUIDE.md) for when to use each method, and the bundle READMEs ([sdlc-programme](plugins/sdlc-programme/README.md), [sdlc-assured](plugins/sdlc-assured/README.md)) for skill catalogues and Getting Started walkthroughs.
 
@@ -130,7 +130,7 @@
   - name: Anthropic Console — Prompt Improver & Evaluator
   - name: Anthropic Console — Workbench
 
-### Core (36 agents)
+### Core (41 agents)
 
 #### `agent-builder`
 - **Path**: `agents/core/agent-builder.md`
@@ -138,6 +138,16 @@
 - **Keywords**: ai, api, architecture, container, database, design, graphql, grpc, kubernetes, llm
 - **Key Capabilities**:
   - 'example
+
+#### `android-app-architect`
+- **Path**: `agents/core/android-app-architect.md`
+- **Description**: Specialist in Android application architecture — Google's recommended UI/domain/data layering + UDF, lifecycle & process-death survival (ViewModel/SavedStateHandle), Hilt DI, Room/DataStore/Paging dat...
+- **Keywords**: api, architecture, design, test, testing
+
+#### `android-performance-specialist`
+- **Path**: `agents/core/android-performance-specialist.md`
+- **Description**: Specialist in Android app performance & diagnostics — app startup (cold/warm/hot, TTID/TTFD, App Startup lib), Baseline Profiles & Macrobenchmark, rendering/jank (frame budgets, slow/frozen frames, Ja...
+- **Keywords**: api, architecture, ci, cloud, design, pipeline
 
 #### `api-architect`
 - **Path**: `agents/core/api-architect.md`
@@ -261,6 +271,11 @@
 - **Description**: Expert in GitHub platform features, Actions workflows, Advanced Security, branch protection, PR automation, and organization governance. Use for GitHub repository configuration, CI/CD design, security...
 - **Keywords**: ai, api, architecture, auth, aws, azure, cd, ci, cloud, design
 
+#### `gradle-build-specialist`
+- **Path**: `agents/core/gradle-build-specialist.md`
+- **Description**: Specialist in Gradle & the Android Gradle Plugin (AGP) — Kotlin DSL, version catalogs (libs.versions.toml), convention plugins (build-logic vs buildSrc), build performance (configuration cache, build ...
+- **Keywords**: api, architecture, ci, security
+
 #### `ios-performance-specialist`
 - **Path**: `agents/core/ios-performance-specialist.md`
 - **Description**: Specialist in iOS app performance & diagnostics — Instruments (Time Profiler, Allocations/Leaks, Animation Hitches, SwiftUI & Swift Concurrency, os_signpost), app launch (~400ms), hitches & hangs (250...
@@ -274,6 +289,11 @@
   - 'example
   - MyApp.app before uploading."
   - 'example
+
+#### `jetpack-compose-architect`
+- **Path**: `agents/core/jetpack-compose-architect.md`
+- **Description**: Specialist in Jetpack Compose UI architecture (Android) — composition/recomposition, stability & strong skipping, state hoisting & UDF, side-effect APIs, custom layout/Modifier.Node, lazy lists, type-...
+- **Keywords**: api, architecture, design, testing
 
 #### `material-design-3-architect`
 - **Path**: `agents/core/material-design-3-architect.md`
@@ -310,6 +330,11 @@
   - Look for: official publisher, CI/CD integration, reusable workflows
   - Record findings: action name, publisher, description, usage count
   - (web search fallback, if steps 3-6 found fewer than 2 results):
+
+#### `play-store-release-specialist`
+- **Path**: `agents/core/play-store-release-specialist.md`
+- **Description**: Specialist in Google Play release & distribution — Play App Signing (two-key model), Android App Bundles (.aab)/bundletool/dynamic delivery, release tracks & staged rollout (halt/roll-forward), the Da...
+- **Keywords**: api, architecture, auth, ci, design, go, security, test, testing
 
 #### `repo-knowledge-distiller`
 - **Path**: `agents/core/repo-knowledge-distiller.md`
@@ -704,12 +729,37 @@
   - name: "LlamaIndex MCP Tools (llama-index-tools-mcp)"
   - name: "Qdrant MCP Server"
 
-### Plugin:Sdlc Team Android (1 agents)
+### Plugin:Sdlc Team Android (6 agents)
+
+#### `android-app-architect`
+- **Path**: `plugins/sdlc-team-android/agents/android-app-architect.md`
+- **Description**: Specialist in Android application architecture — Google's recommended UI/domain/data layering + UDF, lifecycle & process-death survival (ViewModel/SavedStateHandle), Hilt DI, Room/DataStore/Paging dat...
+- **Keywords**: api, architecture, design, test, testing
+
+#### `android-performance-specialist`
+- **Path**: `plugins/sdlc-team-android/agents/android-performance-specialist.md`
+- **Description**: Specialist in Android app performance & diagnostics — app startup (cold/warm/hot, TTID/TTFD, App Startup lib), Baseline Profiles & Macrobenchmark, rendering/jank (frame budgets, slow/frozen frames, Ja...
+- **Keywords**: api, architecture, ci, cloud, design, pipeline
+
+#### `gradle-build-specialist`
+- **Path**: `plugins/sdlc-team-android/agents/gradle-build-specialist.md`
+- **Description**: Specialist in Gradle & the Android Gradle Plugin (AGP) — Kotlin DSL, version catalogs (libs.versions.toml), convention plugins (build-logic vs buildSrc), build performance (configuration cache, build ...
+- **Keywords**: api, architecture, ci, security
+
+#### `jetpack-compose-architect`
+- **Path**: `plugins/sdlc-team-android/agents/jetpack-compose-architect.md`
+- **Description**: Specialist in Jetpack Compose UI architecture (Android) — composition/recomposition, stability & strong skipping, state hoisting & UDF, side-effect APIs, custom layout/Modifier.Node, lazy lists, type-...
+- **Keywords**: api, architecture, design, testing
 
 #### `material-design-3-architect`
 - **Path**: `plugins/sdlc-team-android/agents/material-design-3-architect.md`
 - **Description**: Specialist in Google Material Design 3 (M3 / Material You) — HCT/dynamic color, the md.ref/md.sys/md.comp token system, components, adaptive layout, tonal elevation, motion, and platform implementatio...
 - **Keywords**: angular, api, architecture, container, design, frontend, javascript, mcp, pipeline, quality
+
+#### `play-store-release-specialist`
+- **Path**: `plugins/sdlc-team-android/agents/play-store-release-specialist.md`
+- **Description**: Specialist in Google Play release & distribution — Play App Signing (two-key model), Android App Bundles (.aab)/bundletool/dynamic delivery, release tracks & staged rollout (halt/roll-forward), the Da...
+- **Keywords**: api, architecture, auth, ci, design, go, security, test, testing
 
 ### Plugin:Sdlc Team Cloud (3 agents)
 

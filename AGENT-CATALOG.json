@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "generated": "2026-07-23T16:31:59.222412",
-  "total_agents": 146,
+  "generated": "2026-07-23T17:04:36.874292",
+  "total_agents": 156,
   "categories": {
     "ai-builders": 5,
     "ai-development": 9,
-    "core": 36,
+    "core": 41,
     "delegation": 1,
     "documentation": 2,
     "future": 1,
@@ -21,7 +21,7 @@
     "plugin:sdlc-lang-python": 1,
     "plugin:sdlc-lang-swift": 1,
     "plugin:sdlc-team-ai": 14,
-    "plugin:sdlc-team-android": 1,
+    "plugin:sdlc-team-android": 6,
     "plugin:sdlc-team-cloud": 3,
     "plugin:sdlc-team-common": 8,
     "plugin:sdlc-team-docs": 2,
@@ -630,6 +630,43 @@
         "system-design"
       ],
       "description": "Builds production agents from research via 6-phase pipeline, archetype selection, and knowledge distillation. Use when creating or rebuilding agents."
+    },
+    {
+      "name": "android-app-architect",
+      "path": "agents/core/android-app-architect.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Android application architecture — Google's recommended UI/domain/data layering + UDF, lifecycle & process-death survival (ViewModel/SavedStateHandle), Hilt DI, Room/DataStore/Paging dat..."
+    },
+    {
+      "name": "android-performance-specialist",
+      "path": "agents/core/android-performance-specialist.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "ci",
+        "cloud",
+        "design",
+        "pipeline"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Android app performance & diagnostics — app startup (cold/warm/hot, TTID/TTFD, App Startup lib), Baseline Profiles & Macrobenchmark, rendering/jank (frame budgets, slow/frozen frames, Ja..."
     },
     {
       "name": "api-architect",
@@ -1256,6 +1293,23 @@
       "description": "Expert in GitHub platform features, Actions workflows, Advanced Security, branch protection, PR automation, and organization governance. Use for GitHub repository configuration, CI/CD design, security..."
     },
     {
+      "name": "gradle-build-specialist",
+      "path": "agents/core/gradle-build-specialist.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "ci",
+        "security"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Gradle & the Android Gradle Plugin (AGP) — Kotlin DSL, version catalogs (libs.versions.toml), convention plugins (build-logic vs buildSrc), build performance (configuration cache, build ..."
+    },
+    {
       "name": "ios-performance-specialist",
       "path": "agents/core/ios-performance-specialist.md",
       "category": "core",
@@ -1305,6 +1359,23 @@
         "system-design"
       ],
       "description": "Specialist in iOS release engineering & App Store distribution — code signing & provisioning, capabilities/entitlements, the three privacy surfaces (nutrition labels, PrivacyInfo.xcprivacy manifest, r..."
+    },
+    {
+      "name": "jetpack-compose-architect",
+      "path": "agents/core/jetpack-compose-architect.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Jetpack Compose UI architecture (Android) — composition/recomposition, stability & strong skipping, state hoisting & UDF, side-effect APIs, custom layout/Modifier.Node, lazy lists, type-..."
     },
     {
       "name": "material-design-3-architect",
@@ -1467,6 +1538,28 @@
         "system-design"
       ],
       "description": "Unified entry point for agent creation pipeline. Routes web research or repo analysis, then delegates to agent-builder for construction."
+    },
+    {
+      "name": "play-store-release-specialist",
+      "path": "agents/core/play-store-release-specialist.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "ci",
+        "design",
+        "go",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Google Play release & distribution — Play App Signing (two-key model), Android App Bundles (.aab)/bundletool/dynamic delivery, release tracks & staged rollout (halt/roll-forward), the Da..."
     },
     {
       "name": "repo-knowledge-distiller",
@@ -3556,6 +3649,65 @@
       "description": "RAG architecture specialist for vector databases, embeddings, chunking strategies, and retrieval optimization. Use for designing production RAG systems, selecting vector stores, or optimizing retrieva..."
     },
     {
+      "name": "android-app-architect",
+      "path": "plugins/sdlc-team-android/agents/android-app-architect.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Android application architecture — Google's recommended UI/domain/data layering + UDF, lifecycle & process-death survival (ViewModel/SavedStateHandle), Hilt DI, Room/DataStore/Paging dat..."
+    },
+    {
+      "name": "android-performance-specialist",
+      "path": "plugins/sdlc-team-android/agents/android-performance-specialist.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "ci",
+        "cloud",
+        "design",
+        "pipeline"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Android app performance & diagnostics — app startup (cold/warm/hot, TTID/TTFD, App Startup lib), Baseline Profiles & Macrobenchmark, rendering/jank (frame budgets, slow/frozen frames, Ja..."
+    },
+    {
+      "name": "gradle-build-specialist",
+      "path": "plugins/sdlc-team-android/agents/gradle-build-specialist.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "ci",
+        "security"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Gradle & the Android Gradle Plugin (AGP) — Kotlin DSL, version catalogs (libs.versions.toml), convention plugins (build-logic vs buildSrc), build performance (configuration cache, build ..."
+    },
+    {
+      "name": "jetpack-compose-architect",
+      "path": "plugins/sdlc-team-android/agents/jetpack-compose-architect.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Jetpack Compose UI architecture (Android) — composition/recomposition, stability & strong skipping, state hoisting & UDF, side-effect APIs, custom layout/Modifier.Node, lazy lists, type-..."
+    },
+    {
       "name": "material-design-3-architect",
       "path": "plugins/sdlc-team-android/agents/material-design-3-architect.md",
       "category": "plugin:sdlc-team-android",
@@ -3575,6 +3727,25 @@
       "capabilities": [],
       "domains": [],
       "description": "Specialist in Google Material Design 3 (M3 / Material You) — HCT/dynamic color, the md.ref/md.sys/md.comp token system, components, adaptive layout, tonal elevation, motion, and platform implementatio..."
+    },
+    {
+      "name": "play-store-release-specialist",
+      "path": "plugins/sdlc-team-android/agents/play-store-release-specialist.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "ci",
+        "design",
+        "go",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Google Play release & distribution — Play App Signing (two-key model), Android App Bundles (.aab)/bundletool/dynamic delivery, release tracks & staged rollout (halt/roll-forward), the Da..."
     },
     {
       "name": "cloud-architect",
