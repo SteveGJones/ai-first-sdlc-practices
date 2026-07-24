@@ -27,6 +27,11 @@ _In progress._ Building a new SDLC-family plugin (`sdlc-agent-delegation`) with 
 
 - **2026-07-23** — Branch `feature/external-agent-delegation` created; issue #232 updated to require BOTH continuity modes as first-class, single-contract modes.
 - **2026-07-23** — Confirmed both CLIs support the needed session model locally (codex 0.145.0 `exec resume`; agy 1.1.5 `--conversation`/`-i`).
+- **2026-07-23** — Fable architecture spike + adversarial review (verdict: proceed-with-changes); §9 of the design spec is authoritative. BLOCKER fixed at design time: `setsid`/`timeout`/`gtimeout` absent on macOS → portable perl `POSIX::setsid` daemonizer; submit-then-poll to respect the Bash-tool 120s/600s cap.
+- **2026-07-23** — Stage 1+2 (extdel.sh + codex resume, Sonnet-built) landed in working tree: 33/33 mock tests green, injection-safe (prompt via stdin), posture pinned, read-only default. Pending Fable code review before commit.
+- **2026-07-23** — **User authorized** running the one-off agy live probe at the Stage 3 boundary (`agy --print --mode plan` → execute vs hang; spends a small amount of agy/Google quota). No need to re-ask when Stage 3 starts.
+- **2026-07-23** — Fable code review of Stage 1+2 found 1 BLOCKER (B1: `stop` orphaned codex via process-group mismatch → double-drive) + 9 MAJOR + minors. Sonnet applied all fixes; regression tests added for the gaps. **Stage 1+2 committed**: 64/64 mock tests green, syntax-clean, zero debt. B1 fix verified independently (supervisor TERM/INT handlers forward to `-$child`, signal-aware exit codes, ownership-checked lock release claimed synchronously post-fork).
+- **2026-07-23** — **User authorized** delegating real code reviews of our own implementation to BOTH external platforms (codex + agy) as the end-to-end dogfood test (spends OpenAI + agy quota).
 
 ## Changes Made
 

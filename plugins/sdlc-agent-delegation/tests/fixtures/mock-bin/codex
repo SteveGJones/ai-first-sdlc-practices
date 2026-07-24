@@ -1,0 +1,85 @@
+#!/bin/bash
+# Mock `codex` CLI for extdel.sh tests. Understands just enough of the
+# real `codex exec` / `codex exec resume` / `codex login status` /
+# `codex --version` surface to exercise extdel.sh's codex-resume path
+# without spending real API quota. Never invoke the real codex/agy CLIs
+# from tests — this fixture exists so we don't have to.
+#
+# Env knobs read by this mock:
+#   MOCK_CODEX_SESSION_ID   — uuid to report as session_id (turn 1 only)
+#   MOCK_CODEX_SLEEP        — seconds to sleep before responding
+#   MOCK_CODEX_FAIL         — "1" => exit 1 after emitting an error event
+set -eu
+
+if [ "${1:-}" = "--version" ]; then
+  echo "codex-cli 0.0.0-mock"
+  exit 0
+fi
+
+if [ "${1:-}" = "login" ] && [ "${2:-}" = "status" ]; then
+  exit 0
+fi
+
+if [ "${1:-}" = "exec" ]; then
+  shift
+  out=""
+  session=""
+  turn_mode="start"
+
+  if [ "${1:-}" = "resume" ]; then
+    turn_mode="resume"
+    shift
+    session="$1"
+    shift
+  fi
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -o) out="$2"; shift 2 ;;
+      -C) shift 2 ;;
+      -s) shift 2 ;;
+      -m) shift 2 ;;
+      -c) shift 2 ;;
+      --add-dir) shift 2 ;;
+      --json|--color|never|--skip-git-repo-check|--dangerously-bypass-approvals-and-sandbox)
+        shift ;;
+      -) shift ;;
+      *) shift ;;
+    esac
+  done
+
+  prompt=$(cat)
+
+  # Session-establishing event emitted FIRST, before the "thinking" sleep —
+  # matches real codex CLI behavior (session_meta appears near the start of
+  # a turn, not after it completes) and lets tests that kill/timeout a
+  # turn mid-flight still exercise session-id capture from a turn that
+  # never reached completion.
+  if [ "$turn_mode" = "start" ]; then
+    sid="${MOCK_CODEX_SESSION_ID:-00000000-0000-4000-8000-000000000001}"
+    echo "{\"type\":\"session_meta\",\"session_id\":\"$sid\"}"
+  else
+    echo "{\"type\":\"turn_started\",\"conversation_id\":\"$session\"}"
+  fi
+
+  if [ -n "${MOCK_CODEX_SLEEP:-}" ]; then
+    sleep "$MOCK_CODEX_SLEEP"
+  fi
+
+  if [ "${MOCK_CODEX_FAIL:-0}" = "1" ]; then
+    echo '{"type":"error","message":"mock induced failure"}'
+    exit 1
+  fi
+
+  echo '{"type":"agent_message_delta","delta":"working"}'
+  echo '{"type":"turn_complete"}'
+
+  answer="mock answer for: $prompt"
+  if [ -n "$out" ]; then
+    printf '%s\n' "$answer" > "$out"
+  fi
+  exit 0
+fi
+
+echo "mock codex: unrecognized invocation: $*" >&2
+exit 2

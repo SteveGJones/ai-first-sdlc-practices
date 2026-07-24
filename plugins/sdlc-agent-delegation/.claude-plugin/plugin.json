@@ -1,0 +1,7 @@
+{
+  "name": "sdlc-agent-delegation",
+  "version": "0.1.0",
+  "description": "Delegate scoped sub-problems to external agentic CLIs (codex, agy) from a Haiku wrapper agent, with a compact caller-facing contract and full transcripts kept out of context",
+  "author": { "name": "SteveGJones" },
+  "keywords": ["sdlc", "delegation", "codex", "agy", "token-optimization"]
+}
