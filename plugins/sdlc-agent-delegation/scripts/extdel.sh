@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
 # extdel.sh — external-agent delegation primitives (codex / agy)
 #
-# Stage 1 + Stage 2 of docs/superpowers/specs/2026-07-23-external-agent-delegation-design.md
-# (that spec's §9 is authoritative). This build implements ONLY:
+# Stage 1 + Stage 2 + Stage 3 of
+# docs/superpowers/specs/2026-07-23-external-agent-delegation-design.md
+# (that spec's §9 is authoritative, and §9.14 — agy live-probe findings —
+# supersedes §2.3/§9.6 for agy id-capture specifically). This build
+# implements:
 #   cli=codex, mode=resume  — submit-then-poll id-based resume.
-# agy support and codex persistent (daemon) mode are later stages and are
-# refused with a clear ERROR status rather than attempted.
+#   cli=agy,   mode=resume  — submit-then-poll id-based resume (Stage 3).
+# codex persistent (daemon) mode and agy persistent mode are later/out-of-
+# scope stages and are refused with a clear ERROR status rather than
+# attempted (agy persistent mode is deliberately NOT implemented as
+# resume-under-the-hood here — see cmd_start's scope check — to avoid
+# silently masking a caller's explicit `mode: persistent` request; ships
+# as a clean ERROR per the task's own preference for Stage 3).
 #
 # Target shell: bash 3.2.57 (macOS system bash) / POSIX sh. No associative
 # arrays, no `${var,,}`, no reliance on `setsid`/`timeout`/`gtimeout` (all
@@ -27,6 +35,12 @@ PROJECT_ROOT="$(pwd -P)"
 BASE_DIR="$PROJECT_ROOT/tmp/agent-delegation"
 SUPERVISOR_PL="$SCRIPT_DIR/turn-supervisor.pl"
 MAX_SLICE_CHARS=12000
+
+# agy state (§9.14): read from $HOME so tests can redirect it wholesale by
+# overriding HOME before invoking extdel.sh — never touch the real
+# ~/.gemini/antigravity-cli/ from a test.
+AGY_STATE_DIR="$HOME/.gemini/antigravity-cli"
+AGY_CACHE_LAST_CONV="$AGY_STATE_DIR/cache/last_conversations.json"
 
 # ---------------------------------------------------------------------------
 # Generic helpers
@@ -76,8 +90,9 @@ usage() {
 Usage: extdel.sh <subcommand> [options]
 
 Subcommands:
-  start   --prompt-file F | --prompt TEXT [--cli codex] [--mode resume]
+  start   --prompt-file F | --prompt TEXT [--cli codex|agy] [--mode resume]
           [--cwd DIR] [--model M] [--effort low|medium|high]
+          [--agent NAME]   (agy only; ignored for codex)
           [--posture read-only|workspace|dangerous] [--timeout-s N]
           [--add-dir DIR ...]
   prompt  <HANDLE> --prompt-file F | --prompt TEXT [--posture P] [--steal]
@@ -87,8 +102,9 @@ Subcommands:
   stop    <HANDLE>
   reap    [--prune-closed AGE_SECONDS]
 
-Stage 2 scope: cli=codex, mode=resume only. agy and codex persistent mode
-are not implemented in this build (they return Status: ERROR, not a hang).
+Stage 3 scope: cli=codex mode=resume, cli=agy mode=resume. codex persistent
+and agy persistent mode are not implemented in this build (they return
+Status: ERROR, not a hang).
 EOF
 }
 
@@ -527,6 +543,314 @@ submit_codex_turn() {
 }
 
 # ---------------------------------------------------------------------------
+# agy-specific helpers (Stage 3, §9.14 authoritative for id-capture)
+# ---------------------------------------------------------------------------
+
+preflight_agy() {
+  if ! command -v agy >/dev/null 2>&1; then
+    printf 'agy not found on PATH — install per Antigravity docs'
+    return 1
+  fi
+  # agy has no `login status` verb (§6.1/§6.2) — the best available
+  # sanity check is that the state directory exists at all. A first-ever
+  # `agy` run creates it; its absence means agy has literally never been
+  # signed into on this machine.
+  if [ ! -d "$AGY_STATE_DIR" ]; then
+    printf "agy not initialized — run 'agy' interactively once to sign in"
+    return 1
+  fi
+  return 0
+}
+
+agy_posture_args() {
+  AGY_POSTURE_ARGS=()
+  case "$1" in
+    read-only) AGY_POSTURE_ARGS=(--mode plan --sandbox) ;;
+    workspace) AGY_POSTURE_ARGS=(--mode accept-edits --sandbox) ;;
+    dangerous) AGY_POSTURE_ARGS=(--dangerously-skip-permissions) ;;
+    *) return 1 ;;
+  esac
+  return 0
+}
+
+agy_auth_backstop_matched() {
+  # Runtime auth backstop (§6.2): a first-turn failure whose stderr/CLI-log
+  # matches an auth-shaped pattern is ERROR(auth), distinct from a
+  # model-level FAILURE (e.g. the delegated model correctly refusing a
+  # request, or a sandbox denial) which is not an auth problem at all.
+  for f in "$@"; do
+    [ -f "$f" ] || continue
+    grep -Eiq '(auth|sign.?in|login|unauthorized|credential)' "$f" 2>/dev/null && return 0
+  done
+  return 1
+}
+
+agy_read_last_conversations_id() {
+  # agy_read_last_conversations_id <cwd_norm>
+  # §9.14 (authoritative, supersedes §9.6/§2.3): last_conversations.json —
+  # a flat {"<abs cwd>": "<uuid>"} map — is the SOLE reliable id source for
+  # a --print delegation turn; the metadata-file cross-check described in
+  # earlier design sections is moot (fresh --print conversations never
+  # appear in conversation_metadata.json). Both cache files are rewritten
+  # wholesale when agy runs (TOCTOU), so parse with a 3x/500ms retry.
+  #
+  # Return codes distinguish WHY capture failed, so the caller can tell a
+  # "never initialized" signal from a benign "not this cwd yet":
+  #   0 = success, uuid printed on stdout
+  #   1 = the cache file was missing or never parsed as a JSON object in
+  #       any of the 3 tries (agy-not-initialized-shaped failure)
+  #   2 = the file parsed fine at least once, but this cwd's key was never
+  #       present (id capture failed for this specific delegation)
+  cwd_key="$1"
+  n=0
+  parsed_ok=0
+  while [ "$n" -lt 3 ]; do
+    if [ -f "$AGY_CACHE_LAST_CONV" ]; then
+      if jq -e 'type=="object"' "$AGY_CACHE_LAST_CONV" >/dev/null 2>&1; then
+        parsed_ok=1
+        sid_candidate=$(jq -r --arg k "$cwd_key" '.[$k] // empty' "$AGY_CACHE_LAST_CONV" 2>/dev/null)
+        if printf '%s' "$sid_candidate" | grep -Eq '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'; then
+          printf '%s' "$sid_candidate"
+          return 0
+        fi
+      fi
+    fi
+    n=$((n + 1))
+    [ "$n" -lt 3 ] && sleep 0.5
+  done
+  [ "$parsed_ok" -eq 1 ] && return 2
+  return 1
+}
+
+agy_first_call_lock_acquire() {
+  # agy_first_call_lock_acquire <cwd_norm> — mkdir-based mutex (§5.2) that
+  # serializes same-cwd first-turn id READS against each other (this
+  # plugin's own concurrent handles only — see the header note on
+  # capture_agy_session_id for why it cannot cover cross-process races).
+  # Prints the lock dir path and returns 0 on success; prints nothing and
+  # returns 1 if not acquired within the bound — the caller still attempts
+  # the read best-effort in that case (§9.6's residual-race note already
+  # treats this as a documented, low-likelihood risk, not a hard
+  # guarantee), rather than failing the whole turn over lock contention.
+  cwd_norm="$1"
+  locks_dir="$BASE_DIR/.locks"
+  mkdir -p "$locks_dir" 2>/dev/null
+  h=$(printf '%s' "$cwd_norm" | shasum 2>/dev/null | awk '{print $1}')
+  [ -n "$h" ] || h=$(printf '%s' "$cwd_norm" | sha1sum 2>/dev/null | awk '{print $1}')
+  h12=$(printf '%s' "$h" | cut -c1-12)
+  [ -n "$h12" ] || h12="nohash"
+  lockdir="$locks_dir/agy-first-$h12.d"
+
+  n=0
+  # Bounded to ~15 polls (30s), not the full timeout_s: this lock guards a
+  # sub-second filesystem read, not the external turn itself, so a long
+  # wait here would only eat into cmd_status's own bounded polling budget
+  # (cap 90s) for no benefit — a lock still held after a few seconds is
+  # already anomalous, not a legitimately slow read.
+  while [ "$n" -lt 15 ]; do
+    if mkdir "$lockdir" 2>/dev/null; then
+      printf '%s' "$lockdir"
+      return 0
+    fi
+    age=$(( $(now_epoch) - $(stat_mtime "$lockdir") ))
+    if [ "$age" -gt 900 ]; then
+      rm -rf "$lockdir" 2>/dev/null
+      continue
+    fi
+    n=$((n + 1))
+    sleep 2
+  done
+  return 1
+}
+
+agy_first_call_lock_release() {
+  rmdir "$1" 2>/dev/null
+}
+
+capture_agy_session_id() {
+  # capture_agy_session_id <dir> <cwd> — turn-1-only, called from cmd_status
+  # once the turn reaches terminal SUCCESS. Sets $AGY_CAPTURE_FAIL_REASON
+  # on failure so cmd_status can surface a precise message without
+  # re-deriving the reason.
+  dir="$1"; cwd="$2"
+  AGY_CAPTURE_FAIL_REASON=""
+  cwd_norm=$(cd "$cwd" 2>/dev/null && pwd -P)
+  [ -n "$cwd_norm" ] || cwd_norm="$cwd"
+
+  lockdir=$(agy_first_call_lock_acquire "$cwd_norm")
+  sid=$(agy_read_last_conversations_id "$cwd_norm")
+  rc=$?
+  [ -n "$lockdir" ] && agy_first_call_lock_release "$lockdir"
+
+  if [ "$rc" -eq 0 ] && [ -n "$sid" ]; then
+    printf '%s' "$sid" > "$dir/session.id"
+    meta_set "$dir" session_id str "$sid"
+    meta_set "$dir" agy_cwd_key str "$cwd_norm"
+    return 0
+  fi
+
+  if [ "$rc" -eq 1 ]; then
+    AGY_CAPTURE_FAIL_REASON="agy state file $(display_path "$AGY_CACHE_LAST_CONV") is missing or unparseable after 3 retries — is agy initialized? Run 'agy' interactively once to sign in."
+  else
+    AGY_CAPTURE_FAIL_REASON="no entry for this cwd in $(display_path "$AGY_CACHE_LAST_CONV") after 3 retries — id capture failed."
+  fi
+  return 1
+}
+
+agy_check_identity_drift() {
+  # agy_check_identity_drift <dir> — turn N>1 check: has
+  # last_conversations.json[cwd] moved to a different conversation since we
+  # captured session.id at turn 1? (§9.14: "if it changed identity, surface
+  # a warning in the return rather than silently resuming wrong.") We never
+  # act on this — only warn; the next turn still resumes OUR recorded
+  # session.id via --conversation, never whatever the cache currently says.
+  dir="$1"
+  stored_sid=$(meta_get "$dir" session_id)
+  cwd_key=$(meta_get "$dir" agy_cwd_key)
+  [ -n "$stored_sid" ] && [ -n "$cwd_key" ] || return 0
+  current_sid=$(agy_read_last_conversations_id "$cwd_key")
+  if [ -n "$current_sid" ] && [ "$current_sid" != "$stored_sid" ]; then
+    printf 'WARNING: last_conversations.json for this cwd now points to a different agy conversation (%s) than this handle'\''s session (%s) — NOT auto-resuming the new one; another agy process may be running in the same cwd. Verify before continuing if this is unexpected.' "$current_sid" "$stored_sid"
+  fi
+}
+
+agy_files_changed_summary() {
+  posture="$1"
+  if [ "$posture" = "read-only" ]; then
+    printf 'not tracked (read-only posture)'
+    return
+  fi
+  # agy's --log-file format for edit records has not been verified against
+  # a real agy release (open item per the design doc's §4.2) — report
+  # plainly rather than fabricate a heuristic parse that would misreport
+  # confidence we don't actually have.
+  printf 'not tracked (edit detection not implemented for agy in this build)'
+}
+
+submit_agy_turn() {
+  # submit_agy_turn <dir> <turnnum> <cwd> <posture> <model> <effort> <agent>
+  #                 <timeout_s> [add_dir ...]
+  #
+  # Same submit-then-poll contract as submit_codex_turn (precondition: the
+  # caller already holds dir's turn lock, acquired BEFORE this turn's
+  # prompt file was written). agy differs from codex in ways that shape
+  # this function:
+  #   1. agy has no -C/--cd flag — it runs in the PROCESS cwd (§9.14 #2),
+  #      so the actual invocation is wrapped in a `cd "$cwd" && exec agy
+  #      ...` inner shell rather than exec'd directly.
+  #   2. agy's --print takes the prompt as its FLAG VALUE, and --print MUST
+  #      be the LAST flag with the prompt immediately after it (§9.14 #2)
+  #      — never interleave flags between --print and the prompt. Getting
+  #      this wrong silently drops the real prompt (observed live).
+  #   3. agy has no -o/--output-last-message equivalent: its answer is
+  #      plain stdout, which turn-supervisor.pl already redirects to
+  #      eventsfile — cmd_status copies that into last-message.txt once
+  #      the turn is terminal, so this function does NOT write a
+  #      last-message file itself.
+  #   4. Turn N never re-passes --model/--effort/--agent (mirrors codex
+  #      resume, which never re-passes -m/-c on `exec resume` either —
+  #      those are session-time properties, not per-turn ones); the
+  #      caller (cmd_prompt) passes empty strings for those on turn N.
+  dir="$1"; turnnum="$2"; cwd="$3"; posture="$4"; model="$5"; effort="$6"; agent="$7"; timeout_s="$8"
+  shift 8
+  add_dirs=("$@")
+
+  tn=$(printf 'turn-%03d' "$turnnum")
+  promptfile="$dir/$tn.prompt.txt"
+  eventsfile="$dir/$tn.events.jsonl"
+  stderrfile="$dir/$tn.stderr.log"
+  agylogfile="$dir/$tn.agy.log"
+  exitfile="$dir/$tn.exit.code"
+  pidfile="$dir/$tn.pid"
+  startedfile="$dir/$tn.started"
+  bootlog="$dir/$tn.spawn.log"
+  lockdir="$dir/.turn-lock"
+
+  : > "$eventsfile"
+  : > "$stderrfile"
+  rm -f "$exitfile"
+
+  if ! agy_posture_args "$posture"; then
+    rm -rf "$lockdir"
+    printf 'BAD_POSTURE'
+    return 1
+  fi
+
+  prompt_text=$(cat "$promptfile" 2>/dev/null)
+  case "$prompt_text" in
+    -*)
+      # §9.12 m3: agy's flag parser (Go-style) would treat a leading-dash
+      # prompt VALUE as an option rather than data. Refuse rather than
+      # risk the prompt silently misparsing — the same failure shape as
+      # the flag-ordering bug in §9.14 finding #2, just triggered by the
+      # value instead of the ordering.
+      rm -rf "$lockdir"
+      printf 'BAD_PROMPT'
+      return 1
+      ;;
+  esac
+
+  agy_args=()
+  if [ "$turnnum" -gt 1 ]; then
+    sid=$(cat "$dir/session.id" 2>/dev/null)
+    if [ -z "$sid" ]; then
+      rm -rf "$lockdir"
+      printf 'NO_SESSION'
+      return 1
+    fi
+    # Never --continue (§2.3/§9.14): --continue races under fan-out the
+    # same way codex's `resume --last` does. Always resume by explicit id.
+    agy_args+=(--conversation "$sid")
+  fi
+  [ -n "$model" ] && agy_args+=(--model "$model")
+  [ -n "$effort" ] && agy_args+=(--effort "$effort")
+  [ -n "$agent" ] && agy_args+=(--agent "$agent")
+  agy_args+=("${AGY_POSTURE_ARGS[@]}")
+  for d in "${add_dirs[@]}"; do
+    [ -n "$d" ] && agy_args+=(--add-dir "$d")
+  done
+  agy_args+=(--print-timeout "${timeout_s}s" --log-file "$agylogfile")
+  # --print MUST be last, prompt immediately after it (§9.14 #2) — nothing
+  # may be appended to agy_args below this line.
+  agy_args+=(--print "$prompt_text")
+
+  # agy has no -C flag, so the real invocation must run inside a `cd`
+  # shell. This is a SECOND, independent quoting pass from the outer
+  # supcmd/quote_args layer below: printf %q here escapes $cwd and each
+  # arg so THIS inner `sh -c` parses them back exactly, and quote_args
+  # then escapes the resulting single string as one opaque argv element
+  # for the outer spawn_daemon shell to hand to perl unchanged. Multi-line
+  # prompts survive both passes because printf %q round-trips newlines.
+  inner="cd $(printf '%q' "$cwd") && exec agy"
+  for a in "${agy_args[@]}"; do
+    inner="$inner $(printf '%q' "$a")"
+  done
+  cmd=(sh -c "$inner")
+
+  cmdstr=$(quote_args "${cmd[@]}")
+  # Timeout: agy's own --print-timeout is the primary, native deadline
+  # (verified non-hanging for the read-only posture — §9.14 #1); the
+  # supervisor's perl-alarm is kept only as a hard backstop in case
+  # --print-timeout itself fails to fire, so it's set comfortably past the
+  # native one (timeout_s + 30) rather than racing it.
+  alarm_timeout=$((timeout_s + 30))
+  supcmd="perl $(printf '%q' "$SUPERVISOR_PL") $(printf '%q' "$alarm_timeout") $(printf '%q' "$promptfile") $(printf '%q' "$eventsfile") $(printf '%q' "$stderrfile") $(printf '%q' "$exitfile") $(printf '%q' "$lockdir") --$cmdstr"
+
+  now_epoch > "$startedfile"
+  spawn_daemon "$pidfile" "$supcmd" "$bootlog"
+  wait_for_file "$pidfile" 3
+
+  if [ ! -f "$pidfile" ] || [ ! -s "$pidfile" ]; then
+    rm -rf "$lockdir"
+    printf 'SPAWN_FAIL'
+    return 1
+  fi
+
+  printf 'OK'
+  return 0
+}
+
+# ---------------------------------------------------------------------------
 # Compact-return block (§4.2) — emitted by start/prompt (RUNNING) and status
 # (terminal or RUNNING). Callers set the EB_* globals then call emit_block.
 # ---------------------------------------------------------------------------
@@ -586,7 +910,7 @@ emit_scope_error() {
   EB_SESSION="pending"; EB_DURATION=0
   EB_ANSWERFILE="none"; EB_LOGFILE="none"; EB_FILESCHANGED="not tracked"
   EB_REPOLLABLE="no"
-  EB_ERRORS="cli='$cli' mode='$mode' is not implemented in this build (Stage 2 ships codex resume mode only)."
+  EB_ERRORS="cli='$cli' mode='$mode' is not implemented in this build (Stage 3 ships codex resume + agy resume only)."
   emit_block
 }
 
@@ -602,6 +926,7 @@ cmd_start() {
   cwd="$PROJECT_ROOT"
   model=""
   effort=""
+  agent=""
   posture="read-only"
   timeout_s=600
   add_dirs=()
@@ -620,6 +945,7 @@ cmd_start() {
           *) die_usage "start: --effort must be low|medium|high" ;;
         esac
         effort="$2"; shift 2 ;;
+      --agent) agent="$2"; shift 2 ;;
       --posture) posture="$2"; shift 2 ;;
       --timeout-s)
         validate_nonneg_int "$2" || die_usage "start: --timeout-s must be a non-negative integer"
@@ -629,12 +955,18 @@ cmd_start() {
     esac
   done
 
-  if [ "$cli" != "codex" ] || [ "$mode" != "resume" ]; then
+  scope_ok=1
+  case "$cli" in
+    codex) [ "$mode" = "resume" ] || scope_ok=0 ;;
+    agy) [ "$mode" = "resume" ] || scope_ok=0 ;;
+    *) scope_ok=0 ;;
+  esac
+  if [ "$scope_ok" -ne 1 ]; then
     EB_HANDLE="(none)"; EB_CLI="$cli"; EB_MODE="$mode"; EB_STATUS="ERROR"
     EB_TURN=0; EB_SESSION="pending"; EB_DURATION=0
     EB_ANSWERFILE="none"; EB_LOGFILE="none"; EB_FILESCHANGED="not tracked"
     EB_REPOLLABLE="no"
-    EB_ERRORS="cli='$cli' mode='$mode' is not implemented in this build (Stage 2 ships codex resume mode only)."
+    EB_ERRORS="cli='$cli' mode='$mode' is not implemented in this build (Stage 3 ships codex resume + agy resume only; agy persistent mode is deliberately a clean ERROR here rather than resume-under-the-hood — see design §3.2 for the intended future behavior)."
     emit_block
     return 0
   fi
@@ -648,8 +980,11 @@ cmd_start() {
 
   reap_stale_locks_quiet
 
-  pre_err=$(preflight_codex)
-  if [ $? -ne 0 ]; then
+  case "$cli" in
+    codex) pre_err=$(preflight_codex); pre_rc=$? ;;
+    agy) pre_err=$(preflight_agy); pre_rc=$? ;;
+  esac
+  if [ "$pre_rc" -ne 0 ]; then
     EB_HANDLE="(none)"; EB_CLI="$cli"; EB_MODE="$mode"; EB_STATUS="ERROR"
     EB_TURN=0; EB_SESSION="pending"; EB_DURATION=0
     EB_ANSWERFILE="none"; EB_LOGFILE="none"; EB_FILESCHANGED="not tracked"
@@ -663,27 +998,32 @@ cmd_start() {
   dir="$BASE_DIR/$handle"
   mkdir -p "$dir" || die_usage "start: could not create $dir"
 
-  codex_version=$(codex --version 2>/dev/null | head -1)
+  case "$cli" in
+    codex) cli_version=$(codex --version 2>/dev/null | head -1) ;;
+    agy) cli_version=$(agy --version 2>/dev/null | head -1) ;;
+  esac
   created=$(now_iso)
   add_dirs_json=$(printf '%s\n' "${add_dirs[@]}" | jq -R . | jq -s .)
 
   # No `owner` field: a per-handle exclusive-adoption model (§9.8) was
   # never implemented for resume mode in this build (nothing reads it —
   # a dead field is technical debt), and cross-process adoption is out of
-  # scope for Stage 1+2's single-caller resume flow.
+  # scope for Stage 1+2+3's single-caller resume flow. `agent` is agy-only
+  # (codex has no equivalent flag) — always null for cli=codex.
   jq -n \
     --arg handle "$handle" --arg cli "$cli" --arg mode "$mode" \
     --arg cwd "$cwd" --arg state_root "$PROJECT_ROOT" \
-    --arg model "$model" --arg effort "$effort" --arg posture "$posture" \
+    --arg model "$model" --arg effort "$effort" --arg agent "$agent" --arg posture "$posture" \
     --argjson timeout_s "$timeout_s" --arg created "$created" \
-    --arg codex_version "$codex_version" --argjson add_dirs "$add_dirs_json" \
+    --arg cli_version "$cli_version" --argjson add_dirs "$add_dirs_json" \
     '{
       handle: $handle, cli: $cli, mode: $mode, cwd: $cwd, state_root: $state_root,
       model: (if ($model | length) > 0 then $model else null end),
       effort: (if ($effort | length) > 0 then $effort else null end),
+      agent: (if ($agent | length) > 0 then $agent else null end),
       posture: $posture, timeout_s: $timeout_s, created: $created,
-      codex_version: (if ($codex_version | length) > 0 then $codex_version else null end),
-      add_dirs: $add_dirs, turn_count: 0, session_id: null, closed: null
+      cli_version: (if ($cli_version | length) > 0 then $cli_version else null end),
+      add_dirs: $add_dirs, turn_count: 0, session_id: null, agy_cwd_key: null, closed: null
     }' > "$dir/meta.json"
 
   # Lock BEFORE the prompt file write (M3): start's handle is fresh so
@@ -707,7 +1047,10 @@ cmd_start() {
     printf '%s' "$prompt_text" > "$dir/turn-001.prompt.txt"
   fi
 
-  result=$(submit_codex_turn "$dir" 1 "$cwd" "$posture" "$model" "$effort" "$timeout_s" "${add_dirs[@]}")
+  case "$cli" in
+    codex) result=$(submit_codex_turn "$dir" 1 "$cwd" "$posture" "$model" "$effort" "$timeout_s" "${add_dirs[@]}") ;;
+    agy) result=$(submit_agy_turn "$dir" 1 "$cwd" "$posture" "$model" "$effort" "$agent" "$timeout_s" "${add_dirs[@]}") ;;
+  esac
   case "$result" in
     OK)
       meta_set "$dir" turn_count raw 1
@@ -774,7 +1117,13 @@ cmd_prompt() {
 
   cli=$(meta_get "$dir" cli)
   mode=$(meta_get "$dir" mode)
-  if [ "$cli" != "codex" ] || [ "$mode" != "resume" ]; then
+  prompt_scope_ok=1
+  case "$cli" in
+    codex) [ "$mode" = "resume" ] || prompt_scope_ok=0 ;;
+    agy) [ "$mode" = "resume" ] || prompt_scope_ok=0 ;;
+    *) prompt_scope_ok=0 ;;
+  esac
+  if [ "$prompt_scope_ok" -ne 1 ]; then
     emit_scope_error "$handle" "$cli" "$mode"
     return 0
   fi
@@ -860,7 +1209,13 @@ cmd_prompt() {
     [ -n "$ad" ] && add_dirs+=("$ad")
   done < <(meta_get_array "$dir" add_dirs)
 
-  result=$(submit_codex_turn "$dir" "$next_turn" "$cwd" "$effective_posture" "" "" "$timeout_s" "${add_dirs[@]}")
+  # Turn N never re-passes model/effort/agent (session-time properties,
+  # not per-turn ones) — see submit_agy_turn's header note and the
+  # existing codex behavior this mirrors.
+  case "$cli" in
+    codex) result=$(submit_codex_turn "$dir" "$next_turn" "$cwd" "$effective_posture" "" "" "$timeout_s" "${add_dirs[@]}") ;;
+    agy) result=$(submit_agy_turn "$dir" "$next_turn" "$cwd" "$effective_posture" "" "" "" "$timeout_s" "${add_dirs[@]}") ;;
+  esac
   case "$result" in
     OK)
       meta_set "$dir" turn_count raw "$next_turn"
@@ -975,12 +1330,8 @@ cmd_status() {
     ended=$(stat_mtime "$exitfile")
     duration=$((ended - started))
     [ "$duration" -lt 0 ] && duration=0
-
-    if [ "$turn" -eq 1 ] && [ -z "$(meta_get "$dir" session_id)" ]; then
-      capture_session_id "$dir" "$tn"
-    fi
-    sid=$(meta_get "$dir" session_id)
-    [ -z "$sid" ] && sid="pending"
+    posture=$(meta_get "$dir" posture)
+    cwd_stored=$(meta_get "$dir" cwd)
 
     case "$code" in
       0) status="SUCCESS" ;;
@@ -988,18 +1339,71 @@ cmd_status() {
       *) status="FAILURE" ;;
     esac
 
-    posture=$(meta_get "$dir" posture)
+    if [ "$cli" = "agy" ]; then
+      # agy has no -o/--output-last-message equivalent (§9.14 #3): its
+      # answer is plain stdout, which turn-supervisor.pl already captured
+      # into eventsfile. Populate last-message.txt from it so slice/status
+      # share the exact same file convention codex uses, rather than
+      # forking the contract per CLI.
+      cp -- "$dir/$tn.events.jsonl" "$dir/$tn.last-message.txt" 2>/dev/null
+
+      identity_warning=""
+      if [ "$turn" -eq 1 ] && [ -z "$(meta_get "$dir" session_id)" ]; then
+        if [ "$status" = "SUCCESS" ]; then
+          capture_agy_session_id "$dir" "$cwd_stored" || status="ERROR"
+        fi
+      elif [ "$turn" -gt 1 ]; then
+        identity_warning=$(agy_check_identity_drift "$dir")
+      fi
+
+      sid=$(meta_get "$dir" session_id)
+      [ -z "$sid" ] && sid="pending"
+      files_changed=$(agy_files_changed_summary "$posture")
+
+      status_errors=""
+      case "$status" in
+        FAILURE)
+          if agy_auth_backstop_matched "$dir/$tn.stderr.log" "$dir/$tn.agy.log"; then
+            status="ERROR"
+            status_errors="agy authentication appears to have failed: run 'agy' interactively once to sign in.
+$(errors_tail "$dir/$tn.stderr.log")"
+          else
+            status_errors=$(errors_tail "$dir/$tn.stderr.log")
+          fi
+          ;;
+        ERROR)
+          status_errors="${AGY_CAPTURE_FAIL_REASON:-agy id capture failed for turn 1.} Session id: pending.
+$(errors_tail "$dir/$tn.stderr.log")"
+          ;;
+        TIMEOUT)
+          status_errors="turn aborted; resend the prompt to continue the conversation (agy has no repollable in-flight state once its --print process is killed — §9.7).
+$(errors_tail "$dir/$tn.stderr.log")"
+          ;;
+      esac
+      if [ -n "$identity_warning" ]; then
+        status_errors="${status_errors:+$status_errors
+}$identity_warning"
+      fi
+    else
+      if [ "$turn" -eq 1 ] && [ -z "$(meta_get "$dir" session_id)" ]; then
+        capture_session_id "$dir" "$tn"
+      fi
+      sid=$(meta_get "$dir" session_id)
+      [ -z "$sid" ] && sid="pending"
+      files_changed=$(files_changed_summary "$dir/$tn.events.jsonl" "$posture")
+      status_errors=""
+      if [ "$status" != "SUCCESS" ]; then
+        status_errors=$(errors_tail "$dir/$tn.stderr.log")
+      fi
+    fi
+
     EB_HANDLE="$handle"; EB_CLI="$cli"; EB_MODE="$mode"; EB_STATUS="$status"
     EB_TURN="$turn"; EB_SESSION="$sid"; EB_DURATION="$duration"
     EB_ANSWERFILE=$(display_path "$dir/$tn.last-message.txt")
     EB_LOGFILE=$(display_path "$dir/$tn.events.jsonl")
-    EB_FILESCHANGED=$(files_changed_summary "$dir/$tn.events.jsonl" "$posture")
+    EB_FILESCHANGED="$files_changed"
     EB_REPOLLABLE="no"
-    if [ "$status" != "SUCCESS" ]; then
-      EB_ERRORS=$(errors_tail "$dir/$tn.stderr.log")
-    else
-      EB_ERRORS=""
-    fi
+    EB_ERRORS="$status_errors"
     emit_block
   elif [ "$vanished" -eq 1 ]; then
     sid=$(meta_get "$dir" session_id)
@@ -1057,6 +1461,18 @@ cmd_slice() {
 
   tn=$(printf 'turn-%03d' "$turn")
   answerfile="$dir/$tn.last-message.txt"
+  if [ ! -f "$answerfile" ]; then
+    # agy has no -o equivalent (§9.14 #3) — cmd_status normally populates
+    # last-message.txt from the raw stdout capture once the turn is
+    # terminal, but a caller can legally reach `slice` without ever having
+    # called `status` first. Self-heal here rather than forcing an extra
+    # round trip: if the turn already finished (exit.code present), the
+    # answer is just sitting in events.jsonl unread.
+    cli_for_slice=$(meta_get "$dir" cli)
+    if [ "$cli_for_slice" = "agy" ] && [ -f "$dir/$tn.exit.code" ] && [ -f "$dir/$tn.events.jsonl" ]; then
+      cp -- "$dir/$tn.events.jsonl" "$answerfile" 2>/dev/null
+    fi
+  fi
   if [ ! -f "$answerfile" ]; then
     echo "ERROR: no answer file yet for turn $turn (still RUNNING? call status first): $(display_path "$answerfile")" >&2
     return 0

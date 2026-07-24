@@ -32,6 +32,8 @@ _In progress._ Building a new SDLC-family plugin (`sdlc-agent-delegation`) with 
 - **2026-07-23** — **User authorized** running the one-off agy live probe at the Stage 3 boundary (`agy --print --mode plan` → execute vs hang; spends a small amount of agy/Google quota). No need to re-ask when Stage 3 starts.
 - **2026-07-23** — Fable code review of Stage 1+2 found 1 BLOCKER (B1: `stop` orphaned codex via process-group mismatch → double-drive) + 9 MAJOR + minors. Sonnet applied all fixes; regression tests added for the gaps. **Stage 1+2 committed**: 64/64 mock tests green, syntax-clean, zero debt. B1 fix verified independently (supervisor TERM/INT handlers forward to `-$child`, signal-aware exit codes, ownership-checked lock release claimed synchronously post-fork).
 - **2026-07-23** — **User authorized** delegating real code reviews of our own implementation to BOTH external platforms (codex + agy) as the end-to-end dogfood test (spends OpenAI + agy quota).
+- **2026-07-23** — agy live probes (authorized): plan+sandbox executes non-interactively (no hang); `--print` takes the prompt as its flag value (ordering load-bearing); `last_conversations.json[cwd]` is the sole reliable id source (metadata absent for `--print` convos). Findings → spec §9.14.
+- **2026-07-23** — **Stage 3 (agy resume) committed**: agy wired into extdel.sh (two-layer %q-quoted argv, `--print` last, cwd-keyed id capture w/ retry, plan/sandbox posture map), agy-runner Haiku agent, policy skill extended, mock-agy tests (HOME-redirected). Suites: codex 64/64, agy 86/86 (150 total), zero debt, injection-safe (verified independently).
 
 ## Changes Made
 

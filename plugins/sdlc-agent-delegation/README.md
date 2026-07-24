@@ -13,9 +13,10 @@ in this repo for the full design (§9 is authoritative over §1–§8 wherever
 they conflict) and `docs/feature-proposals/232-external-agent-delegation.md`
 for the originating proposal (issue #232).
 
-## Status: Stage 1 + 2 (this build)
+## Status: Stage 1 + 2 + 3 (this build)
 
-This build ships exactly two things, fully verified against a mock CLI:
+This build ships, fully verified against mock CLIs (no real codex/agy
+quota spent in tests):
 
 1. **`scripts/extdel.sh`** — the primitives (`start | prompt | status |
    slice | stop | reap`) that own all process plumbing: a portable
@@ -24,13 +25,23 @@ This build ships exactly two things, fully verified against a mock CLI:
    on the delegated process's own group, a per-handle turn mutex, and
    pinned-posture enforcement.
 2. **codex resume mode** — submit-then-poll `codex exec` / `codex exec
-   resume`, the `codex-runner` Haiku agent that drives it, and the
-   `agent-delegation-policy` skill.
+   resume`, the `codex-runner` Haiku agent that drives it.
+3. **agy resume mode** — submit-then-poll `agy --print` /
+   `agy --conversation ID --print`, the `agy-runner` Haiku agent that
+   drives it, and cwd-keyed id capture from
+   `~/.gemini/antigravity-cli/cache/last_conversations.json` (the sole
+   reliable id source for a `--print` delegation turn — see the design
+   doc's §9.14 live-probe findings).
 
-**Not yet shipped:** `agy` support (Stage 3), codex *persistent* mode — a
-held `codex mcp-server` daemon over a FIFO (Stage 4) — and the
-`delegate-status`/reap skill (Stage 5). Requesting `--cli agy` or `--mode
-persistent` from `extdel.sh` fails fast with `Status: ERROR`, not a hang.
+Both CLI-runner agents share the `agent-delegation-policy` skill, which
+now also covers when to pick codex vs agy.
+
+**Not yet shipped:** codex *persistent* mode — a held `codex mcp-server`
+daemon over a FIFO (Stage 4) — and the `delegate-status`/reap skill
+(Stage 5). agy has **no** persistent/held-process mode planned at all (a
+deliberate design choice — see the design doc §3.0(c)/§3.2); requesting
+`--mode persistent` for either CLI, or any `--cli` other than `codex`/
+`agy`, from `extdel.sh` fails fast with `Status: ERROR`, not a hang.
 
 ## The two continuity modes (contract, once all stages ship)
 
@@ -53,14 +64,17 @@ sdlc-agent-delegation/
   .claude-plugin/plugin.json
   agents/
     codex-runner.md        # Haiku; drives extdel.sh for codex resume mode
+    agy-runner.md           # Haiku; drives extdel.sh for agy resume mode
   skills/
-    agent-delegation-policy/SKILL.md   # when to delegate out vs inline
+    agent-delegation-policy/SKILL.md   # when to delegate out vs inline, codex vs agy
   scripts/
     extdel.sh               # start | prompt | status | slice | stop | reap
     turn-supervisor.pl      # perl-alarm timeout wrapper (spawned per turn)
   tests/
     test-extdel-codex-resume.sh   # exercises extdel.sh against a mock codex
+    test-extdel-agy-resume.sh     # exercises extdel.sh against a mock agy
     fixtures/mock-bin/codex       # mock CLI — no real codex/agy calls in tests
+    fixtures/mock-bin/agy         # mock CLI — no real codex/agy calls in tests
 ```
 
 ## Unified contract
@@ -132,5 +146,8 @@ naturally with `command-delegation` (same "full log to disk, compact slice
 back" pattern family, applied to local shell commands instead of peer
 agentic CLIs) if that's also installed, but there's no dependency either
 way. Requires `codex` installed and authenticated (`codex login`) on the
-host machine for the `codex-runner` agent to do anything — `extdel.sh`
-fails fast with an actionable `Status: ERROR` message if it isn't.
+host machine for `codex-runner` to do anything, and/or `agy` installed and
+signed in at least once interactively (agy has no `login status` verb —
+`extdel.sh` checks that `~/.gemini/antigravity-cli/` exists instead) for
+`agy-runner` — `extdel.sh` fails fast with an actionable `Status: ERROR`
+message for whichever CLI isn't ready.

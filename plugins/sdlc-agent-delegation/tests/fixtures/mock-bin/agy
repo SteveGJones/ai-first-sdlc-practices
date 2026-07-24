@@ -1,0 +1,89 @@
+#!/bin/bash
+# Mock `agy` CLI for extdel.sh's agy-resume tests. Understands just enough
+# of the real `agy --print` / `agy --conversation ID --print` / `agy
+# --version` surface (per the design doc's §9.14 live-probe findings) to
+# exercise submit_agy_turn without spending real API quota. Never invoke
+# the real codex/agy CLIs from tests — this fixture exists so we don't
+# have to.
+#
+# Conversation-id state: writes into
+# $HOME/.gemini/antigravity-cli/cache/last_conversations.json exactly the
+# way real agy does (a flat {"<abs cwd>": "<uuid>"} map, §9.14 #3). Tests
+# redirect HOME to a throwaway directory so the real ~/.gemini is never
+# touched.
+#
+# Deliberately no `set -e`: `[ -f X ] && ...` idioms below are bare
+# statements, not if-conditions, and would abort the script under -e
+# whenever the test is false — not what we want from a mock that must
+# tolerate a not-yet-existing cache file.
+set -u
+
+if [ "${1:-}" = "--version" ]; then
+  echo "agy-cli 0.0.0-mock (antigravity)"
+  exit 0
+fi
+
+cache_dir="$HOME/.gemini/antigravity-cli/cache"
+cache_file="$cache_dir/last_conversations.json"
+
+conversation_id=""
+prompt=""
+saw_print=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --conversation) conversation_id="$2"; shift 2 ;;
+    --model|--effort|--agent|--add-dir|--print-timeout|--log-file|--mode)
+      shift 2 ;;
+    --sandbox|--dangerously-skip-permissions)
+      shift ;;
+    --print)
+      prompt="$2"
+      saw_print=1
+      shift 2
+      ;;
+    *)
+      shift ;;
+  esac
+done
+
+if [ "$saw_print" -ne 1 ]; then
+  echo "mock agy: no --print flag given: unsupported invocation" >&2
+  exit 2
+fi
+
+cwd_norm=$(pwd -P)
+
+if [ -z "$conversation_id" ]; then
+  # Turn 1 (no --conversation given): mint a new conversation id.
+  conversation_id="${MOCK_AGY_SESSION_ID:-00000000-0000-4000-8000-000000000001}"
+fi
+
+if [ "${MOCK_AGY_NO_ID_WRITE:-0}" != "1" ]; then
+  mkdir -p "$cache_dir" 2>/dev/null
+  existing="{}"
+  if [ -f "$cache_file" ]; then
+    existing=$(cat "$cache_file" 2>/dev/null)
+    [ -n "$existing" ] || existing="{}"
+  fi
+  printf '%s' "$existing" \
+    | jq --arg k "$cwd_norm" --arg v "$conversation_id" '.[$k] = $v' > "$cache_file.tmp.$$" 2>/dev/null \
+    && mv "$cache_file.tmp.$$" "$cache_file"
+fi
+
+if [ -n "${MOCK_AGY_SLEEP:-}" ]; then
+  sleep "$MOCK_AGY_SLEEP"
+fi
+
+if [ "${MOCK_AGY_AUTH_FAIL:-0}" = "1" ]; then
+  echo "mock agy: not signed in — please sign in interactively (unauthorized)" >&2
+  exit 1
+fi
+
+if [ "${MOCK_AGY_FAIL:-0}" = "1" ]; then
+  echo "mock agy: induced failure" >&2
+  exit 1
+fi
+
+echo "mock agy answer for: $prompt"
+exit 0
