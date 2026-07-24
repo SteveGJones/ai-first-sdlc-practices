@@ -98,7 +98,13 @@ poll_until_terminal() {
   return 0
 }
 
-cache_file() { printf '%s' "$FAKE_HOME/.gemini/antigravity-cli/cache/last_conversations.json"; }
+handle_cache_file() {
+  # handle_cache_file <handle> — DF1 (§9.15): id-capture now reads a
+  # per-HANDLE isolated cache under that handle's own --gemini_dir, not a
+  # single machine-global $FAKE_HOME/.gemini/... path. There is no longer
+  # one shared cache file to inspect across handles/tests.
+  printf './tmp/agent-delegation/%s/agy-cfg/antigravity-cli/cache/last_conversations.json' "$1"
+}
 
 echo "=== extdel.sh agy-resume test suite ==="
 echo "TESTROOT=$TESTROOT"
@@ -162,10 +168,15 @@ CAPTURED_SID=$(jq -r '.session_id' "./tmp/agent-delegation/$HANDLE1/meta.json" 2
 [ -f "./tmp/agent-delegation/$HANDLE1/session.id" ] && pass "session.id file written" || fail "session.id file missing"
 CAPTURED_CWD_KEY=$(jq -r '.agy_cwd_key' "./tmp/agent-delegation/$HANDLE1/meta.json" 2>/dev/null)
 [ "$CAPTURED_CWD_KEY" = "$(pwd -P)" ] && pass "meta.json.agy_cwd_key is the pwd -P normalized cwd" || fail "meta.json.agy_cwd_key was '$CAPTURED_CWD_KEY'"
-if jq -e --arg k "$(pwd -P)" '.[$k] == "11111111-1111-4111-8111-111111111111"' "$(cache_file)" >/dev/null 2>&1; then
-  pass "mock correctly wrote last_conversations.json[cwd] = the minted id"
+if jq -e --arg k "$(pwd -P)" '.[$k] == "11111111-1111-4111-8111-111111111111"' "$(handle_cache_file "$HANDLE1")" >/dev/null 2>&1; then
+  pass "mock correctly wrote HANDLE1's isolated last_conversations.json[cwd] = the minted id"
 else
-  fail "last_conversations.json does not have the expected cwd -> id mapping"
+  fail "handle1's isolated last_conversations.json does not have the expected cwd -> id mapping"
+fi
+if [ -d "./tmp/agent-delegation/$HANDLE1/agy-cfg/antigravity-cli" ]; then
+  pass "per-handle --gemini_dir config dir created (DF1)"
+else
+  fail "per-handle --gemini_dir config dir NOT created"
 fi
 echo
 
@@ -525,8 +536,9 @@ echo
 # 19. id-capture failure: last_conversations.json has no entry for this
 #     cwd after retries -> Status ERROR, Session id: pending (§9.14,
 #     supersedes §9.6's metadata cross-check, which is moot for --print
-#     turns). Uses a DEDICATED cwd so no earlier test's successful id
-#     capture for the shared TESTROOT cwd contaminates this one.
+#     turns). Uses a DEDICATED cwd — belt and braces; not strictly required
+#     any more since DF1 isolates each handle's cache anyway, but keeps
+#     this test's intent obvious on its own.
 # ---------------------------------------------------------------------------
 echo "--- 19. id capture failure (no cache entry after retries) -> ERROR ---"
 NO_ID_CWD="$TESTROOT/no-id-capture-cwd"
@@ -540,9 +552,25 @@ assert_contains "$FINAL19" "id capture failed" "error message explains id captur
 echo
 
 # ---------------------------------------------------------------------------
-# 20. Identity-drift warning: last_conversations.json[cwd] changes to a
-#     different conversation between turns -> surfaced as a WARNING on the
-#     next status call, WITHOUT silently resuming the new one (§9.14).
+# 20. Identity-drift warning: this HANDLE'S OWN isolated
+#     last_conversations.json[cwd] changes to a different conversation
+#     between turns -> surfaced as a WARNING on the next status call,
+#     WITHOUT silently resuming the new one (§9.14, adapted for DF1's
+#     per-handle --gemini_dir isolation).
+#
+#     DF1 note: before DF1, id-capture read a single machine-global cache
+#     shared by every agy invocation on the box, so drift could come from
+#     genuinely ANY other process (another Claude project, the user's own
+#     interactive agy) touching the same cwd. After DF1, each handle gets
+#     its own isolated --gemini_dir cache, so that specific cross-process
+#     race is closed — see the comment on agy_read_last_conversations_id
+#     in extdel.sh. What agy_check_identity_drift still guards against is
+#     narrower but not vacuous: THIS handle's own cache entry getting
+#     rewritten out-of-band between our submit and our status poll (e.g. a
+#     bug, or something else writing into this handle's state dir) — we
+#     tamper with the handle's own isolated cache file directly to
+#     exercise that remaining path, rather than the old global one (which
+#     the isolated capture code no longer even reads).
 # ---------------------------------------------------------------------------
 echo "--- 20. identity drift between turns surfaces a warning ---"
 OUT20=$(MOCK_AGY_SESSION_ID="e0e0e0e0-0000-4000-8000-00000000000e" run_extdel_agy start --cli agy --prompt "drift turn 1" --posture read-only)
@@ -556,27 +584,126 @@ TURN2_OUT20=$(run_extdel_agy prompt "$HANDLE20" --prompt "drift turn 2")
 assert_contains "$TURN2_OUT20" "Status: RUNNING" "drift-test turn 2 submitted"
 
 # Wait for turn 2's OWN mock invocation to fully finish (it will re-write
-# last_conversations.json[cwd] back to the CORRECT resumed id) BEFORE we
-# tamper — tampering earlier would just get clobbered by the mock's own
-# write and the drift would never be observable.
+# HANDLE20's isolated last_conversations.json[cwd] back to the CORRECT
+# resumed id) BEFORE we tamper — tampering earlier would just get
+# clobbered by the mock's own write and the drift would never be
+# observable.
 n=0
 while [ "$n" -lt 10 ] && [ ! -f "./tmp/agent-delegation/$HANDLE20/turn-002.exit.code" ]; do
   sleep 1
   n=$((n + 1))
 done
 
-# Simulate another agy process (interactive, or a different tool) claiming
-# this same cwd in last_conversations.json after our turn 2 finished but
-# before we've polled status for it.
+# Simulate something writing out-of-band into THIS HANDLE's own isolated
+# cache after our turn 2 finished but before we've polled status for it.
+HANDLE20_CACHE=$(handle_cache_file "$HANDLE20")
 FAKE_OTHER_ID="deadbeef-dead-4eef-8eef-deadbeefdead"
-jq --arg k "$(pwd -P)" --arg v "$FAKE_OTHER_ID" '.[$k] = $v' "$(cache_file)" > "$(cache_file).drift-tmp" \
-  && mv "$(cache_file).drift-tmp" "$(cache_file)"
+jq --arg k "$(pwd -P)" --arg v "$FAKE_OTHER_ID" '.[$k] = $v' "$HANDLE20_CACHE" > "$HANDLE20_CACHE.drift-tmp" \
+  && mv "$HANDLE20_CACHE.drift-tmp" "$HANDLE20_CACHE"
 
 STATUS20T2=$(run_extdel_agy status "$HANDLE20" --wait-s 2)
 assert_contains "$STATUS20T2" "Status: SUCCESS" "turn 2 still reports SUCCESS despite the drift"
 assert_contains "$STATUS20T2" "$ORIGINAL_SID20" "Session id in the return is still OUR original session, not the drifted one"
 assert_contains "$STATUS20T2" "WARNING" "a WARNING is surfaced when the cwd's recorded conversation identity changed"
 assert_contains "$STATUS20T2" "$FAKE_OTHER_ID" "the warning names the drifted-to id"
+echo
+
+# ---------------------------------------------------------------------------
+# 21. DF1: per-handle --gemini_dir config is written with the correct
+#     permissions.allow list per posture — read-only has NO write_file/
+#     edit_file rule at all; workspace has both plus a build/test command
+#     set; dangerous still gets a config dir (content is inert once
+#     --dangerously-skip-permissions is passed, but --gemini_dir is always
+#     passed uniformly).
+# ---------------------------------------------------------------------------
+echo "--- 21. per-handle gemini_dir config matches the posture (DF1) ---"
+OUT21RO=$(MOCK_AGY_SESSION_ID="21210000-0000-4000-8000-000000000021" run_extdel_agy start --cli agy --prompt "ro config check" --posture read-only)
+HANDLE21RO=$(extract_field "$OUT21RO" "Handle")
+poll_until_terminal "$HANDLE21RO" 10 >/dev/null
+SETTINGS_RO="./tmp/agent-delegation/$HANDLE21RO/agy-cfg/antigravity-cli/settings.json"
+if [ -f "$SETTINGS_RO" ]; then
+  pass "read-only handle's settings.json exists"
+else
+  fail "read-only handle's settings.json missing"
+fi
+if jq -e '.permissions.allow | index("read_file(*)") != null' "$SETTINGS_RO" >/dev/null 2>&1; then
+  pass "read-only settings.json grants read_file(*)"
+else
+  fail "read-only settings.json does not grant read_file(*)"
+fi
+if jq -e '.permissions.allow | (index("write_file(*)") == null) and (index("edit_file(*)") == null)' "$SETTINGS_RO" >/dev/null 2>&1; then
+  pass "read-only settings.json grants NO write_file(*)/edit_file(*)"
+else
+  fail "read-only settings.json unexpectedly grants a write/edit rule"
+fi
+
+OUT21WS=$(MOCK_AGY_SESSION_ID="21210000-0000-4000-8000-000000000022" run_extdel_agy start --cli agy --prompt "ws config check" --posture workspace)
+HANDLE21WS=$(extract_field "$OUT21WS" "Handle")
+poll_until_terminal "$HANDLE21WS" 10 >/dev/null
+SETTINGS_WS="./tmp/agent-delegation/$HANDLE21WS/agy-cfg/antigravity-cli/settings.json"
+if jq -e '.permissions.allow | (index("write_file(*)") != null) and (index("edit_file(*)") != null) and (index("command(pytest)") != null)' "$SETTINGS_WS" >/dev/null 2>&1; then
+  pass "workspace settings.json grants write_file(*)/edit_file(*) + build/test commands"
+else
+  fail "workspace settings.json missing expected write/build-test rules"
+fi
+
+OUT21DG=$(MOCK_AGY_SESSION_ID="21210000-0000-4000-8000-000000000023" MOCK_AGY_ACTION=write run_extdel_agy start --cli agy --prompt "dangerous config check" --posture dangerous)
+HANDLE21DG=$(extract_field "$OUT21DG" "Handle")
+FINAL21DG=$(poll_until_terminal "$HANDLE21DG" 10)
+assert_contains "$FINAL21DG" "Status: SUCCESS" "dangerous posture succeeds a write task via --dangerously-skip-permissions, not the allow-list"
+if [ -d "./tmp/agent-delegation/$HANDLE21DG/agy-cfg/antigravity-cli" ]; then
+  pass "dangerous posture still gets a --gemini_dir config dir (uniform invocation)"
+else
+  fail "dangerous posture's --gemini_dir config dir missing"
+fi
+echo
+
+# ---------------------------------------------------------------------------
+# 22. DF1/DF2: read-only posture read task succeeds; read-only posture
+#     WRITE attempt is auto-denied by the allow-list -> NO_OUTPUT with the
+#     permission hint surfaced verbatim.
+# ---------------------------------------------------------------------------
+echo "--- 22. read-only reads succeed, read-only writes -> NO_OUTPUT with hint ---"
+OUT22R=$(MOCK_AGY_SESSION_ID="22220000-0000-4000-8000-000000000001" MOCK_AGY_ACTION=read run_extdel_agy start --cli agy --prompt "read task" --posture read-only)
+HANDLE22R=$(extract_field "$OUT22R" "Handle")
+FINAL22R=$(poll_until_terminal "$HANDLE22R" 10)
+assert_contains "$FINAL22R" "Status: SUCCESS" "read-only posture allows a read task"
+
+OUT22W=$(MOCK_AGY_SESSION_ID="22220000-0000-4000-8000-000000000002" MOCK_AGY_ACTION=write run_extdel_agy start --cli agy --prompt "write task" --posture read-only)
+HANDLE22W=$(extract_field "$OUT22W" "Handle")
+FINAL22W=$(poll_until_terminal "$HANDLE22W" 10)
+assert_contains "$FINAL22W" "Status: NO_OUTPUT" "read-only posture write attempt reports NO_OUTPUT, not a false SUCCESS"
+assert_not_contains "$FINAL22W" "Status: SUCCESS" "read-only posture write attempt is never SUCCESS"
+assert_contains "$FINAL22W" "auto-denied" "NO_OUTPUT error names the auto-deny"
+assert_contains "$FINAL22W" "write_file(*)" "NO_OUTPUT error names the specific denied permission"
+assert_contains "$FINAL22W" "gemini_dir allow-list" "NO_OUTPUT error tells the caller how to fix it (allow-list or dangerous posture)"
+echo
+
+# ---------------------------------------------------------------------------
+# 23. DF1: workspace posture grants the write task -> SUCCESS.
+# ---------------------------------------------------------------------------
+echo "--- 23. workspace posture write -> SUCCESS ---"
+OUT23=$(MOCK_AGY_SESSION_ID="23230000-0000-4000-8000-000000000001" MOCK_AGY_ACTION=write run_extdel_agy start --cli agy --prompt "write task under workspace" --posture workspace)
+HANDLE23=$(extract_field "$OUT23" "Handle")
+FINAL23=$(poll_until_terminal "$HANDLE23" 10)
+assert_contains "$FINAL23" "Status: SUCCESS" "workspace posture allows a write task"
+SLICE23=$(run_extdel_agy slice "$HANDLE23")
+assert_contains "$SLICE23" "mock agy answer for: write task under workspace" "slice returns the workspace write task's answer"
+echo
+
+# ---------------------------------------------------------------------------
+# 24. DF2: a genuinely empty-but-legitimate answer (exit 0, blank stdout,
+#     NO permission-shaped stderr at all) is STILL reported as NO_OUTPUT —
+#     not a crash, not a silently-accepted empty SUCCESS — but WITHOUT a
+#     fabricated permission hint, since there isn't one.
+# ---------------------------------------------------------------------------
+echo "--- 24. NO_OUTPUT on a genuinely empty exit-0 answer (no permission hint) ---"
+OUT24=$(MOCK_AGY_SESSION_ID="24240000-0000-4000-8000-000000000001" MOCK_AGY_EMPTY_LEGIT=1 run_extdel_agy start --cli agy --prompt "will produce nothing" --posture read-only)
+HANDLE24=$(extract_field "$OUT24" "Handle")
+FINAL24=$(poll_until_terminal "$HANDLE24" 10)
+assert_contains "$FINAL24" "Status: NO_OUTPUT" "a genuinely empty exit-0 answer reports NO_OUTPUT"
+assert_not_contains "$FINAL24" "auto-denied" "no fabricated permission hint when there was no permission problem"
+assert_contains "$FINAL24" "produced no output" "generic NO_OUTPUT explanation is present"
 echo
 
 echo "=== Results: $PASS passed, $FAIL failed ==="

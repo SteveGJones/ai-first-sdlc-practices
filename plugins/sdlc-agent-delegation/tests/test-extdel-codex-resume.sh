@@ -432,6 +432,20 @@ BAD_REAP=$(run_extdel reap --prune-closed notanumber 2>&1)
 assert_contains "$BAD_REAP" "--prune-closed must be a non-negative integer" "reap rejects non-numeric --prune-closed"
 echo
 
+# ---------------------------------------------------------------------------
+# 16. DF2: exit-0-but-empty is NEVER reported as SUCCESS, for codex too
+#     (kept CLI-general, not agy-only) — an empty -o file with a clean
+#     exit code reports NO_OUTPUT, not a false SUCCESS.
+# ---------------------------------------------------------------------------
+echo "--- 16. DF2: exit-0-but-empty last-message -> NO_OUTPUT, not SUCCESS ---"
+OUT16=$(MOCK_CODEX_SESSION_ID="e0e0e0e0-0000-4000-8000-00000000000e" MOCK_CODEX_EMPTY=1 run_extdel start --prompt "will produce nothing" --posture read-only)
+HANDLE16=$(extract_field "$OUT16" "Handle")
+FINAL16=$(poll_until_terminal "$HANDLE16" 10)
+assert_contains "$FINAL16" "Status: NO_OUTPUT" "an exit-0 turn with an empty last-message.txt reports NO_OUTPUT"
+assert_not_contains "$FINAL16" "Status: SUCCESS" "exit-0-but-empty is never reported as SUCCESS"
+assert_contains "$FINAL16" "produced no output" "NO_OUTPUT error explains the empty answer"
+echo
+
 echo "=== Results: $PASS passed, $FAIL failed ==="
 if [ "$FAIL" -gt 0 ]; then
   exit 1

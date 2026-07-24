@@ -38,7 +38,8 @@ doc) — the choice is purely about which model/provider's take you want:
 | Provider / model | OpenAI, GPT | Google Antigravity, Gemini (and other models `agy models` lists) |
 | Continuity mode shipped | resume | resume |
 | Held-process (`mode: persistent`) | not yet shipped (planned: `codex mcp-server` daemon) | **not planned as a held process at all** — agy's own continuity is server-side/id-addressable, so a pty-held interactive session would trade real state for fragile heuristic completion detection; `mode: persistent` is a clean `Status: ERROR`, not attempted |
-| `read-only` posture mapping | `-s read-only` | `--mode plan --sandbox` — verified (live probe) to run non-interactively without hanging on a no-tool prompt |
+| Headless permission model | a real sandbox (`-s read-only`/`workspace-write`) gates tool use non-interactively | **auto-denies every tool call** (`read_file`/`command`/`write_file`/`edit_file`) in `--print` mode unless pre-allowed — `--mode`/`--sandbox` do NOT gate anything headless (live-probed; see the design doc's §9.15) |
+| `read-only` posture mapping | `-s read-only` | a per-handle `--gemini_dir` config carrying a `permissions.allow` list scoped to reads + read-only shell commands — the real enforcement lever, not `--mode`/`--sandbox` |
 | Answer source | `-o`/`--output-last-message` file | plain stdout (no separate answer file from the CLI itself — `extdel.sh` captures it into the same `turn-NNN.last-message.txt` convention) |
 
 Pick `codex` when the caller wants GPT specifically; pick `agy` when they
@@ -58,7 +59,13 @@ authenticated/working.
   approval — external CLIs run non-interactively (`codex exec` /
   `agy --print`), so anything requiring an approval prompt will just fail
   under `read-only`/`workspace` posture rather than pausing for a human.
-  That's intended behavior, not a bug to route around.
+  That's intended behavior, not a bug to route around. (codex's
+  `app-server` protocol exposes a real per-action approval loop —
+  `ExecCommandApprovalRequest`/`ApplyPatchApprovalRequest`/etc, answered
+  with a `ReviewDecision` — that a future Mode B could drive for
+  fine-grained, in-conversation approval; agy has no equivalent verb in
+  its machine channel. Out of scope for this build — see the design doc's
+  §9.15 "Design consequences" for the roadmap.)
 - It's a local shell command, build, test suite, or log to watch — that's
   `command-delegation`'s territory (`command-runner`/`build-runner`/
   `test-runner`/`process-monitor`), not this plugin.
@@ -67,9 +74,19 @@ authenticated/working.
 
 | posture | codex mapping | agy mapping | when |
 |---|---|---|---|
-| `read-only` (**default**) | `-s read-only` — read and reason; no writes, no network from its side | `--mode plan --sandbox` — plan mode blocks edits, sandbox restricts terminal use; verified non-hanging | the default for every delegation unless told otherwise |
-| `workspace` | `-s workspace-write` — can write files within its working directory | `--mode accept-edits --sandbox` — can write files within its working directory | only when the caller explicitly wants the external model to make edits |
-| `dangerous` | `--dangerously-bypass-approvals-and-sandbox` | `--dangerously-skip-permissions` | only when the caller explicitly opts in — never chosen by the wrapper itself |
+| `read-only` (**default**) | `-s read-only` — read and reason; no writes, no network from its side | `--gemini_dir` allow-list scoped to `read_file(*)` + read-only shell command prefixes (`cat`/`head`/`tail`/`sed`/`grep`/`rg`/`ls`/`find`/`wc`/`git`) — no `write_file`/`edit_file` rule at all | the default for every delegation unless told otherwise |
+| `workspace` | `-s workspace-write` — can write files within its working directory | the read-only allow-list PLUS `write_file(*)`/`edit_file(*)` and a build/test command set (`python`/`node`/`npm`/`pytest`/`go`/`cargo`/`make`/`bash`/`sh`) | only when the caller explicitly wants the external model to make edits |
+| `dangerous` | `--dangerously-bypass-approvals-and-sandbox` | `--dangerously-skip-permissions` (supersedes any allow-list; a config dir is still passed for uniformity) | only when the caller explicitly opts in — never chosen by the wrapper itself |
+
+**Why agy's mapping changed from `--mode`/`--sandbox`:** an earlier design
+mapped agy's posture onto `--mode plan|accept-edits` + `--sandbox`.
+Live probing (design doc §9.15) found neither flag gates anything in
+headless `--print` mode — agy auto-denies every tool call there regardless
+of `--mode`, and only a `permissions.allow` entry (delivered via
+`--gemini_dir`) or `--dangerously-skip-permissions` actually lets a tool
+call through. `extdel.sh` writes a fresh per-handle
+`agy-cfg/antigravity-cli/settings.json` before every turn (start AND every
+resume), so a `--steal` posture escalation is picked up automatically.
 
 **Escalation is a caller decision, never the wrapper's.** codex-runner and
 agy-runner are both instructed to never select `dangerous` on their own
@@ -107,15 +124,36 @@ regardless of CLI or mode when deciding how many codex-runner/agy-runner
 dispatches to fan out at once — it exists to bound both process count and
 concurrent spend against the external provider's quota.
 
-**agy has one extra fan-out hazard codex does not:** two agy `start`
-calls landing in the *same* `cwd` at nearly the same time race on which
-conversation `~/.gemini/antigravity-cli/cache/last_conversations.json`
-ends up recording for that cwd. `extdel.sh` serializes the id-*read* with
-a project-local mkdir lock, but that lock cannot cover another Claude
-project — or the user's own interactive `agy` — reading/writing the same
-cwd concurrently outside this plugin. If a `status` call ever surfaces a
-warning that the recorded conversation id changed identity, report it —
-don't silently trust the newer one.
+**agy's old cross-handle id-capture race is now closed by construction:**
+earlier builds read a single machine-global
+`~/.gemini/antigravity-cli/cache/last_conversations.json` keyed by cwd, so
+two agy `start` calls landing in the *same* cwd at nearly the same time
+could race on which conversation that shared cache ended up recording.
+Each handle now gets its own isolated `--gemini_dir`
+(`./tmp/agent-delegation/<HANDLE>/agy-cfg/`), so id capture reads a
+per-handle cache with nothing else to race against — concurrent
+`agy-runner` dispatches in the same cwd no longer contend over id capture
+at all. `status` can still surface a `WARNING` if a handle's own isolated
+cache entry changes identity out-of-band between turns (now a much
+narrower, more anomalous signal than the old cross-process race) — report
+it, don't silently trust the newer id.
+
+## `NO_OUTPUT`: an exit-0 turn is not automatically a successful one
+
+Both `codex-runner` and `agy-runner` can report `Status: NO_OUTPUT` — a
+turn that exited success-shaped (exit code 0) but whose captured answer
+was empty after trimming whitespace. This is never silently upgraded to
+`SUCCESS`. It's most common with agy: the headless auto-deny above means a
+turn can complete cleanly while the actual requested tool call was denied,
+leaving nothing useful in the answer. When that's the cause, `## Errors`
+carries agy's own diagnostic verbatim (its "no output produced ...
+auto-denied" wording) plus the fix — broaden the posture on a fresh
+handle, or rephrase the task to fit the current one. A codex turn can also
+exit 0 with an empty `-o` file (e.g. an unretried sandbox denial); the
+same check applies there too, CLI-generally. A `NO_OUTPUT` with no
+permission hint at all is a legitimately empty answer, not a crash — the
+wrapper agents report it as-is rather than fabricating content or
+silently retrying.
 
 ## Cost is real and invisible to Claude's own telemetry
 

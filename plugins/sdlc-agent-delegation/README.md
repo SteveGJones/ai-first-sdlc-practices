@@ -28,10 +28,16 @@ quota spent in tests):
    resume`, the `codex-runner` Haiku agent that drives it.
 3. **agy resume mode** — submit-then-poll `agy --print` /
    `agy --conversation ID --print`, the `agy-runner` Haiku agent that
-   drives it, and cwd-keyed id capture from
-   `~/.gemini/antigravity-cli/cache/last_conversations.json` (the sole
-   reliable id source for a `--print` delegation turn — see the design
-   doc's §9.14 live-probe findings).
+   drives it, and cwd-keyed id capture from a per-handle isolated
+   `last_conversations.json` (the sole reliable id source for a `--print`
+   delegation turn — see the design doc's §9.14 live-probe findings).
+4. **Graded agy postures via `--gemini_dir`** — headless `agy --print`
+   auto-denies every tool permission unless it's pre-allowed; a per-handle
+   config dir carrying a posture-graded `permissions.allow` list is now
+   the real enforcement mechanism (`--mode`/`--sandbox` don't gate
+   anything headless — see §9.15 of the design doc).
+5. **`NO_OUTPUT` status** — an exit-0-but-empty turn (most commonly agy's
+   auto-deny) is never reported as a false `SUCCESS`, for both CLIs.
 
 Both CLI-runner agents share the `agent-delegation-policy` skill, which
 now also covers when to pick codex vs agy.
@@ -90,7 +96,7 @@ optional — see `agents/codex-runner.md` for the full field list: `cli`,
 ```
 ## External Delegation
 - CLI: codex            Mode: resume
-- Status: RUNNING | SUCCESS | FAILURE | TIMEOUT | ERROR
+- Status: RUNNING | SUCCESS | NO_OUTPUT | FAILURE | TIMEOUT | ERROR
 - Handle: <HANDLE>
 - Session id: <uuid | pending>
 - Turn: <n>    Held process: no    Duration: <s>s
@@ -110,15 +116,46 @@ until a terminal status appears. `slice <HANDLE>` returns just the capped
 (12000-char) final answer text, for when the caller wants the answer
 without the rest of the block.
 
+**`Status: NO_OUTPUT`** — a turn that exited success-shaped (exit 0) but
+whose captured answer is empty after trimming whitespace is never reported
+as `SUCCESS`. This is most commonly agy's headless permission model (see
+below): the conversation completed but the requested tool call was
+auto-denied, so nothing useful came back. When `status`/`slice` detects
+this, `## Errors` carries the external CLI's own diagnostic verbatim (for
+agy, its own "no output produced ... auto-denied" wording) plus concrete
+next-step guidance — escalate posture on a fresh handle, or rephrase.
+A genuinely empty-but-legitimate answer (no permission problem at all)
+also reports `NO_OUTPUT`, just without a permission hint — it is not a
+crash, and the caller should decide what to do with it rather than the
+wrapper agent silently retrying.
+
 ## Safety: posture, and why `read-only` is not `read-nothing`
 
 Every handle pins a permission **posture** at `start` time —
-`read-only` (default), `workspace`, or `dangerous` — mapped onto codex's
-own sandbox flags. `extdel.sh prompt` **refuses** a differing posture on
-a later turn unless `--steal` is passed explicitly, so any escalation is
-visible in the caller's own transcript rather than silent. The wrapper
-agent (`codex-runner`) is instructed to never choose `dangerous` on its
-own initiative — it only ever passes through a posture the caller gave it.
+`read-only` (default), `workspace`, or `dangerous`. `extdel.sh prompt`
+**refuses** a differing posture on a later turn unless `--steal` is
+passed explicitly, so any escalation is visible in the caller's own
+transcript rather than silent. The wrapper agents (`codex-runner`,
+`agy-runner`) are instructed to never choose `dangerous` on their own
+initiative — they only ever pass through a posture the caller gave them.
+
+**codex** posture maps onto its own sandbox flags (`-s read-only` /
+`-s workspace-write` / `--dangerously-bypass-approvals-and-sandbox`).
+
+**agy** posture works differently, because live probing found that agy's
+headless `--print` mode **auto-denies every tool permission** — reads,
+writes, shell commands — unless the tool is pre-listed in a
+`permissions.allow` list, or `--dangerously-skip-permissions` is passed;
+`--mode`/`--sandbox` are interactive-mode concepts that do **not** gate
+anything headless. `extdel.sh` therefore writes a per-handle config dir
+(`./tmp/agent-delegation/<HANDLE>/agy-cfg/antigravity-cli/settings.json`,
+passed via `agy --gemini_dir`) carrying a posture-graded allow-list —
+`read-only` grants reads + read-only shell commands only, `workspace`
+additionally grants `write_file`/`edit_file` + a build/test command set,
+`dangerous` passes `--dangerously-skip-permissions` instead. This
+per-handle dir also isolates that handle's own conversation-id cache
+(`.../agy-cfg/antigravity-cli/cache/last_conversations.json`), which is
+where id capture now reads from instead of a machine-global path.
 
 **Read access is not gated by posture.** `read-only` blocks codex from
 *writing* files or making network calls from its side — it does not

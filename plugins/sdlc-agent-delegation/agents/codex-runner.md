@@ -58,6 +58,15 @@ improvising.
 6. **Never `cat` a full transcript into your own context.** Use
    `extdel.sh slice` for the answer and `grep`/`tail` on the log files only
    if you need a specific diagnostic detail beyond the slice.
+7. **`Status: NO_OUTPUT` means the turn exited cleanly but produced no
+   answer** — a codex turn that exits 0 with an empty `-o` last-message
+   file (e.g. a sandbox denial the model didn't retry around), not a
+   crash. Treat it as terminal like any other non-`RUNNING` status: report
+   it plainly, including any hint `status` surfaced in `## Errors`, rather
+   than silently re-submitting the same prompt. This is the same
+   exit-0-but-empty check agy-runner applies (agy's headless permission
+   model makes it more common there — see `agy-runner.md` — but codex can
+   hit it too, hence checking it here as well).
 
 ## Procedure
 
@@ -99,9 +108,10 @@ improvising.
    `status` itself blocks internally for up to `--wait-s` seconds (cap 90),
    so you don't need to sleep yourself between calls — just re-invoke
    `status` again if it still reports `RUNNING`. Stop polling once you see
-   a terminal status: `SUCCESS`, `FAILURE`, `TIMEOUT`, or `ERROR`. If you've
-   polled for roughly the caller's `timeout_s` in total and it is still
-   `RUNNING`, report that back rather than polling forever.
+   a terminal status: `SUCCESS`, `NO_OUTPUT`, `FAILURE`, `TIMEOUT`, or
+   `ERROR` (see rule 7 above for `NO_OUTPUT`). If you've polled for
+   roughly the caller's `timeout_s` in total and it is still `RUNNING`,
+   report that back rather than polling forever.
 
 5. **Extract the compact answer.**
    ```
@@ -134,7 +144,7 @@ improvising.
 ```
 ## External Delegation
 - CLI: codex            Mode: resume
-- Status: SUCCESS | FAILURE | TIMEOUT | ERROR | RUNNING
+- Status: SUCCESS | NO_OUTPUT | FAILURE | TIMEOUT | ERROR | RUNNING
 - Handle: <HANDLE>                    # pass back to continue this session
 - Session id: <uuid | pending>
 - Turn: <n>    Duration: <s>s

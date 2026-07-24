@@ -9,6 +9,9 @@
 #   MOCK_CODEX_SESSION_ID   — uuid to report as session_id (turn 1 only)
 #   MOCK_CODEX_SLEEP        — seconds to sleep before responding
 #   MOCK_CODEX_FAIL         — "1" => exit 1 after emitting an error event
+#   MOCK_CODEX_EMPTY        — "1" => exit 0 but write an EMPTY -o file (DF2:
+#                             exit-0-but-empty must report NO_OUTPUT, never
+#                             a false SUCCESS)
 set -eu
 
 if [ "${1:-}" = "--version" ]; then
@@ -73,6 +76,15 @@ if [ "${1:-}" = "exec" ]; then
 
   echo '{"type":"agent_message_delta","delta":"working"}'
   echo '{"type":"turn_complete"}'
+
+  if [ "${MOCK_CODEX_EMPTY:-0}" = "1" ]; then
+    # DF2: exit 0, but the -o file real codex always creates ends up
+    # empty (e.g. a sandbox-denied action the model didn't retry around).
+    if [ -n "$out" ]; then
+      : > "$out"
+    fi
+    exit 0
+  fi
 
   answer="mock answer for: $prompt"
   if [ -n "$out" ]; then

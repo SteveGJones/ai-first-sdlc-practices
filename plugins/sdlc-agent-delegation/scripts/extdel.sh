@@ -36,11 +36,17 @@ BASE_DIR="$PROJECT_ROOT/tmp/agent-delegation"
 SUPERVISOR_PL="$SCRIPT_DIR/turn-supervisor.pl"
 MAX_SLICE_CHARS=12000
 
-# agy state (§9.14): read from $HOME so tests can redirect it wholesale by
-# overriding HOME before invoking extdel.sh — never touch the real
-# ~/.gemini/antigravity-cli/ from a test.
+# agy state (§9.14/§9.15): read from $HOME so tests can redirect it
+# wholesale by overriding HOME before invoking extdel.sh — never touch the
+# real ~/.gemini/antigravity-cli/ from a test. AGY_STATE_DIR is used ONLY
+# by preflight_agy's initialized-check (DF1, §9.15): auth/credentials live
+# in the REAL ~/.gemini/antigravity-cli/ (on disk and/or keychain), not in
+# the per-handle --gemini_dir this build creates, which carries only a
+# posture-graded permissions.allow and inherits auth from outside itself
+# (confirmed live). id-capture no longer reads a global cache path here —
+# see agy_write_gemini_config/capture_agy_session_id for the per-handle,
+# isolated cache location.
 AGY_STATE_DIR="$HOME/.gemini/antigravity-cli"
-AGY_CACHE_LAST_CONV="$AGY_STATE_DIR/cache/last_conversations.json"
 
 # ---------------------------------------------------------------------------
 # Generic helpers
@@ -127,6 +133,38 @@ validate_nonneg_int() {
     ''|*[!0-9]*) return 1 ;;
     *) return 0 ;;
   esac
+}
+
+is_blank_file() {
+  # is_blank_file <path> — DF2: 0 (true) if the file is missing, empty, or
+  # contains only whitespace; 1 (false) if it has any non-whitespace
+  # content. Used by cmd_status to catch an exit-0-but-empty turn before
+  # it gets reported as a false SUCCESS.
+  f="$1"
+  [ -f "$f" ] || return 0
+  content=$(tr -d '[:space:]' < "$f" 2>/dev/null)
+  [ -z "$content" ]
+}
+
+permission_denial_hint() {
+  # permission_denial_hint <file> [<file> ...] — DF2: scan the given
+  # stderr/CLI-log files for agy's headless auto-deny wording (§9.15) or
+  # an equivalent generic permission-denial phrase, and print the first
+  # matching line verbatim (never paraphrased — it's the external CLI's
+  # own diagnostic, and its own "add an allow-rule" / "skip permissions"
+  # guidance is exactly what the caller needs to act on). Prints nothing
+  # and returns 1 if no file matches — a genuinely empty-but-legitimate
+  # answer (no permission problem at all) still gets caught upstream by
+  # is_blank_file; this function only supplies the WHY when there is one.
+  for f in "$@"; do
+    [ -f "$f" ] || continue
+    line=$(grep -Eim1 '(no output produced|auto-denied|required the .*permission|permission.*denied)' "$f" 2>/dev/null)
+    if [ -n "$line" ]; then
+      printf '%s' "$line"
+      return 0
+    fi
+  done
+  return 1
 }
 
 validate_handle() {
@@ -563,13 +601,70 @@ preflight_agy() {
 }
 
 agy_posture_args() {
+  # DF1 (§9.15, supersedes the earlier §6.3 mapping for agy): live probes
+  # confirmed `--mode`/`--sandbox` are interactive-mode concepts that do
+  # NOT gate tools in headless (`--print`) mode — agy auto-denies every
+  # tool permission there regardless of `--mode plan`/`accept-edits`. The
+  # real lever is a per-handle `--gemini_dir` carrying a posture-graded
+  # `permissions.allow` list (agy_write_gemini_config, always applied —
+  # see submit_agy_turn). `--mode`/`--sandbox` are deliberately dropped
+  # here rather than kept as inert-but-confusing flags. `dangerous` is the
+  # one posture with a real headless-gating flag of its own:
+  # `--dangerously-skip-permissions` supersedes any allow-list.
   AGY_POSTURE_ARGS=()
   case "$1" in
-    read-only) AGY_POSTURE_ARGS=(--mode plan --sandbox) ;;
-    workspace) AGY_POSTURE_ARGS=(--mode accept-edits --sandbox) ;;
+    read-only) ;;
+    workspace) ;;
     dangerous) AGY_POSTURE_ARGS=(--dangerously-skip-permissions) ;;
     *) return 1 ;;
   esac
+  return 0
+}
+
+agy_write_gemini_config() {
+  # agy_write_gemini_config <dir> <posture> — DF1 (§9.15): write a
+  # per-handle agy config dir (<dir>/agy-cfg/antigravity-cli/settings.json)
+  # carrying a posture-graded `permissions.allow` list, read via
+  # `agy --gemini_dir`. Confirmed live: --gemini_dir is honored, auth is
+  # inherited from OUTSIDE the dir (a minimal dir containing only
+  # settings.json works — no credentials copied), and its permissions.allow
+  # takes effect. Rule formats verified: `read_file(<glob>)` (we use
+  # `read_file(*)`) and `command(<prefix>)` (bare prefix, e.g.
+  # `command(git)` — NOT `command(git *)`).
+  #
+  # Called on every submit_agy_turn (start turn 1 AND every resume turn),
+  # so it also picks up a --steal posture escalation mid-conversation —
+  # rewriting is idempotent and cheap (one small JSON file).
+  dir="$1"; posture="$2"
+  cfg_root="$dir/agy-cfg/antigravity-cli"
+  mkdir -p "$cfg_root" 2>/dev/null || return 1
+
+  read_cmds='"command(cat)","command(head)","command(tail)","command(sed)","command(grep)","command(rg)","command(ls)","command(find)","command(wc)","command(git)"'
+  case "$posture" in
+    read-only)
+      # Reads + review only. No write_file/edit_file rule at all — the
+      # confirmed-working read-only config from the live probe.
+      allow="[\"read_file(*)\",$read_cmds]"
+      ;;
+    workspace)
+      # Read-only's list PLUS writes/edits and a broader build/test
+      # command set, so the delegated model can make and verify changes
+      # within cwd.
+      write_cmds='"command(python)","command(python3)","command(node)","command(npm)","command(pytest)","command(go)","command(cargo)","command(make)","command(bash)","command(sh)"'
+      allow="[\"read_file(*)\",\"write_file(*)\",\"edit_file(*)\",$read_cmds,$write_cmds]"
+      ;;
+    dangerous)
+      # --dangerously-skip-permissions (agy_posture_args) supersedes this
+      # allow-list entirely, but --gemini_dir is still passed on every
+      # invocation uniformly (see submit_agy_turn) rather than special-
+      # cased per posture, so a config file is written here regardless —
+      # content is inert once the skip flag is present.
+      allow="[\"read_file(*)\",\"write_file(*)\",\"edit_file(*)\",$read_cmds]"
+      ;;
+    *) return 1 ;;
+  esac
+
+  printf '{"enableTelemetry":false,"permissions":{"allow":%s}}' "$allow" > "$cfg_root/settings.json" 2>/dev/null || return 1
   return 0
 }
 
@@ -585,14 +680,30 @@ agy_auth_backstop_matched() {
   return 1
 }
 
+agy_gemini_dir_cache_file() {
+  # agy_gemini_dir_cache_file <dir> — prints the per-handle, isolated
+  # last_conversations.json path under this handle's own --gemini_dir
+  # (DF1, §9.15 ground truth #3: a per-handle --gemini_dir isolates that
+  # delegation's conversation store, so id-capture reads from HERE, not a
+  # global cwd-keyed cache shared with every other agy user on the
+  # machine).
+  printf '%s/agy-cfg/antigravity-cli/cache/last_conversations.json' "$1"
+}
+
 agy_read_last_conversations_id() {
-  # agy_read_last_conversations_id <cwd_norm>
-  # §9.14 (authoritative, supersedes §9.6/§2.3): last_conversations.json —
-  # a flat {"<abs cwd>": "<uuid>"} map — is the SOLE reliable id source for
-  # a --print delegation turn; the metadata-file cross-check described in
-  # earlier design sections is moot (fresh --print conversations never
-  # appear in conversation_metadata.json). Both cache files are rewritten
-  # wholesale when agy runs (TOCTOU), so parse with a 3x/500ms retry.
+  # agy_read_last_conversations_id <cwd_norm> <cache_file>
+  # §9.14 (authoritative for shape/retry) as adapted by DF1/§9.15: the
+  # cache file is now the per-handle isolated one (see
+  # agy_gemini_dir_cache_file), not a global path under the real HOME —
+  # each handle gets its own conversation store, so cross-handle/cross-
+  # project same-cwd races that used to require a first-call mkdir lock
+  # (§5.2/§9.6) no longer apply to id capture: there is nothing shared to
+  # race over. (A same-cwd race against the user's OWN interactive agy —
+  # which still uses the real ~/.gemini — remains structurally impossible
+  # to observe here since that agy never writes into our --gemini_dir at
+  # all.) The flat {"<abs cwd>": "<uuid>"} shape and the 3x/500ms
+  # parse-retry (both cache files are rewritten wholesale by agy, a
+  # TOCTOU hazard) are unchanged from §9.14.
   #
   # Return codes distinguish WHY capture failed, so the caller can tell a
   # "never initialized" signal from a benign "not this cwd yet":
@@ -601,14 +712,14 @@ agy_read_last_conversations_id() {
   #       any of the 3 tries (agy-not-initialized-shaped failure)
   #   2 = the file parsed fine at least once, but this cwd's key was never
   #       present (id capture failed for this specific delegation)
-  cwd_key="$1"
+  cwd_key="$1"; cache_file="$2"
   n=0
   parsed_ok=0
   while [ "$n" -lt 3 ]; do
-    if [ -f "$AGY_CACHE_LAST_CONV" ]; then
-      if jq -e 'type=="object"' "$AGY_CACHE_LAST_CONV" >/dev/null 2>&1; then
+    if [ -f "$cache_file" ]; then
+      if jq -e 'type=="object"' "$cache_file" >/dev/null 2>&1; then
         parsed_ok=1
-        sid_candidate=$(jq -r --arg k "$cwd_key" '.[$k] // empty' "$AGY_CACHE_LAST_CONV" 2>/dev/null)
+        sid_candidate=$(jq -r --arg k "$cwd_key" '.[$k] // empty' "$cache_file" 2>/dev/null)
         if printf '%s' "$sid_candidate" | grep -Eq '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'; then
           printf '%s' "$sid_candidate"
           return 0
@@ -622,54 +733,13 @@ agy_read_last_conversations_id() {
   return 1
 }
 
-agy_first_call_lock_acquire() {
-  # agy_first_call_lock_acquire <cwd_norm> — mkdir-based mutex (§5.2) that
-  # serializes same-cwd first-turn id READS against each other (this
-  # plugin's own concurrent handles only — see the header note on
-  # capture_agy_session_id for why it cannot cover cross-process races).
-  # Prints the lock dir path and returns 0 on success; prints nothing and
-  # returns 1 if not acquired within the bound — the caller still attempts
-  # the read best-effort in that case (§9.6's residual-race note already
-  # treats this as a documented, low-likelihood risk, not a hard
-  # guarantee), rather than failing the whole turn over lock contention.
-  cwd_norm="$1"
-  locks_dir="$BASE_DIR/.locks"
-  mkdir -p "$locks_dir" 2>/dev/null
-  h=$(printf '%s' "$cwd_norm" | shasum 2>/dev/null | awk '{print $1}')
-  [ -n "$h" ] || h=$(printf '%s' "$cwd_norm" | sha1sum 2>/dev/null | awk '{print $1}')
-  h12=$(printf '%s' "$h" | cut -c1-12)
-  [ -n "$h12" ] || h12="nohash"
-  lockdir="$locks_dir/agy-first-$h12.d"
-
-  n=0
-  # Bounded to ~15 polls (30s), not the full timeout_s: this lock guards a
-  # sub-second filesystem read, not the external turn itself, so a long
-  # wait here would only eat into cmd_status's own bounded polling budget
-  # (cap 90s) for no benefit — a lock still held after a few seconds is
-  # already anomalous, not a legitimately slow read.
-  while [ "$n" -lt 15 ]; do
-    if mkdir "$lockdir" 2>/dev/null; then
-      printf '%s' "$lockdir"
-      return 0
-    fi
-    age=$(( $(now_epoch) - $(stat_mtime "$lockdir") ))
-    if [ "$age" -gt 900 ]; then
-      rm -rf "$lockdir" 2>/dev/null
-      continue
-    fi
-    n=$((n + 1))
-    sleep 2
-  done
-  return 1
-}
-
-agy_first_call_lock_release() {
-  rmdir "$1" 2>/dev/null
-}
-
 capture_agy_session_id() {
   # capture_agy_session_id <dir> <cwd> — turn-1-only, called from cmd_status
-  # once the turn reaches terminal SUCCESS. Sets $AGY_CAPTURE_FAIL_REASON
+  # once the turn reaches terminal SUCCESS (or, per DF2, an exit-0 turn
+  # that is about to be downgraded to NO_OUTPUT — capture still runs
+  # first: the conversation exists server-side even when the requested
+  # tool call inside it was permission-denied, so it's still a valid
+  # resume target under a broader posture). Sets $AGY_CAPTURE_FAIL_REASON
   # on failure so cmd_status can surface a precise message without
   # re-deriving the reason.
   dir="$1"; cwd="$2"
@@ -677,10 +747,9 @@ capture_agy_session_id() {
   cwd_norm=$(cd "$cwd" 2>/dev/null && pwd -P)
   [ -n "$cwd_norm" ] || cwd_norm="$cwd"
 
-  lockdir=$(agy_first_call_lock_acquire "$cwd_norm")
-  sid=$(agy_read_last_conversations_id "$cwd_norm")
+  cache_file=$(agy_gemini_dir_cache_file "$dir")
+  sid=$(agy_read_last_conversations_id "$cwd_norm" "$cache_file")
   rc=$?
-  [ -n "$lockdir" ] && agy_first_call_lock_release "$lockdir"
 
   if [ "$rc" -eq 0 ] && [ -n "$sid" ]; then
     printf '%s' "$sid" > "$dir/session.id"
@@ -690,25 +759,31 @@ capture_agy_session_id() {
   fi
 
   if [ "$rc" -eq 1 ]; then
-    AGY_CAPTURE_FAIL_REASON="agy state file $(display_path "$AGY_CACHE_LAST_CONV") is missing or unparseable after 3 retries — is agy initialized? Run 'agy' interactively once to sign in."
+    AGY_CAPTURE_FAIL_REASON="agy state file $(display_path "$cache_file") is missing or unparseable after 3 retries — is agy initialized? Run 'agy' interactively once to sign in."
   else
-    AGY_CAPTURE_FAIL_REASON="no entry for this cwd in $(display_path "$AGY_CACHE_LAST_CONV") after 3 retries — id capture failed."
+    AGY_CAPTURE_FAIL_REASON="no entry for this cwd in $(display_path "$cache_file") after 3 retries — id capture failed."
   fi
   return 1
 }
 
 agy_check_identity_drift() {
-  # agy_check_identity_drift <dir> — turn N>1 check: has
-  # last_conversations.json[cwd] moved to a different conversation since we
-  # captured session.id at turn 1? (§9.14: "if it changed identity, surface
-  # a warning in the return rather than silently resuming wrong.") We never
-  # act on this — only warn; the next turn still resumes OUR recorded
-  # session.id via --conversation, never whatever the cache currently says.
+  # agy_check_identity_drift <dir> — turn N>1 check: has this handle's OWN
+  # isolated last_conversations.json[cwd] moved to a different conversation
+  # since we captured session.id at turn 1? (§9.14: "if it changed
+  # identity, surface a warning in the return rather than silently
+  # resuming wrong.") We never act on this — only warn; the next turn
+  # still resumes OUR recorded session.id via --conversation, never
+  # whatever the cache currently says. Per DF1, the cache is now per-handle
+  # isolated, so drift here means something wrote into THIS handle's own
+  # --gemini_dir cache out of band — a narrower, more anomalous signal
+  # than the old global-cache version of this check, but the response is
+  # the same: warn, never auto-resume the drifted id.
   dir="$1"
   stored_sid=$(meta_get "$dir" session_id)
   cwd_key=$(meta_get "$dir" agy_cwd_key)
   [ -n "$stored_sid" ] && [ -n "$cwd_key" ] || return 0
-  current_sid=$(agy_read_last_conversations_id "$cwd_key")
+  cache_file=$(agy_gemini_dir_cache_file "$dir")
+  current_sid=$(agy_read_last_conversations_id "$cwd_key" "$cache_file")
   if [ -n "$current_sid" ] && [ "$current_sid" != "$stored_sid" ]; then
     printf 'WARNING: last_conversations.json for this cwd now points to a different agy conversation (%s) than this handle'\''s session (%s) — NOT auto-resuming the new one; another agy process may be running in the same cwd. Verify before continuing if this is unexpected.' "$current_sid" "$stored_sid"
   fi
@@ -776,6 +851,16 @@ submit_agy_turn() {
     return 1
   fi
 
+  # DF1 (§9.15): write/refresh this handle's per-turn --gemini_dir config
+  # before every invocation (idempotent — also picks up a --steal posture
+  # change). A failure here (e.g. an unwritable state dir) must not fall
+  # through to invoking agy with no posture enforcement at all.
+  if ! agy_write_gemini_config "$dir" "$posture"; then
+    rm -rf "$lockdir"
+    printf 'CONFIG_FAIL'
+    return 1
+  fi
+
   prompt_text=$(cat "$promptfile" 2>/dev/null)
   case "$prompt_text" in
     -*)
@@ -806,6 +891,11 @@ submit_agy_turn() {
   [ -n "$effort" ] && agy_args+=(--effort "$effort")
   [ -n "$agent" ] && agy_args+=(--agent "$agent")
   agy_args+=("${AGY_POSTURE_ARGS[@]}")
+  # DF1 (§9.15): the per-handle config dir just written by
+  # agy_write_gemini_config, carrying this handle's posture-graded
+  # permissions.allow list — passed on EVERY invocation (start turn 1 AND
+  # every resume turn), not just turn 1.
+  agy_args+=(--gemini_dir "$dir/agy-cfg")
   for d in "${add_dirs[@]}"; do
     [ -n "$d" ] && agy_args+=(--add-dir "$d")
   done
@@ -1347,13 +1437,39 @@ cmd_status() {
       # forking the contract per CLI.
       cp -- "$dir/$tn.events.jsonl" "$dir/$tn.last-message.txt" 2>/dev/null
 
+      # exit_success gates id capture below and is deliberately evaluated
+      # from the ORIGINAL exit-0-derived status, before DF2's NO_OUTPUT
+      # downgrade — a permission-denied turn still exits 0 and its
+      # conversation still exists server-side (agy created/updated it
+      # before the tool call inside was denied), so it's still worth
+      # capturing as a resume target even though the answer is empty.
+      exit_success=0
+      [ "$status" = "SUCCESS" ] && exit_success=1
+
       identity_warning=""
       if [ "$turn" -eq 1 ] && [ -z "$(meta_get "$dir" session_id)" ]; then
-        if [ "$status" = "SUCCESS" ]; then
+        if [ "$exit_success" -eq 1 ]; then
           capture_agy_session_id "$dir" "$cwd_stored" || status="ERROR"
         fi
       elif [ "$turn" -gt 1 ]; then
         identity_warning=$(agy_check_identity_drift "$dir")
+      fi
+
+      # DF2: an exit-0 turn with an EMPTY captured answer is never
+      # SUCCESS — most commonly agy's headless auto-deny (§9.15): the
+      # conversation completed (exit 0) but the requested tool call was
+      # denied, so nothing useful came back. Only fires off the ORIGINAL
+      # exit-0 status (not if id capture above already escalated to
+      # ERROR) and only once — a status of ERROR here means id capture
+      # itself is the more specific, actionable problem to report.
+      no_output_hint=""
+      if [ "$status" = "SUCCESS" ] && is_blank_file "$dir/$tn.last-message.txt"; then
+        status="NO_OUTPUT"
+        hint=$(permission_denial_hint "$dir/$tn.stderr.log" "$dir/$tn.agy.log")
+        if [ -n "$hint" ]; then
+          no_output_hint="agy produced no output — the delegated turn's permission was auto-denied under headless mode: $hint
+Add the needed rule to this handle's --gemini_dir allow-list (posture=workspace already grants write_file/edit_file + a build/test command set), or — only with explicit caller approval — resend at posture=dangerous (--dangerously-skip-permissions)."
+        fi
       fi
 
       sid=$(meta_get "$dir" session_id)
@@ -1379,6 +1495,10 @@ $(errors_tail "$dir/$tn.stderr.log")"
           status_errors="turn aborted; resend the prompt to continue the conversation (agy has no repollable in-flight state once its --print process is killed — §9.7).
 $(errors_tail "$dir/$tn.stderr.log")"
           ;;
+        NO_OUTPUT)
+          status_errors="${no_output_hint:-agy exited successfully but produced no output (empty answer) — this is not a crash; the caller got nothing useful and should decide whether to retry, escalate posture, or treat this as a legitimately empty result.}
+$(errors_tail "$dir/$tn.stderr.log")"
+          ;;
       esac
       if [ -n "$identity_warning" ]; then
         status_errors="${status_errors:+$status_errors
@@ -1391,8 +1511,23 @@ $(errors_tail "$dir/$tn.stderr.log")"
       sid=$(meta_get "$dir" session_id)
       [ -z "$sid" ] && sid="pending"
       files_changed=$(files_changed_summary "$dir/$tn.events.jsonl" "$posture")
+
+      # DF2: same exit-0-but-empty check as agy, kept CLI-general (a codex
+      # turn can also exit 0 with an empty -o file — e.g. a sandbox denial
+      # the model didn't retry around). The permission-hint match is
+      # mainly an agy shape but costs nothing to also try here.
+      no_output_hint=""
+      if [ "$status" = "SUCCESS" ] && is_blank_file "$dir/$tn.last-message.txt"; then
+        status="NO_OUTPUT"
+        hint=$(permission_denial_hint "$dir/$tn.stderr.log" "$dir/$tn.events.jsonl")
+        [ -n "$hint" ] && no_output_hint="codex produced no output — possible permission/sandbox denial: $hint"
+      fi
+
       status_errors=""
-      if [ "$status" != "SUCCESS" ]; then
+      if [ "$status" = "NO_OUTPUT" ]; then
+        status_errors="${no_output_hint:-codex exited successfully but produced no output (empty answer) — this is not a crash; the caller got nothing useful and should decide whether to retry, escalate posture, or treat this as a legitimately empty result.}
+$(errors_tail "$dir/$tn.stderr.log")"
+      elif [ "$status" != "SUCCESS" ]; then
         status_errors=$(errors_tail "$dir/$tn.stderr.log")
       fi
     fi
