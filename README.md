@@ -103,6 +103,7 @@ The framework supports **four SDLC delivery structures**. The `setup-team` skill
 | [`sdlc-lang-python`](plugins/sdlc-lang-python/README.md) | 1 | — | Python-specific validation, patterns, expert agent |
 | [`sdlc-lang-javascript`](plugins/sdlc-lang-javascript/README.md) | 1 | — | JavaScript/TypeScript validation and patterns |
 | [`sdlc-lang-swift`](plugins/sdlc-lang-swift/README.md) | 1 | — | Swift language expert — idiomatic Swift 6.2, concurrency, generics, macros, SwiftPM |
+| [`sdlc-lang-kotlin`](plugins/sdlc-lang-kotlin/README.md) | 1 | — | Kotlin language expert — idiomatic Kotlin 2.x, coroutines & Flow, sealed/data/value classes, KMP |
 | [`sdlc-knowledge-base`](plugins/sdlc-knowledge-base/README.md) | 2 | 8 | Filesystem-based knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint |
 | [`sdlc-workflows`](plugins/sdlc-workflows/README.md) | 1 | 6 | Containerised delegation — Archon-orchestrated DAG workflows in isolated Docker containers |
 | [`sdlc-programme`](plugins/sdlc-programme/README.md) | 0 | 5 | **Method 1 substrate** — formal phase gates (requirements → design → test → code) with mandatory cross-phase review. Skill+validator bundle for multi-team programme work. |
@@ -212,7 +213,7 @@ The framework provides 56 specialist agents across 12 plugins. Each plugin's REA
 | `code-review-specialist` | Code quality, security (OWASP), patterns |
 | `verification-enforcer` | Docs-code fidelity, test coverage, runtime proof |
 
-**Team plugins** (63 agents across 14 plugins):
+**Team plugins** (64 agents across 15 plugins):
 
 | Plugin | Agents | Highlights |
 |--------|--------|------------|
@@ -230,6 +231,7 @@ The framework provides 56 specialist agents across 12 plugins. Each plugin's REA
 | `sdlc-lang-python` | 1 | Python language expert |
 | `sdlc-lang-javascript` | 1 | JavaScript/TypeScript language expert |
 | `sdlc-lang-swift` | 1 | Swift language expert (pairs with sdlc-team-ios) |
+| `sdlc-lang-kotlin` | 1 | Kotlin language expert (pairs with sdlc-team-android) |
 | `sdlc-workflows` | 1 | Delegation coordinator |
 
 See [AGENT-INDEX.md](AGENT-INDEX.md) for the full catalog with detailed descriptions.

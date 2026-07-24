@@ -1,0 +1,7 @@
+{
+  "name": "sdlc-lang-kotlin",
+  "version": "0.1.0",
+  "description": "Kotlin language expert agent — idiomatic Kotlin 2.x, coroutines & structured concurrency, Flow, null-safety, sealed/data/value classes, generics, KSP, Java interop, and Kotlin Multiplatform basics. Pairs with sdlc-team-android.",
+  "author": { "name": "SteveGJones" },
+  "keywords": ["sdlc", "kotlin", "language", "coroutines", "agents"]
+}
