@@ -1,0 +1,13 @@
+#!/bin/sh
+# mock-sleep-notrap <pidfile> <duration> — like mock-sleep, but IGNORES
+# SIGTERM (only SIGKILL ends it). Used ONLY by
+# test-turn-supervisor.sh's second-TERM-during-cleanup regression test:
+# it forces turn-supervisor.pl's escalate_and_reap() through its full
+# ~5s TERM-then-grace window before falling through to SIGKILL, which is
+# what makes that window observably wide enough to land a second signal
+# inside it deterministically. Real codex/agy processes don't trap TERM
+# — mock-sleep (untrapped) remains the representative default used by
+# every other test.
+trap '' TERM
+printf '%s' "$$" > "$1"
+exec sleep "$2"

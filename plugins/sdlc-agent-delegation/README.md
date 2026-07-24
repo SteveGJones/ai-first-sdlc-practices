@@ -73,8 +73,11 @@ sdlc-agent-delegation/
   tests/
     test-extdel-codex-resume.sh   # exercises extdel.sh against a mock codex
     test-extdel-agy-resume.sh     # exercises extdel.sh against a mock agy
+    test-turn-supervisor.sh       # direct signal/fork/alarm regression tests
     fixtures/mock-bin/codex       # mock CLI — no real codex/agy calls in tests
     fixtures/mock-bin/agy         # mock CLI — no real codex/agy calls in tests
+    fixtures/mock-sleep           # tiny untrapped-TERM CLI stand-in for turn-supervisor.pl tests
+    fixtures/mock-sleep-notrap    # like mock-sleep but ignores TERM (escalation-window tests)
 ```
 
 ## Unified contract

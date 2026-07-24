@@ -1517,12 +1517,20 @@ cmd_stop() {
       pid=$(cat "$pidfile" 2>/dev/null)
       if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
         kill -TERM "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null
+        # DF3 #3: wait for the supervisor's OWN terminal signal — the
+        # exit.code file — not mere process death. The supervisor's TERM
+        # handler escalates to the child (up to a 5s grace) and only THEN
+        # writes exit.code and exits; force-killing on a 5s liveness
+        # timeout could hit it mid-escalation, skipping the exit.code
+        # write and narrowly orphaning the child (whose pgid `stop` never
+        # learns). Give the joint contract grace + slack (~8s), and only
+        # force-kill if the supervisor never produced a terminal state.
         n=0
-        while [ "$n" -lt 5 ] && kill -0 "$pid" 2>/dev/null; do
+        while [ "$n" -lt 8 ] && [ ! -f "$exitfile" ] && kill -0 "$pid" 2>/dev/null; do
           sleep 1
           n=$((n + 1))
         done
-        if kill -0 "$pid" 2>/dev/null; then
+        if [ ! -f "$exitfile" ] && kill -0 "$pid" 2>/dev/null; then
           kill -KILL "-$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null
         fi
       fi
