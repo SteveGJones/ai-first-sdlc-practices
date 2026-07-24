@@ -13,11 +13,18 @@ _In progress._ Building a new SDLC-family plugin (`sdlc-agent-delegation`) with 
 
 ## What Went Well
 
-- _TBD_
+- **Tiered delegation matched cost to difficulty.** Fable for the architecture spike + two adversarial reviews (design and code), Sonnet for execution, Haiku as the shipped wrapper. Each Fable review caught real defects a cheaper pass would have missed (the `setsid`/timeout-cap BLOCKERs at design time; the `stop`-orphans-codex BLOCKER at code time).
+- **End-to-end dogfood (2026-07-23) worked and paid off immediately.** Drove the real `extdel.sh` against the REAL codex + agy CLIs to review our own `turn-supervisor.pl`. The full machinery worked: submit-then-poll (`RUNNING`→`SUCCESS`), real session-id capture for BOTH CLIs, `slice` extraction, durable `./tmp` logs, `stop`, `reap`. codex returned a high-quality 10-finding review; and the run surfaced two real bugs in our own code (below).
+
+## Dogfood Findings (2026-07-23) — follow-up work
+
+- **DF1 (agy read-only posture is too restrictive for real work).** `agy --mode plan --sandbox` (our `read-only` mapping) **auto-denies the "command"/tool permission in headless mode**, so any task that must read a file or run a command produces **no output**. The trivial "PONG" live probe missed this because it needed no tools; a real review task exposed it. agy's own stderr suggests a `permissions.allow` settings.json allow-rule (e.g. `command(<target>)`) or `--dangerously-skip-permissions`. **Action:** rethink the agy `read-only` mapping — likely need a middle posture that permits read-only file/command access, or document that agy read-only cannot touch files.
+- **DF2 (false SUCCESS on empty output).** agy exited 0 with an empty answer (tool auto-denied), and our contract reported `Status: SUCCESS`. **Action:** treat exit-0-with-empty-answer — especially when stderr matches `no output produced|auto-denied|required the .* permission` — as a distinct non-SUCCESS status (e.g. `NO_OUTPUT`/`DENIED`), so callers aren't misled.
+- **DF3 (codex-found bugs in `turn-supervisor.pl`).** The delegated codex review flagged several real races the Fable review and tests missed: (a) TERM/INT keep default disposition in the window between `fork` and handler install (line ~70→179) — a signal there kills the supervisor uncleanly; (b) the parent can signal `-$child` before the child's `setpgrp` establishes the group → signals miss and `waitpid` can hang; (c) the timeout alarm stays armed inside the TERM/INT handler and can misclassify a stop as timeout 124; (d) a second signal during cleanup `exit 0`s mid-escalation; (e) `owner.pid` handoff truncates in place and ignores I/O failure. **Action:** harden the supervisor (block TERM/INT/ALRM during setup + a fork/setpgrp handshake + cancel alarm on entering the handler + atomic owner.pid write).
 
 ## What Could Improve
 
-- _TBD_
+- **A trivial live probe under-tested agy.** The "PONG" probe answered "does plan mode hang?" (no) but not "does plan mode allow the tools a real task needs?" (no) — DF1. Lesson: probe with a task shaped like the real workload (one that must read a file), not a no-op.
 
 ## Lessons Learned
 
