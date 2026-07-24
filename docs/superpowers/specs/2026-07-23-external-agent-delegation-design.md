@@ -518,6 +518,32 @@ Both wrapper agents (`agy-runner.md`, `codex-runner.md`), the `agent-delegation-
 
 Test coverage: `tests/test-extdel-agy-resume.sh` gained explicit per-posture `--gemini_dir` config-content assertions, a read-only-write-denied → `NO_OUTPUT`-with-hint case, a workspace-write → `SUCCESS` case, and a genuinely-empty → `NO_OUTPUT`-without-hint case; the mock `agy` fixture gained `--gemini_dir` handling, an `MOCK_AGY_ACTION` (read/write) permission-simulation knob, and `MOCK_AGY_EMPTY_LEGIT`. The pre-existing identity-drift test (§9.14) was reworked to tamper with the handle's own isolated cache file rather than the now-defunct global one — the scenario it guards is narrower post-DF1 (out-of-band writes into *this handle's own* state, not a genuine cross-process race) but not vacuous. `tests/test-extdel-codex-resume.sh` gained a `MOCK_CODEX_EMPTY` knob and matching `NO_OUTPUT` test.
 
+### 9.17 codex Mode B proven — app-server per-action approval loop (2026-07-24, spike verified)
+
+A live spike (`scratchpad/appserver_spike.py`, a ~130-line Python client) proved the flagship "we approve each action, per posture" capability end-to-end against `codex app-server`. This SUPERSEDES the §3.1 `mcp-server` + FIFO Mode B design for codex — app-server's typed approval protocol is the right transport.
+
+**Transport & handshake (line-delimited JSON-RPC over `codex app-server` stdio):**
+1. `initialize` `{clientInfo:{name,version}, capabilities:{}}` → `{userAgent, codexHome, platformOs, …}`.
+2. `thread/start` `{cwd, approvalPolicy, sandbox}` → `{thread:{id}, …}`. **`sandbox` is a STRING enum** `read-only|workspace-write|danger-full-access` (NOT the SandboxPolicy object). `approvalPolicy` (AskForApproval) ∈ `untrusted|on-request|never` (or a granular object).
+3. `turn/start` `{threadId, input:[{type:"text",text:"…"}], approvalPolicy, …}` → turn runs; events stream as notifications (`turn/started`, `item/started`, `item/agentMessage/delta`, `item/completed`, `turn/completed`). The final answer is an `item/completed` with `item.type=="agentMessage"`, `phase=="final_answer"`.
+
+**Approval round-trip (PROVEN):** the server sends CLIENT REQUESTS (have both `method` and `id`):
+- `item/commandExecution/requestApproval` — params carry the **actual** `command` (e.g. `/bin/zsh -lc 'printf … > spike_out.txt'`) and `cwd`.
+- `item/fileChange/requestApproval` — params carry the proposed file `changes`.
+- also `item/permissions/requestApproval`, `item/tool/requestUserInput`, `mcpServer/elicitation/request`.
+We answer `{id:<their id>, result:{decision:"approved"|"denied"|"approved_for_session"|"abort"}}` and codex honors it. This is the per-action authority — we see the real command/patch and decide.
+
+**Posture = (sandbox, approvalPolicy) — both combinations verified live:**
+| posture | sandbox | approvalPolicy | observed behavior |
+|---|---|---|---|
+| **read-only** | `read-only` | `untrusted` | reads/safe commands run in-sandbox with NO approval friction; a write attempt is surfaced as an approval request, and under `untrusted` codex rejects the escalation even if approved ("cannot ask for escalated permissions if the approval policy is UnlessTrusted") — i.e. writes are firmly blocked. (Use `on-request` instead if we want to explicitly receive-and-deny each escalation.) |
+| **workspace** | `workspace-write` | `on-request` | in-workspace writes land (verified: `spike_out.txt` written); out-of-workspace / destructive escalations surface as approval requests for our decision. |
+| **dangerous** | `danger-full-access` | `never` | no gating. |
+
+**Key semantic:** codex only asks for approval when an action must ESCAPE the sandbox — harmless in-sandbox reads/writes just run. So read-only delegation has zero approval friction for reads, and the approval loop fires exactly at the safety boundary. That is the ideal model.
+
+**Mode B build shape (informed by the spike):** ship a small app-server client (Python, like `turn-supervisor.pl` is shipped) that: runs as the detached daemon holding the `codex app-server` process (per §9.1 portable daemonizer); implements the posture→ReviewDecision policy using the real command/cwd/patch in each approval request (approve reads; gate writes by posture; deny destructive patterns even under workspace; never auto-approve `dangerous` the caller didn't set); and presents the SAME extdel.sh submit-then-poll contract (prompt in via file, events+answer out to files, status/slice/stop). Open build decisions: whether extdel.sh drives the client per-turn or the client is the long-lived daemon; how the posture policy encodes "destructive" (deny-list vs. sandbox reliance); reusing the §9.8 per-handle mutex + §9.10 pinned posture.
+
 ### 9.13 Revised implementation order
 
 1. `extdel.sh` primitives: portable `spawn_daemon`, perl-alarm wrapper, handle grammar, meta.json, per-handle mutex, `reap`.
