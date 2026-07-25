@@ -130,7 +130,7 @@ earlier builds read a single machine-global
 two agy `start` calls landing in the *same* cwd at nearly the same time
 could race on which conversation that shared cache ended up recording.
 Each handle now gets its own isolated `--gemini_dir`
-(`./tmp/agent-delegation/<HANDLE>/agy-cfg/`), so id capture reads a
+(`./tmp/simple-orchestration/<HANDLE>/agy-cfg/`), so id capture reads a
 per-handle cache with nothing else to race against — concurrent
 `agy-runner` dispatches in the same cwd no longer contend over id capture
 at all. `status` can still surface a `WARNING` if a handle's own isolated
@@ -162,6 +162,6 @@ codex, Google's for agy), not Anthropic's — and that spend does not show
 up in Claude Code's own token/cost reporting. Codex's `--json` event
 stream includes token-count events; agy's `--log-file` output is retained
 per turn. The full transcript for either CLI is kept under
-`./tmp/agent-delegation/<HANDLE>/`, so it's auditable after the fact, but
+`./tmp/simple-orchestration/<HANDLE>/`, so it's auditable after the fact, but
 nothing surfaces it proactively today. Don't fan out delegations casually;
 each one is real spend on someone else's bill.

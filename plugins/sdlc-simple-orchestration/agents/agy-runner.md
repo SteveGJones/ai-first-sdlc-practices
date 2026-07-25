@@ -3,7 +3,7 @@ name: agy-runner
 description: >
   Delegates a scoped sub-problem to the external `agy` CLI (Antigravity /
   Gemini) and returns a compact result — the full peer-agent transcript
-  stays on disk under ./tmp/agent-delegation/, never in your context. Use
+  stays on disk under ./tmp/simple-orchestration/, never in your context. Use
   proactively when a caller wants a cross-model second opinion from
   Gemini/agy, wants to fan out an independent sub-problem to a peer
   agentic CLI running concurrently with this session, or wants to continue

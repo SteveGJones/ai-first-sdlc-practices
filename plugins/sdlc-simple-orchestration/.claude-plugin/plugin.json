@@ -1,0 +1,7 @@
+{
+  "name": "sdlc-simple-orchestration",
+  "version": "0.1.0",
+  "description": "Cross-vendor delegation orchestrator: a unified contract, graded permission postures, and cross-model fan-out/compare over locally installed peer agentic CLIs (codex, agy; extensible via one-directory adapters). In-session and uncontainerised — distinct from sdlc-workflows (Archon/Docker/DAG).",
+  "author": { "name": "SteveGJones" },
+  "keywords": ["sdlc", "orchestration", "delegation", "cross-model", "codex", "agy", "opencode", "token-optimization"]
+}

@@ -5,7 +5,7 @@
 # so this test never spends API quota. Bash-3.2-safe (no associative
 # arrays, no `${var,,}`), matching extdel.sh's own target shell.
 #
-# Run: bash plugins/sdlc-agent-delegation/tests/test-extdel-codex-resume.sh
+# Run: bash plugins/sdlc-simple-orchestration/tests/test-extdel-codex-resume.sh
 #
 # A single real-CLI smoke test can be added later behind
 # `if [ "${EXTDEL_LIVE:-0}" = "1" ]; then ... fi` — off by default, and
@@ -100,19 +100,19 @@ echo "--- 1. handle creation ---"
 OUT1=$(MOCK_CODEX_SESSION_ID="11111111-1111-4111-8111-111111111111" run_extdel start --prompt "hello world" --posture read-only)
 assert_contains "$OUT1" "Status: RUNNING" "start returns RUNNING immediately"
 HANDLE1=$(extract_field "$OUT1" "Handle")
-if [ -n "$HANDLE1" ] && [ -d "./tmp/agent-delegation/$HANDLE1" ]; then
+if [ -n "$HANDLE1" ] && [ -d "./tmp/simple-orchestration/$HANDLE1" ]; then
   pass "handle directory created: $HANDLE1"
 else
   fail "handle directory NOT created (handle='$HANDLE1')"
 fi
-if [ -f "./tmp/agent-delegation/$HANDLE1/meta.json" ] && [ -f "./tmp/agent-delegation/$HANDLE1/turn-001.prompt.txt" ]; then
+if [ -f "./tmp/simple-orchestration/$HANDLE1/meta.json" ] && [ -f "./tmp/simple-orchestration/$HANDLE1/turn-001.prompt.txt" ]; then
   pass "meta.json and turn-001.prompt.txt exist"
 else
   fail "meta.json or turn-001.prompt.txt missing"
 fi
-META_CLI=$(jq -r '.cli' "./tmp/agent-delegation/$HANDLE1/meta.json" 2>/dev/null)
-META_POSTURE=$(jq -r '.posture' "./tmp/agent-delegation/$HANDLE1/meta.json" 2>/dev/null)
-PROMPT_CONTENT=$(cat "./tmp/agent-delegation/$HANDLE1/turn-001.prompt.txt" 2>/dev/null)
+META_CLI=$(jq -r '.cli' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
+META_POSTURE=$(jq -r '.posture' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
+PROMPT_CONTENT=$(cat "./tmp/simple-orchestration/$HANDLE1/turn-001.prompt.txt" 2>/dev/null)
 [ "$META_CLI" = "codex" ] && pass "meta.json cli=codex" || fail "meta.json cli was '$META_CLI'"
 [ "$META_POSTURE" = "read-only" ] && pass "meta.json posture=read-only" || fail "meta.json posture was '$META_POSTURE'"
 [ "$PROMPT_CONTENT" = "hello world" ] && pass "turn-001.prompt.txt has the exact prompt text" || fail "prompt file content was '$PROMPT_CONTENT'"
@@ -142,9 +142,9 @@ echo "--- 3. session-id capture from event stream ---"
 FINAL1=$(poll_until_terminal "$HANDLE1" 10)
 assert_contains "$FINAL1" "Status: SUCCESS" "handle1 turn 1 reaches SUCCESS"
 assert_contains "$FINAL1" "11111111-1111-4111-8111-111111111111" "captured session id matches the mock's session_id event"
-CAPTURED_SID=$(jq -r '.session_id' "./tmp/agent-delegation/$HANDLE1/meta.json" 2>/dev/null)
+CAPTURED_SID=$(jq -r '.session_id' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
 [ "$CAPTURED_SID" = "11111111-1111-4111-8111-111111111111" ] && pass "meta.json.session_id persisted" || fail "meta.json.session_id was '$CAPTURED_SID'"
-[ -f "./tmp/agent-delegation/$HANDLE1/session.id" ] && pass "session.id file written" || fail "session.id file missing"
+[ -f "./tmp/simple-orchestration/$HANDLE1/session.id" ] && pass "session.id file written" || fail "session.id file missing"
 echo
 
 # ---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ echo "--- 5. pinned-posture refusal ---"
 REFUSED=$(run_extdel prompt "$HANDLE1" --prompt "turn2 attempt" --posture workspace)
 assert_contains "$REFUSED" "Status: ERROR" "posture mismatch without --steal is refused"
 assert_contains "$REFUSED" "differs from this handle's pinned posture" "refusal message explains the pinned-posture mismatch"
-POSTURE_AFTER_REFUSAL=$(jq -r '.posture' "./tmp/agent-delegation/$HANDLE1/meta.json" 2>/dev/null)
+POSTURE_AFTER_REFUSAL=$(jq -r '.posture' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
 [ "$POSTURE_AFTER_REFUSAL" = "read-only" ] && pass "pinned posture unchanged after refused attempt" || fail "pinned posture mutated to '$POSTURE_AFTER_REFUSAL'"
 
 STOLEN=$(run_extdel prompt "$HANDLE1" --prompt "turn2 with steal" --posture workspace --steal)
@@ -179,7 +179,7 @@ assert_contains "$STOLEN" "Status: RUNNING" "posture escalation succeeds with --
 STOLEN_FINAL=$(poll_until_terminal "$HANDLE1" 10)
 assert_contains "$STOLEN_FINAL" "Status: SUCCESS" "stolen turn 2 completes"
 assert_contains "$STOLEN_FINAL" "Turn: 2" "stolen turn reports turn 2"
-POSTURE_AFTER_STEAL=$(jq -r '.posture' "./tmp/agent-delegation/$HANDLE1/meta.json" 2>/dev/null)
+POSTURE_AFTER_STEAL=$(jq -r '.posture' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
 [ "$POSTURE_AFTER_STEAL" = "workspace" ] && pass "pinned posture updated after --steal" || fail "pinned posture after steal was '$POSTURE_AFTER_STEAL'"
 echo
 
@@ -209,7 +209,7 @@ echo
 echo "--- 7. stop ---"
 STOP_OUT=$(run_extdel stop "$HANDLE1")
 assert_contains "$STOP_OUT" "STOPPED: $HANDLE1" "stop reports the handle as stopped"
-CLOSED=$(jq -r '.closed' "./tmp/agent-delegation/$HANDLE1/meta.json" 2>/dev/null)
+CLOSED=$(jq -r '.closed' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
 [ "$CLOSED" != "null" ] && [ -n "$CLOSED" ] && pass "meta.json.closed timestamp set" || fail "meta.json.closed was '$CLOSED'"
 echo
 
@@ -217,18 +217,18 @@ echo
 # 8. reap — stale lock cleanup
 # ---------------------------------------------------------------------------
 echo "--- 8. reap ---"
-mkdir -p "./tmp/agent-delegation/$HANDLE3/.turn-lock"
-echo "999999" > "./tmp/agent-delegation/$HANDLE3/.turn-lock/owner.pid"
+mkdir -p "./tmp/simple-orchestration/$HANDLE3/.turn-lock"
+echo "999999" > "./tmp/simple-orchestration/$HANDLE3/.turn-lock/owner.pid"
 # lock_is_stale() (M4a) never reaps a lock younger than its 30s grace
 # window regardless of owner.pid liveness, to avoid racing the window
 # between mkdir and submit_codex_turn overwriting owner.pid with the
 # real supervisor pid. Backdate the lock dir so this fixture actually
 # exercises the "genuinely old and dead" reap path instead of the grace
 # window.
-backdate "./tmp/agent-delegation/$HANDLE3/.turn-lock"
+backdate "./tmp/simple-orchestration/$HANDLE3/.turn-lock"
 REAP_OUT=$(run_extdel reap)
 assert_contains "$REAP_OUT" "reaped stale lock: $HANDLE3" "reap clears a lock whose recorded turn pid is dead"
-[ -d "./tmp/agent-delegation/$HANDLE3/.turn-lock" ] && fail "stale lock directory still present after reap" || pass "stale lock directory removed"
+[ -d "./tmp/simple-orchestration/$HANDLE3/.turn-lock" ] && fail "stale lock directory still present after reap" || pass "stale lock directory removed"
 echo
 
 # ---------------------------------------------------------------------------
@@ -240,16 +240,16 @@ echo "--- 8b. reap respects the lock-age grace window ---"
 OUT8B=$(MOCK_CODEX_SESSION_ID="88888888-8888-4888-8888-888888888888" run_extdel start --prompt "grace window target" --posture read-only)
 HANDLE8B=$(extract_field "$OUT8B" "Handle")
 poll_until_terminal "$HANDLE8B" 10 >/dev/null
-mkdir -p "./tmp/agent-delegation/$HANDLE8B/.turn-lock"
-echo "999999" > "./tmp/agent-delegation/$HANDLE8B/.turn-lock/owner.pid"
+mkdir -p "./tmp/simple-orchestration/$HANDLE8B/.turn-lock"
+echo "999999" > "./tmp/simple-orchestration/$HANDLE8B/.turn-lock/owner.pid"
 # Freshly created — well inside the 30s grace window, no backdate.
 REAP_OUT8B=$(run_extdel reap)
-if [ -d "./tmp/agent-delegation/$HANDLE8B/.turn-lock" ]; then
+if [ -d "./tmp/simple-orchestration/$HANDLE8B/.turn-lock" ]; then
   pass "reap left a fresh (in-grace-window) lock alone despite a dead owner.pid"
 else
   fail "reap removed a lock inside its grace window (M4a regression)"
 fi
-rm -rf "./tmp/agent-delegation/$HANDLE8B/.turn-lock"
+rm -rf "./tmp/simple-orchestration/$HANDLE8B/.turn-lock"
 echo
 
 # ---------------------------------------------------------------------------
@@ -262,7 +262,7 @@ HANDLE9=$(extract_field "$OUT9" "Handle")
 assert_contains "$OUT9" "Status: RUNNING" "handle9 starts RUNNING (mid-flight stop target)"
 
 sleep 1
-SUP_PID9=$(cat "./tmp/agent-delegation/$HANDLE9/turn-001.pid" 2>/dev/null)
+SUP_PID9=$(cat "./tmp/simple-orchestration/$HANDLE9/turn-001.pid" 2>/dev/null)
 
 STOP_OUT9=$(run_extdel stop "$HANDLE9")
 assert_contains "$STOP_OUT9" "STOPPED: $HANDLE9" "stop reports the mid-flight handle as stopped"
@@ -273,13 +273,13 @@ else
   pass "supervisor process is gone after stop (no orphan)"
 fi
 
-if [ -f "./tmp/agent-delegation/$HANDLE9/turn-001.exit.code" ]; then
+if [ -f "./tmp/simple-orchestration/$HANDLE9/turn-001.exit.code" ]; then
   pass "exit.code was written for the stopped mid-flight turn"
 else
   fail "exit.code was NOT written for the stopped mid-flight turn"
 fi
 
-if [ -d "./tmp/agent-delegation/$HANDLE9/.turn-lock" ]; then
+if [ -d "./tmp/simple-orchestration/$HANDLE9/.turn-lock" ]; then
   fail "turn-lock still present after stop"
 else
   pass "turn-lock released after stop"
@@ -313,15 +313,15 @@ echo "--- 11. signal-aware exit code (M1) ---"
 OUT11=$(MOCK_CODEX_SESSION_ID="b0b0b0b0-0000-4000-8000-00000000000b" MOCK_CODEX_SLEEP=6 run_extdel start --prompt "will be signaled directly" --posture read-only)
 HANDLE11=$(extract_field "$OUT11" "Handle")
 sleep 1
-SUP_PID11=$(cat "./tmp/agent-delegation/$HANDLE11/turn-001.pid" 2>/dev/null)
+SUP_PID11=$(cat "./tmp/simple-orchestration/$HANDLE11/turn-001.pid" 2>/dev/null)
 [ -n "$SUP_PID11" ] && kill -TERM "-$SUP_PID11" 2>/dev/null
 
 n=0
-while [ "$n" -lt 10 ] && [ ! -f "./tmp/agent-delegation/$HANDLE11/turn-001.exit.code" ]; do
+while [ "$n" -lt 10 ] && [ ! -f "./tmp/simple-orchestration/$HANDLE11/turn-001.exit.code" ]; do
   sleep 1
   n=$((n + 1))
 done
-CODE11=$(cat "./tmp/agent-delegation/$HANDLE11/turn-001.exit.code" 2>/dev/null | tr -d '[:space:]')
+CODE11=$(cat "./tmp/simple-orchestration/$HANDLE11/turn-001.exit.code" 2>/dev/null | tr -d '[:space:]')
 if [ "$CODE11" = "143" ]; then
   pass "TERM-killed turn's exit code is 128+SIGTERM=143, not misreported as 0"
 else
@@ -329,7 +329,7 @@ else
 fi
 STATUS11=$(run_extdel status "$HANDLE11" --wait-s 2)
 assert_contains "$STATUS11" "Status: FAILURE" "TERM-killed turn reports FAILURE, not SUCCESS"
-if [ -d "./tmp/agent-delegation/$HANDLE11/.turn-lock" ]; then
+if [ -d "./tmp/simple-orchestration/$HANDLE11/.turn-lock" ]; then
   fail "turn-lock still present after a direct signal kill"
 else
   pass "turn-lock released after a direct signal kill"
@@ -345,9 +345,9 @@ OUT12=$(MOCK_CODEX_SESSION_ID="c0c0c0c0-0000-4000-8000-00000000000c" MOCK_CODEX_
 HANDLE12=$(extract_field "$OUT12" "Handle")
 FINAL12=$(poll_until_terminal "$HANDLE12" 15)
 assert_contains "$FINAL12" "Status: TIMEOUT" "a turn exceeding --timeout-s reports TIMEOUT"
-CODE12=$(cat "./tmp/agent-delegation/$HANDLE12/turn-001.exit.code" 2>/dev/null | tr -d '[:space:]')
+CODE12=$(cat "./tmp/simple-orchestration/$HANDLE12/turn-001.exit.code" 2>/dev/null | tr -d '[:space:]')
 [ "$CODE12" = "124" ] && pass "timeout exit code is 124" || fail "timeout exit code was '$CODE12', expected 124"
-if [ -d "./tmp/agent-delegation/$HANDLE12/.turn-lock" ]; then
+if [ -d "./tmp/simple-orchestration/$HANDLE12/.turn-lock" ]; then
   fail "turn-lock still present after a timeout"
 else
   pass "turn-lock released after a timeout"
@@ -392,8 +392,8 @@ assert_contains "$OUT14" "Status: ERROR" "spawn failure is reported as ERROR, no
 assert_contains "$OUT14" "spawn failed" "spawn failure error explains the supervisor never started"
 assert_not_contains "$OUT14" "Status: RUNNING" "spawn failure never reports RUNNING"
 HANDLE14=$(extract_field "$OUT14" "Handle")
-if [ -n "$HANDLE14" ] && [ "$HANDLE14" != "(none)" ] && [ -d "./tmp/agent-delegation/$HANDLE14" ]; then
-  if [ -d "./tmp/agent-delegation/$HANDLE14/.turn-lock" ]; then
+if [ -n "$HANDLE14" ] && [ "$HANDLE14" != "(none)" ] && [ -d "./tmp/simple-orchestration/$HANDLE14" ]; then
+  if [ -d "./tmp/simple-orchestration/$HANDLE14/.turn-lock" ]; then
     fail "turn-lock leaked after a spawn failure"
   else
     pass "turn-lock released after a spawn failure"
@@ -413,7 +413,7 @@ assert_contains "$BAD_TIMEOUT" "--timeout-s must be a non-negative integer" "sta
 OUT15=$(MOCK_CODEX_SESSION_ID="d0d0d0d0-0000-4000-8000-00000000000d" run_extdel start --prompt "for numeric validation" --posture read-only)
 HANDLE15=$(extract_field "$OUT15" "Handle")
 poll_until_terminal "$HANDLE15" 10 >/dev/null
-META_BEFORE=$(cat "./tmp/agent-delegation/$HANDLE15/meta.json" 2>/dev/null)
+META_BEFORE=$(cat "./tmp/simple-orchestration/$HANDLE15/meta.json" 2>/dev/null)
 
 BAD_PROMPT_TIMEOUT=$(run_extdel prompt "$HANDLE15" --prompt "y" --timeout-s notanumber 2>&1)
 assert_contains "$BAD_PROMPT_TIMEOUT" "--timeout-s must be a non-negative integer" "prompt rejects non-numeric --timeout-s"
@@ -421,7 +421,7 @@ assert_contains "$BAD_PROMPT_TIMEOUT" "--timeout-s must be a non-negative intege
 BAD_SLICE=$(run_extdel slice "$HANDLE15" --max-chars notanumber 2>&1)
 assert_contains "$BAD_SLICE" "--max-chars must be a non-negative integer" "slice rejects non-numeric --max-chars"
 
-META_AFTER=$(cat "./tmp/agent-delegation/$HANDLE15/meta.json" 2>/dev/null)
+META_AFTER=$(cat "./tmp/simple-orchestration/$HANDLE15/meta.json" 2>/dev/null)
 if [ "$META_BEFORE" = "$META_AFTER" ]; then
   pass "meta.json is untouched by rejected numeric options"
 else

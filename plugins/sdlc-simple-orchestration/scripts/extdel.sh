@@ -22,7 +22,7 @@
 #
 # Subcommands: start | prompt | status | slice | stop | reap
 #
-# All state lives under ./tmp/agent-delegation/<HANDLE>/ relative to the
+# All state lives under ./tmp/simple-orchestration/<HANDLE>/ relative to the
 # directory extdel.sh is invoked from (the project root) — never /tmp.
 
 # Deliberately no `set -e`: this script does many conditional command
@@ -32,7 +32,7 @@
 SCRIPT_SOURCE="$0"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd -P)"
 PROJECT_ROOT="$(pwd -P)"
-BASE_DIR="$PROJECT_ROOT/tmp/agent-delegation"
+BASE_DIR="$PROJECT_ROOT/tmp/simple-orchestration"
 SUPERVISOR_PL="$SCRIPT_DIR/turn-supervisor.pl"
 MAX_SLICE_CHARS=12000
 
@@ -175,7 +175,7 @@ validate_handle() {
   # attacker-influenced input. Without this, "$BASE_DIR/$handle" lets a
   # handle like `../../..` escape the state dir entirely, and every
   # handle-taking subcommand (prompt/status/slice/stop) would then
-  # rm/kill/write outside ./tmp/agent-delegation.
+  # rm/kill/write outside ./tmp/simple-orchestration.
   case "$1" in
     '') return 1 ;;
   esac

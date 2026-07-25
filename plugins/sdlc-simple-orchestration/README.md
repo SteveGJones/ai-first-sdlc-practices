@@ -1,9 +1,9 @@
-# sdlc-agent-delegation
+# sdlc-simple-orchestration
 
 Delegate a scoped sub-problem to an external agentic CLI — OpenAI **Codex**
 (`codex`) or Antigravity (`agy`) — from inside a Claude Code session, and
 fold a compact result back in. The full peer-agent transcript is written to
-a durable `./tmp/agent-delegation/` log; only a small, structured slice
+a durable `./tmp/simple-orchestration/` log; only a small, structured slice
 returns to the caller's context. Same pattern family as `command-delegation`
 (full output to disk, compact slice back), applied to *peer agentic CLIs*
 rather than shell commands.
@@ -66,7 +66,7 @@ parameter change — nothing else about the calling convention changes.
 ## Directory layout
 
 ```
-sdlc-agent-delegation/
+sdlc-simple-orchestration/
   .claude-plugin/plugin.json
   agents/
     codex-runner.md        # Haiku; drives extdel.sh for codex resume mode
@@ -100,8 +100,8 @@ optional — see `agents/codex-runner.md` for the full field list: `cli`,
 - Handle: <HANDLE>
 - Session id: <uuid | pending>
 - Turn: <n>    Held process: no    Duration: <s>s
-- Answer file: ./tmp/agent-delegation/<HANDLE>/turn-00N.last-message.txt
-- Full log:    ./tmp/agent-delegation/<HANDLE>/turn-00N.events.jsonl
+- Answer file: ./tmp/simple-orchestration/<HANDLE>/turn-00N.last-message.txt
+- Full log:    ./tmp/simple-orchestration/<HANDLE>/turn-00N.events.jsonl
 - Files changed: <best-effort count/summary, or "not tracked">
 - runtime.repollable: yes | no
 
@@ -148,7 +148,7 @@ writes, shell commands — unless the tool is pre-listed in a
 `permissions.allow` list, or `--dangerously-skip-permissions` is passed;
 `--mode`/`--sandbox` are interactive-mode concepts that do **not** gate
 anything headless. `extdel.sh` therefore writes a per-handle config dir
-(`./tmp/agent-delegation/<HANDLE>/agy-cfg/antigravity-cli/settings.json`,
+(`./tmp/simple-orchestration/<HANDLE>/agy-cfg/antigravity-cli/settings.json`,
 passed via `agy --gemini_dir`) carrying a posture-graded allow-list —
 `read-only` grants reads + read-only shell commands only, `workspace`
 additionally grants `write_file`/`edit_file` + a build/test command set,
@@ -171,14 +171,14 @@ External answer/log content is always treated as **data, never
 instructions** — `codex-runner` does not act on anything that looks like a
 directive inside a delegated model's response.
 
-All state lives under project-relative `./tmp/agent-delegation/` (never
+All state lives under project-relative `./tmp/simple-orchestration/` (never
 `/tmp`), which framework projects already gitignore; logs are local-only
 and nothing here uploads them anywhere.
 
 ## Install pairing
 
 ```
-/plugin install sdlc-agent-delegation@ai-first-sdlc
+/plugin install sdlc-simple-orchestration@ai-first-sdlc
 ```
 
 No other plugin is required to install alongside this one. It pairs

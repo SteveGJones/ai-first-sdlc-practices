@@ -45,7 +45,7 @@
 #     full ~5s TERM-then-grace-then-KILL path and giving a wide,
 #     reliable window.
 #
-# Run: bash plugins/sdlc-agent-delegation/tests/test-turn-supervisor.sh
+# Run: bash plugins/sdlc-simple-orchestration/tests/test-turn-supervisor.sh
 
 set -u
 
