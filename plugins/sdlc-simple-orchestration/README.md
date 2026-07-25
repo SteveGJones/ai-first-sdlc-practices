@@ -1,67 +1,140 @@
 # sdlc-simple-orchestration
 
-Delegate a scoped sub-problem to an external agentic CLI — OpenAI **Codex**
-(`codex`) or Antigravity (`agy`) — from inside a Claude Code session, and
-fold a compact result back in. The full peer-agent transcript is written to
-a durable `./tmp/simple-orchestration/` log; only a small, structured slice
-returns to the caller's context. Same pattern family as `command-delegation`
-(full output to disk, compact slice back), applied to *peer agentic CLIs*
-rather than shell commands.
+A **cross-vendor delegation orchestrator**: delegate a scoped sub-problem
+from inside a Claude Code session to a locally-installed peer agentic CLI
+— OpenAI **Codex** (`codex`) or Antigravity (`agy`), extensible to more via
+one-directory adapters — and fold a compact, uniform result back in.
+In-session and uncontainerised: single-machine process delegation, no
+Archon, no Docker, no DAG. (That's the one-line distinction from
+`sdlc-workflows`, which *is* Archon-orchestrated, containerised,
+DAG-based delegation — reach for that plugin when a task genuinely needs
+an isolated container or a multi-step workflow graph; reach for this one
+for a single in-session hand-off to a peer CLI.)
 
-See `docs/superpowers/specs/2026-07-23-external-agent-delegation-design.md`
-in this repo for the full design (§9 is authoritative over §1–§8 wherever
-they conflict) and `docs/feature-proposals/232-external-agent-delegation.md`
-for the originating proposal (issue #232).
+See `docs/superpowers/specs/2026-07-24-sdlc-simple-orchestration-design.md`
+in this repo for the full design (authoritative; supersedes the original
+`2026-07-23-external-agent-delegation-design.md` in the areas noted at its
+own top) and `docs/feature-proposals/232-external-agent-delegation.md` for
+the originating proposal (issue #232).
 
-## Status: Stage 1 + 2 + 3 (this build)
+## Why this plugin, given vendor-native plugins already exist
+
+Per-vendor delegation plugins exist and do the per-vendor job better than
+we would: **`codex@openai-codex`** (official — `/codex:review`,
+`/codex:adversarial-review`, `/codex:rescue`, `/codex:transfer`,
+`/codex:status`, `/codex:result`, `/codex:cancel`; one-shot/background,
+resume; its "approval" is a review gate, not per-action permissions) and
+**`antigravity@antigravity-for-claude-code`** (`/antigravity:delegate`,
+`/antigravity:review`, `/antigravity:research`,
+`/antigravity:cloud-run-debug`, `/antigravity:status`, `/antigravity:result`,
+`/antigravity:cancel`; cost-disciplined, verification-gated — a genuinely
+capable plugin, not a lesser alternative). We don't try to out-do either
+on their home ground. We reposition as the layer that gives you what
+neither offers on its own:
+
+1. **A unified delegation contract** across heterogeneous backends — same
+   input fields, same status vocabulary, same file layout, same handle
+   grammar, regardless of which vendor CLI is underneath.
+2. **Cross-model fan-out / compare** — the same task, sent to N backends
+   at once, under one contract (fast-follow; see Status below).
+3. **Graded permission postures enforced uniformly** — including the agy
+   `--gemini_dir` mechanism (`read-only`/`workspace`/`dangerous`, a real
+   allow-list rather than a single blanket write-approval flag).
+4. **Context isolation** — Haiku wrapper agents + `./tmp` log/slice; peer
+   transcripts never enter the caller's context wholesale.
+5. **Extensibility** — a new backend is one adapter directory
+   (`scripts/adapters/<id>/{adapter.json,adapter.sh}`), no core change.
+   See `docs/ADAPTER-AUTHORING.md`.
+
+**Honest positioning:** without inter-plugin RPC (see the mechanism note
+below), this is an orchestrator *beside* the vendor-native plugins, not
+*over* them. Its value has to be earned by shipping the cross-vendor
+uniformity and fan-out that no single-vendor plugin can offer by
+definition — not by claiming superiority on any one vendor's own turf.
+
+## "Prefer the official plugin" — routing, not call-through
+
+When a sibling vendor plugin is installed and the task shape fits it
+better (reviewing this session's own diff, an adversarial review gate,
+rescuing a stuck codex task, continuing a persistent codex thread), the
+`orchestration-policy` skill's routing table says: **hand off** to that
+plugin's own `/codex:*` command in the main thread, don't also dispatch
+this plugin's runner for the same task.
+
+This is a **routing decision made once, before dispatch — never
+inter-plugin RPC.** Our `delegation-runner` subagent (Haiku;
+Bash/Read/Grep/Glob, no Skill/Agent tool) has no way to invoke another
+plugin's slash command, and giving it that ability would break context
+isolation and be unreliable. The codex adapter here **is** the direct-CLI
+path (`codex exec` / `codex exec resume`) always — our runner shells the
+`codex` binary directly through `extdel.sh`, exactly as it shells `agy`.
+There is no hidden call-through to `codex-plugin-cc`'s own machinery, and
+we don't pretend otherwise anywhere in this plugin's docs or skill.
+
+Gemini/agy routes to our adapter always — the sibling `antigravity`
+plugin is a **coexist** relationship (both plugins are legitimately
+useful; see the routing table for when each one fits), not a
+`superseded-by-us` one, because the installed community plugin is
+genuinely capable on its own terms.
+
+## Status: v0.1.0 — the orchestrator exists
 
 This build ships, fully verified against mock CLIs (no real codex/agy
 quota spent in tests):
 
-1. **`scripts/extdel.sh`** — the primitives (`start | prompt | status |
-   slice | stop | reap`) that own all process plumbing: a portable
-   double-fork daemonizer (no dependency on `setsid`/`timeout`, both absent
-   on macOS), a perl-alarm timeout wrapper with SIGTERM→SIGKILL escalation
-   on the delegated process's own group, a per-handle turn mutex, and
-   pinned-posture enforcement.
-2. **codex resume mode** — submit-then-poll `codex exec` / `codex exec
-   resume`, the `codex-runner` Haiku agent that drives it.
-3. **agy resume mode** — submit-then-poll `agy --print` /
-   `agy --conversation ID --print`, the `agy-runner` Haiku agent that
-   drives it, and cwd-keyed id capture from a per-handle isolated
-   `last_conversations.json` (the sole reliable id source for a `--print`
-   delegation turn — see the design doc's §9.14 live-probe findings).
-4. **Graded agy postures via `--gemini_dir`** — headless `agy --print`
+1. **`scripts/extdel.sh`** — the engine (`start | prompt | status | slice
+   | stop | reap | list-backends`): a portable double-fork daemonizer (no
+   dependency on `setsid`/`timeout`, both absent on macOS), a perl-alarm
+   timeout wrapper with SIGTERM→SIGKILL escalation on the delegated
+   process's own group, a per-handle turn mutex, and pinned-posture
+   enforcement — all backend-agnostic.
+2. **The adapter split** — per-backend behavior (posture mapping, argv
+   construction, session-id capture, files-changed summary, permission-
+   hint pattern) lives in `scripts/adapters/{codex,agy}/`, one directory
+   per backend, sourced by the engine at `--cli` resolution time. Adding
+   a backend is one new directory; see `docs/ADAPTER-AUTHORING.md`.
+3. **`list-backends`** — a pure read-only registry/probe report: which
+   adapters are registered, which are actually installed on this machine,
+   optional live auth probing (`--probe-auth`), and (advisory-only)
+   whether a sibling vendor plugin is present.
+4. **`delegation-runner`** — one generic Haiku agent (merged from the
+   earlier separate `codex-runner`/`agy-runner`) that drives any
+   registered backend via `extdel.sh`, given a required `backend:` field.
+5. **`/…:delegate` and `/…:backends`** commands, and the
+   `orchestration-policy` skill (routing table, posture table, fan-out
+   discipline, cost-opacity note).
+6. **Graded agy postures via `--gemini_dir`** — headless `agy --print`
    auto-denies every tool permission unless it's pre-allowed; a per-handle
-   config dir carrying a posture-graded `permissions.allow` list is now
-   the real enforcement mechanism (`--mode`/`--sandbox` don't gate
-   anything headless — see §9.15 of the design doc).
-5. **`NO_OUTPUT` status** — an exit-0-but-empty turn (most commonly agy's
-   auto-deny) is never reported as a false `SUCCESS`, for both CLIs.
+   config dir carrying a posture-graded `permissions.allow` list is the
+   real enforcement mechanism (`--mode`/`--sandbox` don't gate anything
+   headless — see the design doc's §9.15).
+7. **`NO_OUTPUT` status** — an exit-0-but-empty turn (most commonly agy's
+   auto-deny) is never reported as a false `SUCCESS`, for any backend.
 
-Both CLI-runner agents share the `agent-delegation-policy` skill, which
-now also covers when to pick codex vs agy.
+**Not yet shipped (fast-follow):** `compare`/`synthesize`/`vote` fan-out
+commands (choreography over this same engine — no new `extdel.sh`
+subcommand needed); an OpenCode adapter (all its groundwork is
+probe-verified and recorded in the design doc, walked as the worked
+example in `docs/ADAPTER-AUTHORING.md`); codex session-id interop with
+`codex-plugin-cc` (§3.4); codex *persistent* mode. agy has **no**
+persistent/held-process mode planned at all (a deliberate design choice);
+requesting `--mode persistent`, or any `--cli` not registered as an
+adapter, fails fast with `Status: ERROR`, not a hang.
 
-**Not yet shipped:** codex *persistent* mode — a held `codex mcp-server`
-daemon over a FIFO (Stage 4) — and the `delegate-status`/reap skill
-(Stage 5). agy has **no** persistent/held-process mode planned at all (a
-deliberate design choice — see the design doc §3.0(c)/§3.2); requesting
-`--mode persistent` for either CLI, or any `--cli` other than `codex`/
-`agy`, from `extdel.sh` fails fast with `Status: ERROR`, not a hang.
-
-## The two continuity modes (contract, once all stages ship)
+## The two continuity modes (contract, once persistent ships)
 
 - **`resume`** (default, this build) — stateless between calls. Each turn
   is a fresh, detached CLI invocation that resumes a saved session id.
   Robust across timeouts/crashes; no process held between turns.
-- **`persistent`** (later stage) — one external-CLI process held open for
-  the delegation's life, fed successive prompts over a FIFO. Lower
-  per-prompt latency once warmed; more moving parts to keep alive.
+- **`persistent`** (later, codex only when it ships) — one external-CLI
+  process held open for the delegation's life, fed successive prompts
+  over a FIFO. Lower per-prompt latency once warmed; more moving parts to
+  keep alive.
 
 Both modes present the **same caller-facing contract**: same input fields,
 same status vocabulary, same file layout, same handle grammar. Switching
-`mode` (once persistent ships) or `cli` (once agy ships) is a single
-parameter change — nothing else about the calling convention changes.
+`mode` (once persistent ships) or `backend` is a single parameter change
+— nothing else about the calling convention changes.
 
 ## Directory layout
 
@@ -69,33 +142,43 @@ parameter change — nothing else about the calling convention changes.
 sdlc-simple-orchestration/
   .claude-plugin/plugin.json
   agents/
-    codex-runner.md        # Haiku; drives extdel.sh for codex resume mode
-    agy-runner.md           # Haiku; drives extdel.sh for agy resume mode
+    delegation-runner.md    # Haiku; drives extdel.sh for any registered backend
   skills/
-    agent-delegation-policy/SKILL.md   # when to delegate out vs inline, codex vs agy
+    orchestration-policy/SKILL.md   # routing table, backend picking, posture, fan-out, cost
+  commands/
+    delegate.md              # /…:delegate <backend> <prompt> [posture=][model=][handle=]
+    backends.md               # /…:backends — thin `extdel.sh list-backends` wrapper
   scripts/
-    extdel.sh               # start | prompt | status | slice | stop | reap
-    turn-supervisor.pl      # perl-alarm timeout wrapper (spawned per turn)
+    extdel.sh                 # start | prompt | status | slice | stop | reap | list-backends
+    turn-supervisor.pl        # perl-alarm timeout wrapper (spawned per turn)
+    adapters/
+      codex/{adapter.json,adapter.sh}   # OpenAI Codex direct-CLI adapter
+      agy/{adapter.json,adapter.sh}     # Antigravity/Gemini direct-CLI adapter
+  docs/
+    ADAPTER-AUTHORING.md      # one-directory adapter contract, worked OpenCode example
   tests/
     test-extdel-codex-resume.sh   # exercises extdel.sh against a mock codex
     test-extdel-agy-resume.sh     # exercises extdel.sh against a mock agy
     test-turn-supervisor.sh       # direct signal/fork/alarm regression tests
+    test-adapter-descriptors.sh   # lints every scripts/adapters/*/adapter.json + ABI
+    test-list-backends.sh         # list-backends against fake installed_plugins.json
     fixtures/mock-bin/codex       # mock CLI — no real codex/agy calls in tests
     fixtures/mock-bin/agy         # mock CLI — no real codex/agy calls in tests
-    fixtures/mock-sleep           # tiny untrapped-TERM CLI stand-in for turn-supervisor.pl tests
-    fixtures/mock-sleep-notrap    # like mock-sleep but ignores TERM (escalation-window tests)
+    fixtures/mock-sleep            # tiny untrapped-TERM CLI stand-in for turn-supervisor.pl tests
+    fixtures/mock-sleep-notrap     # like mock-sleep but ignores TERM (escalation-window tests)
 ```
 
 ## Unified contract
 
-Callers pass one request block (`prompt` required; everything else
-optional — see `agents/codex-runner.md` for the full field list: `cli`,
-`mode`, `handle`, `model`, `effort`, `cwd`/`add_dirs`, `timeout_s`,
-`posture`, `expect`). `extdel.sh` returns a compact, structured block:
+Callers pass one request block (`backend` required, `prompt` required;
+everything else optional — see `agents/delegation-runner.md` for the full
+field list: `mode`, `handle`, `model`, `effort`, `agent` (agy-only),
+`cwd`/`add_dirs`, `timeout_s`, `posture`, `expect`). `extdel.sh` returns a
+compact, structured block:
 
 ```
 ## External Delegation
-- CLI: codex            Mode: resume
+- Backend: codex         Mode: resume
 - Status: RUNNING | SUCCESS | NO_OUTPUT | FAILURE | TIMEOUT | ERROR
 - Handle: <HANDLE>
 - Session id: <uuid | pending>
@@ -118,16 +201,16 @@ without the rest of the block.
 
 **`Status: NO_OUTPUT`** — a turn that exited success-shaped (exit 0) but
 whose captured answer is empty after trimming whitespace is never reported
-as `SUCCESS`. This is most commonly agy's headless permission model (see
-below): the conversation completed but the requested tool call was
-auto-denied, so nothing useful came back. When `status`/`slice` detects
-this, `## Errors` carries the external CLI's own diagnostic verbatim (for
-agy, its own "no output produced ... auto-denied" wording) plus concrete
-next-step guidance — escalate posture on a fresh handle, or rephrase.
-A genuinely empty-but-legitimate answer (no permission problem at all)
-also reports `NO_OUTPUT`, just without a permission hint — it is not a
-crash, and the caller should decide what to do with it rather than the
-wrapper agent silently retrying.
+as `SUCCESS`, for any backend. This is most commonly agy's headless
+permission model (see below): the conversation completed but the
+requested tool call was auto-denied, so nothing useful came back. When
+`status`/`slice` detects this, `## Errors` carries the external CLI's own
+diagnostic verbatim (for agy, its own "no output produced ... auto-denied"
+wording) plus concrete next-step guidance — escalate posture on a fresh
+handle, or rephrase. A genuinely empty-but-legitimate answer (no
+permission problem at all) also reports `NO_OUTPUT`, just without a
+permission hint — it is not a crash, and the caller should decide what to
+do with it rather than the wrapper agent silently retrying.
 
 ## Safety: posture, and why `read-only` is not `read-nothing`
 
@@ -135,12 +218,13 @@ Every handle pins a permission **posture** at `start` time —
 `read-only` (default), `workspace`, or `dangerous`. `extdel.sh prompt`
 **refuses** a differing posture on a later turn unless `--steal` is
 passed explicitly, so any escalation is visible in the caller's own
-transcript rather than silent. The wrapper agents (`codex-runner`,
-`agy-runner`) are instructed to never choose `dangerous` on their own
-initiative — they only ever pass through a posture the caller gave them.
+transcript rather than silent. `delegation-runner` is instructed to never
+choose `dangerous` on its own initiative — it only ever passes through a
+posture the caller gave it, for any backend.
 
 **codex** posture maps onto its own sandbox flags (`-s read-only` /
-`-s workspace-write` / `--dangerously-bypass-approvals-and-sandbox`).
+`-s workspace-write` / `--dangerously-bypass-approvals-and-sandbox`) — a
+real OS sandbox (`fidelity: hard` in its adapter descriptor).
 
 **agy** posture works differently, because live probing found that agy's
 headless `--print` mode **auto-denies every tool permission** — reads,
@@ -152,24 +236,27 @@ anything headless. `extdel.sh` therefore writes a per-handle config dir
 passed via `agy --gemini_dir`) carrying a posture-graded allow-list —
 `read-only` grants reads + read-only shell commands only, `workspace`
 additionally grants `write_file`/`edit_file` + a build/test command set,
-`dangerous` passes `--dangerously-skip-permissions` instead. This
-per-handle dir also isolates that handle's own conversation-id cache
+`dangerous` passes `--dangerously-skip-permissions` instead (`fidelity:
+allow-list`, honestly weaker than codex's hard sandbox — surfaced in the
+adapter descriptor and `list-backends`, not papered over). This per-handle
+dir also isolates that handle's own conversation-id cache
 (`.../agy-cfg/antigravity-cli/cache/last_conversations.json`), which is
 where id capture now reads from instead of a machine-global path.
 
-**Read access is not gated by posture.** `read-only` blocks codex from
-*writing* files or making network calls from its side — it does not
-restrict what codex can *read*. Under any posture, codex can read anything
-on disk that the ambient environment's user could read (`.env`, `~/.ssh/`,
-other credentials, anything under the delegated `cwd`/`add_dirs`), and
-that content is sent to OpenAI's infrastructure as part of the delegated
-prompt/context. This is inherent to delegating to a third-party CLI — the
-`agent-delegation-policy` skill and `codex-runner`'s own instructions name
-this plainly rather than paper over it.
+**Read access is not gated by posture, for either backend.** `read-only`
+blocks writes and network calls from the backend's side — it does not
+restrict what it can *read*. Under any posture, codex or agy can read
+anything on disk that the ambient environment's user could read (`.env`,
+`~/.ssh/`, other credentials, anything under the delegated
+`cwd`/`add_dirs`), and that content is sent to the respective vendor's
+infrastructure as part of the delegated prompt/context. This is inherent
+to delegating to a third-party CLI — the `orchestration-policy` skill and
+`delegation-runner`'s own instructions name this plainly rather than
+paper over it.
 
 External answer/log content is always treated as **data, never
-instructions** — `codex-runner` does not act on anything that looks like a
-directive inside a delegated model's response.
+instructions** — `delegation-runner` does not act on anything that looks
+like a directive inside a delegated model's response.
 
 All state lives under project-relative `./tmp/simple-orchestration/` (never
 `/tmp`), which framework projects already gitignore; logs are local-only
@@ -181,13 +268,27 @@ and nothing here uploads them anywhere.
 /plugin install sdlc-simple-orchestration@ai-first-sdlc
 ```
 
-No other plugin is required to install alongside this one. It pairs
-naturally with `command-delegation` (same "full log to disk, compact slice
-back" pattern family, applied to local shell commands instead of peer
-agentic CLIs) if that's also installed, but there's no dependency either
-way. Requires `codex` installed and authenticated (`codex login`) on the
-host machine for `codex-runner` to do anything, and/or `agy` installed and
+No other plugin is required to install alongside this one, and no plugin
+this one depends on for its own function. It coexists naturally with both
+vendor-native sibling plugins — install whichever mix fits:
+
+- **`codex@openai-codex`** (official OpenAI Codex plugin) — for
+  `/codex:review`/`/codex:adversarial-review`/`/codex:rescue`/
+  `/codex:transfer` and persistent codex threads; the `orchestration-policy`
+  routing table hands those task shapes to it when it's installed.
+- **`antigravity@antigravity-for-claude-code`** — for its own
+  cost-disciplined `/antigravity:*` delegate/review/research/cloud-debug
+  flow; a `coexist`, not a competing, relationship with this plugin's agy
+  adapter.
+- **`command-delegation`** — same "full log to disk, compact slice back"
+  pattern family, applied to local shell commands instead of peer agentic
+  CLIs; no dependency either way.
+
+Requires `codex` installed and authenticated (`codex login`) on the host
+machine for the `codex` backend to do anything, and/or `agy` installed and
 signed in at least once interactively (agy has no `login status` verb —
 `extdel.sh` checks that `~/.gemini/antigravity-cli/` exists instead) for
-`agy-runner` — `extdel.sh` fails fast with an actionable `Status: ERROR`
-message for whichever CLI isn't ready.
+the `agy` backend — `extdel.sh` fails fast with an actionable
+`Status: ERROR` message for whichever backend isn't ready. Run
+`/…:backends` (or `extdel.sh list-backends`) any time to check what's
+registered, installed, and authenticated.

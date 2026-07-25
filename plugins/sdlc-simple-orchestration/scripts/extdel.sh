@@ -187,7 +187,12 @@ validate_handle() {
   case "$1" in
     '') return 1 ;;
   esac
-  printf '%s' "$1" | grep -Eq '^(codex|agy)-[a-z]+-[0-9TZ:-]+-[0-9a-f]{6}$'
+  # The <cli> segment is any adapter id (§2.1 grammar: [a-z][a-z0-9]*, no
+  # hyphens/dots/slashes) — NOT hardcoded to codex|agy, so third-party and
+  # future adapters (opencode, …) round-trip through the full lifecycle.
+  # Path traversal stays blocked: [a-z][a-z0-9]* can't contain / . or ..,
+  # and the whole structured grammar is still required.
+  printf '%s' "$1" | grep -Eq '^[a-z][a-z0-9]*-[a-z]+-[0-9TZ:-]+-[0-9a-f]{6}$'
 }
 
 # ---------------------------------------------------------------------------

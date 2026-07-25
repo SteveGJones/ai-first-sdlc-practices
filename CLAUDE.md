@@ -90,7 +90,7 @@ Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
 - CLAUDE-CONTEXT-logging.md — logging standards
 - CLAUDE-CONTEXT-architecture.md — architecture docs
 - docs/METHODS-GUIDE.md — decision tree for the four SDLC methods (solo / single-team / programme / assured), comparison table, trade-offs, and migration notes (load when commissioning a project or advising on method choice)
-- AGENT-INDEX.md — 56 specialist agents across 14 plugins. `sdlc-programme` v0.1.0 + `sdlc-assured` v0.2.0 are **skill+validator bundles by design** — they provide structured SDLC delivery methodology (phase gates, traceability, decomposition), not new specialist agent roles, so they intentionally ship 0 agents.
+- AGENT-INDEX.md — 57 specialist agents across 15 plugins. `sdlc-programme` v0.1.0 + `sdlc-assured` v0.2.0 are **skill+validator bundles by design** — they provide structured SDLC delivery methodology (phase gates, traceability, decomposition), not new specialist agent roles, so they intentionally ship 0 agents.
 
 ## Plugin Installation (Recommended)
 
@@ -124,6 +124,7 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-lang-swift` | Swift language expert agent — idiomatic Swift 6.2, strict concurrency, generics, macros, SwiftPM (pairs with `sdlc-team-ios`) |
 | `sdlc-lang-kotlin` | Kotlin language expert agent — idiomatic Kotlin 2.x, coroutines & Flow, sealed/data/value classes, generics, KSP, KMP basics (pairs with `sdlc-team-android`) |
 | `sdlc-workflows` | Containerised delegation — Archon-orchestrated DAG workflows in isolated Docker containers (6 skills) |
+| `sdlc-simple-orchestration` | Cross-vendor delegation orchestrator — unified contract, graded permission postures, cross-model fan-out over locally installed peer agentic CLIs (codex, agy; extensible via one-directory adapters). In-session and uncontainerised — no Archon, no Docker, no DAG, unlike `sdlc-workflows` (1 agent) |
 | `sdlc-programme` | Method 1 SDLC bundle for multi-team programme work — formal waterfall phase gates (requirements/design/test/code), 4 phase-gate validators, mandatory cross-phase review (5 skills, EPIC #178 v0.1.0) |
 | `sdlc-assured` | Method 2 SDLC bundle for regulated-industry work **or** complex agentic systems at scale (10+ bounded contexts) — positional namespace IDs, bidirectional traceability, DDD decomposition with visibility rules, KB-for-code annotations, standard-specific exports (DO-178C / IEC 62304 / ISO 26262 / FDA DHF). 8 skills. **v0.2.0 audit-ready at tooling layer** (EPIC #188) — typed evidence statuses, multi-format evidence model (Python/markdown/YAML/satisfies-by-existence), platform-neutral dependency extractor, indirect DES-mediated coverage, REQ-quality lint candidate. |
 
