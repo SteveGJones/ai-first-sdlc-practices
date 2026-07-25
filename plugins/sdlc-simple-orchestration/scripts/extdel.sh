@@ -36,17 +36,11 @@ BASE_DIR="$PROJECT_ROOT/tmp/simple-orchestration"
 SUPERVISOR_PL="$SCRIPT_DIR/turn-supervisor.pl"
 MAX_SLICE_CHARS=12000
 
-# agy state (§9.14/§9.15): read from $HOME so tests can redirect it
-# wholesale by overriding HOME before invoking extdel.sh — never touch the
-# real ~/.gemini/antigravity-cli/ from a test. AGY_STATE_DIR is used ONLY
-# by preflight_agy's initialized-check (DF1, §9.15): auth/credentials live
-# in the REAL ~/.gemini/antigravity-cli/ (on disk and/or keychain), not in
-# the per-handle --gemini_dir this build creates, which carries only a
-# posture-graded permissions.allow and inherits auth from outside itself
-# (confirmed live). id-capture no longer reads a global cache path here —
-# see agy_write_gemini_config/capture_agy_session_id for the per-handle,
-# isolated cache location.
-AGY_STATE_DIR="$HOME/.gemini/antigravity-cli"
+# EXTDEL_ADAPTER_PATH (§4): colon-separated list of extra adapter
+# directories searched BEFORE ${SCRIPT_DIR}/adapters/* (first `id` match
+# wins) — see adapter_search_dirs. Third-party/local-override adapters
+# need zero core changes to be picked up this way.
+: "${EXTDEL_ADAPTER_PATH:=}"
 
 # ---------------------------------------------------------------------------
 # Generic helpers
@@ -107,6 +101,7 @@ Subcommands:
   slice   <HANDLE> [--max-chars N] [--turn N]
   stop    <HANDLE>
   reap    [--prune-closed AGE_SECONDS]
+  list-backends [--json] [--probe-auth]
 
 Stage 3 scope: cli=codex mode=resume, cli=agy mode=resume. codex persistent
 and agy persistent mode are not implemented in this build (they return
@@ -148,17 +143,30 @@ is_blank_file() {
 
 permission_denial_hint() {
   # permission_denial_hint <file> [<file> ...] — DF2: scan the given
-  # stderr/CLI-log files for agy's headless auto-deny wording (§9.15) or
-  # an equivalent generic permission-denial phrase, and print the first
-  # matching line verbatim (never paraphrased — it's the external CLI's
-  # own diagnostic, and its own "add an allow-rule" / "skip permissions"
-  # guidance is exactly what the caller needs to act on). Prints nothing
-  # and returns 1 if no file matches — a genuinely empty-but-legitimate
-  # answer (no permission problem at all) still gets caught upstream by
+  # stderr/CLI-log files for the CURRENTLY-SOURCED adapter's permission-
+  # denial wording and print the first matching line verbatim (never
+  # paraphrased — it's the external CLI's own diagnostic, and its own
+  # "add an allow-rule" / "skip permissions" guidance is exactly what the
+  # caller needs to act on). Prints nothing and returns 1 if no file
+  # matches, OR if the adapter defines no pattern at all (§2.2:
+  # adapter_permission_hint_pattern "may be empty" — an empty/undefined
+  # pattern must never be treated as "match anything", which an empty
+  # ERE would do in grep) — a genuinely empty-but-legitimate answer (no
+  # permission problem at all) still gets caught upstream by
   # is_blank_file; this function only supplies the WHY when there is one.
+  #
+  # The ERE itself is adapter-owned (§2.2 ABI); this scanner stays
+  # engine-owned. Both shipped adapters (codex, agy) echo the exact same
+  # pattern this function used to hardcode, so behavior is unchanged for
+  # either.
+  pattern=""
+  if [ "$(type -t adapter_permission_hint_pattern 2>/dev/null)" = "function" ]; then
+    pattern=$(adapter_permission_hint_pattern)
+  fi
+  [ -n "$pattern" ] || return 1
   for f in "$@"; do
     [ -f "$f" ] || continue
-    line=$(grep -Eim1 '(no output produced|auto-denied|required the .*permission|permission.*denied)' "$f" 2>/dev/null)
+    line=$(grep -Eim1 "$pattern" "$f" 2>/dev/null)
     if [ -n "$line" ]; then
       printf '%s' "$line"
       return 0
@@ -346,115 +354,11 @@ spawn_daemon() {
 }
 
 # ---------------------------------------------------------------------------
-# codex-specific helpers
+# Generic per-turn helpers shared by ALL adapters (engine-owned — moved here
+# unchanged from the old "codex-specific helpers" section they used to sit
+# in; they were never actually codex-specific, see the migration's
+# extraction-map notes).
 # ---------------------------------------------------------------------------
-
-preflight_codex() {
-  if ! command -v codex >/dev/null 2>&1; then
-    printf 'codex not found on PATH — install: npm i -g @openai/codex (or brew install codex)'
-    return 1
-  fi
-  if ! codex login status >/dev/null 2>&1; then
-    printf "codex not authenticated — run 'codex login' in a terminal"
-    return 1
-  fi
-  return 0
-}
-
-codex_sandbox_args() {
-  CODEX_SANDBOX_ARGS=()
-  case "$1" in
-    read-only) CODEX_SANDBOX_ARGS=(-s read-only) ;;
-    workspace) CODEX_SANDBOX_ARGS=(-s workspace-write) ;;
-    dangerous) CODEX_SANDBOX_ARGS=(--dangerously-bypass-approvals-and-sandbox) ;;
-    *) return 1 ;;
-  esac
-  return 0
-}
-
-capture_session_id() {
-  # Structural, typed capture — NOT a text grep over the whole transcript.
-  # `--json` events are the delegated (untrusted) external model's own
-  # output stream; a naive `grep -oE '[0-9a-fA-F-]{36}'` over the whole
-  # file can match a uuid-shaped string the MODEL printed in its answer
-  # (e.g. a `"conversation_id":"..."` it echoes back), or 36 hyphens,
-  # letting a poisoned model answer redirect every future resume to an
-  # attacker-chosen id. Restrict to a real UUID shape, and — per the
-  # design's "belt and braces, in order" — only the FIRST event line,
-  # parsed as JSON rather than string-matched, and only from typed
-  # session-establishing events.
-  dir="$1"; tn="$2"
-  events="$dir/$tn.events.jsonl"
-  sid=""
-  if [ -f "$events" ]; then
-    first_line=$(head -1 "$events" 2>/dev/null)
-    if [ -n "$first_line" ]; then
-      sid=$(printf '%s\n' "$first_line" | jq -r '
-        select(type=="object")
-        | select(.type=="session_meta" or has("session_id") or has("thread_id") or has("conversation_id"))
-        | (.session_id // .thread_id // .conversation_id // (.payload.id? // empty))
-        | select(type=="string")
-        | select(test("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";"i"))
-      ' 2>/dev/null)
-    fi
-  fi
-  if [ -z "$sid" ]; then
-    # Date-agnostic fallback (§9.3): codex session dirs are LOCAL-date, so
-    # scan by mtime-newer-than-prompt rather than assuming a UTC/local path.
-    cwd=$(meta_get "$dir" cwd)
-    promptfile="$dir/$tn.prompt.txt"
-    candidate=""
-    if [ -d "$HOME/.codex/sessions" ] && [ -f "$promptfile" ]; then
-      prompt_text_for_match=$(cat "$promptfile" 2>/dev/null)
-      candidate=$(
-        find "$HOME/.codex/sessions" -name 'rollout-*.jsonl' -newer "$promptfile" 2>/dev/null \
-        | while IFS= read -r f; do
-            c=$(head -1 "$f" 2>/dev/null | jq -r '.payload.cwd // empty' 2>/dev/null)
-            [ "$c" = "$cwd" ] || continue
-            # mtime-newer + cwd match alone can still pick a DIFFERENT
-            # concurrent turn-1's rollout in the same cwd (mtime is
-            # whole-second granularity, and two `start`s in the same
-            # second race). Require this turn's own prompt text to
-            # actually appear in the candidate rollout as the real guard
-            # before accepting it.
-            if [ -n "$prompt_text_for_match" ] && ! grep -qF -- "$prompt_text_for_match" "$f" 2>/dev/null; then
-              continue
-            fi
-            printf '%s %s\n' "$(stat_mtime "$f")" "$f"
-          done | sort -n | tail -1 | awk '{print $2}'
-      )
-    fi
-    if [ -n "$candidate" ] && [ -f "$candidate" ]; then
-      sid=$(head -1 "$candidate" | jq -r '
-        select(type=="object")
-        | (.payload.id? // empty)
-        | select(type=="string")
-        | select(test("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";"i"))
-      ' 2>/dev/null)
-    fi
-  fi
-  if [ -n "$sid" ]; then
-    printf '%s' "$sid" > "$dir/session.id"
-    meta_set "$dir" session_id str "$sid"
-  fi
-}
-
-files_changed_summary() {
-  events="$1"; posture="$2"
-  if [ "$posture" = "read-only" ]; then
-    printf 'not tracked (read-only posture)'
-    return
-  fi
-  if [ ! -f "$events" ]; then
-    printf 'none detected'
-    return
-  fi
-  count=$(grep -oE '"type":"(patch_apply_(begin|end)|apply_patch)"' "$events" 2>/dev/null | wc -l | tr -d ' ')
-  case "$count" in
-    ''|0) printf 'none detected' ;;
-    *) printf '%s patch event(s) detected (see full log)' "$count" ;;
-  esac
-}
 
 errors_tail() {
   [ -f "$1" ] && tail -n 20 "$1" 2>/dev/null
@@ -480,465 +384,192 @@ quote_args() {
   printf '%s' "$out"
 }
 
-submit_codex_turn() {
-  # submit_codex_turn <dir> <turnnum> <cwd> <posture> <model> <effort> <timeout_s> [add_dir ...]
-  #
-  # Precondition: the caller already holds dir's turn lock, acquired
-  # BEFORE the turn's prompt file was written (see cmd_start/cmd_prompt).
-  # This function does not itself acquire the lock — only releases it on
-  # a failure that happens before the supervisor takes over ownership.
-  dir="$1"; turnnum="$2"; cwd="$3"; posture="$4"; model="$5"; effort="$6"; timeout_s="$7"
-  shift 7
-  add_dirs=("$@")
-
-  tn=$(printf 'turn-%03d' "$turnnum")
-  promptfile="$dir/$tn.prompt.txt"
-  eventsfile="$dir/$tn.events.jsonl"
-  lastmsgfile="$dir/$tn.last-message.txt"
-  stderrfile="$dir/$tn.stderr.log"
-  exitfile="$dir/$tn.exit.code"
-  pidfile="$dir/$tn.pid"
-  startedfile="$dir/$tn.started"
-  bootlog="$dir/$tn.spawn.log"
-  lockdir="$dir/.turn-lock"
-
-  : > "$eventsfile"
-  : > "$stderrfile"
-  rm -f "$exitfile"
-
-  if ! codex_sandbox_args "$posture"; then
-    rm -rf "$lockdir"
-    printf 'BAD_POSTURE'
-    return 1
-  fi
-
-  cmd=(codex)
-  if [ "$turnnum" -eq 1 ]; then
-    cmd+=(exec --json -o "$lastmsgfile" -C "$cwd")
-    for d in "${add_dirs[@]}"; do
-      [ -n "$d" ] && cmd+=(--add-dir "$d")
-    done
-    cmd+=("${CODEX_SANDBOX_ARGS[@]}")
-    [ -n "$model" ] && cmd+=(-m "$model")
-    [ -n "$effort" ] && cmd+=(-c "model_reasoning_effort=\"$effort\"")
-    cmd+=(--color never --skip-git-repo-check -)
-  else
-    sid=$(cat "$dir/session.id" 2>/dev/null)
-    if [ -z "$sid" ]; then
-      rm -rf "$lockdir"
-      printf 'NO_SESSION'
-      return 1
-    fi
-    # -C/--add-dir on resume: the §2.2 spike recipe omits them, but that
-    # leaves a resumed turn's process cwd at PROJECT_ROOT instead of the
-    # session's own cwd (already fetched into $cwd above and, until this
-    # fix, silently dropped) — a real behavioral bug, not a style choice.
-    # This could not be confirmed against `codex exec resume --help`
-    # without invoking the real CLI (out of scope here), so per the
-    # documented fallback we pass them; if a future verification shows
-    # `resume` rejects -C, drop it here with that citation.
-    cmd+=(exec resume "$sid" --json -o "$lastmsgfile" -C "$cwd")
-    for d in "${add_dirs[@]}"; do
-      [ -n "$d" ] && cmd+=(--add-dir "$d")
-    done
-    cmd+=("${CODEX_SANDBOX_ARGS[@]}")
-    cmd+=(--color never --skip-git-repo-check -)
-  fi
-
-  cmdstr=$(quote_args "${cmd[@]}")
-  supcmd="perl $(printf '%q' "$SUPERVISOR_PL") $(printf '%q' "$timeout_s") $(printf '%q' "$promptfile") $(printf '%q' "$eventsfile") $(printf '%q' "$stderrfile") $(printf '%q' "$exitfile") $(printf '%q' "$lockdir") --$cmdstr"
-
-  now_epoch > "$startedfile"
-  spawn_daemon "$pidfile" "$supcmd" "$bootlog"
-  wait_for_file "$pidfile" 3
-
-  if [ ! -f "$pidfile" ] || [ ! -s "$pidfile" ]; then
-    # Spawn failure: the supervisor never started (perl missing, exec
-    # failed, etc). Without this check, `submit_codex_turn` would print
-    # OK unconditionally and `status` would then see an empty pid and no
-    # exit file forever — RUNNING with no process behind it. Release the
-    # lock ourselves since no supervisor exists to do it.
-    rm -rf "$lockdir"
-    printf 'SPAWN_FAIL'
-    return 1
-  fi
-
-  # NOTE: ownership of the lock's owner.pid marker is claimed by
-  # turn-supervisor.pl ITSELF, synchronously, immediately after its own
-  # fork — not handed off from here. Until then owner.pid still holds the
-  # ACQUIRING SHELL's pid (this process, which is about to return);
-  # after, it's the supervisor's own pid, which is what lets
-  # lock_is_stale() and the supervisor's own end-of-turn ownership check
-  # work without racing meta.json.turn_count. Doing the handoff from
-  # THIS side (after wait_for_file returns) was tried and is a real race:
-  # a fast-finishing turn's supervisor can reach its own release check
-  # before this shell gets a chance to write, see the stale acquiring-
-  # shell pid, conclude the lock isn't its to release, and leave it
-  # stuck. Only the supervisor itself can close that race by construction.
-
-  printf 'OK'
-  return 0
-}
-
 # ---------------------------------------------------------------------------
-# agy-specific helpers (Stage 3, §9.14 authoritative for id-capture)
+# Adapter registry & ABI (§2/§4 of the design) — resolves a `--cli <id>` /
+# `meta.json.cli` value to an adapter directory, sources its adapter.sh into
+# THIS shell (adapters are sourced, never exec'd, so their functions and the
+# engine's are one namespace — that's what lets an adapter call meta_get,
+# spawn_daemon, quote_args, $SUPERVISOR_PL etc. directly), and asserts the
+# §2.2 function ABI is fully defined before any engine code calls into it.
+#
+# Engine-exported globals an adapter's ABI functions read (set by cmd_start/
+# cmd_prompt/cmd_status immediately before each ABI call, per adapter — NOT
+# passed positionally): $DIR $HANDLE $CLI $POSTURE $TURN $PROMPT_FILE
+# $TIMEOUT_S $CWD $ADD_DIRS $MODEL $EFFORT, plus $AGENT (agy-only; not in
+# the design's abbreviated list but required to preserve the existing
+# `--agent NAME` flag behavior byte-for-byte).
 # ---------------------------------------------------------------------------
 
-preflight_agy() {
-  if ! command -v agy >/dev/null 2>&1; then
-    printf 'agy not found on PATH — install per Antigravity docs'
-    return 1
+adapter_search_dirs() {
+  # adapter_search_dirs — print candidate adapter directories, one per
+  # line, in priority order: $EXTDEL_ADAPTER_PATH entries first (colon-
+  # separated, as given), then ${SCRIPT_DIR}/adapters/*. First `id` match
+  # in this order wins (resolve_adapter); this same order is the dedupe
+  # priority for discover_all_adapters (list-backends).
+  if [ -n "${EXTDEL_ADAPTER_PATH:-}" ]; then
+    old_ifs="$IFS"
+    IFS=':'
+    for p in $EXTDEL_ADAPTER_PATH; do
+      [ -n "$p" ] && printf '%s\n' "$p"
+    done
+    IFS="$old_ifs"
   fi
-  # agy has no `login status` verb (§6.1/§6.2) — the best available
-  # sanity check is that the state directory exists at all. A first-ever
-  # `agy` run creates it; its absence means agy has literally never been
-  # signed into on this machine.
-  if [ ! -d "$AGY_STATE_DIR" ]; then
-    printf "agy not initialized — run 'agy' interactively once to sign in"
-    return 1
-  fi
-  return 0
-}
-
-agy_posture_args() {
-  # DF1 (§9.15, supersedes the earlier §6.3 mapping for agy): live probes
-  # confirmed `--mode`/`--sandbox` are interactive-mode concepts that do
-  # NOT gate tools in headless (`--print`) mode — agy auto-denies every
-  # tool permission there regardless of `--mode plan`/`accept-edits`. The
-  # real lever is a per-handle `--gemini_dir` carrying a posture-graded
-  # `permissions.allow` list (agy_write_gemini_config, always applied —
-  # see submit_agy_turn). `--mode`/`--sandbox` are deliberately dropped
-  # here rather than kept as inert-but-confusing flags. `dangerous` is the
-  # one posture with a real headless-gating flag of its own:
-  # `--dangerously-skip-permissions` supersedes any allow-list.
-  AGY_POSTURE_ARGS=()
-  case "$1" in
-    read-only) ;;
-    workspace) ;;
-    dangerous) AGY_POSTURE_ARGS=(--dangerously-skip-permissions) ;;
-    *) return 1 ;;
-  esac
-  return 0
-}
-
-agy_write_gemini_config() {
-  # agy_write_gemini_config <dir> <posture> — DF1 (§9.15): write a
-  # per-handle agy config dir (<dir>/agy-cfg/antigravity-cli/settings.json)
-  # carrying a posture-graded `permissions.allow` list, read via
-  # `agy --gemini_dir`. Confirmed live: --gemini_dir is honored, auth is
-  # inherited from OUTSIDE the dir (a minimal dir containing only
-  # settings.json works — no credentials copied), and its permissions.allow
-  # takes effect. Rule formats verified: `read_file(<glob>)` (we use
-  # `read_file(*)`) and `command(<prefix>)` (bare prefix, e.g.
-  # `command(git)` — NOT `command(git *)`).
-  #
-  # Called on every submit_agy_turn (start turn 1 AND every resume turn),
-  # so it also picks up a --steal posture escalation mid-conversation —
-  # rewriting is idempotent and cheap (one small JSON file).
-  dir="$1"; posture="$2"
-  cfg_root="$dir/agy-cfg/antigravity-cli"
-  mkdir -p "$cfg_root" 2>/dev/null || return 1
-
-  read_cmds='"command(cat)","command(head)","command(tail)","command(sed)","command(grep)","command(rg)","command(ls)","command(find)","command(wc)","command(git)"'
-  case "$posture" in
-    read-only)
-      # Reads + review only. No write_file/edit_file rule at all — the
-      # confirmed-working read-only config from the live probe.
-      allow="[\"read_file(*)\",$read_cmds]"
-      ;;
-    workspace)
-      # Read-only's list PLUS writes/edits and a broader build/test
-      # command set, so the delegated model can make and verify changes
-      # within cwd.
-      write_cmds='"command(python)","command(python3)","command(node)","command(npm)","command(pytest)","command(go)","command(cargo)","command(make)","command(bash)","command(sh)"'
-      allow="[\"read_file(*)\",\"write_file(*)\",\"edit_file(*)\",$read_cmds,$write_cmds]"
-      ;;
-    dangerous)
-      # --dangerously-skip-permissions (agy_posture_args) supersedes this
-      # allow-list entirely, but --gemini_dir is still passed on every
-      # invocation uniformly (see submit_agy_turn) rather than special-
-      # cased per posture, so a config file is written here regardless —
-      # content is inert once the skip flag is present.
-      allow="[\"read_file(*)\",\"write_file(*)\",\"edit_file(*)\",$read_cmds]"
-      ;;
-    *) return 1 ;;
-  esac
-
-  printf '{"enableTelemetry":false,"permissions":{"allow":%s}}' "$allow" > "$cfg_root/settings.json" 2>/dev/null || return 1
-  return 0
-}
-
-agy_auth_backstop_matched() {
-  # Runtime auth backstop (§6.2): a first-turn failure whose stderr/CLI-log
-  # matches an auth-shaped pattern is ERROR(auth), distinct from a
-  # model-level FAILURE (e.g. the delegated model correctly refusing a
-  # request, or a sandbox denial) which is not an auth problem at all.
-  for f in "$@"; do
-    [ -f "$f" ] || continue
-    grep -Eiq '(auth|sign.?in|login|unauthorized|credential)' "$f" 2>/dev/null && return 0
+  for p in "$SCRIPT_DIR"/adapters/*; do
+    [ -d "$p" ] && printf '%s\n' "$p"
   done
+}
+
+resolve_adapter() {
+  # resolve_adapter <id> — search adapter_search_dirs for the first
+  # directory whose adapter.json validates (schema_version==1, id
+  # present, kind=="direct-cli" — the only kind this engine build can
+  # drive) and whose .id equals <id>. Sets ADAPTER_DIR/ADAPTER_JSON on
+  # success (empty on failure); does not source anything itself.
+  id="$1"
+  ADAPTER_DIR=""; ADAPTER_JSON=""
+  while IFS= read -r d; do
+    [ -d "$d" ] || continue
+    dj="$d/adapter.json"
+    [ -f "$dj" ] || continue
+    jq -e '.schema_version==1 and .id and .kind=="direct-cli"' "$dj" >/dev/null 2>&1 || continue
+    did=$(jq -r '.id' "$dj" 2>/dev/null)
+    if [ "$did" = "$id" ]; then
+      ADAPTER_DIR="$d"; ADAPTER_JSON="$dj"
+      return 0
+    fi
+  done < <(adapter_search_dirs)
   return 1
 }
 
-agy_gemini_dir_cache_file() {
-  # agy_gemini_dir_cache_file <dir> — prints the per-handle, isolated
-  # last_conversations.json path under this handle's own --gemini_dir
-  # (DF1, §9.15 ground truth #3: a per-handle --gemini_dir isolates that
-  # delegation's conversation store, so id-capture reads from HERE, not a
-  # global cwd-keyed cache shared with every other agy user on the
-  # machine).
-  printf '%s/agy-cfg/antigravity-cli/cache/last_conversations.json' "$1"
-}
-
-agy_read_last_conversations_id() {
-  # agy_read_last_conversations_id <cwd_norm> <cache_file>
-  # §9.14 (authoritative for shape/retry) as adapted by DF1/§9.15: the
-  # cache file is now the per-handle isolated one (see
-  # agy_gemini_dir_cache_file), not a global path under the real HOME —
-  # each handle gets its own conversation store, so cross-handle/cross-
-  # project same-cwd races that used to require a first-call mkdir lock
-  # (§5.2/§9.6) no longer apply to id capture: there is nothing shared to
-  # race over. (A same-cwd race against the user's OWN interactive agy —
-  # which still uses the real ~/.gemini — remains structurally impossible
-  # to observe here since that agy never writes into our --gemini_dir at
-  # all.) The flat {"<abs cwd>": "<uuid>"} shape and the 3x/500ms
-  # parse-retry (both cache files are rewritten wholesale by agy, a
-  # TOCTOU hazard) are unchanged from §9.14.
-  #
-  # Return codes distinguish WHY capture failed, so the caller can tell a
-  # "never initialized" signal from a benign "not this cwd yet":
-  #   0 = success, uuid printed on stdout
-  #   1 = the cache file was missing or never parsed as a JSON object in
-  #       any of the 3 tries (agy-not-initialized-shaped failure)
-  #   2 = the file parsed fine at least once, but this cwd's key was never
-  #       present (id capture failed for this specific delegation)
-  cwd_key="$1"; cache_file="$2"
-  n=0
-  parsed_ok=0
-  while [ "$n" -lt 3 ]; do
-    if [ -f "$cache_file" ]; then
-      if jq -e 'type=="object"' "$cache_file" >/dev/null 2>&1; then
-        parsed_ok=1
-        sid_candidate=$(jq -r --arg k "$cwd_key" '.[$k] // empty' "$cache_file" 2>/dev/null)
-        if printf '%s' "$sid_candidate" | grep -Eq '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'; then
-          printf '%s' "$sid_candidate"
-          return 0
-        fi
-      fi
+assert_adapter_abi() {
+  # assert_adapter_abi — verify the currently-sourced adapter defines
+  # every REQUIRED §2.2 ABI function (adapter_check_identity_drift is
+  # optional and is checked for with `command -v` at each call site
+  # instead). Prints a one-line reason and returns 1 if anything is
+  # missing; silent + returns 0 on success.
+  missing=""
+  for fn in adapter_detect adapter_preflight adapter_posture_args \
+            adapter_submit_turn adapter_capture_session_id \
+            adapter_files_changed_summary adapter_permission_hint_pattern; do
+    if [ "$(type -t "$fn" 2>/dev/null)" != "function" ]; then
+      missing="$missing $fn"
     fi
-    n=$((n + 1))
-    [ "$n" -lt 3 ] && sleep 0.5
   done
-  [ "$parsed_ok" -eq 1 ] && return 2
-  return 1
+  if [ -n "$missing" ]; then
+    printf 'adapter at %s is missing required ABI function(s):%s' "$ADAPTER_DIR" "$missing"
+    return 1
+  fi
+  return 0
 }
 
-capture_agy_session_id() {
-  # capture_agy_session_id <dir> <cwd> — turn-1-only, called from cmd_status
-  # once the turn reaches terminal SUCCESS (or, per DF2, an exit-0 turn
-  # that is about to be downgraded to NO_OUTPUT — capture still runs
-  # first: the conversation exists server-side even when the requested
-  # tool call inside it was permission-denied, so it's still a valid
-  # resume target under a broader posture). Sets $AGY_CAPTURE_FAIL_REASON
-  # on failure so cmd_status can surface a precise message without
-  # re-deriving the reason.
-  dir="$1"; cwd="$2"
-  AGY_CAPTURE_FAIL_REASON=""
-  cwd_norm=$(cd "$cwd" 2>/dev/null && pwd -P)
-  [ -n "$cwd_norm" ] || cwd_norm="$cwd"
+load_adapter() {
+  # load_adapter <cli-id> — resolve_adapter + source + assert_adapter_abi.
+  # MUST be called as a plain statement, never inside $(...) — sourcing
+  # inside a command substitution only affects that subshell and the
+  # adapter's functions would vanish the instant the substitution ends.
+  # On failure sets $LOAD_ADAPTER_ERR and returns 1; on success
+  # ADAPTER_DIR/ADAPTER_JSON are set and the adapter's functions are live
+  # in this shell.
+  cid="$1"
+  LOAD_ADAPTER_ERR=""
+  if ! resolve_adapter "$cid"; then
+    LOAD_ADAPTER_ERR="no adapter registered for cli='$cid'"
+    return 1
+  fi
+  # shellcheck disable=SC1090
+  . "$ADAPTER_DIR/adapter.sh"
+  abi_err=$(assert_adapter_abi)
+  if [ $? -ne 0 ]; then
+    LOAD_ADAPTER_ERR="$abi_err"
+    return 1
+  fi
+  return 0
+}
 
-  cache_file=$(agy_gemini_dir_cache_file "$dir")
-  sid=$(agy_read_last_conversations_id "$cwd_norm" "$cache_file")
-  rc=$?
+discover_all_adapters() {
+  # discover_all_adapters — print "<id> <dir>" one per line for every
+  # structurally-valid (schema_version==1, id present, kind present —
+  # ANY kind, unlike resolve_adapter, so list-backends can still show an
+  # adapter this engine build can't drive) descriptor, deduped by id in
+  # adapter_search_dirs priority order (first found wins).
+  seen=""
+  while IFS= read -r d; do
+    [ -d "$d" ] || continue
+    dj="$d/adapter.json"
+    [ -f "$dj" ] || continue
+    jq -e '.schema_version==1 and (.id|type=="string") and (.kind|type=="string")' "$dj" >/dev/null 2>&1 || continue
+    did=$(jq -r '.id' "$dj" 2>/dev/null)
+    [ -n "$did" ] || continue
+    case " $seen " in
+      *" $did "*) continue ;;
+    esac
+    seen="$seen $did"
+    printf '%s %s\n' "$did" "$d"
+  done < <(adapter_search_dirs)
+}
 
-  if [ "$rc" -eq 0 ] && [ -n "$sid" ]; then
-    printf '%s' "$sid" > "$dir/session.id"
-    meta_set "$dir" session_id str "$sid"
-    meta_set "$dir" agy_cwd_key str "$cwd_norm"
+# ---------------------------------------------------------------------------
+# Sibling-plugin detection (§3.2/§4) — advisory-only signal for
+# list-backends about whether a related vendor-native plugin (e.g.
+# codex-plugin-cc, antigravity-for-claude-code) is installed alongside us.
+# Never gates the direct-CLI adapter path; a probe failure must never be
+# reported as a confident "not installed" — see the "unknown" branches
+# below.
+# ---------------------------------------------------------------------------
+
+detect_sibling_plugins() {
+  # detect_sibling_plugins <plugin_match> — prints exactly one of:
+  # installed | absent | unknown. <plugin_match> is a
+  # "<plugin-name>@<marketplace>" key (or a prefix of one) as it appears
+  # in installed_plugins.json's .plugins map.
+  #
+  # Primary source: $HOME/.claude/plugins/installed_plugins.json, guarded
+  # by .version==2 (the only shape this reads). Overridable via $HOME so
+  # tests can inject a fake manifest wholesale — never probe the real
+  # ~/.claude from a test.
+  #
+  # Fallback (used when the manifest is absent, unparseable, or not
+  # version 2): scan $HOME/.claude/plugins/cache/*/<plugin-name>/ for the
+  # plugin's cache directory across any marketplace.
+  #
+  # If NEITHER source can produce a real answer (no manifest AND no cache
+  # tree), the correct answer is "unknown", never "absent" — an absent
+  # signal must come from a probe that actually completed, not from the
+  # lack of one.
+  match="$1"
+  manifest="$HOME/.claude/plugins/installed_plugins.json"
+  cache_root="$HOME/.claude/plugins/cache"
+
+  if [ -f "$manifest" ] && jq -e '.version==2' "$manifest" >/dev/null 2>&1; then
+    if jq -e --arg m "$match" '(.plugins // {}) | keys | any(startswith($m))' "$manifest" >/dev/null 2>&1; then
+      printf 'installed'
+    else
+      printf 'absent'
+    fi
     return 0
   fi
 
-  if [ "$rc" -eq 1 ]; then
-    AGY_CAPTURE_FAIL_REASON="agy state file $(display_path "$cache_file") is missing or unparseable after 3 retries — is agy initialized? Run 'agy' interactively once to sign in."
-  else
-    AGY_CAPTURE_FAIL_REASON="no entry for this cwd in $(display_path "$cache_file") after 3 retries — id capture failed."
-  fi
-  return 1
-}
-
-agy_check_identity_drift() {
-  # agy_check_identity_drift <dir> — turn N>1 check: has this handle's OWN
-  # isolated last_conversations.json[cwd] moved to a different conversation
-  # since we captured session.id at turn 1? (§9.14: "if it changed
-  # identity, surface a warning in the return rather than silently
-  # resuming wrong.") We never act on this — only warn; the next turn
-  # still resumes OUR recorded session.id via --conversation, never
-  # whatever the cache currently says. Per DF1, the cache is now per-handle
-  # isolated, so drift here means something wrote into THIS handle's own
-  # --gemini_dir cache out of band — a narrower, more anomalous signal
-  # than the old global-cache version of this check, but the response is
-  # the same: warn, never auto-resume the drifted id.
-  dir="$1"
-  stored_sid=$(meta_get "$dir" session_id)
-  cwd_key=$(meta_get "$dir" agy_cwd_key)
-  [ -n "$stored_sid" ] && [ -n "$cwd_key" ] || return 0
-  cache_file=$(agy_gemini_dir_cache_file "$dir")
-  current_sid=$(agy_read_last_conversations_id "$cwd_key" "$cache_file")
-  if [ -n "$current_sid" ] && [ "$current_sid" != "$stored_sid" ]; then
-    printf 'WARNING: last_conversations.json for this cwd now points to a different agy conversation (%s) than this handle'\''s session (%s) — NOT auto-resuming the new one; another agy process may be running in the same cwd. Verify before continuing if this is unexpected.' "$current_sid" "$stored_sid"
-  fi
-}
-
-agy_files_changed_summary() {
-  posture="$1"
-  if [ "$posture" = "read-only" ]; then
-    printf 'not tracked (read-only posture)'
-    return
-  fi
-  # agy's --log-file format for edit records has not been verified against
-  # a real agy release (open item per the design doc's §4.2) — report
-  # plainly rather than fabricate a heuristic parse that would misreport
-  # confidence we don't actually have.
-  printf 'not tracked (edit detection not implemented for agy in this build)'
-}
-
-submit_agy_turn() {
-  # submit_agy_turn <dir> <turnnum> <cwd> <posture> <model> <effort> <agent>
-  #                 <timeout_s> [add_dir ...]
-  #
-  # Same submit-then-poll contract as submit_codex_turn (precondition: the
-  # caller already holds dir's turn lock, acquired BEFORE this turn's
-  # prompt file was written). agy differs from codex in ways that shape
-  # this function:
-  #   1. agy has no -C/--cd flag — it runs in the PROCESS cwd (§9.14 #2),
-  #      so the actual invocation is wrapped in a `cd "$cwd" && exec agy
-  #      ...` inner shell rather than exec'd directly.
-  #   2. agy's --print takes the prompt as its FLAG VALUE, and --print MUST
-  #      be the LAST flag with the prompt immediately after it (§9.14 #2)
-  #      — never interleave flags between --print and the prompt. Getting
-  #      this wrong silently drops the real prompt (observed live).
-  #   3. agy has no -o/--output-last-message equivalent: its answer is
-  #      plain stdout, which turn-supervisor.pl already redirects to
-  #      eventsfile — cmd_status copies that into last-message.txt once
-  #      the turn is terminal, so this function does NOT write a
-  #      last-message file itself.
-  #   4. Turn N never re-passes --model/--effort/--agent (mirrors codex
-  #      resume, which never re-passes -m/-c on `exec resume` either —
-  #      those are session-time properties, not per-turn ones); the
-  #      caller (cmd_prompt) passes empty strings for those on turn N.
-  dir="$1"; turnnum="$2"; cwd="$3"; posture="$4"; model="$5"; effort="$6"; agent="$7"; timeout_s="$8"
-  shift 8
-  add_dirs=("$@")
-
-  tn=$(printf 'turn-%03d' "$turnnum")
-  promptfile="$dir/$tn.prompt.txt"
-  eventsfile="$dir/$tn.events.jsonl"
-  stderrfile="$dir/$tn.stderr.log"
-  agylogfile="$dir/$tn.agy.log"
-  exitfile="$dir/$tn.exit.code"
-  pidfile="$dir/$tn.pid"
-  startedfile="$dir/$tn.started"
-  bootlog="$dir/$tn.spawn.log"
-  lockdir="$dir/.turn-lock"
-
-  : > "$eventsfile"
-  : > "$stderrfile"
-  rm -f "$exitfile"
-
-  if ! agy_posture_args "$posture"; then
-    rm -rf "$lockdir"
-    printf 'BAD_POSTURE'
-    return 1
-  fi
-
-  # DF1 (§9.15): write/refresh this handle's per-turn --gemini_dir config
-  # before every invocation (idempotent — also picks up a --steal posture
-  # change). A failure here (e.g. an unwritable state dir) must not fall
-  # through to invoking agy with no posture enforcement at all.
-  if ! agy_write_gemini_config "$dir" "$posture"; then
-    rm -rf "$lockdir"
-    printf 'CONFIG_FAIL'
-    return 1
-  fi
-
-  prompt_text=$(cat "$promptfile" 2>/dev/null)
-  case "$prompt_text" in
-    -*)
-      # §9.12 m3: agy's flag parser (Go-style) would treat a leading-dash
-      # prompt VALUE as an option rather than data. Refuse rather than
-      # risk the prompt silently misparsing — the same failure shape as
-      # the flag-ordering bug in §9.14 finding #2, just triggered by the
-      # value instead of the ordering.
-      rm -rf "$lockdir"
-      printf 'BAD_PROMPT'
-      return 1
-      ;;
-  esac
-
-  agy_args=()
-  if [ "$turnnum" -gt 1 ]; then
-    sid=$(cat "$dir/session.id" 2>/dev/null)
-    if [ -z "$sid" ]; then
-      rm -rf "$lockdir"
-      printf 'NO_SESSION'
-      return 1
+  plugin_name="${match%%@*}"
+  if [ -d "$cache_root" ]; then
+    found=0
+    for d in "$cache_root"/*/"$plugin_name"; do
+      if [ -d "$d" ]; then
+        found=1
+        break
+      fi
+    done
+    if [ "$found" -eq 1 ]; then
+      printf 'installed'
+    else
+      printf 'absent'
     fi
-    # Never --continue (§2.3/§9.14): --continue races under fan-out the
-    # same way codex's `resume --last` does. Always resume by explicit id.
-    agy_args+=(--conversation "$sid")
-  fi
-  [ -n "$model" ] && agy_args+=(--model "$model")
-  [ -n "$effort" ] && agy_args+=(--effort "$effort")
-  [ -n "$agent" ] && agy_args+=(--agent "$agent")
-  agy_args+=("${AGY_POSTURE_ARGS[@]}")
-  # DF1 (§9.15): the per-handle config dir just written by
-  # agy_write_gemini_config, carrying this handle's posture-graded
-  # permissions.allow list — passed on EVERY invocation (start turn 1 AND
-  # every resume turn), not just turn 1.
-  agy_args+=(--gemini_dir "$dir/agy-cfg")
-  for d in "${add_dirs[@]}"; do
-    [ -n "$d" ] && agy_args+=(--add-dir "$d")
-  done
-  agy_args+=(--print-timeout "${timeout_s}s" --log-file "$agylogfile")
-  # --print MUST be last, prompt immediately after it (§9.14 #2) — nothing
-  # may be appended to agy_args below this line.
-  agy_args+=(--print "$prompt_text")
-
-  # agy has no -C flag, so the real invocation must run inside a `cd`
-  # shell. This is a SECOND, independent quoting pass from the outer
-  # supcmd/quote_args layer below: printf %q here escapes $cwd and each
-  # arg so THIS inner `sh -c` parses them back exactly, and quote_args
-  # then escapes the resulting single string as one opaque argv element
-  # for the outer spawn_daemon shell to hand to perl unchanged. Multi-line
-  # prompts survive both passes because printf %q round-trips newlines.
-  inner="cd $(printf '%q' "$cwd") && exec agy"
-  for a in "${agy_args[@]}"; do
-    inner="$inner $(printf '%q' "$a")"
-  done
-  cmd=(sh -c "$inner")
-
-  cmdstr=$(quote_args "${cmd[@]}")
-  # Timeout: agy's own --print-timeout is the primary, native deadline
-  # (verified non-hanging for the read-only posture — §9.14 #1); the
-  # supervisor's perl-alarm is kept only as a hard backstop in case
-  # --print-timeout itself fails to fire, so it's set comfortably past the
-  # native one (timeout_s + 30) rather than racing it.
-  alarm_timeout=$((timeout_s + 30))
-  supcmd="perl $(printf '%q' "$SUPERVISOR_PL") $(printf '%q' "$alarm_timeout") $(printf '%q' "$promptfile") $(printf '%q' "$eventsfile") $(printf '%q' "$stderrfile") $(printf '%q' "$exitfile") $(printf '%q' "$lockdir") --$cmdstr"
-
-  now_epoch > "$startedfile"
-  spawn_daemon "$pidfile" "$supcmd" "$bootlog"
-  wait_for_file "$pidfile" 3
-
-  if [ ! -f "$pidfile" ] || [ ! -s "$pidfile" ]; then
-    rm -rf "$lockdir"
-    printf 'SPAWN_FAIL'
-    return 1
+    return 0
   fi
 
-  printf 'OK'
+  printf 'unknown'
   return 0
 }
+
 
 # ---------------------------------------------------------------------------
 # Compact-return block (§4.2) — emitted by start/prompt (RUNNING) and status
@@ -1046,17 +677,17 @@ cmd_start() {
   done
 
   scope_ok=1
-  case "$cli" in
-    codex) [ "$mode" = "resume" ] || scope_ok=0 ;;
-    agy) [ "$mode" = "resume" ] || scope_ok=0 ;;
-    *) scope_ok=0 ;;
-  esac
+  if [ "$mode" != "resume" ]; then
+    scope_ok=0
+  elif ! load_adapter "$cli"; then
+    scope_ok=0
+  fi
   if [ "$scope_ok" -ne 1 ]; then
     EB_HANDLE="(none)"; EB_CLI="$cli"; EB_MODE="$mode"; EB_STATUS="ERROR"
     EB_TURN=0; EB_SESSION="pending"; EB_DURATION=0
     EB_ANSWERFILE="none"; EB_LOGFILE="none"; EB_FILESCHANGED="not tracked"
     EB_REPOLLABLE="no"
-    EB_ERRORS="cli='$cli' mode='$mode' is not implemented in this build (Stage 3 ships codex resume + agy resume only; agy persistent mode is deliberately a clean ERROR here rather than resume-under-the-hood — see design §3.2 for the intended future behavior)."
+    EB_ERRORS="cli='$cli' mode='$mode' is not implemented in this build (Stage 3 ships codex resume + agy resume only; agy persistent mode is deliberately a clean ERROR here rather than resume-under-the-hood — see design §3.2 for the intended future behavior).${LOAD_ADAPTER_ERR:+ ($LOAD_ADAPTER_ERR)}"
     emit_block
     return 0
   fi
@@ -1070,10 +701,7 @@ cmd_start() {
 
   reap_stale_locks_quiet
 
-  case "$cli" in
-    codex) pre_err=$(preflight_codex); pre_rc=$? ;;
-    agy) pre_err=$(preflight_agy); pre_rc=$? ;;
-  esac
+  pre_err=$(adapter_preflight); pre_rc=$?
   if [ "$pre_rc" -ne 0 ]; then
     EB_HANDLE="(none)"; EB_CLI="$cli"; EB_MODE="$mode"; EB_STATUS="ERROR"
     EB_TURN=0; EB_SESSION="pending"; EB_DURATION=0
@@ -1088,10 +716,13 @@ cmd_start() {
   dir="$BASE_DIR/$handle"
   mkdir -p "$dir" || die_usage "start: could not create $dir"
 
-  case "$cli" in
-    codex) cli_version=$(codex --version 2>/dev/null | head -1) ;;
-    agy) cli_version=$(agy --version 2>/dev/null | head -1) ;;
-  esac
+  adapter_binary=$(jq -r '.binary // empty' "$ADAPTER_JSON" 2>/dev/null)
+  cli_version=""
+  if [ -n "$adapter_binary" ]; then
+    cli_version=$("$adapter_binary" --version 2>/dev/null | head -1)
+  fi
+  adapter_dir_val="$ADAPTER_DIR"
+  adapter_schema_version=$(jq -r '.schema_version // empty' "$ADAPTER_JSON" 2>/dev/null)
   created=$(now_iso)
   add_dirs_json=$(printf '%s\n' "${add_dirs[@]}" | jq -R . | jq -s .)
 
@@ -1106,6 +737,7 @@ cmd_start() {
     --arg model "$model" --arg effort "$effort" --arg agent "$agent" --arg posture "$posture" \
     --argjson timeout_s "$timeout_s" --arg created "$created" \
     --arg cli_version "$cli_version" --argjson add_dirs "$add_dirs_json" \
+    --arg adapter_dir "$adapter_dir_val" --arg adapter_schema_version "$adapter_schema_version" \
     '{
       handle: $handle, cli: $cli, mode: $mode, cwd: $cwd, state_root: $state_root,
       model: (if ($model | length) > 0 then $model else null end),
@@ -1113,6 +745,8 @@ cmd_start() {
       agent: (if ($agent | length) > 0 then $agent else null end),
       posture: $posture, timeout_s: $timeout_s, created: $created,
       cli_version: (if ($cli_version | length) > 0 then $cli_version else null end),
+      adapter_dir: (if ($adapter_dir | length) > 0 then $adapter_dir else null end),
+      adapter_schema_version: (if ($adapter_schema_version | length) > 0 then ($adapter_schema_version | tonumber) else null end),
       add_dirs: $add_dirs, turn_count: 0, session_id: null, agy_cwd_key: null, closed: null
     }' > "$dir/meta.json"
 
@@ -1137,10 +771,10 @@ cmd_start() {
     printf '%s' "$prompt_text" > "$dir/turn-001.prompt.txt"
   fi
 
-  case "$cli" in
-    codex) result=$(submit_codex_turn "$dir" 1 "$cwd" "$posture" "$model" "$effort" "$timeout_s" "${add_dirs[@]}") ;;
-    agy) result=$(submit_agy_turn "$dir" 1 "$cwd" "$posture" "$model" "$effort" "$agent" "$timeout_s" "${add_dirs[@]}") ;;
-  esac
+  DIR="$dir"; HANDLE="$handle"; CLI="$cli"; POSTURE="$posture"; TURN=1
+  PROMPT_FILE="$dir/turn-001.prompt.txt"; TIMEOUT_S="$timeout_s"; CWD="$cwd"
+  ADD_DIRS=("${add_dirs[@]}"); MODEL="$model"; EFFORT="$effort"; AGENT="$agent"
+  result=$(adapter_submit_turn)
   case "$result" in
     OK)
       meta_set "$dir" turn_count raw 1
@@ -1208,11 +842,11 @@ cmd_prompt() {
   cli=$(meta_get "$dir" cli)
   mode=$(meta_get "$dir" mode)
   prompt_scope_ok=1
-  case "$cli" in
-    codex) [ "$mode" = "resume" ] || prompt_scope_ok=0 ;;
-    agy) [ "$mode" = "resume" ] || prompt_scope_ok=0 ;;
-    *) prompt_scope_ok=0 ;;
-  esac
+  if [ "$mode" != "resume" ]; then
+    prompt_scope_ok=0
+  elif ! load_adapter "$cli"; then
+    prompt_scope_ok=0
+  fi
   if [ "$prompt_scope_ok" -ne 1 ]; then
     emit_scope_error "$handle" "$cli" "$mode"
     return 0
@@ -1300,12 +934,12 @@ cmd_prompt() {
   done < <(meta_get_array "$dir" add_dirs)
 
   # Turn N never re-passes model/effort/agent (session-time properties,
-  # not per-turn ones) — see submit_agy_turn's header note and the
-  # existing codex behavior this mirrors.
-  case "$cli" in
-    codex) result=$(submit_codex_turn "$dir" "$next_turn" "$cwd" "$effective_posture" "" "" "$timeout_s" "${add_dirs[@]}") ;;
-    agy) result=$(submit_agy_turn "$dir" "$next_turn" "$cwd" "$effective_posture" "" "" "" "$timeout_s" "${add_dirs[@]}") ;;
-  esac
+  # not per-turn ones) — see agy/adapter.sh's adapter_submit_turn header
+  # note and the existing codex behavior this mirrors.
+  DIR="$dir"; HANDLE="$handle"; CLI="$cli"; POSTURE="$effective_posture"; TURN="$next_turn"
+  PROMPT_FILE="$dir/$tn.prompt.txt"; TIMEOUT_S="$timeout_s"; CWD="$cwd"
+  ADD_DIRS=("${add_dirs[@]}"); MODEL=""; EFFORT=""; AGENT=""
+  result=$(adapter_submit_turn)
   case "$result" in
     OK)
       meta_set "$dir" turn_count raw "$next_turn"
@@ -1367,6 +1001,16 @@ cmd_status() {
   mode=$(meta_get "$dir" mode)
   turn=$(meta_get "$dir" turn_count)
   case "$turn" in ''|*[!0-9]*) turn=0 ;; esac
+
+  if ! load_adapter "$cli"; then
+    EB_HANDLE="$handle"; EB_CLI="$cli"; EB_MODE="$mode"; EB_STATUS="ERROR"
+    EB_TURN="$turn"; EB_SESSION="pending"; EB_DURATION=0
+    EB_ANSWERFILE="none"; EB_LOGFILE="none"; EB_FILESCHANGED="not tracked"
+    EB_REPOLLABLE="no"
+    EB_ERRORS="$LOAD_ADAPTER_ERR"
+    emit_block
+    return 0
+  fi
 
   if [ "$turn" -eq 0 ]; then
     EB_HANDLE="$handle"; EB_CLI="$cli"; EB_MODE="$mode"; EB_STATUS="ERROR"
@@ -1449,10 +1093,14 @@ cmd_status() {
       identity_warning=""
       if [ "$turn" -eq 1 ] && [ -z "$(meta_get "$dir" session_id)" ]; then
         if [ "$exit_success" -eq 1 ]; then
-          capture_agy_session_id "$dir" "$cwd_stored" || status="ERROR"
+          DIR="$dir"; CWD="$cwd_stored"; TURN="$turn"
+          adapter_capture_session_id || status="ERROR"
         fi
       elif [ "$turn" -gt 1 ]; then
-        identity_warning=$(agy_check_identity_drift "$dir")
+        DIR="$dir"
+        if [ "$(type -t adapter_check_identity_drift 2>/dev/null)" = "function" ]; then
+          identity_warning=$(adapter_check_identity_drift)
+        fi
       fi
 
       # DF2: an exit-0 turn with an EMPTY captured answer is never
@@ -1474,12 +1122,13 @@ Add the needed rule to this handle's --gemini_dir allow-list (posture=workspace 
 
       sid=$(meta_get "$dir" session_id)
       [ -z "$sid" ] && sid="pending"
-      files_changed=$(agy_files_changed_summary "$posture")
+      POSTURE="$posture"
+      files_changed=$(adapter_files_changed_summary)
 
       status_errors=""
       case "$status" in
         FAILURE)
-          if agy_auth_backstop_matched "$dir/$tn.stderr.log" "$dir/$tn.agy.log"; then
+          if adapter_auth_backstop_matched "$dir/$tn.stderr.log" "$dir/$tn.agy.log"; then
             status="ERROR"
             status_errors="agy authentication appears to have failed: run 'agy' interactively once to sign in.
 $(errors_tail "$dir/$tn.stderr.log")"
@@ -1506,11 +1155,13 @@ $(errors_tail "$dir/$tn.stderr.log")"
       fi
     else
       if [ "$turn" -eq 1 ] && [ -z "$(meta_get "$dir" session_id)" ]; then
-        capture_session_id "$dir" "$tn"
+        DIR="$dir"; TURN="$turn"
+        adapter_capture_session_id
       fi
       sid=$(meta_get "$dir" session_id)
       [ -z "$sid" ] && sid="pending"
-      files_changed=$(files_changed_summary "$dir/$tn.events.jsonl" "$posture")
+      DIR="$dir"; TURN="$turn"; POSTURE="$posture"
+      files_changed=$(adapter_files_changed_summary)
 
       # DF2: same exit-0-but-empty check as agy, kept CLI-general (a codex
       # turn can also exit 0 with an empty -o file — e.g. a sandbox denial
@@ -1745,6 +1396,84 @@ cmd_reap() {
 }
 
 # ---------------------------------------------------------------------------
+# list-backends (§3.2/§4.2) — pure read-only registry/probe report. No
+# handle, no state directory, no external-model tokens spent: adapter_
+# preflight is only invoked under --probe-auth, and even then it's the
+# same cheap auth-status check `start` runs before creating a handle
+# (`codex login status` / an `agy` state-dir existence check), never a
+# real turn.
+# ---------------------------------------------------------------------------
+
+cmd_list_backends() {
+  json_out=0
+  probe_auth=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --json) json_out=1; shift ;;
+      --probe-auth) probe_auth=1; shift ;;
+      *) die_usage "list-backends: unknown argument: $1" ;;
+    esac
+  done
+
+  rows_json="[]"
+  [ "$json_out" -eq 1 ] || printf '%-8s %-8s %-10s %-9s %-12s %-50s %s\n' \
+    "ID" "VENDOR" "INSTALLED" "AUTH" "KIND" "POSTURES(fidelity)" "SIBLING"
+
+  while IFS=' ' read -r id adir; do
+    [ -n "$id" ] || continue
+    dj="$adir/adapter.json"
+
+    # shellcheck disable=SC1090
+    . "$adir/adapter.sh" 2>/dev/null
+
+    installed="no"
+    if [ "$(type -t adapter_detect 2>/dev/null)" = "function" ] && adapter_detect; then
+      installed="yes"
+    fi
+
+    auth="skipped"
+    if [ "$probe_auth" -eq 1 ]; then
+      if [ "$installed" != "yes" ]; then
+        auth="n/a"
+      elif [ "$(type -t adapter_preflight 2>/dev/null)" = "function" ]; then
+        if adapter_preflight >/dev/null 2>&1; then
+          auth="ok"
+        else
+          auth="fail"
+        fi
+      else
+        auth="n/a"
+      fi
+    fi
+
+    vendor=$(jq -r '.vendor // "unknown"' "$dj" 2>/dev/null)
+    kind=$(jq -r '.kind // "unknown"' "$dj" 2>/dev/null)
+    postures=$(jq -r '(.postures // {}) | to_entries | map("\(.key):\(.value.fidelity // "?")") | join(",")' "$dj" 2>/dev/null)
+    [ -n "$postures" ] || postures="(none)"
+
+    sibling_match=$(jq -r '.sibling_plugins[0].plugin_match // empty' "$dj" 2>/dev/null)
+    sibling="n/a"
+    if [ -n "$sibling_match" ]; then
+      sibling=$(detect_sibling_plugins "$sibling_match")
+    fi
+
+    if [ "$json_out" -eq 1 ]; then
+      row=$(jq -n --arg installed "$installed" --arg auth "$auth" --arg sibling "$sibling" \
+        --slurpfile desc "$dj" \
+        '{descriptor: $desc[0], probe: {installed: $installed, auth: $auth, sibling: $sibling}}' 2>/dev/null)
+      [ -n "$row" ] && rows_json=$(printf '%s' "$rows_json" | jq --argjson r "$row" '. + [$r]' 2>/dev/null)
+    else
+      printf '%-8s %-8s %-10s %-9s %-12s %-50s %s\n' \
+        "$id" "$vendor" "$installed" "$auth" "$kind" "$postures" "$sibling"
+    fi
+  done < <(discover_all_adapters)
+
+  if [ "$json_out" -eq 1 ]; then
+    printf '%s\n' "$rows_json"
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 
@@ -1761,6 +1490,7 @@ case "$subcommand" in
   slice) cmd_slice "$@" ;;
   stop) cmd_stop "$@" ;;
   reap) cmd_reap "$@" ;;
+  list-backends) cmd_list_backends "$@" ;;
   -h|--help|help) usage ;;
   *) die_usage "unknown subcommand: $subcommand" ;;
 esac

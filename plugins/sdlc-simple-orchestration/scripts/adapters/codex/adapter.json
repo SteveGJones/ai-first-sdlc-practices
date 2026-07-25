@@ -1,0 +1,16 @@
+{ "schema_version":1, "id":"codex", "display_name":"OpenAI Codex CLI", "vendor":"openai",
+  "kind":"direct-cli", "binary":"codex", "tested_versions":["0.145.0"],
+  "detect":{"command":"codex","auth_probe":"codex login status","auth_fix_hint":"run 'codex login'"},
+  "capabilities":{"one_shot":true,"session_resume":true,"held_process":false,
+    "per_action_approval":false,"fanout_safe":true,"model_select":true,"effort_select":true,
+    "answer_file_native":true},
+  "postures":{
+    "read-only":{"mechanism":"sandbox","fidelity":"hard","native":"-s read-only"},
+    "workspace":{"mechanism":"sandbox","fidelity":"hard","native":"-s workspace-write"},
+    "dangerous":{"mechanism":"bypass","fidelity":"none","native":"--dangerously-bypass-approvals-and-sandbox"}},
+  "sibling_plugins":[{"plugin_match":"codex@openai-codex","relationship":"prefer-for",
+    "prefer_for":["review of Claude's own work","adversarial review gate","rescue","persistent codex threads"],
+    "commands":["/codex:review","/codex:adversarial-review","/codex:rescue","/codex:transfer","/codex:status","/codex:result","/codex:cancel"],
+    "interop_note":"session-id hand-off is a probe-gated fast-follow (§3.4)"}],
+  "notes":{"posture_caveats":"read-only is a real OS sandbox; blocks writes+network not reads",
+    "id_capture":"--json event stream, fallback ~/.codex/sessions scan (spec §9.3)"}}

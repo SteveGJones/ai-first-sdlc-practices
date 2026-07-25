@@ -1,0 +1,16 @@
+{ "schema_version":1, "id":"agy", "display_name":"Antigravity CLI (agy)", "vendor":"google",
+  "kind":"direct-cli", "binary":"agy", "tested_versions":["0.0.0-mock"],
+  "detect":{"command":"agy","auth_probe":null,"auth_fix_hint":"run 'agy' interactively once to sign in"},
+  "capabilities":{"one_shot":true,"session_resume":true,"held_process":false,
+    "per_action_approval":false,"fanout_safe":true,"model_select":true,"effort_select":true,
+    "answer_file_native":false},
+  "postures":{
+    "read-only":{"mechanism":"allow-list","fidelity":"allow-list","native":"--gemini_dir <per-handle dir: read_file(*)+read commands only>"},
+    "workspace":{"mechanism":"allow-list","fidelity":"allow-list","native":"--gemini_dir <per-handle dir: read_file(*)+write_file(*)+edit_file(*)+build/test commands>"},
+    "dangerous":{"mechanism":"bypass","fidelity":"none","native":"--dangerously-skip-permissions"}},
+  "sibling_plugins":[{"plugin_match":"antigravity@antigravity-for-claude-code","relationship":"superseded-by-us",
+    "prefer_for":[],
+    "commands":[],
+    "interop_note":"requires blanket --yolo for writes; our --gemini_dir postures are graded"}],
+  "notes":{"posture_caveats":"agy auto-denies every tool permission in headless --print mode unless pre-listed in the --gemini_dir-scoped permissions.allow, or --dangerously-skip-permissions is passed; --mode/--sandbox are interactive-only and do not gate headless tool calls (§9.15)",
+    "id_capture":"per-handle isolated last_conversations.json under --gemini_dir/antigravity-cli/cache/ (§9.14/§9.15)"}}
