@@ -89,13 +89,21 @@ def load_item_tokens(stack_path, item_path):
     return meta.get("est_prompt_tokens", 0), meta.get("est_output_tokens", 0)
 
 
-def resolve_family(address, families, family_map):
+def resolve_family(address, families, family_map, priors_families=None):
     """Resolve a pricing family for `address`. Returns (family_name_or_None,
-    used_override_bool). See the module docstring's "Family resolution"
-    section for the precedence rules."""
+    used_override_bool). Precedence: --family-map override, then the priors
+    address->family map (longest `matches` substring wins — the same resolution
+    the roster/assess layer uses), then a loose bidirectional substring match on
+    the pricing key, else unresolved."""
     if address in family_map:
         mapped = family_map[address]
         return (mapped if mapped in families else None), True
+
+    if priors_families:
+        import priors as priors_mod
+        fam = priors_mod.resolve_family(address, families=priors_families)
+        if fam in families:
+            return fam, False
 
     addr_lower = address.lower()
     for family in families:
@@ -112,7 +120,8 @@ def rates_for(family, families):
     return rates.get("input_per_mtok", 0.0), rates.get("output_per_mtok", 0.0)
 
 
-def build_estimate(pricing, stack, stack_path, models, dims, k, family_map):
+def build_estimate(pricing, stack, stack_path, models, dims, k, family_map,
+                   priors_families=None):
     families = pricing.get("families", {})
     dims_set = set(dims)
     items = [it for it in stack.get("items", []) if it.get("dimension") in dims_set]
@@ -125,7 +134,7 @@ def build_estimate(pricing, stack, stack_path, models, dims, k, family_map):
     table_rows = []
 
     for model in models:
-        family, _ = resolve_family(model, families, family_map)
+        family, _ = resolve_family(model, families, family_map, priors_families)
         input_rate, output_rate = rates_for(family, families)
         flagged = family is None
 
@@ -181,6 +190,12 @@ def main(argv=None):
         default="",
         help="comma-separated addr=family overrides",
     )
+    parser.add_argument(
+        "--priors-dir",
+        default="",
+        help="priors dir; when given, families resolve via the priors "
+             "address->family map (same resolution as the roster/assess layer)",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -204,8 +219,14 @@ def main(argv=None):
     models = _split_csv(args.models)
     dims = _split_csv(args.dims)
 
+    priors_families = None
+    if args.priors_dir:
+        import priors as priors_mod
+        priors_families = priors_mod.load_priors(args.priors_dir)
+
     per_model, total_usd, table_rows = build_estimate(
-        pricing, stack, args.stack, models, dims, args.k, family_map
+        pricing, stack, args.stack, models, dims, args.k, family_map,
+        priors_families
     )
 
     print_table(table_rows, args.k, total_usd)

@@ -162,5 +162,8 @@ if [ "$allowed" -ne 1 ]; then
 fi
 
 printf '{"type":"text","sessionID":"%s","part":{"type":"text","text":"mock opencode answer for: %s"}}\n' "$sid" "$prompt"
-printf '{"type":"step_finish","sessionID":"%s","part":{"tokens":11,"cost":0}}\n' "$sid"
+# MOCK_OPENCODE_COST (default 0) lets the assessment harness test drive a
+# non-zero exact per-turn cost through usage.py's opencode cost path (budget
+# hard-stop tests). Substrate tests never set it, so cost stays 0.
+printf '{"type":"step_finish","sessionID":"%s","part":{"tokens":11,"cost":%s}}\n' "$sid" "${MOCK_OPENCODE_COST:-0}"
 exit 0
