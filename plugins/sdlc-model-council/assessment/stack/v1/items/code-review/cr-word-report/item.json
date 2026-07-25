@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "cr-word-report",
+  "dimension": "code-review",
+  "version": 1,
+  "difficulty": "med",
+  "timeout_s": 120,
+  "min_context_tokens": 650,
+  "est_prompt_tokens": 460,
+  "est_output_tokens": 220,
+  "answer_contract": "findings-json",
+  "scorer": {
+    "type": "planted-defects",
+    "line_window": 3,
+    "max_findings_counted": 8
+  }
+}

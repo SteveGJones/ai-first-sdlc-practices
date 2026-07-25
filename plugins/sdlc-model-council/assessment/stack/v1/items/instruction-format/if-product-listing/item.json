@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "if-product-listing",
+  "dimension": "instruction-format",
+  "version": 1,
+  "difficulty": "easy",
+  "timeout_s": 60,
+  "min_context_tokens": 200,
+  "est_prompt_tokens": 220,
+  "est_output_tokens": 80,
+  "answer_contract": "strict-json",
+  "scorer": {
+    "type": "format-parse"
+  }
+}

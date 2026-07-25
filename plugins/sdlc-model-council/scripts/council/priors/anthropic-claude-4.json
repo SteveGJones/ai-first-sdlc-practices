@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "family": "anthropic-claude-4",
+  "matches": ["claude-"],
+  "context_tokens": 500000,
+  "pricing_ref": "anthropic-claude-4",
+  "provenance": "Coarse public prior for the Anthropic Claude 4 family (e.g. claude-sonnet-4-6, claude-opus-4-6-thinking), k=3 pseudo-observations only. Not audition-derived; humble frontier-tier estimate, pending real assessment data. Note: v1 slice deliberately excludes Claude-family members from its 5-model cast, so this prior is used only if a project's own commissioned fleet includes a Claude-family address via a non-Claude adapter.",
+  "dimensions": {
+    "code-gen": 0.78,
+    "bug-fix": 0.76,
+    "code-review": 0.75,
+    "refactor": 0.74,
+    "reasoning": 0.76,
+    "research": 0.65,
+    "long-context": 0.68,
+    "instruction-format": 0.78,
+    "tool-use": 0.74
+  },
+  "flags": []
+}

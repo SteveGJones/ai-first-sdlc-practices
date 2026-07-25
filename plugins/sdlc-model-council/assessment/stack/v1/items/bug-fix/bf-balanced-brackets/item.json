@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "bf-balanced-brackets",
+  "dimension": "bug-fix",
+  "version": 1,
+  "difficulty": "med",
+  "timeout_s": 120,
+  "min_context_tokens": 400,
+  "est_prompt_tokens": 350,
+  "est_output_tokens": 180,
+  "answer_contract": "file-blocks",
+  "scorer": {
+    "type": "hidden-tests"
+  }
+}
