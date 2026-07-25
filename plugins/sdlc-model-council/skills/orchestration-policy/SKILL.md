@@ -13,7 +13,7 @@ description: >
 
 # Orchestration Policy
 
-`sdlc-simple-orchestration` is a **cross-vendor delegation orchestrator**:
+`sdlc-model-council` is a **cross-vendor delegation orchestrator**:
 in-session, uncontainerised, single-machine delegation to locally-installed
 peer agentic CLIs — no Archon, no Docker, no DAG. (That's the one-line
 distinction from `sdlc-workflows`, which *is* Archon-orchestrated,
@@ -192,7 +192,7 @@ earlier builds read a single machine-global
 two agy `start` calls landing in the *same* cwd at nearly the same time
 could race on which conversation that shared cache ended up recording.
 Each handle now gets its own isolated `--gemini_dir`
-(`./tmp/simple-orchestration/<HANDLE>/agy-cfg/`), so id capture reads a
+(`./tmp/model-council/<HANDLE>/agy-cfg/`), so id capture reads a
 per-handle cache with nothing else to race against — concurrent
 `delegation-runner` dispatches in the same cwd no longer contend over id
 capture at all. `status` can still surface a `WARNING` if a handle's own
@@ -224,7 +224,7 @@ codex, Google's for agy), not Anthropic's — and that spend does not show
 up in Claude Code's own token/cost reporting. Codex's `--json` event
 stream includes token-count events; agy's `--log-file` output is retained
 per turn. The full transcript for either backend is kept under
-`./tmp/simple-orchestration/<HANDLE>/`, so it's auditable after the fact,
+`./tmp/model-council/<HANDLE>/`, so it's auditable after the fact,
 but nothing surfaces it proactively today. Don't fan out delegations
 casually; each one is real spend on someone else's bill — this is what
 makes the fan-out cap above a cost control, not just a process-count

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Test harness for `extdel.sh list-backends` (issue #232, migration step 4
-# — see docs/superpowers/specs/2026-07-24-sdlc-simple-orchestration-design.md
+# — see docs/superpowers/specs/2026-07-24-sdlc-model-council-design.md
 # §3.2/§4.2). Exercises list-backends entirely against MOCK `codex`/`agy`
 # binaries on PATH and a FAKE $HOME/.claude/plugins/installed_plugins.json
 # (via a HOME override to a throwaway test dir) — the real codex/agy CLIs
@@ -9,7 +9,7 @@
 # machine running the suite. Bash-3.2-safe, matching extdel.sh's own
 # target shell.
 #
-# Run: bash plugins/sdlc-simple-orchestration/tests/test-list-backends.sh
+# Run: bash plugins/sdlc-model-council/tests/test-list-backends.sh
 
 set -u
 
@@ -208,12 +208,12 @@ assert_not_contains "$AGY_LINE6C" " fail " "without --probe-auth, agy's auth col
 echo
 
 # ---------------------------------------------------------------------------
-# 7. list-backends is pure read-only: no ./tmp/simple-orchestration/<handle>
+# 7. list-backends is pure read-only: no ./tmp/model-council/<handle>
 #    directory is created by any of the runs above.
 # ---------------------------------------------------------------------------
 echo "--- 7. read-only: no handle/state created ---"
-if [ -d "./tmp/simple-orchestration" ]; then
-  handle_dirs=$(find "./tmp/simple-orchestration" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+if [ -d "./tmp/model-council" ]; then
+  handle_dirs=$(find "./tmp/model-council" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
 else
   handle_dirs=0
 fi

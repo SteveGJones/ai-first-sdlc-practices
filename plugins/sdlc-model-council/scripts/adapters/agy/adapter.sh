@@ -12,7 +12,7 @@
 # agy_gemini_dir_cache_file ~683, agy_read_last_conversations_id ~693,
 # capture_agy_session_id ~736, agy_check_identity_drift ~769,
 # agy_files_changed_summary ~792, submit_agy_turn ~805 — see
-# docs/superpowers/specs/2026-07-24-sdlc-simple-orchestration-design.md
+# docs/superpowers/specs/2026-07-24-sdlc-model-council-design.md
 # §2.2). Only the §2.2-ABI function NAMES and the calling convention
 # (engine-set globals: $DIR $HANDLE $CLI $POSTURE $TURN $PROMPT_FILE
 # $TIMEOUT_S $CWD $ADD_DIRS $MODEL $EFFORT, plus $AGENT — agy-only,

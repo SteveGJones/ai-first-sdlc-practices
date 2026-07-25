@@ -1,4 +1,4 @@
-# Authoring a new `sdlc-simple-orchestration` adapter
+# Authoring a new `sdlc-model-council` adapter
 
 An adapter is **one directory**: `scripts/adapters/<id>/{adapter.json,adapter.sh}`.
 Add one, register nothing else, and `--cli <id>` works everywhere in

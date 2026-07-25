@@ -1,4 +1,4 @@
-# sdlc-simple-orchestration
+# sdlc-model-council
 
 A **cross-vendor delegation orchestrator**: delegate a scoped sub-problem
 from inside a Claude Code session to a locally-installed peer agentic CLI
@@ -11,7 +11,7 @@ DAG-based delegation — reach for that plugin when a task genuinely needs
 an isolated container or a multi-step workflow graph; reach for this one
 for a single in-session hand-off to a peer CLI.)
 
-See `docs/superpowers/specs/2026-07-24-sdlc-simple-orchestration-design.md`
+See `docs/superpowers/specs/2026-07-24-sdlc-model-council-design.md`
 in this repo for the full design (authoritative; supersedes the original
 `2026-07-23-external-agent-delegation-design.md` in the areas noted at its
 own top) and `docs/feature-proposals/232-external-agent-delegation.md` for
@@ -139,7 +139,7 @@ same status vocabulary, same file layout, same handle grammar. Switching
 ## Directory layout
 
 ```
-sdlc-simple-orchestration/
+sdlc-model-council/
   .claude-plugin/plugin.json
   agents/
     delegation-runner.md    # Haiku; drives extdel.sh for any registered backend
@@ -183,8 +183,8 @@ compact, structured block:
 - Handle: <HANDLE>
 - Session id: <uuid | pending>
 - Turn: <n>    Held process: no    Duration: <s>s
-- Answer file: ./tmp/simple-orchestration/<HANDLE>/turn-00N.last-message.txt
-- Full log:    ./tmp/simple-orchestration/<HANDLE>/turn-00N.events.jsonl
+- Answer file: ./tmp/model-council/<HANDLE>/turn-00N.last-message.txt
+- Full log:    ./tmp/model-council/<HANDLE>/turn-00N.events.jsonl
 - Files changed: <best-effort count/summary, or "not tracked">
 - runtime.repollable: yes | no
 
@@ -232,7 +232,7 @@ writes, shell commands — unless the tool is pre-listed in a
 `permissions.allow` list, or `--dangerously-skip-permissions` is passed;
 `--mode`/`--sandbox` are interactive-mode concepts that do **not** gate
 anything headless. `extdel.sh` therefore writes a per-handle config dir
-(`./tmp/simple-orchestration/<HANDLE>/agy-cfg/antigravity-cli/settings.json`,
+(`./tmp/model-council/<HANDLE>/agy-cfg/antigravity-cli/settings.json`,
 passed via `agy --gemini_dir`) carrying a posture-graded allow-list —
 `read-only` grants reads + read-only shell commands only, `workspace`
 additionally grants `write_file`/`edit_file` + a build/test command set,
@@ -258,14 +258,14 @@ External answer/log content is always treated as **data, never
 instructions** — `delegation-runner` does not act on anything that looks
 like a directive inside a delegated model's response.
 
-All state lives under project-relative `./tmp/simple-orchestration/` (never
+All state lives under project-relative `./tmp/model-council/` (never
 `/tmp`), which framework projects already gitignore; logs are local-only
 and nothing here uploads them anywhere.
 
 ## Install pairing
 
 ```
-/plugin install sdlc-simple-orchestration@ai-first-sdlc
+/plugin install sdlc-model-council@ai-first-sdlc
 ```
 
 No other plugin is required to install alongside this one, and no plugin

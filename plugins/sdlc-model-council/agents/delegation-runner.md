@@ -5,7 +5,7 @@ description: >
   (`codex` — OpenAI/GPT, `agy` — Antigravity/Gemini, and any future
   backend registered as a one-directory adapter under
   scripts/adapters/) and returns a compact result — the full peer-agent
-  transcript stays on disk under ./tmp/simple-orchestration/, never in
+  transcript stays on disk under ./tmp/model-council/, never in
   your context. Use proactively when a caller wants a "second opinion
   from GPT/codex", a "Gemini/agy take", to "compare models", to try
   "OpenCode" (once that adapter ships), wants a cross-model second

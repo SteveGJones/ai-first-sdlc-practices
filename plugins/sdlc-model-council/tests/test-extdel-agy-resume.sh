@@ -7,7 +7,7 @@
 # safe (no associative arrays, no `${var,,}`), matching extdel.sh's own
 # target shell.
 #
-# Run: bash plugins/sdlc-simple-orchestration/tests/test-extdel-agy-resume.sh
+# Run: bash plugins/sdlc-model-council/tests/test-extdel-agy-resume.sh
 #
 # A single real-CLI smoke test can be added later behind
 # `if [ "${EXTDEL_LIVE:-0}" = "1" ]; then ... fi` — off by default, and
@@ -103,7 +103,7 @@ handle_cache_file() {
   # per-HANDLE isolated cache under that handle's own --gemini_dir, not a
   # single machine-global $FAKE_HOME/.gemini/... path. There is no longer
   # one shared cache file to inspect across handles/tests.
-  printf './tmp/simple-orchestration/%s/agy-cfg/antigravity-cli/cache/last_conversations.json' "$1"
+  printf './tmp/model-council/%s/agy-cfg/antigravity-cli/cache/last_conversations.json' "$1"
 }
 
 echo "=== extdel.sh agy-resume test suite ==="
@@ -121,20 +121,20 @@ OUT1=$(MOCK_AGY_SESSION_ID="11111111-1111-4111-8111-111111111111" run_extdel_agy
 assert_contains "$OUT1" "Status: RUNNING" "start returns RUNNING immediately"
 assert_contains "$OUT1" "CLI: agy" "return block reports CLI: agy"
 HANDLE1=$(extract_field "$OUT1" "Handle")
-if [ -n "$HANDLE1" ] && [ -d "./tmp/simple-orchestration/$HANDLE1" ]; then
+if [ -n "$HANDLE1" ] && [ -d "./tmp/model-council/$HANDLE1" ]; then
   pass "handle directory created: $HANDLE1"
 else
   fail "handle directory NOT created (handle='$HANDLE1')"
 fi
-if [ -f "./tmp/simple-orchestration/$HANDLE1/meta.json" ] && [ -f "./tmp/simple-orchestration/$HANDLE1/turn-001.prompt.txt" ]; then
+if [ -f "./tmp/model-council/$HANDLE1/meta.json" ] && [ -f "./tmp/model-council/$HANDLE1/turn-001.prompt.txt" ]; then
   pass "meta.json and turn-001.prompt.txt exist"
 else
   fail "meta.json or turn-001.prompt.txt missing"
 fi
-META_CLI=$(jq -r '.cli' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
-META_POSTURE=$(jq -r '.posture' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
-META_AGENT=$(jq -r '.agent' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
-PROMPT_CONTENT=$(cat "./tmp/simple-orchestration/$HANDLE1/turn-001.prompt.txt" 2>/dev/null)
+META_CLI=$(jq -r '.cli' "./tmp/model-council/$HANDLE1/meta.json" 2>/dev/null)
+META_POSTURE=$(jq -r '.posture' "./tmp/model-council/$HANDLE1/meta.json" 2>/dev/null)
+META_AGENT=$(jq -r '.agent' "./tmp/model-council/$HANDLE1/meta.json" 2>/dev/null)
+PROMPT_CONTENT=$(cat "./tmp/model-council/$HANDLE1/turn-001.prompt.txt" 2>/dev/null)
 [ "$META_CLI" = "agy" ] && pass "meta.json cli=agy" || fail "meta.json cli was '$META_CLI'"
 [ "$META_POSTURE" = "read-only" ] && pass "meta.json posture=read-only" || fail "meta.json posture was '$META_POSTURE'"
 [ "$META_AGENT" = "null" ] && pass "meta.json agent=null when not given" || fail "meta.json agent was '$META_AGENT'"
@@ -163,17 +163,17 @@ echo "--- 2. id capture from last_conversations.json ---"
 FINAL1=$(poll_until_terminal "$HANDLE1" 10)
 assert_contains "$FINAL1" "Status: SUCCESS" "handle1 turn 1 reaches SUCCESS"
 assert_contains "$FINAL1" "11111111-1111-4111-8111-111111111111" "captured session id matches the mock's minted conversation id"
-CAPTURED_SID=$(jq -r '.session_id' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
+CAPTURED_SID=$(jq -r '.session_id' "./tmp/model-council/$HANDLE1/meta.json" 2>/dev/null)
 [ "$CAPTURED_SID" = "11111111-1111-4111-8111-111111111111" ] && pass "meta.json.session_id persisted" || fail "meta.json.session_id was '$CAPTURED_SID'"
-[ -f "./tmp/simple-orchestration/$HANDLE1/session.id" ] && pass "session.id file written" || fail "session.id file missing"
-CAPTURED_CWD_KEY=$(jq -r '.agy_cwd_key' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
+[ -f "./tmp/model-council/$HANDLE1/session.id" ] && pass "session.id file written" || fail "session.id file missing"
+CAPTURED_CWD_KEY=$(jq -r '.agy_cwd_key' "./tmp/model-council/$HANDLE1/meta.json" 2>/dev/null)
 [ "$CAPTURED_CWD_KEY" = "$(pwd -P)" ] && pass "meta.json.agy_cwd_key is the pwd -P normalized cwd" || fail "meta.json.agy_cwd_key was '$CAPTURED_CWD_KEY'"
 if jq -e --arg k "$(pwd -P)" '.[$k] == "11111111-1111-4111-8111-111111111111"' "$(handle_cache_file "$HANDLE1")" >/dev/null 2>&1; then
   pass "mock correctly wrote HANDLE1's isolated last_conversations.json[cwd] = the minted id"
 else
   fail "handle1's isolated last_conversations.json does not have the expected cwd -> id mapping"
 fi
-if [ -d "./tmp/simple-orchestration/$HANDLE1/agy-cfg/antigravity-cli" ]; then
+if [ -d "./tmp/model-council/$HANDLE1/agy-cfg/antigravity-cli" ]; then
   pass "per-handle --gemini_dir config dir created (DF1)"
 else
   fail "per-handle --gemini_dir config dir NOT created"
@@ -215,7 +215,7 @@ else
   fail "truncated first line exceeded max-chars (was $FIRST_LINE_LEN)"
 fi
 
-rm -f "./tmp/simple-orchestration/$HANDLE1/turn-001.last-message.txt"
+rm -f "./tmp/model-council/$HANDLE1/turn-001.last-message.txt"
 SLICE_SELF_HEAL=$(run_extdel_agy slice "$HANDLE1")
 assert_contains "$SLICE_SELF_HEAL" "mock agy answer for: hello world" "slice self-heals last-message.txt from events.jsonl when called before status"
 echo
@@ -227,7 +227,7 @@ echo "--- 5. pinned-posture refusal ---"
 REFUSED=$(run_extdel_agy prompt "$HANDLE1" --prompt "turn2 attempt" --posture workspace)
 assert_contains "$REFUSED" "Status: ERROR" "posture mismatch without --steal is refused"
 assert_contains "$REFUSED" "differs from this handle's pinned posture" "refusal message explains the pinned-posture mismatch"
-POSTURE_AFTER_REFUSAL=$(jq -r '.posture' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
+POSTURE_AFTER_REFUSAL=$(jq -r '.posture' "./tmp/model-council/$HANDLE1/meta.json" 2>/dev/null)
 [ "$POSTURE_AFTER_REFUSAL" = "read-only" ] && pass "pinned posture unchanged after refused attempt" || fail "pinned posture mutated to '$POSTURE_AFTER_REFUSAL'"
 
 STOLEN=$(run_extdel_agy prompt "$HANDLE1" --prompt "turn2 with steal" --posture workspace --steal)
@@ -235,7 +235,7 @@ assert_contains "$STOLEN" "Status: RUNNING" "posture escalation succeeds with --
 STOLEN_FINAL=$(poll_until_terminal "$HANDLE1" 10)
 assert_contains "$STOLEN_FINAL" "Status: SUCCESS" "stolen turn 2 completes"
 assert_contains "$STOLEN_FINAL" "Turn: 2" "stolen turn reports turn 2"
-POSTURE_AFTER_STEAL=$(jq -r '.posture' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
+POSTURE_AFTER_STEAL=$(jq -r '.posture' "./tmp/model-council/$HANDLE1/meta.json" 2>/dev/null)
 [ "$POSTURE_AFTER_STEAL" = "workspace" ] && pass "pinned posture updated after --steal" || fail "pinned posture after steal was '$POSTURE_AFTER_STEAL'"
 echo
 
@@ -265,7 +265,7 @@ echo
 echo "--- 7. stop ---"
 STOP_OUT=$(run_extdel_agy stop "$HANDLE1")
 assert_contains "$STOP_OUT" "STOPPED: $HANDLE1" "stop reports the handle as stopped"
-CLOSED=$(jq -r '.closed' "./tmp/simple-orchestration/$HANDLE1/meta.json" 2>/dev/null)
+CLOSED=$(jq -r '.closed' "./tmp/model-council/$HANDLE1/meta.json" 2>/dev/null)
 [ "$CLOSED" != "null" ] && [ -n "$CLOSED" ] && pass "meta.json.closed timestamp set" || fail "meta.json.closed was '$CLOSED'"
 echo
 
@@ -273,12 +273,12 @@ echo
 # 8. reap — stale lock cleanup
 # ---------------------------------------------------------------------------
 echo "--- 8. reap ---"
-mkdir -p "./tmp/simple-orchestration/$HANDLE3/.turn-lock"
-echo "999999" > "./tmp/simple-orchestration/$HANDLE3/.turn-lock/owner.pid"
-backdate "./tmp/simple-orchestration/$HANDLE3/.turn-lock"
+mkdir -p "./tmp/model-council/$HANDLE3/.turn-lock"
+echo "999999" > "./tmp/model-council/$HANDLE3/.turn-lock/owner.pid"
+backdate "./tmp/model-council/$HANDLE3/.turn-lock"
 REAP_OUT=$(run_extdel_agy reap)
 assert_contains "$REAP_OUT" "reaped stale lock: $HANDLE3" "reap clears a lock whose recorded turn pid is dead"
-[ -d "./tmp/simple-orchestration/$HANDLE3/.turn-lock" ] && fail "stale lock directory still present after reap" || pass "stale lock directory removed"
+[ -d "./tmp/model-council/$HANDLE3/.turn-lock" ] && fail "stale lock directory still present after reap" || pass "stale lock directory removed"
 echo
 
 # ---------------------------------------------------------------------------
@@ -288,15 +288,15 @@ echo "--- 8b. reap respects the lock-age grace window ---"
 OUT8B=$(MOCK_AGY_SESSION_ID="88888888-8888-4888-8888-888888888888" run_extdel_agy start --cli agy --prompt "grace window target" --posture read-only)
 HANDLE8B=$(extract_field "$OUT8B" "Handle")
 poll_until_terminal "$HANDLE8B" 10 >/dev/null
-mkdir -p "./tmp/simple-orchestration/$HANDLE8B/.turn-lock"
-echo "999999" > "./tmp/simple-orchestration/$HANDLE8B/.turn-lock/owner.pid"
+mkdir -p "./tmp/model-council/$HANDLE8B/.turn-lock"
+echo "999999" > "./tmp/model-council/$HANDLE8B/.turn-lock/owner.pid"
 REAP_OUT8B=$(run_extdel_agy reap)
-if [ -d "./tmp/simple-orchestration/$HANDLE8B/.turn-lock" ]; then
+if [ -d "./tmp/model-council/$HANDLE8B/.turn-lock" ]; then
   pass "reap left a fresh (in-grace-window) lock alone despite a dead owner.pid"
 else
   fail "reap removed a lock inside its grace window"
 fi
-rm -rf "./tmp/simple-orchestration/$HANDLE8B/.turn-lock"
+rm -rf "./tmp/model-council/$HANDLE8B/.turn-lock"
 echo
 
 # ---------------------------------------------------------------------------
@@ -316,7 +316,7 @@ HANDLE9=$(extract_field "$OUT9" "Handle")
 assert_contains "$OUT9" "Status: RUNNING" "handle9 starts RUNNING (mid-flight stop target)"
 
 sleep 1
-SUP_PID9=$(cat "./tmp/simple-orchestration/$HANDLE9/turn-001.pid" 2>/dev/null)
+SUP_PID9=$(cat "./tmp/model-council/$HANDLE9/turn-001.pid" 2>/dev/null)
 
 STOP_OUT9=$(run_extdel_agy stop "$HANDLE9")
 assert_contains "$STOP_OUT9" "STOPPED: $HANDLE9" "stop reports the mid-flight handle as stopped"
@@ -327,13 +327,13 @@ else
   pass "supervisor process is gone after stop (no orphan)"
 fi
 
-if [ -f "./tmp/simple-orchestration/$HANDLE9/turn-001.exit.code" ]; then
+if [ -f "./tmp/model-council/$HANDLE9/turn-001.exit.code" ]; then
   pass "exit.code was written for the stopped mid-flight turn"
 else
   fail "exit.code was NOT written for the stopped mid-flight turn"
 fi
 
-if [ -d "./tmp/simple-orchestration/$HANDLE9/.turn-lock" ]; then
+if [ -d "./tmp/model-council/$HANDLE9/.turn-lock" ]; then
   fail "turn-lock still present after stop"
 else
   pass "turn-lock released after stop"
@@ -383,15 +383,15 @@ echo "--- 11. signal-aware exit code ---"
 OUT11=$(MOCK_AGY_SESSION_ID="b0b0b0b0-0000-4000-8000-00000000000b" MOCK_AGY_SLEEP=6 run_extdel_agy start --cli agy --prompt "will be signaled directly" --posture read-only)
 HANDLE11=$(extract_field "$OUT11" "Handle")
 sleep 1
-SUP_PID11=$(cat "./tmp/simple-orchestration/$HANDLE11/turn-001.pid" 2>/dev/null)
+SUP_PID11=$(cat "./tmp/model-council/$HANDLE11/turn-001.pid" 2>/dev/null)
 [ -n "$SUP_PID11" ] && kill -TERM "-$SUP_PID11" 2>/dev/null
 
 n=0
-while [ "$n" -lt 10 ] && [ ! -f "./tmp/simple-orchestration/$HANDLE11/turn-001.exit.code" ]; do
+while [ "$n" -lt 10 ] && [ ! -f "./tmp/model-council/$HANDLE11/turn-001.exit.code" ]; do
   sleep 1
   n=$((n + 1))
 done
-CODE11=$(cat "./tmp/simple-orchestration/$HANDLE11/turn-001.exit.code" 2>/dev/null | tr -d '[:space:]')
+CODE11=$(cat "./tmp/model-council/$HANDLE11/turn-001.exit.code" 2>/dev/null | tr -d '[:space:]')
 if [ "$CODE11" = "143" ]; then
   pass "TERM-killed turn's exit code is 128+SIGTERM=143, not misreported as 0"
 else
@@ -399,7 +399,7 @@ else
 fi
 STATUS11=$(run_extdel_agy status "$HANDLE11" --wait-s 2)
 assert_contains "$STATUS11" "Status: FAILURE" "TERM-killed turn reports FAILURE, not SUCCESS"
-if [ -d "./tmp/simple-orchestration/$HANDLE11/.turn-lock" ]; then
+if [ -d "./tmp/model-council/$HANDLE11/.turn-lock" ]; then
   fail "turn-lock still present after a direct signal kill"
 else
   pass "turn-lock released after a direct signal kill"
@@ -463,8 +463,8 @@ assert_contains "$OUT14" "Status: ERROR" "spawn failure is reported as ERROR, no
 assert_contains "$OUT14" "spawn failed" "spawn failure error explains the supervisor never started"
 assert_not_contains "$OUT14" "Status: RUNNING" "spawn failure never reports RUNNING"
 HANDLE14=$(extract_field "$OUT14" "Handle")
-if [ -n "$HANDLE14" ] && [ "$HANDLE14" != "(none)" ] && [ -d "./tmp/simple-orchestration/$HANDLE14" ]; then
-  if [ -d "./tmp/simple-orchestration/$HANDLE14/.turn-lock" ]; then
+if [ -n "$HANDLE14" ] && [ "$HANDLE14" != "(none)" ] && [ -d "./tmp/model-council/$HANDLE14" ]; then
+  if [ -d "./tmp/model-council/$HANDLE14/.turn-lock" ]; then
     fail "turn-lock leaked after a spawn failure"
   else
     pass "turn-lock released after a spawn failure"
@@ -484,7 +484,7 @@ assert_contains "$BAD_TIMEOUT" "--timeout-s must be a non-negative integer" "sta
 OUT15=$(MOCK_AGY_SESSION_ID="d0d0d0d0-0000-4000-8000-00000000000d" run_extdel_agy start --cli agy --prompt "for numeric validation" --posture read-only)
 HANDLE15=$(extract_field "$OUT15" "Handle")
 poll_until_terminal "$HANDLE15" 10 >/dev/null
-META_BEFORE=$(cat "./tmp/simple-orchestration/$HANDLE15/meta.json" 2>/dev/null)
+META_BEFORE=$(cat "./tmp/model-council/$HANDLE15/meta.json" 2>/dev/null)
 
 BAD_PROMPT_TIMEOUT=$(run_extdel_agy prompt "$HANDLE15" --prompt "y" --timeout-s notanumber 2>&1)
 assert_contains "$BAD_PROMPT_TIMEOUT" "--timeout-s must be a non-negative integer" "prompt rejects non-numeric --timeout-s"
@@ -492,7 +492,7 @@ assert_contains "$BAD_PROMPT_TIMEOUT" "--timeout-s must be a non-negative intege
 BAD_SLICE=$(run_extdel_agy slice "$HANDLE15" --max-chars notanumber 2>&1)
 assert_contains "$BAD_SLICE" "--max-chars must be a non-negative integer" "slice rejects non-numeric --max-chars"
 
-META_AFTER=$(cat "./tmp/simple-orchestration/$HANDLE15/meta.json" 2>/dev/null)
+META_AFTER=$(cat "./tmp/model-council/$HANDLE15/meta.json" 2>/dev/null)
 if [ "$META_BEFORE" = "$META_AFTER" ]; then
   pass "meta.json is untouched by rejected numeric options"
 else
@@ -577,7 +577,7 @@ OUT20=$(MOCK_AGY_SESSION_ID="e0e0e0e0-0000-4000-8000-00000000000e" run_extdel_ag
 HANDLE20=$(extract_field "$OUT20" "Handle")
 FINAL20T1=$(poll_until_terminal "$HANDLE20" 10)
 assert_contains "$FINAL20T1" "Status: SUCCESS" "drift-test handle turn 1 succeeds"
-ORIGINAL_SID20=$(jq -r '.session_id' "./tmp/simple-orchestration/$HANDLE20/meta.json" 2>/dev/null)
+ORIGINAL_SID20=$(jq -r '.session_id' "./tmp/model-council/$HANDLE20/meta.json" 2>/dev/null)
 [ "$ORIGINAL_SID20" = "e0e0e0e0-0000-4000-8000-00000000000e" ] && pass "drift-test handle captured its own session id" || fail "drift-test handle captured '$ORIGINAL_SID20'"
 
 TURN2_OUT20=$(run_extdel_agy prompt "$HANDLE20" --prompt "drift turn 2")
@@ -589,7 +589,7 @@ assert_contains "$TURN2_OUT20" "Status: RUNNING" "drift-test turn 2 submitted"
 # clobbered by the mock's own write and the drift would never be
 # observable.
 n=0
-while [ "$n" -lt 10 ] && [ ! -f "./tmp/simple-orchestration/$HANDLE20/turn-002.exit.code" ]; do
+while [ "$n" -lt 10 ] && [ ! -f "./tmp/model-council/$HANDLE20/turn-002.exit.code" ]; do
   sleep 1
   n=$((n + 1))
 done
@@ -620,7 +620,7 @@ echo "--- 21. per-handle gemini_dir config matches the posture (DF1) ---"
 OUT21RO=$(MOCK_AGY_SESSION_ID="21210000-0000-4000-8000-000000000021" run_extdel_agy start --cli agy --prompt "ro config check" --posture read-only)
 HANDLE21RO=$(extract_field "$OUT21RO" "Handle")
 poll_until_terminal "$HANDLE21RO" 10 >/dev/null
-SETTINGS_RO="./tmp/simple-orchestration/$HANDLE21RO/agy-cfg/antigravity-cli/settings.json"
+SETTINGS_RO="./tmp/model-council/$HANDLE21RO/agy-cfg/antigravity-cli/settings.json"
 if [ -f "$SETTINGS_RO" ]; then
   pass "read-only handle's settings.json exists"
 else
@@ -640,7 +640,7 @@ fi
 OUT21WS=$(MOCK_AGY_SESSION_ID="21210000-0000-4000-8000-000000000022" run_extdel_agy start --cli agy --prompt "ws config check" --posture workspace)
 HANDLE21WS=$(extract_field "$OUT21WS" "Handle")
 poll_until_terminal "$HANDLE21WS" 10 >/dev/null
-SETTINGS_WS="./tmp/simple-orchestration/$HANDLE21WS/agy-cfg/antigravity-cli/settings.json"
+SETTINGS_WS="./tmp/model-council/$HANDLE21WS/agy-cfg/antigravity-cli/settings.json"
 if jq -e '.permissions.allow | (index("write_file(*)") != null) and (index("edit_file(*)") != null) and (index("command(pytest)") != null)' "$SETTINGS_WS" >/dev/null 2>&1; then
   pass "workspace settings.json grants write_file(*)/edit_file(*) + build/test commands"
 else
@@ -651,7 +651,7 @@ OUT21DG=$(MOCK_AGY_SESSION_ID="21210000-0000-4000-8000-000000000023" MOCK_AGY_AC
 HANDLE21DG=$(extract_field "$OUT21DG" "Handle")
 FINAL21DG=$(poll_until_terminal "$HANDLE21DG" 10)
 assert_contains "$FINAL21DG" "Status: SUCCESS" "dangerous posture succeeds a write task via --dangerously-skip-permissions, not the allow-list"
-if [ -d "./tmp/simple-orchestration/$HANDLE21DG/agy-cfg/antigravity-cli" ]; then
+if [ -d "./tmp/model-council/$HANDLE21DG/agy-cfg/antigravity-cli" ]; then
   pass "dangerous posture still gets a --gemini_dir config dir (uniform invocation)"
 else
   fail "dangerous posture's --gemini_dir config dir missing"

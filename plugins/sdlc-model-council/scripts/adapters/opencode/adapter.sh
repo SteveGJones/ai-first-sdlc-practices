@@ -5,7 +5,7 @@
 # quote_args, spawn_daemon, wait_for_file, $SUPERVISOR_PL) directly.
 #
 # This is the F2 "worked example" adapter from docs/superpowers/specs/
-# 2026-07-24-sdlc-simple-orchestration-design.md §4 — the architecture's
+# 2026-07-24-sdlc-model-council-design.md §4 — the architecture's
 # own acceptance test ("adding a backend = one directory, zero engine
 # edits"). Built to the §4.4 "OpenCode probe results — CONFIRMED LIVE"
 # block, not to guesses; every non-obvious choice below cites the fact it

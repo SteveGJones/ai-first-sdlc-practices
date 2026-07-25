@@ -3,7 +3,7 @@ description: List registered delegation backends, whether each is installed/auth
 argument-hint: "[--probe-auth]"
 ---
 
-Report the current backend registry for `sdlc-simple-orchestration`.
+Report the current backend registry for `sdlc-model-council`.
 
 Do this:
 

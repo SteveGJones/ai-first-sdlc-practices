@@ -9,7 +9,7 @@
 # extraction: preflight_codex ~352, codex_sandbox_args ~364,
 # capture_session_id ~375, files_changed_summary ~442,
 # submit_codex_turn ~483 — see docs/superpowers/specs/
-# 2026-07-24-sdlc-simple-orchestration-design.md §2.2). Only the
+# 2026-07-24-sdlc-model-council-design.md §2.2). Only the
 # function NAMES (to the §2.2 ABI) and the calling convention (engine-
 # set globals: $DIR $HANDLE $CLI $POSTURE $TURN $PROMPT_FILE $TIMEOUT_S
 # $CWD $ADD_DIRS $MODEL $EFFORT, set by extdel.sh immediately before

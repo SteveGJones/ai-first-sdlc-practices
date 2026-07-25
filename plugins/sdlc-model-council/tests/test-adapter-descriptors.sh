@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Lint suite for scripts/adapters/*/{adapter.json,adapter.sh} (issue #232,
 # migration step 4 — see docs/superpowers/specs/
-# 2026-07-24-sdlc-simple-orchestration-design.md §2, §4). Two things are
+# 2026-07-24-sdlc-model-council-design.md §2, §4). Two things are
 # checked per adapter directory:
 #   1. adapter.json satisfies the §2.1 descriptor schema (schema_version,
 #      id grammar, kind, all three postures with mechanism+fidelity+
@@ -13,7 +13,7 @@
 # static lint over the adapter directories themselves, so it never spends
 # API quota and needs no PATH/HOME fixtures.
 #
-# Run: bash plugins/sdlc-simple-orchestration/tests/test-adapter-descriptors.sh
+# Run: bash plugins/sdlc-model-council/tests/test-adapter-descriptors.sh
 
 set -u
 
