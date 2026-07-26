@@ -11,11 +11,12 @@ DAG-based delegation — reach for that plugin when a task genuinely needs
 an isolated container or a multi-step workflow graph; reach for this one
 for a single in-session hand-off to a peer CLI.)
 
-See `docs/superpowers/specs/2026-07-24-sdlc-model-council-design.md`
-in this repo for the full design (authoritative; supersedes the original
-`2026-07-23-external-agent-delegation-design.md` in the areas noted at its
-own top) and `docs/feature-proposals/232-external-agent-delegation.md` for
-the originating proposal (issue #232).
+See `docs/superpowers/specs/2026-07-25-sdlc-model-council-design.md`
+in this repo for the full design (authoritative; builds on the substrate
+design `2026-07-24-sdlc-simple-orchestration-design.md` and the original
+`2026-07-23-external-agent-delegation-design.md`) and
+`docs/feature-proposals/232-external-agent-delegation.md` for the
+originating proposal (issue #232).
 
 ## Why this plugin, given vendor-native plugins already exist
 
