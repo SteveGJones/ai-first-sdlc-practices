@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "mlx",
+  "display_name": "MLX local (Apple Silicon)",
+  "vendor": "mlx-community",
+  "kind": "direct-cli",
+  "binary": "mlx-chat",
+  "tested_versions": [
+    "0.0.0-mock"
+  ],
+  "detect": {
+    "command": "mlx-chat",
+    "auth_probe": "mlx-chat --probe",
+    "auth_fix_hint": "start a local server: uv run mlx_lm.server --model <hf-id> --port 8080 (the adapter talks to $MLX_BASE_URL, default http://127.0.0.1:8080/v1)"
+  },
+  "capabilities": {
+    "one_shot": true,
+    "session_resume": true,
+    "held_process": false,
+    "per_action_approval": false,
+    "fanout_safe": false,
+    "model_select": true,
+    "effort_select": false,
+    "answer_file_native": true
+  },
+  "postures": {
+    "read-only": {
+      "mechanism": "sandbox",
+      "fidelity": "hard",
+      "native": "structural: mlx_lm.server only generates text and this adapter wires NO tools, so file reads/writes and shell exec are impossible regardless of posture \u2014 read-only is absolute, not a denyable config"
+    },
+    "workspace": {
+      "mechanism": "sandbox",
+      "fidelity": "none",
+      "native": "no-op: MLX has no write/exec surface to grant; workspace is advisory only (same text-only backend as read-only)"
+    },
+    "dangerous": {
+      "mechanism": "bypass",
+      "fidelity": "none",
+      "native": "no-op: nothing to bypass; MLX cannot act on the filesystem or shell \u2014 a dangerous posture grants no additional capability"
+    }
+  },
+  "sibling_plugins": [],
+  "notes": {
+    "path": "Path B: dedicated mlx adapter, single-user-message one-shot against a local mlx_lm.server OpenAI endpoint. Deliberately NO agentic system prompt (unlike Path A opencode:mlx/*), which is what keeps small-local-model code output uncorrupted \u2014 OpenCode's tool-schema-heavy system prompt induced a 7B-4bit to escape quotes in reproduced code; the raw server does not. See retrospectives/232-external-agent-delegation.md.",
+    "stop_injection": "the client always sends stop:[<|im_end|>] (override via $MLX_STOP in adapter.sh / --stop) because mlx_lm.server (>=0.31.3) can leak the chat stop token into message content (known upstream: ml-explore/mlx-lm #973, #875), which would break downstream answer-contract parsing.",
+    "concurrency": "fanout_safe:false \u2014 one mlx_lm.server serves ONE model and ~32 GB unified memory cannot hold two large models concurrently, so the council must assess MLX sequentially (assess.sh --max-concurrent 1). A single MLX handle inside an otherwise-hosted fan-out is fine; two concurrent MLX handles are not.",
+    "resume": "mlx_lm.server is stateless (no server-side sessions). On resume the client reconstructs conversation history from the engine's own per-turn files (turn-NNN.prompt.txt -> user, turn-NNN.last-message.txt -> assistant) under --history-dir, and adapter_capture_session_id synthesizes a deterministic local id (mlx-<handle>) on turn 1 so the engine's resume gate is satisfied.",
+    "binary_location": "the 'mlx-chat' client ships in this adapter directory and is NOT expected on PATH in production; the adapter resolves it via $MLX_CHAT_BIN override, then PATH (where the test mock lives), then $ADAPTER_DIR/mlx-chat. The engine's own best-effort `binary --version` version probe is non-fatal when mlx-chat is not on PATH."
+  }
+}
