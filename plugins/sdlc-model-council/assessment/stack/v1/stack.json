@@ -55,6 +55,66 @@
       "dimension": "instruction-format",
       "path": "items/instruction-format/if-incident-report",
       "sha256": "b0205bb39925f1b4f01f535bce51badabc9f22d32463fb6a687ec70ca57657fb"
+    },
+    {
+      "id": "ce-grep-errors",
+      "dimension": "command-exec",
+      "path": "items/command-exec/ce-grep-errors",
+      "sha256": "c4f73463830622625fbfd28647ec80052567623d488e85960e0dadbdcb9c5218"
+    },
+    {
+      "id": "ce-disk-usage",
+      "dimension": "command-exec",
+      "path": "items/command-exec/ce-disk-usage",
+      "sha256": "5879466173aa0144dc382b0bc47a987ae0822d6dca67a95696cae31df5f4a15c"
+    },
+    {
+      "id": "ce-port-inspect",
+      "dimension": "command-exec",
+      "path": "items/command-exec/ce-port-inspect",
+      "sha256": "b7aa701c986b89069cf267b03d9fe17f3cc285642afdc2507482bf52b9fe47bf"
+    },
+    {
+      "id": "mon-build-finished",
+      "dimension": "monitoring",
+      "path": "items/monitoring/mon-build-finished",
+      "sha256": "5bd3588b70bb562bb87b77de234eed3aec9073ea54096bcd601dce74bc7073e8"
+    },
+    {
+      "id": "mon-migration-error",
+      "dimension": "monitoring",
+      "path": "items/monitoring/mon-migration-error",
+      "sha256": "97e07f039d37289e762191a572ea1df432c8b164e043cac2e20f28f9213f67d2"
+    },
+    {
+      "id": "mon-still-running",
+      "dimension": "monitoring",
+      "path": "items/monitoring/mon-still-running",
+      "sha256": "2cd65543ab15294e1f7c09dfa18a6a82e160f1ea1ad3e08880eb52d70970ff98"
+    },
+    {
+      "id": "ce-hard-grep-context",
+      "dimension": "command-exec",
+      "path": "items/command-exec/ce-hard-grep-context",
+      "sha256": "80812ff1ba23d11c136a5c56f7f55a9b8cd9730717745102312d3a8a3cc82f88"
+    },
+    {
+      "id": "ce-hard-find-large-recent",
+      "dimension": "command-exec",
+      "path": "items/command-exec/ce-hard-find-large-recent",
+      "sha256": "4a87d92b125a8e10427d04b3abf77180420557c69e04c9b0277c13002654e4e9"
+    },
+    {
+      "id": "mon-hard-multistage",
+      "dimension": "monitoring",
+      "path": "items/monitoring/mon-hard-multistage",
+      "sha256": "0c39423b284334d6105e807a7177f0c0f98096c8a81a39a6024ff3439872093a"
+    },
+    {
+      "id": "mon-hard-transient-error",
+      "dimension": "monitoring",
+      "path": "items/monitoring/mon-hard-transient-error",
+      "sha256": "cca9386ccd3baaa89896fa74dc366267d5591478cae9988ad5e8e1b415e54992"
     }
   ]
 }

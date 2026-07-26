@@ -1,7 +1,9 @@
 {
   "schema_version": 1,
   "family": "oss-gpt-oss",
-  "matches": ["gpt-oss"],
+  "matches": [
+    "gpt-oss"
+  ],
   "context_tokens": 128000,
   "pricing_ref": "oss-gpt-oss",
   "provenance": "Coarse public prior for the open-weight gpt-oss family (e.g. gpt-oss-120b-medium reached via agy), k=3 pseudo-observations only. Not audition-derived; humble mid-tier open-weight estimate, pending real assessment data.",
@@ -14,7 +16,9 @@
     "research": 0.48,
     "long-context": 0.5,
     "instruction-format": 0.55,
-    "tool-use": 0.48
+    "tool-use": 0.48,
+    "command-exec": 0.5,
+    "monitoring": 0.46
   },
   "flags": []
 }

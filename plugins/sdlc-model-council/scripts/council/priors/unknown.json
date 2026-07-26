@@ -14,7 +14,11 @@
     "research": 0.5,
     "long-context": 0.5,
     "instruction-format": 0.5,
-    "tool-use": 0.5
+    "tool-use": 0.5,
+    "command-exec": 0.5,
+    "monitoring": 0.5
   },
-  "flags": ["no-prior"]
+  "flags": [
+    "no-prior"
+  ]
 }

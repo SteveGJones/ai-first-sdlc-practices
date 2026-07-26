@@ -1,0 +1,3 @@
+$ ./server --port 8080
+2026-07-26T10:04:11 FATAL: bind(0.0.0.0:8080): address already in use
+2026-07-26T10:04:11 server exiting
