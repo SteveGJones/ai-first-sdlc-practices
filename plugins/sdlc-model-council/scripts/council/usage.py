@@ -217,13 +217,25 @@ def sum_agy(handle_dir):
     return tokens_in, tokens_out
 
 
-def summarize(handle_dir, pricing, family_override):
+def summarize(handle_dir, pricing, family_override, priors_families=None):
     meta = load_meta(handle_dir)
     cli = meta.get("cli")
     families = pricing.get("families", {})
 
     if family_override:
         family = family_override if family_override in families else None
+    elif priors_families:
+        # Resolve family from the full model ADDRESS (adapter:model) via the
+        # priors matches map — the roster/assess layer's resolution. A bare
+        # meta.model like "default" never substring-matches "openai-gpt5", so
+        # the old path priced live codex/agy at $0 (defeating the budget cap).
+        import priors as priors_mod
+        model = meta.get("model") or ""
+        address = ("%s:%s" % (cli, model)) if cli else model
+        fam = priors_mod.resolve_family(address, families=priors_families)
+        pricing_ref = priors_families.get(fam, {}).get("pricing_ref", fam)
+        family = (pricing_ref if pricing_ref in families
+                  else resolve_family(meta.get("model"), families))
     else:
         family = resolve_family(meta.get("model"), families)
 
@@ -266,10 +278,20 @@ def main(argv=None):
         default=None,
         help="override family resolution (must name a family in --pricing)",
     )
+    parser.add_argument(
+        "--priors-dir",
+        default=None,
+        help="priors dir; resolve family from the adapter:model address via the "
+             "priors matches map (same as the roster/assess layer)",
+    )
     args = parser.parse_args(argv)
 
     pricing = load_pricing(args.pricing)
-    result = summarize(args.handle_dir, pricing, args.family)
+    priors_families = None
+    if args.priors_dir:
+        import priors as priors_mod
+        priors_families = priors_mod.load_priors(args.priors_dir)
+    result = summarize(args.handle_dir, pricing, args.family, priors_families)
     print(json.dumps(result))
     return 0
 

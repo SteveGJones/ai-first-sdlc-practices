@@ -150,6 +150,23 @@ MOCK_OPENCODE_SLEEP=1 "$ASSESS" --stack "$FX6/stack.json" --priors-dir "$PRIORS"
 assert_eq "$(rows "$R6/results.jsonl")" "5" "6a cap-2 pool drained all 5 pairs"
 
 # ---------------------------------------------------------------------------
+# 6b. Resume back-fills prior spend into the budget cap (no cumulative overspend)
+# ---------------------------------------------------------------------------
+R6B="$TESTROOT/run-backfill"
+MOCK_OPENCODE_COST=0.5 "$ASSESS" --stack "$STACK_V1" --priors-dir "$PRIORS" \
+  --pricing "$PRICING" --models "$PAID2" --dims instruction-format \
+  --budget-usd 1.0 --max-concurrent 1 --no-reachability-check --run-dir "$R6B" \
+  --poll-wait-s 1 --now "$NOW" >/dev/null 2>&1   # prior spend $1.0, 2 skipped
+# resume with budget 1.2: backfilled $1.0 + one more $0.5 = $1.5 >= 1.2 → stops
+# again, leaving 1 skipped. Without back-fill, SPENT would start at 0 and both
+# remaining pairs would run (0 skipped) — so this asserts the back-fill.
+MOCK_OPENCODE_COST=0.5 "$ASSESS" --stack "$STACK_V1" --priors-dir "$PRIORS" \
+  --pricing "$PRICING" --models "$PAID2" --dims instruction-format \
+  --budget-usd 1.2 --max-concurrent 1 --no-reachability-check --resume \
+  --run-dir "$R6B" --poll-wait-s 1 --now "$NOW" >/dev/null 2>&1
+assert_eq "$(tally "$R6B/results.jsonl" skipped:budget)" "1" "6b resume back-fills prior spend (cumulative budget still enforced)"
+
+# ---------------------------------------------------------------------------
 # 7. Paid dispatch requires an explicit budget (no surprise spend)
 # ---------------------------------------------------------------------------
 set +e

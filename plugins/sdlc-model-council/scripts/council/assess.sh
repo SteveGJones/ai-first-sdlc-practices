@@ -209,12 +209,14 @@ fi
 # ---------------------------------------------------------------------------
 DONE_KEYS="$RUN_DIR/done-keys.txt"
 : > "$DONE_KEYS"
+RESUME_SPENT_FILE="$RUN_DIR/resume-spent.txt"
 if [ "$RESUME" -eq 1 ] && [ -f "$RESULTS" ]; then
-  python3 - "$RESULTS" "$DONE_KEYS" <<'PY'
+  python3 - "$RESULTS" "$DONE_KEYS" "$RESUME_SPENT_FILE" <<'PY'
 import json, sys
-res, keys = sys.argv[1], sys.argv[2]
+res, keys, spent_file = sys.argv[1], sys.argv[2], sys.argv[3]
 kept = []
 done = set()
+spent = 0.0
 for line in open(res, encoding="utf-8"):
     line = line.strip()
     if not line:
@@ -224,8 +226,10 @@ for line in open(res, encoding="utf-8"):
         continue          # re-run on resume
     kept.append(line)
     done.add(row["model"] + "\t" + row["item"])
+    spent += float(row.get("cost_usd", 0.0))   # back-fill prior spend for the budget cap
 open(res, "w", encoding="utf-8").write("\n".join(kept) + ("\n" if kept else ""))
 open(keys, "w", encoding="utf-8").write("\n".join(sorted(done)) + ("\n" if done else ""))
+open(spent_file, "w", encoding="utf-8").write(repr(round(spent, 8)))
 PY
 else
   : > "$RESULTS"
@@ -255,7 +259,9 @@ compose_prompt() { # compose_prompt <item> <item_dir> -> path
 # ---------------------------------------------------------------------------
 # Row emission + scoring
 # ---------------------------------------------------------------------------
-SPENT="0"
+# On resume, back-fill prior spend so the budget cap accounts for it (a resumed
+# run must not silently blow past --budget-usd by counting only the new wave).
+SPENT="$(cat "$RESUME_SPENT_FILE" 2>/dev/null || echo 0)"
 emit_row() {
   # emit_row model item dim sha status score details_json cost basis tin tout lat handle
   python3 - "$@" >> "$RESULTS" <<'PY'
@@ -294,7 +300,7 @@ process_terminal() { # process_terminal <handle> <pairline> <engine_status> <t0>
   # Usage (cost) — best effort from the handle's events.
   if [ -d "$handle_dir" ]; then
     local u
-    u="$("$COUNCIL/usage.py" "$handle_dir" --pricing "$PRICING" 2>/dev/null || echo '{}')"
+    u="$("$COUNCIL/usage.py" "$handle_dir" --pricing "$PRICING" --priors-dir "$PRIORS" 2>/dev/null || echo '{}')"
     cost="$(printf '%s' "$u" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d.get("cost_usd",0))' 2>/dev/null || echo 0)"
     basis="$(printf '%s' "$u" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d.get("cost_basis","estimated"))' 2>/dev/null || echo estimated)"
     tin="$(printf '%s' "$u" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d.get("tokens_in",0))' 2>/dev/null || echo 0)"
@@ -396,15 +402,35 @@ run_wave() { # run_wave <pending-tsv> <budget-enforced 0|1>
       sout="$("$EXTDEL" status "$h" --wait-s "$POLL_WAIT" 2>/dev/null || true)"
       st="$(printf '%s' "$sout" | grep -m1 '^- Status:' | sed -E 's/^- Status:[[:space:]]*//' | awk '{print $1}')"
       case "$st" in
-        RUNNING|"")
+        RUNNING)
+          rm -f "$RUN_DIR/active/$h.empty" 2>/dev/null || true
           newactive="$newactive $h" ;;
+        "")
+          # Empty = `extdel status` returned nothing / crashed. The engine's
+          # per-turn timeout normally forces a terminal status, so this should
+          # not persist — but a persistent status failure must NOT hang the
+          # poll forever (the convergent finding from the live self-review).
+          local ec
+          ec="$(cat "$RUN_DIR/active/$h.empty" 2>/dev/null || echo 0)"
+          ec=$((ec + 1)); echo "$ec" > "$RUN_DIR/active/$h.empty"
+          if [ "$ec" -ge 5 ]; then
+            local pe te
+            pe="$(cat "$RUN_DIR/active/$h.pair" 2>/dev/null)"
+            te="$(cat "$RUN_DIR/active/$h.t0" 2>/dev/null || date +%s)"
+            process_terminal "$h" "$pe" "ERROR" "$te"
+            "$EXTDEL" stop "$h" >/dev/null 2>&1 || true
+            rm -f "$RUN_DIR/active/$h.pair" "$RUN_DIR/active/$h.t0" "$RUN_DIR/active/$h.empty"
+            progressed=1
+          else
+            newactive="$newactive $h"
+          fi ;;
         *)
           local pairline t0
           pairline="$(cat "$RUN_DIR/active/$h.pair" 2>/dev/null)"
           t0="$(cat "$RUN_DIR/active/$h.t0" 2>/dev/null || date +%s)"
           process_terminal "$h" "$pairline" "$st" "$t0"
           "$EXTDEL" stop "$h" >/dev/null 2>&1 || true
-          rm -f "$RUN_DIR/active/$h.pair" "$RUN_DIR/active/$h.t0"
+          rm -f "$RUN_DIR/active/$h.pair" "$RUN_DIR/active/$h.t0" "$RUN_DIR/active/$h.empty"
           progressed=1
           # budget hard-stop (design §2.4 step 5)
           if [ "$enforce" -eq 1 ] && [ -n "$BUDGET" ]; then
