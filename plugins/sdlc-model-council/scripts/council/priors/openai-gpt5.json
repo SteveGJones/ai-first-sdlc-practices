@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "family": "openai-gpt5",
+  "matches": ["codex:", "gpt-5"],
+  "context_tokens": 400000,
+  "pricing_ref": "openai-gpt5",
+  "provenance": "Coarse public prior for the OpenAI GPT-5 family as reached via the codex adapter, k=3 pseudo-observations only. Not audition-derived; humble frontier-tier estimate pending real assessment data (see roster.py posterior blend).",
+  "dimensions": {
+    "code-gen": 0.75,
+    "bug-fix": 0.75,
+    "code-review": 0.72,
+    "refactor": 0.7,
+    "reasoning": 0.78,
+    "research": 0.68,
+    "long-context": 0.7,
+    "instruction-format": 0.75,
+    "tool-use": 0.72
+  },
+  "flags": []
+}

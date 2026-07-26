@@ -99,7 +99,7 @@ def fetch_run_detail_via_rest(
         merged = dict(data["run"])
         merged["events"] = data.get("events", [])
         return merged
-    return data  # type: ignore[return-value]
+    return data
 
 
 # ---------------------------------------------------------------------------

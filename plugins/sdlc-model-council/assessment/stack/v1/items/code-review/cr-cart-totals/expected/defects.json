@@ -1,0 +1,37 @@
+[
+  {
+    "id": "d1",
+    "file": "cart.py",
+    "line": 4,
+    "line_window": 3,
+    "match_any": [
+      "mutable default",
+      "default (argument|value).*(list|\\[\\])",
+      "cart=\\[\\]"
+    ]
+  },
+  {
+    "id": "d2",
+    "file": "cart.py",
+    "line": 13,
+    "line_window": 3,
+    "match_any": [
+      "off.by.one",
+      "range\\(1",
+      "skip.*(first|item)",
+      "first item.*(skip|miss|excl)"
+    ]
+  },
+  {
+    "id": "d3",
+    "file": "cart.py",
+    "line": 20,
+    "line_window": 3,
+    "match_any": [
+      "floor.*zero",
+      "negative",
+      "does not.*(clamp|floor)",
+      "max\\(0"
+    ]
+  }
+]

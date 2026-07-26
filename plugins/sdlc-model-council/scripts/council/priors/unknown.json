@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "family": "unknown",
+  "matches": [],
+  "context_tokens": 32000,
+  "pricing_ref": "unknown",
+  "provenance": "Fallback for any adapter:model address that does not substring-match any known family's `matches` list. Flat 0.5 across all dimensions is a deliberately uninformative prior (no belief either way), not a measurement. context_tokens is a conservative placeholder, not a claim about the actual model's window. Always carries the 'no-prior' flag so roster.py/commission surface it distinctly rather than presenting it as a real assessment.",
+  "dimensions": {
+    "code-gen": 0.5,
+    "bug-fix": 0.5,
+    "code-review": 0.5,
+    "refactor": 0.5,
+    "reasoning": 0.5,
+    "research": 0.5,
+    "long-context": 0.5,
+    "instruction-format": 0.5,
+    "tool-use": 0.5
+  },
+  "flags": ["no-prior"]
+}

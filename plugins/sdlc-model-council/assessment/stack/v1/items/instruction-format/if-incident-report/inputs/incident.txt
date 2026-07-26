@@ -1,0 +1,5 @@
+Incident INC-77410 was opened after the billing API began returning elevated
+error rates. On investigation this was classified as a high-severity event.
+Two systems were affected: the billing-api service and the payments-worker
+queue. The incident lasted 47 minutes before the rollback fully mitigated it,
+and it has since been marked resolved.

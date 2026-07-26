@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "stack_version": "v1",
+  "items": [
+    {
+      "id": "cr-cart-totals",
+      "dimension": "code-review",
+      "path": "items/code-review/cr-cart-totals",
+      "sha256": "52090a5f9eb18d1dd2e3895d3ea2f2c814bc444a51bf7679a85fc59b0c48406b"
+    },
+    {
+      "id": "cr-rate-limiter",
+      "dimension": "code-review",
+      "path": "items/code-review/cr-rate-limiter",
+      "sha256": "9edcfed7bd186bea9f63feede3b5ef3108a644882a695c6e038bed395139b048"
+    },
+    {
+      "id": "cr-word-report",
+      "dimension": "code-review",
+      "path": "items/code-review/cr-word-report",
+      "sha256": "8944fe25e8c2a269a225136510eaa260da70735a70c122b3ed583d97932c8a01"
+    },
+    {
+      "id": "bf-balanced-brackets",
+      "dimension": "bug-fix",
+      "path": "items/bug-fix/bf-balanced-brackets",
+      "sha256": "18099a4c1c6339c9c467f30228da2cff802478d41ac5cb42246265f1193f0e77"
+    },
+    {
+      "id": "bf-run-length",
+      "dimension": "bug-fix",
+      "path": "items/bug-fix/bf-run-length",
+      "sha256": "15bc41010c7643c6112e2fa2d2e8b0acc5bcf0d60217b4359b12d9adcaff0587"
+    },
+    {
+      "id": "lc-employee-directory",
+      "dimension": "long-context",
+      "path": "items/long-context/lc-employee-directory",
+      "sha256": "c7e1aa40622e7f101e68dfec331bbce5a1cc7940e90095229ff90ba4afb7bfed"
+    },
+    {
+      "id": "lc-meeting-minutes",
+      "dimension": "long-context",
+      "path": "items/long-context/lc-meeting-minutes",
+      "sha256": "80e741788246a5f866dbb3981e9a841d84ad78ef140071af700cb0dd23475a59"
+    },
+    {
+      "id": "if-product-listing",
+      "dimension": "instruction-format",
+      "path": "items/instruction-format/if-product-listing",
+      "sha256": "b999b18f6ceeec177fd731db968eb42c395f1db1a136879139210639d83f5345"
+    },
+    {
+      "id": "if-incident-report",
+      "dimension": "instruction-format",
+      "path": "items/instruction-format/if-incident-report",
+      "sha256": "b0205bb39925f1b4f01f535bce51badabc9f22d32463fb6a687ec70ca57657fb"
+    }
+  ]
+}

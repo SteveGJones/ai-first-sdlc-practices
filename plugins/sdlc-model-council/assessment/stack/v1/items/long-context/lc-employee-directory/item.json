@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "lc-employee-directory",
+  "dimension": "long-context",
+  "version": 1,
+  "difficulty": "easy",
+  "timeout_s": 90,
+  "min_context_tokens": 8000,
+  "est_prompt_tokens": 7800,
+  "est_output_tokens": 20,
+  "answer_contract": "text",
+  "scorer": {
+    "type": "exact-match"
+  }
+}

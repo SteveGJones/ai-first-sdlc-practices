@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+# Mock `opencode` CLI for extdel.sh's opencode-resume tests. Understands
+# just enough of the real `opencode run --dir DIR --format json -m MODEL
+# [--variant EFFORT] [--session ID] [--auto] "<prompt>"` / `opencode
+# models` / `opencode --version` surface (per the design doc's §4.4
+# "OpenCode probe results — CONFIRMED LIVE" block) to exercise
+# adapter_submit_turn without spending real API quota. Never invoke the
+# real opencode CLI from tests — this fixture exists so we don't have to.
+#
+# Event shape (§4.4 P-OC4/P-OC5b): newline-delimited JSON, one event per
+# line. This mock emits:
+#   {"type":"step_start","sessionID":"ses_..."}
+#   {"type":"text","sessionID":"ses_...","part":{"type":"text","text":"..."}}
+#   {"type":"step_finish","sessionID":"ses_...","part":{"tokens":N,"cost":0}}
+# — every line carries sessionID (P-OC5b's "trivial" id-capture claim),
+# and the adapter's jq extraction pulls the LAST text-part event's text
+# into last-message.txt.
+#
+# Env knobs:
+#   MOCK_OPENCODE_SESSION_ID  — sessionID to mint when --session is not
+#                               given (turn 1). Real ids look like
+#                               ses_<hex>; tests may pass any
+#                               ^ses_[A-Za-z0-9]+$-shaped value.
+#   MOCK_OPENCODE_SLEEP       — seconds to sleep before responding
+#   MOCK_OPENCODE_FAIL        — "1" => exit 1 with a stderr error line
+#   MOCK_OPENCODE_EMPTY       — "1" => exit 0, step_start+step_finish only,
+#                               NO text event at all (genuinely empty,
+#                               legitimate answer — DF2-shaped NO_OUTPUT
+#                               with no permission hint)
+#   MOCK_OPENCODE_ACTION      — read (default, always allowed — OpenCode's
+#                               read tool is not permission-gated per
+#                               §4.4) | edit | bash | webfetch (checked
+#                               against $OPENCODE_CONFIG's
+#                               .permission.<action>; "allow" needed,
+#                               "ask"/"deny" refused unless --auto was
+#                               passed)
+#   MOCK_OPENCODE_NO_MODELS   — "1" => `opencode models` prints nothing
+#                               (simulates an unauthenticated/no-model
+#                               state for adapter_preflight)
+#
+# Deliberately no `set -e`: several `[ -f X ] && ...` idioms below are
+# bare statements, not if-conditions, and must tolerate a not-yet-existing
+# file without aborting the whole mock.
+set -u
+
+if [ "${1:-}" = "--version" ]; then
+  echo "opencode 1.18.5-mock"
+  exit 0
+fi
+
+if [ "${1:-}" = "models" ]; then
+  if [ "${MOCK_OPENCODE_NO_MODELS:-0}" = "1" ]; then
+    exit 0
+  fi
+  echo "opencode/deepseek-v4-flash-free"
+  echo "openai/gpt-5-mock"
+  exit 0
+fi
+
+if [ "${1:-}" != "run" ]; then
+  echo "mock opencode: unrecognized invocation: $*" >&2
+  exit 2
+fi
+shift
+
+dir=""
+fmt=""
+model=""
+variant=""
+session=""
+autoflag=0
+prompt=""
+saw_prompt=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dir) dir="$2"; shift 2 ;;
+    --format) fmt="$2"; shift 2 ;;
+    -m) model="$2"; shift 2 ;;
+    --variant) variant="$2"; shift 2 ;;
+    --session) session="$2"; shift 2 ;;
+    --auto) autoflag=1; shift ;;
+    --) shift ;;
+    -*)
+      # Tolerate any other flag the real CLI might accept, consuming a
+      # value only for flags this mock doesn't otherwise recognize but
+      # that plausibly take one — unknown bare flags are just skipped.
+      shift ;;
+    *)
+      prompt="$1"
+      saw_prompt=1
+      shift ;;
+  esac
+done
+
+if [ "$saw_prompt" -ne 1 ]; then
+  echo "mock opencode: no prompt positional given: unsupported invocation" >&2
+  exit 2
+fi
+if [ "$fmt" != "json" ]; then
+  echo "mock opencode: expected --format json" >&2
+  exit 2
+fi
+if [ -z "$dir" ]; then
+  echo "mock opencode: expected --dir" >&2
+  exit 2
+fi
+
+if [ -n "$session" ]; then
+  sid="$session"
+else
+  sid="${MOCK_OPENCODE_SESSION_ID:-ses_0000000000000001}"
+fi
+
+# Session-establishing event emitted FIRST, before the "thinking" sleep —
+# mirrors the codex/agy mocks' own ordering so a killed/timed-out turn
+# still exercises id capture from a turn that never reached completion.
+printf '{"type":"step_start","sessionID":"%s"}\n' "$sid"
+
+if [ -n "${MOCK_OPENCODE_SLEEP:-}" ]; then
+  sleep "$MOCK_OPENCODE_SLEEP"
+fi
+
+if [ "${MOCK_OPENCODE_FAIL:-0}" = "1" ]; then
+  echo "mock opencode: induced failure" >&2
+  exit 1
+fi
+
+if [ "${MOCK_OPENCODE_EMPTY:-0}" = "1" ]; then
+  printf '{"type":"step_finish","sessionID":"%s","part":{"tokens":3,"cost":0}}\n' "$sid"
+  exit 0
+fi
+
+# Permission simulation (§4.4 P-OC2/P-OC3, adapter.json notes): which
+# OPENCODE_CONFIG permission would the simulated delegated task need?
+# 'read' (default) matches every pre-existing test that never sets this
+# knob, since OpenCode's read tool is not permission-gated in any posture.
+action="${MOCK_OPENCODE_ACTION:-read}"
+case "$action" in
+  edit|bash|webfetch) required_perm="$action" ;;
+  *) required_perm="" ;;
+esac
+
+allowed=1
+if [ -n "$required_perm" ]; then
+  allowed=0
+  if [ "$autoflag" -eq 1 ]; then
+    allowed=1
+  elif [ -n "${OPENCODE_CONFIG:-}" ] && [ -f "${OPENCODE_CONFIG:-}" ]; then
+    val=$(jq -r --arg k "$required_perm" '.permission[$k] // "ask"' "$OPENCODE_CONFIG" 2>/dev/null)
+    [ "$val" = "allow" ] && allowed=1
+  fi
+fi
+
+if [ "$allowed" -ne 1 ]; then
+  # §4.4 P-OC2b (this build's live-probe finding): a denied permission
+  # under headless `opencode run` auto-denies rather than hanging — exit
+  # 0, no text output, a denial-shaped diagnostic on stderr.
+  echo "mock opencode: '$required_perm' permission not allowed — denied by config (requires the '$required_perm' permission to be 'allow', or --auto)" >&2
+  printf '{"type":"step_finish","sessionID":"%s","part":{"tokens":2,"cost":0}}\n' "$sid"
+  exit 0
+fi
+
+printf '{"type":"text","sessionID":"%s","part":{"type":"text","text":"mock opencode answer for: %s"}}\n' "$sid" "$prompt"
+# MOCK_OPENCODE_COST (default 0) lets the assessment harness test drive a
+# non-zero exact per-turn cost through usage.py's opencode cost path (budget
+# hard-stop tests). Substrate tests never set it, so cost stays 0.
+printf '{"type":"step_finish","sessionID":"%s","part":{"tokens":11,"cost":%s}}\n' "$sid" "${MOCK_OPENCODE_COST:-0}"
+exit 0

@@ -1,0 +1,223 @@
+EMPLOYEE DIRECTORY — INTERNAL REFERENCE COPY
+Generated for onboarding-assessment purposes. Do not distribute externally.
+
+Record 0001: Employee Callum Suleiman (ID EMP-0101) works in the Field Operations division. Badge color: crimson. Preferred parking level: 3.
+Record 0002: Employee Rowan Tremblay (ID EMP-0138) works in the Quality Assurance division. Badge color: violet. Preferred parking level: 4.
+Record 0003: Employee Marcelline Vantongeren (ID EMP-0175) works in the Logistics division. Badge color: rust. Preferred parking level: 5.
+Record 0004: Employee Sindri Farrukh (ID EMP-0212) works in the Regional Sales division. Badge color: teal. Preferred parking level: 6.
+Record 0005: Employee Dante Iwata (ID EMP-0249) works in the Network Engineering division. Badge color: slate. Preferred parking level: 1.
+Record 0006: Employee Kenji Osgood (ID EMP-0286) works in the Data Platform division. Badge color: cobalt. Preferred parking level: 2.
+Record 0007: Employee Zara Corrigan (ID EMP-0323) works in the Payroll Services division. Badge color: charcoal. Preferred parking level: 3.
+Record 0008: Employee Anouk Holloway (ID EMP-0360) works in the Underwriting division. Badge color: amber. Preferred parking level: 4.
+Record 0009: Employee Ondine Vasquez (ID EMP-0397) works in the Facilities division. Badge color: olive. Preferred parking level: 5.
+Record 0010: Employee Tobias Brannigan (ID EMP-0434) works in the Claims Processing division. Badge color: ivory. Preferred parking level: 6.
+Record 0011: Employee Fionnuala Espinoza (ID EMP-0471) works in the Customer Success division. Badge color: crimson. Preferred parking level: 1.
+Record 0012: Employee Petra Ferris (ID EMP-0508) works in the Materials Planning division. Badge color: violet. Preferred parking level: 2.
+Record 0013: Employee Nkechi Amundsen (ID EMP-0545) works in the Field Operations division. Badge color: rust. Preferred parking level: 3.
+Record 0014: Employee Yusuf Petrosyan (ID EMP-0582) works in the Quality Assurance division. Badge color: teal. Preferred parking level: 4.
+Record 0015: Employee Selin Vukovic (ID EMP-0619) works in the Logistics division. Badge color: slate. Preferred parking level: 5.
+Record 0016: Employee Idris Mbeki (ID EMP-0656) works in the Regional Sales division. Badge color: cobalt. Preferred parking level: 6.
+Record 0017: Employee Talia Marchetti (ID EMP-0693) works in the Network Engineering division. Badge color: charcoal. Preferred parking level: 1.
+Record 0018: Employee Priya Ackerman (ID EMP-0730) works in the Data Platform division. Badge color: amber. Preferred parking level: 2.
+Record 0019: Employee Ines Okoye (ID EMP-0767) works in the Payroll Services division. Badge color: olive. Preferred parking level: 3.
+Record 0020: Employee Declan Blackwood (ID EMP-0804) works in the Underwriting division. Badge color: ivory. Preferred parking level: 4.
+Record 0021: Employee Reza Castellano (ID EMP-0841) works in the Facilities division. Badge color: crimson. Preferred parking level: 5.
+Record 0022: Employee Marisol Delacroix (ID EMP-0878) works in the Claims Processing division. Badge color: violet. Preferred parking level: 6.
+Record 0023: Employee Amara Haugland (ID EMP-0915) works in the Customer Success division. Badge color: rust. Preferred parking level: 1.
+Record 0024: Employee Omar Nakashima (ID EMP-0952) works in the Materials Planning division. Badge color: teal. Preferred parking level: 2.
+Record 0025: Employee Lucho Whitlock (ID EMP-0989) works in the Field Operations division. Badge color: slate. Preferred parking level: 3.
+Record 0026: Employee Mateus Suleiman (ID EMP-1026) works in the Quality Assurance division. Badge color: cobalt. Preferred parking level: 4.
+Record 0027: Employee Nadia Tremblay (ID EMP-1063) works in the Logistics division. Badge color: charcoal. Preferred parking level: 5.
+Record 0028: Employee Bartek Vantongeren (ID EMP-1100) works in the Regional Sales division. Badge color: amber. Preferred parking level: 6.
+Record 0029: Employee Wren Farrukh (ID EMP-1137) works in the Network Engineering division. Badge color: olive. Preferred parking level: 1.
+Record 0030: Employee Ewan Iwata (ID EMP-1174) works in the Data Platform division. Badge color: ivory. Preferred parking level: 2.
+Record 0031: Employee Callum Osgood (ID EMP-1211) works in the Payroll Services division. Badge color: crimson. Preferred parking level: 3.
+Record 0032: Employee Rowan Corrigan (ID EMP-1248) works in the Underwriting division. Badge color: violet. Preferred parking level: 4.
+Record 0033: Employee Marcelline Holloway (ID EMP-1285) works in the Facilities division. Badge color: rust. Preferred parking level: 5.
+Record 0034: Employee Sindri Vasquez (ID EMP-1322) works in the Claims Processing division. Badge color: teal. Preferred parking level: 6.
+Record 0035: Employee Dante Brannigan (ID EMP-1359) works in the Customer Success division. Badge color: slate. Preferred parking level: 1.
+Record 0036: Employee Kenji Espinoza (ID EMP-1396) works in the Materials Planning division. Badge color: cobalt. Preferred parking level: 2.
+Record 0037: Employee Zara Ferris (ID EMP-1433) works in the Field Operations division. Badge color: charcoal. Preferred parking level: 3.
+Record 0038: Employee Anouk Amundsen (ID EMP-1470) works in the Quality Assurance division. Badge color: amber. Preferred parking level: 4.
+Record 0039: Employee Ondine Petrosyan (ID EMP-1507) works in the Logistics division. Badge color: olive. Preferred parking level: 5.
+Record 0040: Employee Tobias Vukovic (ID EMP-1544) works in the Regional Sales division. Badge color: ivory. Preferred parking level: 6.
+Record 0041: Employee Fionnuala Mbeki (ID EMP-1581) works in the Network Engineering division. Badge color: crimson. Preferred parking level: 1.
+Record 0042: Employee Petra Marchetti (ID EMP-1618) works in the Data Platform division. Badge color: violet. Preferred parking level: 2.
+Record 0043: Employee Nkechi Ackerman (ID EMP-1655) works in the Payroll Services division. Badge color: rust. Preferred parking level: 3.
+Record 0044: Employee Yusuf Okoye (ID EMP-1692) works in the Underwriting division. Badge color: teal. Preferred parking level: 4.
+Record 0045: Employee Selin Blackwood (ID EMP-1729) works in the Facilities division. Badge color: slate. Preferred parking level: 5.
+Record 0046: Employee Idris Castellano (ID EMP-1766) works in the Claims Processing division. Badge color: cobalt. Preferred parking level: 6.
+Record 0047: Employee Talia Delacroix (ID EMP-1803) works in the Customer Success division. Badge color: charcoal. Preferred parking level: 1.
+Record 0048: Employee Priya Haugland (ID EMP-1840) works in the Materials Planning division. Badge color: amber. Preferred parking level: 2.
+Record 0049: Employee Ines Nakashima (ID EMP-1877) works in the Field Operations division. Badge color: olive. Preferred parking level: 3.
+Record 0050: Employee Declan Whitlock (ID EMP-1914) works in the Quality Assurance division. Badge color: ivory. Preferred parking level: 4.
+Record 0051: Employee Reza Suleiman (ID EMP-1951) works in the Logistics division. Badge color: crimson. Preferred parking level: 5.
+Record 0052: Employee Marisol Tremblay (ID EMP-1988) works in the Regional Sales division. Badge color: violet. Preferred parking level: 6.
+Record 0053: Employee Amara Vantongeren (ID EMP-2025) works in the Network Engineering division. Badge color: rust. Preferred parking level: 1.
+Record 0054: Employee Omar Farrukh (ID EMP-2062) works in the Data Platform division. Badge color: teal. Preferred parking level: 2.
+Record 0055: Employee Lucho Iwata (ID EMP-2099) works in the Payroll Services division. Badge color: slate. Preferred parking level: 3.
+Record 0056: Employee Mateus Osgood (ID EMP-2136) works in the Underwriting division. Badge color: cobalt. Preferred parking level: 4.
+Record 0057: Employee Nadia Corrigan (ID EMP-2173) works in the Facilities division. Badge color: charcoal. Preferred parking level: 5.
+Record 0058: Employee Bartek Holloway (ID EMP-2210) works in the Claims Processing division. Badge color: amber. Preferred parking level: 6.
+Record 0059: Employee Wren Vasquez (ID EMP-2247) works in the Customer Success division. Badge color: olive. Preferred parking level: 1.
+Record 0060: Employee Ewan Brannigan (ID EMP-2284) works in the Materials Planning division. Badge color: ivory. Preferred parking level: 2.
+Record 0061: Employee Callum Espinoza (ID EMP-2321) works in the Field Operations division. Badge color: crimson. Preferred parking level: 3.
+Record 0062: Employee Rowan Ferris (ID EMP-2358) works in the Quality Assurance division. Badge color: violet. Preferred parking level: 4.
+Record 0063: Employee Marcelline Amundsen (ID EMP-2395) works in the Logistics division. Badge color: rust. Preferred parking level: 5.
+Record 0064: Employee Sindri Petrosyan (ID EMP-2432) works in the Regional Sales division. Badge color: teal. Preferred parking level: 6.
+Record 0065: Employee Dante Vukovic (ID EMP-2469) works in the Network Engineering division. Badge color: slate. Preferred parking level: 1.
+Record 0066: Employee Kenji Mbeki (ID EMP-2506) works in the Data Platform division. Badge color: cobalt. Preferred parking level: 2.
+Record 0067: Employee Zara Marchetti (ID EMP-2543) works in the Payroll Services division. Badge color: charcoal. Preferred parking level: 3.
+Record 0068: Employee Anouk Ackerman (ID EMP-2580) works in the Underwriting division. Badge color: amber. Preferred parking level: 4.
+Record 0069: Employee Ondine Okoye (ID EMP-2617) works in the Facilities division. Badge color: olive. Preferred parking level: 5.
+Record 0070: Employee Tobias Blackwood (ID EMP-2654) works in the Claims Processing division. Badge color: ivory. Preferred parking level: 6.
+Record 0071: Employee Fionnuala Castellano (ID EMP-2691) works in the Customer Success division. Badge color: crimson. Preferred parking level: 1.
+Record 0072: Employee Petra Delacroix (ID EMP-2728) works in the Materials Planning division. Badge color: violet. Preferred parking level: 2.
+Record 0073: Employee Nkechi Haugland (ID EMP-2765) works in the Field Operations division. Badge color: rust. Preferred parking level: 3.
+Record 0074: Employee Yusuf Nakashima (ID EMP-2802) works in the Quality Assurance division. Badge color: teal. Preferred parking level: 4.
+Record 0075: Employee Selin Whitlock (ID EMP-2839) works in the Logistics division. Badge color: slate. Preferred parking level: 5.
+Record 0076: Employee Idris Suleiman (ID EMP-2876) works in the Regional Sales division. Badge color: cobalt. Preferred parking level: 6.
+Record 0077: Employee Talia Tremblay (ID EMP-2913) works in the Network Engineering division. Badge color: charcoal. Preferred parking level: 1.
+Record 0078: Employee Priya Vantongeren (ID EMP-2950) works in the Data Platform division. Badge color: amber. Preferred parking level: 2.
+Record 0079: Employee Ines Farrukh (ID EMP-2987) works in the Payroll Services division. Badge color: olive. Preferred parking level: 3.
+Record 0080: Employee Declan Iwata (ID EMP-3024) works in the Underwriting division. Badge color: ivory. Preferred parking level: 4.
+Record 0081: Employee Reza Osgood (ID EMP-3061) works in the Facilities division. Badge color: crimson. Preferred parking level: 5.
+Record 0082: Employee Marisol Corrigan (ID EMP-3098) works in the Claims Processing division. Badge color: violet. Preferred parking level: 6.
+Record 0083: Employee Amara Holloway (ID EMP-3135) works in the Customer Success division. Badge color: rust. Preferred parking level: 1.
+Record 0084: Employee Omar Vasquez (ID EMP-3172) works in the Materials Planning division. Badge color: teal. Preferred parking level: 2.
+Record 0085: Employee Lucho Brannigan (ID EMP-3209) works in the Field Operations division. Badge color: slate. Preferred parking level: 3.
+Record 0086: Employee Mateus Espinoza (ID EMP-3246) works in the Quality Assurance division. Badge color: cobalt. Preferred parking level: 4.
+Record 0087: Employee Nadia Ferris (ID EMP-3283) works in the Logistics division. Badge color: charcoal. Preferred parking level: 5.
+Record 0088: Employee Bartek Amundsen (ID EMP-3320) works in the Regional Sales division. Badge color: amber. Preferred parking level: 6.
+Record 0089: Employee Wren Petrosyan (ID EMP-3357) works in the Network Engineering division. Badge color: olive. Preferred parking level: 1.
+Record 0090: Employee Ewan Vukovic (ID EMP-3394) works in the Data Platform division. Badge color: ivory. Preferred parking level: 2.
+Record 0091: Employee Callum Mbeki (ID EMP-3431) works in the Payroll Services division. Badge color: crimson. Preferred parking level: 3.
+Record 0092: Employee Rowan Marchetti (ID EMP-3468) works in the Underwriting division. Badge color: violet. Preferred parking level: 4.
+Record 0093: Employee Marcelline Ackerman (ID EMP-3505) works in the Facilities division. Badge color: rust. Preferred parking level: 5.
+Record 0094: Employee Sindri Okoye (ID EMP-3542) works in the Claims Processing division. Badge color: teal. Preferred parking level: 6.
+Record 0095: Employee Dante Blackwood (ID EMP-3579) works in the Customer Success division. Badge color: slate. Preferred parking level: 1.
+Record 0096: Employee Kenji Castellano (ID EMP-3616) works in the Materials Planning division. Badge color: cobalt. Preferred parking level: 2.
+Record 0097: Employee Zara Delacroix (ID EMP-3653) works in the Field Operations division. Badge color: charcoal. Preferred parking level: 3.
+Record 0098: Employee Anouk Haugland (ID EMP-3690) works in the Quality Assurance division. Badge color: amber. Preferred parking level: 4.
+Record 0099: Employee Ondine Nakashima (ID EMP-3727) works in the Logistics division. Badge color: olive. Preferred parking level: 5.
+Record 0100: Employee Tobias Whitlock (ID EMP-3764) works in the Regional Sales division. Badge color: ivory. Preferred parking level: 6.
+Record 0101: Employee Fionnuala Suleiman (ID EMP-3801) works in the Network Engineering division. Badge color: crimson. Preferred parking level: 1.
+Record 0102: Employee Petra Tremblay (ID EMP-3838) works in the Data Platform division. Badge color: violet. Preferred parking level: 2.
+Record 0103: Employee Nkechi Vantongeren (ID EMP-3875) works in the Payroll Services division. Badge color: rust. Preferred parking level: 3.
+Record 0104: Employee Yusuf Farrukh (ID EMP-3912) works in the Underwriting division. Badge color: teal. Preferred parking level: 4.
+Record 0105: Employee Selin Iwata (ID EMP-3949) works in the Facilities division. Badge color: slate. Preferred parking level: 5.
+Record 0106: Employee Idris Osgood (ID EMP-3986) works in the Claims Processing division. Badge color: cobalt. Preferred parking level: 6.
+Record 0107: Employee Talia Corrigan (ID EMP-4023) works in the Customer Success division. Badge color: charcoal. Preferred parking level: 1.
+Record 0108: Employee Priya Holloway (ID EMP-4060) works in the Materials Planning division. Badge color: amber. Preferred parking level: 2.
+Record 0109: Employee Ines Vasquez (ID EMP-4097) works in the Field Operations division. Badge color: olive. Preferred parking level: 3.
+Record 0110: Employee Declan Brannigan (ID EMP-4134) works in the Quality Assurance division. Badge color: ivory. Preferred parking level: 4.
+Record 0111: Employee Reza Espinoza (ID EMP-4171) works in the Logistics division. Badge color: crimson. Preferred parking level: 5.
+Record 0112: Employee Marisol Ferris (ID EMP-4208) works in the Regional Sales division. Badge color: violet. Preferred parking level: 6.
+Record 0113: Employee Amara Amundsen (ID EMP-4245) works in the Network Engineering division. Badge color: rust. Preferred parking level: 1.
+Record 0114: Employee Omar Petrosyan (ID EMP-4282) works in the Data Platform division. Badge color: teal. Preferred parking level: 2.
+Record 0115: Employee Lucho Vukovic (ID EMP-4319) works in the Payroll Services division. Badge color: slate. Preferred parking level: 3.
+Record 0116: Employee Mateus Mbeki (ID EMP-4356) works in the Underwriting division. Badge color: cobalt. Preferred parking level: 4.
+Record 0117: Employee Nadia Marchetti (ID EMP-4393) works in the Facilities division. Badge color: charcoal. Preferred parking level: 5.
+Record 0118: Employee Bartek Ackerman (ID EMP-4430) works in the Claims Processing division. Badge color: amber. Preferred parking level: 6.
+Record 0119: Employee Wren Okoye (ID EMP-4467) works in the Customer Success division. Badge color: olive. Preferred parking level: 1.
+Record 0120: Employee Ewan Blackwood (ID EMP-4504) works in the Materials Planning division. Badge color: ivory. Preferred parking level: 2.
+Record 0121: Employee Callum Castellano (ID EMP-4541) works in the Field Operations division. Badge color: crimson. Preferred parking level: 3.
+Record 0122: Employee Rowan Delacroix (ID EMP-4578) works in the Quality Assurance division. Badge color: violet. Preferred parking level: 4.
+Record 0123: Employee Marcelline Haugland (ID EMP-4615) works in the Logistics division. Badge color: rust. Preferred parking level: 5.
+Record 0124: Employee Sindri Nakashima (ID EMP-4652) works in the Regional Sales division. Badge color: teal. Preferred parking level: 6.
+Record 0125: Employee Dante Whitlock (ID EMP-4689) works in the Network Engineering division. Badge color: slate. Preferred parking level: 1.
+Record 0126: Employee Kenji Suleiman (ID EMP-4726) works in the Data Platform division. Badge color: cobalt. Preferred parking level: 2.
+Record 0127: Employee Zara Tremblay (ID EMP-4763) works in the Payroll Services division. Badge color: charcoal. Preferred parking level: 3.
+Record 0128: Employee Anouk Vantongeren (ID EMP-4800) works in the Underwriting division. Badge color: amber. Preferred parking level: 4.
+Record 0129: Employee Ondine Farrukh (ID EMP-4837) works in the Facilities division. Badge color: olive. Preferred parking level: 5.
+Record 0130: Employee Tobias Iwata (ID EMP-4874) works in the Claims Processing division. Badge color: ivory. Preferred parking level: 6.
+Record 0131: Employee Fionnuala Osgood (ID EMP-4911) works in the Customer Success division. Badge color: crimson. Preferred parking level: 1.
+Record 0132: Employee Petra Corrigan (ID EMP-4948) works in the Materials Planning division. Badge color: violet. Preferred parking level: 2.
+Record 0133: Employee Nkechi Holloway (ID EMP-4985) works in the Field Operations division. Badge color: rust. Preferred parking level: 3.
+Record 0134: Employee Yusuf Vasquez (ID EMP-5022) works in the Quality Assurance division. Badge color: teal. Preferred parking level: 4.
+Record 0135: Employee Selin Brannigan (ID EMP-5059) works in the Logistics division. Badge color: slate. Preferred parking level: 5.
+Record 0136: Employee Idris Espinoza (ID EMP-5096) works in the Regional Sales division. Badge color: cobalt. Preferred parking level: 6.
+Record 0137: Employee Talia Ferris (ID EMP-5133) works in the Network Engineering division. Badge color: charcoal. Preferred parking level: 1.
+Record 0138: Employee Priya Amundsen (ID EMP-5170) works in the Data Platform division. Badge color: amber. Preferred parking level: 2.
+Record 0139: Employee Ines Petrosyan (ID EMP-5207) works in the Payroll Services division. Badge color: olive. Preferred parking level: 3.
+Record 0140: Employee Declan Vukovic (ID EMP-5244) works in the Underwriting division. Badge color: ivory. Preferred parking level: 4.
+Record 0141: Employee Reza Mbeki (ID EMP-5281) works in the Facilities division. Badge color: crimson. Preferred parking level: 5.
+Record 0142: Employee Marisol Marchetti (ID EMP-5318) works in the Claims Processing division. Badge color: violet. Preferred parking level: 6.
+Record 0143: Employee Amara Ackerman (ID EMP-5355) works in the Customer Success division. Badge color: rust. Preferred parking level: 1.
+Record 0144: Employee Omar Okoye (ID EMP-5392) works in the Materials Planning division. Badge color: teal. Preferred parking level: 2.
+Record 0145: Employee Lucho Blackwood (ID EMP-5429) works in the Field Operations division. Badge color: slate. Preferred parking level: 3.
+Record 0146: Employee Mateus Castellano (ID EMP-5466) works in the Quality Assurance division. Badge color: cobalt. Preferred parking level: 4.
+Record 0147: Employee Nadia Delacroix (ID EMP-5503) works in the Logistics division. Badge color: charcoal. Preferred parking level: 5.
+Record 0148: Employee Bartek Haugland (ID EMP-5540) works in the Regional Sales division. Badge color: amber. Preferred parking level: 6.
+Record 0149: Employee Wren Nakashima (ID EMP-5577) works in the Network Engineering division. Badge color: olive. Preferred parking level: 1.
+Record 0150: Employee Ewan Whitlock (ID EMP-5614) works in the Data Platform division. Badge color: ivory. Preferred parking level: 2.
+Record 0151: Employee Callum Suleiman (ID EMP-5651) works in the Payroll Services division. Badge color: crimson. Preferred parking level: 3.
+Record 0152: Employee Rowan Tremblay (ID EMP-5688) works in the Underwriting division. Badge color: violet. Preferred parking level: 4.
+Record 0153: Employee Marcelline Vantongeren (ID EMP-0761) works in the Facilities division. Badge color: rust. Preferred parking level: 5. Special access code for EMP-0761: the code is 'VELVET-COBALT-77'.
+Record 0154: Employee Sindri Farrukh (ID EMP-5762) works in the Claims Processing division. Badge color: teal. Preferred parking level: 6.
+Record 0155: Employee Dante Iwata (ID EMP-5799) works in the Customer Success division. Badge color: slate. Preferred parking level: 1.
+Record 0156: Employee Kenji Osgood (ID EMP-5836) works in the Materials Planning division. Badge color: cobalt. Preferred parking level: 2.
+Record 0157: Employee Zara Corrigan (ID EMP-5873) works in the Field Operations division. Badge color: charcoal. Preferred parking level: 3.
+Record 0158: Employee Anouk Holloway (ID EMP-5910) works in the Quality Assurance division. Badge color: amber. Preferred parking level: 4.
+Record 0159: Employee Ondine Vasquez (ID EMP-5947) works in the Logistics division. Badge color: olive. Preferred parking level: 5.
+Record 0160: Employee Tobias Brannigan (ID EMP-5984) works in the Regional Sales division. Badge color: ivory. Preferred parking level: 6.
+Record 0161: Employee Fionnuala Espinoza (ID EMP-6021) works in the Network Engineering division. Badge color: crimson. Preferred parking level: 1.
+Record 0162: Employee Petra Ferris (ID EMP-6058) works in the Data Platform division. Badge color: violet. Preferred parking level: 2.
+Record 0163: Employee Nkechi Amundsen (ID EMP-6095) works in the Payroll Services division. Badge color: rust. Preferred parking level: 3.
+Record 0164: Employee Yusuf Petrosyan (ID EMP-6132) works in the Underwriting division. Badge color: teal. Preferred parking level: 4.
+Record 0165: Employee Selin Vukovic (ID EMP-6169) works in the Facilities division. Badge color: slate. Preferred parking level: 5.
+Record 0166: Employee Idris Mbeki (ID EMP-6206) works in the Claims Processing division. Badge color: cobalt. Preferred parking level: 6.
+Record 0167: Employee Talia Marchetti (ID EMP-6243) works in the Customer Success division. Badge color: charcoal. Preferred parking level: 1.
+Record 0168: Employee Priya Ackerman (ID EMP-6280) works in the Materials Planning division. Badge color: amber. Preferred parking level: 2.
+Record 0169: Employee Ines Okoye (ID EMP-6317) works in the Field Operations division. Badge color: olive. Preferred parking level: 3.
+Record 0170: Employee Declan Blackwood (ID EMP-6354) works in the Quality Assurance division. Badge color: ivory. Preferred parking level: 4.
+Record 0171: Employee Reza Castellano (ID EMP-6391) works in the Logistics division. Badge color: crimson. Preferred parking level: 5.
+Record 0172: Employee Marisol Delacroix (ID EMP-6428) works in the Regional Sales division. Badge color: violet. Preferred parking level: 6.
+Record 0173: Employee Amara Haugland (ID EMP-6465) works in the Network Engineering division. Badge color: rust. Preferred parking level: 1.
+Record 0174: Employee Omar Nakashima (ID EMP-6502) works in the Data Platform division. Badge color: teal. Preferred parking level: 2.
+Record 0175: Employee Lucho Whitlock (ID EMP-6539) works in the Payroll Services division. Badge color: slate. Preferred parking level: 3.
+Record 0176: Employee Mateus Suleiman (ID EMP-6576) works in the Underwriting division. Badge color: cobalt. Preferred parking level: 4.
+Record 0177: Employee Nadia Tremblay (ID EMP-6613) works in the Facilities division. Badge color: charcoal. Preferred parking level: 5.
+Record 0178: Employee Bartek Vantongeren (ID EMP-6650) works in the Claims Processing division. Badge color: amber. Preferred parking level: 6.
+Record 0179: Employee Wren Farrukh (ID EMP-6687) works in the Customer Success division. Badge color: olive. Preferred parking level: 1.
+Record 0180: Employee Ewan Iwata (ID EMP-6724) works in the Materials Planning division. Badge color: ivory. Preferred parking level: 2.
+Record 0181: Employee Callum Osgood (ID EMP-6761) works in the Field Operations division. Badge color: crimson. Preferred parking level: 3.
+Record 0182: Employee Rowan Corrigan (ID EMP-6798) works in the Quality Assurance division. Badge color: violet. Preferred parking level: 4.
+Record 0183: Employee Marcelline Holloway (ID EMP-6835) works in the Logistics division. Badge color: rust. Preferred parking level: 5.
+Record 0184: Employee Sindri Vasquez (ID EMP-6872) works in the Regional Sales division. Badge color: teal. Preferred parking level: 6.
+Record 0185: Employee Dante Brannigan (ID EMP-6909) works in the Network Engineering division. Badge color: slate. Preferred parking level: 1.
+Record 0186: Employee Kenji Espinoza (ID EMP-6946) works in the Data Platform division. Badge color: cobalt. Preferred parking level: 2.
+Record 0187: Employee Zara Ferris (ID EMP-6983) works in the Payroll Services division. Badge color: charcoal. Preferred parking level: 3.
+Record 0188: Employee Anouk Amundsen (ID EMP-7020) works in the Underwriting division. Badge color: amber. Preferred parking level: 4.
+Record 0189: Employee Ondine Petrosyan (ID EMP-7057) works in the Facilities division. Badge color: olive. Preferred parking level: 5.
+Record 0190: Employee Tobias Vukovic (ID EMP-7094) works in the Claims Processing division. Badge color: ivory. Preferred parking level: 6.
+Record 0191: Employee Fionnuala Mbeki (ID EMP-7131) works in the Customer Success division. Badge color: crimson. Preferred parking level: 1.
+Record 0192: Employee Petra Marchetti (ID EMP-7168) works in the Materials Planning division. Badge color: violet. Preferred parking level: 2.
+Record 0193: Employee Nkechi Ackerman (ID EMP-7205) works in the Field Operations division. Badge color: rust. Preferred parking level: 3.
+Record 0194: Employee Yusuf Okoye (ID EMP-7242) works in the Quality Assurance division. Badge color: teal. Preferred parking level: 4.
+Record 0195: Employee Selin Blackwood (ID EMP-7279) works in the Logistics division. Badge color: slate. Preferred parking level: 5.
+Record 0196: Employee Idris Castellano (ID EMP-7316) works in the Regional Sales division. Badge color: cobalt. Preferred parking level: 6.
+Record 0197: Employee Talia Delacroix (ID EMP-7353) works in the Network Engineering division. Badge color: charcoal. Preferred parking level: 1.
+Record 0198: Employee Priya Haugland (ID EMP-7390) works in the Data Platform division. Badge color: amber. Preferred parking level: 2.
+Record 0199: Employee Ines Nakashima (ID EMP-7427) works in the Payroll Services division. Badge color: olive. Preferred parking level: 3.
+Record 0200: Employee Declan Whitlock (ID EMP-7464) works in the Underwriting division. Badge color: ivory. Preferred parking level: 4.
+Record 0201: Employee Reza Suleiman (ID EMP-7501) works in the Facilities division. Badge color: crimson. Preferred parking level: 5.
+Record 0202: Employee Marisol Tremblay (ID EMP-7538) works in the Claims Processing division. Badge color: violet. Preferred parking level: 6.
+Record 0203: Employee Amara Vantongeren (ID EMP-7575) works in the Customer Success division. Badge color: rust. Preferred parking level: 1.
+Record 0204: Employee Omar Farrukh (ID EMP-7612) works in the Materials Planning division. Badge color: teal. Preferred parking level: 2.
+Record 0205: Employee Lucho Iwata (ID EMP-7649) works in the Field Operations division. Badge color: slate. Preferred parking level: 3.
+Record 0206: Employee Mateus Osgood (ID EMP-7686) works in the Quality Assurance division. Badge color: cobalt. Preferred parking level: 4.
+Record 0207: Employee Nadia Corrigan (ID EMP-7723) works in the Logistics division. Badge color: charcoal. Preferred parking level: 5.
+Record 0208: Employee Bartek Holloway (ID EMP-7760) works in the Regional Sales division. Badge color: amber. Preferred parking level: 6.
+Record 0209: Employee Wren Vasquez (ID EMP-7797) works in the Network Engineering division. Badge color: olive. Preferred parking level: 1.
+Record 0210: Employee Ewan Brannigan (ID EMP-7834) works in the Data Platform division. Badge color: ivory. Preferred parking level: 2.
+Record 0211: Employee Callum Espinoza (ID EMP-7871) works in the Payroll Services division. Badge color: crimson. Preferred parking level: 3.
+Record 0212: Employee Rowan Ferris (ID EMP-7908) works in the Underwriting division. Badge color: violet. Preferred parking level: 4.
+Record 0213: Employee Marcelline Amundsen (ID EMP-7945) works in the Facilities division. Badge color: rust. Preferred parking level: 5.
+Record 0214: Employee Sindri Petrosyan (ID EMP-7982) works in the Claims Processing division. Badge color: teal. Preferred parking level: 6.
+Record 0215: Employee Dante Vukovic (ID EMP-8019) works in the Customer Success division. Badge color: slate. Preferred parking level: 1.
+Record 0216: Employee Kenji Mbeki (ID EMP-8056) works in the Materials Planning division. Badge color: cobalt. Preferred parking level: 2.
+Record 0217: Employee Zara Marchetti (ID EMP-8093) works in the Field Operations division. Badge color: charcoal. Preferred parking level: 3.
+Record 0218: Employee Anouk Ackerman (ID EMP-8130) works in the Quality Assurance division. Badge color: amber. Preferred parking level: 4.
+Record 0219: Employee Ondine Okoye (ID EMP-8167) works in the Logistics division. Badge color: olive. Preferred parking level: 5.
+Record 0220: Employee Tobias Blackwood (ID EMP-8204) works in the Regional Sales division. Badge color: ivory. Preferred parking level: 6.

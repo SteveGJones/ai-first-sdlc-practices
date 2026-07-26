@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "family": "opencode-free-tier",
+  "matches": ["-free", "deepseek", "nemotron"],
+  "context_tokens": 128000,
+  "pricing_ref": "opencode-free-tier",
+  "provenance": "Coarse public prior for opencode's free-tier models (e.g. deepseek-v4-flash-free, nemotron-3-ultra-free; cost:0 per `opencode models`), k=3 pseudo-observations only. Not audition-derived; humble, intentionally below the paid mid-tier families given free-tier serving constraints, pending real assessment data. These are the wave-0 calibration models (§2.4) — used to floor scores and re-estimate paid waves before any paid token is spent.",
+  "dimensions": {
+    "code-gen": 0.45,
+    "bug-fix": 0.42,
+    "code-review": 0.42,
+    "refactor": 0.4,
+    "reasoning": 0.45,
+    "research": 0.4,
+    "long-context": 0.45,
+    "instruction-format": 0.45,
+    "tool-use": 0.4
+  },
+  "flags": []
+}

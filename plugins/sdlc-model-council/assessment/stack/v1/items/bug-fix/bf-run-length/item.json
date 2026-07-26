@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "bf-run-length",
+  "dimension": "bug-fix",
+  "version": 1,
+  "difficulty": "easy",
+  "timeout_s": 90,
+  "min_context_tokens": 350,
+  "est_prompt_tokens": 320,
+  "est_output_tokens": 160,
+  "answer_contract": "file-blocks",
+  "scorer": {
+    "type": "hidden-tests"
+  }
+}

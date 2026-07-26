@@ -1,0 +1,16 @@
+{
+  "required_keys": ["incident_id", "severity", "affected_systems", "resolved", "downtime_minutes"],
+  "types": {
+    "incident_id": "string",
+    "severity": "string",
+    "affected_systems": "array",
+    "resolved": "boolean",
+    "downtime_minutes": "integer"
+  },
+  "enums": {
+    "severity": ["low", "medium", "high", "critical"]
+  },
+  "array_min_len": {
+    "affected_systems": 1
+  }
+}

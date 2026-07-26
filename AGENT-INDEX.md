@@ -1,8 +1,8 @@
 # Agent Catalog Index
 *Generated: 2026-07-23T17:21:48.233214 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
-*Total catalog entries: 158 | 87 in the `agents/` source directory | 71 published in plugins (across 19 plugins; 17 ship agents)*
+*Total catalog entries: 160 | 87 in the `agents/` source directory | 73 published in plugins (across 20 plugins; 18 ship agents)*
 
-> **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (71 agents packaged into the 19 published plugins; 17 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
+> **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (73 agents packaged into the 20 published plugins; 18 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
 
 > **SDLC method bundles — `sdlc-programme` v0.1.0 and `sdlc-assured` v0.2.0 are skill+validator bundles by design and ship 0 agents.** They are not absent from the catalogue because they are unfinished; they are absent because they overlay the universal constitution with structured SDLC delivery methodology (phase gates for Programme; bidirectional traceability + DDD decomposition + KB-for-code for Assured) rather than introducing new specialist agent roles. The value is in their skills (5 for Programme, 8 for Assured), validators, and constitution articles. See [docs/METHODS-GUIDE.md](docs/METHODS-GUIDE.md) for when to use each method, and the bundle READMEs ([sdlc-programme](plugins/sdlc-programme/README.md), [sdlc-assured](plugins/sdlc-assured/README.md)) for skill catalogues and Getting Started walkthroughs.
 
@@ -616,6 +616,18 @@
 - **Path**: `plugins/sdlc-lang-swift/agents/language-swift-expert.md`
 - **Description**: Expert in the Swift language (Swift 6.2) — strict concurrency (async/await, actors, Sendable, Swift 6.2 approachable concurrency), value semantics & noncopyable types, typed throws, optionals/safety, ...
 - **Keywords**: api, architecture, design, javascript, python, quality, test, testing
+
+### Plugin:Sdlc Model Council (2 agents)
+
+#### `council-judge`
+- **Path**: `plugins/sdlc-model-council/agents/council-judge.md`
+- **Description**: Synthesises a cross-model fan-out into one attributed verdict for the Diff+Synthesis play — reads the anonymised (blind-labelled) response bundle from disk and returns Convergent / Divergent(attributed) / Adjudication / Confidence / Baseline-delta...
+- **Keywords**: claude, review, synthesis
+
+#### `delegation-runner`
+- **Path**: `plugins/sdlc-model-council/agents/delegation-runner.md`
+- **Description**: Delegates a scoped sub-problem to an external agentic CLI backend (`codex` — OpenAI/GPT, `agy` — Antigravity/Gemini, and any future backend registered as a one-directory adapter under scripts/adapters...
+- **Keywords**: auth, gpt, react
 
 ### Plugin:Sdlc Team Ai (14 agents)
 
