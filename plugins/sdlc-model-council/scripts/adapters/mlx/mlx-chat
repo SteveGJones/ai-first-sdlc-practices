@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""mlx-chat — the mlx adapter's turn client (Path B).
+
+A thin OpenAI-compatible chat client for a local ``mlx_lm.server``. It is the
+adapter's ``binary`` (see adapter.json); ``adapter.sh`` invokes it once per turn
+under the engine's turn-supervisor. The whole point of Path B is that it sends
+**only the delegated item prompt as a single user message** — NO agentic system
+prompt — because OpenCode's tool-schema-heavy system prompt induces small local
+models to escape quotes in reproduced code (see retrospectives/232). It also
+always sends an explicit ``stop`` sequence, because mlx_lm.server (>=0.31.3) can
+leak the chat stop token (e.g. Qwen's ``<|im_end|>``) into message content
+(ml-explore/mlx-lm #973/#875) — passing ``stop`` makes the server trim it.
+
+Statelessness / resume: mlx_lm.server keeps no server-side session, so on a
+resume turn (``--turn N`` > 1) the client reconstructs the conversation from the
+engine's own per-turn files under ``--history-dir`` (turns 1..N-1:
+``turn-NNN.prompt.txt`` -> user, ``turn-NNN.last-message.txt`` -> assistant) and
+replays the full message array.
+
+Modes:
+  mlx-chat --version
+  mlx-chat --probe [--base-url URL]
+  mlx-chat [--model M] [--base-url URL] [--stop TOK ...] [--history-dir DIR]
+           [--turn N] [--max-tokens N] [--temperature T] -o OUTFILE   (prompt on stdin)
+
+Stdlib only. Answer is written to OUTFILE (never stdout, so the engine's
+events.jsonl stays clean); a one-line status is printed to stdout for the log.
+Exit 0 on success (including a legitimately empty answer -> engine reports
+NO_OUTPUT), non-zero with a stderr reason on failure.
+"""
+import argparse
+import json
+import os
+import sys
+from urllib import request as urlrequest
+from urllib.error import HTTPError, URLError
+
+VERSION = "mlx-chat 1.0.0"
+DEFAULT_BASE_URL = "http://127.0.0.1:8080/v1"
+DEFAULT_STOP = ["<|im_end|>"]
+
+
+def _base_url(cli_val):
+    return (cli_val or os.environ.get("MLX_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
+
+
+def _probe(base_url):
+    try:
+        with urlrequest.urlopen(base_url + "/models", timeout=5) as resp:
+            return resp.status == 200
+    except (HTTPError, URLError, OSError):
+        return False
+
+
+def _read_turn_file(path):
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return fh.read()
+    except OSError:
+        return ""
+
+
+def _reconstruct_history(history_dir, turn):
+    """Replay turns 1..turn-1 from the engine's per-turn files as messages."""
+    messages = []
+    if not history_dir or turn <= 1:
+        return messages
+    for i in range(1, turn):
+        tn = "turn-%03d" % i
+        user = _read_turn_file(os.path.join(history_dir, tn + ".prompt.txt"))
+        if user.strip():
+            messages.append({"role": "user", "content": user})
+        assistant = _read_turn_file(os.path.join(history_dir, tn + ".last-message.txt"))
+        if assistant.strip():
+            messages.append({"role": "assistant", "content": assistant})
+    return messages
+
+
+def _chat(args):
+    base_url = _base_url(args.base_url)
+    prompt = sys.stdin.read()
+
+    messages = _reconstruct_history(args.history_dir, args.turn)
+    messages.append({"role": "user", "content": prompt})
+
+    stop = args.stop or list(DEFAULT_STOP)
+    max_tokens = args.max_tokens or int(os.environ.get("MLX_MAX_TOKENS", "2048"))
+    temperature = (
+        args.temperature
+        if args.temperature is not None
+        else float(os.environ.get("MLX_TEMPERATURE", "0"))
+    )
+
+    payload = {
+        "model": args.model or "local",
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "stop": stop,
+    }
+    body = json.dumps(payload).encode("utf-8")
+    req = urlrequest.Request(
+        base_url + "/chat/completions",
+        data=body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urlrequest.urlopen(req, timeout=1800) as resp:
+            data = json.loads(resp.read())
+    except HTTPError as exc:
+        detail = (
+            exc.read().decode("utf-8", "replace")[:500] if hasattr(exc, "read") else ""
+        )
+        sys.stderr.write(
+            "mlx-chat: server HTTP %s at %s: %s\n" % (exc.code, base_url, detail)
+        )
+        return 1
+    except URLError as exc:
+        sys.stderr.write(
+            "mlx-chat: cannot reach mlx_lm.server at %s (%s). "
+            "Start it: uv run mlx_lm.server --model <hf-id> --port 8080\n"
+            % (base_url, exc)
+        )
+        return 1
+    except (ValueError, OSError) as exc:
+        sys.stderr.write("mlx-chat: bad response from %s: %s\n" % (base_url, exc))
+        return 1
+
+    try:
+        content = data["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError):
+        content = ""
+    if content is None:
+        content = ""
+
+    # Write the answer to the -o file (never stdout). An empty answer writes an
+    # empty file on purpose — the engine's is_blank_file check turns that into
+    # NO_OUTPUT rather than a false SUCCESS.
+    try:
+        with open(args.output, "w", encoding="utf-8") as fh:
+            fh.write(content)
+    except OSError as exc:
+        sys.stderr.write(
+            "mlx-chat: cannot write answer file %s: %s\n" % (args.output, exc)
+        )
+        return 1
+
+    usage = data.get("usage", {}) if isinstance(data, dict) else {}
+    print(
+        "mlx-chat: ok model=%s in=%s out=%s chars=%d"
+        % (
+            payload["model"],
+            usage.get("prompt_tokens", "?"),
+            usage.get("completion_tokens", "?"),
+            len(content),
+        )
+    )
+    return 0
+
+
+def main(argv):
+    ap = argparse.ArgumentParser(add_help=True)
+    ap.add_argument("--version", action="store_true")
+    ap.add_argument("--probe", action="store_true")
+    ap.add_argument("--model", default="")
+    ap.add_argument("--base-url", default="")
+    ap.add_argument("--stop", action="append", default=None)
+    ap.add_argument("--history-dir", default="")
+    ap.add_argument("--turn", type=int, default=1)
+    ap.add_argument("--max-tokens", type=int, default=0)
+    ap.add_argument("--temperature", type=float, default=None)
+    ap.add_argument("-o", "--output", default="")
+    args = ap.parse_args(argv)
+
+    if args.version:
+        print(VERSION)
+        return 0
+    if args.probe:
+        base_url = _base_url(args.base_url)
+        if _probe(base_url):
+            return 0
+        sys.stderr.write("mlx-chat: mlx_lm.server not reachable at %s\n" % base_url)
+        return 1
+    if not args.output:
+        sys.stderr.write("mlx-chat: -o OUTFILE is required for a turn\n")
+        return 2
+    return _chat(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

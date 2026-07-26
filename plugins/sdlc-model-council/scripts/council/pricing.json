@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "asof": "2026-07-25",
-  "provenance": "Coarse public per-Mtok rate estimates for budgeting/estimation only, hand-entered from published vendor pricing pages as of 2026-07-25. NOT exact, NOT contractual, NOT a substitute for metered/exact usage from usage.py. Refresh periodically; treat as order-of-magnitude guidance for estimate.py and pre-dispatch budget gates only. The 'unknown' family is a zero-rated FALLBACK for addresses that resolved to no known pricing family (distinct from 'opencode-free-tier', which is a genuinely free tier) — its 0/0 rates mean 'no cost data', not 'no cost'; callers should treat any unknown-family estimate as untrustworthy and surface it to the operator rather than budget against it silently.",
+  "provenance": "Coarse public per-Mtok rate estimates for budgeting/estimation only, hand-entered from published vendor pricing pages as of 2026-07-25. NOT exact, NOT contractual, NOT a substitute for metered/exact usage from usage.py. Refresh periodically; treat as order-of-magnitude guidance for estimate.py and pre-dispatch budget gates only. The 'unknown' family is a zero-rated FALLBACK for addresses that resolved to no known pricing family (distinct from 'opencode-free-tier', which is a genuinely free tier) \u2014 its 0/0 rates mean 'no cost data', not 'no cost'; callers should treat any unknown-family estimate as untrustworthy and surface it to the operator rather than budget against it silently.",
   "families": {
     "openai-gpt5": {
       "input_per_mtok": 5.0,
@@ -29,6 +29,11 @@
       "free": false
     },
     "opencode-free-tier": {
+      "input_per_mtok": 0.0,
+      "output_per_mtok": 0.0,
+      "free": true
+    },
+    "mlx-local": {
       "input_per_mtok": 0.0,
       "output_per_mtok": 0.0,
       "free": true
