@@ -9,6 +9,19 @@
 
 ---
 
+## Motivation
+
+Per-vendor delegation plugins already wrap a single external CLI well (the official
+`codex-plugin-cc`, the community `antigravity` plugin). A thin "delegate one task to
+one CLI" wrapper adds little over those. The defensible, unmet need — and the reason
+this feature exists — is **cross-model orchestration**: reasoning about *which*
+models, in *what combination*, for *what work*, and deploying a decorrelated panel
+so blind spots don't compound. That is the one thing no per-vendor plugin does. The
+feature therefore evolved from a delegation orchestrator into **`sdlc-model-council`**:
+assess the locally-reachable models against a standardized problem stack, cast them
+into a project roster, and run cross-model fan-out plays — all as choreography above
+the unchanged adapter engine, and instrumented to prove or disprove its own value.
+
 ## Problem Statement
 
 A Claude Code session cannot currently hand a scoped sub-problem to a *peer agentic CLI* — OpenAI's `codex` or Antigravity's `agy` — and fold the result back in. The only way to use those tools today is to leave the session and drive them by hand. That means:
@@ -95,6 +108,26 @@ The wrapper is deliberately **Haiku**: orchestration is cheap; the expensive rea
 **Dependencies:** `codex` and `agy` installed & authenticated; existing `command-delegation` conventions as the pattern reference.
 
 ---
+
+## Success Criteria
+
+The feature succeeds when a Claude Code session can, over locally-installed peer
+agentic CLIs and without leaving the session:
+
+- **Assess** the reachable models against a standardized, original, judge-free
+  problem stack and produce a small-sample-honest **roster** (per-dimension grades
+  with confidence, roles, cost/latency) plus a **diversity map**.
+- **Run a cross-model fan-out play** (v1: Diff+Synthesis) that casts a decorrelated
+  panel, fans the same task out, and returns one **attributed** synthesis — with a
+  **baseline delta** stating whether the panel materially beat the single best model
+  (the measurability spine; if it rarely does, the honest fallback is roster-driven
+  single-model routing).
+- Do all of the above as choreography **above the unchanged adapter engine**, with a
+  **never-surprise-spend** cost discipline (estimate gate + live budget hard-stop),
+  and prove it on a real decision in one gated live run.
+- Ship with mock-only, no-token test coverage green (assessment waves, budget stop,
+  resume, timeout rows, scorer/roster/diversity goldens, and the play's blind-label
+  bias containment), plus the 313-test substrate regression suite untouched.
 
 ## Acceptance Criteria
 

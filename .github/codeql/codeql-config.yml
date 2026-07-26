@@ -1,0 +1,15 @@
+name: "AI-First SDLC CodeQL config"
+
+# Exclude deliberately-buggy assessment fixtures from CodeQL scanning.
+#
+# The sdlc-model-council plugin ships an assessment problem stack under
+# plugins/*/assessment/ — ORIGINAL code carrying PLANTED defects (mutable
+# default arguments, off-by-one loops, dict-mutation-during-iteration, etc.).
+# These are the exact bugs models are graded on finding in the code-review
+# dimension; they are test content, never shipped application code. CodeQL
+# correctly flags them (e.g. py/modification-of-default-value), but that is a
+# false positive on intentional fixtures — the same reason the repo's
+# technical-debt scanner skips plugins/. Scanning of all real application and
+# tooling code is unaffected.
+paths-ignore:
+  - "plugins/*/assessment/**"
