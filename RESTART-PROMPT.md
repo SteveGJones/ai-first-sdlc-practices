@@ -1,79 +1,69 @@
-# RESTART PROMPT — `sdlc-model-council` v1 build (#232)
+# RESTART PROMPT — `sdlc-model-council`: add a local **MLX** backend (#232 follow-on)
 
-Paste this into a fresh session to resume. It is self-contained; read the three specs it points to before writing code.
+Paste into a fresh session to resume. Self-contained; read the pointers before writing code.
 
 ---
 
 ## Mission (one line)
 
-Build **`sdlc-model-council`** — a Claude Code plugin that onboards the AI models reachable on this machine (via `codex`, `agy`, `opencode` CLIs, which are *gateways* to 19+ models) by **assessing them against a standardized problem stack**, casting them into roles from the results (a **roster**), and running **cross-model fan-out plays** (diff+synthesis, consensus, best-of-N, generator↔verifier) chosen **per project** from that roster.
+Add a **local MLX backend adapter** to `sdlc-model-council` so Apple-Silicon-hosted
+LLMs (addresses `mlx:<model>`) join the same **roster** and **fan-out plays** as the
+hosted fleet (codex, agy, opencode) — turning the council into a **local-vs-hosted
+comparison**: does a $0, no-egress, fully-private local model grade well enough on the
+assessment to earn roster roles (e.g. a privacy-preserving reviewer) against the paid
+hosted models? That's the payoff — prove or disprove it with real numbers.
 
-This is a **pivot**, made after an honest self-assessment: as a "delegate one task to one CLI" tool we were near-needless (the official `codex-plugin-cc` and community `antigravity` plugins already wrap their vendors better). The defensible product is **cross-model orchestration** — the one thing no per-vendor plugin does. The whole design is instrumented to **prove or disprove its own value** (see "measurability" below).
+## Where we are (as of 2026-07-25)
 
-## Where we are
-
-- **Repo:** `/Users/stevejones/Documents/Development/ai-first-sdlc-practices` · **Branch:** `feature/external-agent-delegation` · **Issue:** #232 · never merge to `main`; feature branches only.
-- **Committed & pushed:** the full design trail + a working substrate. Latest commit is the model-council architecture design.
-- **The substrate exists and is green:** `plugins/sdlc-simple-orchestration/` — the adapter engine (`extdel.sh` + `turn-supervisor.pl`), unified return contract, `list-backends`, graded postures, and **3 working adapters** (codex, agy, opencode). **313 tests pass**, zero technical debt.
-  - Run them: `cd <repo>; P=plugins/sdlc-simple-orchestration; for t in test-extdel-codex-resume test-extdel-agy-resume test-extdel-opencode-resume test-turn-supervisor test-adapter-descriptors test-list-backends; do bash $P/tests/$t.sh 2>&1 | tail -1; done` (codex 67, agy 104, opencode 69, supervisor 14, adapter-descriptors 28, list-backends 31). The agy suite is slow (~2 min) — run it in the background.
-- **Nothing of the council layer is built yet.** We are at migration **stage 0**, about to start **stage 1** (the rename).
+- **model-council v1 is BUILT and shipped in PR #233** (`feature/external-agent-delegation` → `main`), **CI green, mergeState CLEAN, mergeable**. 9 commits; 681 tests (368 council + 313 substrate). Check whether #233 has MERGED:
+  - If merged → branch the MLX work off `main` (`git checkout main && git pull && git checkout -b feature/model-council-mlx`).
+  - If not merged → either wait, or branch off `feature/external-agent-delegation` (the MLX adapter is additive — one new directory — so it rebases cleanly).
+- **What v1 ships (build ON this, don't rebuild):** the adapter engine (`extdel.sh` + `turn-supervisor.pl`) with 3 adapters (codex, agy, opencode); the council layer under `plugins/sdlc-model-council/scripts/council/` — `assess.sh` (assessment: estimate gate → free wave-0 → paid waves w/ budget hard-stop + resume + timeout), `roster.py`/`diversity.py`/`cast.py` (arithmetic), 4 scorers, `play.sh` (Diff+Synthesis spine) + `council-judge` agent; 5 commands; the `council-policy` skill; priors + pricing.
+- **The whole point of the adapter architecture is THIS task:** "adding a backend = one directory, zero engine edits." MLX is the third-party proof of it (opencode was the first live proof). If you touch `extdel.sh` or `turn-supervisor.pl`, you're doing it wrong.
 
 ## Read these first (in order)
 
-1. `docs/superpowers/specs/2026-07-25-sdlc-model-council-charter.md` — vision + **locked decisions**.
-2. `docs/superpowers/specs/2026-07-25-sdlc-model-council-design.md` — **THE ARCHITECTURE; authoritative for the build.** Assessment harness, scorer ABI, roster+diversity math, the 4 plays, policy+commission, cost model, reuse/rename/new map, **migration order**, v1 slice, testability, risks.
-3. `docs/superpowers/specs/2026-07-24-sdlc-simple-orchestration-design.md` — the **substrate** you build ON (engine, §4.2 contract, adapters, `list-backends`). Kept unchanged.
-4. `retrospectives/232-external-agent-delegation.md` — full history, decision log, and the two dogfood findings (DF1 validated; DF4 = OpenCode hardening follow-ups).
+1. `plugins/sdlc-model-council/docs/ADAPTER-AUTHORING.md` — **the authoritative how-to** for a new adapter (the ABI, the one-directory rule, the mock-CLI test pattern).
+2. `plugins/sdlc-model-council/scripts/adapters/opencode/{adapter.json,adapter.sh}` — the **best template**: config-driven, non-native answer file (extracts the answer itself before the engine reads it), id-capture from a stream, binary off the default PATH. MLX will resemble it.
+3. `docs/superpowers/specs/2026-07-24-sdlc-simple-orchestration-design.md` §2 (adapter interface/ABI), §4 (registry + `list-backends`).
+4. `retrospectives/232-external-agent-delegation.md` — the full v1 history + the "Open follow-ups (from the live slice)" section that names this MLX task, plus the hard-won lessons below.
 
-## Locked decisions (do not relitigate)
+## Ground-truth facts (probed 2026-07-25 — don't re-derive)
 
-- **Name:** `sdlc-model-council` (rename from `sdlc-simple-orchestration`).
-- **v1 patterns:** all four plays designed; **v1 slice builds only Diff+Synthesis** end-to-end first.
-- **Rating source:** static priors + optional live audition (priors = k=3 pseudo-observations shrunk toward by audition evidence; "skip audition" = priors only, n=0). Adaptive learning is a fast-follow.
-- **Policy/roster live in `.sdlc/model-council/`** (project config, not KB).
-- **Council arithmetic = Python 3 stdlib only** (no pip/venv); choreography = bash 3.2.
-- **codex Mode B (app-server per-action approval) is CUT** — superseded by this pivot (banner in its spec). Do not build it.
+- **Machine:** arm64 (Apple Silicon) — MLX runs natively.
+- **MLX LLM tooling is `mlx-lm`, and it is NOT pre-installed** (system `python3` has neither `mlx_lm` nor `mlx.core`). It IS installable. **Per the user's Python policy (global `~/.claude/CLAUDE.md`): never global pip — use a project `.venv` via `uv`.** So: `uv venv --seed` (or reuse a repo `.venv`) then `uv pip install mlx-lm`, and invoke via `uv run mlx_lm.generate ...` or the venv's console scripts. Models come from `mlx-community/*` on HuggingFace (first run downloads weights — slow, several GB).
+- **Two invocation modes:** (a) one-shot `mlx_lm.generate --model <hf-id> --prompt <text> [--max-tokens N]` → prints generated text to stdout (no session); (b) `mlx_lm.server` → an **OpenAI-compatible HTTP** server on localhost (has sessions/streaming). The council's assessment items and Diff+Synthesis are **single-turn**, so **start with one-shot** — simpler, no server lifecycle. (A server mode is a possible `kind:http-server` fast-follow, out of scope.)
+- **`jack-tar-mlx` plugin exists but is IMAGES (mflux), not LLM** — reference only for MLX/venv patterns, not reusable for text.
+- **Adapter grammar:** `^[a-z][a-z0-9]*` — `mlx` is valid. Address form `mlx:<model>` (e.g. `mlx:mlx-community/Qwen2.5-Coder-7B-Instruct-4bit`); slashes are fine in the model part per the address grammar `[A-Za-z0-9./_-]+`.
+- **Engine timeouts + submit-then-poll:** local inference (esp. first load + long prompts) is SLOW — use generous item `timeout_s` and rely on the engine's perl-alarm timeout + `status --wait-s` polling (the Bash tool caps at 600s → `assess.sh` already backgrounds/polls).
 
-## Migration order (design §7 — tests green at each ⭐ step)
+## The adapter to build (the crux)
 
-- ⭐**1. Rename:** `git mv plugins/sdlc-simple-orchestration plugins/sdlc-model-council`; sed state dir `tmp/simple-orchestration → tmp/model-council` and `sdlc-simple-orchestration → sdlc-model-council`; update `plugin.json` name/desc. Delete the stale `known_engine_limitation` note in `scripts/adapters/opencode/adapter.json` (validate_handle is already generalized). **All 313 tests green from the new path.** (This mirrors the v0.1.0 rename; do it carefully — BSD `sed -i ''`, and `grep -rl ... | while read f; do sed -i '' ... "$f"; done`, NOT `xargs -0`.)
-- ⭐**2. Council scripts + problem stack + unit tests** (no commands yet — everything runnable as `bash`/`python3` directly): `scripts/council/*.py` (schedule, extract_answer, usage, estimate, roster, diversity, cast, complexity), `scripts/council/score/*.py` (the scorer ABI), `priors/*.json`, `pricing.json`, `assessment/stack/v1/` (9 objective items for the slice), and the scorer/roster/diversity **golden unit tests** with the mock answer-bank personas.
-- ⭐**3. Mock-fleet assessment end-to-end** (`assess.sh` over mock adapters): waves, cap-5 concurrency, budget hard-stop, resume, timeout rows.
-- **4. Commands + skill + agents:** `commands/{council-commission,council-assess,council-roster,council-run,council-estimate}.md`, reframe `orchestration-policy → council-policy` skill, add `agents/council-judge.md` (Sonnet, blind-label synthesis).
-- **5. Registration:** update `.claude-plugin/marketplace.json`, `CLAUDE.md` plugin table, `AGENT-INDEX.md` (retarget `delegation-runner`, add `council-judge`).
-- **6. ONE gated live slice:** `COUNCIL_LIVE=1` (free opencode models = $0 by default; paid requires explicit budget). Run the assessment → roster → **Diff+Synthesis** on a real decision (reviewing this feature's own PR). Record results in the retrospective.
-- **7. Validation + release:** `python tools/validation/local-validation.py --pre-push`, `check-broken-references.py`, retrospective, PR.
+`scripts/adapters/mlx/{adapter.json, adapter.sh}` implementing the ABI (see ADAPTER-AUTHORING + opencode as template). Decisions to make up front:
 
-## v1 vertical slice (what "done" means for the first milestone)
+- **`kind: direct-cli`**, `binary` = however you invoke mlx-lm from the venv (probe: a wrapper, or `uv run` — resolve a stable, PATH-independent invocation like opencode's `~/.opencode/bin` handling; MLX has no fixed binary, so `adapter_detect` likely checks `python -c "import mlx_lm"` in the venv / a resolvable `mlx_lm.generate`).
+- **`session_resume: false`** (one-shot). The assessment + plays are single-turn, so turn-1-only is fine. Make turn-N (resume) a clean `ERROR` (like the "held mode" adapters do), NOT a hang. Confirm the engine tolerates a `session_resume:false` adapter for the single-turn assessment/play paths (it should — assessment never resumes; `play.sh` fan-out is one turn per member).
+- **`postures`:** local generation gives the model **no disk/network access at all** — it just emits text. So `read-only` is trivially `hard` (there's nothing to gate). No `--gemini_dir`/`OPENCODE_CONFIG`-style graded config needed; document that plainly in the descriptor `notes`.
+- **answer extraction:** mlx_lm.generate prints the completion to stdout (possibly with a stats/prompt echo header/footer). The adapter must isolate the actual generated text into `turn-001.last-message.txt` (like opencode's non-native `answer_file` handling — `answer_file_native:false`). Probe the exact stdout shape and strip the framing.
+- **cost/usage:** `$0`, local. Add pricing family **`mlx-local`** (`free:true`) and `scripts/council/priors/mlx-local.json` (matches `["mlx:"]`, humble priors ~0.40–0.55 across dims + a `no-track`/`local` flag — quality is genuinely unknown until audited; that's the investigation). `usage.py` already meters non-cost adapters as estimated/$0 — confirm `mlx` falls through to $0 cleanly (it has no events.jsonl cost; tokens can be estimated from chars, basis "estimated").
 
-9 **objective, judge-free** items (code-review/planted-defects ×3, bug-fix/hidden-tests ×2, long-context/exact-match ×2, instruction-format/format-parse ×2) → a real **roster** over a 5-model cast (`codex:default@medium`, `agy:gemini-3.6-flash-medium`, `agy:gemini-3.1-pro-high`, two free opencode models — **no Claude-family**, so judge-bias machinery isn't yet load-bearing) → the **Diff+Synthesis** play run once, live, on a real decision, producing a Convergent/Divergent/Adjudication/**Baseline-delta** synthesis + a spend line. Everything deterministic-testable via mocks; the ONE live run is gated.
+## Deliverables
 
-## The measurability spine (the point of the whole thing)
+1. `scripts/adapters/mlx/adapter.json` + `adapter.sh` (the adapter; zero engine edits — that's the acceptance test).
+2. `tests/fixtures/mock-bin/mlx` (a mock `mlx_lm.generate`-shaped CLI, no real weights) + `tests/test-extdel-mlx-resume.sh` (mirror `test-extdel-opencode-resume.sh`: start/status/slice/stop over the mock, id/one-shot behavior, `session_resume:false` → ERROR-not-hang). This proves "one directory, zero core edits."
+3. `scripts/council/priors/mlx-local.json` + a `mlx-local` family in `scripts/council/pricing.json` (free).
+4. Registration touch-ups: `list-backends` should detect `mlx` (it enumerates `adapters/*/adapter.json` — free); update `docs/ADAPTER-AUTHORING.md`'s worked-examples list; `AGENT-INDEX`/marketplace unaffected (no new agent).
+5. **The comparison run (gated live, user-authorised):** install 2–3 small MLX coder models (e.g. a Qwen2.5-Coder-7B-4bit, a Llama-3.x-8B-4bit — pick from `mlx-community`), run `assess.sh` over {those MLX models} ∪ {a hosted anchor or two} on the 4 objective dims, and produce a **roster comparing local vs hosted** (grades + $0 cost + latency — local will be slower but free/private). Then a Diff+Synthesis mixing a local + a hosted member. Record in the retrospective: do local models earn roster roles? at what latency? is a local reviewer viable?
 
-Every play keeps the roster's best single model as `baseline_member` in the cast; the synthesis must state whether the panel materially changed the outcome vs. that baseline; `outcomes.jsonl` accumulates. **Pre-committed rule:** if after ~20 real runs the panel helps in <20% of them, the honest product is roster-driven **single-model routing** (`/delegate` auto-pick, already a shipped path) — the fallback is a feature removal, not a rewrite. Build with this in mind; do not oversell fan-out.
+## Hard-won lessons from the v1 build (apply them)
 
-## Ground-truth facts (hard-won by probing — don't re-derive)
-
-- **Fleet:** codex 0.145.0 (GPT-5.x). `agy models` = 11 ids incl. `gemini-3.{1,5,6}-*`, `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, `gpt-oss-120b-medium` — **agy bakes effort into the model id** (no `@effort`). `opencode models` = 7 incl. **6 free (`cost:0`)**. Model address = `adapter:model[@effort]`; `adapter:default` = gateway default.
-- **macOS gotchas:** `setsid`, `timeout`, `gtimeout` are **ABSENT** (engine uses a perl `POSIX::setsid` daemonizer + perl-alarm; don't reintroduce them). `opencode` is at `~/.opencode/bin/opencode`, **off the non-interactive Bash PATH**. `/bin/sh` = bash 3.2 — no assoc arrays, no `${var,,}`.
-- **Cost telemetry:** opencode `--format json` `step_finish` has exact tokens+cost; codex `--json` has tokens; **agy emits none → estimated (chars/4 × pricing, flagged)**. Engine doesn't aggregate — `usage.py` parses per-handle `events.jsonl` (zero engine edits).
-- **Adapters:** codex = `codex exec [resume]`, `-s read-only|workspace-write`, `codex login status` works. agy = per-handle `--gemini_dir` config for **graded permissions** (DF1 fix — read-only that reads, workspace that writes, no blanket yolo); `--print` takes the prompt as its flag VALUE and must be **last**. opencode = `opencode run --dir --format json --session <id> -m <model>`; `sessionID` in every event; postures via `OPENCODE_CONFIG` per-handle permission file.
-- **Sibling plugins installed** (for detection/routing): `codex@openai-codex` and `antigravity@antigravity-for-claude-code` (manifest v2 at `~/.claude/plugins/installed_plugins.json`). `list-backends` already detects them.
-- **Harness:** Bash tool times out at **120 s default / 600 s cap** → the engine uses **submit-then-poll** (`start` returns `RUNNING` immediately; `status --wait-s N` polls). Respect this in council choreography. State lives under `./tmp/...` (gitignored). `validate_handle` is already generalized to any `[a-z][a-z0-9]*` adapter id.
-
-## Working practices (this project's rhythm)
-
-- **Delegation tiers:** you (main) are **Opus 4.8**. Delegate **complex architecture + reviews to Fable** (`model: fable`), **execution to Sonnet**, and the shipped wrapper agents run on **Haiku**. Dispatch via the Agent tool, `run_in_background: true`; verify their output yourself — never trust blind.
-- **Gate every stage on the 313 substrate tests** staying green (they are the behaviour-preserving regression harness).
-- **Adversarial review before commit** on anything security/correctness-sensitive (a Fable code-review caught a BLOCKER + false-SUCCESS bug in `turn-supervisor.pl`; two independent Fable passes each found a distinct defect — review the *fix*, not just the original).
-- **Dogfood:** use the delegation we ship to review our own code — it found real bugs (codex flagged 2 CRITICALs in the OpenCode adapter; agy validated DF1 by producing a real review). This spends real OpenAI/agy quota — the user has authorised it for reviews; free opencode models cost $0.
-- **Zero technical debt:** no TODO/FIXME/commented-out code; `./tmp` not `/tmp`; run `python tools/validation/check-technical-debt.py --threshold 0 <plugin>`.
-- **Commit style:** feature branch only; end commit messages with `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`. Update the retrospective as you go.
-
-## Open follow-ups (parked, not blocking the council build)
-
-- **DF4 — OpenCode adapter hardening** (from the codex+agy dogfood): CRITICAL — `OPENCODE_CONFIG` is *lower* precedence than a target repo's own `opencode.json` (a project config can override our read-only denies → use higher-precedence `OPENCODE_CONFIG_CONTENT`); CRITICAL — project `.opencode/plugins` auto-load = code exec under read-only; plus HIGH (unspecified tools default-allow → `"*":"deny"`+allowlist; `bash:allow` bypasses webfetch via curl) and agy MEDIUMs (`jq -rs` fails on any non-JSON line; missing `local` in a *sourced* adapter pollutes the engine). Verify each against our actual `./tmp` state-dir layout (some HIGHs may be false positives). Address when the OpenCode model matters to a live council run.
+- **Family resolution MUST go through `priors.py`** (address→family via `matches` substrings), NOT substring-match against pricing keys. `estimate.py` AND `usage.py` were both bitten by this (paid models priced at $0 → budget hard-stop silently ineffective). Both now take `--priors-dir`. Your `mlx-local` priors need a `matches:["mlx:"]` entry so `mlx:...` resolves. (For MLX it's $0 anyway, but keep it consistent.)
+- **The cost model is metered-API-equivalent.** MLX is genuinely $0 marginal (local) — a real, not just proxy, zero. That's the comparison's headline (privacy + $0 vs paid hosted).
+- **`assess.sh` bash gotchas already fixed** (don't reintroduce): `IFS=$'\t' read` collapses empty middle TSV fields (use `awk -F'\t'`); `python3 -c` one-liners need `import sys`; the empty-`status` poll guard; resume back-fills `SPENT`. If you extend assess.sh, respect these.
+- **MLX is slow** → the live comparison will take real wall-clock (weight load + inference). Background `assess.sh` and poll; set item `timeout_s` generously for the MLX run (a per-model timeout override on assess.sh may be worth adding — currently timeouts come from item.json).
+- **Gate every step on the 313 substrate + the council suites staying green.** Adapter tests use the mock-CLI pattern (no real weights, no tokens). Zero technical debt (`./tmp` not `/tmp`; no TODO/FIXME). Feature branch only; never commit to `main`. Commit-message trailer: `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
+- **Dogfood:** once the MLX adapter works, run a Diff+Synthesis with a local MLX reviewer in the panel on our own code — the ultimate "is a private local model good enough" test.
 
 ## Immediate next step
 
-Start migration **stage 1** (the rename), gated by the 313 tests. Then stage 2 (council scripts + the 9-item stack + scorer/roster golden unit tests). Build in gated stages, delegate execution to Sonnet with the 313-test gate enforced, verify each stage yourself, and check in between stages.
+Confirm #233's merge state and branch accordingly. Then: probe `mlx-lm` one-shot output shape in a `.venv` (`uv pip install mlx-lm`; run `mlx_lm.generate` on a tiny model), author the `mlx` adapter + mock + test against that shape (gated by the 313 substrate tests), wire the `mlx-local` priors/pricing, and only then do the gated live local-vs-hosted comparison. Verify each stage yourself; delegate mechanical execution to Sonnet with the test gate enforced.
