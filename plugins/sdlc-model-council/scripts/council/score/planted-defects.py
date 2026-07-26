@@ -22,6 +22,7 @@ import os
 import re
 import sys
 
+
 def _load_extract_answer():
     """Import the sibling extract_answer module (its parent dir is not on
     sys.path when this scorer runs from the score/ subdirectory)."""
@@ -30,6 +31,7 @@ def _load_extract_answer():
         sys.path.insert(0, council_dir)
     import extract_answer
     return extract_answer
+
 
 _DEFAULT_LINE_WINDOW = 3
 _DEFAULT_MAX_FINDINGS_COUNTED = 8

@@ -19,6 +19,7 @@ import json
 import os
 import sys
 
+
 def _load_extract_answer():
     """Import the sibling extract_answer module (its parent dir is not on
     sys.path when this scorer runs from the score/ subdirectory)."""
