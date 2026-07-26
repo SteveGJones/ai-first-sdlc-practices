@@ -1,6 +1,6 @@
 # Retrospective: External Agent Delegation (codex + agy)
 
-**Branch:** `feature/external-agent-delegation`
+**Branch:** `feature/external-agent-delegation` — continued on `feature/model-council-mlx` (local-MLX backend follow-on, PR #234; see the 2026-07-26 entries + proposal `docs/feature-proposals/234-model-council-mlx.md`)
 **Date:** 2026-07-23 (started)
 **Duration:** In progress
 **Tracking Issue:** #232
