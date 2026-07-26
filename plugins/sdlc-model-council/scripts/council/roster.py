@@ -139,17 +139,22 @@ def _roles(dims, review_precision, free, mean_cost, all_dims):
     return sorted(set(roles))
 
 
-def build_roster(rows, families, pricing=None, now="1970-01-01T00:00:00Z"):
-    all_dims = sorted({r["dimension"] for r in rows})
+def build_roster(rows, families, pricing=None, now="1970-01-01T00:00:00Z",
+                 extra_models=None, extra_dims=None):
+    # extra_models / extra_dims let a skip-audition commission (design §5.2 step
+    # 4) render a priors-only roster: models with no observation rows appear
+    # with n=0 → posterior=prior, all provisional, across the requested dims.
+    all_dims = sorted({r["dimension"] for r in rows} | set(extra_dims or []))
     by_model = {}
     for row in rows:
         if row.get("status") not in OBSERVATION_STATUSES:
             continue
         by_model.setdefault(row["model"], []).append(row)
 
+    all_models = sorted(set(by_model) | set(extra_models or []))
     models_out = []
-    for address in sorted(by_model):
-        model_rows = by_model[address]
+    for address in all_models:
+        model_rows = by_model.get(address, [])
         family = priors_mod.resolve_family(address, families=families)
         fam_desc = families.get(family, {})
         pricing_ref = fam_desc.get("pricing_ref", family)
@@ -237,22 +242,35 @@ def render_md(roster):
 
 def _main(argv):
     parser = argparse.ArgumentParser(description="Build the council roster")
-    parser.add_argument("--results", required=True)
+    parser.add_argument("--results",
+                        help="results.jsonl; omit for a priors-only (skip "
+                             "audition) roster built from --models + --dims")
     parser.add_argument("--priors-dir", required=True)
     parser.add_argument("--pricing")
     parser.add_argument("--now", default="1970-01-01T00:00:00Z")
+    parser.add_argument("--models", default="",
+                        help="comma-separated addresses to include even with "
+                             "no observations (priors-only entries)")
+    parser.add_argument("--dims", default="",
+                        help="comma-separated dimensions to render for "
+                             "priors-only models")
     parser.add_argument("--out-json")
     parser.add_argument("--out-md")
     args = parser.parse_args(argv)
 
-    rows = _load_results(args.results)
+    rows = _load_results(args.results) if args.results else []
+    extra_models = [m for m in args.models.split(",") if m]
+    extra_dims = [d for d in args.dims.split(",") if d]
+    if not rows and not extra_models:
+        parser.error("either --results or --models is required")
     families = priors_mod.load_priors(args.priors_dir)
     pricing = None
     if args.pricing:
         with open(args.pricing, encoding="utf-8") as handle:
             pricing = json.load(handle)
 
-    roster = build_roster(rows, families, pricing=pricing, now=args.now)
+    roster = build_roster(rows, families, pricing=pricing, now=args.now,
+                          extra_models=extra_models, extra_dims=extra_dims)
     payload = json.dumps(roster, indent=2, sort_keys=True)
     if args.out_json:
         with open(args.out_json, "w", encoding="utf-8") as handle:

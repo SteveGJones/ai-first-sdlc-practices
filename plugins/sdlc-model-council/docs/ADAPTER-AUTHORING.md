@@ -68,12 +68,12 @@ Field-by-field:
   backends) and `native` (a human-readable description of what actually
   gets passed/written). Never claim `fidelity: hard` for a backend whose
   enforcement is really an allow-list or a denyable config — that's
-  exactly the honesty `list-backends` and the `orchestration-policy`
+  exactly the honesty `list-backends` and the `council-policy`
   skill depend on.
 - **`sibling_plugins`** — advisory only, `[]` is fine if none exists.
   When present, `relationship` must be one of `prefer-for` | `coexist` |
   `superseded-by-us` (lint-checked) — see the routing table in
-  `skills/orchestration-policy/SKILL.md` §3.3 for what each means and how
+  `skills/council-policy/SKILL.md` §3.3 for what each means and how
   it's used; get this value right, since it drives what the policy skill
   tells the caller to prefer.
 - **`notes`** — free text, surfaced to a human reading `adapter.json`

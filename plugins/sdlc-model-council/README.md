@@ -57,7 +57,7 @@ definition — not by claiming superiority on any one vendor's own turf.
 When a sibling vendor plugin is installed and the task shape fits it
 better (reviewing this session's own diff, an adversarial review gate,
 rescuing a stuck codex task, continuing a persistent codex thread), the
-`orchestration-policy` skill's routing table says: **hand off** to that
+`council-policy` skill's routing table says: **hand off** to that
 plugin's own `/codex:*` command in the main thread, don't also dispatch
 this plugin's runner for the same task.
 
@@ -101,7 +101,7 @@ quota spent in tests):
    earlier separate `codex-runner`/`agy-runner`) that drives any
    registered backend via `extdel.sh`, given a required `backend:` field.
 5. **`/…:delegate` and `/…:backends`** commands, and the
-   `orchestration-policy` skill (routing table, posture table, fan-out
+   `council-policy` skill (routing table, posture table, fan-out
    discipline, cost-opacity note).
 6. **Graded agy postures via `--gemini_dir`** — headless `agy --print`
    auto-denies every tool permission unless it's pre-allowed; a per-handle
@@ -144,7 +144,7 @@ sdlc-model-council/
   agents/
     delegation-runner.md    # Haiku; drives extdel.sh for any registered backend
   skills/
-    orchestration-policy/SKILL.md   # routing table, backend picking, posture, fan-out, cost
+    council-policy/SKILL.md   # routing table, backend picking, posture, fan-out, cost
   commands/
     delegate.md              # /…:delegate <backend> <prompt> [posture=][model=][handle=]
     backends.md               # /…:backends — thin `extdel.sh list-backends` wrapper
@@ -250,7 +250,7 @@ anything on disk that the ambient environment's user could read (`.env`,
 `~/.ssh/`, other credentials, anything under the delegated
 `cwd`/`add_dirs`), and that content is sent to the respective vendor's
 infrastructure as part of the delegated prompt/context. This is inherent
-to delegating to a third-party CLI — the `orchestration-policy` skill and
+to delegating to a third-party CLI — the `council-policy` skill and
 `delegation-runner`'s own instructions name this plainly rather than
 paper over it.
 
@@ -274,7 +274,7 @@ vendor-native sibling plugins — install whichever mix fits:
 
 - **`codex@openai-codex`** (official OpenAI Codex plugin) — for
   `/codex:review`/`/codex:adversarial-review`/`/codex:rescue`/
-  `/codex:transfer` and persistent codex threads; the `orchestration-policy`
+  `/codex:transfer` and persistent codex threads; the `council-policy`
   routing table hands those task shapes to it when it's installed.
 - **`antigravity@antigravity-for-claude-code`** — for its own
   cost-disciplined `/antigravity:*` delegate/review/research/cloud-debug

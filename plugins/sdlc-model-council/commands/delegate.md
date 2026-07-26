@@ -19,7 +19,7 @@ installed options.
 
 Do this:
 
-1. **Consult the routing table first.** Load the `orchestration-policy`
+1. **Consult the routing table first.** Load the `council-policy`
    skill (in particular its §3.3 routing table) before dispatching
    anything. Some request shapes — reviewing this session's own diff, an
    adversarial review gate, rescuing a stuck codex task, continuing a
@@ -42,6 +42,6 @@ Do this:
    continue the conversation later.
 
 Remember the fan-out cap of 5 concurrent external sessions (see
-`orchestration-policy`) if this command is being invoked multiple times in
+`council-policy`) if this command is being invoked multiple times in
 quick succession for a manual compare — `/…:delegate` itself only ever
 dispatches one backend per call.

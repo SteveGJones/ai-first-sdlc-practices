@@ -1,25 +1,32 @@
 ---
-name: orchestration-policy
+name: council-policy
 description: >
-  Policy for cross-vendor delegation: when to hand off to an installed
+  Policy for the cross-model council: when to hand off to an installed
   sibling plugin's own slash command (`/codex:*`) versus dispatching our
   `delegation-runner` (backend: codex|agy|…), which backend to pick, what
   permission posture to use, and the fan-out/cost discipline that applies
-  regardless of backend. Consult before delegating out to a peer agentic
-  CLI, before choosing between a sibling plugin's command and our runner,
-  before choosing a permission posture, or before fanning out more than
-  one external delegation concurrently.
+  regardless of backend — plus the council layer built on that substrate:
+  which play to run, how a cast gets picked from the project roster, budget
+  guardrails, and where project policy/commission config lives. Consult
+  before delegating out to a peer agentic CLI, before choosing between a
+  sibling plugin's command and our runner, before choosing a permission
+  posture, before fanning out more than one external delegation
+  concurrently, or before running a council play (`/…:council-run`).
 ---
 
-# Orchestration Policy
+# Council Policy
 
-`sdlc-model-council` is a **cross-vendor delegation orchestrator**:
-in-session, uncontainerised, single-machine delegation to locally-installed
-peer agentic CLIs — no Archon, no Docker, no DAG. (That's the one-line
-distinction from `sdlc-workflows`, which *is* Archon-orchestrated,
-containerised, DAG-based delegation — reach for that plugin instead when a
-task genuinely needs an isolated container or a multi-step workflow graph;
-reach for this one for a single in-session hand-off to a peer CLI.)
+`sdlc-model-council` is a **cross-model council**: it assesses the peer
+agentic CLIs installed on this machine, keeps a project roster of how each
+model performs by task type, and runs fan-out **plays** — the same task to
+a decorrelated panel, synthesised into one attributed verdict — on top of
+an in-session, uncontainerised, single-machine delegation substrate to
+locally-installed peer agentic CLIs. No Archon, no Docker, no DAG. (That's
+the one-line distinction from `sdlc-workflows`, which *is* Archon-
+orchestrated, containerised, DAG-based delegation — reach for that plugin
+instead when a task genuinely needs an isolated container or a multi-step
+workflow graph; reach for this one for a single in-session hand-off to a
+peer CLI, or a cross-model fan-out play, without any of that machinery.)
 
 ## §3.3 Routing: sibling-plugin hand-off vs our `delegation-runner`
 
@@ -230,16 +237,66 @@ casually; each one is real spend on someone else's bill — this is what
 makes the fan-out cap above a cost control, not just a process-count
 control.
 
-## Compare / synthesize (fast-follow — not yet shipped)
+## Plays (cross-model fan-out)
 
-A future `/…:compare` command will fan out one identical prompt to N
-backends concurrently (choreography over the existing engine — no new
-`extdel.sh` subcommand needed, since handles are already fanout-safe),
-collect each backend's unified §4.2 result, and either mechanically merge
-them or dispatch a synthesis pass (a Sonnet judge subagent reading the
-result files from disk, never inheriting the main thread's context) to
-produce a convergent/divergent/adjudicated summary with per-backend
-attribution preserved. Until that ships, achieve the same effect manually:
-dispatch `delegation-runner` once per backend with the same prompt and
-posture, then synthesize the results yourself in the main thread — just
-remember the fan-out cap above applies to manual fan-out too.
+A **play** is a choreographed fan-out over the delegation substrate above —
+the same task goes to a decorrelated panel of models, the results are
+collected on disk (never inheriting the main thread's context), and a
+combine step produces one attributed answer. Four plays are designed;
+one ships in v1.
+
+- **Diff+Synthesis — SHIPPING in v1.** Cast a decorrelated panel (default
+  k=3) from the project roster, fan the same task out to each member (cap
+  5, per the fan-out section above), and dispatch the `council-judge`
+  agent (Sonnet, reads result files from disk under blind labels) to
+  synthesise them into `combine/synthesis.md`: **Convergent** (points of
+  agreement) / **Divergent (attributed)** (disagreements, each pinned to
+  its model) / **Adjudication** (the judge's call on each divergence) /
+  **Confidence** / **Baseline delta** (did the panel materially beat the
+  roster's single best model for this task, the `baseline_member`?). Run
+  it via `/…:council-run task-type=… input=…`.
+- **Consensus/Vote — designed, deferred.** An odd-N cast each ends its
+  response with a mechanically-tallied `VERDICT: APPROVE|BLOCK|UNSURE`
+  line; a split or majority-UNSURE escalates to a judge.
+- **Best-of-N — designed, deferred.** N generators produce independent
+  candidates; an outcome scorer (test-pass rate for code, judge-vs-rubric
+  for design) ranks them and returns an attributed winner.
+- **Generator↔Verifier — designed, deferred.** A generator and a
+  cross-family verifier run one bounded repair round; an unverified result
+  is flagged rather than silently accepted.
+
+**The measurability spine:** every play keeps the roster's best single
+model in the cast as the `baseline_member`, and the synthesis states
+plainly whether the panel beat it, confirmed it, or was net-negative. This
+is not decoration — it's how the whole approach proves or disproves its
+own worth. If, over real use, the panel rarely beats the baseline member,
+the honest fallback is **roster-driven single-model routing**
+(`/…:delegate` with the roster's pick, no fan-out at all) — a feature
+removal, not a rewrite, and one this policy exists to make honest to reach
+for.
+
+## Policy & commission consult
+
+A project's council configuration lives under `.sdlc/model-council/`:
+`roster.json` (per-model performance by task type, from assessment),
+`policy.json` (task-type → {play, cast or cast_rule, budget}), and
+`commission.json` (the record of how the project was commissioned).
+
+`/…:council-run` reads `policy.json` for the task type it's given, to pick
+the play, the cast, and the budget guardrail without the caller having to
+specify them. If the project isn't commissioned (no `policy.json`), it
+falls back to heuristics — play = `diff-synthesis`, cast built live from
+`roster.json` if present, else ask the caller — and says plainly that the
+project isn't commissioned rather than silently guessing.
+
+Casts in policy are usually a **`cast_rule`** (re-evaluated live against
+the current roster at run time), not a pinned list of addresses — that way
+a policy set up today keeps selecting good models after a roster refresh
+or a model's retirement, rather than pointing at addresses that no longer
+resolve well or at all. Pinned casts are supported for when a caller
+deliberately wants a fixed panel.
+
+Set this up with `/…:council-commission` (discover → characterize →
+assess → write roster + policy), refresh it with `/…:council-assess`,
+inspect the roster with `/…:council-roster`, and preview spend with
+`/…:council-estimate` before a run that would cost real money.

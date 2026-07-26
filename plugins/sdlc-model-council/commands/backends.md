@@ -29,7 +29,7 @@ Do this:
    `/antigravity:cloud-run-debug`, `/antigravity:status`,
    `/antigravity:result`, `/antigravity:cancel`, installable via
    `/plugin install antigravity@antigravity-for-claude-code`) — point to
-   the `orchestration-policy` skill's routing table for when to prefer
+   the `council-policy` skill's routing table for when to prefer
    the sibling plugin over `/…:delegate`.
 5. For any row whose `sibling` column is `absent`, still name the
    sibling plugin and its `/plugin install` command as an FYI, in case the

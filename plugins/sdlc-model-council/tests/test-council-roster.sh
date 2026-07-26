@@ -144,6 +144,11 @@ JSON
   --diversity "$WORK/diversity-cast.json" --dimension code-review --k 3 \
   --out "$WORK/cast.json" >/dev/null
 
+# priors-only (skip-audition) roster from --models/--dims, no results at all
+"$COUNCIL/roster.py" --priors-dir "$PRIORS" --pricing "$WORK/pricing.json" \
+  --models "flat:strong,free:calib" --dims "bug-fix,code-review" \
+  --now "2026-07-25T00:00:00Z" --out-json "$WORK/skip-roster.json" >/dev/null
+
 # --- assertions ------------------------------------------------------------
 python3 - "$WORK" <<'PY'
 import json, math, sys
@@ -217,6 +222,15 @@ cast = json.load(open(f"{work}/cast.json"))
 check("cast baseline a", cast["baseline_member"]=="cast:a")
 check("cast order a,c,b", cast["cast"]==["cast:a","cast:c","cast:b"])
 check("cast excludes e (grade<C)", "cast:e" not in cast["cast"])
+
+# priors-only (skip) roster: n=0, posterior=prior, provisional, source=priors
+skip = json.load(open(f"{work}/skip-roster.json"))
+sm = {m["model"]: m for m in skip["models"]}
+check("skip source is priors", skip["source"] == "priors")
+check("skip flat:strong bug-fix n=0", sm["flat:strong"]["dimensions"]["bug-fix"]["n"] == 0)
+check("skip flat:strong posterior=prior 0.5", close(sm["flat:strong"]["dimensions"]["bug-fix"]["posterior"], 0.5))
+check("skip flat:strong provisional", sm["flat:strong"]["dimensions"]["bug-fix"]["provisional"] is True)
+check("skip free:calib free flag", sm["free:calib"]["free"] is True)
 
 print(f"=== Results: {passed} passed, {failed} failed ===")
 sys.exit(1 if failed else 0)
