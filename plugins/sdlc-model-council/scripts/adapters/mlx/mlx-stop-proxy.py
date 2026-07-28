@@ -278,7 +278,7 @@ def main(argv):
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
-        pass
+        pass  # Ctrl-C is the documented, expected way to stop this proxy
     return 0
 
 
