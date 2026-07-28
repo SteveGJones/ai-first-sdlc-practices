@@ -4,14 +4,15 @@ Paste into a fresh session to resume. Self-contained; read the pointers before w
 
 ---
 
-## ⚠️ Read this first — machine has been kernel-panicking under local MLX load
+## ⚠️ Local MLX kernel-panic history — resolved as of 2026-07-28, read before trusting large dense models unattended
 
-Restarting after an OS update specifically to clear this. **Before resuming
-any MLX work, confirm the update installed** (`sw_vers` — panics below were
-all on **macOS 26.5.1 / build 25F80**; if you're still on 25F80, the update
-hasn't landed yet, stop and install it first).
+**Status: OS updated (26.5.1/25F80 → 26.6/25G72), panic-diagnosis tooling
+verified working, full re-test of every currently-cached model clean, zero
+panics.** Not proof the underlying bug is gone — see "What's still unknown"
+below — but there is no live risk signal against anything in the current
+local cache.
 
-### What happened
+### What happened (2026-07-26/27, pre-update)
 
 Four kernel panics in ~30 hours, all during local MLX (Apple Silicon Metal/GPU)
 inference, all in the same kernel subsystem:
@@ -25,50 +26,55 @@ inference, all in the same kernel subsystem:
 
 All four are macOS/Metal **kernel** driver faults (IOGPU memory-object
 accounting), not app-level crashes — they happen below anything `assess.sh`
-or the MLX adapter can catch or prevent. Correlated via `mlx-panic-report.sh`
-breadcrumbs (see "Panic post-mortem tooling built this session" below):
+or the MLX adapter can catch or prevent.
 
-- The 2026-07-27 17:43:37 panic lines up with an in-flight `mlx-chat` request
-  to `mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit` (`REQUEST_WAITING`
-  at `T-4min`), with `Qwen3-Coder-30B-A3B-Instruct-4bit` also active in the same
-  run directory — i.e. **GPU memory pressure from a large model under load**,
-  consistent with the other three panics.
-- The 2026-07-27 15:15:56 panic (documented in the retrospective) was traced to
-  `Qwen2.5-Coder-32B-Instruct-4bit` on a long-context item
-  (`lc-meeting-minutes`), ~68s after dispatch — the largest **dense** model in
-  the cached fleet.
+- The 2026-07-27 17:43:37 panic is breadcrumb-confirmed: an in-flight
+  `mlx-chat` request to `mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit`
+  (`REQUEST_WAITING` at `T-4min`), with `Qwen3-Coder-30B-A3B-Instruct-4bit`
+  also active in the same run directory.
+- The 2026-07-27 15:15:56 panic's attribution to `Qwen2.5-Coder-32B-Instruct-4bit`
+  is **unconfirmed** — a 2026-07-28 review found the breadcrumb tooling didn't
+  exist yet at that timestamp (earliest breadcrumb on disk: `22:04:52Z` that
+  day), and the panic report itself carries no model strings. The operator
+  did delete 32B from the cache after this panic believing it was the cause;
+  a second, differently-signatured panic happened anyway with 32B already
+  gone, so the risk generalizes beyond one model. Full account in the
+  retrospective's "What was hard / surprising" section — read that, not this
+  summary, for the actual evidence chain.
 
-**Working theory:** this is a macOS/Metal driver bug under unified-memory
-pressure on this 32GB Apple Silicon machine, triggered reliably by large
-(24B–32B, dense) MLX models — especially combined with long-context prompts or
-multiple large models in flight. It panics/reboots rather than the process
-OOM-killing gracefully. Recorded in `retrospectives/235-council-tool-use-assessment.md`
-and `plugins/sdlc-model-council/scripts/adapters/mlx/adapter.json`'s
-`hardware_risk` field.
+**Working theory (unchanged):** a macOS/Metal driver bug under unified-memory
+pressure on this 32GB Apple Silicon machine, most acute with large dense
+models on long-context prompts or multiple large models in flight. Panics
+rather than OOM-killing gracefully. `hardware_risk` field in
+`plugins/sdlc-model-council/scripts/adapters/mlx/adapter.json`.
 
-### Recommendations for this restart
+### 2026-07-28 re-test — clean
 
-1. **Confirm the OS update actually installed** (`sw_vers`) before touching
-   MLX again — that's the whole point of rebooting into it.
-2. **Don't immediately re-run the full 6-model fleet unattended.** First smoke
-   -test with a small model (7B/14B or the MoE 30B-A3B variants, which did
-   **not** trigger the panic despite the similar-looking parameter count —
-   they're ~3B active params) and watch it complete cleanly.
-3. **Only then, cautiously, re-test a large dense model** (24B/32B) — in
-   isolation, nothing else running, on a short/non-long-context item first,
-   with the machine in a state where an unplanned reboot is tolerable.
-4. If a large dense model panics again on the *updated* OS, treat it as
-   confirmed still-present (not a one-off) and escalate to avoiding 24B+
-   dense models on this hardware entirely for council runs — prefer the
-   MoE 30B-A3B variants or smaller dense models, per the `hardware_risk` note.
-5. **Uncommitted work exists on this branch** — `git status` shows modified
-   `assess.sh` / `adapter.json` / `mlx-chat` / the retrospective, plus three
-   new untracked files (`mlx-stop-proxy.py`, `mlx-panic-report.sh`,
-   `mlx-server-run.sh`). This is the panic-diagnosis tooling built this
-   session, not yet committed — review and commit it before starting new
-   feature work, so it isn't lost to another reboot.
+Every model still in the local cache (7B, 14B, both 30B-A3B variants,
+Devstral-24B — `Qwen2.5-Coder-32B` excluded, no longer cached) run through the
+long-context dimension via **both** Path A (OpenCode) and Path B (direct), one
+MLX server loaded at a time, `mlx-server-run.sh` heartbeat logging watching
+memory pressure throughout. Uptime stayed continuous the whole session
+(zero reboots), including a run where `Pages free` dropped to ~7k pages. The
+breadcrumb tooling's `SUSPECTED_PANIC_VICTIM` detection was verified
+end-to-end first (deliberately `SIGKILL`-ing `assess.sh` mid-dispatch,
+confirming the victim model/item was correctly identified) — and that check
+surfaced a real bug (`last_alive` always `"unknown"`, fixed) before the fleet
+re-test was trusted.
 
-### Panic post-mortem tooling built this session
+### What's still unknown
+
+- **`Qwen2.5-Coder-32B` itself is untested** since it was deleted — the only
+  model with even circumstantial (not confirmed) evidence against it has not
+  been re-run on the updated OS.
+- **Two MLX servers loaded concurrently** (the documented
+  `fanout_safe:false` case, and the actual condition during the second
+  panic) was deliberately *not* reproduced in the 2026-07-28 re-test —
+  operator chose sequential-only for that pass.
+- A clean re-test is evidence of reduced/absent risk, not proof — GPU kernel
+  panics under memory pressure are not perfectly deterministic.
+
+### Panic post-mortem tooling (built 2026-07-27, committed, verified)
 
 - `plugins/sdlc-model-council/scripts/council/mlx-panic-report.sh` — read-only;
   correlates in-flight-request breadcrumbs (Path A + Path B + `assess.sh`
@@ -101,17 +107,33 @@ should win command execution on latency × tool-call reliability" answer into
 
 ## Where we are
 
-- **Issue #235** raised (follow-on to #232 / PR #234). Branch
-  **`feature/council-tool-use-assessment`** (pushed). **Scaffolding only — no
-  implementation yet.**
-- Committed on the branch: the **feature definition**
-  `docs/feature-proposals/235-council-tool-use-assessment.md` and the
-  **retrospective** `retrospectives/235-council-tool-use-assessment.md`. Read the
-  proposal first — it holds the scope, the recommended design stance, and the
-  open questions.
+**All four deliverables below are DONE (commit `28693aa`, already on this
+branch).** `command-exec` + `monitoring` dimensions shipped, `command-check` +
+`command-diff` scorers shipped, a 10-model audition ran at $0 total, priors
+re-derived. Full results in `retrospectives/235-council-tool-use-assessment.md`
+§"Results — the comparison". Headline finding: local `Qwen3-Coder-30B-A3B`
+ties Haiku 4.5 and the hosted fleet on this tier, at 2s p50 and genuine $0 —
+the "Haiku should win on latency × reliability" extrapolation did not hold.
+
+Since then (this session, 2026-07-27/28): panic-diagnosis tooling built,
+verified, and committed (see the section above); a full re-test of the
+current local fleet came back clean. Currently working on: extending
+`assess.sh` with a `--timeout-multiplier` so local MLX runs (which are
+regularly slower than the hosted-model-calibrated per-item `timeout_s`) can
+run to genuine completion instead of hitting a harness timeout that isn't a
+real failure.
+
+- **Issue #235** (follow-on to #232 / PR #234). Branch
+  **`feature/council-tool-use-assessment`** (pushed, several commits ahead of
+  origin — push before ending a session).
 - **model-council v1 (PR #233) + local-MLX backend (PR #234) are MERGED to
   `main`.** This feature builds directly on them. Never commit to `main`; feature
   branch only.
+- Remaining work is **follow-ups only**, not blocking: see the retrospective's
+  "Follow-ups" section — a genuinely harder tool-use tier, making the three
+  non-executable `command-exec` items executable, a tool-use-driven role in
+  `roster.py`, eliciting Haiku through a real adapter instead of a subagent.
+  None of these block opening a PR if the branch is otherwise ready.
 
 ## Read these first (pointers)
 
@@ -217,15 +239,20 @@ built (see the 232 retrospective for the worked example).
 
 ## Immediate next step
 
-Invoke `superpowers:writing-plans-and-specs` (or the `Plan` subagent) to lock the
-**scoring contract + item schema + metrics** for the propose-and-score dimension,
-and resolve the two open questions (single-vs-split dim; how to reach Haiku).
-THEN, TDD (`superpowers:test-driven-development`): author the scorer + 3–5
-deterministic command-line-execution / monitoring items with golden answers, wire
-the `tool-use` dim into `stack.json` / priors / roster, keep the **15-file council
-suite green**, and run the gated comparison (MLX 7B/14B/32B + **Haiku 4.5** +
-hosted fleet). Re-derive the `tool-use` prior from the audition; record in the
-retrospective.
+The design/implement/audition work described in the rest of this file (below)
+is **historical context for how #235 was built**, not a to-do list — it's all
+done (see "Where we are" above). The live thread as of 2026-07-28 is:
+
+1. Add a `--timeout-multiplier` flag to `assess.sh` so local MLX long-context
+   runs can complete instead of hitting the hosted-model-calibrated 90s
+   `timeout_s` (harness artifact, not a real failure — confirmed by watching
+   `mlx_lm.server`'s own log keep processing well past the harness giving up).
+   TDD it, keep the council suite green.
+2. Use it to run a calibration pass and get a real wall-clock estimate for
+   letting a fuller local fleet run go to actual completion, before deciding
+   whether to run it.
+3. Then: either open a PR (all four deliverables done, suite green, zero
+   debt) or pick up a retrospective follow-up — operator's call.
 
 ## Deliverables
 

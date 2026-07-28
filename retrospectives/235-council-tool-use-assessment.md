@@ -238,29 +238,70 @@ independently re-confirms keeping Path B for local models.
   `mon-hard-transient-error` were written as traps and every single model walked
   through both. Designing an item that *feels* hard is not the same as designing
   one that discriminates.
-- **The 32B model panicked the machine during a full-fleet run (2026-07-27).**
-  A follow-up run driving all 6 cached models through `assess.sh` (Path B, one
-  server per model, `--max-concurrent 1`) hit a kernel panic
-  (`"completeMemory() prepare count underflow" @IOGPUMemory.cpp:550`) partway
-  through the `Qwen2.5-Coder-32B-Instruct-4bit` job, on a long-context item
-  (`lc-meeting-minutes`), ~68s after the request was dispatched. This is a
-  *different* IOGPU panic signature from the two prior ones seen during earlier
-  work on this feature (`"pending memory object unexpectedly found in non
-  pending hash" @IOGPUGroupMemory.cpp:528`), but the same subsystem — GPU/unified
-  memory pressure. Qwen2.5-Coder-32B is the largest **dense** model in the
-  cached fleet (the two Qwen3-Coder-30B-A3B variants are MoE, only ~3B active
-  params at a time, so lighter in practice despite the similar name). On a
-  32GB unified-memory Apple Silicon laptop, a 32B-parameter 4-bit model
-  combined with a long-context prompt appears to push GPU memory pressure into
-  a regime the current macOS/Metal stack cannot recover from gracefully — it
-  panics and reboots rather than OOM-killing the process. Recommendation:
-  **treat the 32B tier as at-risk on 32GB machines**, especially for
-  long-context items; prefer the MoE 30B-A3B variants or smaller dense models
-  for routine fleet runs, and if 32B must be exercised, do it in isolation
-  (nothing else running, machine can tolerate an unplanned reboot) rather than
-  as one job in an unattended multi-hour queue. `mlx-panic-report.sh` and
-  `mlx-server-run.sh`'s heartbeat logging (this session's work) made isolating
-  the exact job/item straightforward after the fact, but did not prevent it.
+- **The machine kernel-panicked four times in ~30 hours during local MLX runs
+  (2026-07-26/27), and the specific model blamed for the first one is
+  unconfirmed.** A follow-up run driving cached models through `assess.sh`
+  (Path B, one server per model, `--max-concurrent 1`) hit a kernel panic
+  (`"completeMemory() prepare count underflow" @IOGPUMemory.cpp:550`) at
+  2026-07-27 15:15:56, on a long-context item (`lc-meeting-minutes`). This
+  entry originally attributed it to `Qwen2.5-Coder-32B-Instruct-4bit`, but a
+  2026-07-28 review found **no corroborating evidence for that attribution**:
+  the panic-breadcrumb tooling (`mlx-chat`/`mlx-stop-proxy`/`assess.sh`) did
+  not exist yet at 15:15:56 — the earliest breadcrumb on disk is
+  `2026-07-27T22:04:52Z`, hours later — and the panic report itself carries no
+  userspace strings naming a model. **Treat the 32B attribution as
+  unconfirmed, not fact.** What *is* known: the operator deleted
+  `Qwen2.5-Coder-32B-Instruct-4bit` from the local cache after this panic
+  believing it was the cause, and a second, differently-signatured panic
+  (`"pending memory object unexpectedly found in non pending hash"
+  @IOGPUGroupMemory.cpp:528`, 2026-07-27 17:43:37) happened anyway — with 32B
+  already gone and, per breadcrumb evidence, `Devstral-Small-2-24B-Instruct-2512-4bit`
+  and `Qwen3-Coder-30B-A3B-Instruct-4bit` active. So the risk is not specific
+  to one model; it's GPU/unified-memory pressure from large models generally,
+  most acute on long-context prompts. Recommendation unchanged in spirit:
+  **treat large (24B+) MLX models as at-risk on 32GB machines**, especially
+  for long-context items; prefer the MoE 30B-A3B variants or smaller dense
+  models for routine fleet runs, and if a large dense model must be exercised,
+  do it in isolation (nothing else running, machine can tolerate an unplanned
+  reboot) rather than as one job in an unattended multi-hour queue.
+  `mlx-panic-report.sh` and `mlx-server-run.sh`'s heartbeat logging (built the
+  session after these panics) would make isolating the exact job/item
+  straightforward on a *future* panic, but could not retroactively explain
+  this one.
+
+- **2026-07-28 — a full re-test after an OS update (macOS 26.5.1/25F80 →
+  26.6/25G72) found no panic anywhere.** Every model still in the local cache
+  (7B, 14B, both 30B-A3B variants, Devstral-24B — `Qwen2.5-Coder-32B` excluded,
+  no longer cached) was run through the long-context dimension via **both**
+  Path B (direct) and Path A (OpenCode), one MLX server loaded at a time
+  (never two concurrently, matching `adapter.json`'s documented
+  `fanout_safe:false`), with `mlx-server-run.sh` heartbeat logging watching
+  memory pressure throughout. Uptime stayed continuous across the whole
+  session (12:12 → 12:45, zero reboots), including a run where `Pages free`
+  dropped to ~7k pages (real pressure) and one where load average spiked to
+  17.91. Before trusting the breadcrumb tooling on this run, its
+  `SUSPECTED_PANIC_VICTIM` archival path was verified end-to-end by
+  deliberately `SIGKILL`-ing `assess.sh` and its children mid-dispatch — it
+  correctly named the in-flight model/item both times. **A real bug was found
+  and fixed in the process:** the archival code read `active/$h.alive` for
+  the last-liveness timestamp, but nothing ever wrote that file — only `.hb`
+  (heartbeat epoch) and `.t0` (dispatch epoch) exist — so `last_alive` was
+  always reported as `"unknown"`. Fixed to read `.hb` (falling back to
+  `.t0`), verified with a synthetic stale-state test. This does not prove the
+  underlying IOGPU bug is fixed (32B, the only model with even
+  circumstantial evidence against it, is untested since deletion, and the
+  documented two-concurrent-MLX-servers case was deliberately not
+  reproduced) — it does mean every currently-cached model is safe to use for
+  routine council runs, sequentially, on this machine as of this OS build.
+
+- **The long-context items' `timeout_s: 90` (calibrated for hosted models) is
+  too short for local MLX generation**, producing a `timeout` status even
+  when the server is still legitimately working — confirmed by watching
+  `mlx_lm.server`'s own prompt-processing log continue well past
+  `assess.sh` giving up. Path A (larger agentic-prompt requests) hit this
+  every time in the 2026-07-28 re-test; Path B mostly finished inside 90s
+  except the DWQ variant. Follow-up: a `--timeout-multiplier` knob for local
+  runs (tracked separately; not yet implemented as of this entry).
 
 ## Fairness caveats (recorded)
 
