@@ -24,8 +24,16 @@ import os
 import sys
 
 OBSERVATION_STATUSES = {"scored", "contract-fail", "timeout"}
-OBJECTIVE_DIMS = {"long-context", "instruction-format", "bug-fix",
-                  "code-review", "code-gen", "refactor"}
+OBJECTIVE_DIMS = {
+    "long-context",
+    "instruction-format",
+    "bug-fix",
+    "code-review",
+    "code-gen",
+    "refactor",
+    "command-exec",
+    "monitoring",
+}
 PER_DEFECT_DIMS = {"code-review"}
 INSUFFICIENT_MIN = 6
 
@@ -63,7 +71,8 @@ def _defect_universe(rows, stack_path):
             if item.get("dimension") not in PER_DEFECT_DIMS:
                 continue
             defects_path = os.path.join(
-                stack_dir, item["path"], "expected", "defects.json")
+                stack_dir, item["path"], "expected", "defects.json"
+            )
             if os.path.exists(defects_path):
                 with open(defects_path, encoding="utf-8") as handle:
                     defects = json.load(handle)

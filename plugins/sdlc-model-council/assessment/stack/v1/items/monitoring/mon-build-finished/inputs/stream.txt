@@ -1,0 +1,6 @@
+> Task :compileJava
+> Task :test
+142 tests completed, 0 failed
+> Task :jar
+BUILD SUCCESSFUL in 12s
+9 actionable tasks: 9 executed

@@ -122,6 +122,31 @@ TSCORE="$(python3 -c 'import json;print(json.loads(open("'"$R5"'/results.jsonl")
 assert_eq "$TSCORE" "0.0" "5b timeout row scores 0.0"
 
 # ---------------------------------------------------------------------------
+# 5c/5d. --timeout-multiplier — same item (timeout_s=1), same 3s-sleep mock,
+# multiplier 5 => effective timeout 5s > sleep, so the turn completes instead
+# of timing out (design intent: local MLX runs are slower than the
+# hosted-model-calibrated per-item timeout_s).
+# ---------------------------------------------------------------------------
+R5B="$TESTROOT/run-timeout-mult"
+MOCK_OPENCODE_SLEEP=3 "$ASSESS" --stack "$FX/stack.json" --priors-dir "$PRIORS" \
+  --pricing "$PRICING" --models "opencode:opencode/deepseek-v4-flash-free" \
+  --dims long-context --no-reachability-check --run-dir "$R5B" \
+  --timeout-multiplier 5 --poll-wait-s 1 --now "$NOW" >/dev/null 2>&1
+assert_eq "$(tally "$R5B/results.jsonl" timeout)" "0" "5c --timeout-multiplier 5 avoids the false timeout"
+assert_eq "$(rows "$R5B/results.jsonl")" "1" "5d --timeout-multiplier still produces exactly 1 row"
+
+# ---------------------------------------------------------------------------
+# 5e. --timeout-multiplier validation — non-numeric / non-positive rejected
+# ---------------------------------------------------------------------------
+BADMULT_OUT="$("$ASSESS" --stack "$FX/stack.json" --priors-dir "$PRIORS" \
+  --pricing "$PRICING" --models "opencode:opencode/deepseek-v4-flash-free" \
+  --dims long-context --no-reachability-check --run-dir "$TESTROOT/run-badmult" \
+  --timeout-multiplier notanumber --now "$NOW" 2>&1)"
+BADMULT_RC=$?
+assert_eq "$BADMULT_RC" "1" "5e non-numeric --timeout-multiplier exits nonzero"
+assert_contains "$BADMULT_OUT" "timeout-multiplier" "5f error names --timeout-multiplier"
+
+# ---------------------------------------------------------------------------
 # 6. Concurrency drain — cap 2 over 5 slow pairs, pool fully drains
 # ---------------------------------------------------------------------------
 FX6="$TESTROOT/stack-conc"

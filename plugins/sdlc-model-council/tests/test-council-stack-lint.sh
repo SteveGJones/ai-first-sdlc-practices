@@ -45,7 +45,7 @@ def check(name, condition, detail=""):
         failures.append(msg)
 
 
-KNOWN_SCORER_TYPES = {"hidden-tests", "planted-defects", "exact-match", "format-parse"}
+KNOWN_SCORER_TYPES = {"hidden-tests", "planted-defects", "exact-match", "format-parse", "command-check", "command-diff"}
 KNOWN_ANSWER_CONTRACTS = {"text", "file-blocks", "findings-json", "strict-json", "verdict-line"}
 ENVELOPE_SNIPPETS = {
     "file-blocks": "```file:NAME``` fenced",
@@ -77,7 +77,7 @@ if stack_data is not None:
     check("stack.json has a non-empty items list", isinstance(items, list) and len(items) > 0)
     items = items or []
 
-    check("stack has exactly 9 items", len(items) == 9, f"found {len(items)}")
+    check("stack has exactly 19 items", len(items) == 19, f"found {len(items)}")
 
     seen_ids = set()
     for entry in items:
@@ -235,6 +235,89 @@ if stack_data is not None:
                 except (OSError, json.JSONDecodeError) as exc:
                     check(f"{item_id}: expected/schema.json parses as JSON", False, str(exc))
 
+        elif scorer_type == "command-check":
+            checks_path = os.path.join(expected_dir, "checks.json")
+            checks_exists = os.path.isfile(checks_path)
+            check(f"{item_id}: expected/checks.json exists", checks_exists)
+            if checks_exists:
+                try:
+                    with open(checks_path) as f:
+                        checks = json.load(f)
+                    check(f"{item_id}: expected/checks.json parses as JSON", True)
+                    fchecks = checks.get("field_checks")
+                    check(
+                        f"{item_id}: expected/checks.json has a non-empty field_checks list",
+                        isinstance(fchecks, list) and len(fchecks) > 0,
+                    )
+                    ops = {"equals", "enum", "regex", "not_regex"}
+                    well_formed = isinstance(fchecks, list) and all(
+                        isinstance(c, dict) and "field" in c and (ops & set(c.keys()))
+                        for c in (fchecks or [])
+                    )
+                    check(
+                        f"{item_id}: every field_check names a field and one operator",
+                        well_formed,
+                    )
+                except (OSError, json.JSONDecodeError) as exc:
+                    check(f"{item_id}: expected/checks.json parses as JSON", False, str(exc))
+
+        elif scorer_type == "command-diff":
+            # Execute-and-diff items ship expected/exec.json + the golden stdout
+            # it names, plus inputs/ (the sandbox is a copy of it). They SHOULD
+            # also ship expected/checks.json: that is the static-rubric fallback
+            # used when COUNCIL_ALLOW_EXEC is not set, which keeps a default
+            # council run meaningful.
+            exec_path = os.path.join(expected_dir, "exec.json")
+            exec_exists = os.path.isfile(exec_path)
+            check(f"{item_id}: expected/exec.json exists", exec_exists)
+            check(
+                f"{item_id}: has inputs/ for the exec sandbox",
+                os.path.isdir(os.path.join(item_dir, "inputs")),
+            )
+            check(
+                f"{item_id}: ships expected/checks.json as the exec-disabled fallback",
+                os.path.isfile(os.path.join(expected_dir, "checks.json")),
+            )
+            if exec_exists:
+                try:
+                    with open(exec_path) as f:
+                        exec_spec = json.load(f)
+                    check(f"{item_id}: expected/exec.json parses as JSON", True)
+                    allow = exec_spec.get("allow_binaries")
+                    check(
+                        f"{item_id}: exec.json has a non-empty allow_binaries list",
+                        isinstance(allow, list) and len(allow) > 0,
+                    )
+                    forbidden = {
+                        "rm", "mv", "dd", "curl", "wget", "nc", "netcat", "ssh",
+                        "scp", "sudo", "kill", "chmod", "chown", "tee", "truncate",
+                        "mkfs", "shutdown", "reboot", "eval", "sh", "bash", "zsh",
+                    }
+                    check(
+                        f"{item_id}: allow_binaries has no destructive or egress binary",
+                        not (forbidden & set(allow or [])),
+                        str(sorted(forbidden & set(allow or []))),
+                    )
+                    check(
+                        f"{item_id}: exec.json timeout_s is a positive int",
+                        isinstance(exec_spec.get("timeout_s"), int)
+                        and exec_spec["timeout_s"] > 0,
+                    )
+                    golden_name = exec_spec.get("golden_stdout", "stdout.txt")
+                    golden_path = os.path.join(expected_dir, golden_name)
+                    golden_ok = os.path.isfile(golden_path)
+                    check(
+                        f"{item_id}: golden stdout {golden_name} exists", golden_ok
+                    )
+                    if golden_ok:
+                        with open(golden_path) as f:
+                            check(
+                                f"{item_id}: golden stdout is non-empty",
+                                len(f.read().strip()) > 0,
+                            )
+                except (OSError, json.JSONDecodeError) as exc:
+                    check(f"{item_id}: expected/exec.json parses as JSON", False, str(exc))
+
         # --- sha256 recompute matches stack.json ---
         declared_sha = entry.get("sha256", "")
         try:
@@ -255,6 +338,8 @@ if stack_data is not None:
         "bug-fix": 2,
         "long-context": 2,
         "instruction-format": 2,
+        "command-exec": 5,
+        "monitoring": 5,
     }
     for dim, expected_n in expected_counts.items():
         check(

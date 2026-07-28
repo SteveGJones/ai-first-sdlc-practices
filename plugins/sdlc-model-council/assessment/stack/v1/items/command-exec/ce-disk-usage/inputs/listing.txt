@@ -1,0 +1,6 @@
+$ ls -1 /var/log
+journal
+nginx
+postgresql
+syslog
+old

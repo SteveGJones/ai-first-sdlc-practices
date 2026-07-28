@@ -1,10 +1,15 @@
 {
   "schema_version": 1,
   "family": "google-gemini-3-flash",
-  "matches": ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3-flash", "flash"],
+  "matches": [
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-3-flash",
+    "flash"
+  ],
   "context_tokens": 1000000,
   "pricing_ref": "google-gemini-3-flash",
-  "provenance": "Coarse public prior for the Google Gemini 3 Flash family (e.g. gemini-3.6-flash, gemini-3.5-flash), k=3 pseudo-observations only. Not audition-derived; humble mid-tier estimate — cheaper/faster sibling of gemini-3-pro, expected weaker on reasoning-heavy dims, pending real assessment data.",
+  "provenance": "Coarse public prior for the Google Gemini 3 Flash family (e.g. gemini-3.6-flash, gemini-3.5-flash), k=3 pseudo-observations only. Not audition-derived; humble mid-tier estimate \u2014 cheaper/faster sibling of gemini-3-pro, expected weaker on reasoning-heavy dims, pending real assessment data.",
   "dimensions": {
     "code-gen": 0.58,
     "bug-fix": 0.55,
@@ -14,7 +19,9 @@
     "research": 0.5,
     "long-context": 0.62,
     "instruction-format": 0.6,
-    "tool-use": 0.55
+    "tool-use": 0.72,
+    "command-exec": 0.72,
+    "monitoring": 0.72
   },
   "flags": []
 }

@@ -1,7 +1,10 @@
 {
   "schema_version": 1,
   "family": "google-gemini-3-pro",
-  "matches": ["gemini-3.1-pro", "gemini-3-pro"],
+  "matches": [
+    "gemini-3.1-pro",
+    "gemini-3-pro"
+  ],
   "context_tokens": 2000000,
   "pricing_ref": "google-gemini-3-pro",
   "provenance": "Coarse public prior for the Google Gemini 3 Pro family (e.g. gemini-3.1-pro), k=3 pseudo-observations only. Not audition-derived; humble frontier-tier estimate, slightly favoring long-context given Gemini's published context-window strength, pending real assessment data.",
@@ -14,7 +17,9 @@
     "research": 0.7,
     "long-context": 0.78,
     "instruction-format": 0.7,
-    "tool-use": 0.65
+    "tool-use": 0.65,
+    "command-exec": 0.66,
+    "monitoring": 0.64
   },
   "flags": []
 }

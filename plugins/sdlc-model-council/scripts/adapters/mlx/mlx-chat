@@ -27,21 +27,66 @@ Stdlib only. Answer is written to OUTFILE (never stdout, so the engine's
 events.jsonl stays clean); a one-line status is printed to stdout for the log.
 Exit 0 on success (including a legitimately empty answer -> engine reports
 NO_OUTPUT), non-zero with a stderr reason on failure.
+
+Panic breadcrumbs: local MLX inference has been observed taking the whole
+machine down with a kernel panic (reboot, no crash log in this process's own
+stderr — it never gets to write one). Every request this client makes is
+therefore bracketed with a durable, fsync'd breadcrumb: REQUEST_START before
+the HTTP call, REQUEST_WAITING every ~5s while blocked on the server, and a
+terminal REQUEST_DONE/REQUEST_*_ERROR after. If the machine panics mid-turn,
+the last line in the breadcrumb file with no matching terminal event names
+the model, history-dir (handle) and how long it had been waiting — that's
+"which model, which test condition". Default location is
+~/.sdlc/model-council/mlx-chat-panic-breadcrumb.jsonl (survives regardless of
+caller cwd); override with $MLX_CHAT_BREADCRUMB, or set it to empty to
+disable.
 """
 import argparse
+import datetime
 import json
 import os
 import sys
+import threading
+import time
 from urllib import request as urlrequest
 from urllib.error import HTTPError, URLError
 
 VERSION = "mlx-chat 1.0.0"
 DEFAULT_BASE_URL = "http://127.0.0.1:8080/v1"
 DEFAULT_STOP = ["<|im_end|>"]
+BREADCRUMB_HEARTBEAT_S = 5
 
 
 def _base_url(cli_val):
     return (cli_val or os.environ.get("MLX_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
+
+
+def _now_iso():
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _breadcrumb_path():
+    # Empty string explicitly disables (distinct from unset -> default).
+    if "MLX_CHAT_BREADCRUMB" in os.environ:
+        return os.environ["MLX_CHAT_BREADCRUMB"]
+    base = os.path.expanduser("~/.sdlc/model-council")
+    try:
+        os.makedirs(base, exist_ok=True)
+    except OSError:
+        return ""
+    return os.path.join(base, "mlx-chat-panic-breadcrumb.jsonl")
+
+
+def _breadcrumb(path, record):
+    if not path:
+        return
+    try:
+        with open(path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, separators=(",", ":")) + "\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+    except OSError:
+        pass  # diagnostics must never break a real turn
 
 
 def _probe(base_url):
@@ -105,6 +150,34 @@ def _chat(args):
         headers={"Content-Type": "application/json"},
         method="POST",
     )
+
+    bc_path = _breadcrumb_path()
+    req_id = "%d-%d" % (os.getpid(), int(time.time() * 1000))
+    bc_base = {
+        "req_id": req_id,
+        "pid": os.getpid(),
+        "model": payload["model"],
+        "base_url": base_url,
+        "history_dir": args.history_dir or "",
+        "turn": args.turn,
+    }
+    _breadcrumb(bc_path, dict(
+        bc_base, ts=_now_iso(), event="REQUEST_START",
+        prompt_chars=len(prompt), message_count=len(messages), max_tokens=max_tokens,
+    ))
+    stop_heartbeat = threading.Event()
+
+    def _heartbeat():
+        waited = 0
+        while not stop_heartbeat.wait(BREADCRUMB_HEARTBEAT_S):
+            waited += BREADCRUMB_HEARTBEAT_S
+            _breadcrumb(bc_path, dict(
+                bc_base, ts=_now_iso(), event="REQUEST_WAITING", waited_s=waited,
+            ))
+
+    hb_thread = threading.Thread(target=_heartbeat, daemon=True)
+    hb_thread.start()
+    t0 = time.time()
     try:
         with urlrequest.urlopen(req, timeout=1800) as resp:
             data = json.loads(resp.read())
@@ -112,11 +185,19 @@ def _chat(args):
         detail = (
             exc.read().decode("utf-8", "replace")[:500] if hasattr(exc, "read") else ""
         )
+        _breadcrumb(bc_path, dict(
+            bc_base, ts=_now_iso(), event="REQUEST_HTTP_ERROR",
+            elapsed_s=round(time.time() - t0, 1), http_status=exc.code, detail=detail,
+        ))
         sys.stderr.write(
             "mlx-chat: server HTTP %s at %s: %s\n" % (exc.code, base_url, detail)
         )
         return 1
     except URLError as exc:
+        _breadcrumb(bc_path, dict(
+            bc_base, ts=_now_iso(), event="REQUEST_UNREACHABLE",
+            elapsed_s=round(time.time() - t0, 1), detail=str(exc),
+        ))
         sys.stderr.write(
             "mlx-chat: cannot reach mlx_lm.server at %s (%s). "
             "Start it: uv run mlx_lm.server --model <hf-id> --port 8080\n"
@@ -124,8 +205,14 @@ def _chat(args):
         )
         return 1
     except (ValueError, OSError) as exc:
+        _breadcrumb(bc_path, dict(
+            bc_base, ts=_now_iso(), event="REQUEST_BAD_RESPONSE",
+            elapsed_s=round(time.time() - t0, 1), detail=str(exc),
+        ))
         sys.stderr.write("mlx-chat: bad response from %s: %s\n" % (base_url, exc))
         return 1
+    finally:
+        stop_heartbeat.set()
 
     try:
         content = data["choices"][0]["message"]["content"]
@@ -141,12 +228,22 @@ def _chat(args):
         with open(args.output, "w", encoding="utf-8") as fh:
             fh.write(content)
     except OSError as exc:
+        _breadcrumb(bc_path, dict(
+            bc_base, ts=_now_iso(), event="REQUEST_WRITE_ERROR",
+            elapsed_s=round(time.time() - t0, 1), detail=str(exc),
+        ))
         sys.stderr.write(
             "mlx-chat: cannot write answer file %s: %s\n" % (args.output, exc)
         )
         return 1
 
     usage = data.get("usage", {}) if isinstance(data, dict) else {}
+    _breadcrumb(bc_path, dict(
+        bc_base, ts=_now_iso(), event="REQUEST_DONE",
+        elapsed_s=round(time.time() - t0, 1),
+        tokens_in=usage.get("prompt_tokens"), tokens_out=usage.get("completion_tokens"),
+        answer_chars=len(content),
+    ))
     print(
         "mlx-chat: ok model=%s in=%s out=%s chars=%d"
         % (

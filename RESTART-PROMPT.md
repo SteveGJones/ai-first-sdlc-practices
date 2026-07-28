@@ -1,150 +1,287 @@
-# RESTART PROMPT — `sdlc-model-council`: evaluate local **MLX** models (#232 follow-on)
+# RESTART PROMPT — `sdlc-model-council`: assess **tool-use & command-line execution** (#235)
 
 Paste into a fresh session to resume. Self-contained; read the pointers before writing code.
 
 ---
 
+## ⚠️ Local MLX kernel-panic history — resolved as of 2026-07-28, read before trusting large dense models unattended
+
+**Status: OS updated (26.5.1/25F80 → 26.6/25G72), panic-diagnosis tooling
+verified working, full re-test of every currently-cached model clean, zero
+panics.** Not proof the underlying bug is gone — see "What's still unknown"
+below — but there is no live risk signal against anything in the current
+local cache.
+
+### What happened (2026-07-26/27, pre-update)
+
+Four kernel panics in ~30 hours, all during local MLX (Apple Silicon Metal/GPU)
+inference, all in the same kernel subsystem:
+
+| Timestamp (local) | Panic reason | Subsystem |
+|---|---|---|
+| 2026-07-26 13:20:10 | `"pending memory object unexpectedly found in non pending hash"` | `IOGPUGroupMemory.cpp:528` |
+| 2026-07-26 14:51:34 | same as above | `IOGPUGroupMemory.cpp:528` |
+| 2026-07-27 15:15:56 | `"completeMemory() prepare count underflow"` | `IOGPUMemory.cpp:550` |
+| 2026-07-27 17:43:37 | `"pending memory object unexpectedly found in non pending hash"` | `IOGPUGroupMemory.cpp:528` |
+
+All four are macOS/Metal **kernel** driver faults (IOGPU memory-object
+accounting), not app-level crashes — they happen below anything `assess.sh`
+or the MLX adapter can catch or prevent.
+
+- The 2026-07-27 17:43:37 panic is breadcrumb-confirmed: an in-flight
+  `mlx-chat` request to `mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit`
+  (`REQUEST_WAITING` at `T-4min`), with `Qwen3-Coder-30B-A3B-Instruct-4bit`
+  also active in the same run directory.
+- The 2026-07-27 15:15:56 panic's attribution to `Qwen2.5-Coder-32B-Instruct-4bit`
+  is **unconfirmed** — a 2026-07-28 review found the breadcrumb tooling didn't
+  exist yet at that timestamp (earliest breadcrumb on disk: `22:04:52Z` that
+  day), and the panic report itself carries no model strings. The operator
+  did delete 32B from the cache after this panic believing it was the cause;
+  a second, differently-signatured panic happened anyway with 32B already
+  gone, so the risk generalizes beyond one model. Full account in the
+  retrospective's "What was hard / surprising" section — read that, not this
+  summary, for the actual evidence chain.
+
+**Working theory (unchanged):** a macOS/Metal driver bug under unified-memory
+pressure on this 32GB Apple Silicon machine, most acute with large dense
+models on long-context prompts or multiple large models in flight. Panics
+rather than OOM-killing gracefully. `hardware_risk` field in
+`plugins/sdlc-model-council/scripts/adapters/mlx/adapter.json`.
+
+### 2026-07-28 re-test — clean
+
+Every model still in the local cache (7B, 14B, both 30B-A3B variants,
+Devstral-24B — `Qwen2.5-Coder-32B` excluded, no longer cached) run through the
+long-context dimension via **both** Path A (OpenCode) and Path B (direct), one
+MLX server loaded at a time, `mlx-server-run.sh` heartbeat logging watching
+memory pressure throughout. Uptime stayed continuous the whole session
+(zero reboots), including a run where `Pages free` dropped to ~7k pages. The
+breadcrumb tooling's `SUSPECTED_PANIC_VICTIM` detection was verified
+end-to-end first (deliberately `SIGKILL`-ing `assess.sh` mid-dispatch,
+confirming the victim model/item was correctly identified) — and that check
+surfaced a real bug (`last_alive` always `"unknown"`, fixed) before the fleet
+re-test was trusted.
+
+### What's still unknown
+
+- **`Qwen2.5-Coder-32B` itself is untested** since it was deleted — the only
+  model with even circumstantial (not confirmed) evidence against it has not
+  been re-run on the updated OS.
+- **Two MLX servers loaded concurrently** (the documented
+  `fanout_safe:false` case, and the actual condition during the second
+  panic) was deliberately *not* reproduced in the 2026-07-28 re-test —
+  operator chose sequential-only for that pass.
+- A clean re-test is evidence of reduced/absent risk, not proof — GPU kernel
+  panics under memory pressure are not perfectly deterministic.
+
+### Panic post-mortem tooling (built 2026-07-27, committed, verified)
+
+- `plugins/sdlc-model-council/scripts/council/mlx-panic-report.sh` — read-only;
+  correlates in-flight-request breadcrumbs (Path A + Path B + `assess.sh`
+  orchestrator) against the newest macOS panic reports in
+  `/Library/Logs/DiagnosticReports`. Run it after any unexplained reboot,
+  before starting new work, so old breadcrumb files don't get overwritten by
+  a fresh run's traffic.
+- `plugins/sdlc-model-council/scripts/council/mlx-server-run.sh` — wraps
+  `mlx_lm.server` with unbuffered, timestamped logging + a `vm_stat`/RSS
+  heartbeat every 5s, fsync'd, so a post-mortem has a memory-pressure trend
+  leading up to the panic, not just a last-known-good log tail.
+- `plugins/sdlc-model-council/scripts/adapters/mlx/mlx-stop-proxy.py` — Path A
+  (OpenCode) breadcrumb instrumentation, same idea as `mlx-chat`'s existing
+  breadcrumbs but for the proxy path, which can't see item IDs directly so
+  fingerprints requests by content instead.
+- `assess.sh` now writes `panic-breadcrumb.jsonl` per run dir (DISPATCH /
+  HEARTBEAT / DONE events) and archives any stale `active/*.pair` files found
+  at startup as `SUSPECTED_PANIC_VICTIM` before wiping them — previously that
+  evidence was destroyed by the normal startup cleanup on every run.
+
+---
+
 ## Mission (one line)
 
-Bring **local MLX (Apple-Silicon) LLMs into the council assessment** so they sit in the
-same **roster** and **fan-out plays** as the hosted fleet — a **local-vs-hosted
-comparison** on a **32 GB MacBook Pro**: does a $0, no-egress, fully-private local model
-grade well enough on the standardized problem stack to earn roster roles (e.g. a
-privacy-preserving reviewer) against the paid hosted models? Prove or disprove it with
-real numbers.
-
-## Approach — reuse the OpenCode adapter first; a dedicated adapter is later
-
-**Path A — MLX *through* OpenCode (DO THIS FIRST; fastest, zero new adapter code).**
-`mlx_lm.server` exposes an **OpenAI-compatible** endpoint; OpenCode registers it as a
-custom provider, so an MLX model becomes addressable as `opencode:mlx/<model>` and is
-assessed by the **existing opencode adapter** — no engine or adapter changes.
-- Confirmed real: [awni's "OpenCode with MLX" gist](https://gist.github.com/awni/93a973a0cf5fb539b2ce1f37ec4a9989),
-  [OpenCode providers docs](https://opencode.ai/docs/providers/). Config shape:
-  ```json
-  {"$schema":"https://opencode.ai/config.json","provider":{"mlx":{
-    "npm":"@ai-sdk/openai-compatible","name":"MLX (local)",
-    "options":{"baseURL":"http://127.0.0.1:8080/v1"},
-    "models":{"mlx-community/<model>":{"name":"<display>"}}}}}
-  ```
-- **The one wrinkle to solve first (DF4 precedence):** our opencode adapter writes a
-  *per-handle* `OPENCODE_CONFIG` carrying the read-only permission block. The `mlx`
-  provider block must be visible to that same run — so the adapter's per-handle config
-  must *include/merge* the provider block, or the provider must live where opencode
-  still reads it under `OPENCODE_CONFIG`. **First task = a one-model smoke test** to
-  confirm the provider is picked up under our read-only posture (recall from #232:
-  `OPENCODE_CONFIG` is lower precedence than a repo's own `opencode.json`; prefer
-  `OPENCODE_CONFIG_CONTENT` or a merged per-handle config).
-
-**Path B — dedicated `mlx` adapter (later productization).** `mlx:<model>` via one-shot
-`mlx_lm.generate`, no OpenCode dependency (one directory: `adapter.json` + `adapter.sh`,
-zero engine edits; opencode adapter is the template; see `plugins/sdlc-model-council/
-docs/ADAPTER-AUTHORING.md`). Build this only if MLX earns a permanent seat and we want
-it independent of OpenCode. Not needed for the evaluation.
+Add a **tool-use / command-line-execution** capability to the council assessment
+and run a **local-MLX vs Haiku-4.5 vs hosted-fleet** comparison — turning the
+un-audited `tool-use` prior (0.42 placeholder) and the *extrapolated* "Haiku
+should win command execution on latency × tool-call reliability" answer into
+**real, measured numbers** (grade / task-success / turns-to-success / latency / $).
 
 ## Where we are
 
-- **model-council v1 is MERGED to `main`** (PR #233, merge commit `b524066`). 681 tests
-  green (368 council + 313 substrate). This branch (`feature/model-council-mlx`) is cut
-  off that merge. Never commit to `main`; feature branch only.
-- The council layer lives at `plugins/sdlc-model-council/scripts/council/` — `assess.sh`
-  (estimate gate → free wave-0 → paid waves w/ budget hard-stop + resume + timeout),
-  `roster.py`/`diversity.py`/`cast.py`, 4 scorers, `play.sh` (Diff+Synthesis) +
-  `council-judge` agent, 5 commands, the `council-policy` skill, priors + pricing.
-- Assessment stack: `plugins/sdlc-model-council/assessment/stack/v1/` — 9 objective
-  items across code-review/bug-fix/long-context/instruction-format.
+**All four deliverables below are DONE (commit `28693aa`, already on this
+branch).** `command-exec` + `monitoring` dimensions shipped, `command-check` +
+`command-diff` scorers shipped, a 10-model audition ran at $0 total, priors
+re-derived. Full results in `retrospectives/235-council-tool-use-assessment.md`
+§"Results — the comparison". Headline finding: local `Qwen3-Coder-30B-A3B`
+ties Haiku 4.5 and the hosted fleet on this tier, at 2s p50 and genuine $0 —
+the "Haiku should win on latency × reliability" extrapolation did not hold.
 
-## The 32 GB constraint shapes everything
+Since then (this session, 2026-07-27/28): panic-diagnosis tooling built,
+verified, and committed (see the section above); a full re-test of the
+current local fleet came back clean. Currently working on: extending
+`assess.sh` with a `--timeout-multiplier` so local MLX runs (which are
+regularly slower than the hosted-model-calibrated per-item `timeout_s`) can
+run to genuine completion instead of hitting a harness timeout that isn't a
+real failure.
 
-Unified memory shared by macOS + apps + model + KV cache. Budget ~8–10 GB for the system
-→ **~22 GB for weights + context**. 4-bit quant ≈ 0.5–0.6 GB per 1B params:
+- **Issue #235** (follow-on to #232 / PR #234). Branch
+  **`feature/council-tool-use-assessment`** (pushed, several commits ahead of
+  origin — push before ending a session).
+- **model-council v1 (PR #233) + local-MLX backend (PR #234) are MERGED to
+  `main`.** This feature builds directly on them. Never commit to `main`; feature
+  branch only.
+- Remaining work is **follow-ups only**, not blocking: see the retrospective's
+  "Follow-ups" section — a genuinely harder tool-use tier, making the three
+  non-executable `command-exec` items executable, a tool-use-driven role in
+  `roster.py`, eliciting Haiku through a real adapter instead of a subagent.
+  None of these block opening a PR if the branch is otherwise ready.
 
-| Model (4-bit, `mlx-community/*`) | ~Weights | 32 GB | Role |
-|---|---|---|---|
-| Qwen2.5-Coder-**7B** / Llama-3.1-8B | ~4–5 GB | ✅ fast | fast-local baseline |
-| Qwen2.5-Coder-**14B** | ~8 GB | ✅ comfortable | quality/latency sweet spot |
-| Qwen2.5-Coder-**32B** | ~18 GB | ⚠️ tight | stretch test (long-context items inflate KV cache → watch swap) |
-| any 70B | ~40 GB | ❌ | excluded on 32 GB |
+## Read these first (pointers)
 
-**Two hard constraints for the local wave:**
-1. **Concurrency = 1.** `mlx_lm.server` serves ONE model and 32 GB can't hold two large
-   models → MLX runs **sequentially** (server up → assess model → server down → next).
-   Use `assess.sh --max-concurrent 1` for the MLX wave; the hosted fleet still fans out.
-2. **Generous timeouts.** Local 32B on the 7k-token long-context items is slow
-   (tens of seconds–minutes/turn). Bump item `timeout_s` for the MLX wave (consider
-   adding a `--timeout-override` to assess.sh), or run 32B on a **reduced dim set**
-   (skip/shorten long-context) to avoid OOM/swap.
+- `docs/feature-proposals/235-council-tool-use-assessment.md` — this feature's scope.
+- `retrospectives/232-external-agent-delegation.md` — the full council + MLX story,
+  incl. the live comparison, the Path-A/Path-B fairness lesson, and the SDLC/CI
+  gotchas (all directly relevant).
+- `plugins/sdlc-model-council/scripts/council/` — the assessment layer.
+- `plugins/sdlc-model-council/assessment/stack/v1/` — the problem stack you'll extend.
+- `plugins/sdlc-model-council/scripts/adapters/mlx/` — the Path-B MLX adapter (text-only).
+- `plugins/sdlc-model-council/docs/ADAPTER-AUTHORING.md` — if a new adapter is needed
+  (e.g. a `claude`/Haiku adapter).
 
-## Methodology — reuse the council assessment unchanged
+## What the capability needs (why it's different from v1)
 
-1. **Assess** each MLX model on the 4 objective dims — the identical 9-item stack the
-   hosted fleet ran.
-2. **Include a hosted anchor** in the SAME run (e.g. `agy:gemini-3.6-flash-medium`, the
-   cheap solid-B baseline) → one roster with **local and hosted side by side**: grade
-   per dim, **$0 cost** for all MLX, and **p50 latency** (where local pays).
-3. **Diff+Synthesis test:** best local model + a hosted member reviewing our own code —
-   the "is a private, $0, no-egress local reviewer good enough for the panel?" question;
-   record the baseline-delta.
+The v1 stack grades **static, single-turn** dims (code-review, bug-fix,
+long-context, instruction-format). Tool use / command execution is **agentic**:
+emit a command/tool call → observe output → decide → iterate → **know when to
+stop** (monitoring). It stresses tool-call **format validity**, **reasoning over
+observations**, and **stop-condition judgment** — none of which v1 measures.
 
-**What we learn (success criteria):** does a local model grade ≥ B on code-review/bug-fix
-(→ a privacy-preserving zero-cost reviewer)? the quality-vs-latency curve across
-7B/14B/32B? does 32B-4bit survive the long-context items on 32 GB or swap/OOM? does a
-local member still add material value to a hosted panel?
+## Recommended approach — **propose-and-score** (the proposal's design stance)
 
-## Ground-truth facts (probed 2026-07-25/26 — don't re-derive)
+Default to a **deterministic propose-and-score contract with NO live shell**:
+give the model a goal + a *simulated* terminal transcript; it emits the correct
+next command(s) / decision; score deterministically against a golden command set
+/ decision. This (a) is safe + reproducible, (b) isolates **model capability**
+from harness plumbing, and (c) keeps elicitation **uniform** — a single prompt,
+**no agentic system prompt** (the #234 fairness lesson: OpenCode's system prompt
+corrupted small-local-model output; send only the item prompt). Real sandboxed
+execution is an **opt-in stretch**, gated behind explicit authorisation.
 
-- **Machine:** arm64 (Apple Silicon), 32 GB unified memory. MLX runs natively.
-- **`mlx-lm` is NOT pre-installed** (system python has neither `mlx_lm` nor `mlx.core`)
-  but IS installable. **User Python policy (global `~/.claude/CLAUDE.md`): never global
-  pip — use a project `.venv` via `uv`.** So `uv venv --seed` then `uv pip install
-  mlx-lm`; run via `uv run mlx_lm.server --model <hf-id> --port 8080` (OpenAI-compatible
-  `/v1`) or `uv run mlx_lm.generate`. Models from `mlx-community/*` on HuggingFace
-  (first run downloads weights — several GB, slow).
-- **opencode** binary is at `~/.opencode/bin/opencode`, OFF the non-interactive Bash
-  PATH; opencode 1.18.5; anonymous OpenCode Zen free tier = ~100 req/day (irrelevant for
-  local — a local provider bypasses Zen entirely).
-- **`jack-tar-mlx` plugin exists but is IMAGES (mflux), not LLM** — reference only.
-- Adapter grammar `^[a-z][a-z0-9]*`; addresses `opencode:mlx/<model>` (Path A) or
-  `mlx:<model>` (Path B).
+**Decide up front (open questions in the proposal):**
+1. One `tool-use` dimension, or split `command-exec` (produce the right command
+   for a goal) vs `monitoring` (given a stream, decide continue/stop + when the
+   condition fires)? Leaning: start with items under a single `tool-use` dim; split
+   only if the data shows they grade differently.
+2. **How to reach Haiku for an apples-to-apples harness.** There is **no Claude
+   adapter** in the council today (adapters are codex/agy/opencode/mlx). For
+   propose-and-score, elicitation is one prompt → answer → deterministic score, so
+   Haiku can be reached either by a **new minimal `claude` adapter** (see
+   ADAPTER-AUTHORING.md) or by a direct Claude API call in a comparison harness.
+   Pick one and keep every model on the identical prompt + scorer.
 
-## Lessons from the v1 build (apply them)
+## How the council works (ground-truth — don't re-derive)
 
-- **Family resolution MUST go through `priors.py`** (address→family via `matches`), NOT
-  substring-match on pricing keys — `estimate.py` and `usage.py` were both bitten (paid
-  models priced $0 → budget hard-stop silently ineffective; both now take `--priors-dir`).
-  Add an `mlx-local` family (free) to `pricing.json` + a `scripts/council/priors/
-  mlx-local.json` (matches e.g. `["opencode:mlx/","mlx:"]`, humble ~0.40–0.55 priors —
-  quality is genuinely unknown until this audit).
-- **Cost model is metered-API-equivalent.** MLX is a genuine $0 (local, no egress) — the
-  comparison's headline. See memory `model-council-cost-framing`.
-- **`assess.sh` bash gotchas already fixed** (don't reintroduce): `IFS=$'\t' read`
-  collapses empty middle TSV fields → use `awk -F'\t'`; `python3 -c` one-liners need
-  `import sys`; empty-`status` poll guard; resume back-fills `SPENT`.
-- **MLX is slow** → background `assess.sh` and poll; generous timeouts; the live compare
-  will take real wall-clock (weight load + inference).
-- **Gate every step on the 313 substrate + council suites staying green.** Adapter/mock
-  tests use the mock-CLI pattern (no weights, no tokens). Zero debt (`./tmp` not `/tmp`;
-  no TODO/FIXME). Commit trailer: `Co-Authored-By: Claude Opus 4.8 (1M context)
-  <noreply@anthropic.com>`.
+**Assessment stack** — `assessment/stack/v1/stack.json` lists items; each item dir
+has `item.json` + `prompt.md` (+ `inputs/`, `expected/`). `item.json` fields:
+`id, dimension, version, difficulty, timeout_s, min_context_tokens,
+est_prompt_tokens, est_output_tokens, answer_contract, scorer.type`.
+- `answer_contract` ∈ `text | file-blocks | findings-json | strict-json |
+  verdict-line` — parsed by `scripts/council/extract_answer.py` (the SINGLE source
+  of truth; scorers import it, never re-parse). A command-exec item likely uses
+  `verdict-line` / `strict-json` for the emitted command(s)/decision, or a **new
+  contract** if needed.
+- `scorer.type` ∈ existing `hidden-tests | exact-match | format-parse |
+  planted-defects` (`scripts/council/score/<type>.py`). A command-comparison
+  scorer is probably a **new type** (normalise + compare commands / decisions).
 
-## Deliverables
+**Scorer ABI** — `score/<type>.py <item_dir> <answer_file> <workdir>` writes
+`<workdir>/score.json` = `{score: float, status: str, details: {...}}`, and MUST
+**always exit 0** (use `os.makedirs(workdir, exist_ok=True)` in `write_score` —
+this bit the v1 scorers). Stdlib only. Add golden cases to
+`tests/test-council-scorers.sh`; items are linted by
+`tests/test-council-stack-lint.sh` (add the new item shas to `stack.json`).
 
-1. **Path-A smoke test** — `mlx_lm.server` one 7B model + opencode `mlx` provider config
-   resolving under our read-only posture (the DF4 wrinkle); one assess turn against
-   `opencode:mlx/<model>` returns a scored row.
-2. `mlx-local` family in `pricing.json` (free) + `priors/mlx-local.json`.
-3. **The gated live comparison** (user-authorised): assess 7B + 14B (+ 32B stretch on a
-   reduced dim set) + a hosted anchor at `--max-concurrent 1` → a **local-vs-hosted
-   roster** (grade / $0 / latency); then a Diff+Synthesis with a local + hosted member on
-   our own code. Record in `retrospectives/232-external-agent-delegation.md`.
-4. Decide on Path B (dedicated `mlx` adapter + mock + `test-extdel-mlx-resume.sh`) based
-   on whether MLX earned its seat.
+**Priors + grades** — `scripts/council/priors.py` resolves an address
+`adapter:model[@effort]` to a family by **longest matching `matches` substring**;
+`priors/<family>.json` has a `dimensions` map (add a real `tool-use` value per
+family; `mlx-local`'s is a 0.42 placeholder to REPLACE with audition data).
+`scripts/council/roster.py`: `posterior = (n·raw_mean + 3·prior)/(n+3)`; grades
+**A≥0.85, B≥0.65, C≥0.45**, else D. Consider adding `tool-use` to `CORE_DIMS` /
+role logic if it should drive roles.
+
+**Run an assessment / comparison** (from repo root — `./tmp` matters):
+```bash
+C=plugins/sdlc-model-council/scripts/council
+MLX_BASE_URL="http://127.0.0.1:8081/v1" bash "$C/assess.sh" \
+  --stack plugins/sdlc-model-council/assessment/stack/v1/stack.json \
+  --priors-dir "$C/priors" --pricing "$C/pricing.json" \
+  --models "mlx:mlx-community/Qwen2.5-Coder-14B-Instruct-4bit" \
+  --dims tool-use --max-concurrent 1 --run-dir ./tmp/model-council/tu-14b
+```
+Paid models (Haiku, hosted fleet) need `--budget-usd`. Merge per-model
+`results.jsonl` → `roster.py --results <merged>` + `diversity.py` for the
+side-by-side roster (grade / $ / p50-latency) — exactly how #234's comparison was
+built (see the 232 retrospective for the worked example).
+
+## The 32 GB MLX environment (already set up in #234)
+
+- arm64, 32 GB. Repo `.venv` (gitignored) has `mlx-lm`. Qwen2.5-Coder-**7B/14B/32B**
+  `-Instruct-4bit` are cached in `~/.cache/huggingface`. Start a server per model:
+  `uv run mlx_lm.server --model <hf-id> --port 8081` (OpenAI `/v1`).
+- **Concurrency = 1** (one server, 32 GB can't hold two large models) → MLX runs
+  **sequentially**; swap the server's loaded model between passes (it load-switches
+  on the request `model` field). **Generous timeouts** — local is slow (14B hit
+  293s on a long-context item; 32B ~161s on a bug-fix item).
+- The Path-B `mlx` adapter (`scripts/adapters/mlx/`) is **text-only, no tools** —
+  it injects `stop` itself (no proxy needed) and sends only the item prompt. The
+  `tmp/mlx-stop-proxy.py` shim is Path-A (opencode) only. For a **real-execution**
+  tool-use mode you would need a tool-wired harness — out of scope for the
+  propose-and-score default.
 
 ## Immediate next step
 
-`uv venv --seed && uv pip install mlx-lm`; download a Qwen2.5-Coder-7B-Instruct-4bit;
-`uv run mlx_lm.server ... --port 8080`; add the opencode `mlx` provider and confirm it's
-picked up under our per-handle `OPENCODE_CONFIG` (the DF4 precedence check) with one
-`opencode:mlx/<model>` assess turn. THEN wire `mlx-local` priors/pricing and run the
-gated live comparison at concurrency 1. Verify each step yourself; delegate mechanical
-execution to Sonnet with the 313-test gate enforced.
+The design/implement/audition work described in the rest of this file (below)
+is **historical context for how #235 was built**, not a to-do list — it's all
+done (see "Where we are" above). The live thread as of 2026-07-28 is:
+
+1. Add a `--timeout-multiplier` flag to `assess.sh` so local MLX long-context
+   runs can complete instead of hitting the hosted-model-calibrated 90s
+   `timeout_s` (harness artifact, not a real failure — confirmed by watching
+   `mlx_lm.server`'s own log keep processing well past the harness giving up).
+   TDD it, keep the council suite green.
+2. Use it to run a calibration pass and get a real wall-clock estimate for
+   letting a fuller local fleet run go to actual completion, before deciding
+   whether to run it.
+3. Then: either open a PR (all four deliverables done, suite green, zero
+   debt) or pick up a retrospective follow-up — operator's call.
+
+## Deliverables
+
+1. Design spec (scoring contract, item schema, metrics) — the two open questions
+   resolved.
+2. New scorer + 3–5 items + stack/priors/roster wiring; council suite green; zero debt.
+3. The **gated comparison** with **Haiku 4.5 as an anchor** → a tool-use roster
+   (grade / task-success / turns-to-success / latency / $) answering "how do local
+   models compare with Haiku for command-line execution and monitoring?".
+4. Audition-derived `tool-use` priors replacing the placeholders; findings in
+   `retrospectives/235-council-tool-use-assessment.md`.
+
+## Lessons from #234 to apply
+
+- **Fairness:** single item prompt, **no agentic system prompt** — that's the whole
+  reason Path B exists. Keep every model on the identical elicitation + scorer.
+- **SDLC/CI:** the branch already has a branch-named proposal + retrospective, so
+  the PR-gated `Feature Proposal Check` / `Retrospective Check` will pass (they
+  derive expected artifacts from the branch name; #234 initially failed because it
+  reused the #232 names). `validation.yml` is informational-only (main is red on
+  it); the real fatal steps are those two PR-gated checks. **Never** use `--admin`
+  / `--force` / branch-protection bypass — report a block and ask.
+- **Gate every step on the council suite staying green** (`plugins/sdlc-model-council/
+  tests/*.sh`, incl. the slow `test-extdel-*-resume.sh`). Adapter/mock tests use the
+  mock-CLI pattern (no weights, no tokens). Zero debt (`./tmp` not `/tmp`; no
+  TODO/FIXME). Run `pre-commit` (installed via `uv tool`) — it auto-normalises JSON
+  (`pretty-format-json`) + Python (`black`); re-stage its fixes.
+- **Cost framing:** MLX is genuine $0; hosted/Haiku $ are metered-API-equivalent
+  (subscription users read $/item as a usage proxy). See memory `model-council-cost-framing`.
+- **Verify yourself; delegate mechanical execution** to Sonnet with the test gate
+  enforced. Commit trailer:
+  `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
