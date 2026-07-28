@@ -24,7 +24,7 @@ EXTDEL_DEFAULT="$(cd "$THIS_DIR/.." && pwd -P)/extdel.sh"
 STACK=""; PRIORS=""; PRICING=""; MODELS=""; DIMS=""
 BUDGET=""; ESTIMATE=0; RESUME=0; RUN_DIR=""; POSTURE="read-only"
 MAX_CONC=5; NOW=""; EXTDEL="$EXTDEL_DEFAULT"; K=1
-NO_REACH=0; POLL_WAIT=1
+NO_REACH=0; POLL_WAIT=1; TIMEOUT_MULT=1
 
 die() { echo "assess.sh: $1" >&2; exit 1; }
 
@@ -46,6 +46,7 @@ while [ $# -gt 0 ]; do
     --extdel) EXTDEL="$2"; shift 2 ;;
     --no-reachability-check) NO_REACH=1; shift ;;
     --poll-wait-s) POLL_WAIT="$2"; shift 2 ;;
+    --timeout-multiplier) TIMEOUT_MULT="$2"; shift 2 ;;
     *) die "unknown option: $1" ;;
   esac
 done
@@ -56,6 +57,8 @@ done
 [ -n "$MODELS" ] || die "--models is required"
 [ -n "$DIMS" ] || die "--dims is required"
 [ -x "$EXTDEL" ] || die "extdel.sh not executable at $EXTDEL"
+python3 -c "import sys; sys.exit(0 if float(sys.argv[1]) > 0 else 1)" "$TIMEOUT_MULT" 2>/dev/null \
+  || die "--timeout-multiplier must be a positive number, got: $TIMEOUT_MULT"
 
 RUN_CWD="$(pwd -P)"
 BASE_DIR="$RUN_CWD/tmp/model-council"
@@ -234,13 +237,18 @@ is_unreachable() { case "$UNREACHABLE" in *" $1 "*) return 0 ;; *) return 1 ;; e
   || die "schedule.py failed"
 
 # Expand plan into a pending TSV: model \t item \t dimension \t timeout \t sha
+# --timeout-multiplier scales every item's canonical timeout_s (calibrated for
+# fast hosted models) up for slow local backends, so a genuinely-still-working
+# local MLX generation isn't cut off and reported as a false "timeout".
 ALLPAIRS="$RUN_DIR/pairs.tsv"
-python3 - "$PLAN" > "$ALLPAIRS" <<'PY'
+python3 - "$PLAN" "$TIMEOUT_MULT" > "$ALLPAIRS" <<'PY'
 import json, sys
 plan = json.load(open(sys.argv[1], encoding="utf-8"))
+mult = float(sys.argv[2])
 for p in plan.get("pairs", []):
+    timeout_s = max(1, round(p.get("timeout_s", 120) * mult))
     print("\t".join([p["model"], p["item"], p["dimension"],
-                     str(p.get("timeout_s", 120)), p.get("item_sha256", "")]))
+                     str(timeout_s), p.get("item_sha256", "")]))
 PY
 
 # ---------------------------------------------------------------------------
