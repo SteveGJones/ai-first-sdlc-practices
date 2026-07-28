@@ -238,6 +238,29 @@ independently re-confirms keeping Path B for local models.
   `mon-hard-transient-error` were written as traps and every single model walked
   through both. Designing an item that *feels* hard is not the same as designing
   one that discriminates.
+- **The 32B model panicked the machine during a full-fleet run (2026-07-27).**
+  A follow-up run driving all 6 cached models through `assess.sh` (Path B, one
+  server per model, `--max-concurrent 1`) hit a kernel panic
+  (`"completeMemory() prepare count underflow" @IOGPUMemory.cpp:550`) partway
+  through the `Qwen2.5-Coder-32B-Instruct-4bit` job, on a long-context item
+  (`lc-meeting-minutes`), ~68s after the request was dispatched. This is a
+  *different* IOGPU panic signature from the two prior ones seen during earlier
+  work on this feature (`"pending memory object unexpectedly found in non
+  pending hash" @IOGPUGroupMemory.cpp:528`), but the same subsystem — GPU/unified
+  memory pressure. Qwen2.5-Coder-32B is the largest **dense** model in the
+  cached fleet (the two Qwen3-Coder-30B-A3B variants are MoE, only ~3B active
+  params at a time, so lighter in practice despite the similar name). On a
+  32GB unified-memory Apple Silicon laptop, a 32B-parameter 4-bit model
+  combined with a long-context prompt appears to push GPU memory pressure into
+  a regime the current macOS/Metal stack cannot recover from gracefully — it
+  panics and reboots rather than OOM-killing the process. Recommendation:
+  **treat the 32B tier as at-risk on 32GB machines**, especially for
+  long-context items; prefer the MoE 30B-A3B variants or smaller dense models
+  for routine fleet runs, and if 32B must be exercised, do it in isolation
+  (nothing else running, machine can tolerate an unplanned reboot) rather than
+  as one job in an unattended multi-hour queue. `mlx-panic-report.sh` and
+  `mlx-server-run.sh`'s heartbeat logging (this session's work) made isolating
+  the exact job/item straightforward after the fact, but did not prevent it.
 
 ## Fairness caveats (recorded)
 

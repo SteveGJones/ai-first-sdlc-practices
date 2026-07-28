@@ -79,9 +79,61 @@ RESULTS="$RUN_DIR/results.jsonl"
 PLAN="$RUN_DIR/plan.json"
 mkdir -p "$RUN_DIR/prompts" "$RUN_DIR/score" "$RUN_DIR/active"
 : > "$RUN_DIR/active.reap" 2>/dev/null || true
-rm -f "$RUN_DIR/active/"*.pair "$RUN_DIR/active/"*.t0 2>/dev/null || true
 
 log() { echo "[assess] $*"; }
+
+# ---------------------------------------------------------------------------
+# Panic breadcrumbs (issue: local MLX runs have taken the whole machine down
+# with a kernel panic mid-run). Durable, fsync'd record of dispatch/liveness/
+# completion per model x item pair, so a post-mortem after an unexplained
+# reboot can name which pair was in flight. See mlx-panic-report.sh.
+# ---------------------------------------------------------------------------
+BREADCRUMB="$RUN_DIR/panic-breadcrumb.jsonl"
+[ -f "$BREADCRUMB" ] || : > "$BREADCRUMB"
+mkdir -p "$BASE_DIR" 2>/dev/null || true
+printf '%s\n' "$RUN_DIR" > "$BASE_DIR/latest-run.txt" 2>/dev/null || true
+
+breadcrumb() { # breadcrumb <event> <handle> <model> <item> <dim> [extra_json]
+  local event="$1" handle="$2" model="$3" item="$4" dim="$5" extra="${6:-"{}"}"
+  python3 - "$BREADCRUMB" "$event" "$handle" "$model" "$item" "$dim" "$extra" <<'PY'
+import json, os, sys, time
+path, event, handle, model, item, dim, extra = sys.argv[1:8]
+try:
+    extra_obj = json.loads(extra)
+except Exception:
+    extra_obj = {}
+rec = {
+    "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    "event": event, "handle": handle, "model": model, "item": item,
+    "dimension": dim,
+}
+rec.update(extra_obj)
+try:
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps(rec, separators=(",", ":")) + "\n")
+        fh.flush()
+        os.fsync(fh.fileno())
+except OSError:
+    pass
+PY
+}
+
+# Any active/*.pair files still present at startup are evidence of an
+# abnormal previous exit — the normal wipe below (and the cleanup at the end
+# of each dispatch) never runs after a panic reboot. Archive them to the
+# breadcrumb log as the prime suspect BEFORE they're wiped, or that evidence
+# is lost forever.
+for pf in "$RUN_DIR"/active/*.pair; do
+  [ -f "$pf" ] || continue
+  h="$(basename "$pf" .pair)"
+  pairline="$(cat "$pf" 2>/dev/null)"
+  sm="$(printf '%s' "$pairline" | cut -f1)"; si="$(printf '%s' "$pairline" | cut -f2)"
+  sd="$(printf '%s' "$pairline" | cut -f3)"
+  alive="$(cat "$RUN_DIR/active/$h.alive" 2>/dev/null || echo unknown)"
+  breadcrumb "SUSPECTED_PANIC_VICTIM" "$h" "$sm" "$si" "$sd" \
+    "{\"last_alive\":\"$alive\"}"
+done
+rm -f "$RUN_DIR/active/"*.pair "$RUN_DIR/active/"*.t0 "$RUN_DIR/active/"*.alive 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
 # Item manifest: item -> path,dimension,scorer_type,answer_contract,timeout,sha
@@ -332,6 +384,8 @@ process_terminal() { # process_terminal <handle> <pairline> <engine_status> <t0>
   emit_row "$model" "$item" "$dim" "$sha" "$status" "$score" "$details" \
            "$cost" "$basis" "$tin" "$tout" "$lat" "$handle" "$STACK_VERSION" "$NOW_TS"
   SPENT="$(python3 -c 'import sys;print(round(float(sys.argv[1])+float(sys.argv[2]),8))' "$SPENT" "$cost" 2>/dev/null || echo "$SPENT")"
+  breadcrumb "DONE" "$handle" "$model" "$item" "$dim" \
+    "{\"status\":\"$status\",\"latency_s\":$lat}"
 }
 
 emit_skipped() { # emit_skipped <pairline>
@@ -390,6 +444,9 @@ run_wave() { # run_wave <pending-tsv> <budget-enforced 0|1>
       fi
       printf '%s' "$pairline" > "$RUN_DIR/active/$h.pair"
       date +%s > "$RUN_DIR/active/$h.t0"
+      local pdim
+      pdim="$(printf '%s' "$pairline" | cut -f3)"
+      breadcrumb "DISPATCH" "$h" "$pm" "$pi" "$pdim" "{}"
       ACTIVE="$ACTIVE $h"
     done
 
@@ -404,6 +461,17 @@ run_wave() { # run_wave <pending-tsv> <budget-enforced 0|1>
       case "$st" in
         RUNNING)
           rm -f "$RUN_DIR/active/$h.empty" 2>/dev/null || true
+          local now_ep last_hb
+          now_ep="$(date +%s)"
+          last_hb="$(cat "$RUN_DIR/active/$h.hb" 2>/dev/null || echo 0)"
+          if [ $((now_ep - last_hb)) -ge 5 ]; then
+            local hpair hm hi hd
+            hpair="$(cat "$RUN_DIR/active/$h.pair" 2>/dev/null)"
+            hm="$(printf '%s' "$hpair" | cut -f1)"; hi="$(printf '%s' "$hpair" | cut -f2)"
+            hd="$(printf '%s' "$hpair" | cut -f3)"
+            breadcrumb "HEARTBEAT" "$h" "$hm" "$hi" "$hd" "{}"
+            printf '%s' "$now_ep" > "$RUN_DIR/active/$h.hb"
+          fi
           newactive="$newactive $h" ;;
         "")
           # Empty = `extdel status` returned nothing / crashed. The engine's
@@ -419,7 +487,7 @@ run_wave() { # run_wave <pending-tsv> <budget-enforced 0|1>
             te="$(cat "$RUN_DIR/active/$h.t0" 2>/dev/null || date +%s)"
             process_terminal "$h" "$pe" "ERROR" "$te"
             "$EXTDEL" stop "$h" >/dev/null 2>&1 || true
-            rm -f "$RUN_DIR/active/$h.pair" "$RUN_DIR/active/$h.t0" "$RUN_DIR/active/$h.empty"
+            rm -f "$RUN_DIR/active/$h.pair" "$RUN_DIR/active/$h.t0" "$RUN_DIR/active/$h.empty" "$RUN_DIR/active/$h.hb"
             progressed=1
           else
             newactive="$newactive $h"
@@ -430,7 +498,7 @@ run_wave() { # run_wave <pending-tsv> <budget-enforced 0|1>
           t0="$(cat "$RUN_DIR/active/$h.t0" 2>/dev/null || date +%s)"
           process_terminal "$h" "$pairline" "$st" "$t0"
           "$EXTDEL" stop "$h" >/dev/null 2>&1 || true
-          rm -f "$RUN_DIR/active/$h.pair" "$RUN_DIR/active/$h.t0" "$RUN_DIR/active/$h.empty"
+          rm -f "$RUN_DIR/active/$h.pair" "$RUN_DIR/active/$h.t0" "$RUN_DIR/active/$h.empty" "$RUN_DIR/active/$h.hb"
           progressed=1
           # budget hard-stop (design §2.4 step 5)
           if [ "$enforce" -eq 1 ] && [ -n "$BUDGET" ]; then

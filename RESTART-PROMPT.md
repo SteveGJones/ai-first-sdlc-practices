@@ -4,6 +4,93 @@ Paste into a fresh session to resume. Self-contained; read the pointers before w
 
 ---
 
+## ⚠️ Read this first — machine has been kernel-panicking under local MLX load
+
+Restarting after an OS update specifically to clear this. **Before resuming
+any MLX work, confirm the update installed** (`sw_vers` — panics below were
+all on **macOS 26.5.1 / build 25F80**; if you're still on 25F80, the update
+hasn't landed yet, stop and install it first).
+
+### What happened
+
+Four kernel panics in ~30 hours, all during local MLX (Apple Silicon Metal/GPU)
+inference, all in the same kernel subsystem:
+
+| Timestamp (local) | Panic reason | Subsystem |
+|---|---|---|
+| 2026-07-26 13:20:10 | `"pending memory object unexpectedly found in non pending hash"` | `IOGPUGroupMemory.cpp:528` |
+| 2026-07-26 14:51:34 | same as above | `IOGPUGroupMemory.cpp:528` |
+| 2026-07-27 15:15:56 | `"completeMemory() prepare count underflow"` | `IOGPUMemory.cpp:550` |
+| 2026-07-27 17:43:37 | `"pending memory object unexpectedly found in non pending hash"` | `IOGPUGroupMemory.cpp:528` |
+
+All four are macOS/Metal **kernel** driver faults (IOGPU memory-object
+accounting), not app-level crashes — they happen below anything `assess.sh`
+or the MLX adapter can catch or prevent. Correlated via `mlx-panic-report.sh`
+breadcrumbs (see "Panic post-mortem tooling built this session" below):
+
+- The 2026-07-27 17:43:37 panic lines up with an in-flight `mlx-chat` request
+  to `mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit` (`REQUEST_WAITING`
+  at `T-4min`), with `Qwen3-Coder-30B-A3B-Instruct-4bit` also active in the same
+  run directory — i.e. **GPU memory pressure from a large model under load**,
+  consistent with the other three panics.
+- The 2026-07-27 15:15:56 panic (documented in the retrospective) was traced to
+  `Qwen2.5-Coder-32B-Instruct-4bit` on a long-context item
+  (`lc-meeting-minutes`), ~68s after dispatch — the largest **dense** model in
+  the cached fleet.
+
+**Working theory:** this is a macOS/Metal driver bug under unified-memory
+pressure on this 32GB Apple Silicon machine, triggered reliably by large
+(24B–32B, dense) MLX models — especially combined with long-context prompts or
+multiple large models in flight. It panics/reboots rather than the process
+OOM-killing gracefully. Recorded in `retrospectives/235-council-tool-use-assessment.md`
+and `plugins/sdlc-model-council/scripts/adapters/mlx/adapter.json`'s
+`hardware_risk` field.
+
+### Recommendations for this restart
+
+1. **Confirm the OS update actually installed** (`sw_vers`) before touching
+   MLX again — that's the whole point of rebooting into it.
+2. **Don't immediately re-run the full 6-model fleet unattended.** First smoke
+   -test with a small model (7B/14B or the MoE 30B-A3B variants, which did
+   **not** trigger the panic despite the similar-looking parameter count —
+   they're ~3B active params) and watch it complete cleanly.
+3. **Only then, cautiously, re-test a large dense model** (24B/32B) — in
+   isolation, nothing else running, on a short/non-long-context item first,
+   with the machine in a state where an unplanned reboot is tolerable.
+4. If a large dense model panics again on the *updated* OS, treat it as
+   confirmed still-present (not a one-off) and escalate to avoiding 24B+
+   dense models on this hardware entirely for council runs — prefer the
+   MoE 30B-A3B variants or smaller dense models, per the `hardware_risk` note.
+5. **Uncommitted work exists on this branch** — `git status` shows modified
+   `assess.sh` / `adapter.json` / `mlx-chat` / the retrospective, plus three
+   new untracked files (`mlx-stop-proxy.py`, `mlx-panic-report.sh`,
+   `mlx-server-run.sh`). This is the panic-diagnosis tooling built this
+   session, not yet committed — review and commit it before starting new
+   feature work, so it isn't lost to another reboot.
+
+### Panic post-mortem tooling built this session
+
+- `plugins/sdlc-model-council/scripts/council/mlx-panic-report.sh` — read-only;
+  correlates in-flight-request breadcrumbs (Path A + Path B + `assess.sh`
+  orchestrator) against the newest macOS panic reports in
+  `/Library/Logs/DiagnosticReports`. Run it after any unexplained reboot,
+  before starting new work, so old breadcrumb files don't get overwritten by
+  a fresh run's traffic.
+- `plugins/sdlc-model-council/scripts/council/mlx-server-run.sh` — wraps
+  `mlx_lm.server` with unbuffered, timestamped logging + a `vm_stat`/RSS
+  heartbeat every 5s, fsync'd, so a post-mortem has a memory-pressure trend
+  leading up to the panic, not just a last-known-good log tail.
+- `plugins/sdlc-model-council/scripts/adapters/mlx/mlx-stop-proxy.py` — Path A
+  (OpenCode) breadcrumb instrumentation, same idea as `mlx-chat`'s existing
+  breadcrumbs but for the proxy path, which can't see item IDs directly so
+  fingerprints requests by content instead.
+- `assess.sh` now writes `panic-breadcrumb.jsonl` per run dir (DISPATCH /
+  HEARTBEAT / DONE events) and archives any stale `active/*.pair` files found
+  at startup as `SUSPECTED_PANIC_VICTIM` before wiping them — previously that
+  evidence was destroyed by the normal startup cleanup on every run.
+
+---
+
 ## Mission (one line)
 
 Add a **tool-use / command-line-execution** capability to the council assessment
