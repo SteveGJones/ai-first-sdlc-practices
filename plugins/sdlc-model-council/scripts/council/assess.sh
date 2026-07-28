@@ -129,11 +129,23 @@ for pf in "$RUN_DIR"/active/*.pair; do
   pairline="$(cat "$pf" 2>/dev/null)"
   sm="$(printf '%s' "$pairline" | cut -f1)"; si="$(printf '%s' "$pairline" | cut -f2)"
   sd="$(printf '%s' "$pairline" | cut -f3)"
-  alive="$(cat "$RUN_DIR/active/$h.alive" 2>/dev/null || echo unknown)"
+  # .hb holds the epoch of the last successful liveness poll (written by the
+  # HEARTBEAT loop below); .t0 holds the dispatch epoch. Neither survives a
+  # real panic in a more authoritative form, so this is the best available
+  # "how long was it alive" signal, not a guarantee it was still running at
+  # the recorded moment.
+  dispatch_ep="$(cat "$RUN_DIR/active/$h.t0" 2>/dev/null || echo "")"
+  hb_ep="$(cat "$RUN_DIR/active/$h.hb" 2>/dev/null || echo "")"
+  last_alive="unknown"
+  if [ -n "$hb_ep" ]; then
+    last_alive="$(date -u -r "$hb_ep" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "epoch:$hb_ep")"
+  elif [ -n "$dispatch_ep" ]; then
+    last_alive="dispatch-only:$(date -u -r "$dispatch_ep" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "epoch:$dispatch_ep")"
+  fi
   breadcrumb "SUSPECTED_PANIC_VICTIM" "$h" "$sm" "$si" "$sd" \
-    "{\"last_alive\":\"$alive\"}"
+    "{\"last_alive\":\"$last_alive\"}"
 done
-rm -f "$RUN_DIR/active/"*.pair "$RUN_DIR/active/"*.t0 "$RUN_DIR/active/"*.alive 2>/dev/null || true
+rm -f "$RUN_DIR/active/"*.pair "$RUN_DIR/active/"*.t0 "$RUN_DIR/active/"*.hb "$RUN_DIR/active/"*.alive 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
 # Item manifest: item -> path,dimension,scorer_type,answer_contract,timeout,sha
