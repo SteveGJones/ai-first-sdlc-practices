@@ -1,10 +1,17 @@
-# Feature Proposal: Council multi-stage agentic coding capstone — client/server poker
+# Feature Proposal: Multi-stage agentic coding capstone — client/server poker (research)
 
 **Proposal Number:** 237
 **Status:** Draft
 **Author:** Claude (Sonnet 5) + Steve Jones
 **Created:** 2026-07-28
 **Target Branch:** `feature/council-poker-capstone`
+**Location:** `research/poker-capstone/` — **this is a research project, not a
+shipped plugin capability.** `release-mapping.yaml` has no
+`sdlc-model-council` entry, confirming `plugins/` is reserved for shippable
+content; everything here lives under this repo's existing `research/`
+convention instead. It reuses the council's adapter/`extdel.sh` machinery as
+a dependency for the CLI-reachable models, but is not itself part of the
+`sdlc-model-council` plugin.
 
 ---
 
@@ -66,6 +73,31 @@ a grading anchor for the two open-ended design stages, and a second test
 mode — hand a model only the exemplar's stage-2 design and have it implement
 against spec, run through the identical stage-4 harness. That isolates
 design skill from implementation skill as two separate, comparable numbers.
+
+**This is the point of the whole project**: the exemplar plus the stage-4
+harness together are a **reusable scoring process**, not a one-off build. The
+deliverable is something we re-run against new models as they show up — a
+research instrument, not a shipped plugin feature.
+
+**Model roster and how each is reached** (two genuinely different elicitation
+mechanisms, both scored the same way):
+
+- **External CLIs — Gemini (via the `agy` adapter), Codex, OpenCode** —
+  reached the way the council already reaches them: `extdel.sh` spawning the
+  real CLI, same adapter infrastructure as `assess.sh`.
+- **Claude family — Fable, Opus, Sonnet, Haiku** — reached via **Claude
+  Code's own Agent tool**, using a `model` override per stage, *not* through
+  an external CLI adapter. This is an in-session subagent invocation, a
+  fundamentally different path from spawning an external process.
+
+**Fairness caveat, recorded now rather than discovered later** (same
+discipline as the #234 Path A/B lesson): a Claude Code subagent invocation
+carries its own harness/system-prompt overhead that a bare external-CLI
+prompt doesn't. Elicitation prompts will be kept as close to identical as
+possible across both paths, but the asymmetry can't be fully eliminated —
+document it plainly in results, the way Haiku's subagent-path numbers were
+caveated in #235, rather than presenting cross-path scores as directly
+apples-to-apples.
 
 ### Technical Approach
 
@@ -149,10 +181,13 @@ design skill from implementation skill as two separate, comparable numbers.
 - [ ] Wire results into a comparable output (not necessarily the existing
       roster/priors machinery — TBD per the open questions below)
 
-**Dependencies:** OrbStack (installed, verified). Model access via existing
-council adapters (codex/agy/opencode/mlx) plus whatever elicitation the
-multi-stage/multi-turn flow needs (likely a longer-running delegated session
-per model per stage, not the single-turn `extdel.sh start` used today).
+**Dependencies:** OrbStack (installed, verified). Model access via two paths:
+`extdel.sh`/council adapters (agy→Gemini, codex, opencode) for external CLIs
+— likely a longer-running delegated session per model per stage, not the
+single-turn `extdel.sh start` used today; and Claude Code's Agent tool with
+per-stage `model` overrides (Fable, Opus, Sonnet, Haiku) for the Claude
+family — no adapter involved, a genuinely different mechanism (see "Model
+roster" above).
 
 ---
 

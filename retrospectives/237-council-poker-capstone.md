@@ -40,7 +40,27 @@ filled in as each phase lands.
   autonomy and spec-fidelity — last (Phase 3).
 - **New branch/issue** (#237), separate from #235 — #235's four deliverables
   were already complete and its branch ready for a PR; this is a materially
-  new, multi-day epic that shouldn't block or entangle with it.
+  new, multi-day epic that shouldn't block or entangle with it. (#235's PR
+  #236 has since merged, including an in-flight CodeQL fix for a
+  partial-SSRF finding in `mlx-stop-proxy.py`.)
+- **Research project, not a plugin — operator correction 2026-07-28.** The
+  deliverable is the exemplar + stage-4 harness *as a reusable scoring
+  process*, re-run against new models as they appear, not a shipped
+  `sdlc-model-council` capability. Lives at `research/poker-capstone/`
+  (`release-mapping.yaml` has no `sdlc-model-council` entry, confirming
+  `plugins/` is reserved for shippable content) — reuses the council's
+  adapter/`extdel.sh` machinery as a dependency, but isn't part of the
+  plugin itself.
+- **Two elicitation mechanisms for one model roster.** External CLIs
+  (Gemini via `agy`, Codex, OpenCode) go through `extdel.sh`, same as the
+  council today. The Claude family (Fable, Opus, Sonnet, Haiku) go through
+  Claude Code's own **Agent tool** with per-stage `model` overrides — an
+  in-session subagent invocation, not a spawned external process. Recorded
+  as a fairness caveat up front (same discipline as #234's Path A/B
+  lesson): a subagent invocation carries harness/system-prompt overhead a
+  bare CLI prompt doesn't, so cross-path scores need the same caveat
+  treatment Haiku's subagent numbers got in #235, not presentation as
+  directly apples-to-apples.
 
 ## What Went Well
 
