@@ -28,6 +28,7 @@ Usage:
 
 Stdlib only. Runs in the foreground; Ctrl-C or SIGTERM to stop.
 """
+
 import argparse
 import datetime
 import json
@@ -38,6 +39,7 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib import request as urlrequest
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit, urlunsplit
 
 DEFAULT_LISTEN_PORT = 8081
 DEFAULT_UPSTREAM = "http://127.0.0.1:8082"
@@ -56,7 +58,7 @@ def _breadcrumb_path():
     try:
         os.makedirs(base, exist_ok=True)
     except OSError:
-        return ""
+        return ""  # breadcrumbs are diagnostics-only; disable rather than fail a turn
     return os.path.join(base, "mlx-stop-proxy-panic-breadcrumb.jsonl")
 
 
@@ -69,7 +71,24 @@ def _breadcrumb(path, record):
             fh.flush()
             os.fsync(fh.fileno())
     except OSError:
-        pass
+        pass  # diagnostics must never break a real turn
+
+
+def _forward_url(upstream, raw_path):
+    """Build the upstream request URL without ever letting the incoming
+    request line control the scheme/host (CWE-918 partial-SSRF): a client
+    could send a proxy-style absolute-URI request line
+    (``GET http://evil.example/x HTTP/1.1``), which `http.server` hands back
+    verbatim as `self.path`. Only the path+query are taken from it; the
+    scheme/host always come from `upstream`, fixed once at startup from the
+    CLI arg, never from a request.
+    """
+    incoming = urlsplit(raw_path)
+    up = urlsplit(upstream)
+    safe_path = incoming.path or "/"
+    if not safe_path.startswith("/"):
+        safe_path = "/" + safe_path
+    return urlunsplit((up.scheme, up.netloc, safe_path, incoming.query, ""))
 
 
 def _fingerprint_messages(payload):
@@ -88,7 +107,7 @@ def _fingerprint_messages(payload):
                     return content
                 return content[:150] + " ... " + content[-150:]
     except Exception:
-        pass
+        pass  # best-effort fingerprint only; never let this break forwarding
     return ""
 
 
@@ -98,7 +117,9 @@ class ProxyHandler(BaseHTTPRequestHandler):
     breadcrumb_path = ""
 
     def log_message(self, fmt, *args):
-        sys.stderr.write("mlx-stop-proxy: %s - %s\n" % (self.address_string(), fmt % args))
+        sys.stderr.write(
+            "mlx-stop-proxy: %s - %s\n" % (self.address_string(), fmt % args)
+        )
 
     def _forward(self):
         length = int(self.headers.get("Content-Length", 0) or 0)
@@ -120,13 +141,22 @@ class ProxyHandler(BaseHTTPRequestHandler):
                 pass  # forward whatever we got, unmodified
 
         bc_base = {
-            "req_id": req_id, "pid": os.getpid(), "path": self.path,
-            "model": model, "client": self.client_address[0],
+            "req_id": req_id,
+            "pid": os.getpid(),
+            "path": self.path,
+            "model": model,
+            "client": self.client_address[0],
             "fingerprint": fingerprint,
         }
-        _breadcrumb(self.breadcrumb_path, dict(
-            bc_base, ts=_now_iso(), event="REQUEST_START", bytes_in=len(raw),
-        ))
+        _breadcrumb(
+            self.breadcrumb_path,
+            dict(
+                bc_base,
+                ts=_now_iso(),
+                event="REQUEST_START",
+                bytes_in=len(raw),
+            ),
+        )
 
         stop_heartbeat = threading.Event()
 
@@ -134,22 +164,31 @@ class ProxyHandler(BaseHTTPRequestHandler):
             waited = 0
             while not stop_heartbeat.wait(HEARTBEAT_S):
                 waited += HEARTBEAT_S
-                _breadcrumb(self.breadcrumb_path, dict(
-                    bc_base, ts=_now_iso(), event="REQUEST_WAITING", waited_s=waited,
-                ))
+                _breadcrumb(
+                    self.breadcrumb_path,
+                    dict(
+                        bc_base,
+                        ts=_now_iso(),
+                        event="REQUEST_WAITING",
+                        waited_s=waited,
+                    ),
+                )
 
         hb = threading.Thread(target=_heartbeat, daemon=True)
         hb.start()
         t0 = time.time()
         try:
             fwd_headers = {
-                k: v for k, v in self.headers.items()
+                k: v
+                for k, v in self.headers.items()
                 if k.lower() not in ("host", "content-length")
             }
             fwd_headers["Content-Length"] = str(len(raw))
             req = urlrequest.Request(
-                self.upstream + self.path, data=raw if raw else None,
-                headers=fwd_headers, method=self.command,
+                _forward_url(self.upstream, self.path),
+                data=raw if raw else None,
+                headers=fwd_headers,
+                method=self.command,
             )
             with urlrequest.urlopen(req, timeout=1800) as resp:
                 body = resp.read()
@@ -159,16 +198,28 @@ class ProxyHandler(BaseHTTPRequestHandler):
             body = exc.read() if hasattr(exc, "read") else b""
             status = exc.code
             resp_headers = list(exc.headers.items()) if exc.headers else []
-            _breadcrumb(self.breadcrumb_path, dict(
-                bc_base, ts=_now_iso(), event="REQUEST_HTTP_ERROR",
-                elapsed_s=round(time.time() - t0, 1), http_status=status,
-            ))
+            _breadcrumb(
+                self.breadcrumb_path,
+                dict(
+                    bc_base,
+                    ts=_now_iso(),
+                    event="REQUEST_HTTP_ERROR",
+                    elapsed_s=round(time.time() - t0, 1),
+                    http_status=status,
+                ),
+            )
         except URLError as exc:
             stop_heartbeat.set()
-            _breadcrumb(self.breadcrumb_path, dict(
-                bc_base, ts=_now_iso(), event="REQUEST_UNREACHABLE",
-                elapsed_s=round(time.time() - t0, 1), detail=str(exc),
-            ))
+            _breadcrumb(
+                self.breadcrumb_path,
+                dict(
+                    bc_base,
+                    ts=_now_iso(),
+                    event="REQUEST_UNREACHABLE",
+                    elapsed_s=round(time.time() - t0, 1),
+                    detail=str(exc),
+                ),
+            )
             self.send_response(502)
             self.end_headers()
             self.wfile.write(b"mlx-stop-proxy: upstream unreachable")
@@ -176,10 +227,17 @@ class ProxyHandler(BaseHTTPRequestHandler):
         finally:
             stop_heartbeat.set()
 
-        _breadcrumb(self.breadcrumb_path, dict(
-            bc_base, ts=_now_iso(), event="REQUEST_DONE",
-            elapsed_s=round(time.time() - t0, 1), http_status=status, bytes_out=len(body),
-        ))
+        _breadcrumb(
+            self.breadcrumb_path,
+            dict(
+                bc_base,
+                ts=_now_iso(),
+                event="REQUEST_DONE",
+                elapsed_s=round(time.time() - t0, 1),
+                http_status=status,
+                bytes_out=len(body),
+            ),
+        )
 
         self.send_response(status)
         for k, v in resp_headers:
@@ -210,8 +268,12 @@ def main(argv):
     srv = ThreadingHTTPServer(("127.0.0.1", args.listen_port), ProxyHandler)
     print(
         "mlx-stop-proxy: 127.0.0.1:%d -> %s  stop=%s  breadcrumb=%s"
-        % (args.listen_port, ProxyHandler.upstream, ProxyHandler.stop_tokens,
-           ProxyHandler.breadcrumb_path or "(disabled)")
+        % (
+            args.listen_port,
+            ProxyHandler.upstream,
+            ProxyHandler.stop_tokens,
+            ProxyHandler.breadcrumb_path or "(disabled)",
+        )
     )
     try:
         srv.serve_forever()
