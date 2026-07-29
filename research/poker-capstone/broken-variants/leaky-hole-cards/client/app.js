@@ -200,7 +200,10 @@ function render(state) {
       const cardSpan = document.createElement("span");
       cardSpan.className = "card" + (card && (card.suit === "h" || card.suit === "d") ? " red" : "");
       cardSpan.setAttribute("data-testid", `seat-${p.seat}-hole-card-${slot}`);
-      cardSpan.setAttribute("data-hidden", String(!card));
+      // INJECTED BUG: should be String(!card) — always reports "not hidden"
+      // regardless of whether real card data was actually sent, falsely
+      // claiming other seats' hole cards are visible.
+      cardSpan.setAttribute("data-hidden", "false");
       if (card) {
         cardSpan.setAttribute("data-rank", String(card.rank));
         cardSpan.setAttribute("data-suit", card.suit);

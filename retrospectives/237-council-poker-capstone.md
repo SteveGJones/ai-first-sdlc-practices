@@ -250,6 +250,74 @@ implementation defect** and, per the project's own design principle,
 reported it honestly rather than papering over it. That is exactly what
 this system exists to do.
 
+## Testing matrix — where we are, and the client-testing problem
+
+Operator asked (2026-07-29) for a full capability matrix — what we
+*should* aim to test vs. what the Sonnet run actually covered — and to
+organize it into difficulty-ordered phases (P1..P11) so a model's run can
+stop at its first failure instead of always paying for the full pipeline.
+Key finding from that exercise: the Sonnet run jumped straight to the
+hardest phase (P9, full-stack full-autonomy) — we don't actually know
+whether it would have cleared the simpler phases first. P3/P4 (judged
+design quality) turned out to need no new infrastructure at all — a
+"judge" inside Claude Code is just another `Agent` call with a comparison
+prompt, the same pattern `council-judge` already uses elsewhere in this
+repo.
+
+**P6/P8 (client verification) needed real design work first.** The
+REST harness generalizes to any server because `HARNESS-CONTRACT.md`
+fixes the wire shape. The client has no equivalent — arbitrary DOM,
+arbitrary framework, arbitrary labels — so a fixed Playwright script
+can't drive arbitrary markup the way `scenarios.py` drives arbitrary
+REST implementations. Two options considered: (a) generate a bespoke
+Playwright suite per submitted app, or (b) fix a `data-testid`/`data-*`
+attribute contract, same principle as the wire API, leaving framework/
+styling/layout free. Chose **(b)**, for the same reason the wire API got
+fixed: a bespoke-per-app suite would make test-generation quality a
+hidden confound inside every client-verification result, and wouldn't be
+reusable or comparable across models. Bespoke test-authoring against an
+unfamiliar app is still a genuinely interesting capability — noted as a
+**separate future phase**, not the core client-verification mechanism.
+
+**Built and proven, 2026-07-29:**
+- `docs/CLIENT-TEST-CONTRACT.md` — a data-attribute state mirror (same
+  shape as the REST JSON, via `data-*` attributes) plus a URL deep-link
+  contract (`?table={id}&seat={n}`) so the driver never has to touch a
+  submission's own lobby UI. Playwright reads attributes only, never
+  rendered text or CSS selectors — the reason the contract can stay fixed
+  while every submission's actual UI looks completely different.
+- Exemplar client (`app.js`, `index.html`) retrofitted to the contract —
+  same "fix the reference implementation first" discipline as
+  `HARNESS-CONTRACT.md`.
+- `harness/browser_scenarios.py` + `harness/client_verify.py` — a fixed
+  Playwright driver, kept as a separate opt-in entry point from
+  `python -m harness` since a client is optional and its absence must
+  never fail the required (server-only) stage-4 result. Three scenarios:
+  hole-card privacy (own cards visible, every other seat's hidden),
+  turn-gated action controls (enabled only for the current actor, every
+  other seat's page disabled), and **live cross-browser sync** (an
+  action taken in one browser context must update every seat's mirror,
+  not just the actor's own — the one check that exercises real-time
+  propagation, not just correct initial render).
+- Proven both directions, same discipline as the REST harness: two clean
+  passes against the retrofitted exemplar (2 browser contexts, a real
+  heads-up hand driven end-to-end through actual rendered pages), then a
+  new fixture `broken-variants/leaky-hole-cards` (one injected client-side
+  bug: `data-hidden` hardcoded to `"false"`) correctly fails only
+  `hole_card_privacy` with exact per-seat/slot mismatch details, while
+  `turn_gated_controls` and `action_propagates` — untouched by that bug —
+  still pass.
+- `runner.py` extended to discover the client's host-mapped port
+  (`docker compose port client 80`), best-effort and non-fatal — absence
+  is `None`, not a `HarnessError`, matching the client's optional status.
+- Found one real gap while building this: the harness had never had its
+  own `requirements.txt` — dependencies (`pytest`, `httpx`, now
+  `playwright`) had only ever been installed ad hoc into the venv, never
+  recorded. Fixed.
+
+P6/P8 are now unblocked — a spec-fidelity or full-autonomy client build
+can be verified the same way the server already is.
+
 ## What Went Well
 
 - **Writing the detailed design doc before the code caught the hard rules
@@ -402,8 +470,20 @@ this system exists to do.
       complete 2026-07-29 — result FAIL (genuine implementation bug: hand
       never completes past showdown), three harness bugs found and fixed
       along the way. See "First verification run" above.
-- [ ] Phase 3 remaining: spec-fidelity mode; a second full-autonomy run
-      (Sonnet or another model) against the now-corrected harness to see
-      whether Stage 4 passes cleanly when nothing needs retrofitting
-      after the fact; folding results into a comparable report format
-      across the full model roster (external CLIs + Claude family)
+- [x] P6/P8 prerequisite: client-testing mechanism designed
+      (`docs/CLIENT-TEST-CONTRACT.md`, data-attribute mirror + URL
+      deep-link) and built (`harness/browser_scenarios.py` +
+      `client_verify.py`), proven both directions — complete 2026-07-29
+- [ ] Full capability ladder (P1-P11, see "Testing matrix" above) not yet
+      run for any model — only P9 (full-stack full-autonomy) has been
+      exercised, and only with Sonnet
+- [ ] P3/P4 judge step (an `Agent` call, no new infra needed) not yet
+      wired into the pipeline
+- [ ] P1/P2 (document/QA the exemplar) and P10 (post-hoc documentation
+      drift check) not yet built
+- [ ] Spec-fidelity mode (P5/P6/P7/P8) not yet run against the
+      now-corrected harness — including whether a second full-autonomy
+      run (Sonnet or another model) passes Stage 4 cleanly when nothing
+      needs retrofitting after the fact
+- [ ] Cross-model roster (P11) — folding results into a comparable
+      report format across external CLIs + Claude family

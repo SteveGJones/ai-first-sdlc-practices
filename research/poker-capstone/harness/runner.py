@@ -25,6 +25,7 @@ class RunningStack:
     impl_dir: Path
     project_name: str
     base_url: str
+    client_url: str | None = None
 
 
 def _run(cmd: list[str], cwd: Path, timeout: int) -> subprocess.CompletedProcess:
@@ -80,7 +81,10 @@ def bring_up(
             with urllib.request.urlopen(f"{base_url}/healthz", timeout=3) as resp:
                 if resp.status == 200:
                     return RunningStack(
-                        impl_dir=impl_dir, project_name=project_name, base_url=base_url
+                        impl_dir=impl_dir,
+                        project_name=project_name,
+                        base_url=base_url,
+                        client_url=_discover_client_url(impl_dir, project_name),
                     )
         except (urllib.error.URLError, OSError) as exc:
             last_error = exc
@@ -90,6 +94,36 @@ def bring_up(
     raise HarnessError(
         f"server never became healthy within {health_timeout_s}s: {last_error}"
     )
+
+
+def _discover_client_url(
+    impl_dir: Path, project_name: str, wait_s: int = 15
+) -> str | None:
+    """Best-effort — a client is optional per HARNESS-CONTRACT.md, so
+    absence here is not a HarnessError, just None (callers that need a
+    client skip/fail their own scenarios, not bring_up itself). Waits
+    briefly for it to actually serve something, since unlike the server
+    there's no required /healthz to gate on here."""
+    port_result = _run(
+        ["docker", "compose", "-p", project_name, "port", "client", "80"],
+        cwd=impl_dir,
+        timeout=20,
+    )
+    if port_result.returncode != 0 or not port_result.stdout.strip():
+        return None
+    host_port = port_result.stdout.strip().rsplit(":", 1)[-1]
+    client_url = f"http://localhost:{host_port}"
+
+    deadline = time.time() + wait_s
+    while time.time() < deadline:
+        try:
+            with urllib.request.urlopen(client_url, timeout=3) as resp:
+                if resp.status == 200:
+                    return client_url
+        except (urllib.error.URLError, OSError):
+            pass
+        time.sleep(1)
+    return client_url  # discovered but never confirmed serving — let the caller's own checks decide
 
 
 def tear_down(impl_dir: Path, project_name: str) -> None:

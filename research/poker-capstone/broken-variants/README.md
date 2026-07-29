@@ -17,3 +17,14 @@ payout-cross-validation scenarios) with mismatch details naming the
 exact seats/amounts, while `turn_enforcement` — unrelated to this bug —
 still passes. That's the harness working correctly: failing on the
 assertion the bug actually violates, not silently or on the wrong one.
+
+## `leaky-hole-cards`
+
+`client/app.js` — the hole-card `data-hidden` attribute is hardcoded to
+`"false"` regardless of whether real card data was sent, falsely
+claiming every seat's hole cards are visible to every viewer. Proves
+`client_verify`'s Playwright driver (`harness/browser_scenarios.py`)
+catches a client-side privacy bug specifically — `hole_card_privacy`
+fails with per-seat/slot mismatch details, `turn_gated_controls` and
+`action_propagates` (unrelated) still pass. See its own `README.md` for
+detail.
