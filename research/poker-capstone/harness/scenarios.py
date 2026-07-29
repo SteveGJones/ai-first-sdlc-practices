@@ -117,9 +117,22 @@ def _drive_hand(
     # own response already reflects blinds posted, and total_committed
     # (used below) also counts blinds, so deriving pre_hand_stacks from the
     # /start response would double-count them.
-    for _ in range(500):
+    for i in range(500):
         if not state["hand_in_progress"]:
             break
+        if state.get("last_showdown"):
+            # A very specific, very informative failure mode: showdown was
+            # evaluated (hand categories computed) but the server never
+            # completed the hand transition (hand_in_progress still true,
+            # no payout applied, more actions still being accepted). Fail
+            # immediately with the exact evidence rather than spinning
+            # through the remaining iterations to a generic timeout.
+            raise ScenarioError(
+                "showdown was evaluated (last_showdown populated) but "
+                "hand_in_progress is still true after action %d — the hand "
+                "never completed (no payout applied / stacks don't sum "
+                "correctly). Final state: %s" % (i, json.dumps(state))
+            )
         actor = state["current_actor"]
         me = next(p for p in state["players"] if p["seat"] == actor)
         to_call = state["current_bet"] - me["current_bet"]
@@ -128,7 +141,10 @@ def _drive_hand(
             base_url, f"/tables/{table_id}/actions", {"seat": actor, "action": action}
         )
     else:
-        raise ScenarioError("hand did not complete within 500 actions")
+        raise ScenarioError(
+            "hand did not complete within 500 actions. Final state: %s"
+            % json.dumps(state)
+        )
     return _cross_validate_hand(pre_hand_stacks, state)
 
 

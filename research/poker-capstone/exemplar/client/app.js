@@ -98,7 +98,7 @@ function appendLog(line) {
 function render(state) {
   lastState = state;
 
-  $("community-cards").innerHTML = "";
+  $("community-cards").replaceChildren();
   state.community_cards.forEach((c) => $("community-cards").appendChild(cardEl(c)));
 
   $("pots").textContent = state.pots.length
@@ -106,7 +106,7 @@ function render(state) {
     : "";
 
   const seatsDiv = $("seats");
-  seatsDiv.innerHTML = "";
+  seatsDiv.replaceChildren();
   const n = state.players.length;
   state.players.forEach((p, i) => {
     const angle = (2 * Math.PI * i) / n - Math.PI / 2;
@@ -120,19 +120,34 @@ function render(state) {
     el.style.left = `calc(${cx}% - 70px)`;
     el.style.top = `calc(${cy}% - 40px)`;
 
-    const button = p.seat === state.button_seat ? '<span class="button-marker">D</span> ' : "";
     const holeCards = p.hole_cards
       ? p.hole_cards.map((c) => `${rankLabel(c.rank)}${suitSymbol(c.suit)}`).join(" ")
       : p.status === "folded"
       ? "folded"
       : "??";
-    el.innerHTML = `
-      <div>${button}<strong>${p.name}</strong> (seat ${p.seat})</div>
-      <div>stack: ${p.stack}</div>
-      <div>bet: ${p.current_bet}</div>
-      <div>${holeCards}</div>
-      <div>${p.status}</div>
-    `;
+
+    // p.name is a player-supplied string (POST /tables/{id}/players), never
+    // trusted as markup — built with textContent, not innerHTML, so a seat
+    // name can't inject HTML/JS into every other player's browser.
+    const nameLine = document.createElement("div");
+    if (p.seat === state.button_seat) {
+      const marker = document.createElement("span");
+      marker.className = "button-marker";
+      marker.textContent = "D";
+      nameLine.appendChild(marker);
+      nameLine.appendChild(document.createTextNode(" "));
+    }
+    const strong = document.createElement("strong");
+    strong.textContent = p.name;
+    nameLine.appendChild(strong);
+    nameLine.appendChild(document.createTextNode(` (seat ${p.seat})`));
+    el.appendChild(nameLine);
+
+    for (const text of [`stack: ${p.stack}`, `bet: ${p.current_bet}`, holeCards, p.status]) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      el.appendChild(div);
+    }
     seatsDiv.appendChild(el);
   });
 

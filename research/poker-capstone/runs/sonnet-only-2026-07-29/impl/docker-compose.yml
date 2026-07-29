@@ -1,0 +1,39 @@
+# Poker Capstone — local orchestration.
+#
+# `server` is the authoritative Node.js/TypeScript game engine (dealer +
+# judge) from stage2/design-server.md, exposing:
+#   - GET  /healthz   liveness probe
+#   - WS   /ws        the design-server.md §6 message contract
+#
+# `client` is the static React bundle (design-client.md), served by nginx
+# on container port 80. It never gets the server's address baked in at
+# build time — it derives it from window.location.hostname at runtime
+# (see client/src/net/serverConfig.ts), so it always finds `server` on
+# port 8000 on whatever host the browser used to load the page.
+services:
+  server:
+    build:
+      context: ./server
+    image: poker-capstone-server:local
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+    image: poker-capstone-client:local
+    ports:
+      - "5173:80"
+    depends_on:
+      server:
+        condition: service_healthy
+    restart: unless-stopped

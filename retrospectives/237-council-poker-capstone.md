@@ -176,17 +176,79 @@ Ran the design agreed above end-to-end: `runs/sonnet-only-2026-07-29/`.
      explicitly as a retrofit this run's Stage 2 wasn't designed against
      from the start, not a clean measurement of "did the design
      anticipate this."
-- **Full pipeline result:** *(fill in once the retrofit + harness re-run
-  completes)*.
+- **Third harness gap, smaller: `HARNESS-CONTRACT.md`'s own response
+  shape was incomplete.** After the REST facade retrofit, the harness
+  crashed with `KeyError: 'current_bet'` — the contract doc I wrote
+  omitted a field `scenarios.py` actually reads (per-player `current_bet`,
+  distinct from `total_committed`). Audited every field the harness
+  reads against both the doc and the exemplar's own response shape to
+  confirm this was the only omission; fixed the doc, Sonnet's server
+  agent added the one missing field (already tracked internally, just not
+  exposed) and re-verified directly.
+- **Stage 4 final result: FAIL — a genuine implementation bug, not
+  another harness gap.** With the harness itself now correctly wired,
+  `turn_enforcement` passed but `basic_multihand` hung. Manually stepped
+  through the REST calls by hand to diagnose (`GET`/`POST` against a live
+  container, not guessing from the error message alone) and found: the
+  server correctly deals, enforces turns, and evaluates the showdown
+  (`last_showdown` populated with correct hand categories — seat 0's
+  pocket-derived straight beats seat 1's two pair beats seat 2's one
+  pair) — but never *completes* the hand. `hand_in_progress` stays `true`,
+  the pot's chips are never paid into any stack (294 across seats + 6
+  stranded in `pots` = 300, correct total but wrong distribution), and
+  the engine loops back into accepting further betting actions instead
+  of starting the next hand. Very likely a REST-facade integration
+  regression, not a defect in the original WS-verified game logic (the
+  server agent's own pre-retrofit WS smoke test completed a full hand to
+  `HAND_COMPLETE` with correct payout) — but per the operator-confirmed
+  rule, **no backfill for stage 3/4**: this is the honest, recorded
+  result, not something to keep patching on the model's behalf. See
+  `runs/sonnet-only-2026-07-29/` for the full artifact trail.
+- **Harness improvement made in the process of diagnosing this:** the
+  original timeout error (`"hand did not complete within 500 actions"`)
+  carried zero diagnostic detail — finding the actual bug required
+  manually replaying the REST calls by hand. Fixed: `_drive_hand` now (a)
+  detects the specific "showdown evaluated but hand never completed"
+  pattern immediately rather than spinning through the remaining
+  iterations, and (b) includes the full final state in both error
+  messages. A future run hitting the same class of bug won't need manual
+  reproduction to find it.
+- **Quality sweep on the exemplar/broken-variant found a real
+  vulnerability in our own code — not the model's.**
+  `check-technical-debt.py` had never been run against `research/` before
+  (only `--syntax` had). It found: a genuine stored-XSS in the exemplar's
+  client (`app.js` interpolated a player-supplied seat name, e.g.
+  `POST /tables/{id}/players {"name": ...}`, directly into `innerHTML` —
+  a malicious name would execute in every other player's browser; fixed
+  with safe DOM construction via `textContent`), two `.innerHTML = ""`
+  clears flagged as the same category (false positives, but trivially
+  replaced with `.replaceChildren()` to remove the ambiguity), and a
+  `# type: ignore[attr-defined]` in `main.py` from stashing a seat number
+  as a dynamic attribute on a `WebSocket` object (refactored to a
+  `dict[WebSocket, seat]` keyed by the socket itself, removing the need
+  for the suppression entirely rather than just silencing the checker).
+  One flagged "commented code" hit was a genuine false positive (an
+  explanatory prose comment, not commented-out code) and left as-is.
+  Sonnet's own Stage 3 output has three narrow, idiomatic
+  `eslint-disable-next-line` comments (`no-console` on a startup log,
+  `react-hooks/exhaustive-deps` on two deliberately-scoped effects) —
+  **not fixed**, on the same no-backfill-on-implementation principle as
+  the showdown bug: that's the model's own work being measured, not ours
+  to polish. All fixes re-verified: exemplar 25/25 tests + harness
+  clean pass, broken-variant still fails on exactly the same two
+  scenarios as before.
 
-**Why this counts as the first verification succeeding, not failing**,
-even before a final pass/fail number exists: the entire point of a first
-verification run is to pressure-test the harness against a real,
-independently-produced implementation before trusting it on anything
-else. It found two genuine harness bugs an exemplar-only test could never
-have surfaced (the exemplar can't reveal "the harness assumes REST" when
-the exemplar IS the REST implementation) — that's the run doing exactly
-its job.
+**Why this counts as the first verification succeeding, not failing** —
+the entire point of a first verification run is to pressure-test the
+harness against a real, independently-produced implementation before
+trusting it on anything else, and to prove the whole pipeline start to
+finish. It found and fixed **three genuine harness bugs** an exemplar-only
+test could never have surfaced (the exemplar can't reveal "the harness
+assumes REST" when the exemplar IS the REST implementation), then — with
+the harness now trustworthy — correctly identified a **real
+implementation defect** and, per the project's own design principle,
+reported it honestly rather than papering over it. That is exactly what
+this system exists to do.
 
 ## What Went Well
 
@@ -336,6 +398,12 @@ its job.
       Docker packaging) — complete 2026-07-28
 - [x] Phase 2: stage-4 harness, proven against exemplar + a broken variant
       — complete 2026-07-29
-- [ ] Phase 3: full-autonomy and spec-fidelity model-facing test modes —
-      first verification (Sonnet-only, full-autonomy) plan agreed, not
-      yet run
+- [x] Phase 3, first verification (Sonnet-only, full-autonomy): run
+      complete 2026-07-29 — result FAIL (genuine implementation bug: hand
+      never completes past showdown), three harness bugs found and fixed
+      along the way. See "First verification run" above.
+- [ ] Phase 3 remaining: spec-fidelity mode; a second full-autonomy run
+      (Sonnet or another model) against the now-corrected harness to see
+      whether Stage 4 passes cleanly when nothing needs retrofitting
+      after the fact; folding results into a comparable report format
+      across the full model roster (external CLIs + Claude family)

@@ -349,7 +349,8 @@ def _finish_hand(table: Table, awarded_seats: list[int] | None = None) -> None:
             eligible = [s for s in pot.eligible_seats if s in scores]
             if not eligible:
                 continue
-            best_score = min(scores[s] for s in eligible)  # INJECTED BUG: should be max()
+            # INJECTED BUG: should be max() -- picks the worst eligible hand instead of the best.
+            best_score = min(scores[s] for s in eligible)
             winners = sorted(s for s in eligible if scores[s] == best_score)
             share = pot.amount // len(winners)
             remainder = pot.amount - share * len(winners)

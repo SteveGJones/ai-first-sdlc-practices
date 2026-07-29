@@ -25,7 +25,10 @@ app.add_middleware(
 )
 
 TABLES: dict[str, Table] = {}
-CONNECTIONS: dict[str, list[WebSocket]] = {}
+# table_id -> {websocket: seat}. A dict keyed by the socket (rather than
+# stashing the seat as a dynamic attribute on the WebSocket object) needs no
+# type-ignore for an attribute the WebSocket type stub doesn't declare.
+CONNECTIONS: dict[str, dict[WebSocket, int | None]] = {}
 
 
 def _get_table(table_id: str) -> Table:
@@ -36,16 +39,15 @@ def _get_table(table_id: str) -> Table:
 
 
 async def _broadcast(table: Table) -> None:
-    sockets = CONNECTIONS.get(table.table_id, [])
+    sockets = CONNECTIONS.get(table.table_id, {})
     stale: list[WebSocket] = []
-    for ws in sockets:
-        seat = getattr(ws, "_poker_seat", None)
+    for ws, seat in sockets.items():
         try:
             await ws.send_json(table.to_dict(viewer_seat=seat))
         except Exception:
             stale.append(ws)
     for ws in stale:
-        sockets.remove(ws)
+        del sockets[ws]
 
 
 class CreateTableRequest(BaseModel):
@@ -75,7 +77,7 @@ def create_table(req: CreateTableRequest) -> dict[str, str]:
         big_blind=req.big_blind,
         deck=Deck(),
     )
-    CONNECTIONS[table_id] = []
+    CONNECTIONS[table_id] = {}
     return {"table_id": table_id}
 
 
@@ -130,8 +132,7 @@ async def table_ws(
         await websocket.close(code=4404)
         return
     await websocket.accept()
-    websocket._poker_seat = seat  # type: ignore[attr-defined]
-    CONNECTIONS.setdefault(table_id, []).append(websocket)
+    CONNECTIONS.setdefault(table_id, {})[websocket] = seat
     try:
         await websocket.send_json(table.to_dict(viewer_seat=seat))
         while True:
@@ -143,9 +144,8 @@ async def table_ws(
     except WebSocketDisconnect:
         pass
     finally:
-        conns = CONNECTIONS.get(table_id, [])
-        if websocket in conns:
-            conns.remove(websocket)
+        conns = CONNECTIONS.get(table_id, {})
+        conns.pop(websocket, None)
 
 
 @app.get("/healthz")
