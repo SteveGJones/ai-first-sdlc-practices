@@ -67,6 +67,7 @@ skipped:
   ],
   "players": [
     {"seat": int, "stack": int, "status": "active"|"folded"|"all_in"|"sitting_out",
+     "current_bet": int,      // chips this seat has put in THIS betting round only, reset to 0 when the round advances (preflop -> flop -> ...)
      "total_committed": int   // chips this seat has put in THIS hand, across all betting rounds, reset to 0 at the start of each new hand
     }, ...
   ]
