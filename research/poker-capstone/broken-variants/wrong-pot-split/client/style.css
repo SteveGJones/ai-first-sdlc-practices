@@ -1,0 +1,149 @@
+body {
+  font-family: system-ui, sans-serif;
+  background: #0b3d20;
+  color: #eee;
+  margin: 0;
+  padding: 1rem;
+}
+
+.panel {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hidden {
+  display: none;
+}
+
+section {
+  background: #114d2a;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: inline-block;
+  margin-right: 1rem;
+}
+
+input {
+  width: 6rem;
+  margin-left: 0.25rem;
+}
+
+#join-table-id,
+#enter-table-id {
+  width: 12rem;
+}
+
+button {
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  background: #ffd54a;
+  font-weight: bold;
+}
+
+button:disabled {
+  background: #555;
+  color: #999;
+  cursor: not-allowed;
+}
+
+#table-oval {
+  position: relative;
+  background: #1b6b3a;
+  border: 8px solid #3d2b1f;
+  border-radius: 200px;
+  min-height: 420px;
+  margin-bottom: 1rem;
+}
+
+#community-cards,
+#pots {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 100%;
+}
+
+#pots {
+  top: 65%;
+  font-weight: bold;
+}
+
+.card {
+  display: inline-block;
+  background: white;
+  color: black;
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+  margin: 0 0.15rem;
+  font-weight: bold;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.card.red {
+  color: #c0392b;
+}
+
+#seats {
+  position: relative;
+  height: 420px;
+}
+
+.seat {
+  position: absolute;
+  background: #0b3d20;
+  border: 2px solid #ffd54a;
+  border-radius: 8px;
+  padding: 0.5rem;
+  width: 140px;
+  text-align: center;
+}
+
+.seat.current-actor {
+  border-color: #ff5252;
+  box-shadow: 0 0 8px #ff5252;
+}
+
+.seat.folded {
+  opacity: 0.4;
+}
+
+.seat .button-marker {
+  background: white;
+  color: black;
+  border-radius: 50%;
+  width: 1.2rem;
+  height: 1.2rem;
+  display: inline-block;
+  line-height: 1.2rem;
+  font-size: 0.7rem;
+}
+
+#action-bar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+#action-error {
+  color: #ff8a80;
+  min-height: 1.2rem;
+}
+
+#log {
+  background: #0a2e17;
+  border-radius: 4px;
+  padding: 0.5rem;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}

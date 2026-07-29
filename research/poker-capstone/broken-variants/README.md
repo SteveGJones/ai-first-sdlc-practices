@@ -1,0 +1,19 @@
+# Broken variants
+
+Deliberately-broken copies of the exemplar, used to prove the stage-4
+harness (`harness/`) actually catches real bugs rather than always
+passing. Each variant introduces exactly one targeted bug, documented
+inline at the change site with an `INJECTED BUG` comment, so the harness
+run against it can be checked for the *specific* failure the bug should
+cause, not just "did it fail."
+
+## `wrong-pot-split`
+
+`server/app/game_engine.py::_finish_hand` — `best_score = min(...)`
+instead of `max(...)`, so every showdown pot is awarded to the *worst*
+eligible hand instead of the best. Verified 2026-07-29: the harness
+correctly fails `basic_multihand` and `short_all_in_side_pot` (the
+payout-cross-validation scenarios) with mismatch details naming the
+exact seats/amounts, while `turn_enforcement` — unrelated to this bug —
+still passes. That's the harness working correctly: failing on the
+assertion the bug actually violates, not silently or on the wrong one.

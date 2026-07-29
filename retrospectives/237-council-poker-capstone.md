@@ -15,9 +15,24 @@ evaluation, turn state machine, side pots, showdown), a static HTML/JS
 client, both containerized, and a live end-to-end run through the actual
 `docker compose` stack (3 players, 3 hands, chip conservation held every
 time, turn enforcement rejected an out-of-turn action live). 25/25 pytest
-tests green. Phases 2 (stage-4 harness) and 3 (model-facing test modes)
-not yet started — see `docs/feature-proposals/237-council-poker-capstone.md`
-for the full design and phasing.
+tests green.
+
+**Phase 2 (stage-4 harness) complete, 2026-07-29.** Builds/runs a
+submitted implementation's own Docker artifacts (a new "packaging
+contract" appended to `design-server.md`: a service named `server` on
+container port 8000), drives 3 REST-only scenarios, and — since the
+harness cannot force particular cards — cross-validates every payout
+against an independent oracle (`harness/oracle.py`, zero dependency on
+the exemplar's own code) rather than asserting one scripted outcome.
+Proven in both directions per the acceptance criteria in the feature
+proposal: 4 consecutive clean passes against the exemplar, and a
+deliberately-broken variant (`broken-variants/wrong-pot-split`, one
+injected bug: pot winner picked via `min()` instead of `max()`) correctly
+fails only the two payout-related scenarios while `turn_enforcement`
+(untouched by that bug) still passes.
+
+Phase 3 (model-facing test modes) in progress — see "Decisions &
+rationale" below for the agreed Sonnet-only first-verification plan.
 
 ## Decisions & rationale (recorded as made, not deferred to the end)
 
@@ -68,6 +83,39 @@ for the full design and phasing.
   bare CLI prompt doesn't, so cross-path scores need the same caveat
   treatment Haiku's subagent numbers got in #235, not presentation as
   directly apples-to-apples.
+- **First verification: Sonnet-only, subagent-orchestrated, full-autonomy
+  mode — agreed 2026-07-29.** Before touching the harder cross-path
+  fairness question (external CLIs vs. Claude-family subagents) or
+  spec-fidelity mode, prove the whole 4-stage pipeline once, single model,
+  against the just-proven harness. Design (operator-confirmed):
+  - I (the orchestrating session) act as conductor across 4 sequential
+    `Agent` tool calls (`model: "claude-sonnet-5"`, general-purpose type,
+    task-only prompt — no persona, same fairness discipline as Path A/B),
+    each stage writing its own output directly to files under a run
+    directory rather than relaying large output through my own context.
+  - Stage 1 (architecture) and Stage 2 (detailed design): same brief that
+    seeded the exemplar, the subagent never shown the exemplar itself.
+  - Stage 3 (implementation): **two parallel subagents** (server, client)
+    from the same locked Stage 1+2 output — operator-chosen over one
+    subagent doing both, to test whether the Stage 2 design doc is
+    detailed enough for independently-implemented halves to integrate,
+    closer to the real client/server integration risk.
+  - Stage 4: not a subagent — the Phase 2 harness, unchanged, run against
+    whatever the Stage 3 subagents produced.
+  - **Backfill, explicit and logged, stages 1-2 only.** After each of
+    stages 1-2, a deterministic checklist (the required-elements list
+    already in `design-server.md`/`design-client.md`) checks whether the
+    model's own output is sufficient to usefully drive the next stage. If
+    not, the corresponding exemplar section is spliced in — but the
+    model's own output is still kept and scored as produced, and every
+    backfill event is logged (stage, what was missing, what was
+    substituted) so the final report can separate "reached stage 4 on its
+    own merits" from "reached stage 4 because the pipeline carried it."
+  - **No backfill for stage 3 (implementation) — operator-confirmed hard
+    rule.** If the Stage 3 output fails to build/run in Docker, that's a
+    hard stage-4 failure, full stop. Backfilling code (not just design)
+    would make the stage-4 result meaningless — implementation
+    correctness is exactly what stage 4 measures.
 
 ## What Went Well
 
@@ -118,6 +166,28 @@ for the full design and phasing.
   unscoped `pre-commit run --all-files` had reformatted ~107 unrelated
   files). Worth calling out as the improvement actually landing, not just
   the mistake it fixed.
+- **Two more real bugs, this time in the harness itself, both caught by
+  actually running it against the (already-correct) exemplar rather than
+  trusting the code by inspection:**
+  1. `pre_hand_stacks` was captured from the `/start` response, which
+     already reflects blinds posted — but `total_committed` (used in the
+     same formula) also counts blinds, so every payout comparison
+     double-counted them, producing small but consistent false-fail
+     mismatches (off by exactly the blind amount) even against a fully
+     correct server. Fixed by capturing pre-hand stacks via a `GET` made
+     *before* calling `/start`, not derived from `/start`'s own response.
+  2. The first `short_all_in_side_pot` scenario design didn't actually
+     force a side pot: after the short stack's all-in, the other two
+     players only ever called to match it, then checked every remaining
+     street — so every seat's total contribution ended up equal and no
+     side-pot layer ever formed. Fixed by having whichever of the two
+     remaining players acts first each street make an additional forced
+     bet, guaranteeing contributions diverge from the short stack's
+     regardless of the random cards.
+  Neither bug was in the thing being tested — both were in the test
+  itself producing a false negative against known-good code. Same lesson
+  as Phase 1's bugs, one level up: a harness needs the same "run it,
+  don't just read it" discipline as the thing it's judging.
 
 ## Lessons Learned
 
@@ -167,10 +237,34 @@ for the full design and phasing.
 - `research/poker-capstone/exemplar/client/{index.html,style.css,app.js,
   Dockerfile}` — static, no-build-step web client
 - `research/poker-capstone/exemplar/docker-compose.yml`
+- `research/poker-capstone/harness/oracle.py` — independent hand-eval +
+  pot-reconstruction oracle, zero dependency on the exemplar's code
+- `research/poker-capstone/harness/runner.py` — docker-compose lifecycle
+  (build/up/health-poll/teardown), discovers the host port dynamically via
+  `docker compose port server 8000`
+- `research/poker-capstone/harness/scenarios.py` — turn enforcement,
+  5-hand chip-conservation run, forced short-all-in side pot; every
+  payout cross-validated against the oracle
+- `research/poker-capstone/harness/__main__.py` — CLI entry point
+  (`python -m harness --impl-dir <path>`)
+- `research/poker-capstone/harness/tests/test_oracle.py` — 10 golden
+  cases for the oracle
+- `research/poker-capstone/broken-variants/wrong-pot-split/` — deliberately-
+  broken exemplar copy (one injected bug) proving the harness fails
+  correctly, not just passes
+
+### Files Modified
+- `research/poker-capstone/exemplar/docs/design-server.md` — added the
+  "Packaging contract" section (service named `server`, container port
+  8000) and rewrote "What the stage-4 harness will check" to describe the
+  oracle cross-validation approach, once that became the actual design
 
 ## Action Items
 
 - [x] Phase 1: exemplar (architecture + detailed design + server + client +
       Docker packaging) — complete 2026-07-28
-- [ ] Phase 2: stage-4 harness, proven against exemplar + a broken variant
-- [ ] Phase 3: full-autonomy and spec-fidelity model-facing test modes
+- [x] Phase 2: stage-4 harness, proven against exemplar + a broken variant
+      — complete 2026-07-29
+- [ ] Phase 3: full-autonomy and spec-fidelity model-facing test modes —
+      first verification (Sonnet-only, full-autonomy) plan agreed, not
+      yet run
