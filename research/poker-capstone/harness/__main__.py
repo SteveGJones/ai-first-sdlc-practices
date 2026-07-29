@@ -20,11 +20,25 @@ def main() -> int:
         "--impl-dir", required=True, help="directory containing docker-compose.yml"
     )
     ap.add_argument("--project-name", default="poker-harness")
+    ap.add_argument(
+        "--build-timeout-s",
+        type=int,
+        default=900,
+        help="submitted stacks vary a lot in build weight (a lightweight Python "
+        "server vs. a TypeScript/React client with npm install) — tune per run "
+        "if a legitimate heavier stack needs more than the default",
+    )
+    ap.add_argument("--health-timeout-s", type=int, default=60)
     args = ap.parse_args()
 
     impl_dir = Path(args.impl_dir).resolve()
     try:
-        stack = runner.bring_up(impl_dir, args.project_name)
+        stack = runner.bring_up(
+            impl_dir,
+            args.project_name,
+            build_timeout_s=args.build_timeout_s,
+            health_timeout_s=args.health_timeout_s,
+        )
     except runner.HarnessError as exc:
         print(json.dumps({"passed": False, "harness_error": str(exc)}, indent=2))
         return 1

@@ -117,6 +117,77 @@ rationale" below for the agreed Sonnet-only first-verification plan.
     would make the stage-4 result meaningless — implementation
     correctness is exactly what stage 4 measures.
 
+## First verification run (Sonnet-only) — 2026-07-29
+
+Ran the design agreed above end-to-end: `runs/sonnet-only-2026-07-29/`.
+
+- **Stage 1 (architecture):** checklist score 1.0 (5/5), no backfill.
+  Sonnet chose Node.js/TypeScript server + React client, WebSocket-primary
+  live channel — a different, equally valid stack from the exemplar's
+  Python/FastAPI/vanilla-JS. Independence from the exemplar preserved
+  throughout (the subagent was told never to look for or read anything
+  under a directory named "exemplar").
+- **Stage 2 (detailed design):** server 0.857 (6/7), client 0.8 (4/5),
+  both above the 0.6 sufficiency threshold — no backfill. Both misses were
+  `*_contract_specified` items whose keyword patterns assume a REST/HTTP
+  vocabulary ("API", "endpoint", "POST /"); Sonnet's genuinely
+  well-specified WebSocket-message contract just doesn't use those words.
+  Noted as a checklist-calibration gap worth revisiting, not a real design
+  gap — the actual design quality (worked side-pot example, precise
+  7-step turn-validation pipeline, explicit short-all-in-raise handling)
+  was, if anything, more rigorous than the exemplar's own prose.
+- **Stage 3 (implementation) — real infrastructure friction, not content
+  problems.** Both parallel subagents (server, client) hit **transient API
+  connection drops mid-task**, twice each, unrelated to task content —
+  resumed each via `SendMessage` (one accidental duplicate-agent-instead-
+  of-resume mistake corrected; no functional harm since the original had
+  already terminated). Both eventually completed with substantial,
+  verified work: the server subagent wrote its own throwaway WebSocket
+  smoke test and confirmed a full heads-up hand end-to-end (correct
+  payout, button rotation) before reporting done; the client ran its own
+  build (`tsc -b && vite build`, 0 errors) before reporting done.
+- **Stage 4 (harness) — two real, harness-side bugs found, both fixed:**
+  1. **Build timeout too short for a legitimate heavier stack.** The
+     300s default (calibrated implicitly against the exemplar's own fast
+     Python build) timed out on TypeScript/React's `npm install`. Not a
+     submission problem — a harness limitation. Fixed: default raised to
+     900s, and `--build-timeout-s`/`--health-timeout-s` added as CLI
+     overrides (`harness/__main__.py`, `harness/runner.py`).
+  2. **The wire API was never actually protocol-agnostic.**
+     `harness/scenarios.py` hardcodes the exemplar's own REST endpoint
+     shapes. Sonnet's Stage 2 chose a WebSocket-message protocol instead
+     — a legitimate design choice the brief never ruled out — and stage 4
+     had no way to drive it (`POST /tables` → 404). **Root cause:** the
+     "packaging contract" fixed *deployment* (service name, port) but not
+     *the API surface the harness actually calls*, and that gap was
+     invisible until an independently-designed (not exemplar-authored)
+     implementation hit it. **Fix, operator-confirmed:** the wire API is
+     now a fixed constraint everywhere, same status as the packaging
+     contract — extracted into a new canonical
+     `docs/HARNESS-CONTRACT.md` (endpoints + exact response JSON shape,
+     since the oracle cross-validation reads specific fields like
+     `total_committed`/`last_showdown`), referenced from both
+     `exemplar/docs/design-server.md` (no more duplicated copy to drift)
+     and a new `docs/BRIEF-TEMPLATE.md` for future full-autonomy runs.
+     This run's own `brief.md` predates the fix and was annotated, not
+     rewritten, to keep the historical record accurate. Sonnet's server
+     subagent was asked to add a thin REST facade over its existing,
+     already-verified engine to satisfy the now-fixed contract — noted
+     explicitly as a retrofit this run's Stage 2 wasn't designed against
+     from the start, not a clean measurement of "did the design
+     anticipate this."
+- **Full pipeline result:** *(fill in once the retrofit + harness re-run
+  completes)*.
+
+**Why this counts as the first verification succeeding, not failing**,
+even before a final pass/fail number exists: the entire point of a first
+verification run is to pressure-test the harness against a real,
+independently-produced implementation before trusting it on anything
+else. It found two genuine harness bugs an exemplar-only test could never
+have surfaced (the exemplar can't reveal "the harness assumes REST" when
+the exemplar IS the REST implementation) — that's the run doing exactly
+its job.
+
 ## What Went Well
 
 - **Writing the detailed design doc before the code caught the hard rules

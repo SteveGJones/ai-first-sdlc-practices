@@ -163,40 +163,22 @@ ranks" check misses it.
 
 ## API contract
 
-### REST
-
-- `POST /tables` → create a table. Body: `{small_blind, big_blind}`.
-  Returns `{table_id}`.
-- `POST /tables/{id}/players` → seat a player. Body: `{name, buy_in}`.
-  Returns `{seat}`.
-- `POST /tables/{id}/start` → deal a new hand (requires >=2 seated
-  players). No body.
-- `POST /tables/{id}/actions` → submit an action. Body:
-  `{seat, action: "fold"|"check"|"call"|"bet"|"raise", amount?: int}`
-  (`amount` required for `bet`/`raise`, the **total** the player's bet
-  reaches this round, not the increment). Returns the new table state on
-  success, `409` with `{error: reason}` if illegal (wrong turn, illegal
-  action for current state, amount doesn't meet min).
-- `GET /tables/{id}/state?seat={seat}` → current state, hole cards visible
-  only for `seat` (or all-folded/showdown reveals everyone's).
-
-### WebSocket
-
-- `WS /tables/{id}/ws?seat={seat}` → server pushes the full state (same
-  redaction rule as `GET .../state`) after every action and after every
-  hand-lifecycle transition (deal, round advance, showdown, payout).
+The REST API and response shape the stage-4 harness depends on are fixed
+across every implementation (full-autonomy or spec-fidelity) — see the
+canonical `../../docs/HARNESS-CONTRACT.md`, not restated here to avoid the
+two copies drifting. This exemplar also exposes the same events over a
+push-only WebSocket (`WS /tables/{id}/ws?seat={seat}`, same redaction
+rule) as an additional, non-required convenience for its own client — the
+harness only ever drives the REST surface.
 
 ## Packaging contract (normative — the stage-4 harness depends on this)
 
-A `docker-compose.yml` at the implementation's root must define a service
-literally named `server` that, once healthy, serves the REST API above on
-container port `8000` (the harness discovers the actual host-mapped port
-via `docker compose port server 8000`, so the exact host port doesn't
-matter — the service name and container port do). If a client is also
-submitted, its service must be named `client`; the stage-4 harness does
-not require it and does not fail a run for its absence, since stage 4
-tests the server's API surface directly (see `architecture.md` "Why
-WebSocket + REST").
+See `../../docs/HARNESS-CONTRACT.md` "Packaging" — a `docker-compose.yml`
+at the implementation's root, a service literally named `server` on
+container port `8000`, `GET /healthz`. If a client is also submitted, its
+service must be named `client`; not required, since stage 4 tests the
+server's API surface directly (see `architecture.md` "Why WebSocket +
+REST").
 
 ## What the stage-4 harness will check
 

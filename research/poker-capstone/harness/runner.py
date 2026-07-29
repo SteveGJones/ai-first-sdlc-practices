@@ -34,7 +34,7 @@ def _run(cmd: list[str], cwd: Path, timeout: int) -> subprocess.CompletedProcess
 def bring_up(
     impl_dir: Path,
     project_name: str,
-    build_timeout_s: int = 300,
+    build_timeout_s: int = 900,
     health_timeout_s: int = 60,
 ) -> RunningStack:
     compose_file = impl_dir / "docker-compose.yml"
