@@ -318,6 +318,52 @@ unfamiliar app is still a genuinely interesting capability — noted as a
 P6/P8 are now unblocked — a spec-fidelity or full-autonomy client build
 can be verified the same way the server already is.
 
+## P1 built and run (2026-07-29): document the exemplar
+
+Built `docs/P1-GROUND-TRUTH-FACTS.md` (15 specific, checkable claims
+about the exemplar's actual behavior, extracted by re-reading the
+current source — not copied from the design docs, which could
+themselves have drifted) and `harness/doc_fidelity.py` (a deterministic
+topic-coverage checklist, same style as `checklist.py`, plus a judge-
+prompt builder for fact-accuracy grading).
+
+**Ran it**: a Sonnet subagent given *only* the exemplar's four server
+source files (no existing docs, explicitly instructed not to look for
+any) wrote `runs/sonnet-p1-2026-07-29/exemplar-documentation.md`.
+Checklist score: **1.0 (10/10 topics)**. A judge subagent then verified
+it against the 15 ground-truth facts.
+
+**Raw judge verdict: 13 correct, 1 incorrect, 1 omitted.** The
+"incorrect" one (F1, turn-check ordering) turned out to be **a bug in
+the ground-truth fact, not the documentation** — F1 claimed the turn
+check happens before any other validation; the actual code checks
+`hand_in_progress` first, then the turn. The candidate's documentation
+correctly reported the real order and was penalized for it. Verified
+against source, fact corrected in place (dated, cross-referenced), full
+correction recorded in `runs/sonnet-p1-2026-07-29/judge_verdict_CORRECTED.md`
+rather than silently edited. **Corrected tally: 14 correct, 0 incorrect,
+1 omitted** — the one real gap (F6, the short-all-in-raise rule) is a
+partial-credit omission (correctly stated one of three required parts),
+not a wrong claim.
+
+**Same pattern as every other grading mechanism built this session**:
+the REST harness, the client contract, and now the doc-fidelity judge
+each had a real bug in the *grading infrastructure itself*, found only
+by running it against real output, not by careful writing. Worth stating
+plainly: a ground-truth fact list isn't self-evidently correct just
+because its author also wrote the code under test.
+
+**What this tells us that P9 didn't**: Sonnet's comprehension/
+documentation capability (P1) came back strong — 14/15 facts accurately
+and specifically documented, including catching the genuinely subtle
+short-all-in-raise nuance unprompted and correctly flagging a real,
+previously-unnoted issue (`viewer_seat`/`seat` has no authentication —
+any caller can view another seat's hole cards by declaring that seat
+number). P9 (full-stack full-autonomy build) failed on a real
+implementation bug. That's exactly the differentiated signal the
+capability ladder was built to produce: this is not one number, and a
+model's ceiling on one phase doesn't predict its result on another.
+
 ## What Went Well
 
 - **Writing the detailed design doc before the code caught the hard rules
@@ -474,13 +520,16 @@ can be verified the same way the server already is.
       (`docs/CLIENT-TEST-CONTRACT.md`, data-attribute mirror + URL
       deep-link) and built (`harness/browser_scenarios.py` +
       `client_verify.py`), proven both directions — complete 2026-07-29
-- [ ] Full capability ladder (P1-P11, see "Testing matrix" above) not yet
-      run for any model — only P9 (full-stack full-autonomy) has been
-      exercised, and only with Sonnet
+- [x] P1 (document the exemplar) built and run with Sonnet — complete
+      2026-07-29. Checklist 1.0, judge-verified 14/15 facts correct (1
+      omission, 0 wrong) after correcting a bug found in the ground-truth
+      facts themselves. See "P1 built and run" above.
+- [ ] Full capability ladder (P1-P11, see "Testing matrix" above): only
+      P1 and P9 have been exercised, and only with Sonnet
 - [ ] P3/P4 judge step (an `Agent` call, no new infra needed) not yet
       wired into the pipeline
-- [ ] P1/P2 (document/QA the exemplar) and P10 (post-hoc documentation
-      drift check) not yet built
+- [ ] P2 (QA/test the exemplar against a planted bug) and P10 (post-hoc
+      documentation drift check) not yet built
 - [ ] Spec-fidelity mode (P5/P6/P7/P8) not yet run against the
       now-corrected harness — including whether a second full-autonomy
       run (Sonnet or another model) passes Stage 4 cleanly when nothing

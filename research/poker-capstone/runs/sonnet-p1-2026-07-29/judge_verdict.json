@@ -1,0 +1,65 @@
+{
+  "per_fact": {
+    "F1": {
+      "verdict": "INCORRECT",
+      "detail": "F1 requires the turn check to happen before ANY other validation (no partial mutation happens first). The doc's prose in §3 (\"Whose turn it is\") correctly says `submit_action` \"first checks\" the turn, but the doc's own numbered, authoritative ordering directly contradicts that: §3 \"What makes an action legal (`submit_action`, checked in order): 1. A hand must be in progress (`table.hand_in_progress`). 2. It must be that seat's turn (`table.current_actor == seat`).\" This places the hand-in-progress check ahead of the turn check, contradicting F1's claim that the turn check precedes all other validation. Since the document commits to this explicit numbered order elsewhere, it makes a claim that contradicts F1."
+    },
+    "F2": {
+      "verdict": "CORRECT",
+      "detail": "§3's ordered legality list has step 3 immediately after step 2 (turn check): \"3. The player's status must be `ACTIVE` (folded/all-in/sitting-out players cannot act — this would also normally be structurally impossible... but it's checked defensively).\" This matches F2's content and ordering (status check right after turn check)."
+    },
+    "F3": {
+      "verdict": "CORRECT",
+      "detail": "§3: \"`_betting_round_complete`: true iff every player with status `ACTIVE` has both (a) `has_acted_this_round == True` and (b) `current_bet == table.current_bet`.\" This matches F3 exactly (only ACTIVE seats are checked, implicitly exempting folded/all-in)."
+    },
+    "F4": {
+      "verdict": "CORRECT",
+      "detail": "§3: \"Any wager that establishes a new `current_bet` (a real bet/raise, i.e. `full_raise or not is_all_in`) resets `has_acted_this_round = False` for every other `ACTIVE` player via `_reset_acted_except`, forcing them to act again.\" This states the reset and, via the 'full_raise or not is_all_in' condition, correctly encodes the exception for the short-all-in-raise case (F6)."
+    },
+    "F5": {
+      "verdict": "CORRECT",
+      "detail": "§3's raise legality rule: \"target must be at least `min(table.current_bet + table.min_raise, max_reachable)`\" is arithmetically equivalent to F5's claim (raise size = target - current_bet must be >= min_raise to be a full/normal raise), even though the doc doesn't use the term \"raise size\" explicitly."
+    },
+    "F6": {
+      "verdict": "OMITTED",
+      "detail": "The doc's §3 clause (\"full_raise or not is_all_in\" triggers the has_acted reset) correctly implies that a short all-in raise does NOT reset other players' has_acted_this_round — matching part of F6. However, the doc never states that a short all-in raise also fails to increase `table.min_raise`, and never explicitly confirms that `table.current_bet` is still raised to the new (lower) target in this case. These are core parts of F6 (\"the one genuinely subtle rule\") that the documentation does not address."
+    },
+    "F7": {
+      "verdict": "CORRECT",
+      "detail": "§4 gives the full algorithm: \"`levels = sorted(set(contributions.values()))`... `layer_players` = everyone whose contribution is `>= level`. The pot layer's size is `(level - previous_level) * len(layer_players)`\" and \"`eligible_seats` for that layer pot = the subset of `layer_players` who have not folded\" — matches F7 precisely."
+    },
+    "F8": {
+      "verdict": "CORRECT",
+      "detail": "§4: \"folded players' chips still count toward pot *size* but they're excluded from *eligibility* to win it.\" Matches F8 directly."
+    },
+    "F9": {
+      "verdict": "CORRECT",
+      "detail": "§4: \"Winners are ordered by seat distance clockwise from the button... and the odd remainder chip(s) go to the first winner in that clockwise-from-button order.\" This commits to the accurate F9 claim (split evenly, remainder to winner closest to button clockwise); the added caveat about the code comment calling it an 'approximation' using hand-seat vs. full-table seat order is an implementation nuance that doesn't contradict the stated rule."
+    },
+    "F10": {
+      "verdict": "CORRECT",
+      "detail": "§5: \"`best_hand`... concatenates hole + community cards and takes the `max()` of `score_five(combo)` over every 5-card `combinations()` of them — i.e. brute-force best-5-of-7 (or best-5-of-N if fewer than 7 cards are supplied...)\" — matches F10's C(7,5)=21 exhaustive-combination description in substance, though it doesn't spell out the number 21."
+    },
+    "F11": {
+      "verdict": "CORRECT",
+      "detail": "§5: \"Wheel straight (A-2-3-4-5): handled explicitly in `_straight_high` — `if ranks_desc == [14, 5, 4, 3, 2]: return 5`. The Ace counts low and the straight's rank for comparison purposes is 5, not 14... a wheel straight is correctly the *lowest* straight\", plus explicit confirmation for straight flushes: \"so a steel-wheel A-2-3-4-5 suited is correctly a straight flush with tiebreak 5.\" This matches F11 exactly, including that it's a special case rather than a naive consecutive-rank check."
+    },
+    "F12": {
+      "verdict": "CORRECT",
+      "detail": "§5: \"`score_five` returns a tuple `(category, *tiebreakers)` where category is one of 9 integers `HIGH_CARD..STRAIGHT_FLUSH` (`range(9)`)\" — matches F12's 9 categories and standard low-to-high ordering (high card lowest, straight flush highest)."
+    },
+    "F13": {
+      "verdict": "CORRECT",
+      "detail": "§6 covers both cases precisely: \"3+ players: small blind is the seat after the button, big blind is the seat after that... normal ring-game blind assignment\" plus \"First actor preflop: `first_to_act = _next_seat(seats, bb_seat)` — the seat after the big blind\" for 3+ handed; and \"Heads-up (exactly 2 hand-eligible seats): the *button* posts the small blind, and the other player posts the big blind... the button/SB acts first preflop, consistent with standard heads-up rules.\" This matches F13's full content including the heads-up exception."
+    },
+    "F14": {
+      "verdict": "CORRECT",
+      "detail": "§2's REST table lists all the required endpoints (create table, seat player, start hand, submit action, get state) plus the WS endpoint described as push-only: \"pushes table state dict on connect and after every state change\" and \"Server never reads client-sent frames as commands.\" §1 also states: \"WebSocket connections are push-only (server → client); all game commands go through REST endpoints.\" Matches F14 exactly."
+    },
+    "F15": {
+      "verdict": "CORRECT",
+      "detail": "§7 states hole cards are revealed \"if and only if: the viewer *is* that seat... or the hand has reached showdown (`betting_round == SHOWDOWN`) — at showdown, **everyone's** (non-folded...) hole cards become visible to all viewers.\" Matches F15 exactly."
+    }
+  },
+  "summary": {"correct": 13, "incorrect": 1, "omitted": 1}
+}
