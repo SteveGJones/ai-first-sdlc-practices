@@ -20,6 +20,17 @@ internal service can be built any way its owner likes, but a fixed
 external API it must expose for other systems (here: the grading harness)
 to integrate with isn't optional.
 
+## Cross-origin access (CORS)
+
+The server must send permissive CORS headers (`Access-Control-Allow-
+Origin: *` or equivalent — allow any origin, any method, any header) on
+every REST response. The harness's browser-based client verification
+(`harness/client_verify.py`) loads a client on one host-mapped port and
+that client fetches the server on a different one; without CORS enabled,
+every fetch is blocked by the browser before it reaches your handler at
+all, regardless of how correct the REST logic itself is. The exemplar
+server enables this via `CORSMiddleware(allow_origins=["*"], ...)`.
+
 ## Packaging
 
 - `docker-compose.yml` at the implementation root.
@@ -138,6 +149,17 @@ contract, not by us re-reading it more carefully:
   Fixed by making the harness always pass `seat` explicitly and by
   stating the requirement here, rather than by changing P5's server:
   the harness's assumption was the bug, not the candidate's.
+
+- 2026-07-29, P9-v2 self-pairing verification: a from-scratch server
+  implementation (built correctly to every field/behavior this document
+  specified at the time) still couldn't serve its own paired client —
+  the browser blocked every fetch with a CORS error, because nothing
+  here ever said CORS was required. The exemplar has always silently
+  depended on it. Fixed by adding the "Cross-origin access" section
+  above; the implementation was then asked to add the now-documented
+  requirement, the same way the original P9 run's server added the
+  `current_bet` field once that gap was found — a contract-clarity fix,
+  not a backfill of the model's own logic.
 
 Treat this document as version-controlled and fallible, not as a fixed
 oracle — if a future implementation surfaces another gap, fix it here

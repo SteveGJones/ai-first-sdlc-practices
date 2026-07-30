@@ -22,6 +22,13 @@ external HTTP surface and container packaging are fixed, because an
 external test harness needs a uniform way to drive and grade any
 implementation.
 
+If you are also submitting a client, it must expose the fixed
+data-attribute mirror and URL deep-link contract specified in
+`docs/CLIENT-TEST-CONTRACT.md` (also provided alongside this brief) —
+same principle, applied to the DOM: framework, layout, styling, and
+visible copy are entirely your own choice, only the `data-testid`/
+`data-*` surface a driver reads is fixed.
+
 ---
 
 **Provenance note:** added 2026-07-29 after the first Sonnet-only
@@ -33,3 +40,11 @@ stage-4 harness with no way to drive it. See
 `runs/sonnet-only-2026-07-29/brief.md` used for that run predates this
 fix and did not include this section — worth knowing if comparing its
 Stage 2 output against a later run's.
+
+**Second provenance note:** the client contract paragraph above was
+added later the same day, after P7/P8 cross-pairing found that same
+run's client predated `CLIENT-TEST-CONTRACT.md` entirely (it didn't
+exist yet when that run's Stage 3 happened) and so carried no
+`data-testid` attributes at all — not a design defect, just a contract
+that didn't exist yet when the brief was issued. See the "P7/P8 v2"
+section of the retrospective.

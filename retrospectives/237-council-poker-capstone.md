@@ -485,21 +485,49 @@ infrastructure):
   negative control (still correctly fails `hole_card_privacy` only)
   before trusting them on P5/P6's real output.
 
-**P7/P8 (cross-pairing P9's server/client with the exemplar's opposite
-half)**: both fail, but **not informatively about P9's design quality**
-— P9 was built before `HARNESS-CONTRACT.md`'s `hole_cards`/`table_id`/
-etc. fields and before `CLIENT-TEST-CONTRACT.md` existed at all, so
-P7 (P9 server + exemplar client) fails on a missing `hole_cards` field
-and P8 (exemplar server + P9 client) times out immediately — P9's client
-carries no `data-testid` attributes whatsoever. Recorded as a genuine
-finding about the scoring process itself (contract versioning matters
-for a benchmark meant to be re-run over time) rather than about P9.
-Separately, independently re-running the plain REST harness against
-P9's server standalone reproduces the *original* P9 failure: a real bug
-in its own hand-completion logic (`last_showdown` populates but
-`hand_in_progress` never flips to `false`, no payout applied) —
-confirmed still present, unrelated to the contract-versioning issue.
-Full writeup: `runs/p7-p8-crosspair/README.md`.
+**P7/P8, first attempt (cross-pairing P9's server/client with the
+exemplar's opposite half)**: both failed, but **not informatively about
+P9's design quality** — P9 was built before `HARNESS-CONTRACT.md`'s
+`hole_cards`/`table_id`/etc. fields and before `CLIENT-TEST-CONTRACT.md`
+existed at all, so P7 (P9 server + exemplar client) failed on a missing
+`hole_cards` field and P8 (exemplar server + P9 client) timed out
+immediately — P9's client carried no `data-testid` attributes
+whatsoever. Recorded as a finding about the scoring process itself
+(contract versioning matters for a benchmark meant to be re-run over
+time) rather than about P9. Full writeup: `runs/p7-p8-crosspair/README.md`.
+
+**P7-v2/P8-v2 — redone clean.** Operator asked to redo this properly
+rather than leave it inconclusive. Rather than re-running the whole
+ladder, only Stage 3 (implementation) was rebuilt from scratch — a fresh
+server and fresh client, each a blind Agent dispatch from Sonnet's
+*existing*, already-judged `stage1/architecture.md` +
+`stage2/design-{server,client}.md`, built against the current, complete
+contracts (`runs/sonnet-p9v2-2026-07-29/`). `docs/BRIEF-TEMPLATE.md` was
+also updated to point future full-autonomy briefs at
+`CLIENT-TEST-CONTRACT.md`, closing that gap for the next model run.
+
+Independently verifying P9-v2's own server+client paired together
+(before even reaching the cross-pairs) surfaced **a third real contract
+gap**: every browser fetch was blocked by CORS. `HARNESS-CONTRACT.md`
+never documented that the server must send CORS headers — the exemplar
+has always silently depended on `CORSMiddleware(allow_origins=["*"])`
+without it ever being written down. Fixed by adding a "Cross-origin
+access (CORS)" section to the contract, then asking the same
+server-build agent to add the now-documented requirement — same
+precedent as the original P9 run's `current_bet` field: a contract-
+clarity fix the model completes once told, not a backfill of its own
+logic. Re-verified clean afterward (`curl -H "Origin: ..." ...` showing
+the header present).
+
+**All three passes then came back clean**: P9-v2 self-paired — REST
+harness 3/3 scenarios (unlike the original P9, `basic_multihand` now
+passes too — a different implementation of the same design didn't
+reproduce the original's hand-completion bug) and browser harness 3/3;
+**P7-v2** (P9-v2 server + exemplar client) 3/3 browser scenarios; **P8-v2**
+(exemplar server + P9-v2 client) 3/3 browser scenarios. P9-v2's server
+and client both correctly interoperate with an independently-built
+reference in either direction — the actual signal P7/P8 was designed to
+produce. Full writeup: `runs/p7-p8-crosspair-v2/README.md`.
 
 **P10 (post-hoc documentation drift, newly designed this session — no
 prior mechanism existed)**: a realistic "keep docs in sync after a code
@@ -524,7 +552,7 @@ cross-model roster deliberately deferred as the next phase)**:
 | P4 | Judged detailed-design quality | server 2/2/2/2; client 1/2/2/2 |
 | P5 | Spec-fidelity server build | 3/3 harness scenarios pass |
 | P6 | Spec-fidelity client build | 3/3 browser scenarios pass |
-| P7/P8 | Cross-pair with exemplar | inconclusive (contract-versioning artifact, not a P9 signal) |
+| P7/P8 | Cross-pair with exemplar | clean pass (v2 redo: fresh Stage 3 build, all 3 pairings 3/3) |
 | P9 | Full-autonomy full-stack build | FAIL — real hand-completion/payout bug, reproduced again this session |
 | P10 | Post-hoc documentation drift | 5/5 — correctly updated only the invalidated claim |
 
@@ -712,12 +740,18 @@ cross-model roster deliberately deferred as the next phase)**:
       more real harness bugs found and fixed along the way (`seat` query
       param, Playwright visibility assumption) — see "P3-P10 built and
       run" above.
-- [x] P7/P8 (cross-pairing P9's server/client with the exemplar's
-      opposite half) run — inconclusive by design (P9 predates several
+- [x] P7/P8, first attempt — inconclusive by design (P9 predates several
       contract fields), recorded as a finding about contract versioning
-      rather than about P9. `python -m harness` re-run standalone against
-      P9's own server confirms the original P9 hand-completion bug is
-      still present. See `runs/p7-p8-crosspair/README.md`.
+      rather than about P9. See `runs/p7-p8-crosspair/README.md`.
+- [x] P7-v2/P8-v2 — redone clean, 2026-07-29. Rebuilt only Stage 3
+      (server + client) fresh from Sonnet's existing, already-judged
+      stage1/stage2 docs against the current complete contracts
+      (`runs/sonnet-p9v2-2026-07-29/`). Found and fixed a third real
+      contract gap (undocumented CORS requirement) along the way. All
+      three pairings (self-paired, P7-v2, P8-v2) pass 3/3. Updated
+      `docs/BRIEF-TEMPLATE.md` to reference `CLIENT-TEST-CONTRACT.md` for
+      future runs. See `runs/p7-p8-crosspair-v2/README.md`.
 - [ ] Cross-model roster (P11) — folding results into a comparable
       report format across external CLIs + Claude family. Next phase,
-      now that the Sonnet baseline (P1-P10) is complete.
+      now that the Sonnet baseline (P1-P10) is complete, with a clean
+      P7/P8 result.
