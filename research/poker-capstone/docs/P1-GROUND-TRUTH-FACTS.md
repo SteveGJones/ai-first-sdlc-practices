@@ -91,3 +91,27 @@ Each fact has an id for reference in a judge verdict.
 - **F15**: A given state response reveals a seat's hole cards only to
   that seat itself, UNLESS the hand has reached showdown, in which case
   every non-folded seat's hole cards become visible to everyone.
+  **Corrected 2026-07-29**: this fact originally (incorrectly) claimed
+  the showdown reveal excludes folded seats. Re-reading `models.py`
+  `Table.to_dict()` directly: `reveal_hole_cards=(s == viewer_seat or
+  showdown)` (line 170) applies uniformly to every seated player with no
+  status check at all — folding (`game_engine.py` `submit_action`) only
+  sets `status = FOLDED`, it never clears `hole_cards` (only
+  `reset_for_new_hand`, at the *next* hand, does that). So **every**
+  seated player's hole cards — folded or not — become visible in the
+  `players[]` array once `betting_round == SHOWDOWN`, as long as they
+  were dealt in for the current hand. The "non-folded only" behavior
+  actually belongs to a *different* field, `last_showdown`
+  (`game_engine.py` `_finish_hand`, built from `non_folded_seats()`
+  only) — the fact conflated the two. Found because a second model's
+  (Haiku, P11 cross-model run) documentation stated the broader "all
+  seats" claim, which the judge marked INCORRECT against this fact —
+  re-verifying against source before trusting the judge (this project's
+  standing rule) showed the model was right and the fact was wrong. This
+  retroactively affects the original Sonnet P1 grading too: Sonnet's own
+  documentation asserted the narrower "non-folded only" claim (with an
+  internally incorrect justification — "since only non-folded players
+  ... still hold hole_cards", which is also false) and was marked
+  CORRECT only because it matched this flawed fact. See
+  `runs/sonnet-p1-2026-07-29/judge_verdict_SECOND_CORRECTION.md` and
+  `runs/haiku-p1-2026-07-29/judge_verdict_CORRECTED.md`.

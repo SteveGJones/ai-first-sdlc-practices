@@ -1,0 +1,1028 @@
+# Texas Hold'em Poker Server — Stage 2 Detailed Design
+
+## Executive Summary
+
+This document specifies the complete server implementation for a Texas Hold'em poker server, building on the architecture from Stage 1. It provides exact algorithms and state machines sufficient for independent implementation without further design decisions. The server runs in a Docker container (service name `server`, port 8000) and exposes a fixed REST API (HARNESS-CONTRACT.md) while managing complex game logic: turn enforcement, betting round progression with all-in scenarios, side-pot allocation, and hand evaluation.
+
+---
+
+## Part 1: Data Structures & Game State
+
+### 1.1 Core Data Model
+
+```python
+# Card representation
+class Card:
+    rank: int  # 2-14, where 14=Ace, 13=King, ..., 2=Deuce
+    suit: str  # Any consistent string: "s", "h", "d", "c" or "spades", "hearts", etc.
+    
+    def to_dict(self) -> dict:
+        return {"rank": self.rank, "suit": self.suit}
+
+# Player at a table
+class Player:
+    seat: int              # 0-indexed seat number (0-9)
+    name: str              # Player name (no validation)
+    stack: int             # Current chip count
+    hole_cards: List[Card] # Exactly 2 cards in a live hand, empty when not dealt
+    status: str            # "active", "folded", "all_in", "sitting_out"
+    current_bet: int       # Chips committed THIS betting round only; reset to 0 when round advances
+    total_committed: int   # Chips committed THIS hand across ALL rounds; reset to 0 at hand start
+
+# Pot structure
+class Pot:
+    amount: int            # Total chips in this pot
+    eligible_seats: List[int]  # Seats that can win this pot (contributed at this level)
+
+# Game state container
+class Table:
+    table_id: str
+    small_blind: int
+    big_blind: int
+    button_seat: int | None     # null before first hand ever started
+    current_hand_id: int        # Incremental hand counter
+    deck: List[Card]            # Remaining undealt cards
+    community_cards: List[Card] # 0 preflop, 3 flop, 4 turn, 5 river
+    pots: List[Pot]             # One or more pots (main + side pots)
+    betting_round: str | None   # "preflop", "flop", "turn", "river", "showdown", or None
+    hand_in_progress: bool      # True once first hand started, False after showdown resolves
+    current_actor: int | None   # Seat number of player who must act, or None if no one
+    current_bet: int            # Highest bet amount in THIS round
+    min_raise: int              # Minimum legal raise INCREMENT
+    players: Dict[int, Player]  # Dict keyed by seat number
+    last_action_log: List[str]  # Most recent actions (cap at 20 entries)
+    last_showdown: List[dict]   # [{"seat": int, "hole_cards": [...], "hand_category": str}, ...]
+    acting_order: List[int]     # Seats in order from current_actor onward, wrapping
+```
+
+### 1.2 Game State Invariants
+
+These invariants must hold after every action completes and must be verified:
+
+1. **Exactly one current_actor** (or None if hand is over or awaiting deal)
+2. **current_bet >= 0** and reflects the highest bet in the current round
+3. **min_raise >= big_blind** at preflop; reflects the last raise size or big blind if no raises yet
+4. **All non-folded, non-sitting-out players have matched current_bet OR are all-in**
+5. **sum(pot.amount for all pots) == sum(player.total_committed for all players)** (chips conservation)
+6. **Player stacks + total_committed == buy-in amount** (individual chip conservation)
+7. **Hole cards are dealt only during a live hand** (empty lists between hands)
+8. **Community cards grow monotonically**: size 0 → 3 → 4 → 5 (only preflop, flop, turn, river)
+
+---
+
+## Part 2: Turn Enforcement State Machine
+
+### 2.1 Turn Validation (Pre-Action)
+
+Before executing ANY action, validate in this exact order:
+
+1. **Hand is in progress**: `hand_in_progress == True`
+   - If False: return `400 {"detail": "No hand in progress"}`
+
+2. **Betting round is active**: `betting_round != None and betting_round != "showdown"`
+   - If not (e.g., showdown reached): return `400 {"detail": "Betting has finished"}`
+
+3. **Correct actor**: `seat == current_actor`
+   - If not: return `400 {"detail": f"Not your turn (seat {seat}, actor is {current_actor})"}`
+
+4. **Player is not sitting out**: `players[seat].status != "sitting_out"`
+   - If sitting out: return `400 {"detail": "Player is sitting out"}`
+
+5. **Player is still active**: `players[seat].status in ["active", "all_in"]`
+   - If folded: return `400 {"detail": "Player has folded"}`
+
+### 2.2 Action Legality (Per Betting State)
+
+After turn validation, validate the action itself based on current state:
+
+#### **Preflop (And Any Betting Round) — Legal Actions:**
+
+| Current Situation | Legal Actions | Notes |
+|-------------------|---------------|-------|
+| No bet yet (current_bet=0) | fold, check, bet | "Fold" is always legal but unusual when no bet |
+| Bet exists (current_bet > 0), player can match | fold, call, raise | call amount = current_bet - current_bet (player's already-bet) |
+| Player all-in already | *none* (wait for others or round to advance) | Skip this player |
+| Only one player remains | *end hand immediately* | Others folded; advance to showdown |
+
+#### **Check Legality:**
+- Legal only when `current_bet == players[seat].current_bet` (no bet to match)
+- Example: first to act, or previous player checked
+- Result: `current_actor` advances, action logged
+
+#### **Fold Legality:**
+- Always legal (even when it's irrational)
+- Result: set `players[seat].status = "folded"`, advance `current_actor`
+- Exception: if this results in one player remaining, end hand immediately
+
+#### **Call Legality:**
+- Legal when `current_bet > players[seat].current_bet`
+- Amount player adds: `min(current_bet - players[seat].current_bet, players[seat].stack)`
+  - If player stack < amount needed: player goes all-in, commit entire stack
+- Result: update `current_bet`, advance `current_actor`
+
+#### **Bet Legality** (first bet in round):
+- Legal only when `current_bet == 0` (no prior bet)
+- Requested amount (from request): `amount` (total, not increment)
+- Validate: `amount >= small_blind (as minimum)`
+- Validate: `amount <= players[seat].stack`
+- If valid: set `current_bet = amount`, set `min_raise = amount`, advance `current_actor`
+
+#### **Raise Legality** (respond to existing bet):
+- Legal when `current_bet > 0` and `players[seat].current_bet < current_bet`
+- Requested amount (from request): `amount` (total for this round, not increment)
+- Validate: `amount > current_bet` (raise must be higher than current bet)
+- Validate: `amount - current_bet >= min_raise` (raise increment must be at least min_raise)
+  - Exception: "short all-in raise" — if `players[seat].stack < amount`, allow all-in at any amount > current_bet
+  - This short all-in DOES NOT reopen betting for other players already in the round
+- Validate: `amount <= players[seat].stack`
+- If valid: update `current_bet = amount`, update `min_raise = amount - old_current_bet`, advance `current_actor`
+
+#### **Short All-In Raise (Critical Edge Case):**
+
+When a player goes all-in for less than `min_raise` increment:
+
+- **Example**: current_bet is 100, min_raise is 100. Player A has 120 chips left and goes all-in for 120 (a raise of 20, less than min_raise).
+- **Behavior**: This raise is LEGAL (doesn't reopen betting), but players who already acted in this round do NOT get another turn.
+- **Rationale**: They've already made their decision based on a closed action, and reopening would be unfair.
+- **Implementation**: Track which players have acted in this round. After a short all-in, skip any player who already acted; proceed to next unacted player, or end round if all others have acted.
+
+### 2.3 Current Actor Advancement
+
+After each legal action, advance to the next player:
+
+```
+def advance_current_actor():
+    if all-but-one players have folded:
+        end hand (move to showdown/hand resolution)
+        return
+    
+    acting_order = [seats in clock order from current_actor's left, wrapping]
+    
+    for next_seat in acting_order:
+        if players[next_seat].status in ["active", "all_in"]:
+            if players[next_seat].status == "all_in":
+                continue  # skip; they can't act
+            if players[next_seat].current_bet == current_bet:
+                # They've matched the current bet
+                continue  # skip; they're done this round
+            # This player must act
+            current_actor = next_seat
+            return
+    
+    # No one else can act → round is over, advance to next betting round
+    advance_betting_round()
+```
+
+### 2.4 Turn at Preflop (Specific Order)
+
+Preflop turn order starts after blinds are posted:
+
+1. Small blind posts (say 10 chips)
+2. Big blind posts (say 20 chips)
+3. Next player to left of big blind acts first (in preflop)
+4. Continue clockwise until all players have either folded, called, raised, or all-in'd
+5. If only big blind remains unacted: they can check (no raise against them)
+
+**Blind posting order:**
+- If this is hand 1: button_seat = 0, small_blind_seat = button_seat, big_blind_seat = (button_seat + 1) % num_players
+- If hand N > 1: button advances one position from previous hand
+
+---
+
+## Part 3: Betting Round Progression
+
+### 3.1 Round Detection & Advancement Logic
+
+A betting round is **complete** when one of these conditions holds:
+
+1. **All players folded except one**: `len([p for p in players if p.status != "folded"]) == 1`
+   - Action: End hand immediately, winner takes pot(s), move to showdown
+
+2. **All non-folded, non-all-in players have matched current_bet AND acted at least once:**
+   - Each player has either:
+     - Folded (status="folded"), OR
+     - Gone all-in (status="all_in"), OR
+     - Matched current_bet AND has acted this round (current_bet >= global current_bet)
+   - When TRUE: move to next betting round
+
+3. **All non-folded players are all-in except zero, and no one can act:**
+   - When TRUE: skip remaining betting rounds, move directly to showdown
+
+### 3.2 Betting Round Sequence
+
+```
+Preflop (2 hole cards dealt, 0 community cards)
+    ↓ [when complete]
+Flop (0 → 3 community cards dealt)
+    ↓ [when complete]
+Turn (3 → 4 community cards dealt)
+    ↓ [when complete]
+River (4 → 5 community cards dealt)
+    ↓ [when complete]
+Showdown (evaluate hands, distribute pots, end hand)
+```
+
+### 3.3 Transition Rules
+
+When a round completes:
+
+1. **Deal new community cards** (if not showdown):
+   - Preflop → Flop: burn 1 card, deal 3
+   - Flop → Turn: burn 1 card, deal 1
+   - Turn → River: burn 1 card, deal 1
+
+2. **Reset for new round**:
+   - `current_bet = 0`
+   - `min_raise = big_blind`
+   - For each player: `current_bet = 0` (reset THIS round's bet; total_committed remains)
+   - Determine new `current_actor`: first non-folded, non-all-in player to act, starting from small blind seat
+
+3. **Player to act first in new round**:
+   - Small blind seat (or next non-folded seat clockwise if small blind folded)
+   - Check if they are all-in: if so, skip to next; if no one left, move to showdown
+
+### 3.4 All-In Scenario Handling
+
+When multiple players are all-in with different stack sizes:
+
+- **No further betting is possible** (by definition; all-in players have no chips left)
+- **Community cards are dealt to completion** immediately (no more turns pass)
+- **Evaluate all remaining cards** at showdown
+
+**Example**: Preflop, A bets 50 and is called. Then B goes all-in for 30. At this point, if A has already acted and B hasn't yet had a full turn, we still evaluate B's all-in move. But once B acts, we must advance to next round WITHOUT waiting for A to re-act (the short all-in doesn't reopen action).
+
+---
+
+## Part 4: Side-Pot Algorithm
+
+### 4.1 Pot Structure When All-In Occurs
+
+When players go all-in for different amounts, create multiple pots:
+
+**Key Insight**: Each pot has an "eligible seats" list representing which players contributed to that pot level.
+
+### 4.2 Detailed Algorithm
+
+Execute this algorithm at each point when a pot needs to be recalculated (after player goes all-in or at round end):
+
+```python
+def calculate_pots(players: List[Player], committed_per_player: Dict[int, int]) -> List[Pot]:
+    """
+    Calculate pots from committed chip amounts.
+    
+    Args:
+        players: List of all players
+        committed_per_player: Dict mapping seat → total chips committed (total_committed field)
+    
+    Returns:
+        List[Pot] ordered by level, with eligible_seats for each
+    """
+    
+    # Step 1: Gather all unique commit amounts (sorted, ascending)
+    commit_amounts = sorted(set(committed_per_player.values()))
+    if not commit_amounts or commit_amounts[0] == 0:
+        return []  # No one has committed chips yet
+    
+    pots = []
+    prev_level = 0
+    active_seats = [p.seat for p in players if p.status != "sitting_out"]
+    
+    # Step 2: For each commit level, create a pot
+    for level in commit_amounts:
+        pot_contribution = (level - prev_level)  # chips added at this level
+        eligible = [s for s in active_seats if committed_per_player[s] >= level]
+        
+        if not eligible:
+            prev_level = level
+            continue  # Skip empty levels
+        
+        pot_amount = pot_contribution * len(eligible)  # Each eligible player contributes pot_contribution
+        pots.append(Pot(amount=pot_amount, eligible_seats=eligible))
+        prev_level = level
+    
+    return pots
+
+# Example:
+# Players: A (committed 50), B (committed 100), C (committed 100)
+# Commit amounts: [50, 100]
+# Level 50: pot = (50-0) * 3 = 150; eligible = [A, B, C]
+# Level 100: pot = (100-50) * 2 = 100; eligible = [B, C]
+# Result: [Pot(150, [A,B,C]), Pot(100, [B,C])]
+```
+
+### 4.3 Short All-In Raise & Min Raise
+
+**Short All-In Raise Definition**: A raise where the raise increment is less than `min_raise`.
+
+**Example Scenario**:
+- current_bet = 100
+- min_raise = 100
+- Player A raises to 150 (increment of 50) → meets min_raise ✓
+- Player B re-raises to 160 (increment of 10) but has only 160 left
+- B goes all-in for 160 (total, not increment)
+- Increment is 10, less than min_raise of 100
+
+**Handling Short All-In**:
+
+1. **Accept the all-in**: it's legal (player committed all remaining chips)
+2. **DO NOT reopen betting** for players who already acted
+3. **Move to next unacted player** (or end round if all others acted)
+4. **Example continuation**: After B's all-in at 160, if A hasn't yet acted, A can raise to 200. But if A already acted at 150, A does NOT get another turn.
+
+### 4.4 Pot Distribution at Showdown
+
+**Pots are awarded independently** (order matters):
+
+```python
+def distribute_pots(pots: List[Pot], hand_ranks: Dict[int, HandRank]) -> Dict[int, int]:
+    """
+    Distribute each pot to winners among its eligible seats.
+    
+    Args:
+        pots: Ordered list of pots with eligible_seats
+        hand_ranks: Dict mapping seat → ranked hand (higher is better)
+    
+    Returns:
+        Dict mapping seat → chips won (excludes ties, see below)
+    """
+    
+    winnings = {seat: 0 for seat in hand_ranks}
+    
+    for pot in pots:
+        # Find best hand among eligible seats in this pot
+        eligible_ranks = {s: hand_ranks[s] for s in pot.eligible_seats if s in hand_ranks}
+        if not eligible_ranks:
+            continue  # No eligible winner (shouldn't happen if logic is correct)
+        
+        best_rank = max(eligible_ranks.values())
+        winners = [s for s in pot.eligible_seats if hand_ranks[s] == best_rank]
+        
+        # Distribute pot evenly among winners
+        chips_per_winner = pot.amount // len(winners)
+        remainder = pot.amount % len(winners)
+        
+        for winner in winners:
+            winnings[winner] += chips_per_winner
+        
+        # Handle odd chip (see section 5)
+        if remainder > 0:
+            distribute_odd_chips(winners, remainder)
+    
+    return winnings
+```
+
+---
+
+## Part 5: Hand Evaluation
+
+### 5.1 Hand Ranking System
+
+Rank a 5-card poker hand (best rank is highest value):
+
+```python
+class HandRank:
+    category: int       # 0=high card, 1=pair, 2=two pair, 3=trips, 4=straight, 5=flush, 6=full house, 7=quads, 8=straight flush
+    tiebreaker: Tuple[int, ...]  # Ranks in descending order for tie-breaking within category
+    
+    def __eq__(self, other):
+        return self.category == other.category and self.tiebreaker == other.tiebreaker
+    
+    def __lt__(self, other):
+        if self.category != other.category:
+            return self.category < other.category
+        # Lower tiebreaker is worse (ascending comparison)
+        return self.tiebreaker < other.tiebreaker
+    
+    def __gt__(self, other):
+        if self.category != other.category:
+            return self.category > other.category
+        return self.tiebreaker > other.tiebreaker
+
+# Example tiebreakers:
+# Pair of Kings with Ace kicker: (13, 14) = [13, 14]
+# Two pair, Aces and Kings with Queen: (14, 13, 12) = [14, 13, 12]
+# Straight, high card 9: (9,)
+# Flush, ranks [14, 10, 8, 5, 2]: (14, 10, 8, 5, 2)
+```
+
+### 5.2 7-Card Hand Evaluation (The Wheel Edge Case)
+
+Given 2 hole cards + 5 community cards (7 total), evaluate the best 5-card hand:
+
+```python
+from itertools import combinations
+
+def best_5_from_7(hole_cards: List[Card], community: List[Card]) -> HandRank:
+    """
+    Find the best 5-card poker hand from 7 cards.
+    """
+    all_7 = hole_cards + community
+    
+    best_hand = None
+    for five_card_combo in combinations(all_7, 5):
+        hand_rank = evaluate_5_card_hand(list(five_card_combo))
+        if best_hand is None or hand_rank > best_hand:
+            best_hand = hand_rank
+    
+    return best_hand
+
+def evaluate_5_card_hand(five_cards: List[Card]) -> HandRank:
+    """
+    Evaluate exactly 5 cards and return their ranking.
+    """
+    ranks = sorted([card.rank for card in five_cards], reverse=True)
+    suits = [card.suit for card in five_cards]
+    rank_counts = {rank: ranks.count(rank) for rank in ranks}
+    is_flush = len(set(suits)) == 1
+    
+    # Detect straight
+    is_straight, straight_high = detect_straight(ranks)
+    
+    if is_straight and is_flush:
+        # Straight flush
+        return HandRank(category=8, tiebreaker=(straight_high,))
+    
+    # Count occurrences
+    counts = sorted(rank_counts.values(), reverse=True)
+    
+    if counts == [4, 1]:
+        # Quads
+        quad_rank = [r for r, c in rank_counts.items() if c == 4][0]
+        kicker = [r for r, c in rank_counts.items() if c == 1][0]
+        return HandRank(category=7, tiebreaker=(quad_rank, kicker))
+    
+    if counts == [3, 2]:
+        # Full house
+        trip_rank = [r for r, c in rank_counts.items() if c == 3][0]
+        pair_rank = [r for r, c in rank_counts.items() if c == 2][0]
+        return HandRank(category=6, tiebreaker=(trip_rank, pair_rank))
+    
+    if is_flush:
+        # Flush
+        return HandRank(category=5, tiebreaker=tuple(ranks))
+    
+    if is_straight:
+        # Straight
+        return HandRank(category=4, tiebreaker=(straight_high,))
+    
+    if counts == [3, 1, 1]:
+        # Three of a kind
+        trip_rank = [r for r, c in rank_counts.items() if c == 3][0]
+        kickers = sorted([r for r, c in rank_counts.items() if c == 1], reverse=True)
+        return HandRank(category=3, tiebreaker=(trip_rank,) + tuple(kickers))
+    
+    if counts == [2, 2, 1]:
+        # Two pair
+        pair_ranks = sorted([r for r, c in rank_counts.items() if c == 2], reverse=True)
+        kicker = [r for r, c in rank_counts.items() if c == 1][0]
+        return HandRank(category=2, tiebreaker=tuple(pair_ranks) + (kicker,))
+    
+    if counts == [2, 1, 1, 1]:
+        # Pair
+        pair_rank = [r for r, c in rank_counts.items() if c == 2][0]
+        kickers = sorted([r for r, c in rank_counts.items() if c == 1], reverse=True)
+        return HandRank(category=1, tiebreaker=(pair_rank,) + tuple(kickers))
+    
+    # High card
+    return HandRank(category=0, tiebreaker=tuple(ranks))
+
+def detect_straight(sorted_ranks: List[int]) -> Tuple[bool, int | None]:
+    """
+    Detect if 5 sorted (descending) ranks form a straight.
+    Returns (is_straight, high_rank) or (False, None).
+    
+    Must handle the wheel: A-2-3-4-5 (Ace low).
+    """
+    # Normal straight: each rank is exactly 1 less than the previous
+    if all(sorted_ranks[i] - sorted_ranks[i+1] == 1 for i in range(4)):
+        return True, sorted_ranks[0]  # High rank is the straight high
+    
+    # Wheel: [14, 5, 4, 3, 2] (Ace high, then 5-4-3-2)
+    if sorted_ranks == [14, 5, 4, 3, 2]:
+        return True, 5  # Wheel's high card is 5, NOT Ace (Ace is low in this straight)
+    
+    return False, None
+```
+
+### 5.3 Hand Categories (Canonical Order)
+
+| Category | Rank Value | Description | Example Tiebreaker |
+|----------|------------|-------------|-------------------|
+| High card | 0 | No pairs, no straight, no flush | (14, 10, 8, 5, 2) |
+| Pair | 1 | Two of same rank | (13, 14, 10, 9) = KK with A-10-9 |
+| Two pair | 2 | Two different pairs | (14, 13, 12) = AA-KK with Q |
+| Trips | 3 | Three of same rank | (12, 14, 10) = QQQ with A-10 |
+| Straight | 4 | Five consecutive ranks | (10,) = 10-high straight |
+| Flush | 5 | Five same suit | (14, 10, 8, 5, 2) = Ace-high flush |
+| Full house | 6 | Three + pair | (10, 8) = TTT-88 |
+| Quads | 7 | Four of same rank | (9, 12) = 9999 with Q |
+| Straight flush | 8 | Straight + flush | (10,) = 10-high straight flush |
+
+### 5.4 The Wheel: A-2-3-4-5 (Special Case)
+
+- **Cards**: Ace (rank 14), 5 (rank 5), 4 (rank 4), 3 (rank 3), 2 (rank 2)
+- **In sorted order**: [14, 5, 4, 3, 2]
+- **Detection**: In `detect_straight()`, check if `sorted_ranks == [14, 5, 4, 3, 2]`
+- **Hand rank**: Straight (category 4), tiebreaker (5,) — NOT (14,) because Ace is low
+- **Why**: The wheel is the lowest straight in poker; 5-high straight ranks below 6-high straight
+
+**Comparison Examples**:
+- Wheel vs 6-high straight: 6-high wins (higher straight high)
+- Wheel vs 7-high straight: 7-high wins
+- Wheel vs Royal flush: Royal wins (better category)
+
+---
+
+## Part 6: Odd-Chip & Tie-Break Handling
+
+### 6.1 Odd Chip Distribution
+
+When a pot doesn't divide evenly among winners:
+
+**Algorithm**:
+1. Divide pot evenly: `chips_per_winner = pot.amount // len(winners)`
+2. Calculate remainder: `remainder = pot.amount % len(winners)`
+3. Distribute remainder chips **one per winner**, starting with **the first winner in seat order**
+
+**Example**:
+- Pot: 100 chips
+- Winners: seats [3, 7] (two players)
+- Each gets: 100 // 2 = 50
+- Remainder: 100 % 2 = 0 (no odd chip)
+- Distribution: seat 3 gets 50, seat 7 gets 50
+
+**Example with odd chip**:
+- Pot: 101 chips
+- Winners: seats [3, 7]
+- Each gets: 101 // 2 = 50
+- Remainder: 101 % 2 = 1
+- Distribution: seat 3 gets 50+1=51, seat 7 gets 50
+
+**Seat order for odd chip**: When distributing remainder chips, assign them to winners in ascending seat number order. If remainder is 3 and winners are [1, 5, 9], then seat 1 gets +1, seat 5 gets +1, seat 9 gets +1.
+
+### 6.2 Tie Scenarios
+
+#### **Tie Within a Pot**:
+- Multiple players have identical best hand in a pot
+- All tied winners split the pot evenly (with odd chip distributed as above)
+
+#### **Fold-Out Hand** (Only One Player Remains):
+- All others folded
+- Winner takes all main pot (and any side pots if applicable)
+- Hand doesn't reach showdown; no hole cards shown
+- In response, `last_showdown` is an empty list
+
+#### **All-In Hands**:
+- One or more players are all-in and can't match further action
+- Hand proceeds to showdown with all community cards dealt
+- All-in players' hole cards are revealed
+- Winners determined by hand ranking
+
+### 6.3 Side-Pot Example (Full Walkthrough)
+
+**Scenario**:
+```
+Initial stacks: A=100, B=150, C=200
+Preflop: A bets 50 (total committed: 50)
+         B calls 50 (total committed: 50)
+         C raises to 100 (total committed: 100)
+         A goes all-in for 50 more (total committed: 100, has 0 left)
+         B raises to 150 (total committed: 200, B is all-in, has 0 left)
+         C calls 150 (total committed: 250)
+```
+
+**Committed amounts**: A=100, B=200, C=250
+
+**Pot calculation**:
+- Commit levels: [100, 200, 250]
+- Level 100: pot = (100-0) * 3 = 300; eligible = [A, B, C]
+- Level 200: pot = (200-100) * 2 = 100; eligible = [B, C]
+- Level 250: pot = (250-200) * 1 = 50; eligible = [C]
+- Result: `[Pot(300, [A,B,C]), Pot(100, [B,C]), Pot(50, [C])]`
+
+**Showdown hand evaluation**:
+- A: pair of kings
+- B: pair of aces
+- C: ace high
+
+**Distribution**:
+- Pot 1 (300, eligible [A,B,C]): Best hand is B's aces → B wins 300
+- Pot 2 (100, eligible [B,C]): Best hand is B's aces → B wins 100
+- Pot 3 (50, eligible [C]): Only C eligible → C wins 50
+- Final: A gets 0, B gets 400, C gets 50
+
+**Invariant check**: A contributed 100, B contributed 200, C contributed 250. Total: 550. Distributed: 0+400+50=450. Difference: 100 (original stack for C? Check: 200+250=450. Yes, all chips accounted.)
+
+---
+
+## Part 7: Game Flow & State Transitions
+
+### 7.1 Hand Lifecycle
+
+```
+1. Create table (POST /tables) → no players, no hands yet
+2. Add players (POST /tables/{id}/players) → seated, sitting out
+3. Start hand (POST /tables/{id}/start) → deals hole cards, begins preflop
+4. Betting (POST /tables/{id}/actions x multiple) → players act in turn
+5. Showdown (automatic) → evaluate hands, distribute pots
+6. (Repeat from 3 for next hand)
+```
+
+### 7.2 Hand Start (POST /tables/{id}/start)
+
+Preconditions:
+- At least 2 players are seated (status != "sitting_out")
+
+Actions:
+1. Increment `current_hand_id`
+2. Create new deck (52 cards, all ranks 2-14, all suits)
+3. Shuffle deck
+4. Advance button: if first hand, button = 0; else button = (previous_button + 1) % num_players
+5. Determine small blind & big blind seats (next two to left of button)
+6. Post blinds:
+   - Small blind player loses `small_blind` chips from stack
+   - Big blind player loses `big_blind` chips from stack
+   - These chips go into `total_committed` and `current_bet` for their players
+   - Create main pot with these chips
+7. Deal hole cards:
+   - Remove 2 cards from deck per player (in seat order from small blind around)
+   - Assign to `players[seat].hole_cards` (2-element list)
+8. Set `betting_round = "preflop"`
+9. Set `current_actor` to first seat after big blind
+10. Set `hand_in_progress = True`
+11. Initialize `last_action_log = []`
+12. Initialize `last_showdown = []`
+
+### 7.3 Betting Round Completion Check
+
+After each action, check if current round is complete:
+
+```python
+def is_betting_round_complete() -> bool:
+    active_and_unfolded = [p for p in players if p.status != "folded"]
+    
+    if len(active_and_unfolded) == 1:
+        return True  # Only one player left
+    
+    if all(p.status == "all_in" for p in active_and_unfolded if p.status != "all_in"):
+        # All but one are all-in; others can't act
+        # Hmm, this logic is confusing. Let me rethink.
+        pass
+    
+    # Check: have all non-folded, non-all-in players acted and matched the current bet?
+    for player in active_and_unfolded:
+        if player.status == "all_in":
+            continue  # They're done
+        if player.current_bet < current_bet:
+            return False  # They haven't matched yet
+        if player.has_not_acted_this_round:
+            return False  # They haven't acted yet
+    
+    return True  # All non-folded, non-all-in players have acted and matched
+```
+
+Actually, use this clearer logic:
+
+```python
+def is_betting_round_complete() -> bool:
+    # Only one player left
+    active = [p for p in players if p.status in ["active", "all_in"]]
+    if len(active) == 1:
+        return True
+    
+    # All non-all-in active players have acted and matched current_bet
+    must_act = [p for p in active if p.status == "active"]  # Active, not all-in
+    if not must_act:
+        # All remaining players are either folded or all-in
+        # If all non-folded are all-in, round is complete
+        if all(p.status == "all_in" for p in active):
+            return True
+    
+    # Check each player who must act
+    for player in must_act:
+        if player.current_bet < current_bet:
+            return False  # Haven't matched
+        if not player.acted_this_round:
+            return False  # Haven't acted
+    
+    return True
+```
+
+### 7.4 Showdown
+
+When no more betting is possible:
+
+1. Evaluate best 5-card hand for each player still in the hand (not folded)
+2. Determine winner(s) per pot (using side-pot algorithm)
+3. Distribute chips
+4. Record `last_showdown`: for each non-folded player, record `{seat, hole_cards, hand_category}`
+5. Update player stacks
+6. Set `hand_in_progress = False`
+7. Return to ready state for next hand
+
+### 7.5 Fold-Out Hand
+
+When only one player remains (others folded):
+
+1. That player wins all pots
+2. Record `last_showdown = []` (no hand reached showdown)
+3. Update player stack
+4. Set `hand_in_progress = False`
+5. Return to ready state for next hand
+
+---
+
+## Part 8: API Response Shape & Hole-Card Filtering
+
+### 8.1 Response Shape (From HARNESS-CONTRACT.md)
+
+Every endpoint that returns state must include these exact fields (see HARNESS-CONTRACT.md for full definition):
+
+```json
+{
+  "table_id": "string",
+  "small_blind": integer,
+  "big_blind": integer,
+  "button_seat": integer | null,
+  "betting_round": "preflop" | "flop" | "turn" | "river" | "showdown" | null,
+  "community_cards": [{"rank": integer, "suit": "string"}, ...],
+  "pots": [{"amount": integer, "eligible_seats": [integer, ...]}, ...],
+  "current_bet": integer,
+  "min_raise": integer,
+  "current_actor": integer | null,
+  "hand_in_progress": boolean,
+  "last_action_log": ["string", ...],
+  "last_showdown": [
+    {
+      "seat": integer,
+      "hole_cards": [{"rank": integer, "suit": "string"}, ...],
+      "hand_category": "string"
+    }
+  ],
+  "players": [
+    {
+      "seat": integer,
+      "stack": integer,
+      "status": "active" | "folded" | "all_in" | "sitting_out",
+      "current_bet": integer,
+      "total_committed": integer,
+      "hole_cards": [{"rank": integer, "suit": "string"}, ...] | null
+    }
+  ]
+}
+```
+
+### 8.2 Hole-Card Filtering (Privacy)
+
+Before returning state, apply hole-card filtering:
+
+```python
+def filter_state(state: dict, viewing_seat: int) -> dict:
+    """
+    Filter hole cards based on viewing_seat query parameter.
+    
+    Rules:
+    1. If seat == viewing_seat: show hole_cards
+    2. If betting_round == "showdown": show all hole_cards
+    3. Otherwise: set hole_cards to null
+    """
+    filtered = copy(state)
+    
+    for player in filtered["players"]:
+        if player["seat"] == viewing_seat:
+            # Viewing own cards: keep as-is
+            pass
+        elif state["betting_round"] == "showdown":
+            # Showdown: show all cards
+            pass
+        else:
+            # Hide cards
+            player["hole_cards"] = None
+    
+    return filtered
+```
+
+### 8.3 Hand Category String Representation
+
+For `last_showdown[].hand_category`, use a readable string:
+
+- "High card"
+- "Pair"
+- "Two pair"
+- "Three of a kind"
+- "Straight"
+- "Flush"
+- "Full house"
+- "Four of a kind"
+- "Straight flush"
+
+---
+
+## Part 9: Packaging & Deployment
+
+### 9.1 Docker Service Configuration
+
+**docker-compose.yml** (at repo root):
+```yaml
+version: "3"
+services:
+  server:
+    build: .
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+```
+
+**Dockerfile** (at repo root):
+```dockerfile
+FROM python:3.10-slim
+WORKDIR /app
+COPY . .
+RUN pip install -r requirements.txt
+EXPOSE 8000
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### 9.2 HTTP Server (FastAPI)
+
+- **Framework**: FastAPI (or Starlette if minimal)
+- **Host**: 0.0.0.0 (all interfaces)
+- **Port**: 8000
+- **CORS**: Enabled via `CORSMiddleware` with `allow_origins=["*"]`
+- **Health check**: `GET /healthz` → 200
+
+### 9.3 Endpoints
+
+All endpoints return JSON with the state shape above (except POST /tables and POST /tables/{id}/players, which return minimal responses):
+
+```
+POST /tables
+  Body: {"small_blind": int, "big_blind": int}
+  Response: {"table_id": str}
+  Errors: 400 if blinds invalid
+
+POST /tables/{id}/players
+  Body: {"name": str, "buy_in": int}
+  Response: {"seat": int}
+  Errors: 400 if buy_in invalid, 409 if table full
+
+POST /tables/{id}/start
+  Body: (empty)
+  Response: (full state shape)
+  Errors: 400 if < 2 players
+
+POST /tables/{id}/actions
+  Body: {"seat": int, "action": str, "amount": int?}
+  Response: (full state shape) on success
+  Errors: 4xx with {"detail": str} on illegal action
+  Critical: state unchanged on error
+
+GET /tables/{id}/state?seat={seat}
+  Response: (full state shape, hole-cards filtered)
+  Errors: 404 if table not found
+  Critical: seat parameter required
+```
+
+---
+
+## Part 10: Edge Cases & Scenarios
+
+### 10.1 Edge Case: Two Players Heads-Up
+
+- Button is small blind (acts first preflop, last post-flop)
+- Small blind posts first blind
+- Other player posts big blind
+- Small blind (button) acts first preflop
+- After preflop, big blind acts first
+
+### 10.2 Edge Case: Incomplete Community Cards at Showdown
+
+When a hand reaches showdown but betting has ceased early (all-in), deal remaining community cards:
+
+- Preflop: all 5 cards dealt at showdown
+- Flop (3 dealt): turn and river dealt at showdown
+- Turn (4 dealt): river dealt at showdown
+- River (5 dealt): no additional cards
+
+### 10.3 Edge Case: Folded Player Counts at Showdown
+
+`last_showdown` only includes players who did NOT fold:
+
+```python
+last_showdown = [
+    {
+        "seat": player.seat,
+        "hole_cards": player.hole_cards,
+        "hand_category": hand_category_string(hand_rank)
+    }
+    for player in players
+    if player.status != "folded"
+]
+```
+
+Fold-out hands have `last_showdown = []`.
+
+### 10.4 Edge Case: All-In Player Can't Bet Further
+
+Once a player is all-in (status="all_in"), they cannot act. They are skipped in turn order.
+
+### 10.5 Edge Case: Betting Round Reopened by Raise
+
+A raise reopens the betting round for players who already acted:
+
+- Player A bets 50
+- Player B calls 50
+- Player C raises to 150
+- Player A must act again (they're back in turn)
+- Player B must act again
+
+Exception: if C went all-in for less than min_raise, action is NOT reopened.
+
+---
+
+## Part 11: Testing Checklist
+
+Before implementation is complete, verify:
+
+- [ ] Turn enforcement: only current_actor can act
+- [ ] Fold-out: hand ends when all but one player folds
+- [ ] All-in: player can't act after going all-in
+- [ ] Betting round complete: detects when all active players matched bet
+- [ ] Preflop → Flop: detects completion, deals 3 community cards
+- [ ] Flop → Turn: deals 1 card
+- [ ] Turn → River: deals 1 card
+- [ ] River → Showdown: deals 0 more cards, evaluates hands
+- [ ] Side pots: two players all-in at different amounts creates two pots
+- [ ] Short all-in: raise < min_raise doesn't reopen betting for acted players
+- [ ] Hand evaluation: pair, two pair, trips, straight, flush, full house, quads, straight flush all detect correctly
+- [ ] Wheel: A-2-3-4-5 evaluates as 5-high straight (beats 4-high, loses to 6-high)
+- [ ] 7-card evaluation: generates all C(7,5)=21 combinations, returns best
+- [ ] Tie-break: same hand category, tiebreaker determines winner
+- [ ] Odd chip: 101-chip pot split 50-50 gives 51 to seat with lower number
+- [ ] Hole-card privacy: own seat sees cards, others see null (unless showdown)
+- [ ] Showdown cards: all hole_cards visible once betting_round="showdown"
+- [ ] CORS: responses have `Access-Control-Allow-Origin: *`
+- [ ] Response shape: all required fields present
+- [ ] Error handling: illegal action returns 4xx, state unchanged
+- [ ] Concurrent requests: use locks or single-threaded processing
+
+---
+
+## Part 12: Implementation Notes
+
+### 12.1 State Mutability
+
+**Python approach**:
+- Use dataclasses or dict-based state
+- When processing an action, clone the state, modify the clone, validate, then commit
+- On validation failure, discard clone (original unchanged)
+
+### 12.2 Hand Evaluation Optimization
+
+- Computing best 5 from 7 requires C(7,5)=21 evaluations
+- Cache results if the same hole+community cards are evaluated multiple times (unlikely in this context, but good practice)
+
+### 12.3 Concurrency
+
+**Option 1 (Simplest)**: Single asyncio event loop (FastAPI default)
+- Each request processed sequentially
+- No explicit locking needed
+
+**Option 2**: Per-table lock
+- Multiple requests to different tables can proceed in parallel
+- Same-table requests wait for the lock
+- More complex but slightly better concurrency
+
+Choose Option 1 unless performance becomes a bottleneck.
+
+### 12.4 Logging (Application Code Requirement)
+
+Every action should be logged (per CLAUDE.md Article 7):
+- Player joined
+- Hand started
+- Action taken (seat, action type, amount)
+- Round advanced
+- Showdown result
+- Error (illegal action)
+
+10 mandatory logging points minimum for a game engine.
+
+---
+
+## Conclusion
+
+This design document provides complete specification of:
+1. Data structures and state invariants
+2. Turn enforcement with exact validation order
+3. Betting round progression and all-in handling
+4. Side-pot allocation algorithm with edge cases
+5. Hand evaluation including the wheel
+6. Odd-chip distribution
+7. API response shape and hole-card privacy
+8. Packaging and deployment requirements
+
+An engineer reading this document should be able to implement a compliant server without making further design decisions.

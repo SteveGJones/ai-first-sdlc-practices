@@ -556,6 +556,77 @@ cross-model roster deliberately deferred as the next phase)**:
 | P9 | Full-autonomy full-stack build | FAIL — real hand-completion/payout bug, reproduced again this session |
 | P10 | Post-hoc documentation drift | 5/5 — correctly updated only the invalidated claim |
 
+## P11 begins: Haiku run (P1-P4), 2026-07-29
+
+Operator asked to start the cross-model roster with Haiku (Claude Haiku
+4.5), the "weaker" reference point the ladder was built to also measure,
+not just assume. Ran fail-fast: P1, then P2 (both cheap, reusing all
+existing grading infrastructure unmodified), checked in, then continued
+into P3/P4 on request — which for Haiku required first generating its
+own Stage 1/2 (architecture + design docs) from scratch, since unlike
+Sonnet there was no pre-existing P9 run to reuse.
+
+**P1**: 15/15 facts correct after grading (checklist coverage 1.0 too).
+**P2**: 42 tests, all pass against the exemplar, but **0 catch the
+planted bug** — every payout-adjacent test asserts only chip
+conservation, never which seat wins or by how much, so the suite is
+structurally blind to a "wrong winner" bug regardless of how many such
+tests it has. A real, narrow capability gap versus Sonnet's suite (which
+had specific winner-correctness assertions). Full writeup:
+`runs/haiku-p2-2026-07-29/RESULTS.md`.
+
+**P3** (architecture.md vs. exemplar reference), corrected: **2/2/2/2**.
+**P4** (design docs vs. exemplar reference), corrected: server **2/2/2/1**,
+client **2/2/1/1**. Real, verified defects in Haiku's server design: a
+leftover "Hmm, this logic is confusing. Let me rethink." draft fragment
+left inside a safety-critical function, and a worked side-pot example
+whose own arithmetic is wrong ((200-100)*2 written as 100, not 200),
+self-contradicting the document's own stated chip-conservation
+invariant. Real gaps in the client design: no client-side max-bet-vs-
+stack ceiling, no explicit big_blind-when-current_bet-zero floor, no
+dealer-button visual convention, under-treated side-pot eligible_seats
+and reconnect-resync semantics.
+
+**Three real errors found in this project's own reference materials by
+grading Haiku's output, none by re-reading our own material harder:**
+
+1. `docs/P1-GROUND-TRUTH-FACTS.md` F15 was wrong (claimed the showdown
+   hole-card reveal excludes folded seats; the real code — `Table.to_dict()`
+   line 170 — has no folded-status check at all, and folding never
+   clears `hole_cards`). Haiku's P1 documentation stated the broader,
+   correct claim and was marked INCORRECT against the flawed fact.
+   Corrected, and retroactively corrects Sonnet's own P1 tally down to
+   13/15 (Sonnet's documentation made the same, also-wrong, "non-folded
+   only" claim and was originally marked correct only because it matched
+   the flawed fact). See `docs/P1-GROUND-TRUTH-FACTS.md` F15 and
+   `runs/sonnet-p1-2026-07-29/judge_verdict_SECOND_CORRECTION.md`.
+2. The raw P3 judge verdict claimed an internal contradiction in Haiku's
+   architecture doc (unauthenticated hole-card privacy vs. its own
+   "server is authoritative" principle) — false: Haiku's document
+   explicitly scopes authentication out in its own "Out of Scope"
+   section, identically to how the reference does. Judge simply missed
+   it. Corrected `internal_consistency` back from 1 to 2.
+3. `exemplar/docs/design-server.md`'s "Turn state machine" section
+   claimed the actor check is "checked before any other validation" —
+   stale; the real code checks `hand_in_progress` first (already
+   established via P1-GROUND-TRUTH-FACTS.md F1's correction earlier this
+   session, but never propagated back to this design doc). The P4 judge
+   penalized Haiku's candidate for getting this "wrong" when it was
+   actually right — its order matches real system behavior, the
+   reference document didn't. Corrected in place, raised
+   `turn_enforcement_soundness` from 1 to 2.
+
+Worth stating plainly as a general lesson for the rest of P11: **a
+disagreement between a model's output and one of this project's own
+"ground truth" fact lists or reference documents is exactly as likely to
+be our bug as the model's.** Running the same fixed grading apparatus
+against a second, independently-produced model's output is itself a
+second independent check on whether the apparatus is correct — not just
+a second data point on the model. Every model run from here should keep
+re-verifying surprising "incorrect" judge findings against real source
+before accepting them, the same discipline already applied throughout
+this project to harness/contract bugs.
+
 ## What Went Well
 
 - **Writing the detailed design doc before the code caught the hard rules
@@ -751,7 +822,19 @@ cross-model roster deliberately deferred as the next phase)**:
       three pairings (self-paired, P7-v2, P8-v2) pass 3/3. Updated
       `docs/BRIEF-TEMPLATE.md` to reference `CLIENT-TEST-CONTRACT.md` for
       future runs. See `runs/p7-p8-crosspair-v2/README.md`.
-- [ ] Cross-model roster (P11) — folding results into a comparable
-      report format across external CLIs + Claude family. Next phase,
-      now that the Sonnet baseline (P1-P10) is complete, with a clean
-      P7/P8 result.
+- [x] Cross-model roster (P11) started — Haiku, P1-P4 run 2026-07-29.
+      P1 15/15, P2 42/42 vs. exemplar but 0/42 catch the planted bug
+      (chip-conservation-only assertions, structurally blind to a wrong-
+      winner bug), P3 2/2/2/2, P4 server 2/2/2/1 / client 2/2/1/1. Found
+      and fixed three more real errors in this project's own reference
+      materials along the way (P1-GROUND-TRUTH-FACTS.md F15, a raw P3
+      judge miss, `exemplar/docs/design-server.md` doc-drift from its own
+      code) — see "P11 begins: Haiku run" above. P5-P10 for Haiku not yet
+      run; not yet folded into the `sdlc-model-council` roster format
+      (`plugins/sdlc-model-council/scripts/council/roster.py`).
+- [ ] Haiku P5-P10 (spec-fidelity builds through doc-drift) — not yet run.
+- [ ] Opus and external-CLI (codex/agy/opencode) roster runs — not started.
+- [ ] Fold poker-capstone phase results into the existing
+      `sdlc-model-council` roster card format so they sit alongside the
+      council's other assessed capability dimensions in one comparable
+      report, not a separate document.

@@ -1,0 +1,20 @@
+{
+  "per_fact": {
+    "F1": {"verdict": "CORRECT", "detail": "Section 3.2 lists checks in order: (1) hand in progress -> 'no hand in progress', (2) current_actor == seat -> 'not your turn', matching the required order."},
+    "F2": {"verdict": "CORRECT", "detail": "Section 3.2 step 3: 'Can this player act? If table.players[seat].status != ACTIVE: raise ActionError(\"player cannot act\")' is listed third, immediately after the turn check, covering FOLDED/ALL_IN/SITTING_OUT."},
+    "F3": {"verdict": "CORRECT", "detail": "_betting_round_complete is described as requiring every ACTIVE player to have has_acted_this_round==True and current_bet==table.current_bet; by only checking ACTIVE seats it correctly exempts folded/all-in seats."},
+    "F4": {"verdict": "CORRECT", "detail": "Raise logic: 'If full_raise OR (not is_all_in): ... resets has_acted_this_round for other ACTIVE players. Else (short all-in raise): ... does NOT reset others' acted flags' matches F4/F6 exactly."},
+    "F5": {"verdict": "CORRECT", "detail": "'raise_size = target - table.current_bet; full_raise = (raise_size >= table.min_raise)' matches F5 exactly."},
+    "F6": {"verdict": "CORRECT", "detail": "Section 3.5: short all-in raise updates current_bet 'so later players still owe the all-in amount', does not update min_raise, does not reset others' has_acted_this_round — matches F6 exactly."},
+    "F7": {"verdict": "CORRECT", "detail": "_side_pots: layer players = 'seats with total_committed >= level' (i.e. seats who reached that level), layer amount = (level - previous_level) * count(layer_players), eligible = layer players minus FOLDED — matches F7."},
+    "F8": {"verdict": "CORRECT", "detail": "Section 4.3: 'A player who folds is excluded from eligible seats of pots they contributed to' while the pot amount computation still includes their chips (example shows seat 0's folded contribution counted in Pot 1's amount of 300) — matches F8."},
+    "F9": {"verdict": "CORRECT", "detail": "Section 4.4: 'the remainder (pot % winners) goes to the first winner clockwise from the button', explicitly not lowest seat number or first-to-act order — matches F9."},
+    "F10": {"verdict": "CORRECT", "detail": "Section 5.3: 'combinations(all_cards, 5) generates 21 possible hands' from the 7 available (hole + community), max() picks best — matches F10."},
+    "F11": {"verdict": "CORRECT", "detail": "'Wheel detection: if ranks are [14, 5, 4, 3, 2] ... it's a wheel with high card 5' is described as an explicit special case, consistent with F11's ace-low special handling."},
+    "F12": {"verdict": "CORRECT", "detail": "Table in section 5.1 lists exactly 9 categories (0-8) in standard order, high card lowest to straight flush highest — matches F12."},
+    "F13": {"verdict": "CORRECT", "detail": "'in 3+ players, small blind is next seat after button, big blind is next after that' plus 'First to act: seat after big blind' for 3+, and 'in heads-up (2 players), button posts small blind; other posts big blind' with 'heads-up: small blind acts first preflop' — matches F13 exactly."},
+    "F14": {"verdict": "CORRECT", "detail": "Section 2.6: 'WebSocket is push-only from server (no game commands accepted over it)' and 'Game commands (actions) are submitted via POST /actions, not WebSocket' — matches F14."},
+    "F15": {"verdict": "INCORRECT", "detail": "Ground truth says only non-folded seats' hole cards become visible at showdown; the candidate claims broader visibility: 'During SHOWDOWN betting round: All players' hole cards are revealed to all viewers' and 'Once betting_round == SHOWDOWN, reveal_hole_cards=True for all seats' — this states ALL seats (not just non-folded) are revealed, contradicting the fact's non-folded qualifier."}
+  },
+  "summary": {"correct": 14, "incorrect": 1, "omitted": 0}
+}

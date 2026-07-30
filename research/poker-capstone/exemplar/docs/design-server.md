@@ -39,8 +39,25 @@ Table      = {
 
 **Invariant (the one this whole design exists to guarantee):** the server
 accepts an action **only** from `table.current_actor`. Any other seat's
-action request is rejected with `403` and the state is unchanged. This is
-checked before any other validation.
+action request is rejected with a `4xx` and the state is unchanged.
+
+**Corrected 2026-07-29**: this section originally claimed the actor check
+is "checked before any other validation." That was always inaccurate —
+the actual implementation (`game_engine.py::submit_action`) checks
+`hand_in_progress` FIRST, then the actor — and `docs/P1-GROUND-TRUTH-FACTS.md`
+F1 was independently corrected to match the real code back on this same
+date. This section of the *design* doc was never updated to match, so it
+kept the original (wrong) order on record even after the code-level fact
+was fixed. Found a second time, independently, while judging a different
+model's (Haiku, P11) detailed design against this document for P4 — the
+judge penalized Haiku's candidate for checking `hand_in_progress` before
+the actor, which is actually the *correct* order, because this reference
+document still asserted the opposite. See
+`runs/p3-p4-judging-haiku/p4_server_verdict.json` for the corrected
+verdict and `retrospectives/237-council-poker-capstone.md` for the full
+history — this is the third real error found in this project's own
+reference materials by grading a second model's output against them, not
+by re-reading our own material more carefully.
 
 ### Hand lifecycle
 
