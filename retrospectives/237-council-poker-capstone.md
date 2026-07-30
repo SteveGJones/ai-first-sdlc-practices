@@ -364,6 +364,51 @@ implementation bug. That's exactly the differentiated signal the
 capability ladder was built to produce: this is not one number, and a
 model's ceiling on one phase doesn't predict its result on another.
 
+## P2 built and run (2026-07-29): QA the exemplar (blind mode)
+
+Built `harness/qa_fidelity.py`: unlike P1's judge, this is fully
+deterministic — run a model-authored pytest suite (unmodified) against
+two real codebases and check it discriminates. Blind mode: the model is
+never told a bug exists anywhere, just asked to write a thorough suite
+"as if it were going into a regression suite" for code it's shown.
+
+**Ran it**: Sonnet, given only the exemplar's three game-logic source
+files, wrote 72 tests. Independently re-verified (not just trusting the
+subagent's self-report) via `qa_fidelity.evaluate()`: **72/72 pass
+against the real exemplar; 3 fail against `broken-variants/wrong-pot-
+split`** — and all three are exactly the payout-focused tests
+(`test_three_way_all_in_with_side_pots_pays_correct_winners`,
+`test_split_pot_with_odd_chip_...`, `test_deeper_stack_reclaims_...`).
+Three independently-constructed payout scenarios all correctly caught
+the same min()-instead-of-max() bug — not one lucky assertion. Full
+writeup: `runs/sonnet-p2-2026-07-29/RESULTS.md`.
+
+**Sonnet caught two bugs in its own first draft** (a mislabeled
+assertion, two deck-exhaustion crashes) by actually running the suite
+against the real source rather than trusting hand-worked arithmetic —
+the "run it, don't just trust it" pattern this project keeps
+rediscovering, this time demonstrated unprompted by the model under
+test itself, not just by us building the harness.
+
+**A genuine bonus finding, unrelated to the planted bug**: Sonnet's
+suite pins that `Table.non_folded_seats()` (`models.py`) counts
+`SITTING_OUT` players as not-folded, which feeds
+`_maybe_end_hand_early`'s remaining-player count. Traced and confirmed:
+at a 3+-seat table with a busted (`SITTING_OUT`) seat present, a
+2-player pot where one side folds would not correctly trigger
+early-hand-end detection — the sitting-out ghost inflates the count
+from 1 to 2. Not chased down or fixed here (scope discipline — this is
+about proving P2 works, not fixing every bug it finds), recorded as a
+follow-up action item.
+
+**The `qa_fidelity` harness had a real bug too**, same pattern as
+everything else: `_parse_summary`'s regex had every group optional and
+unanchored, so `re.search` always matched an empty string at position 0
+before ever reaching pytest's actual "N passed" numbers later in the
+line — found by the harness's own sanity-check suite (a synthetic
+scripted-hand test) before it was ever pointed at Sonnet's real output,
+fixed, re-verified.
+
 ## What Went Well
 
 - **Writing the detailed design doc before the code caught the hard rules
@@ -524,12 +569,22 @@ model's ceiling on one phase doesn't predict its result on another.
       2026-07-29. Checklist 1.0, judge-verified 14/15 facts correct (1
       omission, 0 wrong) after correcting a bug found in the ground-truth
       facts themselves. See "P1 built and run" above.
+- [x] P2 (QA the exemplar, blind mode) built and run with Sonnet —
+      complete 2026-07-29. 72/72 tests pass on the exemplar, 3/3 planted-
+      bug-catching tests correctly fail on the broken variant, all
+      independently re-verified. See "P2 built and run" above.
+- [ ] **Follow-up bug found via P2, not yet fixed**: `Table.non_folded_seats()`
+      (`exemplar/server/app/models.py`) counts `SITTING_OUT` players as
+      not-folded, which feeds `_maybe_end_hand_early`'s remaining-player
+      count — at a 3+-seat table with a busted/sitting-out seat present,
+      a 2-player pot where one side folds may not correctly trigger
+      early-hand-end detection. Traced and confirmed, not fixed (scope
+      discipline this session).
 - [ ] Full capability ladder (P1-P11, see "Testing matrix" above): only
-      P1 and P9 have been exercised, and only with Sonnet
+      P1, P2, and P9 have been exercised, and only with Sonnet
 - [ ] P3/P4 judge step (an `Agent` call, no new infra needed) not yet
       wired into the pipeline
-- [ ] P2 (QA/test the exemplar against a planted bug) and P10 (post-hoc
-      documentation drift check) not yet built
+- [ ] P10 (post-hoc documentation drift check) not yet built
 - [ ] Spec-fidelity mode (P5/P6/P7/P8) not yet run against the
       now-corrected harness — including whether a second full-autonomy
       run (Sonnet or another model) passes Stage 4 cleanly when nothing
