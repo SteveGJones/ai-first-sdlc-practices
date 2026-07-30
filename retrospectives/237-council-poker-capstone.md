@@ -892,10 +892,16 @@ this project to harness/contract bugs.
       P6: real self-inflicted regression (a second render block wipes
       out the first's correct hole-card data-attribute contract on every
       render). See "Haiku P5/P6, 2026-07-29" above.
-- [ ] Haiku P7-P10 — not yet run. Given P5/P6 are already genuine FAILs,
-      worth deciding whether to continue the ladder for completeness or
-      treat this as Haiku's natural stopping point per the fail-fast
-      design intent.
+- [x] **Haiku's ladder run stops at P6 — operator decision, 2026-07-30.**
+      Per the fail-fast design intent stated when the ladder was first
+      designed ("organize it into difficulty-ordered phases so a model's
+      run can stop at its first failure instead of always paying for the
+      full pipeline"), P7-P10 deliberately NOT run: P5/P6 already
+      produced two independently-verified genuine FAILs, consistent with
+      the weakening trend visible since P2 (see "Haiku P5/P6" above for
+      the full profile). Haiku's final P11 record: **P1 clean, P2 blind
+      spot, P3 clean, P4 real defects, P5 FAIL, P6 FAIL, P7-P10 not run
+      (stopped)**.
 - [ ] Opus and external-CLI (codex/agy/opencode) roster runs — not started.
 - [ ] Fold poker-capstone phase results into the existing
       `sdlc-model-council` roster card format so they sit alongside the
