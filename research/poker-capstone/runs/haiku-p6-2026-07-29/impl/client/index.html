@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Texas Hold'em Poker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Lobby View -->
+  <div id="lobby-view" class="view active">
+    <div class="lobby-container">
+      <h1>Texas Hold'em Poker</h1>
+
+      <div class="lobby-section">
+        <h2>Create Table</h2>
+        <div class="form-group">
+          <label>Small Blind</label>
+          <input type="number" id="create-small-blind" value="10" min="1">
+        </div>
+        <div class="form-group">
+          <label>Big Blind</label>
+          <input type="number" id="create-big-blind" value="20" min="1">
+        </div>
+        <button id="create-table-btn">Create Table</button>
+      </div>
+
+      <div class="lobby-section">
+        <h2>Join Table</h2>
+        <div class="form-group">
+          <label>Table ID</label>
+          <input type="text" id="join-table-id" placeholder="Enter table ID">
+        </div>
+        <div class="form-group">
+          <label>Player Name</label>
+          <input type="text" id="join-player-name" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label>Buy In</label>
+          <input type="number" id="join-buy-in" value="1000" min="1">
+        </div>
+        <button id="join-table-btn">Join Table</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table View -->
+  <div id="table-view" class="view">
+    <div class="table-wrapper">
+      <!-- Table State Mirror (required by CLIENT-TEST-CONTRACT.md) -->
+      <div
+        id="table-state-mirror"
+        data-testid="table"
+        data-hand-in-progress="false"
+        data-current-actor=""
+        data-current-bet="0"
+        data-button-seat=""
+      ></div>
+
+      <!-- Poker Table Layout -->
+      <div class="poker-table">
+        <!-- Community Cards & Pots (Center) -->
+        <div class="table-center">
+          <div class="community-cards" id="community-cards">
+            <!-- Community card elements will be added here with data-testid="community-card-{i}" -->
+          </div>
+          <div class="pots-display" id="pots-display">
+            <!-- Pot elements will be added here with data-testid="pot-{i}" -->
+          </div>
+        </div>
+
+        <!-- Seats (6 seats arranged in oval) -->
+        <div class="seats-container">
+          <div class="seat" data-seat-position="0">
+            <div
+              id="seat-0"
+              data-testid="seat-0"
+              data-seat="0"
+              data-status="sitting_out"
+              data-stack="0"
+              data-current-bet="0"
+              data-total-committed="0"
+              class="seat-content"
+            >
+              <div class="seat-player-info">
+                <div class="player-name"></div>
+                <div class="player-stack"></div>
+              </div>
+              <div class="hole-cards">
+                <div
+                  data-testid="seat-0-hole-card-0"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+                <div
+                  data-testid="seat-0-hole-card-1"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+              </div>
+              <div class="seat-status-indicator"></div>
+              <div class="dealer-button"></div>
+            </div>
+          </div>
+
+          <div class="seat" data-seat-position="1">
+            <div
+              id="seat-1"
+              data-testid="seat-1"
+              data-seat="1"
+              data-status="sitting_out"
+              data-stack="0"
+              data-current-bet="0"
+              data-total-committed="0"
+              class="seat-content"
+            >
+              <div class="seat-player-info">
+                <div class="player-name"></div>
+                <div class="player-stack"></div>
+              </div>
+              <div class="hole-cards">
+                <div
+                  data-testid="seat-1-hole-card-0"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+                <div
+                  data-testid="seat-1-hole-card-1"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+              </div>
+              <div class="seat-status-indicator"></div>
+              <div class="dealer-button"></div>
+            </div>
+          </div>
+
+          <div class="seat" data-seat-position="2">
+            <div
+              id="seat-2"
+              data-testid="seat-2"
+              data-seat="2"
+              data-status="sitting_out"
+              data-stack="0"
+              data-current-bet="0"
+              data-total-committed="0"
+              class="seat-content"
+            >
+              <div class="seat-player-info">
+                <div class="player-name"></div>
+                <div class="player-stack"></div>
+              </div>
+              <div class="hole-cards">
+                <div
+                  data-testid="seat-2-hole-card-0"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+                <div
+                  data-testid="seat-2-hole-card-1"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+              </div>
+              <div class="seat-status-indicator"></div>
+              <div class="dealer-button"></div>
+            </div>
+          </div>
+
+          <div class="seat" data-seat-position="3">
+            <div
+              id="seat-3"
+              data-testid="seat-3"
+              data-seat="3"
+              data-status="sitting_out"
+              data-stack="0"
+              data-current-bet="0"
+              data-total-committed="0"
+              class="seat-content"
+            >
+              <div class="seat-player-info">
+                <div class="player-name"></div>
+                <div class="player-stack"></div>
+              </div>
+              <div class="hole-cards">
+                <div
+                  data-testid="seat-3-hole-card-0"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+                <div
+                  data-testid="seat-3-hole-card-1"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+              </div>
+              <div class="seat-status-indicator"></div>
+              <div class="dealer-button"></div>
+            </div>
+          </div>
+
+          <div class="seat" data-seat-position="4">
+            <div
+              id="seat-4"
+              data-testid="seat-4"
+              data-seat="4"
+              data-status="sitting_out"
+              data-stack="0"
+              data-current-bet="0"
+              data-total-committed="0"
+              class="seat-content"
+            >
+              <div class="seat-player-info">
+                <div class="player-name"></div>
+                <div class="player-stack"></div>
+              </div>
+              <div class="hole-cards">
+                <div
+                  data-testid="seat-4-hole-card-0"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+                <div
+                  data-testid="seat-4-hole-card-1"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+              </div>
+              <div class="seat-status-indicator"></div>
+              <div class="dealer-button"></div>
+            </div>
+          </div>
+
+          <div class="seat" data-seat-position="5">
+            <div
+              id="seat-5"
+              data-testid="seat-5"
+              data-seat="5"
+              data-status="sitting_out"
+              data-stack="0"
+              data-current-bet="0"
+              data-total-committed="0"
+              class="seat-content"
+            >
+              <div class="seat-player-info">
+                <div class="player-name"></div>
+                <div class="player-stack"></div>
+              </div>
+              <div class="hole-cards">
+                <div
+                  data-testid="seat-5-hole-card-0"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+                <div
+                  data-testid="seat-5-hole-card-1"
+                  data-hidden="true"
+                  data-rank="0"
+                  data-suit=""
+                  class="hole-card"
+                ></div>
+              </div>
+              <div class="seat-status-indicator"></div>
+              <div class="dealer-button"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <div class="action-buttons">
+          <button
+            id="start-hand-btn"
+            data-testid="start-hand"
+            disabled
+            class="action-btn start-hand-btn"
+          >Start Hand</button>
+          <button
+            id="fold-btn"
+            data-testid="action-fold"
+            disabled
+            class="action-btn fold-btn"
+          >Fold</button>
+          <button
+            id="check-call-btn"
+            data-testid="action-check-call"
+            disabled
+            class="action-btn check-call-btn"
+          >Check/Call</button>
+          <button
+            id="bet-raise-btn"
+            data-testid="action-bet-raise"
+            disabled
+            class="action-btn bet-raise-btn"
+          >Bet/Raise</button>
+          <div class="bet-amount-group">
+            <label for="bet-amount-input">Amount:</label>
+            <input
+              id="bet-amount-input"
+              data-testid="bet-amount-input"
+              type="number"
+              min="0"
+              value="0"
+            >
+          </div>
+        </div>
+        <div class="game-info">
+          <div id="game-status" class="game-status"></div>
+          <div id="action-log" class="action-log"></div>
+        </div>
+      </div>
+
+      <!-- Connection Status -->
+      <div id="connection-status" class="connection-status"></div>
+
+      <!-- Back to Lobby -->
+      <button id="back-to-lobby-btn" class="back-btn">Back to Lobby</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

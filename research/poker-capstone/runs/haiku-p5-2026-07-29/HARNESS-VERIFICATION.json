@@ -1,0 +1,4 @@
+{
+  "passed": false,
+  "harness_error": "POST /tables/d45be5b4/actions unexpectedly failed (400): {'detail': \"Cannot bet when there's already a bet this round\"}"
+}

@@ -556,6 +556,59 @@ cross-model roster deliberately deferred as the next phase)**:
 | P9 | Full-autonomy full-stack build | FAIL — real hand-completion/payout bug, reproduced again this session |
 | P10 | Post-hoc documentation drift | 5/5 — correctly updated only the invalidated claim |
 
+## Haiku P5/P6, 2026-07-29 — the first genuine FAILs
+
+Continued the fail-fast Haiku run into P5 (spec-fidelity server, built
+solely from `exemplar/docs/design-server.md` + `HARNESS-CONTRACT.md`,
+blind to the exemplar's code) and P6 (spec-fidelity client, same
+principle). Both **FAIL**, independently verified — the build agents'
+own self-reports both claimed success (P5's own report even contained a
+visible self-correction mid-summary, "wait, let me recheck... actually
+300, not 301," which should itself have been a signal), underscoring why
+this project never trusts a self-report without running the harness.
+
+**P5 (server) root cause, confirmed by manually stepping through REST
+calls**: two related defects in exactly the highest-risk area (all-in
+handling). (1) A player's `status` never transitions to `all_in` when
+their stack reaches zero — stays `"active"`. (2) Turn-advancement
+incorrectly selects an ALL_IN seat as `current_actor` instead of
+skipping it, and then treats that seat's resulting no-op "call" as a
+real action requiring another betting lap — so the betting round never
+closes and `current_bet` is never reset for the next street. A normal
+player computing `to_call = current_bet - my_current_bet` off the
+server's own (stale) state then reasonably opens a fresh bet, which the
+server rejects because its internal round state never actually advanced.
+Full writeup: `runs/haiku-p5-2026-07-29/RESULTS.md`.
+
+**P6 (client) root cause, confirmed by inspecting the live DOM**: a
+self-inflicted regression, not a game-logic bug. `index.html`'s static
+markup correctly includes every `data-testid="seat-N-hole-card-I"`
+element the contract requires. `app.js` has two blocks touching the same
+`.hole-cards` container on every render — the first correctly sets
+`data-hidden`/`data-rank`/`data-suit` on the existing contract elements,
+the second (titled "Render hole cards visually," running immediately
+after) does `cardsContainer.innerHTML = ''` on the *same* container and
+rebuilds it from scratch with plain, non-compliant `<div class="card">`
+elements. The second block silently destroys the first's correct work on
+every single render. The build agent's own compliance self-review had
+explicitly checked off hole-card compliance as satisfied — it found the
+correct code (block 1) without noticing block 2 immediately undoes it.
+Every other contract element (table/seat mirrors, community cards, pots,
+action controls) was genuinely correct. Full writeup:
+`runs/haiku-p6-2026-07-29/RESULTS.md`.
+
+**Reading**: both failures land in exactly the areas P2 and P4 already
+flagged as Haiku's weak spots — all-in/round-completion mechanics (P5,
+echoing P4 server's arithmetic error in the same area) and a
+self-consistency slip between two pieces of code meant to do the same
+job (P6, echoing P4 server's leftover "let me rethink" draft fragment).
+Haiku's ladder profile is now reasonably clear: strong on high-level
+comprehension and architecture (P1, P3 both clean), but progressively
+less reliable the deeper into mechanical/detailed correctness the task
+goes (P2's blind spot, P4's real defects, now P5/P6's real defects) —
+exactly the kind of differentiated, per-phase signal this ladder was
+built to produce instead of one aggregate pass/fail number.
+
 ## P11 begins: Haiku run (P1-P4), 2026-07-29
 
 Operator asked to start the cross-model roster with Haiku (Claude Haiku
@@ -832,7 +885,17 @@ this project to harness/contract bugs.
       code) — see "P11 begins: Haiku run" above. P5-P10 for Haiku not yet
       run; not yet folded into the `sdlc-model-council` roster format
       (`plugins/sdlc-model-council/scripts/council/roster.py`).
-- [ ] Haiku P5-P10 (spec-fidelity builds through doc-drift) — not yet run.
+- [x] Haiku P5/P6 — run and independently verified 2026-07-29, both
+      **FAIL** (first genuine FAILs in Haiku's ladder). P5: real all-in
+      handling bug (status never transitions to `all_in`; turn-
+      advancement doesn't skip all-in seats, corrupting round closure).
+      P6: real self-inflicted regression (a second render block wipes
+      out the first's correct hole-card data-attribute contract on every
+      render). See "Haiku P5/P6, 2026-07-29" above.
+- [ ] Haiku P7-P10 — not yet run. Given P5/P6 are already genuine FAILs,
+      worth deciding whether to continue the ladder for completeness or
+      treat this as Haiku's natural stopping point per the fail-fast
+      design intent.
 - [ ] Opus and external-CLI (codex/agy/opencode) roster runs — not started.
 - [ ] Fold poker-capstone phase results into the existing
       `sdlc-model-council` roster card format so they sit alongside the
