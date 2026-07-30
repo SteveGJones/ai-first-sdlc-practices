@@ -44,7 +44,10 @@ internal protocol the design otherwise uses)
   unchanged** on rejection.
 - `GET /tables/{id}/state?seat={seat}` — current state, hole cards
   redacted for every seat except `seat` (all seats' hole cards are
-  visible once a hand reaches showdown).
+  visible once a hand reaches showdown). **`seat` is a required query
+  parameter, not optional** — every caller, including the harness,
+  must always supply it (see "Rollout note" below for why this is
+  called out explicitly).
 
 ## Response shape (every endpoint above that returns state)
 
@@ -53,14 +56,25 @@ The harness's cross-validation (`harness/oracle.py` +
 makes a hand un-scoreable, which is scored as a stage-4 failure, not
 skipped:
 
+This is the COMPLETE field list — every field a compliant server's state
+response must include, audited field-by-field against the exemplar's own
+`Table.to_dict()` on 2026-07-29 after two rounds of finding fields missing
+here that a real client actually needed (see "Rollout note" below).
+
 ```
 {
-  "hand_in_progress": bool,
-  "current_actor": int | null,
-  "current_bet": int,
-  "button_seat": int,
+  "table_id": str,
+  "small_blind": int,
+  "big_blind": int,
+  "button_seat": int | null,       // null only before the first hand has ever started
+  "betting_round": "preflop"|"flop"|"turn"|"river"|"showdown"|null,
   "community_cards": [{"rank": int (2-14, 14=Ace), "suit": str}, ...],
   "pots": [{"amount": int, "eligible_seats": [int, ...]}, ...],
+  "current_bet": int,
+  "min_raise": int,                // smallest legal raise INCREMENT this round — needed for client-side bet-sizing UI, not just server-side validation
+  "current_actor": int | null,
+  "hand_in_progress": bool,
+  "last_action_log": [str, ...],   // most recent entries, newest last; a compliant server may cap this list's length (the exemplar keeps the last 20) but must include at least the single most recent entry
   "last_showdown": [
     {"seat": int, "hole_cards": [{"rank": int, "suit": str}, {"rank": int, "suit": str}],
      "hand_category": str}   // present only for seats that reached showdown; empty list on a fold-out hand
@@ -68,7 +82,12 @@ skipped:
   "players": [
     {"seat": int, "stack": int, "status": "active"|"folded"|"all_in"|"sitting_out",
      "current_bet": int,      // chips this seat has put in THIS betting round only, reset to 0 when the round advances (preflop -> flop -> ...)
-     "total_committed": int   // chips this seat has put in THIS hand, across all betting rounds, reset to 0 at the start of each new hand
+     "total_committed": int,  // chips this seat has put in THIS hand, across all betting rounds, reset to 0 at the start of each new hand
+     "hole_cards": [{"rank": int, "suit": str}, {"rank": int, "suit": str}] | null
+       // this is THE hole-card-privacy mechanism: null unless this seat's
+       // hole cards are visible to the requesting viewer (their own seat,
+       // or any seat once the hand reaches showdown) — see "What the
+       // stage-4 harness will check" for how this gets exercised
     }, ...
   ]
 }
@@ -89,3 +108,37 @@ uninteresting for grading purposes) design freedom of choosing *how
 results get reported to an external test harness*, the same way a coding
 interview fixes a function signature without dictating the algorithm
 inside it.
+
+## Rollout note — this document has had real gaps, found the hard way
+
+Each found by a model actually trying to implement or consume this
+contract, not by us re-reading it more carefully:
+
+- 2026-07-29: `players[].current_bet` was missing entirely — the
+  Sonnet-only Phase 3 verification's server, built exactly to the
+  then-current spec, crashed the harness with a `KeyError` the harness
+  itself never anticipated either.
+- 2026-07-29: `players[].hole_cards` was missing — the P6 spec-fidelity
+  client build correctly noticed the hole-card-privacy mechanism itself
+  had no documented field to carry it, and made a reasonable assumption
+  rather than guessing wrong silently.
+- 2026-07-29, same pass: a full field-by-field audit against the
+  exemplar's actual `Table.to_dict()` found `table_id`, `small_blind`,
+  `big_blind`, `betting_round`, `min_raise`, and `last_action_log` were
+  all real response fields never listed here — `min_raise` specifically
+  flagged by the same P6 client build as needed for bet-sizing UI it
+  otherwise had to guess at.
+- 2026-07-29, P5 verification: the harness itself called
+  `GET /tables/{id}/state` without a `seat` query param in four
+  scenarios (relying on the exemplar's own, undocumented choice to
+  treat a missing `seat` as "spectator view, no hole cards revealed").
+  The P5 spec-fidelity server, built only from this contract, made
+  `seat` a required parameter and correctly rejected the un-parameterized
+  call with `422` — a reasonable reading the contract didn't rule out.
+  Fixed by making the harness always pass `seat` explicitly and by
+  stating the requirement here, rather than by changing P5's server:
+  the harness's assumption was the bug, not the candidate's.
+
+Treat this document as version-controlled and fallible, not as a fixed
+oracle — if a future implementation surfaces another gap, fix it here
+the same way, with the finding recorded rather than silently patched.

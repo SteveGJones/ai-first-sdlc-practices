@@ -127,9 +127,19 @@ state at every point a cross-check is taken.
 ## Rollout note
 
 This is new as of 2026-07-29, after the wire-API-contract lesson from the
-first Sonnet verification. The exemplar's own client does not yet
-implement this contract — it needs the same retrofit-and-verify treatment
-`HARNESS-CONTRACT.md` got, in the same order: fix the exemplar first,
-build the fixed Playwright driver against it, prove a deliberately-broken
-client fails the right assertions, only then point it at model-submitted
-clients.
+first Sonnet verification. The exemplar's own client did not yet
+implement this contract when it was written; it has since been retrofitted
+in the same order laid out here: exemplar first, Playwright driver built
+and proven against it, a deliberately-broken client (`leaky-hole-cards`)
+proven to fail the right assertion, only then pointed at model-submitted
+clients (P6).
+
+- 2026-07-29, P6 verification: the driver's `wait_for_selector` used
+  Playwright's default `state="visible"`, but nothing in this contract
+  requires the state-mirror element to be CSS-visible — only present
+  with correct `data-*` attributes ("the visible page can look like
+  anything," above). P6's client made the mirror element genuinely
+  invisible (`width:0; height:0; overflow:hidden`), a legitimate reading
+  the exemplar's own "hidden"-class toggle happened not to exercise.
+  Fixed by waiting for `state="attached"` instead — the driver's
+  assumption was the bug, not P6's client.

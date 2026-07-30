@@ -158,12 +158,12 @@ def scenario_basic_multihand(
     hand_reports = []
     total_before_all = num_players * 100
     for _ in range(num_hands):
-        _, pre_state = _request(base_url, "GET", f"/tables/{table_id}/state")
+        _, pre_state = _request(base_url, "GET", f"/tables/{table_id}/state?seat=0")
         pre_hand_stacks = {p["seat"]: p["stack"] for p in pre_state["players"]}
         state = _post_ok(base_url, f"/tables/{table_id}/start")
         hand_reports.append(_drive_hand(base_url, table_id, pre_hand_stacks, state))
 
-    final_status, final_state = _request(base_url, "GET", f"/tables/{table_id}/state")
+    final_status, final_state = _request(base_url, "GET", f"/tables/{table_id}/state?seat=0")
     total_after_all = sum(p["stack"] for p in final_state["players"])
     chip_conservation_ok = total_after_all == total_before_all
     payouts_ok = all(r["ok"] for r in hand_reports)
@@ -196,7 +196,7 @@ def scenario_turn_enforcement(base_url: str) -> ScenarioResult:
     )
     rejected = status >= 400
 
-    _, state_after = _request(base_url, "GET", f"/tables/{table_id}/state")
+    _, state_after = _request(base_url, "GET", f"/tables/{table_id}/state?seat=0")
     unchanged = state_after["current_actor"] == actor
 
     return ScenarioResult(
@@ -215,7 +215,7 @@ def scenario_short_all_in_side_pot(base_url: str) -> ScenarioResult:
     for name, stack in [("short", 5), ("p1", 100), ("p2", 100)]:
         seats[name] = _seat(base_url, table_id, name, stack)
 
-    _, pre_state = _request(base_url, "GET", f"/tables/{table_id}/state")
+    _, pre_state = _request(base_url, "GET", f"/tables/{table_id}/state?seat=0")
     pre_hand_stacks = {p["seat"]: p["stack"] for p in pre_state["players"]}
     state = _post_ok(base_url, f"/tables/{table_id}/start")
 

@@ -409,6 +409,125 @@ line — found by the harness's own sanity-check suite (a synthetic
 scripted-hand test) before it was ever pointed at Sonnet's real output,
 fixed, re-verified.
 
+## P3-P10 built and run (2026-07-29): the full Sonnet baseline
+
+Operator asked to complete the entire remaining capability ladder for
+Sonnet specifically, to establish it as the "medium" reference point on
+the rubric before testing other models (Opus expected to score higher,
+others lower). P3/P4 needed no new infrastructure beyond a prompt
+template (`harness/design_judge.py`) — same `Agent`-dispatch judge
+pattern as P1/P2's judge steps, reusing Sonnet's existing P9 artifacts
+(`stage1/architecture.md`, `stage2/design-server.md`,
+`stage2/design-client.md`) as the candidate rather than generating new
+material, since those documents already exist and re-scoring them at a
+different capability tier is exactly what the ladder is for.
+
+**P3 (architecture.md vs. exemplar's reference architecture)**: 2/2/1/2
+(completeness/turn-enforcement/edge-case/consistency). Candidate
+*exceeded* the reference on message-envelope precision (concrete JSON
+shapes with idempotency tokens and sequence numbers), connection-identity
+binding (closes a spoofing vector the reference doesn't address), and
+turn-timeout/reconnection handling (both entirely absent from the
+reference, which explicitly scopes them out). Lost points only on
+edge-case awareness: no mention of short-all-in/side-pot mechanics or
+heads-up-vs-multi-way turn differences, and silently expanded scope
+(auth, persistence, reconnection) opposite the reference's explicit
+test-harness-tractability tradeoff, without engaging that tradeoff.
+Full verdict: `runs/p3-p4-judging/p3_architecture_verdict.json`.
+
+**P4 (design-server.md / design-client.md vs. reference)**: server 2/2/2/2
+(gap: no packaging/deployment section — no docker-compose/service-name/
+port/healthz specified). Client: completeness 1/2, others 2/2 (gap:
+omits the Lobby view entirely, no concrete tech stack committed;
+superior: an actionSeq/handSeq gap-detection-and-resync protocol the
+reference doesn't have). Full verdicts:
+`runs/p3-p4-judging/p4_{server,client}_verdict.json`.
+
+**P5 (spec-fidelity server build, own tech stack, no exemplar access)**:
+built a Python/FastAPI server from `design-server.md` + `HARNESS-
+CONTRACT.md` alone. Independently re-verified — not just the build
+subagent's self-report — by running the same REST harness already
+proven against the exemplar and both broken-variants
+(`python -m harness --impl-dir runs/sonnet-p5-2026-07-29/impl`):
+**all 3 scenarios pass** (`turn_enforcement`, `basic_multihand`,
+`short_all_in_side_pot`). Result: `runs/sonnet-p5-2026-07-29/HARNESS-VERIFICATION.json`.
+
+**P6 (spec-fidelity client build, own framework, no exemplar access)**:
+built a vanilla-JS/nginx client from `design-client.md` +
+`HARNESS-CONTRACT.md` + `CLIENT-TEST-CONTRACT.md` alone. Paired (by us,
+not the build agent — P6 was deliberately not asked to write its own
+docker-compose.yml) with the exemplar's own known-good server and run
+through `harness/client_verify.py`: **all 3 browser scenarios pass**
+(`hole_card_privacy`, `turn_gated_controls`, `action_propagates`).
+Result: `runs/sonnet-p6-2026-07-29/HARNESS-VERIFICATION.json`.
+
+**Two more real harness bugs found and fixed by P5/P6, same pattern as
+every prior phase** (never fix a model's own output, only our own
+infrastructure):
+- `harness/scenarios.py` called `GET /tables/{id}/state` without a
+  `seat` query param in four scenarios, relying on the exemplar's own
+  undocumented choice to treat a missing `seat` as a fully-redacted
+  spectator view. P5's server made `seat` required and correctly
+  rejected the un-parameterized call with `422` — a reasonable reading
+  the contract didn't rule out. Fixed by always passing `seat`
+  explicitly (never by changing P5's server) and documenting the
+  requirement in `HARNESS-CONTRACT.md`'s "Rollout note".
+- `harness/browser_scenarios.py`'s `wait_for_selector` used Playwright's
+  default `state="visible"`, but `CLIENT-TEST-CONTRACT.md` explicitly
+  says "the visible page can look like anything" — nothing requires the
+  state-mirror element to be CSS-visible, only DOM-present with correct
+  attributes. P6's client made the mirror element genuinely invisible
+  (`width:0; height:0; overflow:hidden`), a legitimate reading the
+  exemplar's own implementation happened not to exercise. Fixed by
+  waiting for `state="attached"` instead, documented in
+  `CLIENT-TEST-CONTRACT.md`'s "Rollout note". Both fixes re-verified
+  clean against the exemplar (regression) and the `leaky-hole-cards`
+  negative control (still correctly fails `hole_card_privacy` only)
+  before trusting them on P5/P6's real output.
+
+**P7/P8 (cross-pairing P9's server/client with the exemplar's opposite
+half)**: both fail, but **not informatively about P9's design quality**
+— P9 was built before `HARNESS-CONTRACT.md`'s `hole_cards`/`table_id`/
+etc. fields and before `CLIENT-TEST-CONTRACT.md` existed at all, so
+P7 (P9 server + exemplar client) fails on a missing `hole_cards` field
+and P8 (exemplar server + P9 client) times out immediately — P9's client
+carries no `data-testid` attributes whatsoever. Recorded as a genuine
+finding about the scoring process itself (contract versioning matters
+for a benchmark meant to be re-run over time) rather than about P9.
+Separately, independently re-running the plain REST harness against
+P9's server standalone reproduces the *original* P9 failure: a real bug
+in its own hand-completion logic (`last_showdown` populates but
+`hand_in_progress` never flips to `false`, no payout applied) —
+confirmed still present, unrelated to the contract-versioning issue.
+Full writeup: `runs/p7-p8-crosspair/README.md`.
+
+**P10 (post-hoc documentation drift, newly designed this session — no
+prior mechanism existed)**: a realistic "keep docs in sync after a code
+change" task. Gave Sonnet one row of its own P1 documentation plus a
+genuine unified diff changing a validation rule (`buy_in<=0` →
+`buy_in < 20 * big_blind`), asked it to produce only the updated row.
+**5/5 on a deterministic checklist**: removed the now-stale claim, stated
+the new rule correctly, invented nothing beyond what the diff showed,
+left untouched details untouched. Note: the diff is synthetic, applied
+only for this test, not to the real exemplar (which still validates
+`buy_in<=0`) — this would disturb every other phase that depends on the
+exemplar's actual behavior. Full writeup: `runs/p10-doc-drift/RESULTS.md`.
+
+**Sonnet baseline summary (P1-P10; P9 already recorded above; P11
+cross-model roster deliberately deferred as the next phase)**:
+
+| Phase | What | Result |
+|---|---|---|
+| P1 | Document the exemplar | 14/15 facts correct (1 corrected — our ground-truth error, not the model's) |
+| P2 | QA/test-authoring (blind) | 72/72 pass vs. exemplar, 3/3 correctly catch the planted bug |
+| P3 | Judged architecture quality | 2/2/1/2 — exceeds reference on protocol precision, loses on edge-case awareness |
+| P4 | Judged detailed-design quality | server 2/2/2/2; client 1/2/2/2 |
+| P5 | Spec-fidelity server build | 3/3 harness scenarios pass |
+| P6 | Spec-fidelity client build | 3/3 browser scenarios pass |
+| P7/P8 | Cross-pair with exemplar | inconclusive (contract-versioning artifact, not a P9 signal) |
+| P9 | Full-autonomy full-stack build | FAIL — real hand-completion/payout bug, reproduced again this session |
+| P10 | Post-hoc documentation drift | 5/5 — correctly updated only the invalidated claim |
+
 ## What Went Well
 
 - **Writing the detailed design doc before the code caught the hard rules
@@ -580,14 +699,25 @@ fixed, re-verified.
       a 2-player pot where one side folds may not correctly trigger
       early-hand-end detection. Traced and confirmed, not fixed (scope
       discipline this session).
-- [ ] Full capability ladder (P1-P11, see "Testing matrix" above): only
-      P1, P2, and P9 have been exercised, and only with Sonnet
-- [ ] P3/P4 judge step (an `Agent` call, no new infra needed) not yet
-      wired into the pipeline
-- [ ] P10 (post-hoc documentation drift check) not yet built
-- [ ] Spec-fidelity mode (P5/P6/P7/P8) not yet run against the
-      now-corrected harness — including whether a second full-autonomy
-      run (Sonnet or another model) passes Stage 4 cleanly when nothing
-      needs retrofitting after the fact
+- [x] Full capability ladder (P1-P10) run end-to-end for Sonnet as the
+      "medium" baseline — complete 2026-07-29. See "P3-P10 built and run"
+      above for the full per-phase results table.
+- [x] P3/P4 judge step (`harness/design_judge.py`, an `Agent` call, no new
+      infra needed) built and wired — complete 2026-07-29
+- [x] P10 (post-hoc documentation drift check) designed and built from
+      scratch this session (no prior mechanism existed) and run — 5/5.
+      See "P3-P10 built and run" above.
+- [x] Spec-fidelity mode (P5/P6) run against the now-corrected harness —
+      both pass cleanly (3/3 REST scenarios, 3/3 browser scenarios). Two
+      more real harness bugs found and fixed along the way (`seat` query
+      param, Playwright visibility assumption) — see "P3-P10 built and
+      run" above.
+- [x] P7/P8 (cross-pairing P9's server/client with the exemplar's
+      opposite half) run — inconclusive by design (P9 predates several
+      contract fields), recorded as a finding about contract versioning
+      rather than about P9. `python -m harness` re-run standalone against
+      P9's own server confirms the original P9 hand-completion bug is
+      still present. See `runs/p7-p8-crosspair/README.md`.
 - [ ] Cross-model roster (P11) — folding results into a comparable
-      report format across external CLIs + Claude family
+      report format across external CLIs + Claude family. Next phase,
+      now that the Sonnet baseline (P1-P10) is complete.
