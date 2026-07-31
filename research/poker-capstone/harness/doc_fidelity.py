@@ -16,14 +16,26 @@ from __future__ import annotations
 
 from .checklist import ChecklistResult, score_checklist
 
+# Pattern hygiene, 2026-07-31: `score_checklist` is an ANY-match over these
+# patterns, so a substring pattern silently satisfies a topic from unrelated
+# prose. Two real false positives were found by running this against a thin
+# API-inventory-style document (see runs/local14b-p1-2026-07-31/RESULTS.md):
+# bare `turn` matched inside "Returns" (and the TURN betting-round enum), and
+# bare `layer` matched inside "player" — the latter satisfying the side-pot
+# topic for ANY poker document. Both are now anchored or replaced with
+# patterns that require the actual concept. Keep new patterns behavioural, and
+# check them against a document that merely lists field names.
 DOC_CHECKLIST: list[tuple[str, list[str]]] = [
-    ("turn_enforcement_described", [r"turn", r"current[_ ]?actor"]),
+    (
+        "turn_enforcement_described",
+        [r"whose turn", r"turn order", r"out of turn", r"acting seat"],
+    ),
     (
         "betting_round_closure_described",
         [r"round\s+(is|ends|complete)", r"acted_this_round", r"has_acted"],
     ),
     ("short_all_in_raise_rule_described", [r"short[- ]?all[- ]?in", r"reopen"]),
-    ("side_pot_algorithm_described", [r"side[- ]?pot", r"layer"]),
+    ("side_pot_algorithm_described", [r"side[- ]?pot", r"\blayer(s|ed|ing)?\b"]),
     ("hand_evaluation_described", [r"hand\s+(rank|evaluat)", r"best[\s\S]{0,20}5"]),
     ("wheel_straight_mentioned", [r"wheel", r"A-2-3-4-5", r"ace[\s\S]{0,20}low"]),
     ("blinds_button_described", [r"\bblind", r"\bbutton\b"]),

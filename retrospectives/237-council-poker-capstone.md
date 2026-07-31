@@ -1012,7 +1012,27 @@ evidence about the model, and was replaced with the unambiguous test above.
       plus three live checks against the real 14B (clean one-shot output,
       server-side confirmation the conversation reaches the model, and
       1 → 6 → 1 failure convergence across three feedback iterations).
-- [ ] **Run Qwen2.5-Coder-14B through the ladder starting at P1, in order**,
+- [x] **Local model (Qwen2.5-Coder-14B) run — started at P1, STOPPED at P1,
+      2026-07-31.** First phase, first genuine FAIL: judge verdict **2
+      CORRECT / 0 INCORRECT / 13 OMITTED** against the 15 ground-truth facts
+      (Sonnet 14/15, Haiku 15/15), checklist 0.60 vs 1.00 for both baselines.
+      The document is an API/attribute inventory rather than a behavioural
+      spec — "straight" never appears, `current_actor` appears once as a field
+      listing, the short-all-in rule is absent. Zero INCORRECT is a real
+      positive: it omitted rather than confabulated. Fail-fast applied, P2+
+      not run. The agentic wrapper was NOT the constraint — this model does
+      not reach the build phases. See `runs/local14b-p1-2026-07-31/RESULTS.md`.
+- [x] **Two regex false positives fixed in `harness/doc_fidelity.py`**, found
+      by grading that thin document: `r"turn"` matched inside "Returns" and
+      `r"layer"` matched inside "player" (satisfying the side-pot topic for
+      any poker document). `score_checklist` is an ANY-match, so a substring
+      pattern silently satisfies a topic. Re-scored all three P1 docs after
+      the fix: Sonnet and Haiku unchanged at 1.00, only the 14B moved
+      (0.70 → 0.60). Fifth grading-infrastructure bug this project has found
+      by running the grader against fresh output rather than re-reading it.
+- [ ] **Run a stronger model through the ladder from P1** if the local-model
+      seat is still wanted — the wrapper is built and verified, so build
+      phases are reachable for a model that gets that far.
       using the new wrapper, fail-fast as with the Sonnet and Haiku runs.
       (Terminology: P1-P10 are the phases; **P11 is the cross-model roster
       exercise, not a phase** — "running P11" for a model means running it
