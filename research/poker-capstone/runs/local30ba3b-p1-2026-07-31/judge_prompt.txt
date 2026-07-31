@@ -1,0 +1,341 @@
+You are grading documentation for factual accuracy against a fixed set of
+ground-truth facts about a codebase. You are NOT grading writing quality,
+completeness of coverage, or style — only whether specific factual claims
+the documentation makes (or should make, per the fact list) are correct.
+
+## Ground-truth facts (the authoritative source — trust these over the
+candidate documentation if they ever conflict)
+
+# P1 ground-truth facts (judge reference — never shown to the model under test)
+
+Specific, checkable claims about the exemplar's *actual implementation*
+(`exemplar/server/app/{models,hand_eval,game_engine,main}.py`), extracted
+by re-reading the current source, not copied from the design docs (which
+could themselves have drifted — see P10). Used by a judge subagent to
+grade a candidate's documentation for **factual accuracy**, distinct from
+the deterministic checklist's topic-coverage-only check
+(`harness/doc_fidelity.py`).
+
+Each fact has an id for reference in a judge verdict.
+
+## Turn enforcement
+
+- **F1**: `submit_action` checks, in order: (1) a hand must be in
+  progress (`table.hand_in_progress`), THEN (2) the acting `seat` must
+  equal `table.current_actor`, raising `ActionError` ("no hand in
+  progress" / "not your turn" respectively) — no partial state mutation
+  happens before either check.
+  **Corrected 2026-07-29**: this fact originally (incorrectly) claimed
+  the turn check happens "before any other validation." A P1 judge run
+  penalized a candidate's documentation as INCORRECT for correctly
+  reporting the real order (hand-in-progress, then turn) — verified
+  against the actual source and fixed here; the candidate was right, the
+  fact was wrong. See `retrospectives/237-council-poker-capstone.md`.
+- **F2**: A player whose `status` is not `ACTIVE` (folded/all-in/sitting-
+  out) cannot act even if somehow addressed — checked immediately after
+  the turn check (i.e. third in the overall order, after F1's two
+  checks).
+
+## Betting round closure
+
+- **F3**: A betting round is complete when every seat with status
+  `ACTIVE` has both (a) `has_acted_this_round == True` and (b)
+  `current_bet == table.current_bet`. Folded and all-in seats are exempt
+  from this check.
+- **F4**: When a player bets or raises, `has_acted_this_round` is reset
+  to `False` for every *other* `ACTIVE` seat (`_reset_acted_except`) —
+  reopening the round for them, EXCEPT in the short-all-in-raise case
+  (F6).
+
+## Short all-in raise (the one genuinely subtle rule)
+
+- **F5**: A raise's size is `target - table.current_bet`. It counts as a
+  "full" raise if that size is `>= table.min_raise`.
+- **F6**: A raise that is BOTH an all-in (uses the player's entire
+  remaining stack) AND smaller than a full raise (`raise_size <
+  table.min_raise`) does **not** reset other players' `has_acted_this_round`
+  and does **not** increase `table.min_raise` — but it DOES still raise
+  `table.current_bet` to the new (higher) target, so later-to-act players
+  still owe up to that amount to call.
+
+## Side pots
+
+- **F7**: Side pots are computed by layering distinct contribution levels
+  (`total_committed` per seat): for each ascending level, one pot layer
+  of size `(level - previous_level) * count_of_seats_who_reached_that_level`,
+  with eligibility = seats at that level minus folded seats.
+- **F8**: A folded player's chips remain in whichever pot layer(s) they
+  contributed to (the pot amount includes them) — they are just excluded
+  from `eligible_seats`, so they cannot win that chip back.
+- **F9**: On a tie for a pot, it splits evenly; any odd remainder chip
+  goes to the tied winner closest to the button in clockwise seat order
+  (not, e.g., lowest seat number, or the first-to-act order).
+
+## Hand evaluation
+
+- **F10**: Best hand is the max-scoring 5-card combination out of all
+  C(7,5)=21 combinations of the 2 hole cards + up to 5 community cards.
+- **F11**: The A-2-3-4-5 "wheel" straight is recognized as a straight
+  (and straight flush, if suited) with the Ace counting LOW — i.e. this
+  is a special case, not something a naive "5 consecutive ranks" check
+  catches (Ace is rank 14 everywhere else).
+- **F12**: There are exactly 9 standard hand categories, standard
+  poker ranking order (high card lowest, straight flush highest).
+
+## Blinds / button
+
+- **F13**: In a 3+ handed hand, small blind = seat immediately clockwise
+  of the button, big blind = next seat after that, first to act preflop
+  = next seat after the big blind. **In heads-up (exactly 2 seats), this
+  is different**: the button itself posts the small blind, and is also
+  the first to act preflop — the other seat is the big blind.
+
+## API / privacy
+
+- **F14**: The server exposes both a REST API (create table, seat
+  player, start hand, submit action, get state) and a push-only
+  WebSocket (state broadcast after every change) — actions are only ever
+  submitted via REST, never over the WebSocket.
+- **F15**: A given state response reveals a seat's hole cards only to
+  that seat itself, UNLESS the hand has reached showdown, in which case
+  every non-folded seat's hole cards become visible to everyone.
+  **Corrected 2026-07-29**: this fact originally (incorrectly) claimed
+  the showdown reveal excludes folded seats. Re-reading `models.py`
+  `Table.to_dict()` directly: `reveal_hole_cards=(s == viewer_seat or
+  showdown)` (line 170) applies uniformly to every seated player with no
+  status check at all — folding (`game_engine.py` `submit_action`) only
+  sets `status = FOLDED`, it never clears `hole_cards` (only
+  `reset_for_new_hand`, at the *next* hand, does that). So **every**
+  seated player's hole cards — folded or not — become visible in the
+  `players[]` array once `betting_round == SHOWDOWN`, as long as they
+  were dealt in for the current hand. The "non-folded only" behavior
+  actually belongs to a *different* field, `last_showdown`
+  (`game_engine.py` `_finish_hand`, built from `non_folded_seats()`
+  only) — the fact conflated the two. Found because a second model's
+  (Haiku, P11 cross-model run) documentation stated the broader "all
+  seats" claim, which the judge marked INCORRECT against this fact —
+  re-verifying against source before trusting the judge (this project's
+  standing rule) showed the model was right and the fact was wrong. This
+  retroactively affects the original Sonnet P1 grading too: Sonnet's own
+  documentation asserted the narrower "non-folded only" claim (with an
+  internally incorrect justification — "since only non-folded players
+  ... still hold hole_cards", which is also false) and was marked
+  CORRECT only because it matched this flawed fact. See
+  `runs/sonnet-p1-2026-07-29/judge_verdict_SECOND_CORRECTION.md` and
+  `runs/haiku-p1-2026-07-29/judge_verdict_CORRECTED.md`.
+
+
+## The candidate documentation under review
+
+# Texas Hold'em Poker Server Implementation Documentation
+
+## Overview
+
+This implementation implements a Texas Hold'em poker game server with the following components:
+
+1. **Data Models**: `Card`, `Deck`, `Player`, `Pot`, and `Table`
+2. **Game Logic**: Hand evaluation and betting round management
+3. **API Layer**: REST and WebSocket interfaces for table management and gameplay
+
+## Data Models
+
+### Card
+
+- Represents a single playing card with rank (2-14) and suit (s, h, d, c)
+- Rank mapping:
+  - 2 through 14 (Ace = 14)
+  - 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A
+- Suit: one of "s", "h", "d", "c"
+- String representation: rank + suit (e.g., "A s", "K h")
+
+### Deck
+
+- Contains 52 cards (52 cards total)
+- Cards are shuffled using `random.Random` (or default random generator)
+- Cards are dealt in order from the top of the deck
+- `deal(n)` method returns `n` cards from the deck, raises `ValueError` if deck is exhausted
+
+### Player
+
+- `seat`: seat number (0-based integer)
+- `name`: player name string
+- `stack`: chip stack amount (int)
+- `hole_cards`: list of 2 cards (None initially)
+- `status`: one of "active", "folded", "all_in", "sitting_out"
+- `current_bet`: amount bet in current betting round
+- `total_committed`: total amount committed to pot
+- `has_acted_this_round`: boolean indicating if player has acted this round
+
+### Pot
+
+- `amount`: pot amount in chips
+- `eligible_seats`: set of seat numbers eligible to win this pot
+
+### Table
+
+- `table_id`: unique identifier string
+- `small_blind`: blind amount (int)
+- `big_blind`: blind amount (int)
+- `players`: dictionary mapping seat numbers to Player objects
+- `button_seat`: seat number of button (None initially)
+- `community_cards`: list of community cards (empty initially)
+- `betting_round`: current betting round ("preflop", "f flop", "turn", "river", "showdown")
+- `pots`: list of Pot objects
+- `current_bet`: current amount to call (0 initially)
+- `min_raise`: minimum raise amount (0 initially)
+- `current_actor`: seat number of player whose turn it is (None initially)
+- `last_aggressor`: seat number of last player to raise (None initially)
+- `last_action_log`: list of last 20 actions (strings)
+- `last_showdown`: list of player hand information (for logging)
+
+## Game Logic
+
+### Hand Evaluation
+
+The hand evaluation system evaluates all possible 5-card combinations from the 7 cards (2 hole + 5 community) and selects the best hand according to standard poker hand rankings:
+
+1. **Straight Flush**: Five cards in sequence with same suit
+2. **Four of a Kind**: Four cards of same rank
+3. **Full House**: Three cards of one rank and two cards of another rank
+4. **Flush**: Five cards of same suit
+5. **Straight**: Five cards in sequence (A-2-3-4-5 counts as straight)
+6. **Three of a Kind**: Three cards of same rank
+7. **Two Pair**: Two pairs of cards of same rank
+8. **One Pair**: Two cards of same rank
+9. **High Card**: Highest card in hand
+
+### Betting Round Rules
+
+- **Preflop**: Players act in turn starting from the button, with blinds posted
+- **F Flop**: Three community cards are dealt, players act in turn
+- **Turn**: One more community card is dealt, players act in turn
+- **River**: One more community card is dealt, players act in turn
+- **Showdown**: All remaining players reveal their hands and pot is awarded
+
+### Betting Rules
+
+- **Blinds**: Small blind (small_blind) and big blind (big_blind) are posted
+- **Bet**: Must bet at least big_blind amount
+- **Raise**: Must raise by at least min_raise amount
+- **Minimum raise**: Big blind or larger, whichever is larger
+- **Raise size**: Must raise by at least min_raise amount
+- **All-in**: Player can only raise up to their stack size
+
+### Pot Allocation
+
+- **Side Pot Algorithm**: Pot is split into layers based on player commitments
+- **Pot Allocation**: Pot is distributed to players who contributed to that pot
+- **Pot Distribution**: Pot is distributed to the winner(s) of that pot
+
+### Hand Resolution
+
+- **Fold-out**: If only one player remains, they win all pots
+- **Showdown**: All remaining players reveal their hands and pot is distributed
+- **Pot Distribution**: Pot is distributed to the winner(s) of that pot
+
+### Player Actions
+
+- **Fold**: Player folds and is removed from the hand
+- **Check**: Player passes without betting
+- **Call**: Player matches the current bet
+- **Bet**: Player bets a specified amount
+- **Raise**: Player raises the current bet by specified amount
+
+### Game State Management
+
+- **Hand State**: Hand is in progress when `hand_in_progress` is True
+- **Player Status**: Players can be "active", "folded", "all_in", or "sitting_out"
+- **Player Actions**: Players can only act when it's their turn
+- **Player Actions**: Players can only act if they have chips to bet
+
+### Table Management
+
+- **Table Creation**: Creates a new table with specified blind levels
+- **Player Seating**: Seats players at the table with specified buy-in
+- **Hand Start**: Starts a new hand with shuffled deck and blinds posted
+- **Player Actions**: Processes player actions and updates game state
+
+### WebSocket API
+
+- **WebSocket Connection**: WebSocket connection to receive real-time updates
+- **State Updates**: Sends updated table state to all connected clients
+- **Player Actions**: Receives player actions over WebSocket
+
+### REST API
+
+- **Create Table**: Creates a new table with specified blind levels
+- **Seat Player**: Adds a player to the table with specified buy-in
+- **Start Hand**: Starts a new hand with shuffled deck and blinds posted
+- **Player Action**: Processes player actions and updates game state
+- **Get State**: Returns current table state
+
+### Error Handling
+
+- **Action Errors**: Raised for illegal actions (e.g., betting when not your turn)
+- **HTTP Errors**: Raised for invalid requests (e.g., invalid blind levels)
+- **Validation**: Validates all inputs and actions before processing
+
+### Game Flow
+
+1. **Table Creation**: Create table with specified blind levels
+2. **Player Seating**: Seat players at table with buy-in
+3. **Hand Start**: Start new hand with shuffled deck and blinds posted
+4. **Betting Rounds**: Process player actions in turn order
+5. **Pot Allocation**: Allocate pots based on player contributions
+6. **Hand Resolution**: Resolve hand and distribute pots to winners
+7. **New Hand**: Start new hand with new deck and new blinds
+
+### Edge Cases
+
+- **All-in**: Player can only raise up to their stack size
+- **Short All-in Raise**: Short all-in raises do not raise min_raise
+- **Pot Distribution**: Pot is distributed to winners in order of seat number
+- **Player Status**: Players can only act when active or all-in
+- **Hand Resolution**: Fold-out occurs when only one player remains
+- **Pot Allocation**: Pot is distributed to players who contributed to that pot
+
+### Validation
+
+- **Blind Validation**: Small blind must be positive and less than or equal to big blind
+- **Buy-in Validation**: Buy-in must be positive
+- **Action Validation**: Actions must be valid actions (fold, check, call, bet, raise)
+- **Player Validation**: Player must be seated at table
+- **Action Validation**: Player must be in turn to act
+- **Action Validation**: Player must have enough chips to make action
+
+### Game State
+
+- **Hand State**: Hand is in progress when `hand_in_progress` is True
+- **Player Status**: Player status is updated when folded or all-in
+- **Pot Allocation**: Pot is allocated based on player contributions
+- **Pot Distribution**: Pot is distributed to winners in order of seat number
+
+### Pot Allocation Algorithm
+
+
+## Your task
+
+For EACH numbered fact (F1, F2, ...) above, classify the candidate
+documentation's treatment of it as exactly one of:
+- CORRECT — the documentation states this fact accurately (need not use
+  the same wording, just be factually consistent with it)
+- INCORRECT — the documentation makes a claim that contradicts this fact
+  (quote the specific contradicting sentence)
+- OMITTED — the documentation does not address this topic at all
+
+Report your verdict as a JSON object:
+{
+  "per_fact": {
+    "F1": {"verdict": "CORRECT"|"INCORRECT"|"OMITTED", "detail": "..."},
+    ...
+  },
+  "summary": {"correct": N, "incorrect": N, "omitted": N}
+}
+
+Be strict: a vague or hedged statement that could be read either way for
+a fact should be marked OMITTED, not CORRECT — only mark CORRECT if the
+documentation actually commits to the accurate claim. An INCORRECT
+verdict is the most important signal this exercise produces (a model
+confidently documenting something wrong is worse than a model saying
+nothing about it), so scrutinize claims that touch each fact's topic
+carefully before marking CORRECT.

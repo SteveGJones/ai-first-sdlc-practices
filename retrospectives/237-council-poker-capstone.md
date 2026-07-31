@@ -1030,9 +1030,33 @@ evidence about the model, and was replaced with the unambiguous test above.
       the fix: Sonnet and Haiku unchanged at 1.00, only the 14B moved
       (0.70 → 0.60). Fifth grading-infrastructure bug this project has found
       by running the grader against fresh output rather than re-reading it.
+- [x] **MoE model (Qwen3-Coder-30B-A3B) also run at P1, 2026-07-31 — FAIL,
+      and worse than the 14B despite more facts correct.** Judged on a
+      generously-extracted coherent prefix: **5 CORRECT / 4 INCORRECT / 6
+      OMITTED**. It engages with behaviour far more than the 14B (covering the
+      wheel straight and short-all-in rule the 14B omitted) but **confabulates
+      four facts** — including claiming the WebSocket receives player actions
+      when the source explicitly comments it is push-only, and claiming odd
+      chips go by seat number when the code sorts clockwise from the button (a
+      fact the 14B got right). Both INCORRECT calls re-verified against source
+      before acceptance. Per the judge prompt's own stated ordering — a
+      confidently-wrong claim is worse than an omission — this is the worse of
+      the two local models.
+      **It also never produced a usable document at all**: 86% duplicate lines
+      at temp 0.0 (one line repeated 602×), and raising temperature to 0.3 made
+      it *worse* (94% duplicate, collapse starting earlier), refuting the
+      hypothesis that this was a greedy-decoding artifact rather than a real
+      failure mode. See `runs/local30ba3b-p1-2026-07-31/RESULTS.md`.
+- [x] **Local-model seat conclusion**: both auditioned 4-bit local models fail
+      P1, the ladder's easiest phase, in different ways — the 14B is coherent
+      but shallow with zero confabulation; the MoE is deeper but confabulates
+      and collapses into repetition. Neither is close to Sonnet (14/15) or
+      Haiku (15/15). For this benchmark, on this hardware, at 4-bit, on-device
+      coding is not ready. Scope noted deliberately in RESULTS.md: two models,
+      4-bit, one 32 GB Mac, one phase — not a general claim about local models.
 - [ ] **Run a stronger model through the ladder from P1** if the local-model
-      seat is still wanted — the wrapper is built and verified, so build
-      phases are reachable for a model that gets that far.
+      seat is still wanted — the wrapper is built and verified but was never
+      exercised by either local model, since neither reached the build phases.
       using the new wrapper, fail-fast as with the Sonnet and Haiku runs.
       (Terminology: P1-P10 are the phases; **P11 is the cross-model roster
       exercise, not a phase** — "running P11" for a model means running it
