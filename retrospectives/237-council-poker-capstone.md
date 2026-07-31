@@ -822,6 +822,82 @@ this project to harness/contract bugs.
   8000) and rewrote "What the stage-4 harness will check" to describe the
   oracle cross-validation approach, once that became the actual design
 
+## Local-model agentic wrapper, 2026-07-31 — and the end of the OpenCode question
+
+Two threads closed this session, one infrastructural and one methodological.
+
+**1. The `mlx_lm.server` OOM is fixed, and OpenCode (Path A) is now
+definitively rejected.** The 2026-07-30 crash was diagnosed as an unbounded
+prompt cache accumulating a KV sequence per session ("9 sequences, 9.72 GB")
+until the GPU ran out. Rather than re-run all 18 audition pairs, only the one
+item that had hung was re-run against a bounded server: it completed in **71s,
+rc=0**, cache steady at "1 sequences, 0.10 GB". Two corrections to the notes
+written before the reboot: `--prompt-cache-size` is the lever that actually
+matters (sequence count was the direct cause, not total bytes), and
+**`--max-concurrent` does not exist in mlx-lm 0.31.3** — the flags are
+`--decode-concurrency` / `--prompt-concurrency`, and passing the wrong one
+makes the server exit immediately.
+
+With the OOM gone the run completed — and its output was corrupted by the
+quote-escaping bug previously seen only on a 7B, now **reproduced on 14B**.
+The emitted Python contains literal `\"\"\"` instead of `"""` and does not
+compile. Critically this is an **encoding fault, not a capability one**:
+repairing only the escaping, the same answer passes 9/9 correctness cases.
+So Path A is structurally unusable across model sizes, the planned 18-pair
+re-run was abandoned as uninterpretable (it would measure corruption, not
+quality), and OpenCode is also ruled out as the agentic runner for the
+file-writing phases. The cheap single-item probe replaced a multi-hour run
+that could not have answered the question either way.
+
+**2. A wrapper now makes build phases runnable by a text-only local model.**
+The `mlx:` adapter is one-shot with no filesystem or Docker access, so it
+could only attempt P1/P3/P4/P10. That is precisely the wrong subset: Haiku
+passed P1 and P3 cleanly and its two genuine FAILs were P5 and P6, so a
+text-only local run would have exercised only the non-discriminating phases.
+Three new modules close the gap:
+
+- `harness/file_blocks.py` — parses ```file:PATH fences and writes them under
+  the impl dir. Follows CommonMark's variable-length fence rule so a
+  submitted file containing its own ``` fence survives; discards unclosed
+  (truncated) blocks rather than writing half a source file; rejects path
+  traversal, absolute/home paths and symlink escapes, validating every path
+  before writing any so one bad name cannot leave a half-applied tree.
+- `harness/mlx_client.py` — importable multi-turn client (the existing
+  `mlx-chat` is a one-shot CLI). Keeps the `stop`-token workaround for
+  mlx-lm #973/#875 and raises `max_tokens` to 8192, since 2048 truncates a
+  multi-file build answer mid-file and the parser then discards it.
+- `harness/local_agent.py` + `harness/run_local.py` — the write → verify →
+  feed-back → retry loop, with `model_fn` and `verify_fn` injected so it is
+  testable without a live server or Docker.
+
+Design decisions worth recording. A response with no file blocks gets a
+**format nudge instead of a score of zero** — Qwen3-Coder-30B-A3B was
+previously contract-failed for using a plain ```python fence when its actual
+fix was correct, and that is a formatting slip, not a capability gap. The
+verifier is **not** run when no files were produced, because building an
+unchanged tree re-scores the previous iteration and can report a false pass.
+And `iteration_count` is recorded on every result and written to the
+transcript: a pass on attempt 5 is not a pass on attempt 1, and comparisons
+against the Sonnet/Haiku baselines must say which it was.
+
+**Verification, live rather than assumed.** 36 new unit tests (60 total in
+the harness suite, no regressions), then three live checks against the real
+14B. A one-shot task produced clean, compiling, correct code on disk — the
+direct Path A/Path B contrast on identical input, since OpenCode corrupted
+that exact task. Conversation growth was confirmed server-side
+(`prompt_tokens` 184 → 311 on the retry), proving the model really receives
+its prior answer plus the feedback rather than the loop silently dropping it.
+And on a deliberately under-specified brief the model's failures went
+**1 → 6 → 1** across three iterations: it added the missing function from
+the feedback alone, broke two things doing so, then fixed them. That
+convergence is the agentic behaviour the one-shot adapter could not supply.
+
+One honest caveat: an earlier probe using angle brackets produced no
+revision across three iterations, but that probe was badly designed (`<>`
+returning True is consistent with simply ignoring angle brackets, so only a
+lone `<` distinguished the cases — a single confusing data point). It is not
+evidence about the model, and was replaced with the unambiguous test above.
+
 ## Action Items
 
 - [x] Phase 1: exemplar (architecture + detailed design + server + client +
@@ -902,6 +978,23 @@ this project to harness/contract bugs.
       the full profile). Haiku's final P11 record: **P1 clean, P2 blind
       spot, P3 clean, P4 real defects, P5 FAIL, P6 FAIL, P7-P10 not run
       (stopped)**.
+- [x] **`mlx_lm.server` OOM fixed and OpenCode (Path A) definitively
+      rejected, 2026-07-31.** Bounded prompt cache (`--prompt-cache-size 2`)
+      turns the 2h48m hang into a 71s clean run; the completed output is
+      then corrupted by the quote-escaping bug, now reproduced on 14B and
+      not just 7B. The 18-pair re-run was abandoned as uninterpretable. See
+      "Local-model agentic wrapper" above.
+- [x] **Agentic wrapper for text-only local models built and verified,
+      2026-07-31** — `harness/file_blocks.py`, `harness/mlx_client.py`,
+      `harness/local_agent.py`, `harness/run_local.py`; 36 new unit tests
+      plus three live checks against the real 14B (clean one-shot output,
+      server-side confirmation the conversation reaches the model, and
+      1 → 6 → 1 failure convergence across three feedback iterations).
+- [ ] **Run the local-model (Qwen2.5-Coder-14B) P11 ladder** using the new
+      wrapper, fail-fast from P1 as with the Sonnet and Haiku runs. The
+      wrapper makes P5/P6-style build phases reachable; record
+      `iteration_count` per phase, since a pass on attempt 5 is not
+      comparable to a baseline pass on attempt 1.
 - [ ] Opus and external-CLI (codex/agy/opencode) roster runs — not started.
 - [ ] Fold poker-capstone phase results into the existing
       `sdlc-model-council` roster card format so they sit alongside the
