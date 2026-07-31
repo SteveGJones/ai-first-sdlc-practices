@@ -843,11 +843,33 @@ quote-escaping bug previously seen only on a 7B, now **reproduced on 14B**.
 The emitted Python contains literal `\"\"\"` instead of `"""` and does not
 compile. Critically this is an **encoding fault, not a capability one**:
 repairing only the escaping, the same answer passes 9/9 correctness cases.
-So Path A is structurally unusable across model sizes, the planned 18-pair
-re-run was abandoned as uninterpretable (it would measure corruption, not
-quality), and OpenCode is also ruled out as the agentic runner for the
-file-writing phases. The cheap single-item probe replaced a multi-hour run
+The planned 18-pair re-run was abandoned as uninterpretable (it would measure
+corruption, not quality), and OpenCode is ruled out as the agentic runner for
+the file-writing phases. The cheap single-item probe replaced a multi-hour run
 that could not have answered the question either way.
+
+**Scope of that rejection, stated precisely — an initial write-up of this
+section over-claimed it as "definitively rejected" and that was too strong.**
+Checking the three code-review items that had completed cleanly on 14B before
+the crash found **zero corruption** in all three. They emit JSON findings
+rather than reproduced source. So the fault is **task-shaped, not uniform**:
+it appears when the model reproduces source code in a fenced block, which is
+consistent with the original 2026-07-26 mechanism ("escape quotes in
+reproduced code") but means the 14B evidence is **1 corrupted item alongside 3
+clean ones**. The honest claim: corruption is confirmed on 14B for
+code-reproduction answers, consistent with the prior 7B finding; it does NOT
+support a blanket "OpenCode is broken for local models". It is still enough to
+disqualify OpenCode as a build-phase runner, because P2/P5/P6/P9 are precisely
+the code-reproduction case — but the ranking cross-check it was originally
+meant to provide remains genuinely **unrun**, not answered.
+
+**Also worth stating because it is easy to misread the above as broader than
+it is: 0 of the 11 poker-capstone phases have ever been run through OpenCode.**
+Every item in every OpenCode run to date is from the council v1 assessment
+stack (code-review / bug-fix / long-context / instruction-format). Running
+totals through OpenCode: the timeout-bounded run produced 0 usable outputs (all
+timeouts, now suspected OOM-contaminated), the unbounded run produced 3 (all
+clean code-review), and the smoke test produced 1 (corrupted bug-fix).
 
 **2. A wrapper now makes build phases runnable by a text-only local model.**
 The `mlx:` adapter is one-shot with no filesystem or Docker access, so it
@@ -990,9 +1012,12 @@ evidence about the model, and was replaced with the unambiguous test above.
       plus three live checks against the real 14B (clean one-shot output,
       server-side confirmation the conversation reaches the model, and
       1 → 6 → 1 failure convergence across three feedback iterations).
-- [ ] **Run the local-model (Qwen2.5-Coder-14B) P11 ladder** using the new
-      wrapper, fail-fast from P1 as with the Sonnet and Haiku runs. The
-      wrapper makes P5/P6-style build phases reachable; record
+- [ ] **Run Qwen2.5-Coder-14B through the ladder starting at P1, in order**,
+      using the new wrapper, fail-fast as with the Sonnet and Haiku runs.
+      (Terminology: P1-P10 are the phases; **P11 is the cross-model roster
+      exercise, not a phase** — "running P11" for a model means running it
+      from P1 upwards, as Haiku's P11 run meant P1-P6.) Do not skip ahead to
+      the build phases just because the wrapper newly reaches them. Record
       `iteration_count` per phase, since a pass on attempt 5 is not
       comparable to a baseline pass on attempt 1.
 - [ ] Opus and external-CLI (codex/agy/opencode) roster runs — not started.

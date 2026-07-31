@@ -1,4 +1,4 @@
-# RESTART PROMPT — run the poker-capstone P11 ladder against the local MLX model (#237)
+# RESTART PROMPT — run the local MLX model through the poker-capstone ladder from P1 (#237)
 
 Paste into a fresh session to resume. Self-contained; read the pointers before
 writing code. Two earlier blockers (the `mlx_lm.server` OOM, and whether
@@ -8,9 +8,19 @@ OpenCode was viable) are now **closed** — do not re-open them.
 
 ## Mission (one line)
 
-Run the `research/poker-capstone/` P11 capability ladder against
-`mlx-community/Qwen2.5-Coder-14B-Instruct-4bit`, fail-fast from P1, using the
-agentic wrapper built on 2026-07-31.
+Run `mlx-community/Qwen2.5-Coder-14B-Instruct-4bit` through the
+`research/poker-capstone/` ladder **starting at P1 and going up in order**,
+fail-fast, using the agentic wrapper built on 2026-07-31.
+
+## Terminology — read this before planning anything
+
+**P1-P10 are the ladder phases. P11 is NOT a phase — it is the cross-model
+roster exercise**, i.e. the activity of running a further model through P1
+onwards. "Running P11 for model X" means "run X through P1, P2, P3, ...",
+exactly as Haiku's P11 run meant P1-P6 before it was stopped. There is no
+phase 11 to jump to, and no phase may be skipped to get somewhere more
+interesting — the ladder is difficulty-ordered precisely so a run can stop at
+its first genuine failure.
 
 ## Where we are (don't re-derive)
 
@@ -81,13 +91,17 @@ python -m harness.run_local \
 
 ## What to actually do
 
-1. **Run P1 first** (fail-fast, same as the Sonnet and Haiku runs). See the
+1. **Start at P1** (fail-fast, same as the Sonnet and Haiku runs). See the
    "P3-P10 built and run" and "P11 begins: Haiku run" sections of
    `retrospectives/237-council-poker-capstone.md` for the exact per-phase
    mechanics (judge prompts, harness verification, blind-mode dispatch) to
    replicate.
-2. **Continue up the ladder while it passes**, stopping at the first genuine
-   FAIL per the ladder's fail-fast design intent.
+2. **Then P2, P3, ... in order**, stopping at the first genuine FAIL per the
+   ladder's fail-fast design intent. Do not skip ahead to the build phases
+   because the wrapper makes them newly reachable — the earlier phases are
+   what make a later failure interpretable, and Haiku's P2 result (42/42 pass
+   but 0/42 catching the planted bug) is exactly the kind of finding that only
+   shows up if you actually run the phase.
 3. **Record `iteration_count` for every phase.** This is the headline fairness
    caveat: a pass on attempt 5 is not comparable to a Sonnet baseline pass on
    attempt 1, and the write-up must say which it was.
