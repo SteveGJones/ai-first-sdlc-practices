@@ -11,5 +11,25 @@ name: "AI-First SDLC CodeQL config"
 # false positive on intentional fixtures — the same reason the repo's
 # technical-debt scanner skips plugins/. Scanning of all real application and
 # tooling code is unaffected.
+# Same rationale, second assessment instrument (the poker capstone, #237):
+#
+#   research/poker-capstone/runs/** — VERBATIM model submissions captured as
+#   assessment evidence. This is code written by the model under test, not by
+#   us, and some of it is defective ON PURPOSE as a recorded result — e.g.
+#   runs/haiku-p5-*/ is the implementation whose bug we graded as that model's
+#   P5 FAIL. "Fixing" a CodeQL alert here would corrupt the artifact the
+#   assessment rests on; runs must stay byte-identical so a result can be
+#   re-verified later. (CodeQL is also wrong on at least one of these:
+#   py/non-iterable-in-for-loop on `for suit in Suit` where Suit is a
+#   str/Enum, which is iterable.)
+#
+#   research/poker-capstone/broken-variants/** — exemplar copies with a single
+#   deliberately-injected bug each, whose whole purpose is to prove the harness
+#   fails on the SPECIFIC injected defect rather than silently.
+#
+# The assessment HARNESS (research/poker-capstone/harness/) and the EXEMPLAR
+# reference implementation are our own code and are deliberately NOT excluded.
 paths-ignore:
   - "plugins/*/assessment/**"
+  - "research/poker-capstone/runs/**"
+  - "research/poker-capstone/broken-variants/**"

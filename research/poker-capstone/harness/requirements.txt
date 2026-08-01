@@ -1,0 +1,6 @@
+pytest>=9.1,<10
+httpx>=0.28,<0.29
+playwright>=1.61,<2
+
+# After installing, also fetch the browser binary once:
+#   python -m playwright install chromium

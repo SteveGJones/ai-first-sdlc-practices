@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Poker Capstone Exemplar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="lobby" class="panel">
+    <h1>Poker Capstone Exemplar</h1>
+
+    <section>
+      <h2>Create a table</h2>
+      <label>Small blind <input id="sb" type="number" value="1" min="1" /></label>
+      <label>Big blind <input id="bb" type="number" value="2" min="1" /></label>
+      <button id="create-table-btn">Create table</button>
+      <p id="create-result"></p>
+    </section>
+
+    <section>
+      <h2>Join a table</h2>
+      <label>Table ID <input id="join-table-id" type="text" /></label>
+      <label>Name <input id="join-name" type="text" value="Player" /></label>
+      <label>Buy-in <input id="join-buyin" type="number" value="100" min="1" /></label>
+      <button id="join-btn">Seat me</button>
+      <p id="join-result"></p>
+    </section>
+
+    <section>
+      <h2>Enter table view</h2>
+      <label>Table ID <input id="enter-table-id" type="text" /></label>
+      <label>My seat <input id="enter-seat" type="number" min="0" /></label>
+      <button id="enter-btn">Enter</button>
+    </section>
+  </div>
+
+  <!-- data-testid="table" mirrors the REST state's top-level fields as
+       data-* attributes (updated in app.js render()) — see
+       docs/CLIENT-TEST-CONTRACT.md. Visible rendering below is entirely
+       separate from this mirror; a test driver reads only the attributes. -->
+  <div id="table-view" class="panel hidden" data-testid="table">
+    <div id="table-oval">
+      <div id="community-cards"></div>
+      <div id="pots"></div>
+      <div id="seats"></div>
+    </div>
+    <div id="action-bar">
+      <button id="start-hand-btn" data-testid="start-hand">Start hand</button>
+      <button id="fold-btn" data-testid="action-fold" disabled>Fold</button>
+      <button id="check-call-btn" data-testid="action-check-call" disabled>Check</button>
+      <div id="bet-raise-group">
+        <input id="bet-amount" data-testid="bet-amount-input" type="number" min="1" />
+        <button id="bet-raise-btn" data-testid="action-bet-raise" disabled>Bet</button>
+      </div>
+    </div>
+    <p id="action-error"></p>
+    <div id="log"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

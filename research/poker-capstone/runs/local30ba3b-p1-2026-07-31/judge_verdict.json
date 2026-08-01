@@ -1,0 +1,69 @@
+{
+  "per_fact": {
+    "F1": {
+      "verdict": "OMITTED",
+      "detail": "The documentation mentions both preconditions in isolation ('Hand State: Hand is in progress when `hand_in_progress` is True', 'Player Actions: Players can only act when it's their turn', 'Action Errors: Raised for illegal actions (e.g., betting when not your turn)') but never commits to the ordering of the two checks in submit_action, nor to the absence of partial state mutation before them. Per the strictness rule this is topic-adjacent but non-committal, so OMITTED rather than CORRECT."
+    },
+    "F2": {
+      "verdict": "INCORRECT",
+      "detail": "Under 'Edge Cases' the documentation states: '**Player Status**: Players can only act when active or all-in'. This directly contradicts F2 — an all-in player's status is not ACTIVE and therefore cannot act. (The doc elsewhere lists the four statuses but never says non-ACTIVE seats are barred, and this sentence asserts the opposite for all-in.)"
+    },
+    "F3": {
+      "verdict": "OMITTED",
+      "detail": "The `has_acted_this_round` field is listed in the Player model ('boolean indicating if player has acted this round'), but the documentation nowhere states the betting-round-completion condition (every ACTIVE seat has acted AND has current_bet == table.current_bet, with folded/all-in seats exempt). The 'Betting Round Rules' section only narrates the streets (preflop/flop/turn/river/showdown)."
+    },
+    "F4": {
+      "verdict": "OMITTED",
+      "detail": "No statement anywhere that a bet or raise resets `has_acted_this_round` to False for the other ACTIVE seats (reopening the round). The raise entry says only 'Raise: Player raises the current bet by specified amount' and 'Must raise by at least min_raise amount'."
+    },
+    "F5": {
+      "verdict": "OMITTED",
+      "detail": "The documentation never commits to raise size being computed as `target - table.current_bet`; 'Raise: Player raises the current bet by specified amount' leaves target-vs-increment semantics ambiguous. The full-raise threshold is only gestured at via the legality-flavoured 'Must raise by at least min_raise amount' (repeated twice) and the garbled 'Minimum raise: Big blind or larger, whichever is larger', neither of which states the '>= min_raise means it is a full raise' classification. Vague on both halves, so OMITTED."
+    },
+    "F6": {
+      "verdict": "CORRECT",
+      "detail": "Under 'Edge Cases': '**Short All-in Raise**: Short all-in raises do not raise min_raise'. This commits accurately to the most distinctive sub-claim of F6 and contradicts nothing in it. Coverage is partial — the doc does not mention that such a raise also fails to reset other players' `has_acted_this_round`, nor that it nevertheless does raise `table.current_bet` — but what it does assert is factually correct."
+    },
+    "F7": {
+      "verdict": "CORRECT",
+      "detail": "'**Side Pot Algorithm**: Pot is split into layers based on player commitments' commits to the layering-by-contribution-level mechanism described in F7. It is thin (no per-layer size formula, no statement of the eligibility set) but is factually consistent, not contradictory."
+    },
+    "F8": {
+      "verdict": "OMITTED",
+      "detail": "The documentation never addresses what happens to a folded player's already-committed chips. It defines `eligible_seats` as 'set of seat numbers eligible to win this pot' without saying folded seats are removed from it, and says 'Fold: Player folds and is removed from the hand'. The repeated line 'Pot Allocation: Pot is distributed to players who contributed to that pot' brushes the topic but is loose enough (and softened by the 'removed from the hand' line) that it does not amount to a committed contradiction — so OMITTED rather than INCORRECT."
+    },
+    "F9": {
+      "verdict": "INCORRECT",
+      "detail": "Stated twice — under 'Edge Cases' and under 'Game State': '**Pot Distribution**: Pot is distributed to winners in order of seat number'. F9 explicitly rules this out: the odd remainder chip on a split pot goes to the tied winner closest to the button in clockwise seat order, 'not, e.g., lowest seat number'. The documentation also never states that a tied pot splits evenly."
+    },
+    "F10": {
+      "verdict": "CORRECT",
+      "detail": "'The hand evaluation system evaluates all possible 5-card combinations from the 7 cards (2 hole + 5 community) and selects the best hand according to standard poker hand rankings'. This states the exhaustive-combination approach accurately. It does not give the count 21 nor the 'up to 5 community cards' qualifier, but nothing it asserts is wrong."
+    },
+    "F11": {
+      "verdict": "CORRECT",
+      "detail": "'**Straight**: Five cards in sequence (A-2-3-4-5 counts as straight)' — an unhedged commitment that the wheel is recognised as a straight with the Ace low. It does not note the straight-flush variant or that it is a special case against Ace-high-rank-14, but the claim it makes is accurate."
+    },
+    "F12": {
+      "verdict": "CORRECT",
+      "detail": "The doc enumerates exactly 9 categories in the correct order, Straight Flush (1) down to High Card (9), and correctly does not split out a separate 'Royal Flush' category."
+    },
+    "F13": {
+      "verdict": "INCORRECT",
+      "detail": "'**Preflop**: Players act in turn starting from the button, with blinds posted'. In a 3+ handed hand the first to act preflop is the seat after the big blind, not the button. The documentation also never mentions the small blind = seat clockwise of button / big blind = next seat structure, and never mentions the heads-up special case (button posts the small blind and acts first preflop)."
+    },
+    "F14": {
+      "verdict": "INCORRECT",
+      "detail": "Under 'WebSocket API': '**Player Actions**: Receives player actions over WebSocket'. This directly contradicts F14 — the WebSocket is push-only (state broadcast) and actions are only ever submitted via REST. The doc does correctly list both interfaces and the five REST endpoints (including 'Player Action'), but the WebSocket-receives-actions claim is a confident false statement."
+    },
+    "F15": {
+      "verdict": "OMITTED",
+      "detail": "The documentation never addresses hole-card redaction in state responses at all — nothing about a seat seeing only its own hole cards, and nothing about the showdown reveal rule in the serialized state. The only showdown mention, '**Showdown**: All remaining players reveal their hands and pot is awarded', is a generic description of the game phase rather than a claim about what a state response exposes to a given viewer, so it is too vague to grade as either CORRECT or INCORRECT."
+    }
+  },
+  "summary": {
+    "correct": 5,
+    "incorrect": 4,
+    "omitted": 6
+  }
+}

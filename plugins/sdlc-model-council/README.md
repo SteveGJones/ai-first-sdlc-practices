@@ -1,6 +1,48 @@
 # sdlc-model-council
 
-A **cross-vendor delegation orchestrator**: delegate a scoped sub-problem
+**Assess which models are worth using, then delegate to the ones that earn
+it.** This is not only a delegation plugin — assessment is half of it, and the
+half that makes the other half meaningful. Delegating to a peer model is easy;
+knowing *which* model deserves the work, on evidence rather than vendor
+benchmarks or vibes, is the hard part.
+
+| | What it does | Where it lives |
+|---|---|---|
+| **Assessment** | Measure what a model can actually do, on our own problems, under our own grading | `assessment/stack/` (the v1 item stack) and `research/poker-capstone/` (the multi-stage capability ladder) |
+| **Delegation** | Reach a locally-installed peer agentic CLI and fold a uniform result back in | `scripts/extdel.sh` + `scripts/adapters/` |
+
+The output of assessment is a **roster** — which models hold which seats, with
+what evidence behind each. Delegation then routes work against that roster
+instead of against guesswork. A model that has not been assessed has not
+earned a seat.
+
+## The assessment half
+
+Two complementary instruments, deliberately different in cost and depth:
+
+1. **The v1 item stack** (`assessment/stack/v1/`) — a standardized set of
+   short items (code-review, bug-fix, long-context, instruction-format) run
+   across every reachable backend. Cheap, broad, right for auditioning a
+   newly-released model or taking a first cut.
+2. **The poker capstone** (`research/poker-capstone/`) — a difficulty-ordered
+   capability ladder (P1-P10) over a single substantial engineering problem,
+   run fail-fast so a model's assessment stops at its first genuine failure.
+   Expensive, deep, and the instrument that actually separates models.
+
+Why both: short items rank models that all look similar; the ladder shows
+*where* a model breaks, which is what determines what you can safely delegate
+to it. Findings to date — including a strong model failing full-autonomy on a
+real payout bug, a green 42-test suite structurally blind to the bug it
+existed to catch, and two local models failing the ladder's easiest phase in
+opposite ways — are tabulated in `research/poker-capstone/README.md`.
+
+A standing rule in both instruments: **the grader is under test too.** A judge
+verdict is re-verified against source before it is accepted, which has found
+five real bugs in our own grading material, every one in the model's favour.
+
+## The delegation half
+
+Delegate a scoped sub-problem
 from inside a Claude Code session to a locally-installed peer agentic CLI
 — OpenAI **Codex** (`codex`) or Antigravity (`agy`), extensible to more via
 one-directory adapters — and fold a compact, uniform result back in.

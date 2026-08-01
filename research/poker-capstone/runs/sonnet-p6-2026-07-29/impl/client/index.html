@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== LOBBY VIEW (humans only) ===================== -->
+<div id="lobby-view" class="view">
+  <h1>Poker Lobby</h1>
+
+  <section class="lobby-card">
+    <h2>Create a table</h2>
+    <form id="create-table-form">
+      <label>Small blind <input type="number" id="create-small-blind" value="1" min="1" required></label>
+      <label>Big blind <input type="number" id="create-big-blind" value="2" min="1" required></label>
+      <button type="submit">Create table</button>
+    </form>
+    <p id="create-table-result"></p>
+  </section>
+
+  <section class="lobby-card">
+    <h2>Join a table</h2>
+    <form id="join-table-form">
+      <label>Table ID <input type="text" id="join-table-id" required></label>
+      <label>Your name <input type="text" id="join-name" required></label>
+      <label>Buy-in <input type="number" id="join-buyin" value="200" min="1" required></label>
+      <button type="submit">Join</button>
+    </form>
+    <p id="join-table-result"></p>
+  </section>
+
+  <section class="lobby-card">
+    <h2>Go straight to a seat</h2>
+    <form id="goto-form">
+      <label>Table ID <input type="text" id="goto-table-id" required></label>
+      <label>Seat <input type="number" id="goto-seat" value="0" min="0" required></label>
+      <button type="submit">Go</button>
+    </form>
+  </section>
+</div>
+
+<!-- ===================== TABLE VIEW ===================== -->
+<div id="table-view" class="view" hidden>
+  <header class="table-header">
+    <div class="table-id-label">Table <span id="table-id-display"></span> — seat <span id="my-seat-display"></span></div>
+    <div id="connection-status" class="connection-status" data-state="connecting">connecting…</div>
+    <button id="back-to-lobby">Lobby</button>
+  </header>
+
+  <!-- Required top-level state mirror (CLIENT-TEST-CONTRACT.md) -->
+  <div
+    id="table-state-mirror"
+    data-testid="table"
+    data-hand-in-progress="false"
+    data-current-actor=""
+    data-current-bet="0"
+    data-button-seat="0"
+  ></div>
+
+  <div class="poker-table-wrap">
+    <div class="poker-table-oval">
+      <div id="community-cards" class="community-cards"></div>
+      <div id="pots" class="pots"></div>
+      <div id="seats" class="seats"></div>
+    </div>
+  </div>
+
+  <div id="last-action-log" class="last-action-log" aria-live="polite"></div>
+
+  <div id="error-toast" class="error-toast" hidden></div>
+
+  <div class="action-bar">
+    <button id="start-hand" data-testid="start-hand" disabled>Start hand</button>
+    <button id="action-fold" data-testid="action-fold" disabled>Fold</button>
+    <button id="action-check-call" data-testid="action-check-call" disabled>Check</button>
+    <input id="bet-amount-input" data-testid="bet-amount-input" type="number" min="0" step="1" disabled>
+    <button id="action-bet-raise" data-testid="action-bet-raise" disabled>Bet</button>
+  </div>
+
+  <!-- Hidden templates for hole cards / seats are built in JS -->
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

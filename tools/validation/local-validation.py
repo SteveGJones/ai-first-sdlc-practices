@@ -22,6 +22,13 @@ import argparse
 import time
 
 
+#: Directory names never worth walking: gitignored scratch (`tmp/` — the
+#: location CLAUDE.md mandates for scratch work), vendored dependencies, and
+#: build caches. Files under these cannot be pushed, so failing a pre-push
+#: gate on them blocks a legitimate push for no benefit.
+_SKIP_DIRS = frozenset({"tmp", "node_modules", "__pycache__", "venv", "build", "dist"})
+
+
 class ValidationRunner:
     """Runs comprehensive local validation checks"""
 
@@ -63,8 +70,16 @@ class ValidationRunner:
 
         python_files = []
         for root, dirs, files in os.walk("."):
-            # Skip hidden dirs and test dirs
-            dirs[:] = [d for d in dirs if not d.startswith(".") and "test-" not in d]
+            # Skip hidden dirs, test dirs, and scratch/vendored dirs that are
+            # gitignored and so can never be pushed. `tmp/` matters especially:
+            # CLAUDE.md directs all scratch work there and .gitignore excludes
+            # it, so scanning it blocks a push on files that are not part of
+            # the repo — e.g. deliberately-captured malformed model output.
+            dirs[:] = [
+                d
+                for d in dirs
+                if not d.startswith(".") and "test-" not in d and d not in _SKIP_DIRS
+            ]
             for file in files:
                 if file.endswith(".py"):
                     python_files.append(os.path.join(root, file))

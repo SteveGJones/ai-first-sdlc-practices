@@ -1,0 +1,21 @@
+services:
+  # P8-v2: the exemplar's own known-good SERVER paired with Sonnet's
+  # freshly-rebuilt P9-v2 CLIENT (own design, React/TypeScript, built
+  # fresh against CLIENT-TEST-CONTRACT.md from the start).
+  server:
+    build: ../../../exemplar/server
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  client:
+    build: ../../sonnet-p9v2-2026-07-29/impl/client
+    ports:
+      - "8081:80"
+    depends_on:
+      - server

@@ -1,0 +1,155 @@
+/* Purely cosmetic — docs/CLIENT-TEST-CONTRACT.md is explicit that visible
+   styling/layout/copy is entirely free; only the data-attribute mirror is
+   fixed. This file exists only to make the page usable for a human. */
+
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0b3d24;
+  color: #f0f0f0;
+}
+
+.landing {
+  max-width: 32rem;
+  margin: 4rem auto;
+  padding: 1.5rem;
+  background: #123;
+  border-radius: 0.5rem;
+}
+
+.landing label {
+  display: block;
+  margin: 0.75rem 0;
+}
+
+.table-view {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.table-view__header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.connection-status {
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.8rem;
+  background: #244;
+}
+.connection-status--connected {
+  background: #274d27;
+}
+.connection-status--reconnecting,
+.connection-status--error {
+  background: #5c2323;
+}
+
+.community-cards,
+.seat__hole-cards {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.community-card,
+.hole-card {
+  width: 2.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #111;
+  border-radius: 0.35rem;
+  font-weight: 600;
+}
+
+.hole-card--back {
+  background: #1b4d8f;
+  color: #fff;
+}
+
+.pots {
+  margin: 0.75rem 0;
+}
+
+.seats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.seat {
+  border: 1px solid #345;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  background: #0f2d1f;
+}
+
+.seat--acting {
+  outline: 2px solid gold;
+}
+
+.seat--me {
+  border-color: #6cf;
+}
+
+.seat__header {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-weight: 600;
+}
+
+.seat__stats {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  margin: 0.35rem 0;
+}
+
+.action-log {
+  font-size: 0.85rem;
+  max-height: 8rem;
+  overflow-y: auto;
+}
+
+.action-panel {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #0f2d1f;
+  border-radius: 0.5rem;
+}
+
+.action-panel__buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.action-panel__error {
+  color: #ff8080;
+  margin-bottom: 0.5rem;
+}
+
+.action-panel__hint {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

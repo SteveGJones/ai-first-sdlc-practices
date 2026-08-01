@@ -1,0 +1,270 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0b3d24;
+  color: #f0f0f0;
+}
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-picker input {
+  margin-left: 0.5rem;
+}
+
+.connection-banner {
+  background: #7a4b00;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.join-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  background: #0e2a1c;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.table {
+  background: #0d5c34;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.board {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.board-cards {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.pot-total {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.street-label {
+  opacity: 0.7;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+.card {
+  width: 40px;
+  height: 56px;
+  border-radius: 6px;
+  background: #fff;
+  color: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.card-red {
+  color: #c0272d;
+}
+
+.card-black {
+  color: #111;
+}
+
+.card-back {
+  background: repeating-linear-gradient(45deg, #2b4c8c, #2b4c8c 4px, #1a2f57 4px, #1a2f57 8px);
+}
+
+.card-empty {
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+}
+
+.seats-ring {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.seat {
+  position: relative;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.seat-empty {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.seat-acting {
+  outline: 3px solid #ffd54a;
+  box-shadow: 0 0 12px #ffd54a;
+}
+
+.seat-hole-cards {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 0.4rem 0;
+}
+
+.me-badge {
+  color: #7fd7ff;
+}
+
+.badge {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.badge-allin {
+  background: #c0272d;
+}
+
+.badge-folded {
+  background: #444;
+}
+
+.badge-sitout {
+  background: #555;
+}
+
+.button-chip {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #fff;
+  color: #111;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.countdown {
+  margin-top: 0.25rem;
+  font-variant-numeric: tabular-nums;
+  color: #ffd54a;
+}
+
+.action-panel {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.action-panel-disabled {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-fold {
+  background: #7a2626;
+  color: #fff;
+}
+
+.btn-check {
+  background: #2b5f3a;
+  color: #fff;
+}
+
+.btn-call {
+  background: #2b5f8c;
+  color: #fff;
+}
+
+.btn-raise {
+  background: #8c6d2b;
+  color: #fff;
+}
+
+.raise-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.all-in-label {
+  color: #ffd54a;
+}
+
+.pending-indicator {
+  margin-top: 0.5rem;
+  opacity: 0.8;
+}
+
+.rejection-message {
+  margin-top: 0.5rem;
+  color: #ff8a80;
+}
+
+.showdown {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.pot-breakdown {
+  margin: 0;
+  padding-left: 1.25rem;
+}
