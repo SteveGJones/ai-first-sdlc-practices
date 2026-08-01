@@ -35,6 +35,10 @@ class FixedDeck(Deck):
     shuffle, so scripted hands are deterministic."""
 
     def __init__(self, order: list[str]) -> None:
+        # Initialise the base Deck first so this double is a fully-formed Deck
+        # (and so a future field added to Deck.__init__ can't silently go
+        # missing here), then replace the shuffled cards with the fixed order.
+        super().__init__()
         self._cards = [card(s) for s in order]
         self._rng = None
 
