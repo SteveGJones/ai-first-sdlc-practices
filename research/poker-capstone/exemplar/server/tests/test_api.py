@@ -65,10 +65,12 @@ def test_full_hand_via_api_to_showdown_or_fold() -> None:
     ]
     client.post(f"/tables/{table_id}/players", json={"name": "alice", "buy_in": 100})
     client.post(f"/tables/{table_id}/players", json={"name": "bob", "buy_in": 100})
-    state = client.post(f"/tables/{table_id}/start").json()
+    client.post(f"/tables/{table_id}/start")
 
     # Drive to completion with checks/calls only (no raises) — hand ends
     # either at showdown or stays hand_in_progress False once resolved.
+    # The loop re-reads state from the server each pass, so the start
+    # response body is deliberately not captured.
     for _ in range(50):
         state = client.get(f"/tables/{table_id}/state").json()
         if not state["hand_in_progress"]:
@@ -80,7 +82,6 @@ def test_full_hand_via_api_to_showdown_or_fold() -> None:
             f"/tables/{table_id}/actions", json={"seat": actor, "action": action}
         )
         assert r.status_code == 200, r.json()
-        state = r.json()
 
     final = client.get(f"/tables/{table_id}/state").json()
     assert final["hand_in_progress"] is False

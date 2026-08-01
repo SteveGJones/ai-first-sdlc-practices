@@ -121,6 +121,10 @@ def _discover_client_url(
                 if resp.status == 200:
                     return client_url
         except (urllib.error.URLError, OSError):
+            # Expected while the client container is still starting: connection
+            # refused / DNS not ready / partial response. A client is optional
+            # per HARNESS-CONTRACT.md, so we retry until the deadline rather
+            # than treat any single failed poll as an error.
             pass
         time.sleep(1)
     return client_url  # discovered but never confirmed serving — let the caller's own checks decide
