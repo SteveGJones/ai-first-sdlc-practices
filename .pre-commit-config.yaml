@@ -33,6 +33,17 @@ repos:
     hooks:
       - id: flake8
         args: ['--max-line-length=127', '--extend-ignore=E203,W503']
+        # research/poker-capstone/runs/ holds VERBATIM model submissions kept
+        # as assessment evidence — code written by the model under test, not
+        # by us. An unused import in a model's answer is a finding ABOUT that
+        # model (recorded in that run's results write-up); "fixing" it would
+        # corrupt the artifact the assessment rests on, and runs must stay
+        # byte-identical so a result can be re-verified later. The assessment
+        # HARNESS (research/poker-capstone/harness/) is our code and is
+        # deliberately NOT excluded. Set here rather than in setup.cfg because
+        # pre-commit passes filenames explicitly, bypassing flake8's own
+        # `exclude`.
+        exclude: '^research/poker-capstone/runs/'
 
   - repo: local
     hooks:

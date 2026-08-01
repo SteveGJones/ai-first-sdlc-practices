@@ -7,6 +7,17 @@ Run (or resume) a council assessment: the shipped problem stack goes to each
 named model, scored, and turned into a roster card + diversity map. This
 wraps `assess.sh` — the choreography, not a new engine.
 
+**This is the shallow, broad instrument — one of two.** The v1 item stack run
+here is cheap and ranks models quickly, which makes it right for auditioning a
+newly-released model or taking a first cut. It does not tell you *where* a
+model breaks on sustained multi-stage work. For that, the second instrument is
+the **poker-capstone capability ladder** (`research/poker-capstone/`): P1-P10
+in difficulty order over one substantial engineering problem, run fail-fast so
+a model's assessment stops at its first genuine failure. Use this command to
+narrow the field; use the ladder before granting a model a seat that matters.
+Results to date, and what each phase measures, are tabulated in that
+directory's README.
+
 Arguments: `$ARGUMENTS` — parse `models=` (comma-separated model addresses,
 required), `dims=` (comma-separated dimensions, required), optional
 `budget-usd=` (a dollar cap — see step 2), `--estimate` (stop after the
