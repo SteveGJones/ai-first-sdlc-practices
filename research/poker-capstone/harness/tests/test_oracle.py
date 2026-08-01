@@ -37,36 +37,36 @@ def hand(*cards: str) -> list[tuple[int, str]]:
     return [card(c) for c in cards]
 
 
-def test_royal_flush():
+def test_royal_flush() -> None:
     sc = score_five(tuple(hand("As", "Ks", "Qs", "Js", "10s")))
     assert describe(sc) == "straight_flush"
     assert sc == (8, 14)
 
 
-def test_wheel_straight():
+def test_wheel_straight() -> None:
     sc = score_five(tuple(hand("As", "2h", "3d", "4c", "5s")))
     assert sc == (4, 5)
 
 
-def test_full_house_beats_flush():
+def test_full_house_beats_flush() -> None:
     fh = score_five(tuple(hand("9s", "9h", "9d", "2c", "2h")))
     fl = score_five(tuple(hand("2s", "5s", "9s", "Js", "Ks")))
     assert fh > fl
 
 
-def test_best_hand_picks_best_5_of_7():
+def test_best_hand_picks_best_5_of_7() -> None:
     bh = best_hand(hand("As", "Ks"), hand("Qs", "Js", "10s", "2h", "3d"))
     assert describe(bh) == "straight_flush"
 
 
-def test_reconstruct_pots_no_all_in_is_single_pot():
+def test_reconstruct_pots_no_all_in_is_single_pot() -> None:
     pots = reconstruct_pots({0: 10, 1: 10, 2: 10}, folded_seats=set())
     assert len(pots) == 1
     assert pots[0]["amount"] == 30
     assert pots[0]["eligible_seats"] == {0, 1, 2}
 
 
-def test_reconstruct_pots_short_all_in_creates_side_pot():
+def test_reconstruct_pots_short_all_in_creates_side_pot() -> None:
     # seat0 all-in for 5, seat1 and seat2 both put in 20.
     pots = reconstruct_pots({0: 5, 1: 20, 2: 20}, folded_seats=set())
     assert len(pots) == 2
@@ -77,7 +77,7 @@ def test_reconstruct_pots_short_all_in_creates_side_pot():
     assert side["eligible_seats"] == {1, 2}
 
 
-def test_reconstruct_pots_folded_seat_excluded_from_eligibility_not_amount():
+def test_reconstruct_pots_folded_seat_excluded_from_eligibility_not_amount() -> None:
     # seat0 folded after committing 10; seat1/seat2 committed 10 each.
     pots = reconstruct_pots({0: 10, 1: 10, 2: 10}, folded_seats={0})
     assert len(pots) == 1
@@ -85,7 +85,7 @@ def test_reconstruct_pots_folded_seat_excluded_from_eligibility_not_amount():
     assert pots[0]["eligible_seats"] == {1, 2}  # but can't win it
 
 
-def test_expected_payouts_simple_heads_up():
+def test_expected_payouts_simple_heads_up() -> None:
     payouts = expected_payouts(
         contributions={0: 10, 1: 10},
         folded_seats=set(),
@@ -96,7 +96,7 @@ def test_expected_payouts_simple_heads_up():
     assert payouts == {0: 20}
 
 
-def test_expected_payouts_side_pot_different_winners():
+def test_expected_payouts_side_pot_different_winners() -> None:
     # seat0 all-in for 5 with the best hand overall -> wins main pot only.
     # seat1 wins the side pot between seat1/seat2.
     payouts = expected_payouts(
@@ -111,7 +111,7 @@ def test_expected_payouts_side_pot_different_winners():
     assert 2 not in payouts
 
 
-def test_expected_payouts_split_pot_odd_chip_goes_clockwise_from_button():
+def test_expected_payouts_split_pot_odd_chip_goes_clockwise_from_button() -> None:
     payouts = expected_payouts(
         contributions={0: 11, 1: 10},
         folded_seats=set(),

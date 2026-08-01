@@ -20,14 +20,14 @@ BRIEF = "Build a poker server."
 PASS = {"passed": True, "scenarios": []}
 
 
-def _fail(detail="AssertionError: pot was 30, expected 20"):
+def _fail(detail: str = "AssertionError: pot was 30, expected 20") -> dict:
     return {"passed": False, "scenarios": [{"name": "side_pot", "error": detail}]}
 
 
-def test_passes_on_first_attempt_runs_exactly_one_iteration():
+def test_passes_on_first_attempt_runs_exactly_one_iteration() -> None:
     calls = []
 
-    def model(messages):
+    def model(messages) -> str:
         calls.append(messages)
         return "```file:server.py\nOK\n```"
 
@@ -39,10 +39,10 @@ def test_passes_on_first_attempt_runs_exactly_one_iteration():
     assert len(calls) == 1
 
 
-def test_retries_with_feedback_and_can_pass_on_second_attempt():
+def test_retries_with_feedback_and_can_pass_on_second_attempt() -> None:
     reports = [_fail(), PASS]
 
-    def verify(_):
+    def verify(_) -> dict:
         return reports.pop(0)
 
     result = run_loop(
@@ -57,7 +57,7 @@ def test_retries_with_feedback_and_can_pass_on_second_attempt():
     assert result.stop_reason == "passed"
 
 
-def test_stops_at_max_iterations_when_never_passing():
+def test_stops_at_max_iterations_when_never_passing() -> None:
     result = run_loop(
         BRIEF,
         impl_dir=None,
@@ -71,12 +71,12 @@ def test_stops_at_max_iterations_when_never_passing():
     assert result.stop_reason == "max_iterations"
 
 
-def test_model_sees_growing_conversation_with_its_own_prior_answer():
+def test_model_sees_growing_conversation_with_its_own_prior_answer() -> None:
     """A retry is only meaningfully agentic if the model can see what it
     previously wrote and what broke — otherwise it is just N one-shots."""
     seen = []
 
-    def model(messages):
+    def model(messages) -> str:
         seen.append(list(messages))
         return "```file:server.py\nattempt\n```"
 
@@ -94,10 +94,10 @@ def test_model_sees_growing_conversation_with_its_own_prior_answer():
     assert second[1]["content"] == "```file:server.py\nattempt\n```"
 
 
-def test_feedback_includes_the_actual_failure_detail():
+def test_feedback_includes_the_actual_failure_detail() -> None:
     seen = []
 
-    def model(messages):
+    def model(messages) -> str:
         seen.append(list(messages))
         return "```file:server.py\nX\n```"
 
@@ -113,12 +113,12 @@ def test_feedback_includes_the_actual_failure_detail():
     assert "pot was 30, expected 20" in feedback
 
 
-def test_harness_error_is_fed_back_too():
+def test_harness_error_is_fed_back_too() -> None:
     """A build failure is the most common real outcome and is reported as
     harness_error, not as a scenario failure — it must still reach the model."""
     seen = []
 
-    def model(messages):
+    def model(messages) -> str:
         seen.append(list(messages))
         return "```file:server.py\nX\n```"
 
@@ -136,14 +136,14 @@ def test_harness_error_is_fed_back_too():
     assert "no module named flask" in seen[1][-1]["content"]
 
 
-def test_response_with_no_file_blocks_is_nudged_about_the_format():
+def test_response_with_no_file_blocks_is_nudged_about_the_format() -> None:
     """Qwen3-Coder-30B-A3B was previously contract-failed for using a plain
     ```python fence. A nudge costs one iteration and is fairer than scoring
     a formatting slip as a capability failure."""
     seen = []
     responses = ["```python\nx = 1\n```", "```file:server.py\nX\n```"]
 
-    def model(messages):
+    def model(messages) -> str:
         seen.append(list(messages))
         return responses.pop(0)
 
@@ -162,12 +162,12 @@ def test_response_with_no_file_blocks_is_nudged_about_the_format():
     assert result.iterations[0].files_written == []
 
 
-def test_verifier_not_called_when_no_files_were_produced():
+def test_verifier_not_called_when_no_files_were_produced() -> None:
     """Running Docker against an unchanged tree would score the PREVIOUS
     iteration's code again and could report a false pass."""
     verify_calls = []
 
-    def verify(d):
+    def verify(d) -> dict:
         verify_calls.append(d)
         return PASS
 
@@ -182,11 +182,11 @@ def test_verifier_not_called_when_no_files_were_produced():
     assert verify_calls == []
 
 
-def test_default_iteration_cap_is_explicit_and_small():
+def test_default_iteration_cap_is_explicit_and_small() -> None:
     assert DEFAULT_MAX_ITERATIONS == 5
 
 
-def test_files_are_written_to_impl_dir_between_iterations(tmp_path):
+def test_files_are_written_to_impl_dir_between_iterations(tmp_path) -> None:
     run_loop(
         BRIEF,
         impl_dir=tmp_path,
@@ -196,7 +196,7 @@ def test_files_are_written_to_impl_dir_between_iterations(tmp_path):
     assert (tmp_path / "server.py").read_text() == "real content\n"
 
 
-def test_transcript_records_every_iteration_for_audit(tmp_path):
+def test_transcript_records_every_iteration_for_audit(tmp_path) -> None:
     impl = tmp_path / "impl"
     transcript = tmp_path / "t"
     reports = [_fail(), PASS]
@@ -217,7 +217,7 @@ def test_transcript_records_every_iteration_for_audit(tmp_path):
     assert (transcript / "iteration-002.response.txt").exists()
 
 
-def test_unsafe_path_ends_the_run_without_writing(tmp_path):
+def test_unsafe_path_ends_the_run_without_writing(tmp_path) -> None:
     result = run_loop(
         BRIEF,
         impl_dir=tmp_path,

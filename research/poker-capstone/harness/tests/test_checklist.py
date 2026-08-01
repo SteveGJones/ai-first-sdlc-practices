@@ -14,37 +14,37 @@ from harness.checklist import (
 EXEMPLAR_DOCS = Path(__file__).parent.parent.parent / "exemplar" / "docs"
 
 
-def test_exemplar_architecture_doc_is_sufficient():
+def test_exemplar_architecture_doc_is_sufficient() -> None:
     text = (EXEMPLAR_DOCS / "architecture.md").read_text()
     result = score_checklist(text, ARCHITECTURE_CHECKLIST)
     assert result.sufficient(), result.missing
 
 
-def test_exemplar_server_design_doc_is_sufficient():
+def test_exemplar_server_design_doc_is_sufficient() -> None:
     text = (EXEMPLAR_DOCS / "design-server.md").read_text()
     result = score_checklist(text, SERVER_DESIGN_CHECKLIST)
     assert result.sufficient(), result.missing
 
 
-def test_exemplar_client_design_doc_is_sufficient():
+def test_exemplar_client_design_doc_is_sufficient() -> None:
     text = (EXEMPLAR_DOCS / "design-client.md").read_text()
     result = score_checklist(text, CLIENT_DESIGN_CHECKLIST)
     assert result.sufficient(), result.missing
 
 
-def test_empty_text_is_insufficient():
+def test_empty_text_is_insufficient() -> None:
     result = score_checklist("", SERVER_DESIGN_CHECKLIST)
     assert not result.sufficient()
     assert result.score == 0.0
 
 
-def test_unrelated_text_is_insufficient():
+def test_unrelated_text_is_insufficient() -> None:
     text = "This is a document about baking bread. Flour, water, yeast, salt."
     result = score_checklist(text, SERVER_DESIGN_CHECKLIST)
     assert not result.sufficient()
 
 
-def test_partial_doc_scores_between():
+def test_partial_doc_scores_between() -> None:
     text = "The server uses a state machine to track whose turn it is. Blinds are posted each hand."
     result = score_checklist(text, SERVER_DESIGN_CHECKLIST)
     assert 0.0 < result.score < 1.0

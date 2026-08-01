@@ -7,12 +7,12 @@ from fastapi.testclient import TestClient
 from app.main import CONNECTIONS, TABLES, app
 
 
-def _reset():
+def _reset() -> None:
     TABLES.clear()
     CONNECTIONS.clear()
 
 
-def test_create_table_seat_and_start_hand():
+def test_create_table_seat_and_start_hand() -> None:
     _reset()
     client = TestClient(app)
 
@@ -37,7 +37,7 @@ def test_create_table_seat_and_start_hand():
     assert state["current_actor"] is not None
 
 
-def test_action_rejected_out_of_turn_returns_409():
+def test_action_rejected_out_of_turn_returns_409() -> None:
     _reset()
     client = TestClient(app)
     table_id = client.post("/tables", json={"small_blind": 1, "big_blind": 2}).json()[
@@ -57,7 +57,7 @@ def test_action_rejected_out_of_turn_returns_409():
     assert "not your turn" in r.json()["detail"]
 
 
-def test_full_hand_via_api_to_showdown_or_fold():
+def test_full_hand_via_api_to_showdown_or_fold() -> None:
     _reset()
     client = TestClient(app)
     table_id = client.post("/tables", json={"small_blind": 1, "big_blind": 2}).json()[
@@ -88,7 +88,7 @@ def test_full_hand_via_api_to_showdown_or_fold():
     assert total_chips == 200  # no chips created or destroyed
 
 
-def test_hole_cards_hidden_from_other_seat():
+def test_hole_cards_hidden_from_other_seat() -> None:
     _reset()
     client = TestClient(app)
     table_id = client.post("/tables", json={"small_blind": 1, "big_blind": 2}).json()[

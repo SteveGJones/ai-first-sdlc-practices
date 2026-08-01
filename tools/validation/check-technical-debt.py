@@ -45,6 +45,11 @@ class TechnicalDebtDetector:
             ".idea",
             ".vscode",
             "plugins",
+            # Gitignored scratch. CLAUDE.md mandates ./tmp/ for all scratch
+            # work and .gitignore excludes it, so its contents can never be
+            # pushed — scanning it makes a local run disagree with CI and can
+            # block a push on files that are not part of the repo.
+            "tmp",
         }
 
         # Repo-relative path prefixes to skip. Distinct from skip_dirs above,

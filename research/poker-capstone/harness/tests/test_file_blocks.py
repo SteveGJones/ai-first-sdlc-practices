@@ -14,12 +14,12 @@ import pytest
 from harness.file_blocks import UnsafePathError, parse_file_blocks, write_file_blocks
 
 
-def test_parses_single_block():
+def test_parses_single_block() -> None:
     text = "```file:app.py\nprint('hi')\n```"
     assert parse_file_blocks(text) == {"app.py": "print('hi')\n"}
 
 
-def test_parses_multiple_blocks_with_prose_between():
+def test_parses_multiple_blocks_with_prose_between() -> None:
     text = (
         "Here is the server.\n\n"
         "```file:server.py\nA\n```\n\n"
@@ -29,18 +29,18 @@ def test_parses_multiple_blocks_with_prose_between():
     assert parse_file_blocks(text) == {"server.py": "A\n", "docker-compose.yml": "B\n"}
 
 
-def test_parses_nested_subdirectory_paths():
+def test_parses_nested_subdirectory_paths() -> None:
     text = "```file:src/poker/table.py\nX\n```"
     assert parse_file_blocks(text) == {"src/poker/table.py": "X\n"}
 
 
-def test_longer_fence_allows_inner_triple_backticks():
+def test_longer_fence_allows_inner_triple_backticks() -> None:
     """A README that itself contains a ``` fence must survive intact."""
     text = "````file:README.md\n# Title\n\n```python\ncode\n```\n````"
     assert parse_file_blocks(text) == {"README.md": "# Title\n\n```python\ncode\n```\n"}
 
 
-def test_unclosed_fence_is_ignored_not_half_written():
+def test_unclosed_fence_is_ignored_not_half_written() -> None:
     """A truncated response (hit max_tokens mid-file) must not yield a
     partial file — writing half a source file would be scored as a model
     defect when it is really a transport truncation."""
@@ -48,31 +48,31 @@ def test_unclosed_fence_is_ignored_not_half_written():
     assert parse_file_blocks(text) == {"whole.py": "complete\n"}
 
 
-def test_empty_file_block_is_preserved():
+def test_empty_file_block_is_preserved() -> None:
     text = "```file:__init__.py\n```"
     assert parse_file_blocks(text) == {"__init__.py": ""}
 
 
-def test_crlf_line_endings_are_normalised():
+def test_crlf_line_endings_are_normalised() -> None:
     text = "```file:a.py\r\nX\r\n```"
     assert parse_file_blocks(text) == {"a.py": "X\n"}
 
 
-def test_no_blocks_returns_empty():
+def test_no_blocks_returns_empty() -> None:
     assert parse_file_blocks("I refuse to answer.") == {}
 
 
-def test_later_block_wins_on_duplicate_filename():
+def test_later_block_wins_on_duplicate_filename() -> None:
     text = "```file:a.py\nfirst\n```\n```file:a.py\nsecond\n```"
     assert parse_file_blocks(text) == {"a.py": "second\n"}
 
 
-def test_language_hint_fence_is_not_a_file_block():
+def test_language_hint_fence_is_not_a_file_block() -> None:
     """A plain ```python fence is prose, not a submission."""
     assert parse_file_blocks("```python\nx = 1\n```") == {}
 
 
-def test_write_creates_nested_dirs(tmp_path):
+def test_write_creates_nested_dirs(tmp_path) -> None:
     written = write_file_blocks(tmp_path, {"src/pkg/m.py": "X\n"})
     assert (tmp_path / "src/pkg/m.py").read_text() == "X\n"
     assert written == [tmp_path / "src/pkg/m.py"]
@@ -82,12 +82,12 @@ def test_write_creates_nested_dirs(tmp_path):
     "bad",
     ["../escape.py", "a/../../escape.py", "/etc/passwd", "~/x.py"],
 )
-def test_rejects_paths_escaping_the_impl_dir(tmp_path, bad):
+def test_rejects_paths_escaping_the_impl_dir(tmp_path, bad) -> None:
     with pytest.raises(UnsafePathError):
         write_file_blocks(tmp_path, {bad: "pwned"})
 
 
-def test_rejects_symlink_escape(tmp_path):
+def test_rejects_symlink_escape(tmp_path) -> None:
     """A model could emit a symlink-then-write pair across iterations; the
     resolved destination must still land inside impl_dir."""
     outside = tmp_path / "outside"
@@ -99,7 +99,7 @@ def test_rejects_symlink_escape(tmp_path):
         write_file_blocks(impl, {"link/x.py": "pwned"})
 
 
-def test_rejects_escape_before_writing_anything(tmp_path):
+def test_rejects_escape_before_writing_anything(tmp_path) -> None:
     """All-or-nothing: one bad path must not leave good files half-applied,
     otherwise a retry sees an inconsistent tree."""
     with pytest.raises(UnsafePathError):

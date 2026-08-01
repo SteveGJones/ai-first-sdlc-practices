@@ -29,16 +29,16 @@ class FixedDeck(Deck):
         self._cards = list(order)
         self._rng = None
 
-    def deal(self, n):
+    def deal(self, n) -> list:
         dealt, self._cards = self._cards[:n], self._cards[n:]
         return dealt
 
 
-def _card(rank, suit):
+def _card(rank, suit) -> Card:
     return Card(rank, suit)
 
 
-def test_pocket_aces_wins_heads_up_showdown():
+def test_pocket_aces_wins_heads_up_showdown() -> None:
     table = Table(table_id="t", small_blind=1, big_blind=2, deck=Deck())
     table.players[0] = Player(seat=0, name="p0", stack=100)
     table.players[1] = Player(seat=1, name="p1", stack=100)
@@ -68,29 +68,29 @@ def test_pocket_aces_wins_heads_up_showdown():
 
 
 @pytest.fixture()
-def synthetic_test_file(tmp_path):
+def synthetic_test_file(tmp_path) -> Path:
     test_file = tmp_path / "test_synthetic.py"
     test_file.write_text(_SYNTHETIC_TEST_SOURCE)
     return test_file
 
 
-def test_run_pytest_against_exemplar_passes(synthetic_test_file):
+def test_run_pytest_against_exemplar_passes(synthetic_test_file) -> None:
     result = run_pytest_against(synthetic_test_file, EXEMPLAR_SERVER, "exemplar")
     assert result.passed == 1, result.stdout_tail
     assert result.failed == 0
 
 
-def test_run_pytest_against_broken_variant_fails(synthetic_test_file):
+def test_run_pytest_against_broken_variant_fails(synthetic_test_file) -> None:
     result = run_pytest_against(synthetic_test_file, BROKEN_SERVER, "broken_variant")
     assert result.failed == 1, result.stdout_tail
 
 
-def test_evaluate_end_to_end(synthetic_test_file):
+def test_evaluate_end_to_end(synthetic_test_file) -> None:
     report = evaluate(synthetic_test_file, EXEMPLAR_SERVER, BROKEN_SERVER)
     assert report.all_pass_on_exemplar is True
     assert report.catches_planted_bug is True
 
 
-def test_missing_test_file_raises():
+def test_missing_test_file_raises() -> None:
     with pytest.raises(QAFidelityError):
         run_pytest_against(Path("/nonexistent/test.py"), EXEMPLAR_SERVER, "exemplar")

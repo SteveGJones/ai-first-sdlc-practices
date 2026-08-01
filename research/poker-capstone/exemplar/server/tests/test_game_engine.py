@@ -70,7 +70,7 @@ def deal_order_heads_up_p0_wins() -> list[str]:
     ]
 
 
-def test_turn_enforcement_rejects_wrong_seat():
+def test_turn_enforcement_rejects_wrong_seat() -> None:
     table = make_table(2, [100, 100])
     start_new_hand(table, deck=FixedDeck(deal_order_heads_up_p0_wins()))
     wrong_seat = 1 if table.current_actor == 0 else 0
@@ -78,7 +78,7 @@ def test_turn_enforcement_rejects_wrong_seat():
         submit_action(table, wrong_seat, "call")
 
 
-def test_cannot_check_when_facing_a_bet():
+def test_cannot_check_when_facing_a_bet() -> None:
     table = make_table(2, [100, 100])
     start_new_hand(table, deck=FixedDeck(deal_order_heads_up_p0_wins()))
     actor = table.current_actor
@@ -86,7 +86,7 @@ def test_cannot_check_when_facing_a_bet():
         submit_action(table, actor, "check")
 
 
-def test_heads_up_hand_to_showdown_correct_winner():
+def test_heads_up_hand_to_showdown_correct_winner() -> None:
     table = make_table(2, [100, 100])
     start_new_hand(table, deck=FixedDeck(deal_order_heads_up_p0_wins()))
 
@@ -118,7 +118,7 @@ def test_heads_up_hand_to_showdown_correct_winner():
     assert winner_entry["hand_category"] in ("three_of_a_kind", "full_house")
 
 
-def test_fold_out_awards_pot_without_showdown():
+def test_fold_out_awards_pot_without_showdown() -> None:
     table = make_table(2, [100, 100])
     start_new_hand(table, deck=FixedDeck(deal_order_heads_up_p0_wins()))
     actor = table.current_actor
@@ -134,7 +134,7 @@ def test_fold_out_awards_pot_without_showdown():
     assert total_chips == 200  # no chips created/destroyed
 
 
-def test_bet_below_minimum_rejected():
+def test_bet_below_minimum_rejected() -> None:
     table = make_table(2, [100, 100], sb=1, bb=2)
     start_new_hand(table, deck=FixedDeck(deal_order_heads_up_p0_wins()))
     submit_action(table, table.current_actor, "call")
@@ -145,7 +145,7 @@ def test_bet_below_minimum_rejected():
         submit_action(table, table.current_actor, "bet", amount=1)
 
 
-def test_raise_below_min_raise_rejected():
+def test_raise_below_min_raise_rejected() -> None:
     table = make_table(2, [100, 100], sb=1, bb=2)
     start_new_hand(table, deck=FixedDeck(deal_order_heads_up_p0_wins()))
     actor = table.current_actor
@@ -154,7 +154,7 @@ def test_raise_below_min_raise_rejected():
         submit_action(table, actor, "raise", amount=3)
 
 
-def test_three_handed_side_pot():
+def test_three_handed_side_pot() -> None:
     # Seat0 short-stacked, goes all-in preflop for less than a full call
     # from the others -> creates a side pot between seat1 and seat2.
     table = make_table(3, [5, 100, 100], sb=1, bb=2)
