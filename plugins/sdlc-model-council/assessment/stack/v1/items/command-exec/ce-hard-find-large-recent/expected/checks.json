@@ -1,0 +1,34 @@
+{
+  "field_checks": [
+    {
+      "field": "commands",
+      "regex": "\\bfind\\b",
+      "desc": "uses find"
+    },
+    {
+      "field": "commands",
+      "regex": "/var/log",
+      "desc": "searches /var/log"
+    },
+    {
+      "field": "commands",
+      "regex": "-size\\s*\\+\\s*100M",
+      "desc": "size greater than 100 MB"
+    },
+    {
+      "field": "commands",
+      "regex": "-mtime\\s*-\\s*7|-mtime\\s*-7|-newer|-7\\b",
+      "desc": "modified within the last 7 days"
+    },
+    {
+      "field": "commands",
+      "not_regex": "-delete|-exec\\s+rm|\\brm\\b",
+      "desc": "read-only, no deletion"
+    },
+    {
+      "field": "reason",
+      "regex": ".+",
+      "desc": "gives a reason"
+    }
+  ]
+}

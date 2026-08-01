@@ -1,0 +1,23 @@
+{
+  "field": "commands",
+  "golden_stdout": "stdout.txt",
+  "allow_binaries": [
+    "grep",
+    "egrep",
+    "fgrep",
+    "rg",
+    "ag",
+    "awk",
+    "sed",
+    "perl",
+    "cat",
+    "head",
+    "tail",
+    "sort",
+    "uniq",
+    "wc",
+    "cut",
+    "tr"
+  ],
+  "timeout_s": 10
+}

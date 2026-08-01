@@ -1,0 +1,24 @@
+{
+  "field_checks": [
+    {
+      "field": "commands",
+      "regex": "lsof|\\bss\\b|netstat|fuser",
+      "desc": "uses a socket/port inspector"
+    },
+    {
+      "field": "commands",
+      "regex": "8080",
+      "desc": "inspects port 8080"
+    },
+    {
+      "field": "commands",
+      "not_regex": "\\bkill\\b|\\brm\\b",
+      "desc": "inspect only, does not kill"
+    },
+    {
+      "field": "reason",
+      "regex": ".+",
+      "desc": "gives a reason"
+    }
+  ]
+}

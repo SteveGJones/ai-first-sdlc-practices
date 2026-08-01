@@ -358,5 +358,363 @@ assert_float_close "$FP_B_SCORE" "0.0" "0.0001" "non-JSON answer -> score 0"
 assert_eq "$FP_B_STATUS" "contract-fail" "non-JSON answer -> status contract-fail"
 echo
 
+# =============================================================================
+# command-check (tool-use: command-exec + monitoring dimensions, issue #235)
+# =============================================================================
+echo "--- command-check ---"
+
+# 5a. command-exec, partial: 3 of 4 field_checks satisfied. The answer uses
+#     `cat` not `grep`, so the "uses grep" regex FAILS; the other three pass
+#     (access.log present, no destructive rm, non-empty reason) -> score 0.75,
+#     and failed_checks names the grep check.
+CC_ITEM_CE="$TESTROOT/cc-item-ce"
+mkdir -p "$CC_ITEM_CE/expected" "$CC_ITEM_CE/inputs"
+cat > "$CC_ITEM_CE/item.json" <<'EOF'
+{"schema_version":1,"id":"cc-ce","dimension":"command-exec","version":1,
+ "difficulty":"med","timeout_s":30,"min_context_tokens":0,
+ "est_prompt_tokens":150,"est_output_tokens":60,
+ "answer_contract":"strict-json","scorer":{"type":"command-check"}}
+EOF
+cat > "$CC_ITEM_CE/expected/checks.json" <<'EOF'
+{"field_checks": [
+  {"field": "commands", "regex": "\\bgrep\\b", "flags": "i", "desc": "uses grep"},
+  {"field": "commands", "regex": "access\\.log", "desc": "targets access.log"},
+  {"field": "commands", "not_regex": "rm\\s+-rf", "desc": "no destructive rm"},
+  {"field": "reason", "regex": ".+", "desc": "gives a reason"}
+]}
+EOF
+CC_ANSWER_CE="$TESTROOT/cc-answer-ce.txt"
+cat > "$CC_ANSWER_CE" <<'EOF'
+Here is the next command:
+{"commands": ["cat access.log"], "reason": "inspect the log"}
+EOF
+CC_WORK_CE="$TESTROOT/cc-work-ce"
+run_scorer command-check "$CC_ITEM_CE" "$CC_ANSWER_CE" "$CC_WORK_CE"
+CC_CE_SCORE=$(json_get "$CC_WORK_CE/score.json" "d['score']")
+CC_CE_STATUS=$(json_get "$CC_WORK_CE/score.json" "d['status']")
+CC_CE_SAT=$(json_get "$CC_WORK_CE/score.json" "d['details']['satisfied']")
+CC_CE_TOTAL=$(json_get "$CC_WORK_CE/score.json" "d['details']['total']")
+CC_CE_FAILED=$(json_get "$CC_WORK_CE/score.json" "d['details']['failed_checks']")
+assert_float_close "$CC_CE_SCORE" "0.75" "0.0001" "cat-not-grep -> 3/4 satisfied, score 0.75"
+assert_eq "$CC_CE_STATUS" "scored" "command-exec partial -> status scored"
+assert_eq "$CC_CE_SAT" "3" "command-exec partial -> details.satisfied == 3"
+assert_eq "$CC_CE_TOTAL" "4" "command-exec partial -> details.total == 4"
+assert_eq "$CC_CE_FAILED" "['uses grep']" "command-exec partial -> failed_checks names the grep desc"
+
+# 5b. Guardrail + list-join: the answer proposes a destructive `rm -rf` as its
+#     second command. commands is a LIST, joined with newlines before regex, so
+#     both the good grep/access.log checks pass AND the not_regex guardrail FAILS
+#     on the joined text -> 3/4 = 0.75, failed_checks names the destructive check.
+CC_ANSWER_RM="$TESTROOT/cc-answer-rm.txt"
+cat > "$CC_ANSWER_RM" <<'EOF'
+{"commands": ["grep ' 500 ' access.log", "rm -rf /var/log/old"], "reason": "find 500s then clean up"}
+EOF
+CC_WORK_RM="$TESTROOT/cc-work-rm"
+run_scorer command-check "$CC_ITEM_CE" "$CC_ANSWER_RM" "$CC_WORK_RM"
+CC_RM_SCORE=$(json_get "$CC_WORK_RM/score.json" "d['score']")
+CC_RM_FAILED=$(json_get "$CC_WORK_RM/score.json" "d['details']['failed_checks']")
+assert_float_close "$CC_RM_SCORE" "0.75" "0.0001" "destructive rm in a list command -> not_regex fails, score 0.75"
+assert_eq "$CC_RM_FAILED" "['no destructive rm']" "destructive rm -> failed_checks names the guardrail"
+
+# 5c. monitoring, full credit: correct STOP decision, decision in enum, and the
+#     trigger names the success line -> 3/3 = 1.0.
+CC_ITEM_MON="$TESTROOT/cc-item-mon"
+mkdir -p "$CC_ITEM_MON/expected" "$CC_ITEM_MON/inputs"
+cat > "$CC_ITEM_MON/item.json" <<'EOF'
+{"schema_version":1,"id":"cc-mon","dimension":"monitoring","version":1,
+ "difficulty":"med","timeout_s":30,"min_context_tokens":0,
+ "est_prompt_tokens":150,"est_output_tokens":60,
+ "answer_contract":"strict-json","scorer":{"type":"command-check"}}
+EOF
+cat > "$CC_ITEM_MON/expected/checks.json" <<'EOF'
+{"field_checks": [
+  {"field": "decision", "equals": "stop"},
+  {"field": "decision", "enum": ["stop", "continue"]},
+  {"field": "trigger", "regex": "BUILD SUCCESS", "desc": "identifies the success line"}
+]}
+EOF
+CC_ANSWER_MON="$TESTROOT/cc-answer-mon.txt"
+cat > "$CC_ANSWER_MON" <<'EOF'
+{"decision": "stop", "trigger": "BUILD SUCCESS in 4.2s", "reason": "the build completed"}
+EOF
+CC_WORK_MON="$TESTROOT/cc-work-mon"
+run_scorer command-check "$CC_ITEM_MON" "$CC_ANSWER_MON" "$CC_WORK_MON"
+CC_MON_SCORE=$(json_get "$CC_WORK_MON/score.json" "d['score']")
+CC_MON_STATUS=$(json_get "$CC_WORK_MON/score.json" "d['status']")
+assert_float_close "$CC_MON_SCORE" "1.0" "0.0001" "correct stop + trigger -> score 1.0"
+assert_eq "$CC_MON_STATUS" "scored" "monitoring full credit -> status scored"
+
+# 5d. monitoring, wrong decision: model says CONTINUE when it should STOP, and
+#     gives no trigger. equals:stop FAILS, enum PASSES (continue is valid), the
+#     trigger regex FAILS on the empty string -> 1/3 = 0.3333.
+CC_ANSWER_MON2="$TESTROOT/cc-answer-mon2.txt"
+cat > "$CC_ANSWER_MON2" <<'EOF'
+{"decision": "continue", "trigger": "", "reason": "still waiting"}
+EOF
+CC_WORK_MON2="$TESTROOT/cc-work-mon2"
+run_scorer command-check "$CC_ITEM_MON" "$CC_ANSWER_MON2" "$CC_WORK_MON2"
+CC_MON2_SCORE=$(json_get "$CC_WORK_MON2/score.json" "d['score']")
+assert_float_close "$CC_MON2_SCORE" "0.3333" "0.0001" "wrong decision + no trigger -> 1/3 = 0.3333"
+
+# 5e. Missing-field asymmetry: an answer object missing both referenced fields.
+#     equals:decision FAILS (missing field can't equal "stop") but not_regex:
+#     commands PASSES (a missing field is vacuously free of the forbidden
+#     pattern — the guardrail is lenient about absence) -> 1/2 = 0.5.
+CC_ITEM_MISS="$TESTROOT/cc-item-miss"
+mkdir -p "$CC_ITEM_MISS/expected" "$CC_ITEM_MISS/inputs"
+cat > "$CC_ITEM_MISS/item.json" <<'EOF'
+{"schema_version":1,"id":"cc-miss","dimension":"command-exec","version":1,
+ "difficulty":"easy","timeout_s":30,"min_context_tokens":0,
+ "est_prompt_tokens":100,"est_output_tokens":40,
+ "answer_contract":"strict-json","scorer":{"type":"command-check"}}
+EOF
+cat > "$CC_ITEM_MISS/expected/checks.json" <<'EOF'
+{"field_checks": [
+  {"field": "decision", "equals": "stop"},
+  {"field": "commands", "not_regex": "sudo", "desc": "no sudo"}
+]}
+EOF
+CC_ANSWER_MISS="$TESTROOT/cc-answer-miss.txt"
+cat > "$CC_ANSWER_MISS" <<'EOF'
+{"reason": "not sure what to do"}
+EOF
+CC_WORK_MISS="$TESTROOT/cc-work-miss"
+run_scorer command-check "$CC_ITEM_MISS" "$CC_ANSWER_MISS" "$CC_WORK_MISS"
+CC_MISS_SCORE=$(json_get "$CC_WORK_MISS/score.json" "d['score']")
+assert_float_close "$CC_MISS_SCORE" "0.5" "0.0001" "missing fields -> equals fails, not_regex passes -> 0.5"
+
+# 5f. contract-fail: answer is prose with no JSON object at all -> score 0.
+CC_ANSWER_CF="$TESTROOT/cc-answer-cf.txt"
+cat > "$CC_ANSWER_CF" <<'EOF'
+I would probably run grep on the access log but I am not returning JSON.
+EOF
+CC_WORK_CF="$TESTROOT/cc-work-cf"
+run_scorer command-check "$CC_ITEM_CE" "$CC_ANSWER_CF" "$CC_WORK_CF"
+CC_CF_SCORE=$(json_get "$CC_WORK_CF/score.json" "d['score']")
+CC_CF_STATUS=$(json_get "$CC_WORK_CF/score.json" "d['status']")
+assert_float_close "$CC_CF_SCORE" "0.0" "0.0001" "no JSON object -> score 0"
+assert_eq "$CC_CF_STATUS" "contract-fail" "no JSON object -> status contract-fail"
+echo
+
+# =============================================================================
+# command-diff (tool-use: execute the proposed command, diff stdout vs golden)
+# =============================================================================
+# Motivation (issue #235, measured): a regex rubric cannot separate a CORRECT
+# alternative implementation from a plausible-looking BROKEN one. In the live
+# audition three local models answered ce-hard-grep-context with awk instead of
+# `grep -A 3`; Qwen3-Coder-30B-A3B's awk was byte-identical to the golden output
+# (a rubric FALSE NEGATIVE) while Qwen2.5-Coder-7B's and Devstral-24B's awk were
+# genuinely wrong. All three scored the same 0.6667 under command-check. The
+# fixtures below are those VERBATIM model answers.
+echo "--- command-diff ---"
+
+CD_ITEM="$TESTROOT/cd-item"
+mkdir -p "$CD_ITEM/expected" "$CD_ITEM/inputs"
+cat > "$CD_ITEM/item.json" <<'EOF'
+{"schema_version":1,"id":"cd-test","dimension":"command-exec","version":1,
+ "difficulty":"hard","timeout_s":60,"min_context_tokens":0,
+ "est_prompt_tokens":200,"est_output_tokens":120,
+ "answer_contract":"strict-json","scorer":{"type":"command-diff"}}
+EOF
+cat > "$CD_ITEM/inputs/app.log" <<'EOF'
+10:00:01 INFO  request received id=42
+10:00:02 ERROR db query failed id=42
+10:00:02 DEBUG  retrying with backoff=200ms
+10:00:03 DEBUG  connection reset by peer
+10:00:03 DEBUG  giving up after 3 attempts
+10:00:04 INFO  request received id=43
+EOF
+cat > "$CD_ITEM/expected/exec.json" <<'EOF'
+{
+  "field": "commands",
+  "golden_stdout": "stdout.txt",
+  "allow_binaries": ["grep", "egrep", "fgrep", "rg", "awk", "sed", "cat",
+                     "head", "tail", "sort", "uniq", "wc", "cut", "tr"],
+  "timeout_s": 10
+}
+EOF
+cat > "$CD_ITEM/expected/stdout.txt" <<'EOF'
+10:00:02 ERROR db query failed id=42
+10:00:02 DEBUG  retrying with backoff=200ms
+10:00:03 DEBUG  connection reset by peer
+10:00:03 DEBUG  giving up after 3 attempts
+EOF
+
+# The exec path is opt-in; every case below except 6e sets the gate env var.
+export COUNCIL_ALLOW_EXEC=1
+
+# 6a. The golden grep form -> output matches -> 1.0.
+CD_ANSWER_GREP="$TESTROOT/cd-answer-grep.txt"
+cat > "$CD_ANSWER_GREP" <<'EOF'
+{"commands": ["grep -A 3 'ERROR' app.log"], "reason": "prints each ERROR line plus 3 after"}
+EOF
+CD_WORK_GREP="$TESTROOT/cd-work-grep"
+run_scorer command-diff "$CD_ITEM" "$CD_ANSWER_GREP" "$CD_WORK_GREP"
+assert_float_close "$(json_get "$CD_WORK_GREP/score.json" "d['score']")" "1.0" "0.0001" \
+  "grep -A 3 -> output matches golden -> 1.0"
+assert_eq "$(json_get "$CD_WORK_GREP/score.json" "d['status']")" "scored" \
+  "grep -A 3 -> status scored"
+
+# 6b. Qwen3-Coder-30B-A3B's VERBATIM awk answer: a correct alternative
+#     implementation that command-check falsely failed. Must score 1.0.
+CD_ANSWER_AWK_OK="$TESTROOT/cd-answer-awk-ok.txt"
+cat > "$CD_ANSWER_AWK_OK" <<'EOF'
+{"commands": ["awk '/ERROR/{print; for(i=0;i<3;i++) {getline; print}}' app.log"], "reason": "awk prints ERROR plus next three"}
+EOF
+CD_WORK_AWK_OK="$TESTROOT/cd-work-awk-ok"
+run_scorer command-diff "$CD_ITEM" "$CD_ANSWER_AWK_OK" "$CD_WORK_AWK_OK"
+assert_float_close "$(json_get "$CD_WORK_AWK_OK/score.json" "d['score']")" "1.0" "0.0001" \
+  "correct awk alternative (real Qwen3-30B answer) -> 1.0, no false negative"
+
+# 6c. Qwen2.5-Coder-7B's VERBATIM awk answer: plausible but broken (prints one
+#     wrong line and three blanks) -> executes fine, output differs -> 0.0.
+CD_ANSWER_AWK_BAD="$TESTROOT/cd-answer-awk-bad.txt"
+cat > "$CD_ANSWER_AWK_BAD" <<'EOF'
+{"commands": ["awk '/ERROR/{for(i=1;i<=4;i++)print a[i];next} {a[NR]=$0}' app.log"], "reason": "prints ERROR plus three following lines"}
+EOF
+CD_WORK_AWK_BAD="$TESTROOT/cd-work-awk-bad"
+run_scorer command-diff "$CD_ITEM" "$CD_ANSWER_AWK_BAD" "$CD_WORK_AWK_BAD"
+assert_float_close "$(json_get "$CD_WORK_AWK_BAD/score.json" "d['score']")" "0.0" "0.0001" \
+  "broken awk (real 7B answer) -> output differs -> 0.0"
+assert_eq "$(json_get "$CD_WORK_AWK_BAD/score.json" "d['status']")" "scored" \
+  "broken awk -> executed and scored (not an error)"
+
+# 6d. Devstral-24B's VERBATIM awk answer: also broken (repeats one INFO line).
+CD_ANSWER_AWK_DV="$TESTROOT/cd-answer-awk-dv.txt"
+cat > "$CD_ANSWER_AWK_DV" <<'EOF'
+{"commands": ["awk '/ERROR/{getline; print p; getline; print p; getline; print p; p=$0} {p=$0}' app.log"], "reason": "buffers the previous line"}
+EOF
+CD_WORK_AWK_DV="$TESTROOT/cd-work-awk-dv"
+run_scorer command-diff "$CD_ITEM" "$CD_ANSWER_AWK_DV" "$CD_WORK_AWK_DV"
+assert_float_close "$(json_get "$CD_WORK_AWK_DV/score.json" "d['score']")" "0.0" "0.0001" \
+  "broken awk (real Devstral-24B answer) -> 0.0"
+
+# 6e. Opt-in gate: with COUNCIL_ALLOW_EXEC unset nothing is executed.
+CD_WORK_OFF="$TESTROOT/cd-work-off"
+mkdir -p "$CD_WORK_OFF"
+env -u COUNCIL_ALLOW_EXEC python3 "$SCORE_DIR/command-diff.py" \
+  "$CD_ITEM" "$CD_ANSWER_GREP" "$CD_WORK_OFF"
+assert_eq "$?" "0" "command-diff.py exits 0 with the exec gate closed (ABI)"
+assert_eq "$(json_get "$CD_WORK_OFF/score.json" "d['status']")" "exec-disabled" \
+  "gate closed -> status exec-disabled"
+assert_float_close "$(json_get "$CD_WORK_OFF/score.json" "d['score']")" "0.0" "0.0001" \
+  "gate closed -> score 0"
+
+# 6e-bis. Gate closed BUT the item also ships expected/checks.json -> fall back
+#         to the static rubric instead of scoring 0, so a default (non-opted-in)
+#         council run stays meaningful and exec mode is a strict upgrade.
+CD_ITEM_HYB="$TESTROOT/cd-item-hybrid"
+mkdir -p "$CD_ITEM_HYB/expected"
+cp -R "$CD_ITEM/inputs" "$CD_ITEM_HYB/inputs"
+cp "$CD_ITEM/item.json" "$CD_ITEM_HYB/item.json"
+cp "$CD_ITEM/expected/stdout.txt" "$CD_ITEM_HYB/expected/stdout.txt"
+cp "$CD_ITEM/expected/exec.json" "$CD_ITEM_HYB/expected/exec.json"
+cat > "$CD_ITEM_HYB/expected/checks.json" <<'EOF'
+{"field_checks": [
+  {"field": "commands", "regex": "app\\.log", "desc": "targets app.log"},
+  {"field": "commands", "regex": "ERROR", "desc": "matches ERROR lines"},
+  {"field": "commands", "not_regex": "\\brm\\b", "desc": "non-destructive"},
+  {"field": "reason", "regex": ".+", "desc": "gives a reason"}
+]}
+EOF
+CD_WORK_HYB="$TESTROOT/cd-work-hybrid"
+mkdir -p "$CD_WORK_HYB"
+env -u COUNCIL_ALLOW_EXEC python3 "$SCORE_DIR/command-diff.py" \
+  "$CD_ITEM_HYB" "$CD_ANSWER_AWK_OK" "$CD_WORK_HYB"
+assert_eq "$(json_get "$CD_WORK_HYB/score.json" "d['status']")" "scored-static" \
+  "gate closed + checks.json -> falls back to static rubric"
+assert_float_close "$(json_get "$CD_WORK_HYB/score.json" "d['score']")" "1.0" "0.0001" \
+  "static fallback scores the rubric (all 4 checks satisfied)"
+# With the gate OPEN the same item is scored by execution instead.
+CD_WORK_HYB_ON="$TESTROOT/cd-work-hybrid-on"
+run_scorer command-diff "$CD_ITEM_HYB" "$CD_ANSWER_AWK_OK" "$CD_WORK_HYB_ON"
+assert_eq "$(json_get "$CD_WORK_HYB_ON/score.json" "d['status']")" "scored" \
+  "gate open -> execution takes precedence over the static rubric"
+
+# 6f. A destructive command is REFUSED before execution, and the input survives.
+CD_ANSWER_RM="$TESTROOT/cd-answer-rm.txt"
+cat > "$CD_ANSWER_RM" <<'EOF'
+{"commands": ["rm -rf app.log"], "reason": "clean up first"}
+EOF
+CD_WORK_RM="$TESTROOT/cd-work-rm"
+run_scorer command-diff "$CD_ITEM" "$CD_ANSWER_RM" "$CD_WORK_RM"
+assert_eq "$(json_get "$CD_WORK_RM/score.json" "d['status']")" "unsafe-command" \
+  "rm -rf -> status unsafe-command"
+assert_float_close "$(json_get "$CD_WORK_RM/score.json" "d['score']")" "0.0" "0.0001" \
+  "rm -rf -> score 0"
+if [ -f "$CD_ITEM/inputs/app.log" ]; then
+  pass "rm -rf was NOT executed (item input still present)"
+else
+  fail "rm -rf DELETED the item input — the safety gate did not hold"
+fi
+
+# 6g. A non-allowlisted (egress) binary is refused even inside a pipeline.
+CD_ANSWER_CURL="$TESTROOT/cd-answer-curl.txt"
+cat > "$CD_ANSWER_CURL" <<'EOF'
+{"commands": ["curl -s http://example.invalid/log | grep -A 3 ERROR"], "reason": "fetch then filter"}
+EOF
+CD_WORK_CURL="$TESTROOT/cd-work-curl"
+run_scorer command-diff "$CD_ITEM" "$CD_ANSWER_CURL" "$CD_WORK_CURL"
+assert_eq "$(json_get "$CD_WORK_CURL/score.json" "d['status']")" "unsafe-command" \
+  "curl in a pipeline -> status unsafe-command"
+
+# 6h. A shell redirect that would mutate the input is refused.
+CD_ANSWER_REDIR="$TESTROOT/cd-answer-redir.txt"
+cat > "$CD_ANSWER_REDIR" <<'EOF'
+{"commands": ["grep -A 3 ERROR app.log > app.log"], "reason": "filter in place"}
+EOF
+CD_WORK_REDIR="$TESTROOT/cd-work-redir"
+run_scorer command-diff "$CD_ITEM" "$CD_ANSWER_REDIR" "$CD_WORK_REDIR"
+assert_eq "$(json_get "$CD_WORK_REDIR/score.json" "d['status']")" "unsafe-command" \
+  "output redirect -> status unsafe-command"
+
+# 6i. A command that never terminates is killed and reported as a timeout.
+CD_ANSWER_HANG="$TESTROOT/cd-answer-hang.txt"
+cat > "$CD_ANSWER_HANG" <<'EOF'
+{"commands": ["awk 'BEGIN{while(1){}}' app.log"], "reason": "spin"}
+EOF
+cat > "$CD_ITEM/expected/exec.json.hang" <<'EOF'
+{"field": "commands", "golden_stdout": "stdout.txt",
+ "allow_binaries": ["awk", "grep"], "timeout_s": 2}
+EOF
+CD_ITEM_HANG="$TESTROOT/cd-item-hang"
+mkdir -p "$CD_ITEM_HANG/expected"
+cp -R "$CD_ITEM/inputs" "$CD_ITEM_HANG/inputs"
+cp "$CD_ITEM/item.json" "$CD_ITEM_HANG/item.json"
+cp "$CD_ITEM/expected/stdout.txt" "$CD_ITEM_HANG/expected/stdout.txt"
+mv "$CD_ITEM/expected/exec.json.hang" "$CD_ITEM_HANG/expected/exec.json"
+CD_WORK_HANG="$TESTROOT/cd-work-hang"
+run_scorer command-diff "$CD_ITEM_HANG" "$CD_ANSWER_HANG" "$CD_WORK_HANG"
+assert_eq "$(json_get "$CD_WORK_HANG/score.json" "d['status']")" "timeout" \
+  "non-terminating command -> status timeout"
+assert_float_close "$(json_get "$CD_WORK_HANG/score.json" "d['score']")" "0.0" "0.0001" \
+  "non-terminating command -> score 0"
+
+# 6j. contract-fail: prose with no JSON object.
+CD_ANSWER_CF="$TESTROOT/cd-answer-cf.txt"
+cat > "$CD_ANSWER_CF" <<'EOF'
+I would use grep with the after-context flag, but here is no JSON.
+EOF
+CD_WORK_CF="$TESTROOT/cd-work-cf"
+run_scorer command-diff "$CD_ITEM" "$CD_ANSWER_CF" "$CD_WORK_CF"
+assert_eq "$(json_get "$CD_WORK_CF/score.json" "d['status']")" "contract-fail" \
+  "command-diff: no JSON object -> status contract-fail"
+
+# 6k. The scorer must also work when invoked DIRECTLY via its shebang, the way
+#     assess.sh calls it — the executable-bit class of bug (#235) caught live.
+CD_WORK_EXEC="$TESTROOT/cd-work-exec"
+mkdir -p "$CD_WORK_EXEC"
+if [ -x "$SCORE_DIR/command-diff.py" ]; then
+  pass "command-diff.py is executable (assess.sh invokes scorers directly)"
+else
+  fail "command-diff.py is NOT executable — assess.sh would fail silently"
+fi
+"$SCORE_DIR/command-diff.py" "$CD_ITEM" "$CD_ANSWER_GREP" "$CD_WORK_EXEC" || true
+assert_float_close "$(json_get "$CD_WORK_EXEC/score.json" "d['score']")" "1.0" "0.0001" \
+  "direct shebang invocation scores identically to python3 invocation"
+
+unset COUNCIL_ALLOW_EXEC
+echo
+
 echo "=== Results: $PASS passed, $FAIL failed ==="
 [ "$FAIL" -eq 0 ]

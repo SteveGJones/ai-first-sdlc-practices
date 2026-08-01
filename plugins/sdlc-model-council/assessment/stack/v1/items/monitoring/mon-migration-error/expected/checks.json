@@ -1,0 +1,26 @@
+{
+  "field_checks": [
+    {
+      "field": "decision",
+      "equals": "stop"
+    },
+    {
+      "field": "decision",
+      "enum": [
+        "stop",
+        "continue"
+      ]
+    },
+    {
+      "field": "trigger",
+      "regex": "ERROR|already exists|aborted",
+      "flags": "i",
+      "desc": "identifies the failure line"
+    },
+    {
+      "field": "reason",
+      "regex": ".+",
+      "desc": "gives a reason"
+    }
+  ]
+}
