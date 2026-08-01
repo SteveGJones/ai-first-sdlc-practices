@@ -35,6 +35,36 @@ answer.
 stages (architecture, detailed design) is the least precedented part of this
 proposal — see "Open Questions".
 
+## Motivation
+
+Model choice is normally made on vendor benchmarks, vibes, or a single
+one-off try. None of those survive contact with a real multi-stage
+engineering task, and none of them tell you *where* a model breaks — which
+is the only thing that determines what you can safely delegate to it.
+
+This makes `sdlc-model-council` an **assessment** capability first and a
+delegation one second. Assessment produces a roster (which model holds which
+seat, with evidence behind it); delegation then routes work against that
+roster instead of against guesswork. A model that has not been assessed has
+not earned a seat.
+
+The existing v1 item stack is cheap and broad, which is right for auditioning
+a newly-released model, but its short items rank models that all look much
+the same. A difficulty-ordered ladder over one substantial problem, run
+fail-fast, is what actually separates them — and it has to be a problem hard
+enough that a competent model can still fail it. Concretely, the ladder has
+already produced findings no single score would have: a strong model passing
+comprehension and spec-fidelity but failing full-autonomy on a real payout
+bug; a 42-test suite that was green against the reference yet structurally
+blind to the planted bug it existed to catch; and two local models failing
+the *easiest* phase in opposite ways — one shallow but honest, the other
+deeper but confabulating.
+
+A secondary motivation, which has paid for itself repeatedly: the assessment
+apparatus is itself under test. Grading real model output has now found five
+genuine bugs in this project's own reference material and graders, and in
+every case the model was right and our reference was wrong.
+
 ## User Stories
 
 - As the council operator, I want to know whether a model can carry a
@@ -216,6 +246,42 @@ Then the harness produces the same pass/fail signal it would for any
 ```
 
 ---
+
+## Success Criteria
+
+The capability is successful if it produces trustworthy, reusable evidence
+about model capability — not if every model passes.
+
+1. **The harness discriminates in both directions.** It passes cleanly
+   against the exemplar and fails a deliberately-broken variant on the
+   *specific* injected defect, not silently and not on an unrelated
+   assertion. *(Met — proven both directions, see `broken-variants/`.)*
+2. **Grading is independent of the exemplar.** Payouts are cross-validated
+   against the harness's own oracle, so a submission is never graded merely
+   by diffing against our implementation's choices. *(Met.)*
+3. **The ladder separates models rather than ranking them on one number.**
+   Different models fail at different phases, for identifiable reasons.
+   *(Met — Sonnet reaches P9 before failing, Haiku fails P5/P6, both local
+   models fail P1, each for a distinct and documented cause.)*
+4. **Fail-fast is real.** A run stops at the first genuine failure instead of
+   always paying for the full pipeline, and every stop is recorded with its
+   reasoning. *(Met — every run to date has a recorded stopping point.)*
+5. **A result is re-verifiable.** Every run keeps its prompt, raw output, and
+   verdict; model submissions are stored byte-identical so any score can be
+   re-checked later. *(Met — enforced by excluding `runs/` from linters,
+   CodeQL and the debt scanner, since "fixing" a model's answer would
+   destroy the artefact.)*
+6. **Verdicts are not trusted at face value.** Judge output is re-verified
+   against source before acceptance. *(Met, and load-bearing — this is what
+   caught five real defects in our own grading material.)*
+7. **A text-only model can attempt the build phases.** Otherwise a local
+   model could only ever run the judged-document phases, which are precisely
+   the non-discriminating ones. *(Met — the agentic write/verify/feed-back
+   loop is built and verified, though neither local model reached far enough
+   up the ladder to need it.)*
+8. **Comparisons state their caveats in the data, not the prose.**
+   `iteration_count` is recorded on every result, because a pass on attempt
+   five is not a baseline pass on attempt one. *(Met.)*
 
 ## Risks
 
