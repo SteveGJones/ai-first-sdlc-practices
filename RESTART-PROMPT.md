@@ -1,17 +1,18 @@
-# RESTART PROMPT — `sdlc-model-council` assessment: what is done, what is next
+# RESTART PROMPT — clean slate
 
-Paste into a fresh session to resume. Self-contained; read the pointers before
-writing code.
+**Nothing is in flight as of 2026-08-09.** The last two workstreams are merged:
 
-**Two workstreams completed and merged/open as PRs — do not restart either:**
+- **#235 / PR #236** — tool-use & command-execution assessment dimension.
+- **#237 / PRs #238, #239** — poker-capstone assessment ladder, local-model
+  agentic harness, assessment-first reframing of `sdlc-model-council`, plus a
+  research note on why local models failed.
 
-- **#235 / PR #236 (merged)** — tool-use & command-line-execution assessment
-  dimension, execute-and-diff scorer, 10-model audition.
-- **#237 / PR #238** — poker-capstone assessment ladder, the local-model
-  agentic harness, and the assessment-first reframing of the plugin docs.
+**Start here:** read `CLAUDE.md` "Active Work" for what is open (EPIC #197
+Phase C; EPIC #97 sub-features) and the memory index for project state. Do not
+resume anything from this file — it now holds only *standing context* that
+outlives any single task.
 
-Keep the MLX safety section below: it is standing operational context for any
-local-MLX work, not a record of a closed task.
+---
 
 ## ⚠️ Local MLX kernel-panic history — resolved as of 2026-07-28, read before trusting large dense models unattended
 
@@ -107,87 +108,59 @@ re-test was trusted.
 ---
 
 
-## Where the assessment capability stands
 
-`sdlc-model-council` is **assessment + delegation**, in that order — assess a
-model, put it on a roster with evidence, then route work against that roster.
-Two instruments:
+---
 
-1. **v1 item stack** (`plugins/sdlc-model-council/assessment/stack/v1/`) —
-   short items, cheap, broad. Right for auditioning a newly-released model.
-2. **Poker capstone** (`research/poker-capstone/`) — a difficulty-ordered
-   ladder (P1-P10) over one substantial problem, run fail-fast. Shows *where*
-   a model breaks.
+## Standing operational facts (not task state)
 
-**Terminology, easy to get wrong:** P1-P10 are the phases. **P11 is the
-cross-model roster exercise, NOT a phase** — "running P11" for a model means
-running it from P1 upwards. There is no phase 11 to jump to, and no phase
-should be skipped to reach the more interesting build phases faster.
+**`mlx_lm.server` — always bound the prompt cache.** Unbounded, it accumulates
+a KV sequence per session and will OOM or kernel-panic (see above; also
+`ml-explore/mlx-lm#883`, where a **96GB** machine panicked the same way).
+Bounding is required at every RAM tier, not as a small-machine workaround.
 
-### Assessment results to date
+```bash
+uv run --with mlx-lm mlx_lm.server --model <hf-id> --port 8081 \
+  --decode-concurrency 1 --prompt-concurrency 1 \
+  --prompt-cache-size 2 --prompt-cache-bytes 4294967296
+```
 
-| Model | Outcome |
-|---|---|
-| Sonnet | P1-P10 baseline; strong until **P9 FAIL** (real payout bug) |
-| Haiku | Stopped at P6; **P5/P6 FAIL**; P2 suite green but blind to the planted bug |
-| Qwen2.5-Coder-14B | **P1 FAIL** (2/15 facts) — coherent but shallow, zero confabulation |
-| Qwen3-Coder-30B-A3B | **P1 FAIL** (5 right / 4 **wrong**) — deeper but confabulates, and collapses into a repetition loop at any temperature |
+**`--max-concurrent` does NOT exist** in mlx-lm 0.31.3 — it is
+`--decode-concurrency` / `--prompt-concurrency`; the old flag makes the server
+exit immediately. The server also load-swaps models by the request's `model`
+field, so one instance can serve several cached models sequentially.
 
-**Local-model seat is closed for now.** Both auditioned 4-bit local models
-fail P1, the ladder's easiest phase. Scope that claim honestly: two models,
-4-bit, one 32GB Mac, one phase — not a general verdict on local models.
-
-### Settled — do not re-investigate
-
-- **`mlx_lm.server` prompt-cache OOM.** Unbounded cache accumulated a KV
-  sequence per session (9 sequences / 9.72 GB) until the GPU OOM'd. Fix:
-  `--prompt-cache-size 2`. Turns a 2h48m hang into a 71s clean run.
-  **`--max-concurrent` does NOT exist in mlx-lm 0.31.3** — it is
-  `--decode-concurrency` / `--prompt-concurrency`; the old flag makes the
-  server exit immediately. Working launch:
-  ```bash
-  uv run --with mlx-lm mlx_lm.server --model <hf-id> --port 8081 \
-    --decode-concurrency 1 --prompt-concurrency 1 \
-    --prompt-cache-size 2 --prompt-cache-bytes 4294967296
-  ```
-- **OpenCode (Path A) for code-reproduction work.** Quote-escaping corruption
-  reproduces on 14B, not just 7B. Scope it honestly: 1 corrupted item vs 3
-  clean ones on the same model (the clean ones emit JSON, not source), so it
-  is task-shaped, not blanket. Enough to rule it out for file-writing phases.
-  **0 of the 11 poker phases have ever been run through OpenCode.**
-
-### The local-model agentic harness (built, verified, unused)
-
-`research/poker-capstone/harness/{file_blocks,mlx_client,local_agent,run_local}.py`
-supplies the write → verify → feed-back → retry loop a text-only local model
-needs to attempt build phases. 36 unit tests plus three live checks against the
-real 14B. **It was never the constraint** — neither local model reached the
-build phases it unlocks. It stays ready for a stronger local model.
-
-## Candidate next steps (pick with the operator, don't assume)
-
-1. **Run a stronger model up the ladder from P1** — Opus as the "above Sonnet"
-   reference point was previously declined; a larger local model would finally
-   exercise the agentic harness.
-2. **Fold poker-capstone results into the roster card format**
-   (`plugins/sdlc-model-council/scripts/council/roster.py`) so ladder findings
-   sit alongside the v1 stack's dimensions in one comparable report. This is
-   still outstanding and is the main integration gap.
-3. **Repo-wide technical-debt backlog** — `SDLC Compliance Check` fails on
-   `main` itself (5586 violations, pre-existing, not from #237). Worth a
-   dedicated cleanup PR rather than blocking feature work.
+**Assessment artefacts are exempt from four validators.**
+`research/poker-capstone/{runs,broken-variants}` are skipped by flake8
+(`.pre-commit-config.yaml` + `setup.cfg`), CodeQL
+(`.github/codeql/codeql-config.yml`), the technical-debt scanner
+(`skip_path_prefixes`) and logging compliance (`.ai-sdlc.json`). This is
+deliberate — `runs/` is verbatim model output, some defective *on purpose* as a
+recorded result, and must stay byte-identical to stay re-verifiable. **Do not
+"fix" lint findings in there.** Two of those validators auto-detect
+framework-vs-application context *by file ratio*, so adding a large corpus can
+silently flip the whole repo onto strict rules — worth remembering before
+committing another big body of generated material.
 
 ## Standing rules that keep paying off
 
-- **The grader is under test too.** Never accept a judge verdict at face
-  value — re-verify against source. This has found five real bugs in our own
-  grading material, every one in the model's favour.
+- **The grader is under test too.** Never accept a judge verdict — or a
+  research agent's citation — at face value. Re-verify against source. This has
+  found five real bugs in our own grading material, every one in the model's
+  favour, plus three overstated citations in web research.
 - **Verify a background loop is doing real work within a minute or two**, not
-  just that its PID exists. A shell bug once silently killed a run for an
-  hour; an OOM once looked like "a slow model" for 2h48m. `ps` CPU-time vs
-  wall-clock plus the server log told the real story both times.
+  just that its PID exists. `ps` CPU-time vs wall-clock plus the process log
+  told the real story every time something looked "stuck".
 - **A cheap targeted probe beats a long exhaustive run** when the question is
-  "is this broken?" — one 71s item replaced an 18-pair multi-hour re-run and
-  answered more than the big run could have.
-- **`mlx_lm.server` load-swaps models by the request's `model` field**, so one
-  instance can serve several cached models sequentially without a restart.
+  "is this broken?"
+
+## Measurement traps that have cost real time here
+
+- **Stale agent worktrees under `.claude/worktrees/` are full repo copies** and
+  inflate any local scan. `git worktree list` and prune before measuring.
+- **Compare both sides in clean worktrees outside the repo** — comparing
+  main-in-a-worktree against branch-in-the-working-tree is not apples-to-apples.
+- **zsh does not word-split unquoted `$VAR`**; **`while read` silently drops a
+  final line with no trailing newline.** Both have caused real damage.
+- **Never run `pre-commit run --all-files`** casually here — it auto-reformats
+  the entire repo, including the byte-identical assessment artefacts. Scope it
+  with `--files`.
