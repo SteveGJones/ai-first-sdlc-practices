@@ -1,0 +1,10 @@
+{
+  "_comment": "Project-level config for this repo's own validators - the same .ai-sdlc.json that tools/framework-setup.py generates for consumer projects.",
+  "logging": {
+    "_comment": "research/poker-capstone/{runs,broken-variants} hold ASSESSMENT ARTEFACTS, not application code we maintain, so the 10 mandatory logging points do not apply. runs/ is VERBATIM output from the model under test, some defective on purpose as a recorded result (runs/haiku-p5-* is the implementation whose bug we graded as that model's P5 FAIL) and must stay byte-identical so a score can be re-verified. broken-variants/ is exemplar copies each carrying one deliberately-injected bug, proving the harness fails on the SPECIFIC defect. Without this, ~50k lines of model output tip the checker's framework-vs-application auto-detection and the WHOLE repo gets held to application logging rules. The assessment harness and the exemplar are our own code and are NOT skipped.",
+    "skip_directories": [
+      "runs",
+      "broken-variants"
+    ]
+  }
+}

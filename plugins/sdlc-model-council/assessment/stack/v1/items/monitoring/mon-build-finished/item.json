@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "mon-build-finished",
+  "dimension": "monitoring",
+  "version": 1,
+  "difficulty": "easy",
+  "timeout_s": 90,
+  "min_context_tokens": 120,
+  "est_prompt_tokens": 180,
+  "est_output_tokens": 70,
+  "answer_contract": "strict-json",
+  "scorer": {
+    "type": "command-check"
+  }
+}

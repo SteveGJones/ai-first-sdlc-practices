@@ -1,0 +1,20 @@
+{
+  "field_checks": [
+    {
+      "field": "decision",
+      "equals": "continue"
+    },
+    {
+      "field": "decision",
+      "enum": [
+        "stop",
+        "continue"
+      ]
+    },
+    {
+      "field": "reason",
+      "regex": ".+",
+      "desc": "gives a reason"
+    }
+  ]
+}

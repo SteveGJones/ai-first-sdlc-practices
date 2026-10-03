@@ -1,0 +1,4 @@
+Applying migration 0007_add_index... ok
+Applying migration 0008_create_users...
+ERROR:  relation "users" already exists
+migration aborted; database rolled back

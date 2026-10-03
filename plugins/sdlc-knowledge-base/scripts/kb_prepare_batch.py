@@ -171,7 +171,7 @@ def prepare_batch(
 
             result.staged += 1
 
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             result.failed += 1
             result.errors.append(f"{source.name}: {exc}")
 

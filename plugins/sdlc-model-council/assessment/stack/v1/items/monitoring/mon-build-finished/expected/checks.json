@@ -1,0 +1,25 @@
+{
+  "field_checks": [
+    {
+      "field": "decision",
+      "equals": "stop"
+    },
+    {
+      "field": "decision",
+      "enum": [
+        "stop",
+        "continue"
+      ]
+    },
+    {
+      "field": "trigger",
+      "regex": "BUILD SUCCESSFUL",
+      "desc": "identifies the success line"
+    },
+    {
+      "field": "reason",
+      "regex": ".+",
+      "desc": "gives a reason"
+    }
+  ]
+}

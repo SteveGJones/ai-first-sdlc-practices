@@ -1,0 +1,17 @@
+--- a/exemplar/server/app/main.py
++++ b/exemplar/server/app/main.py
+@@ -84,8 +84,11 @@
+ @app.post("/tables/{table_id}/players")
+ def seat_player(table_id: str, req: SeatPlayerRequest) -> dict[str, int]:
+     table = _get_table(table_id)
+-    if req.buy_in <= 0:
+-        raise HTTPException(status_code=400, detail="buy_in must be positive")
++    min_buy_in = table.big_blind * 20
++    if req.buy_in < min_buy_in:
++        raise HTTPException(
++            status_code=400,
++            detail=f"buy_in must be at least {min_buy_in} (20x the table's big blind)",
++        )
+     if table.hand_in_progress:
+         raise HTTPException(status_code=409, detail="cannot seat mid-hand")
+     seat = 0

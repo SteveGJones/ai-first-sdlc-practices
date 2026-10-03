@@ -30,13 +30,16 @@ That's the minimal flow. The starter pack ships with three example library files
 |---|---|---|
 | `research-librarian` | Stateless retrieval-and-synthesis. Reads the shelf-index, identifies the 2-4 most relevant library files for a query, deep-reads only those, returns structured evidence with citations. **Read-only.** | Sonnet (for command-line tool use) |
 | `agent-knowledge-updater` | Proactively integrates new sources into the library. Reads a source, classifies it, identifies which existing files it touches, makes surgical updates or creates new files, updates the shelf-index, appends to log.md. **The only agent with write access to the library.** Opinionated about what belongs. | Sonnet |
+| `knowledge-extractor` | Read-only map-phase extractor for bulk ingest — reads one source, emits structured JSON (findings/statistics/citations/targets), never writes the library. Dispatched many-wide by kb-ingest-bulk. | Haiku |
 
-### Skills (8)
+### Skills (10)
 
 | Skill | Purpose |
 |---|---|
 | `/sdlc-knowledge-base:kb-init` | Initialise a project: append `[Knowledge Base]` section to CLAUDE.md, create `library/` structure, optionally seed with starter pack |
 | `/sdlc-knowledge-base:kb-ingest <source>` | Integrate a new source into the library (wraps `agent-knowledge-updater`) |
+| `/sdlc-knowledge-base:kb-ingest-bulk` | Parallel map-reduce bulk ingest for large source sets; supersedes kb-ingest-batch |
+| `/sdlc-knowledge-base:kb-ingest-batch` | Batch ingest with progress tracking and resume support (deprecated — use kb-ingest-bulk) |
 | `/sdlc-knowledge-base:kb-query <question>` | Query the library (wraps `research-librarian`); supports `--promote-to-library` |
 | `/sdlc-knowledge-base:kb-lint` | Six-check health report: contradictions, stale claims, orphan files, missing cross-references, concepts lacking pages, data gaps |
 | `/sdlc-knowledge-base:kb-rebuild-indexes` | Hash-based incremental rebuild of the shelf-index |
@@ -87,6 +90,7 @@ The plugin supports three usage modes depending on how much investment you want 
 - Use a deep research engine (Perplexity Pro, Gemini Deep Research, ChatGPT Deep Research) to commission 10-15 research prompts on the project's key topics
 - Synthesise the raw results into 10-20 library files via `/sdlc-knowledge-base:kb-ingest`
 - Run `/sdlc-knowledge-base:kb-rebuild-indexes` after each batch
+- Keep vendored dumps out of the index: list their library-relative directories in `library/.kb-index-ignore` (one per line; `raw/` is always excluded). A rebuild that would add 50+ entries and double the index is refused (exit 2) until you confirm with `--force`
 - Run `/sdlc-knowledge-base:kb-validate-citations` to spot obvious hallucinations
 - Run `/sdlc-knowledge-base:kb-lint` periodically (weekly or before major reviews)
 - **Use case**: a team or programme that wants the full research library pattern as developed by the original three production projects. This is the proven shape.

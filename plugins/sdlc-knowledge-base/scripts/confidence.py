@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from .library_files import discover_library_files
+
 VALID_CONFIDENCE_VALUES: frozenset[str] = frozenset({"high", "medium", "low"})
 VALID_RELEVANCE_VALUES: frozenset[str] = frozenset(
     {"direct", "supporting", "tangential"}
@@ -29,8 +31,6 @@ COMBINATION_TABLE: dict[tuple[str, str], str] = {
     ("unknown", "tangential"): "low",
 }
 
-_EXCLUDED_NAMES = frozenset({"_shelf-index.md", "_index.md", "log.md"})
-_EXCLUDED_DIRS = frozenset({"raw"})
 _FRONTMATTER_RE = re.compile(r"^---[ \t]*\r?\n(.*?)\r?\n---[ \t]*\r?\n", re.DOTALL)
 _SOURCE_CONF_RE = re.compile(r"^\*\*Source confidence:\*\*\s+(\S+)", re.MULTILINE)
 _QUERY_REL_RE = re.compile(r"^\*\*Query relevance:\*\*\s+(\S+)", re.MULTILINE)
@@ -71,26 +71,10 @@ def _parse_frontmatter(text: str) -> dict[str, object]:
         return {}
 
 
-def _is_library_file(path: Path, library_path: Path) -> bool:
-    if path.name in _EXCLUDED_NAMES:
-        return False
-    try:
-        rel = path.relative_to(library_path)
-    except ValueError:
-        return False
-    if not rel.parts:
-        return False
-    if rel.parts[0] in _EXCLUDED_DIRS:
-        return False
-    return path.suffix == ".md"
-
-
 def check_confidence_compliance(library_path: Path) -> list[tuple[str, str]]:
     """Return (rel_path, error_msg) for files missing a valid confidence: field."""
     violations: list[tuple[str, str]] = []
-    for md_file in sorted(library_path.rglob("*.md")):
-        if not _is_library_file(md_file, library_path):
-            continue
+    for md_file in discover_library_files(library_path):
         rel = str(md_file.relative_to(library_path))
         try:
             text = md_file.read_text(encoding="utf-8")

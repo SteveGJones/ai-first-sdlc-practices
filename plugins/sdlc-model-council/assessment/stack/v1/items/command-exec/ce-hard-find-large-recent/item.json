@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "ce-hard-find-large-recent",
+  "dimension": "command-exec",
+  "version": 1,
+  "difficulty": "hard",
+  "timeout_s": 90,
+  "min_context_tokens": 140,
+  "est_prompt_tokens": 200,
+  "est_output_tokens": 80,
+  "answer_contract": "strict-json",
+  "scorer": {
+    "type": "command-check"
+  }
+}

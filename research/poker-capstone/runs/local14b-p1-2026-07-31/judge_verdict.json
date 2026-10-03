@@ -1,0 +1,69 @@
+{
+  "per_fact": {
+    "F1": {
+      "verdict": "OMITTED",
+      "detail": "The documentation describes submit_action only by signature (table, seat, action, amount) and offers one generic sentence under Edge Cases: 'Action Validation: Actions are validated based on the current state of the game, ensuring that illegal actions are rejected.' It never states that a hand must be in progress, never states that the acting seat must equal table.current_actor, never gives an ordering between the two checks, and never mentions ActionError or the 'no hand in progress' / 'not your turn' messages. Nothing here contradicts F1, but nothing commits to it either."
+    },
+    "F2": {
+      "verdict": "OMITTED",
+      "detail": "PlayerStatus enum values (ACTIVE, FOLDED, ALL_IN, SITTING_OUT) are listed with one-line glosses, but the documentation never says that a seat whose status is not ACTIVE is rejected when it tries to act, and never positions such a check relative to the turn check. The generic 'Actions are validated based on the current state of the game' sentence is too vague to count as committing to this rule."
+    },
+    "F3": {
+      "verdict": "OMITTED",
+      "detail": "The Player attribute has_acted_this_round is listed ('A boolean indicating whether the player has acted in the current betting round') and Table.current_bet / Player.current_bet are listed, but the documentation never states the round-completion condition (every ACTIVE seat has has_acted_this_round == True AND current_bet == table.current_bet), and never says folded/all-in seats are exempt. _advance and _advance_betting_round are documented only as 'Advances the game state' / 'Advances to the next betting round' with no condition given."
+    },
+    "F4": {
+      "verdict": "OMITTED",
+      "detail": "No mention of has_acted_this_round being reset for other ACTIVE seats when a player bets or raises, and no mention of _reset_acted_except (the function is absent from the Game Engine section entirely). _apply_wager is documented only as 'Applies a wager (bet or raise) for a player' with its parameter list; the reopening-the-round semantics are never stated."
+    },
+    "F5": {
+      "verdict": "OMITTED",
+      "detail": "Table.min_raise is listed as 'An integer representing the minimum raise amount', but the documentation never defines raise size as target - table.current_bet, and never states the >= table.min_raise test that makes a raise a 'full' raise. The attribute gloss is a restatement of the field name, not a commitment to the rule."
+    },
+    "F6": {
+      "verdict": "OMITTED",
+      "detail": "The short all-in raise case is not addressed anywhere. There is no statement that an all-in raise smaller than min_raise fails to reset other players' has_acted_this_round, no statement that it does not increase table.min_raise, and no statement that it nonetheless raises table.current_bet. ALL_IN appears only as a PlayerStatus enum gloss ('The player has bet all their chips')."
+    },
+    "F7": {
+      "verdict": "OMITTED",
+      "detail": "_side_pots is documented as 'Allocates side pots' returning 'A list of Pot objects', and the Edge Cases section says 'Side Pot Allocation: Side pots are allocated based on the contributions of players, ensuring that players with smaller contributions are not left out.' That is a hedged, directionally-plausible summary; it never describes the layering algorithm — distinct total_committed levels, per-level layer size (level - previous_level) * count_of_seats_reaching_that_level, or eligibility derived from seats at that level. Per the strictness rule this reads either way and is OMITTED, not CORRECT."
+    },
+    "F8": {
+      "verdict": "OMITTED",
+      "detail": "Pot.eligible_seats is listed as 'A set of integers representing the seats eligible to win the pot', which is only a restatement of the field name. The documentation never states that a folded player's chips remain in the pot layers they contributed to while the player is excluded from eligible_seats. It also never makes the opposite (incorrect) claim that folded contributions are refunded or removed, so this is an omission rather than a contradiction."
+    },
+    "F9": {
+      "verdict": "CORRECT",
+      "detail": "Edge Cases item 5 states: 'The showdown is handled correctly, with the best hand winning the pots, and odd chips distributed to the first winning seat clockwise from the button.' This commits to the correct tie-break rule for the odd remainder chip — clockwise from the button among the tied winners — rather than lowest seat number or first-to-act order. The split-evenly part is implied by 'odd chips' and is not contradicted."
+    },
+    "F10": {
+      "verdict": "OMITTED",
+      "detail": "best_hand is documented as 'Determines the best 5-card hand from a given set of hole cards and community cards' and score_five as 'Evaluates the best 5-card hand from a given set of 5 cards' (itself a slightly loose gloss — score_five scores one specific 5-card hand). This restates the function signatures without committing to the mechanism in F10: exhaustive evaluation of all C(7,5)=21 five-card combinations of 2 hole cards plus up to 5 community cards, taking the max score. Nothing about combination enumeration or the count appears."
+    },
+    "F11": {
+      "verdict": "OMITTED",
+      "detail": "The wheel (A-2-3-4-5) is never mentioned. The Card gloss states 'rank: An integer representing the card rank (2-14, where 14 is Ace)', which is correct as far as it goes, but the documentation never notes the low-Ace special case for straights and straight flushes. It also does not assert that a plain consecutive-rank check suffices, so this is an omission rather than a contradiction."
+    },
+    "F12": {
+      "verdict": "OMITTED",
+      "detail": "score_five is said to return 'A tuple representing the hand category and tie-breakers' and describe to return 'a string description of the hand category', but the documentation never states how many categories there are (9), never enumerates them, and never states the ranking order (high card lowest through straight flush highest)."
+    },
+    "F13": {
+      "verdict": "OMITTED",
+      "detail": "Table.button_seat is listed and Edge Cases item 2 says 'Blind Posting: Blinds are posted in the correct order, with the small blind followed by the big blind.' That asserts only the posting sequence, not the seat derivation: it never says small blind is the seat immediately clockwise of the button, never says the big blind is the next seat, never identifies first-to-act preflop, and — most importantly — never mentions the heads-up (exactly 2 seats) exception where the button posts the small blind and acts first preflop. _post_blind is documented by signature only. 'Posted in the correct order' is exactly the kind of hedge the strictness rule directs to OMITTED."
+    },
+    "F14": {
+      "verdict": "CORRECT",
+      "detail": "The API Endpoints section enumerates the full REST surface accurately and completely: POST /tables (create table), POST /tables/{table_id}/players (seat player), POST /tables/{table_id}/start (start hand), POST /tables/{table_id}/actions (submit action), GET /tables/{table_id}/state (get state), plus GET /healthz; and separately documents /tables/{table_id}/ws as a WebSocket that 'Provides WebSocket support for real-time updates' with an optional seat viewer parameter. Action submission is placed solely under the REST POST endpoint and no action-submission path over the WebSocket is described anywhere, consistent with F14. Caveat: the documentation never uses the word push-only nor explicitly states that state is broadcast after every change, so the directionality of the socket is asserted only implicitly ('real-time updates')."
+    },
+    "F15": {
+      "verdict": "OMITTED",
+      "detail": "The privacy rule is never stated. The documentation notes Player.public_dict 'Returns a dictionary representation of the player, optionally revealing the hole cards' and that GET /tables/{table_id}/state takes 'seat: An optional integer representing the viewer's seat' — mechanism hints only. It never says hole cards are visible solely to the owning seat, and never addresses what happens at SHOWDOWN (whether all seated players' hole cards are revealed, or only non-folded ones). Because it takes no position on the showdown reveal, it cannot be graded CORRECT, and it does not contradict F15 either."
+    }
+  },
+  "summary": {
+    "correct": 2,
+    "incorrect": 0,
+    "omitted": 13
+  }
+}

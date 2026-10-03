@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "cr-rate-limiter",
+  "dimension": "code-review",
+  "version": 1,
+  "difficulty": "med",
+  "timeout_s": 120,
+  "min_context_tokens": 700,
+  "est_prompt_tokens": 480,
+  "est_output_tokens": 220,
+  "answer_contract": "findings-json",
+  "scorer": {
+    "type": "planted-defects",
+    "line_window": 3,
+    "max_findings_counted": 8
+  }
+}

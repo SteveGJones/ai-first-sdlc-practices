@@ -5,6 +5,10 @@ disable-model-invocation: false
 argument-hint: "[<dir-or-manifest>] [--parallel <N>] [--retry-failed]"
 ---
 
+> **Deprecated (v0.3.0+):** Prefer `/sdlc-knowledge-base:kb-ingest-bulk`, which adds a
+> parallel map-reduce path that can update existing shared files (this skill is
+> create-only). `kb-ingest-batch` remains functional for simple create-only batches.
+
 # Batch Ingestion
 
 Drive `agent-knowledge-updater` over every staged file in `library/raw/`, with progress tracking and resume support. Second stage of the batch workflow: **prepare** (`kb-prepare-batch`) then **ingest** (this skill).
@@ -99,6 +103,13 @@ a. **Rebuild shelf-index** (one run):
 ```bash
 python3 -c "... from sdlc_knowledge_base_scripts.build_shelf_index import main; sys.exit(main(['<library_path>']))"
 ```
+
+If the rebuild exits with code 2, the bulk-add safety rail refused it (>= 50
+entries added and index >= 2x; directories can be excluded via
+`<library>/.kb-index-ignore`). Neither `_shelf-index.md` nor `log.md` was
+written. You MUST show the user the per-directory breakdown and re-run with
+`--force` **only after the user confirms** — never automatically. Do not write
+the log entry below until the rebuild has succeeded.
 
 b. **Write consolidated log.md entry**:
 ```markdown

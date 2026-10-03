@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "if-incident-report",
+  "dimension": "instruction-format",
+  "version": 1,
+  "difficulty": "med",
+  "timeout_s": 60,
+  "min_context_tokens": 250,
+  "est_prompt_tokens": 260,
+  "est_output_tokens": 90,
+  "answer_contract": "strict-json",
+  "scorer": {
+    "type": "format-parse"
+  }
+}

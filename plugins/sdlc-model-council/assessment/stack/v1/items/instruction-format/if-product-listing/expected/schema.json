@@ -1,0 +1,16 @@
+{
+  "required_keys": ["sku", "price_usd", "in_stock", "tags", "category"],
+  "types": {
+    "sku": "string",
+    "price_usd": "number",
+    "in_stock": "boolean",
+    "tags": "array",
+    "category": "string"
+  },
+  "enums": {
+    "category": ["electronics", "apparel", "home", "toys", "books"]
+  },
+  "array_min_len": {
+    "tags": 2
+  }
+}

@@ -1,0 +1,22 @@
+services:
+  # P6 is a spec-fidelity CLIENT build only — paired here with the
+  # exemplar's own known-good server (not P6's own, since P6 wasn't
+  # asked to build one) so harness/client_verify.py has something real
+  # to drive. Server intentionally NOT built from this run's directory.
+  server:
+    build: ../../../exemplar/server
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  client:
+    build: ./client
+    ports:
+      - "8081:80"
+    depends_on:
+      - server
