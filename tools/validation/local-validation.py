@@ -43,6 +43,61 @@ _PRE_COMMIT_TIMEOUT = 1800
 _POST_KILL_TIMEOUT = 10
 
 
+#: Repository-selection variables (the fallback for ``git rev-parse
+#: --local-env-vars``). Inherited from a git hook they override the working
+#: directory of every child git/pre-commit process and point it at the
+#: developer's MAIN checkout.
+_FALLBACK_REPO_ENV_VARS = (
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_COMMON_DIR",
+    "GIT_CONFIG",
+    "GIT_CONFIG_PARAMETERS",
+    "GIT_CONFIG_COUNT",
+    "GIT_DIR",
+    "GIT_GRAFT_FILE",
+    "GIT_IMPLICIT_WORK_TREE",
+    "GIT_INDEX_FILE",
+    "GIT_NO_REPLACE_OBJECTS",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_PREFIX",
+    "GIT_REPLACE_REF_BASE",
+    "GIT_SHALLOW_FILE",
+    "GIT_WORK_TREE",
+)
+
+#: Never removed: these isolate configuration, they do not select a repository.
+_KEPT_GIT_ENV_VARS = frozenset({"GIT_CONFIG_GLOBAL", "GIT_CONFIG_NOSYSTEM"})
+
+
+def _discover_repo_env_vars() -> Optional[List[str]]:
+    """Ask git for its repository-local variables; None if it cannot say."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--local-env-vars"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+    names = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    return names or None
+
+
+def sanitized_git_env() -> Dict[str, str]:
+    """The current environment minus repository-selection variables.
+
+    Git documents that these must be cleared when operating on another
+    worktree or repository; every git and pre-commit child of the gate gets
+    this environment so ``cwd`` alone decides which repository is used.
+    """
+    names = set(_discover_repo_env_vars() or ()) | set(_FALLBACK_REPO_ENV_VARS)
+    names -= _KEPT_GIT_ENV_VARS
+    return {key: value for key, value in os.environ.items() if key not in names}
+
+
 class GateTerminated(BaseException):
     """Raised from the SIGTERM handler so ``finally`` blocks clean up.
 
@@ -95,6 +150,7 @@ class ValidationRunner:
                 encoding="utf-8",
                 errors="replace",
                 cwd=cwd,
+                env=sanitized_git_env(),
                 start_new_session=os.name != "nt",
             )
         except Exception as e:
@@ -196,40 +252,31 @@ class ValidationRunner:
         )
 
         worktree = self.repo_root / "tmp" / f"prepush-gate-{os.getpid()}"
-        # A worktree registration left by a killed earlier run (same pid reuse,
-        # or a directory deleted by hand) makes `git worktree add` refuse.
-        self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
-        added, _, add_err = self.run_command(
-            ["git", "worktree", "add", "--detach", str(worktree), "HEAD"],
-            cwd=self.repo_root,
-        )
-        if added != 0:
-            self.errors.append(
-                f"Pre-commit hooks failed: cannot create worktree: {add_err}"
-            )
-            return False
-
+        returncode, stdout, stderr = 1, "", ""
         removal_failed = False
+        # Handler first: SIGTERM during worktree creation must also clean up.
         previous_handler = self._install_sigterm_handler()
         try:
+            # A worktree registration left by a killed earlier run (same pid
+            # reuse, or a directory deleted by hand) makes `git worktree add`
+            # refuse.
+            self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
+            added, _, add_err = self.run_command(
+                ["git", "worktree", "add", "--detach", str(worktree), "HEAD"],
+                cwd=self.repo_root,
+            )
+            if added != 0:
+                self.errors.append(
+                    f"Pre-commit hooks failed: cannot create worktree: {add_err}"
+                )
+                return False
             returncode, stdout, stderr = self.run_command(
                 ["pre-commit", "run", "--all-files", "--show-diff-on-failure"],
                 cwd=worktree,
                 timeout=_PRE_COMMIT_TIMEOUT,
             )
         finally:
-            removed, _, remove_err = self.run_command(
-                ["git", "worktree", "remove", "--force", str(worktree)],
-                cwd=self.repo_root,
-            )
-            if removed != 0:
-                removal_failed = True
-                self.errors.append(
-                    f"Pre-commit hooks: could not remove throwaway worktree "
-                    f"{worktree}: {remove_err.strip()}"
-                )
-                self.log(self.errors[-1], "ERROR")
-            self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
+            removal_failed = self._remove_worktree(worktree)
             self._restore_sigterm_handler(previous_handler)
 
         output = "\n".join(part for part in (stdout, stderr) if part)
@@ -245,6 +292,32 @@ class ValidationRunner:
 
         self.log("Pre-commit hooks passed", "SUCCESS")
         return True
+
+    def _remove_worktree(self, worktree: Path) -> bool:
+        """Remove whatever exists of the throwaway worktree; True if it failed.
+
+        Safe when creation was partial or never happened, and never raises:
+        it runs in ``finally`` and must not mask the error being propagated.
+        """
+        failed = False
+        try:
+            if worktree.exists():
+                removed, _, remove_err = self.run_command(
+                    ["git", "worktree", "remove", "--force", str(worktree)],
+                    cwd=self.repo_root,
+                )
+                if removed != 0:
+                    failed = True
+                    self.errors.append(
+                        f"Pre-commit hooks: could not remove throwaway worktree "
+                        f"{worktree}: {remove_err.strip()}"
+                    )
+                    self.log(self.errors[-1], "ERROR")
+            self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
+        except Exception as exc:  # cleanup must not mask the original error
+            failed = True
+            self.errors.append(f"Pre-commit hooks: worktree cleanup failed: {exc}")
+        return failed
 
     @staticmethod
     def _install_sigterm_handler() -> Optional[object]:
@@ -273,7 +346,11 @@ class ValidationRunner:
 
     def _git_output(self, args: List[str]) -> str:
         result = subprocess.run(
-            ["git", *args], cwd=self.repo_root, capture_output=True, text=True
+            ["git", *args],
+            cwd=self.repo_root,
+            capture_output=True,
+            text=True,
+            env=sanitized_git_env(),
         )
         return result.stdout
 

@@ -31,6 +31,9 @@ jobs:
       with:
         python-version: '3.9'
 
+    - name: Install generator dependencies
+      run: pip install pyyaml
+
     - name: Generate Agent Catalog
       run: |
         python tools/automation/build-agent-catalog.py

@@ -6,6 +6,7 @@ Extracts metadata, keywords, and capabilities for searchable discovery.
 
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -167,6 +168,15 @@ def extract_agent_metadata(file_path: Path) -> Dict[str, Any]:
 
 def build_catalog():
     """Build the complete agent catalog."""
+
+    if yaml is None:
+        print(
+            "WARNING: PyYAML is not installed; using the naive front-matter "
+            "fallback parser. Descriptions and capabilities will be degraded "
+            "(e.g. block-scalar descriptions come out empty). "
+            "Install it with `pip install pyyaml` and re-run.",
+            file=sys.stderr,
+        )
 
     agents_dir = Path("agents")
     if not agents_dir.exists():

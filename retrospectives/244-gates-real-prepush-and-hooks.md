@@ -8,7 +8,7 @@
 
 ## Summary
 
-Five commits make the repository's hooks passable, stop `--pre-push` from
+Eight commits (seven reviewed plus the third-round fix) make the repository's hooks passable, stop `--pre-push` from
 mutating the tree, and make CI block on the pinned pre-commit hooks. A run of
 `pre-commit run --all-files --show-diff-on-failure` in a throwaway worktree of
 the pre-final HEAD exits 0 with all 15 hooks Passed and a clean
@@ -21,7 +21,7 @@ the pre-final HEAD exits 0 with all 15 hooks Passed and a clean
    `pre-commit` in `requirements-test.txt` (`e1f38fa`).
 3. 21 mode changes, 15 shebang removals, 5 shellcheck directives, flake8 fixes
    (`6156cf5`).
-4. 109-file mechanical normalisation (`7404153`): 63 Python files AST-identical
+4. 109-file mechanical normalisation (`7404153`): 64 Python files AST-identical
    (incl. extensionless `mlx-chat`), 30 JSON equal data, 15 Markdown
    whitespace/EOF only; corpus hashes identical; 4 non-corpus files under
    `research/` re-wrapped.
@@ -226,3 +226,58 @@ and is NOT bumped.
   after the unparsed `# implements:` IDs and would be swallowed by the `.+$` in
   the regex if that parsing gap is ever fixed.
 - Untracked file content and gitignored files are not covered by the tripwire.
+
+## Third review round
+
+Codex reviewed the branch and returned **NO-GO**; an earlier Fable review
+returned GO. Fable ran everything with PyYAML installed and outside a git-hook
+environment, so it could not see any of the three blocking findings. Codex's
+sandbox could not create worktrees, so it reviewed by reading the code plus a
+read-only git probe (it confirmed that inherited `GIT_DIR`/`GIT_WORK_TREE`
+override another working directory). Its findings were not reproduced by
+running the gate in its sandbox; they were reproduced and fixed here.
+
+- **B1: inherited repository-selection variables (blocking).** The gate ran
+  `git worktree ...` and `pre-commit` with the inherited environment. A git
+  hook exports `GIT_DIR`/`GIT_WORK_TREE`, which override `cwd=<worktree>`, so
+  pre-commit could discover the MAIN checkout and its formatters rewrite it.
+  Fix: `sanitized_git_env()` removes the variables listed by
+  `git rev-parse --local-env-vars` (with a hard-coded fallback list) from the
+  environment of every git/pre-commit child (`run_command`) and of the
+  tripwire's own git snapshots; `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_NOSYSTEM`
+  are deliberately kept. Proof: a hermetic test points `GIT_DIR`/`GIT_WORK_TREE`
+  at a temp "main" repo with a mutating hook and gates a second temp repo; it
+  FAILED before the fix (the main repo's tracked file gained `mutated`) and
+  passes after, with both repos' tracked bytes, status and worktree lists
+  unchanged. Further tests that failed first: the gated repo's own hook output
+  is reported, the tripwire snapshot reads the gated repo, and the sanitiser
+  drops/keeps the right variables (with and without git's own list).
+- **B2: worktree creation outside the cleanup scope (blocking).** `git worktree
+  add` ran before the SIGTERM handler was installed and outside `try/finally`,
+  so a signal, timeout or exception during creation skipped cleanup (the child
+  git runs in its own session and survives; a registered worktree could leak).
+  Fix: the handler is installed first, creation and use share one
+  `try/finally`, and cleanup (`_remove_worktree`) removes only what exists,
+  always prunes, and never raises. Proof: a subprocess test runs a slow `git
+  worktree add` and sends SIGTERM mid-creation; it FAILED before (worktree
+  leaked, `sleep` orphan survived) and passes after. A unit test that an
+  exception raised right after creation still removes the worktree FAILED
+  first. Two further tests (a failing cleanup does not mask the original error;
+  the SIGTERM handler is restored) passed before the fix and are
+  characterisation tests. Process-signal tests are skipped on Windows.
+- **B3: catalog workflow without PyYAML (blocking).** `agent-catalog-update.yml`
+  never installed PyYAML, so on a clean runner `build-agent-catalog.py` silently
+  used its naive front-matter fallback and wrote degraded data (for example
+  `ai-devops-engineer` got an EMPTY description). The previous claim that
+  regenerating is "timestamp-only" was true ONLY with PyYAML installed. Fix: the
+  workflow now runs `pip install pyyaml` before the generator, the generator
+  prints a `WARNING` to stderr when it falls back, and a test covers the warning
+  (it FAILED first; a test that the workflow installs PyYAML first also FAILED).
+  Proof: in a throwaway worktree under Python 3.9 (the workflow's version) with
+  only PyYAML, regeneration differs from the committed files in the two
+  `generated` timestamp lines only. Without PyYAML all 160 descriptions differ
+  (72 become empty), 8 capability lists differ and 2 names differ
+  (`example-security-architect`, `example-python-expert`).
+- **B4: documentation.** Commit count (Eight, not Five) and the normalised
+  Python file count (64, including the extensionless `mlx-chat`, not 63) were
+  corrected in this retrospective and the feature proposal.

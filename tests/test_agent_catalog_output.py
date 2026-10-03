@@ -144,3 +144,31 @@ def test_committed_index_notes_match_the_notes_source() -> None:
     index = (_REPO / "AGENT-INDEX.md").read_text(encoding="utf-8")
     _, bundles = _notes().strip("\n").split("\n\n")
     assert bundles in index
+
+
+def test_fallback_parser_warns_on_stderr_when_pyyaml_is_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    monkeypatch.setattr(build_agent_catalog, "yaml", None)
+    _generate(tmp_path, monkeypatch)
+    err = capsys.readouterr().err
+    assert "WARNING" in err
+    assert "PyYAML" in err
+    assert "degraded" in err
+
+
+def test_no_fallback_warning_when_pyyaml_is_available(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    pytest.importorskip("yaml")
+    _generate(tmp_path, monkeypatch)
+    assert "PyYAML" not in capsys.readouterr().err
+
+
+def test_workflow_installs_pyyaml_before_running_the_generator() -> None:
+    workflow = (_REPO / ".github" / "workflows" / "agent-catalog-update.yml").read_text(
+        encoding="utf-8"
+    )
+    generator_step = "python tools/automation/build-agent-catalog.py"
+    assert "pip install pyyaml" in workflow
+    assert workflow.index("pip install pyyaml") < workflow.index(generator_step)

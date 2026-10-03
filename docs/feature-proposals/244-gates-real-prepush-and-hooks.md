@@ -34,7 +34,7 @@ cannot change the working tree, and CI blocks on the same pinned hooks.
 
 ## Proposed Solution
 
-Five commits on this branch (after `631a626`):
+Eight commits on this branch (after `631a626`): the five steps below plus three review-round fix commits:
 
 1. **Corpus excludes and hook args** (`025aaca`). A top-level `exclude:` in
    `.pre-commit-config.yaml` makes every hook skip `research/poker-capstone/runs`,
@@ -60,7 +60,7 @@ Five commits on this branch (after `631a626`):
    (late imports merged, unused imports removed, F541, E305, `noqa` where
    justified).
 4. **Mechanical normalisation** (`7404153`). The pinned hooks applied once, in a
-   throwaway worktree, to 109 files: 63 Python (AST-identical, including the
+   throwaway worktree, to 109 files: 64 Python (AST-identical, including the
    extensionless `mlx-chat`), 30 JSON (parse to equal data), 15 Markdown
    (whitespace-only lines and end-of-file newlines). Corpus hashes identical
    before and after. Four non-corpus files under `research/` (two poker-capstone

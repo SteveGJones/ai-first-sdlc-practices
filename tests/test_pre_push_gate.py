@@ -572,6 +572,8 @@ def test_run_command_gives_up_if_pipes_stay_open_after_kill(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     proc = _HungProc()
+    # Discovery shells out through the same (patched) Popen; bypass it.
+    monkeypatch.setattr(local_validation, "_discover_repo_env_vars", lambda: None)
     monkeypatch.setattr(local_validation.subprocess, "Popen", lambda *a, **k: proc)
     monkeypatch.setattr(
         local_validation.ValidationRunner,
@@ -638,3 +640,258 @@ def test_sigterm_to_the_gate_removes_worktree_and_kills_children(
     finally:
         proc.kill()
         subprocess.run(["pkill", "-f", "sleep 31337"], check=False)
+
+
+# --- repository-selection variables must not leak into the gate's children ---
+
+
+@needs_pre_commit
+def test_gate_ignores_inherited_git_dir_and_work_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A git hook runs the gate with GIT_DIR/GIT_WORK_TREE exported.
+
+    Those override ``cwd``, so without sanitising, ``git worktree`` and
+    ``pre-commit`` would operate on the checkout named by the variables (the
+    developer's MAIN checkout) instead of the repository being gated.
+    """
+    main = tmp_path / "main"
+    main.mkdir()
+    checkout = _make_repo(main, _MUTATING_CONFIG)
+    target_root = tmp_path / "target"
+    target_root.mkdir()
+    target = _make_repo(target_root, _PASSING_CONFIG)
+    main_bytes = _tracked_bytes(checkout)
+    main_status = _git(checkout, "status", "--porcelain")
+
+    monkeypatch.setenv("GIT_DIR", str(checkout / ".git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(checkout))
+    runner = _runner(target)
+    result = runner.check_pre_commit_hooks()
+    monkeypatch.delenv("GIT_DIR")
+    monkeypatch.delenv("GIT_WORK_TREE")
+
+    assert _tracked_bytes(checkout) == main_bytes, "the main checkout was rewritten"
+    assert _git(checkout, "status", "--porcelain") == main_status
+    assert result is True, runner.errors  # the gate saw target's passing config
+    assert runner.errors == []
+    for repo in (checkout, target):
+        assert "prepush-gate-" not in _git(repo, "worktree", "list")
+        assert not list((repo / "tmp").glob("prepush-gate-*"))
+
+
+@needs_pre_commit
+def test_gate_reports_the_gated_repos_hook_not_the_inherited_ones(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    main = tmp_path / "main"
+    main.mkdir()
+    checkout = _make_repo(main, _PASSING_CONFIG)
+    target_root = tmp_path / "target"
+    target_root.mkdir()
+    target = _make_repo(target_root, _MUTATING_CONFIG)
+
+    monkeypatch.setenv("GIT_DIR", str(checkout / ".git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(checkout))
+    runner = _runner(target)
+    result = runner.check_pre_commit_hooks()
+
+    assert result is False
+    assert any("append a line to every file" in e for e in runner.errors)
+
+
+def test_tripwire_snapshot_uses_the_gated_repo_not_inherited_git_dir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    main = tmp_path / "main"
+    main.mkdir()
+    checkout = _make_repo(main, _PASSING_CONFIG)
+    target_root = tmp_path / "target"
+    target_root.mkdir()
+    target = _make_repo(target_root, _PASSING_CONFIG)
+    (target / "only-in-target.txt").write_text("x\n")
+
+    monkeypatch.setenv("GIT_DIR", str(checkout / ".git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(checkout))
+    snapshot = _runner(target)._tree_snapshot()
+
+    assert snapshot.get("untracked:only-in-target.txt") == "present"
+
+
+def test_git_environment_drops_repository_selection_but_keeps_config_isolation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"):
+        monkeypatch.setenv(name, "/somewhere")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", os.devnull)
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+    monkeypatch.setenv("UNRELATED_VARIABLE", "kept")
+
+    env = local_validation.sanitized_git_env()
+
+    for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"):
+        assert name not in env
+    assert env["GIT_CONFIG_GLOBAL"] == os.devnull
+    assert env["GIT_CONFIG_NOSYSTEM"] == "1"
+    assert env["UNRELATED_VARIABLE"] == "kept"
+
+
+def test_git_environment_falls_back_to_the_builtin_list(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(local_validation, "_discover_repo_env_vars", lambda: None)
+    monkeypatch.setenv("GIT_DIR", "/somewhere")
+    monkeypatch.setenv("GIT_OBJECT_DIRECTORY", "/objects")
+    env = local_validation.sanitized_git_env()
+    assert "GIT_DIR" not in env and "GIT_OBJECT_DIRECTORY" not in env
+
+
+# --- worktree creation is inside the cleanup scope ---------------------------
+
+
+def _create_then(runner: "local_validation.ValidationRunner", action: "object") -> None:
+    """After the real `git worktree add` succeeds, run ``action`` (e.g. raise)."""
+    real = runner.run_command
+
+    def fake(cmd: List[str], *args: object, **kwargs: object) -> Tuple:
+        result = real(cmd, *args, **kwargs)  # type: ignore[arg-type]
+        if "worktree" in cmd and "add" in cmd:
+            action()  # type: ignore[operator]
+        return result
+
+    runner.run_command = fake  # type: ignore[method-assign]
+
+
+@needs_pre_commit
+def test_failure_during_creation_still_removes_what_was_created(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    runner = _runner(repo)
+
+    def boom() -> None:
+        raise RuntimeError("interrupted right after creation")
+
+    _create_then(runner, boom)
+    with pytest.raises(RuntimeError, match="interrupted right after creation"):
+        runner.check_pre_commit_hooks()
+
+    assert "prepush-gate-" not in _git(repo, "worktree", "list")
+    assert not list((repo / "tmp").glob("prepush-gate-*"))
+
+
+@needs_pre_commit
+def test_cleanup_failure_does_not_mask_the_original_error(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    runner = _runner(repo)
+    real = runner.run_command
+
+    def fake(cmd: List[str], *args: object, **kwargs: object) -> Tuple:
+        if "worktree" in cmd and "remove" in cmd:
+            raise OSError("cleanup exploded")
+        return real(cmd, *args, **kwargs)  # type: ignore[arg-type]
+
+    def boom() -> None:
+        raise RuntimeError("original error")
+
+    runner.run_command = fake  # type: ignore[method-assign]
+    _create_then(runner, boom)
+    try:
+        with pytest.raises(RuntimeError, match="original error"):
+            runner.check_pre_commit_hooks()
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", *_leftover(repo)],
+            cwd=repo,
+            check=False,
+            capture_output=True,
+        )
+
+
+@needs_pre_commit
+def test_sigterm_handler_is_restored_after_the_gate(tmp_path: Path) -> None:
+    import signal
+
+    if os.name == "nt":
+        pytest.skip("SIGTERM handlers are POSIX")
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    before = signal.getsignal(signal.SIGTERM)
+    _runner(repo).check_pre_commit_hooks()
+    assert signal.getsignal(signal.SIGTERM) is before
+
+
+_SLOW_ADD_SCRIPT = """\
+import importlib.util, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("lv", sys.argv[1])
+lv = importlib.util.module_from_spec(spec)
+sys.modules["lv"] = lv
+spec.loader.exec_module(lv)
+runner = lv.ValidationRunner(verbose=False, repo_root=Path(sys.argv[2]))
+real = runner.run_command
+
+def slow(cmd, *args, **kwargs):
+    if "worktree" in cmd and "add" in cmd:
+        # A slow git: registers the worktree, then lingers before returning.
+        wrapped = ["sh", "-c", 'git worktree add --detach "$0" HEAD; sleep 31338', cmd[-2]]
+        print("ADDING", flush=True)
+        return real(wrapped, *args, **kwargs)
+    return real(cmd, *args, **kwargs)
+
+runner.run_command = slow
+print("READY", flush=True)
+try:
+    runner.check_pre_commit_hooks()
+except BaseException as exc:
+    print("INTERRUPTED", type(exc).__name__, flush=True)
+    raise SystemExit(143)
+"""
+
+
+def _slow_adders() -> str:
+    result = subprocess.run(
+        ["pgrep", "-f", "sleep 31338"], capture_output=True, text=True
+    )
+    return result.stdout.strip()
+
+
+@needs_pre_commit
+@pytest.mark.skipif(os.name == "nt", reason="signals and process groups are POSIX")
+@pytest.mark.skipif(shutil.which("pgrep") is None, reason="pgrep not available")
+def test_sigterm_during_worktree_creation_leaves_no_worktree_or_orphan(
+    tmp_path: Path,
+) -> None:
+    import signal
+    import time
+
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    script = tmp_path / "slow_gate.py"
+    script.write_text(_SLOW_ADD_SCRIPT)
+    env = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
+    proc = subprocess.Popen(
+        [sys.executable, str(script), str(_SCRIPT), str(repo)],
+        stdout=subprocess.PIPE,
+        text=True,
+        env=env,
+    )
+    try:
+        assert proc.stdout is not None
+        assert proc.stdout.readline().strip() == "READY"
+        assert proc.stdout.readline().strip() == "ADDING"
+        deadline = time.time() + 60
+        while time.time() < deadline and not _slow_adders():
+            time.sleep(0.1)
+        assert _slow_adders(), "the slow worktree add never started"
+        deadline = time.time() + 30
+        while time.time() < deadline and "prepush-gate-" not in _git(
+            repo, "worktree", "list"
+        ):
+            time.sleep(0.1)
+        proc.send_signal(signal.SIGTERM)
+        proc.wait(timeout=60)
+        assert "prepush-gate-" not in _git(repo, "worktree", "list")
+        assert not list((repo / "tmp").glob("prepush-gate-*"))
+        assert _slow_adders() == "", "slow git child survived SIGTERM"
+    finally:
+        proc.kill()
+        subprocess.run(["pkill", "-f", "sleep 31338"], check=False)
