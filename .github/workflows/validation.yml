@@ -192,10 +192,49 @@ jobs:
         print(f'KB compliance OK (layers: {len(layers)}, confidence: checked)')
         "
 
-  # Job 5: Summary
+  # Job 5: Test suite (pytest) on Python 3.11-3.13 (3.9 deliberately omitted;
+  # the Framework Tools job above still covers 3.9)
+  tests:
+    runs-on: ubuntu-latest
+    name: Tests (Python ${{ matrix.python-version }})
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: pip
+        cache-dependency-path: requirements-test.txt
+
+    - name: Install test dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+
+    - name: Run test suite
+      run: python -m pytest tests -q -ra --strict-markers -p no:cacheprovider
+
+    - name: Verify tests left the working tree clean
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "::error::The test run modified or created files in the working tree. Tests must not write into the repository."
+          git status --porcelain
+          exit 1
+        fi
+
+  # Job 6: Summary
   summary:
     runs-on: ubuntu-latest
-    needs: [sdlc-validation, code-quality, test-framework-tools, kb-compliance]
+    needs: [sdlc-validation, code-quality, test-framework-tools, kb-compliance, tests]
     if: always()
     name: Validation Summary
     permissions:
@@ -215,6 +254,7 @@ jobs:
         echo "| Code Quality | ${{ needs.code-quality.result == 'success' && 'Pass' || 'Warn' }} |" >> summary.md
         echo "| Framework Tools | ${{ needs.test-framework-tools.result == 'success' && 'Pass' || 'Warn' }} |" >> summary.md
         echo "| KB Compliance | ${{ needs.kb-compliance.result == 'success' && 'Pass' || 'Fail' }} |" >> summary.md
+        echo "| Tests | ${{ needs.tests.result == 'success' && 'Pass' || 'Fail' }} |" >> summary.md
 
         if [[ "${{ needs.sdlc-validation.result }}" == "failure" ]]; then
           echo "" >> summary.md
@@ -222,8 +262,14 @@ jobs:
           exit 1
         fi
 
+        if [[ "${{ needs.tests.result }}" != "success" ]]; then
+          echo "" >> summary.md
+          echo "**Test suite did not pass (result: ${{ needs.tests.result }}). Review the Tests jobs.**" >> summary.md
+          exit 1
+        fi
+
     - name: Comment PR
-      if: github.event_name == 'pull_request'
+      if: always() && github.event_name == 'pull_request'
       uses: actions/github-script@v8
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}

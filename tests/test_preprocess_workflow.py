@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Tests for preprocess_workflow — image node to bash node transformation."""
 
+from __future__ import annotations
+
 import logging
 
 from sdlc_workflows_scripts import preprocess_workflow
