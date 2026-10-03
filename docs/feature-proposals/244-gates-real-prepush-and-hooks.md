@@ -34,7 +34,7 @@ cannot change the working tree, and CI blocks on the same pinned hooks.
 
 ## Proposed Solution
 
-Ten commits on this branch (after `631a626`; nine reviewed plus the fifth-round fix): the five steps below plus five review-round fix commits:
+Eleven commits on this branch (after `631a626`; ten reviewed plus a final documentation-accuracy commit): the five steps below plus six review-round fix commits:
 
 1. **Corpus excludes and hook args** (`025aaca`). A top-level `exclude:` in
    `.pre-commit-config.yaml` makes every hook skip `research/poker-capstone/runs`,
@@ -175,23 +175,48 @@ retrospective.
 Opus verified a swallowed-SIGTERM regression introduced by the previous round, a
 thread bug in the shared mute flag, and an unguarded deletion (it deleted a whole
 throwaway checkout); Codex returned a second NO-GO (deletion safety,
-concurrency). The branch now has ten commits: nine reviewed plus this fix.
+concurrency). At the end of this round the branch had ten commits: nine
+reviewed plus this fix (a later documentation-accuracy commit makes eleven).
 
 - **Signal handling replaced, not patched again.** No module-level signal state.
   A module lock serialises gate calls; the SIGTERM handler is installed only in
   the main thread on POSIX; the handler blocks further SIGTERM then raises
-  `GateTerminated`; cleanup blocks SIGTERM, kills the hook's process group,
+  `GateTerminated` (in a single-threaded process a second signal then stays
+  pending in the kernel; `pthread_sigmask` is per thread, so with another live
+  thread a second SIGTERM before cleanup begins can raise again, theoretical for
+  the single-threaded CLI); cleanup blocks SIGTERM, kills the hook's process group,
   removes the worktree, restores the previous handler, then unblocks, so a
   SIGTERM that arrives during cleanup (even a plain one) is delivered to the
   original disposition afterwards and is never dropped. A previous `SIG_IGN`
-  stays ignored by the caller's choice. The earlier statement that further
+  is replaced by the gate's handler while the gate runs (a SIGTERM during the gate
+  raises `GateTerminated`) and is restored afterwards, so a SIGTERM still pending
+  at that point is discarded by the caller's choice. The earlier statement that further
   SIGTERMs were "recorded" was wrong: they were dropped.
-- **Residual window**: a signal handled between the end of the `try` body and the
-  first statement of the `finally` still raises from inside the `finally` and
-  would skip that call's cleanup. Nothing more is claimed.
+- **Residual window**: from the end of the `try` body until the cleanup flag is
+  set (entering the `finally`, the method call and its conditional), several
+  interpreter checks fall in the span; a signal handled there raises
+  `GateTerminated` and would skip that call's cleanup. Theoretical for a
+  developer-run gate; not closed, and nothing more is claimed.
+- **Known limit (live-child kill)**: the cleanup step that kills live child
+  process groups only affects children still registered when cleanup begins;
+  `run_command`'s own `finally` unregisters a process once its call ends, so in
+  the single-thread case there is usually nothing left to kill. A signal landing
+  after `Popen` returns but before the `try` in `_communicate` can orphan the
+  child (simulated with a `sleep <token>` child). Theoretical; the follow-up is
+  about three lines: kill the group in `run_command`'s `finally` when unwinding
+  with an exception.
 - **Deletion guard**: `_remove_worktree` only touches a non-symlink path directly
   under the real `<repo>/tmp`, named `prepush-gate-<pid>-<8 hex>`, minted by this
-  call; creation refuses a symlinked `tmp`. Anything else is refused with an
-  error naming the failed check.
+  runner (ownership is tracked per runner, not per call); creation refuses a symlinked `tmp`. Anything else is refused with an
+  error naming the failed check. The `_tmp_dir_error` "symlinked ancestor" branch
+  is unreachable (`repo_root` is already resolved) and is kept as a harmless
+  defensive check.
 - **Tests**: new tests for each of the above, each seen to fail first; the timeout
   test re-verifies the marker before killing recorded pids.
+
+## Final reviews and commit count
+
+Final reviews: Opus SHIP (no further redesign recommended), Fable GO, Codex GO
+after two earlier NO-GOs. The branch has eleven commits: ten reviewed plus this
+documentation-accuracy commit, which changes only comments, docstrings and
+Markdown.

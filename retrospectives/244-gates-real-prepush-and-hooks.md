@@ -8,7 +8,7 @@
 
 ## Summary
 
-Ten commits (nine reviewed plus the fifth-round fix) make the repository's hooks passable, stop `--pre-push` from
+Eleven commits (ten reviewed plus a final documentation-accuracy commit) make the repository's hooks passable, stop `--pre-push` from
 mutating the tree, and make CI block on the pinned pre-commit hooks. A run of
 `pre-commit run --all-files --show-diff-on-failure` in a throwaway worktree of
 the pre-final HEAD exits 0 with all 15 hooks Passed and a clean
@@ -358,8 +358,9 @@ fourth-round fix (the fifth-round fix below makes ten).
 
 ## Fifth review round
 
-Opus reviewed the fourth-round fix and Codex returned a second **NO-GO**. The
-branch now has ten commits: nine reviewed plus this fifth-round fix.
+Opus reviewed the fourth-round fix and Codex returned a second **NO-GO**. At
+the end of this round the branch had ten commits: nine reviewed plus this
+fifth-round fix (a later documentation-accuracy commit makes eleven).
 
 - **A swallowed SIGTERM (Opus, verified, serious regression from the previous
   round).** `_ignore_further_sigterm()` muted SIGTERM on the SUCCESS path too and
@@ -387,31 +388,37 @@ branch now has ten commits: nine reviewed plus this fifth-round fix.
   available); otherwise nothing is installed. All handler state lives in a
   per-call `_SigtermScope`, none at module level. (c) The handler blocks further
   SIGTERM for the thread (`pthread_sigmask`) before raising `GateTerminated`, so
-  a second signal stays pending in the kernel instead of interrupting the
-  unwinding. (d) Cleanup runs in a fixed order, each step nested so a failure
+  in a single-threaded process a second signal stays pending in the kernel
+  instead of interrupting the unwinding (`pthread_sigmask` is per thread: with
+  another live thread and SIGTERM unmasked there, a second SIGTERM before
+  cleanup begins can raise `GateTerminated` again, reproduced with one idle
+  helper thread; the CLI is single-threaded, so this is theoretical there). (d) Cleanup runs in a fixed order, each step nested so a failure
   cannot skip a later one: block SIGTERM, kill the hook's process group if still
   running, remove the worktree, restore the PREVIOUS handler, unblock. Because
   the previous handler is back before the unblock, a SIGTERM that arrived at any
   point in cleanup, including a plain one with no earlier signal, is delivered to
   the original disposition afterwards (normally terminating the process). It is
-  honoured after cleanup, never dropped. If the caller's own previous disposition
-  was `SIG_IGN` it stays ignored, so a pending SIGTERM is then discarded by that
-  choice. Installation blocks SIGTERM while swapping the handler, so no signal
+  honoured after cleanup, never dropped. A previous
+  `SIG_IGN` is only honoured AFTER the gate finishes: while the gate runs its
+  handler replaces it, so a SIGTERM during the gate raises `GateTerminated`; the
+  original `SIG_IGN` is restored afterwards, so a SIGTERM still pending then is
+  discarded by the caller's choice. Installation blocks SIGTERM while swapping the handler, so no signal
   lands between the swap and the bookkeeping.
 - **Containment guard on deletion.** Before any `git worktree remove`, `unlock` or
   `rmtree`, `_remove_worktree` requires: the path's real parent equals the real
   `<repo_root>/tmp` (itself not a symlink); the name matches
   `^prepush-gate-\d+-[0-9a-f]{8}$`; the path is not a symlink and is not, or an
-  ancestor of, the repo root; and the path is one this runner minted via
+  ancestor of, the repo root; and the path is one this runner minted (ownership is tracked per runner, not per call) via
   `_gate_worktree_path()`. Otherwise nothing is touched and an error naming the
   path and the failed check is recorded. Creation refuses a symlinked `tmp` (or a
   `tmp` that resolves outside the repo) and a path that already exists, and only
   a path that creation actually claimed is ever removed.
-- **Residual window, stated honestly.** A SIGTERM whose Python handler runs after
-  the `try` body ends but before the first statement of the `finally` raises
-  `GateTerminated` from inside the `finally` before the block is in place, which
-  skips that call's cleanup. The cleanup is the first statement of the `finally`
-  so this is a single bytecode boundary, but it is not closed. Children spawned
+- **Residual window, stated honestly.** The window runs from the end
+  of the `try` body until the cleanup flag is set (entering the `finally`, the
+  `begin_cleanup` call and its conditional), so it is wider than one bytecode:
+  several interpreter checks fall in that span. A SIGTERM whose Python handler
+  runs there raises `GateTerminated` before the cleanup is in place, which skips
+  that call's cleanup. Theoretical for a developer-run gate; not closed. Children spawned
   during cleanup (the git removal commands) inherit the blocked SIGTERM mask. A
   `KeyboardInterrupt` is not handled by this scheme.
 - **Tests.** Tests that FAILED first (each run against the old code): SIGTERM
@@ -453,3 +460,51 @@ Lessons recorded for future work: give every parallel agent its own throwaway
 worktree for BOTH editing and verification (not just for running hooks);
 have agents commit to a throwaway branch early; and treat the main checkout as
 read-only for everything except the final integration step.
+
+## Documentation-accuracy corrections (final commit)
+
+Final reviews: Opus SHIP (no further redesign recommended), Fable GO, Codex GO
+after two earlier NO-GOs. The branch has eleven commits: ten reviewed plus this
+documentation-accuracy commit, which changes only comments, docstrings and
+Markdown (verified by an AST comparison with docstrings removed). Opus ran the
+signal-handling code and found the following overclaims, corrected above and in
+`local-validation.py`:
+
+- A second signal staying pending holds only in a single-threaded process.
+- A previous `SIG_IGN` is replaced while the gate runs and restored afterwards.
+- The residual window is wider than one bytecode (theoretical for a developer
+  run).
+- The "kill live child process groups" step only reaches children still
+  registered at cleanup; a signal after `Popen` returns but before the `try` in
+  `_communicate` can orphan the child (known limit, theoretical; about three
+  lines to fix by killing the group in `run_command`'s `finally` on an
+  exception).
+- Ownership of the worktree path is tracked per runner, not per call; the
+  `_tmp_dir_error` symlinked-ancestor branch is unreachable and kept as a
+  harmless defensive check.
+
+### Known limits (final)
+
+- **GateTerminated is a `BaseException` not caught in `main()`** (cosmetic,
+  practical): a real SIGTERM in the `try` body ends in a Python traceback and
+  exit 1 rather than a signal exit. The push is still blocked. Follow-up.
+- **Cleanup git calls inherit the SIGTERM block** (practical if git hangs):
+  cleanup runs git with SIGTERM blocked and the children inherit the block, so
+  if git hangs the gate ignores SIGTERM for up to about 8 x 300s (each git
+  call's timeout) until SIGKILL. A shorter cleanup timeout is a follow-up.
+- **Timing-dependent signal tests** (practical, rare):
+  `test_sigterm_during_normal_cleanup_is_honoured_after_cleanup` and
+  `test_two_sigterms_with_a_confirmed_delay...` rely on the second signal
+  landing inside a 2.0s cleanup sleep, so a runner stall over 1.5s could flake
+  them. Widen the sleep if it ever does.
+- **Unbounded test reads** (practical): some test reads of a subprocess's stdout
+  are blocking and not bounded by the later `wait(timeout=...)`, so a
+  misbehaving test could hang until the CI job's 10-minute timeout instead of
+  failing fast. Follow-up.
+- **Lock re-entry** (theoretical): re-entering the gate lock from the same
+  thread, only possible via a signal handler or a previous handler callable,
+  would deadlock.
+- **`documentation.yml` toc-generator auto-PRs** (unverified): they will hit the
+  blocking Code Quality job; this has not been exercised.
+- **Formatting-only plugin changes are not version-bumped** (already stated
+  above).

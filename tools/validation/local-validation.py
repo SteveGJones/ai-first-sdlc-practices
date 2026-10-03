@@ -141,21 +141,36 @@ class _SigtermScope:
     flag-based:
 
     * the handler blocks further SIGTERM for the thread, then raises
-      ``GateTerminated`` so ``finally`` blocks run; a second signal stays
-      pending in the kernel instead of interrupting the unwinding;
+      ``GateTerminated`` so ``finally`` blocks run; in a SINGLE-THREADED
+      process a second signal stays pending in the kernel instead of
+      interrupting the unwinding (``pthread_sigmask`` is per thread: with
+      another live thread that has SIGTERM unmasked, a second SIGTERM before
+      cleanup begins can raise ``GateTerminated`` again; the CLI is
+      single-threaded, so this is theoretical there);
     * cleanup blocks SIGTERM first, restores the PREVIOUS handler, and only
       then unblocks, so a SIGTERM that arrived at any point in cleanup
       (including one with no earlier signal) is delivered to the original
-      disposition afterwards and is never dropped. The one exception is the
-      caller's own choice: if the previous disposition was SIG_IGN it stays
-      ignored, so a pending SIGTERM is discarded by that choice.
+      disposition afterwards and is never dropped. The one exception is a
+      previous disposition of SIG_IGN: while the gate runs, the gate's handler
+      REPLACES it, so a SIGTERM during the gate raises ``GateTerminated``; the
+      original SIG_IGN is restored afterwards, so a SIGTERM that is still
+      pending at that point is discarded by the caller's choice.
 
-    Residual window: a SIGTERM whose Python handler runs after the ``try``
-    body ends but before the first statement of the ``finally`` raises
-    ``GateTerminated`` from inside the ``finally`` before the block is in
-    place, which would skip that call's cleanup. The cleanup is therefore the
-    very first statement of the ``finally``. Children spawned during cleanup
-    inherit the blocked mask.
+    Residual window: it runs from the end of the ``try`` body until the
+    cleanup flag is set (entering the ``finally``, the ``begin_cleanup`` call
+    and its conditional); several interpreter checks fall in that span. A
+    SIGTERM whose Python handler runs there raises ``GateTerminated`` before
+    the cleanup is in place, which would skip that call's cleanup. This is
+    theoretical for a developer-run gate and is not closed. Children spawned
+    during cleanup inherit the blocked mask.
+
+    Known limit: the "kill live children" step only affects children still
+    registered when cleanup begins; ``run_command``'s own ``finally`` removes
+    a process from the live list once its call ends, so in the single-thread
+    case there is usually nothing left to kill. A signal landing after
+    ``Popen`` returns but before the ``try`` in ``_communicate`` can orphan the
+    child. Theoretical; a small follow-up is to kill the group in
+    ``run_command``'s ``finally`` when unwinding with an exception.
     """
 
     def __init__(self) -> None:
@@ -427,8 +442,10 @@ class ValidationRunner:
             )
         finally:
             # Order matters and is fixed: block SIGTERM, kill the hook's
-            # process group, remove the worktree, restore the previous handler,
-            # unblock. Each step is nested so a failure cannot skip a later one.
+            # process group (only children still registered; see the
+            # _SigtermScope known limit), remove the worktree, restore the
+            # previous handler, unblock. Each step is nested so a failure
+            # cannot skip a later one.
             scope.begin_cleanup()
             try:
                 self._kill_live_children()
@@ -457,7 +474,12 @@ class ValidationRunner:
         return True
 
     def _tmp_dir_error(self) -> Optional[str]:
-        """Why ``<repo>/tmp`` cannot safely hold the worktree, or None."""
+        """Why ``<repo>/tmp`` cannot safely hold the worktree, or None.
+
+        The "symlinked ancestor" branch is unreachable (``repo_root`` is
+        already resolved, so only ``tmp`` itself can be a link); it is kept as
+        a harmless defensive check.
+        """
         tmp = self.repo_root / "tmp"
         if os.path.islink(tmp):
             return f"{tmp} is a symlink; refusing to create a worktree outside the repo"
@@ -468,11 +490,13 @@ class ValidationRunner:
         return None
 
     def _gate_worktree_path(self) -> Path:
-        """A resolved path unique to one gate call, recorded as owned by it.
+        """A resolved path unique to one gate call, recorded as owned by this runner.
 
         The pid alone is shared by threads of one process, and a failed
         ``add`` for one call must never remove another call's live worktree.
-        Only paths minted here are ever deleted by ``_remove_worktree``.
+        Ownership is tracked per runner (the set of paths minted here), not
+        per call. Only paths minted here are ever deleted by
+        ``_remove_worktree``.
         """
         name = f"prepush-gate-{os.getpid()}-{uuid.uuid4().hex[:8]}"
         path = Path(os.path.realpath(self.repo_root)) / "tmp" / name
@@ -513,7 +537,7 @@ class ValidationRunner:
     def _remove_worktree(self, worktree: Path) -> bool:
         """Remove whatever exists of the throwaway worktree; True if it failed.
 
-        ``worktree`` must be a path this call chose under ``<repo>/tmp`` with the
+        ``worktree`` must be a path this runner minted under ``<repo>/tmp`` with the
         gate's name pattern and not a symlink; otherwise nothing is touched and
         True is returned with an error. Handles creation that was
         partial, interrupted, or never happened. A creation killed mid-checkout
