@@ -55,8 +55,9 @@ def get_prior(family, dimension, priors_dir=None, families=None, default=DEFAULT
     return float(value) if value is not None else default
 
 
-def prior_for_address(address, dimension, priors_dir=None, families=None,
-                      default=DEFAULT_PRIOR):
+def prior_for_address(
+    address, dimension, priors_dir=None, families=None, default=DEFAULT_PRIOR
+):
     """Convenience: resolve family then look up its per-dimension prior."""
     if families is None:
         families = load_priors(priors_dir)
@@ -84,10 +85,12 @@ def _main(argv):
         print(resolve_family(args.address, families=families))
         return 0
     if args.cmd == "prior":
-        family, value = prior_for_address(args.address, args.dimension,
-                                          families=families)
-        print(json.dumps({"family": family, "dimension": args.dimension,
-                          "prior": value}))
+        family, value = prior_for_address(
+            args.address, args.dimension, families=families
+        )
+        print(
+            json.dumps({"family": family, "dimension": args.dimension, "prior": value})
+        )
         return 0
     return 2
 

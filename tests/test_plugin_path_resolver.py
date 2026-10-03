@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for resolve_plugin_paths — plugin name to filesystem path resolution."""
 
 import json

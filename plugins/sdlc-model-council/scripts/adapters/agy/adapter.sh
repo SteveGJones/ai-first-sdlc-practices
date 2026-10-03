@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 # adapter.sh — agy (Antigravity CLI) direct-CLI adapter (§2.2 ABI,
 # authoritative for id-capture: design §9.14/§9.15). Sourced by extdel.sh
 # (never executed directly) into the SAME shell, so it may call engine

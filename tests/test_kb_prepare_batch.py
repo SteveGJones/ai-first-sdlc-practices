@@ -40,7 +40,9 @@ def test_detect_converter_unknown_returns_none() -> None:
 
 
 def test_write_provenance_frontmatter_adds_metadata() -> None:
-    content = write_provenance_frontmatter("~/Downloads/test.pdf", "markitdown", "Body content.\n")
+    content = write_provenance_frontmatter(
+        "~/Downloads/test.pdf", "markitdown", "Body content.\n"
+    )
     assert "source: ~/Downloads/test.pdf" in content
     assert "converted_by: markitdown" in content
     assert "converted_at:" in content
@@ -49,7 +51,9 @@ def test_write_provenance_frontmatter_adds_metadata() -> None:
 
 
 def test_write_provenance_frontmatter_passthrough_has_status_raw() -> None:
-    content = write_provenance_frontmatter("~/docs/notes.md", "passthrough", "# Notes\n")
+    content = write_provenance_frontmatter(
+        "~/docs/notes.md", "passthrough", "# Notes\n"
+    )
     assert "status: raw" in content
     assert "converted_by: passthrough" in content
 
@@ -117,8 +121,12 @@ def test_prepare_batch_converts_pdf_via_markitdown(tmp_path: Path) -> None:
     pdf = src / "report.pdf"
     pdf.write_bytes(b"%PDF fake content")
 
-    with patch("sdlc_knowledge_base_scripts.kb_prepare_batch.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0, stdout="# Converted content\n", stderr="")
+    with patch(
+        "sdlc_knowledge_base_scripts.kb_prepare_batch.subprocess.run"
+    ) as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="# Converted content\n", stderr=""
+        )
         result = prepare_batch([pdf], raw, mode="copy")
 
     assert result.staged == 1
@@ -134,10 +142,17 @@ def test_prepare_batch_converts_tex_via_pandoc(tmp_path: Path) -> None:
     raw = tmp_path / "library" / "raw"
     raw.mkdir(parents=True)
     tex = src / "paper.tex"
-    tex.write_text("\\documentclass{article}\\begin{document}Hello\\end{document}", encoding="utf-8")
+    tex.write_text(
+        "\\documentclass{article}\\begin{document}Hello\\end{document}",
+        encoding="utf-8",
+    )
 
-    with patch("sdlc_knowledge_base_scripts.kb_prepare_batch.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0, stdout="# Paper\n\nHello\n", stderr="")
+    with patch(
+        "sdlc_knowledge_base_scripts.kb_prepare_batch.subprocess.run"
+    ) as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="# Paper\n\nHello\n", stderr=""
+        )
         result = prepare_batch([tex], raw, mode="copy")
 
     assert result.staged == 1

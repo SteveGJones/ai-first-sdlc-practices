@@ -2,6 +2,14 @@
   "name": "sdlc-team-cloud",
   "version": "1.0.0",
   "description": "Cloud infrastructure agents — cloud, container, SRE specialists",
-  "author": { "name": "SteveGJones" },
-  "keywords": ["sdlc", "cloud", "infrastructure", "kubernetes", "agents"]
+  "author": {
+    "name": "SteveGJones"
+  },
+  "keywords": [
+    "sdlc",
+    "cloud",
+    "infrastructure",
+    "kubernetes",
+    "agents"
+  ]
 }

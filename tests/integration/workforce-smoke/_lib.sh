@@ -1,4 +1,4 @@
-#!/bin/bash
+# shellcheck shell=bash
 # Shared helpers for workforce-smoke integration harnesses.
 #
 # These functions centralise the backup/restore of the repo's .archon/

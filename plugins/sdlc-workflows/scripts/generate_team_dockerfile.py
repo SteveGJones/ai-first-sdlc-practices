@@ -338,9 +338,7 @@ def generate(
         short_name = plugin_key.split("@")[0] if "@" in plugin_key else plugin_key
 
         lines.append(f"# Plugin: {short_name} — plugin metadata")
-        lines.append(
-            f"COPY --from=plugin-source {image_base}/.claude-plugin/ \\"
-        )
+        lines.append(f"COPY --from=plugin-source {image_base}/.claude-plugin/ \\")
         lines.append(f"     {image_base}/.claude-plugin/")
         lines.append("")
 
@@ -415,7 +413,9 @@ def generate(
     container_json_path = output_path.parent / f"{team_name}-installed_plugins.json"
     generate_container_installed_json(installed_json, plugins_root, container_json_path)
     lines.append("# Plugin registry (paths rewritten for container filesystem)")
-    lines.append(f"COPY {container_json_path} {_IMAGE_PLUGINS_ROOT}/installed_plugins.json")
+    lines.append(
+        f"COPY {container_json_path} {_IMAGE_PLUGINS_ROOT}/installed_plugins.json"
+    )
     lines.append("")
 
     # -- Switch to root for ownership / permission operations -------------------
@@ -439,9 +439,7 @@ def generate(
     # skills at runtime.  Combined with --cap-drop ALL and
     # --security-opt no-new-privileges on docker run, this removes
     # the primary runtime agent-injection surface.
-    lines.append(
-        "# Lock user-level agent/skill directories (defense in depth)"
-    )
+    lines.append("# Lock user-level agent/skill directories (defense in depth)")
     lines.append(
         "RUN mkdir -p /home/sdlc/.claude/agents /home/sdlc/.claude/skills \\\n"
         "    && chmod -R a-w /home/sdlc/.claude/agents "
@@ -479,7 +477,9 @@ def generate(
 
 def main() -> None:
     """CLI entry point for generate_team_dockerfile."""
-    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s"
+    )
     logger.info("generate_team_dockerfile CLI start")
     parser = argparse.ArgumentParser(
         description="Generate a team-specific Dockerfile from a team manifest."

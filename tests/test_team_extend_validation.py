@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for team_extend validation in workflow-team checker."""
 
 import json
@@ -46,12 +45,16 @@ class TestTeamExtendValidation:
         (plugin_dir / ".claude-plugin" / "plugin.json").write_text("{}")
 
         installed_json = tmp_path / "installed_plugins.json"
-        installed_json.write_text(json.dumps({
-            "sec-plugin@mkt": {
-                "name": "sec-plugin",
-                "installPath": str(plugin_dir),
-            },
-        }))
+        installed_json.write_text(
+            json.dumps(
+                {
+                    "sec-plugin@mkt": {
+                        "name": "sec-plugin",
+                        "installPath": str(plugin_dir),
+                    },
+                }
+            )
+        )
 
         errors = check_workflow_teams.validate(
             workflows_dir=tmp_path / "workflows",

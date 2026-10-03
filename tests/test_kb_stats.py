@@ -20,7 +20,9 @@ def _write_shelf_index(path: Path, entries: list[dict]) -> None:
     for n, e in enumerate(entries, 1):
         facts_block = "\n".join(f"- Fact {i}." for i in range(e.get("facts_count", 1)))
         links = ", ".join(e.get("links", []))
-        confidence_line = f"**Confidence:** {e['confidence']}\n" if "confidence" in e else ""
+        confidence_line = (
+            f"**Confidence:** {e['confidence']}\n" if "confidence" in e else ""
+        )
         body += (
             f"## {n}. {e['file']}\n\n"
             f"**Hash:** {'a' * 64}\n"
@@ -316,7 +318,12 @@ def test_stats_counts_files_lacking_confidence(tmp_path: Path) -> None:
     _write_shelf_index(
         shelf,
         [
-            {"file": "a.md", "layer": "methodology", "confidence": "high", "facts_count": 1},
+            {
+                "file": "a.md",
+                "layer": "methodology",
+                "confidence": "high",
+                "facts_count": 1,
+            },
             {"file": "b.md", "layer": "evidence", "facts_count": 1},  # no confidence
         ],
     )

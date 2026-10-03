@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 # adapter.sh — MLX local direct-CLI adapter (§2.2 ABI). Sourced by
 # extdel.sh (never executed directly) into the SAME shell, so it may call
 # engine helpers (meta_get/meta_set, now_iso/now_epoch, is_blank_file,

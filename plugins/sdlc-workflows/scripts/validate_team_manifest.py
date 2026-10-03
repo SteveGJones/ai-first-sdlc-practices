@@ -93,7 +93,10 @@ def validate(
 
     logger.info(
         "Team manifest validation start",
-        extra={"manifest_path": str(manifest_path), "has_installed_json": installed_json is not None},
+        extra={
+            "manifest_path": str(manifest_path),
+            "has_installed_json": installed_json is not None,
+        },
     )
     errors: list[str] = []
 
@@ -211,9 +214,7 @@ def validate(
         if agent_str.startswith("local:"):
             rel = Path(agent_str.removeprefix("local:"))
             if not _within_project_root(rel):
-                errors.append(
-                    f"Local agent path escapes project root: {agent_str}"
-                )
+                errors.append(f"Local agent path escapes project root: {agent_str}")
                 continue
             local_path = project_root / rel
             if not local_path.exists():
@@ -240,9 +241,7 @@ def validate(
         if skill_str.startswith("local:"):
             rel = Path(skill_str.removeprefix("local:"))
             if not _within_project_root(rel):
-                errors.append(
-                    f"Local skill path escapes project root: {skill_str}"
-                )
+                errors.append(f"Local skill path escapes project root: {skill_str}")
                 continue
             local_path = project_root / rel
             if not local_path.exists():
@@ -267,9 +266,7 @@ def validate(
     for ctx_file in context_raw:
         rel = Path(str(ctx_file))
         if not _within_project_root(rel):
-            errors.append(
-                f"Context file path escapes project root: {ctx_file}"
-            )
+            errors.append(f"Context file path escapes project root: {ctx_file}")
             continue
         ctx_path = project_root / rel
         if not ctx_path.exists():
@@ -283,9 +280,7 @@ def validate(
     if "group" in data:
         group_value = data["group"]
         if not isinstance(group_value, str) or not group_value.strip():
-            errors.append(
-                "Field 'group' must be a non-empty string if present"
-            )
+            errors.append("Field 'group' must be a non-empty string if present")
         else:
             logger.warning(
                 "Reserved field 'group' is accepted but has no runtime effect in v1",
@@ -302,7 +297,9 @@ def validate(
 
 def main() -> None:
     """CLI entry point for validate_team_manifest."""
-    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s"
+    )
     logger.info("validate_team_manifest CLI start")
     parser = argparse.ArgumentParser(
         description="Validate a team manifest YAML against the SDLC-workflows schema."

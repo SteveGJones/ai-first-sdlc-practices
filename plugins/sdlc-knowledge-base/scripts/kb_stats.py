@@ -33,7 +33,7 @@ _HEADER_FIELD_RE = re.compile(r"^<!--\s*(\w+):\s*(.+?)\s*-->\s*$")
 _ENTRY_SPLIT_RE = re.compile(r"^## \d+\.", re.MULTILINE)
 _LAYER_RE = re.compile(r"^\*\*Layer:\*\*\s+(\S+)\s*$", re.MULTILINE)
 _CONFIDENCE_RE = re.compile(r"^\*\*Confidence:\*\*\s+(\S+)\s*$", re.MULTILINE)
-_TERMS_RE = re.compile(r"^\*\*Terms:\*\*\s+(.+)$", re.MULTILINE)
+_TERMS_RE = re.compile(r"^\*\*Terms:\*\*[ \t]*(.*)$", re.MULTILINE)
 _FACTS_BULLET_RE = re.compile(r"^\s*-\s+.+", re.MULTILINE)
 _FACTS_SECTION_RE = re.compile(r"\*\*Facts:\*\*\s*\n(.*?)(?=\n\*\*|\Z)", re.DOTALL)
 _NO_FINDINGS_RE = re.compile(r"no structured findings", re.IGNORECASE)
@@ -118,7 +118,9 @@ def _parse_shelf_index(content: str) -> list[_ShelfEntry]:
         layer = layer_match.group(1).strip().lower() if layer_match else "uncategorized"
 
         confidence_match = _CONFIDENCE_RE.search(section)
-        confidence = confidence_match.group(1).strip().lower() if confidence_match else "unknown"
+        confidence = (
+            confidence_match.group(1).strip().lower() if confidence_match else "unknown"
+        )
 
         terms_match = _TERMS_RE.search(section)
         domains = _parse_domains_from_terms(terms_match.group(1)) if terms_match else []
@@ -126,7 +128,7 @@ def _parse_shelf_index(content: str) -> list[_ShelfEntry]:
         facts_count = _count_facts_in_block(section)
 
         # Parse **Links:** — comma-separated list on same line
-        links_match = re.search(r"^\*\*Links:\*\*\s*(.*)", section, re.MULTILINE)
+        links_match = re.search(r"^\*\*Links:\*\*[ \t]*(.*)", section, re.MULTILINE)
         links: list[str] = []
         if links_match:
             raw_links = links_match.group(1).strip()

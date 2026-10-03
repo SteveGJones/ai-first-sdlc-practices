@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for workflow-team reference validation."""
 
 import sys

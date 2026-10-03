@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Unit coverage for the §7.4 full-formation super-smoke.
 
 Runs the preprocessor over the real miniproject
@@ -56,9 +55,9 @@ def test_model_override_propagates_to_every_image_node() -> None:
     for node in wf["nodes"]:
         if "bash" not in node:
             continue
-        assert "CLAUDE_MODEL=claude-sonnet-4-6" in node["bash"], (
-            f"node {node['id']} missing CLAUDE_MODEL"
-        )
+        assert (
+            "CLAUDE_MODEL=claude-sonnet-4-6" in node["bash"]
+        ), f"node {node['id']} missing CLAUDE_MODEL"
 
 
 def test_dag_preserved() -> None:
@@ -82,9 +81,7 @@ def test_security_flags_on_every_image_node() -> None:
         if "bash" not in node:
             continue
         for flag in flags:
-            assert flag in node["bash"], (
-                f"node {node['id']} missing flag {flag!r}"
-            )
+            assert flag in node["bash"], f"node {node['id']} missing flag {flag!r}"
 
 
 def test_finalise_node_preserved_untransformed() -> None:

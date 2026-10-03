@@ -178,7 +178,7 @@ As Persona A (solo dev, Mac, fresh install):
 Build takes 3-5 minutes. The user waits. Nothing goes wrong on a Mac with Docker Desktop running. At the end: "SDLC delegated workflows are configured and verified. Next steps: 1. Run a parallel review: `/sdlc-workflows:workflows-run sdlc-parallel-review`". Good.
 
 **Minute 15: Try to run `sdlc-parallel-review`**
-The skill runs. Immediately: `Workflow 'sdlc-parallel-review' not found. Available workflows: (empty)`. 
+The skill runs. Immediately: `Workflow 'sdlc-parallel-review' not found. Available workflows: (empty)`.
 
 Why? Because `sdlc-parallel-review` references `image: sdlc-worker:dev-team` and `sdlc-worker:review-team`. Neither image exists. `workflows-setup` builds `base` and `full`, not team images. The user does not have `.archon/teams/` set up. The workflow can't run.
 

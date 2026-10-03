@@ -61,10 +61,10 @@ For each file in your assignment, implement the required changes:
    ```bash
    # Python
    python -m py_compile path/to/file.py 2>&1 || echo "Syntax error"
-   
+
    # TypeScript
    npx tsc --noEmit path/to/file.ts 2>/dev/null || echo "Type check — see errors above"
-   
+
    # Or use the project's configured linter
    ```
 

@@ -140,12 +140,29 @@ def test_render_spec_findings_omits_last_rebuilt_by_default() -> None:
 
 def test_render_spec_findings_emits_per_req_related_when_metadata_provided() -> None:
     records = [
-        IdRecord(id="REQ-foo-001", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
-        IdRecord(id="REQ-foo-002", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
-        IdRecord(id="REQ-foo-003", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
+        IdRecord(
+            id="REQ-foo-001",
+            kind="REQ",
+            source="docs/specs/foo/requirements-spec.md",
+            satisfies=[],
+        ),
+        IdRecord(
+            id="REQ-foo-002",
+            kind="REQ",
+            source="docs/specs/foo/requirements-spec.md",
+            satisfies=[],
+        ),
+        IdRecord(
+            id="REQ-foo-003",
+            kind="REQ",
+            source="docs/specs/foo/requirements-spec.md",
+            satisfies=[],
+        ),
     ]
     metadata = {
-        "REQ-foo-002": RequirementMetadata(req_id="REQ-foo-002", related=["REQ-foo-001"]),
+        "REQ-foo-002": RequirementMetadata(
+            req_id="REQ-foo-002", related=["REQ-foo-001"]
+        ),
     }
     out = render_spec_findings(records, library_handle="x", metadata=metadata)
     assert "**Related:** REQ-foo-001" in out
@@ -153,3 +170,26 @@ def test_render_spec_findings_emits_per_req_related_when_metadata_provided() -> 
     assert "Related:" not in section_001
     section_003 = out.split("REQ-foo-003")[1]
     assert "Related:" not in section_003
+
+
+def test_render_code_index_empty_terms_has_no_trailing_space() -> None:
+    entries = [
+        CodeIndexEntry(
+            file_path="src/a.py",
+            line=3,
+            cited_ids=["REQ-a-001"],
+            terms=[],
+            facts=[],
+        ),
+    ]
+    output = render_code_index(entries, library_handle="local-project")
+    assert "**Terms:**\n" in output
+    assert all(line == line.rstrip() for line in output.splitlines())
+
+
+def test_render_code_index_has_no_trailing_space_when_entry_has_no_links() -> None:
+    entries = [CodeIndexEntry(file_path="a.py", line=1, cited_ids=[])]
+    output = render_code_index(entries, library_handle="local-project")
+    for line in output.splitlines():
+        assert line == line.rstrip(), f"trailing whitespace: {line!r}"
+    assert "**Links:**" in output

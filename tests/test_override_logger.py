@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for override_logger — team_extend override logging."""
 
 import json

@@ -38,7 +38,16 @@ def test_save_and_load_manifest_roundtrip(tmp_path: Path) -> None:
 
 def test_save_manifest_is_atomic(tmp_path: Path) -> None:
     manifest_path = tmp_path / ".batch-progress.json"
-    save_manifest(manifest_path, {"started_at": _now(), "total": 1, "completed": [], "failed": [], "pending": ["x.md"]})
+    save_manifest(
+        manifest_path,
+        {
+            "started_at": _now(),
+            "total": 1,
+            "completed": [],
+            "failed": [],
+            "pending": ["x.md"],
+        },
+    )
     assert manifest_path.exists()
     assert not (tmp_path / ".batch-progress.json.tmp").exists()
 
@@ -62,8 +71,12 @@ def test_build_manifest_from_file_list(tmp_path: Path) -> None:
 def test_build_manifest_skips_non_raw_files(tmp_path: Path) -> None:
     raw = tmp_path / "raw"
     raw.mkdir()
-    (raw / "curated.md").write_text("---\nstatus: active\n---\n# Curated\n", encoding="utf-8")
-    (raw / "source.md").write_text("---\nstatus: raw\n---\n# Source\n", encoding="utf-8")
+    (raw / "curated.md").write_text(
+        "---\nstatus: active\n---\n# Curated\n", encoding="utf-8"
+    )
+    (raw / "source.md").write_text(
+        "---\nstatus: raw\n---\n# Source\n", encoding="utf-8"
+    )
     manifest = build_manifest([raw / "curated.md", raw / "source.md"])
     pending_names = [Path(p).name for p in manifest["pending"]]
     assert "source.md" in pending_names
@@ -88,7 +101,10 @@ def test_build_manifest_merges_with_existing(tmp_path: Path) -> None:
 
 def test_mark_completed_moves_from_pending(tmp_path: Path) -> None:
     manifest = {
-        "started_at": _now(), "total": 2, "completed": [], "failed": [],
+        "started_at": _now(),
+        "total": 2,
+        "completed": [],
+        "failed": [],
         "pending": ["a.md", "b.md"],
     }
     updated = mark_completed(manifest, "a.md", _now())
@@ -98,7 +114,10 @@ def test_mark_completed_moves_from_pending(tmp_path: Path) -> None:
 
 def test_mark_failed_moves_from_pending(tmp_path: Path) -> None:
     manifest = {
-        "started_at": _now(), "total": 2, "completed": [], "failed": [],
+        "started_at": _now(),
+        "total": 2,
+        "completed": [],
+        "failed": [],
         "pending": ["a.md", "bad.md"],
     }
     updated = mark_failed(manifest, "bad.md", "YAML parse error", _now())
@@ -109,7 +128,10 @@ def test_mark_failed_moves_from_pending(tmp_path: Path) -> None:
 
 def test_mark_failed_removes_from_pending(tmp_path: Path) -> None:
     manifest = {
-        "started_at": _now(), "total": 2, "completed": [], "failed": [],
+        "started_at": _now(),
+        "total": 2,
+        "completed": [],
+        "failed": [],
         "pending": ["good.md", "bad.md"],
     }
     updated = mark_failed(manifest, "bad.md", "error", _now())
@@ -119,9 +141,10 @@ def test_mark_failed_removes_from_pending(tmp_path: Path) -> None:
 
 def test_retry_failed_moves_back_to_pending() -> None:
     manifest = {
-        "started_at": _now(), "total": 2, "completed": [], "failed": [
-            {"path": "bad.md", "error": "timeout", "attempted_at": _now()}
-        ],
+        "started_at": _now(),
+        "total": 2,
+        "completed": [],
+        "failed": [{"path": "bad.md", "error": "timeout", "attempted_at": _now()}],
         "pending": ["ok.md"],
     }
     updated = retry_failed(manifest)

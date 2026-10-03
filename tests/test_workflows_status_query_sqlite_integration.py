@@ -125,10 +125,38 @@ def archon_home(tmp_path: Path) -> Path:
         )
         # Events for the completed run — two nodes, started + completed each
         for ev_id, run_id, etype, idx, name, ts in [
-            ("e1", "aaaa0001ffffffffffffffffffffffff", "node_started", 0, "implement", "2026-04-19 12:00:05"),
-            ("e2", "aaaa0001ffffffffffffffffffffffff", "node_completed", 0, "implement", "2026-04-19 12:02:00"),
-            ("e3", "aaaa0001ffffffffffffffffffffffff", "node_started", 1, "review", "2026-04-19 12:02:10"),
-            ("e4", "aaaa0001ffffffffffffffffffffffff", "node_completed", 1, "review", "2026-04-19 12:05:00"),
+            (
+                "e1",
+                "aaaa0001ffffffffffffffffffffffff",
+                "node_started",
+                0,
+                "implement",
+                "2026-04-19 12:00:05",
+            ),
+            (
+                "e2",
+                "aaaa0001ffffffffffffffffffffffff",
+                "node_completed",
+                0,
+                "implement",
+                "2026-04-19 12:02:00",
+            ),
+            (
+                "e3",
+                "aaaa0001ffffffffffffffffffffffff",
+                "node_started",
+                1,
+                "review",
+                "2026-04-19 12:02:10",
+            ),
+            (
+                "e4",
+                "aaaa0001ffffffffffffffffffffffff",
+                "node_completed",
+                1,
+                "review",
+                "2026-04-19 12:05:00",
+            ),
         ]:
             conn.execute(
                 """INSERT INTO remote_agent_workflow_events
@@ -220,8 +248,12 @@ def test_run_id_full_uuid_returns_detail_with_events(archon_home: Path) -> None:
     assert "feature-pipeline" in r.stdout
     assert "Events:" in r.stdout
     # All four seeded events present, in order
-    for event_name in ("[implement] node_started", "[implement] node_completed",
-                       "[review] node_started", "[review] node_completed"):
+    for event_name in (
+        "[implement] node_started",
+        "[implement] node_completed",
+        "[review] node_started",
+        "[review] node_completed",
+    ):
         assert event_name in r.stdout
 
 
@@ -291,7 +323,8 @@ class TestSchemaProbe:
         db_path = tmp_path / "archon.db"
         conn = sqlite3.connect(db_path)
         # Create a runs table missing 'working_path'
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE remote_agent_workflow_runs (
                 id TEXT PRIMARY KEY,
                 conversation_id TEXT,
@@ -311,7 +344,8 @@ class TestSchemaProbe:
                 data TEXT,
                 created_at TEXT
             );
-        """)
+        """
+        )
         conn.close()
         r = _run(tmp_path, "--recent", "5")
         # Must be our diagnostic, not a raw traceback
@@ -325,7 +359,8 @@ class TestSchemaProbe:
         db_path = tmp_path / "archon.db"
         conn = sqlite3.connect(db_path)
         # Only create the events table
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE remote_agent_workflow_events (
                 id TEXT PRIMARY KEY,
                 workflow_run_id TEXT,
@@ -335,7 +370,8 @@ class TestSchemaProbe:
                 data TEXT,
                 created_at TEXT
             );
-        """)
+        """
+        )
         conn.close()
         r = _run(tmp_path, "--recent", "5")
         # Must be our diagnostic, not a raw crash

@@ -2,6 +2,14 @@
   "name": "sdlc-team-fullstack",
   "version": "2.0.0",
   "description": "Web full-stack agents — frontend, backend, API, data, DevOps, UX & integration architects",
-  "author": { "name": "SteveGJones" },
-  "keywords": ["sdlc", "fullstack", "frontend", "backend", "agents"]
+  "author": {
+    "name": "SteveGJones"
+  },
+  "keywords": [
+    "sdlc",
+    "fullstack",
+    "frontend",
+    "backend",
+    "agents"
+  ]
 }

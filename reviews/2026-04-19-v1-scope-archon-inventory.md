@@ -346,4 +346,3 @@ where `repo_root` is computed from `import.meta.dir` — the source file's locat
 - Codebase registration required before REST workflow discovery will return results
 - `POST /api/workflows/runs/{id}/resume` is informational only — actual resume is triggered by re-running the workflow, not by this endpoint
 - `sse_stream_follow.py` likely has no effect in CLI-launch integration shape — CLI runs do not emit to serve's SSE
-

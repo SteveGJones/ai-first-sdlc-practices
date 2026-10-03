@@ -158,12 +158,8 @@ def generate(
     # Role
     lines.append("## Role")
     lines.append("")
-    lines.append(
-        f"You are operating as part of the **{name}** delegation team."
-    )
-    lines.append(
-        "Your available specialists and capabilities are listed below."
-    )
+    lines.append(f"You are operating as part of the **{name}** delegation team.")
+    lines.append("Your available specialists and capabilities are listed below.")
     lines.append("Stay within your team's scope.")
     lines.append("")
 
@@ -216,9 +212,7 @@ def generate(
         "- Focus on your team's domain."
         " Do not produce recommendations outside your scope."
     )
-    lines.append(
-        "- Use the agents and skills listed above. They are your team."
-    )
+    lines.append("- Use the agents and skills listed above. They are your team.")
     lines.append("- Follow the project rules in CONSTITUTION.md.")
     lines.append("")
 
@@ -269,7 +263,9 @@ def concatenate(project_claude_path: Path, team_md: str) -> str:
 if __name__ == "__main__":
     import argparse
 
-    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s"
+    )
     logger.info("generate_team_claude_md CLI start")
 
     try:
@@ -279,10 +275,16 @@ if __name__ == "__main__":
         print("ERROR: PyYAML not installed. Run: pip install pyyaml", file=sys.stderr)
         sys.exit(2)
 
-    parser = argparse.ArgumentParser(description="Generate team CLAUDE.md from manifest")
+    parser = argparse.ArgumentParser(
+        description="Generate team CLAUDE.md from manifest"
+    )
     parser.add_argument("manifest", type=Path, help="Path to team manifest YAML")
-    parser.add_argument("--output", type=Path, required=True, help="Output path for generated CLAUDE.md")
-    parser.add_argument("--project-claude", type=Path, help="Project CLAUDE.md to concatenate with")
+    parser.add_argument(
+        "--output", type=Path, required=True, help="Output path for generated CLAUDE.md"
+    )
+    parser.add_argument(
+        "--project-claude", type=Path, help="Project CLAUDE.md to concatenate with"
+    )
     args = parser.parse_args()
 
     with open(args.manifest) as f:

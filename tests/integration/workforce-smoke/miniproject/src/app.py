@@ -24,8 +24,7 @@ class TaskTracker:
     def list_tasks(self) -> list[dict[str, object]]:
         """Return all tasks as a list of dicts."""
         return [
-            {"name": name, "done": done}
-            for name, done in sorted(self._tasks.items())
+            {"name": name, "done": done} for name, done in sorted(self._tasks.items())
         ]
 
     def pending_count(self) -> int:

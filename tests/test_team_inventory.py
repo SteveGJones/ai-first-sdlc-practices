@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for team_inventory — plugin agent and skill discovery."""
 
 import json
@@ -58,8 +57,7 @@ class TestDiscoverPluginSkills:
         skill_dir = plugin_dir / "skills" / "validate"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
-            "---\nname: validate\n"
-            "description: Run validation pipeline\n---\n"
+            "---\nname: validate\n" "description: Run validation pipeline\n---\n"
         )
 
         result = team_inventory.discover_plugin_skills(plugin_dir)

@@ -27,6 +27,7 @@ def _load_extract_answer():
     if council_dir not in sys.path:
         sys.path.insert(0, council_dir)
     import extract_answer
+
     return extract_answer
 
 
@@ -82,9 +83,7 @@ def materialize_blocks(blocks, workdir):
 
 def main(argv):
     if len(argv) != 4:
-        sys.stderr.write(
-            "usage: hidden-tests.py <item-dir> <answer-file> <workdir>\n"
-        )
+        sys.stderr.write("usage: hidden-tests.py <item-dir> <answer-file> <workdir>\n")
         sys.exit(2)
 
     item_dir, answer_file, workdir = argv[1], argv[2], argv[3]
@@ -127,7 +126,7 @@ def main(argv):
         result_line = None
         for line in (proc.stdout or "").splitlines():
             if line.startswith("RESULT_JSON:"):
-                result_line = line[len("RESULT_JSON:"):]
+                result_line = line[len("RESULT_JSON:") :]
 
         if result_line is None:
             write_score(

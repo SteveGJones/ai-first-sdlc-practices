@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for team CLAUDE.md generator."""
 
 from pathlib import Path
@@ -78,9 +77,7 @@ class TestGenerateClaude:
         combined = generate_team_claude_md.concatenate(project_claude, team_md)
         assert combined.startswith("# Project Rules")
         assert "security-review-team" in combined
-        assert combined.index("Project Rules") < combined.index(
-            "security-review-team"
-        )
+        assert combined.index("Project Rules") < combined.index("security-review-team")
 
 
 class TestSanitiseDescription:

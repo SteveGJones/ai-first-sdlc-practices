@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from sdlc_knowledge_base_scripts import build_shelf_index as _bsi
 from sdlc_knowledge_base_scripts.build_shelf_index import (
     RAIL_GROWTH_FACTOR,
     RAIL_MIN_ADDED,
@@ -16,6 +17,8 @@ from sdlc_knowledge_base_scripts.build_shelf_index import (
     parse_frontmatter,
     rebuild_shelf_index,
 )
+from sdlc_knowledge_base_scripts.kb_stats import _parse_shelf_index
+from sdlc_knowledge_base_scripts.priming import _extract_shelf_index_terms
 
 
 def test_parse_frontmatter_valid() -> None:
@@ -868,3 +871,134 @@ def test_no_ignore_file_output_unchanged(tmp_path: Path) -> None:
     stats = rebuild_shelf_index(library, index)
     assert _entry_paths(index) == ["a.md"]
     assert (stats.added, stats.refused, stats.warnings) == (1, False, [])
+
+
+# --- hook-clean output (EPIC #244: pre-commit is a blocking CI check) -------
+
+
+def _entry(
+    name: str, terms: list[str], links: list[str], facts: list[str]
+) -> "_bsi.IndexEntry":
+    return _bsi.IndexEntry(
+        file_path=name,
+        hash="a" * 64,
+        terms=terms,
+        facts=facts,
+        links=links,
+        layer="methodology",
+        confidence="high",
+    )
+
+
+def _assert_hook_clean(text: str) -> None:
+    assert text.endswith("\n") and not text.endswith("\n\n")
+    for line in text.splitlines():
+        assert line == line.rstrip(), f"trailing whitespace: {line!r}"
+
+
+def test_render_entry_has_no_trailing_space_when_terms_and_links_empty() -> None:
+    rendered = _bsi._render_entry(1, _entry("a.md", [], [], []))
+    assert "**Terms:**\n" in rendered
+    assert rendered.endswith("**Links:**\n")
+    _assert_hook_clean(rendered)
+
+
+def test_render_entry_non_empty_is_byte_identical_to_previous_format() -> None:
+    rendered = _bsi._render_entry(2, _entry("b.md", ["x", "y"], ["l1", "l2"], ["f"]))
+    assert rendered == (
+        "## 2. b.md\n\n"
+        f"**Hash:** {'a' * 64}\n"
+        "**Layer:** methodology\n"
+        "**Confidence:** high\n"
+        "**Terms:** x, y\n"
+        "**Facts:**\n- f\n"
+        "**Links:** l1, l2\n"
+    )
+
+
+def test_index_with_empty_terms_and_links_is_hook_clean_and_parses() -> None:
+    entries = [
+        _entry("a.md", [], [], ["fact"]),
+        _entry("b.md", ["t1", "t2"], ["l1"], ["fact"]),
+        _entry("c.md", [], [], []),
+    ]
+    content = _bsi._build_index_content(entries, "local", "desc")
+    _assert_hook_clean(content)
+
+    parsed = _parse_shelf_index(content)
+    assert [e.domains for e in parsed] == [[], ["t1", "t2"], []]
+    assert [e.links for e in parsed] == [[], ["l1"], []]
+    assert [e.facts_count for e in parsed] == [1, 1, 0]
+
+
+def test_priming_terms_extraction_handles_empty_and_non_empty(
+    tmp_path: Path,
+) -> None:
+    index = tmp_path / "_shelf-index.md"
+    index.write_text(
+        _bsi._build_index_content(
+            [_entry("a.md", [], [], []), _entry("b.md", ["t1", "t2"], [], [])],
+            "local",
+            "desc",
+        ),
+        encoding="utf-8",
+    )
+    assert _extract_shelf_index_terms(index) == ["t1", "t2"]
+
+
+def test_empty_library_index_is_hook_clean(tmp_path: Path) -> None:
+    lib = tmp_path / "library"
+    lib.mkdir()
+    index = lib / "_shelf-index.md"
+    rebuild_shelf_index(lib, index, full=True)
+    _assert_hook_clean(index.read_text(encoding="utf-8"))
+
+
+def test_rebuilt_index_and_log_are_hook_clean_and_a_fixed_point(
+    tmp_path: Path,
+) -> None:
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "one.md").write_text("# One\n\nBody.\n", encoding="utf-8")
+    (lib / "two.md").write_text("---\ntitle: Two\n---\n\nBody.\n", encoding="utf-8")
+    index = lib / "_shelf-index.md"
+    log = lib / "log.md"
+    log.write_text("# Log\n", encoding="utf-8")
+
+    rebuild_shelf_index(lib, index, full=True, log_path=log)
+    first = index.read_text(encoding="utf-8")
+    _assert_hook_clean(first)
+    _assert_hook_clean(log.read_text(encoding="utf-8"))
+
+    rebuild_shelf_index(lib, index, full=True, log_path=log)
+    second = index.read_text(encoding="utf-8")
+
+    def drop_timestamp(text: str) -> str:
+        return "\n".join(
+            line for line in text.splitlines() if "last_rebuilt" not in line
+        )
+
+    assert drop_timestamp(first) == drop_timestamp(second)
+    _assert_hook_clean(log.read_text(encoding="utf-8"))
+
+
+def test_append_to_log_adds_missing_final_newline_before_entry(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "log.md"
+    log.write_text("# Log", encoding="utf-8")
+    _bsi._append_to_log(log, _bsi.RebuildStats(), full=False)
+    text = log.read_text(encoding="utf-8")
+    assert text.startswith("# Log\n\n## [")
+    _assert_hook_clean(text)
+
+
+def test_append_to_log_on_empty_log_does_not_start_with_blank_lines(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "log.md"
+    log.write_text("", encoding="utf-8")
+    _bsi._append_to_log(log, _bsi.RebuildStats(), full=False)
+    text = log.read_text(encoding="utf-8")
+    assert text.startswith("## [")
+    _assert_hook_clean(text)

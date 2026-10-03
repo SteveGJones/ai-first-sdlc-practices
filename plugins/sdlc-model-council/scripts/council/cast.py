@@ -25,13 +25,16 @@ def _load(path):
 
 
 def _posterior(model_entry, dimension):
-    return float(model_entry.get("dimensions", {}).get(dimension, {})
-                 .get("posterior", 0.0))
+    return float(
+        model_entry.get("dimensions", {}).get(dimension, {}).get("posterior", 0.0)
+    )
 
 
 def _is_free_or_cheap(model_entry):
-    return bool(model_entry.get("free")) or \
-        float(model_entry.get("mean_cost_usd_per_item", 0.0)) <= CHEAP_COST_THRESHOLD
+    return (
+        bool(model_entry.get("free"))
+        or float(model_entry.get("mean_cost_usd_per_item", 0.0)) <= CHEAP_COST_THRESHOLD
+    )
 
 
 def _bw_lookup(diversity):
@@ -69,15 +72,26 @@ def cast_panel(roster, diversity, dimension, k, budget_usd=None):
 
     rationale = []
     if not pool:
-        return {"dimension": dimension, "k": k, "baseline_member": None,
-                "cast": [], "rationale": [], "note": "no cost-feasible model at grade>=C"}
+        return {
+            "dimension": dimension,
+            "k": k,
+            "baseline_member": None,
+            "cast": [],
+            "rationale": [],
+            "note": "no cost-feasible model at grade>=C",
+        }
 
     # 1. baseline = best posterior (ties -> lexicographic address).
-    baseline = max(sorted(pool),
-                   key=lambda a: _posterior(entries[a], dimension))
+    baseline = max(sorted(pool), key=lambda a: _posterior(entries[a], dimension))
     cast = [baseline]
-    rationale.append({"model": baseline, "posterior": _posterior(entries[baseline], dimension),
-                      "max_both_wrong_vs_prior_cast": 0.0, "reason": "baseline"})
+    rationale.append(
+        {
+            "model": baseline,
+            "posterior": _posterior(entries[baseline], dimension),
+            "max_both_wrong_vs_prior_cast": 0.0,
+            "reason": "baseline",
+        }
+    )
 
     # 2. greedily add decorrelated-yet-strong members.
     while len(cast) < k:
@@ -86,31 +100,48 @@ def cast_panel(roster, diversity, dimension, k, budget_usd=None):
             break
 
         def marginal(addr):
-            return _posterior(entries[addr], dimension) - 0.5 * _bw(bw_table, addr, cast)
+            return _posterior(entries[addr], dimension) - 0.5 * _bw(
+                bw_table, addr, cast
+            )
 
         pick = max(sorted(remaining), key=marginal)
-        rationale.append({
-            "model": pick,
-            "posterior": _posterior(entries[pick], dimension),
-            "max_both_wrong_vs_prior_cast": round(_bw(bw_table, pick, cast), 4),
-        })
+        rationale.append(
+            {
+                "model": pick,
+                "posterior": _posterior(entries[pick], dimension),
+                "max_both_wrong_vs_prior_cast": round(_bw(bw_table, pick, cast), 4),
+            }
+        )
         cast.append(pick)
 
     # 3. tight-budget free/cheap guarantee.
-    if k >= 3 and budget_usd is not None and \
-            not any(_is_free_or_cheap(entries[a]) for a in cast):
-        free_candidates = [a for a in pool if a not in cast and _is_free_or_cheap(entries[a])]
+    if (
+        k >= 3
+        and budget_usd is not None
+        and not any(_is_free_or_cheap(entries[a]) for a in cast)
+    ):
+        free_candidates = [
+            a for a in pool if a not in cast and _is_free_or_cheap(entries[a])
+        ]
         if free_candidates:
-            best_free = max(sorted(free_candidates),
-                            key=lambda a: _posterior(entries[a], dimension))
+            best_free = max(
+                sorted(free_candidates), key=lambda a: _posterior(entries[a], dimension)
+            )
             # swap out the lowest-marginal NON-baseline member.
             non_baseline = [a for a in cast if a != baseline]
             if non_baseline:
-                drop = min(sorted(non_baseline),
-                           key=lambda a: _posterior(entries[a], dimension))
+                drop = min(
+                    sorted(non_baseline),
+                    key=lambda a: _posterior(entries[a], dimension),
+                )
                 cast = [best_free if a == drop else a for a in cast]
-                rationale.append({"model": best_free, "posterior": _posterior(entries[best_free], dimension),
-                                  "reason": f"free/cheap swap for {drop} (tight budget)"})
+                rationale.append(
+                    {
+                        "model": best_free,
+                        "posterior": _posterior(entries[best_free], dimension),
+                        "reason": f"free/cheap swap for {drop} (tight budget)",
+                    }
+                )
 
     return {
         "dimension": dimension,
@@ -133,8 +164,9 @@ def _main(argv):
 
     roster = _load(args.roster)
     diversity = _load(args.diversity)
-    result = cast_panel(roster, diversity, args.dimension, args.k,
-                        budget_usd=args.budget_usd)
+    result = cast_panel(
+        roster, diversity, args.dimension, args.k, budget_usd=args.budget_usd
+    )
     payload = json.dumps(result, indent=2, sort_keys=True)
     if args.out:
         with open(args.out, "w", encoding="utf-8") as handle:

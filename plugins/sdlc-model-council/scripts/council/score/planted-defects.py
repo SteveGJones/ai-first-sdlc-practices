@@ -30,6 +30,7 @@ def _load_extract_answer():
     if council_dir not in sys.path:
         sys.path.insert(0, council_dir)
     import extract_answer
+
     return extract_answer
 
 

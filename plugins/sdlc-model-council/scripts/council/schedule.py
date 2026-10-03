@@ -72,8 +72,7 @@ def parse_min_context_map(value):
             result[key] = int(raw_val)
         except ValueError:
             raise ValueError(
-                "--min-context-map value for %r is not an integer: %r"
-                % (key, raw_val)
+                "--min-context-map value for %r is not an integer: %r" % (key, raw_val)
             )
     return result
 
@@ -116,9 +115,7 @@ def build_plan(stack, stack_path, models, dims, context_map):
     # Item metadata (timeout_s, min_context_tokens) does not depend on the
     # model being scheduled -- read each item.json exactly once, not once
     # per model, even though the same item is scheduled against every model.
-    item_metas = [
-        (item, load_item_meta(stack_path, item["path"])) for item in items
-    ]
+    item_metas = [(item, load_item_meta(stack_path, item["path"])) for item in items]
 
     pairs = []
     for model in models:

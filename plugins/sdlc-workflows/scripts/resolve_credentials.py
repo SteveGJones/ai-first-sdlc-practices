@@ -148,10 +148,16 @@ def _try_volume() -> dict | None:
 
         result = subprocess.run(
             [
-                "docker", "run", "--rm",
-                "-v", f"{CREDENTIAL_VOLUME}:/data:ro",
-                "--entrypoint", "test",
-                "alpine", "-f", "/data/.credentials.json",
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                f"{CREDENTIAL_VOLUME}:/data:ro",
+                "--entrypoint",
+                "test",
+                "alpine",
+                "-f",
+                "/data/.credentials.json",
             ],
             capture_output=True,
             text=True,
@@ -261,7 +267,9 @@ def main() -> None:
     import json as json_mod
     import tempfile
 
-    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s"
+    )
     logger.info("resolve_credentials CLI start")
 
     parser = argparse.ArgumentParser(description="Resolve Claude Code credentials")

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for generate_container_installed_json — host-to-container path rewriting."""
 
 import json
@@ -11,23 +10,29 @@ class TestContainerInstalledJson:
     def test_rewrites_v2_paths(self, tmp_path: Path) -> None:
         """V2 format installPath values are rewritten to container paths."""
         host_json = tmp_path / "installed_plugins.json"
-        host_json.write_text(json.dumps({
-            "version": 2,
-            "plugins": {
-                "sdlc-core@ai-first-sdlc": [
-                    {
-                        "scope": "global",
-                        "installPath": "/Users/alice/.claude/plugins/cache/ai-first-sdlc/sdlc-core/1.0.0",
-                        "version": "1.0.0",
-                    }
-                ],
-            },
-        }))
+        host_json.write_text(
+            json.dumps(
+                {
+                    "version": 2,
+                    "plugins": {
+                        "sdlc-core@ai-first-sdlc": [
+                            {
+                                "scope": "global",
+                                "installPath": "/Users/alice/.claude/plugins/cache/ai-first-sdlc/sdlc-core/1.0.0",
+                                "version": "1.0.0",
+                            }
+                        ],
+                    },
+                }
+            )
+        )
         plugins_root = Path("/Users/alice/.claude/plugins")
         output = tmp_path / "rewritten.json"
 
         generate_team_dockerfile.generate_container_installed_json(
-            host_json, plugins_root, output,
+            host_json,
+            plugins_root,
+            output,
         )
 
         result = json.loads(output.read_text())
@@ -37,17 +42,23 @@ class TestContainerInstalledJson:
     def test_rewrites_v1_paths(self, tmp_path: Path) -> None:
         """V1 (flat) format installPath values are rewritten."""
         host_json = tmp_path / "installed_plugins.json"
-        host_json.write_text(json.dumps({
-            "sdlc-core@mkt": {
-                "name": "sdlc-core",
-                "installPath": "/Users/bob/.claude/plugins/cache/mkt/sdlc-core/2.0.0",
-            },
-        }))
+        host_json.write_text(
+            json.dumps(
+                {
+                    "sdlc-core@mkt": {
+                        "name": "sdlc-core",
+                        "installPath": "/Users/bob/.claude/plugins/cache/mkt/sdlc-core/2.0.0",
+                    },
+                }
+            )
+        )
         plugins_root = Path("/Users/bob/.claude/plugins")
         output = tmp_path / "rewritten.json"
 
         generate_team_dockerfile.generate_container_installed_json(
-            host_json, plugins_root, output,
+            host_json,
+            plugins_root,
+            output,
         )
 
         result = json.loads(output.read_text())
@@ -57,24 +68,30 @@ class TestContainerInstalledJson:
     def test_preserves_other_fields(self, tmp_path: Path) -> None:
         """Non-path fields are preserved unchanged."""
         host_json = tmp_path / "installed_plugins.json"
-        host_json.write_text(json.dumps({
-            "version": 2,
-            "plugins": {
-                "my-plugin@mkt": [
-                    {
-                        "scope": "global",
-                        "installPath": "/Users/carol/.claude/plugins/cache/mkt/my-plugin/1.0.0",
-                        "version": "1.0.0",
-                        "installedAt": "2026-04-10",
-                    }
-                ],
-            },
-        }))
+        host_json.write_text(
+            json.dumps(
+                {
+                    "version": 2,
+                    "plugins": {
+                        "my-plugin@mkt": [
+                            {
+                                "scope": "global",
+                                "installPath": "/Users/carol/.claude/plugins/cache/mkt/my-plugin/1.0.0",
+                                "version": "1.0.0",
+                                "installedAt": "2026-04-10",
+                            }
+                        ],
+                    },
+                }
+            )
+        )
         plugins_root = Path("/Users/carol/.claude/plugins")
         output = tmp_path / "rewritten.json"
 
         generate_team_dockerfile.generate_container_installed_json(
-            host_json, plugins_root, output,
+            host_json,
+            plugins_root,
+            output,
         )
 
         result = json.loads(output.read_text())
@@ -138,7 +155,8 @@ class TestDockerfileHardening:
         # Ensure the agents directory is covered by a chmod -R a-w
         # (appears in a chmod line, not just a mkdir line).
         chmod_lines = [
-            line for line in content.splitlines()
+            line
+            for line in content.splitlines()
             if "chmod -R a-w" in line and "/home/sdlc/.claude/agents" in line
         ]
         assert chmod_lines, "No chmod -R a-w covering /home/sdlc/.claude/agents"
@@ -154,7 +172,8 @@ class TestDockerfileHardening:
             output_path=output,
         )
         chmod_lines = [
-            line for line in content.splitlines()
+            line
+            for line in content.splitlines()
             if "chmod -R a-w" in line and "/home/sdlc/.claude/skills" in line
         ]
         assert chmod_lines, "No chmod -R a-w covering /home/sdlc/.claude/skills"

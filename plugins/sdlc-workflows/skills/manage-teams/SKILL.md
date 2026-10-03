@@ -399,4 +399,3 @@ offer to run) now lives in /sdlc-workflows:author-workflow --for-task,
 where workflow+formation planning already belongs. The previous mode
 also wrote a .archon/tasks/<slug>.yaml file that had no consumer. See
 reviews/2026-04-19-v1-scope-critical-goal.md §4.4. -->
-

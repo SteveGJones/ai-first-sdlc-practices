@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Append-only JSONL logger for team_extend overrides.
 
 Each workflow run that uses ``team_extend`` logs one entry per extended
@@ -82,6 +81,10 @@ def read_overrides(log_path: Path) -> list[dict]:
             continue
     logger.info(
         "Override log read complete",
-        extra={"log_path": str(log_path), "entries": len(entries), "malformed": malformed},
+        extra={
+            "log_path": str(log_path),
+            "entries": len(entries),
+            "malformed": malformed,
+        },
     )
     return entries

@@ -174,7 +174,10 @@ def available_but_not_included(
     """
     logger.debug(
         "Computing available-but-not-included set",
-        extra={"team_plugins_count": len(team_plugins), "team_agents_count": len(team_agents)},
+        extra={
+            "team_plugins_count": len(team_plugins),
+            "team_agents_count": len(team_agents),
+        },
     )
     inventory = discover_all(installed_json)
 
@@ -191,10 +194,12 @@ def available_but_not_included(
         for agent in inventory[bare]["agents"]:
             qualified = f"{bare}:{agent['name']}"
             if qualified not in included_agents:
-                available_agents.append({
-                    "qualified": qualified,
-                    "description": agent.get("description", ""),
-                })
+                available_agents.append(
+                    {
+                        "qualified": qualified,
+                        "description": agent.get("description", ""),
+                    }
+                )
 
     return {"agents": available_agents}
 
@@ -205,7 +210,9 @@ def main() -> None:
 
     import yaml as yaml_mod
 
-    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s"
+    )
     logger.info("team_inventory CLI start")
     parser = argparse.ArgumentParser(description="Plugin inventory discovery")
     parser.add_argument(
