@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from sdlc_knowledge_base_scripts import build_shelf_index as _bsi
 from sdlc_knowledge_base_scripts.build_shelf_index import (
     RAIL_GROWTH_FACTOR,
     RAIL_MIN_ADDED,
@@ -16,6 +17,8 @@ from sdlc_knowledge_base_scripts.build_shelf_index import (
     parse_frontmatter,
     rebuild_shelf_index,
 )
+from sdlc_knowledge_base_scripts.kb_stats import _parse_shelf_index
+from sdlc_knowledge_base_scripts.priming import _extract_shelf_index_terms
 
 
 def test_parse_frontmatter_valid() -> None:
@@ -871,12 +874,6 @@ def test_no_ignore_file_output_unchanged(tmp_path: Path) -> None:
 
 
 # --- hook-clean output (EPIC #244: pre-commit is a blocking CI check) -------
-
-from sdlc_knowledge_base_scripts import build_shelf_index as _bsi  # noqa: E402
-from sdlc_knowledge_base_scripts.kb_stats import _parse_shelf_index  # noqa: E402
-from sdlc_knowledge_base_scripts.priming import (  # noqa: E402
-    _extract_shelf_index_terms,
-)
 
 
 def _entry(

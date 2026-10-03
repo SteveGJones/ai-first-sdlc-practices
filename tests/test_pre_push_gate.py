@@ -20,7 +20,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Tuple
 
 import pytest
 import yaml
@@ -239,7 +239,7 @@ def test_tripwire_fails_when_a_check_mutates_a_tracked_file(tmp_path: Path) -> N
         (repo / "a.txt").write_text("rewritten by a check\n")
         return True
 
-    runner.check_technical_debt = mutate  # type: ignore[method-assign]
+    setattr(runner, "check_technical_debt", mutate)
     assert runner.run_pre_push_validation() is False
     assert any("a.txt" in e and "tripwire" in e.lower() for e in runner.errors)
 
@@ -262,7 +262,7 @@ def test_tripwire_ignores_gitignored_tmp(tmp_path: Path) -> None:
         (repo / "tmp" / "scratch.txt").write_text("x")
         return True
 
-    runner.check_security = scratch  # type: ignore[method-assign]
+    setattr(runner, "check_security", scratch)
     assert runner.run_pre_push_validation() is True
 
 
@@ -335,7 +335,7 @@ def test_tripwire_reports_only_what_the_run_changed(tmp_path: Path) -> None:
         (repo / "b.txt").write_text("changed by a check\n")
         return True
 
-    runner.check_technical_debt = mutate  # type: ignore[method-assign]
+    setattr(runner, "check_technical_debt", mutate)
     assert runner.run_pre_push_validation() is False
     report = next(e for e in runner.errors if "TRIPWIRE" in e)
     assert "b.txt" in report
@@ -356,7 +356,7 @@ def test_tripwire_sees_new_file_inside_existing_untracked_directory(
         (repo / "scratch" / "second.txt").write_text("2")
         return True
 
-    runner.check_security = add_file  # type: ignore[method-assign]
+    setattr(runner, "check_security", add_file)
     assert runner.run_pre_push_validation() is False
     assert any("second.txt" in e for e in runner.errors)
 
@@ -380,7 +380,7 @@ def test_tripwire_reports_protected_corpus_bytes_changing(tmp_path: Path) -> Non
         (repo / "research/poker-capstone/runs/x.txt").write_text("rewritten\n")
         return True
 
-    runner.check_type_safety = rewrite  # type: ignore[method-assign]
+    setattr(runner, "check_type_safety", rewrite)
     assert runner.run_pre_push_validation() is False
     assert any("research/poker-capstone/runs/x.txt" in e for e in runner.errors)
 
@@ -398,7 +398,7 @@ def test_tripwire_reports_protected_corpus_index_entry_changing(
         _git(repo, "add", str(target))
         return True
 
-    runner.check_type_safety = stage_rewrite  # type: ignore[method-assign]
+    setattr(runner, "check_type_safety", stage_rewrite)
     assert runner.run_pre_push_validation() is False
     assert any(
         "research/poker-capstone" in e and "index entries changed" in e
@@ -415,12 +415,12 @@ def _intercepting_run_command(
     """Make run_command return ``result`` for commands containing ``needle``."""
     real = runner.run_command
 
-    def fake(cmd: List[str], *args: object, **kwargs: object) -> Tuple:
+    def fake(cmd: List[str], *args: Any, **kwargs: Any) -> Tuple:
         if all(part in cmd for part in needle):
             return result
-        return real(cmd, *args, **kwargs)  # type: ignore[arg-type]
+        return real(cmd, *args, **kwargs)
 
-    runner.run_command = fake  # type: ignore[method-assign]
+    setattr(runner, "run_command", fake)
 
 
 @needs_pre_commit
@@ -547,7 +547,7 @@ def test_tripwire_ignores_a_preexisting_untracked_file_that_grows(
             handle.write("the gate's own output, tee'd into the repo\n")
         return True
 
-    runner.check_security = keep_logging  # type: ignore[method-assign]
+    setattr(runner, "check_security", keep_logging)
     assert runner.run_pre_push_validation() is True
     assert runner.errors == []
 
@@ -566,7 +566,7 @@ def test_tripwire_trips_on_a_new_untracked_file_in_an_untracked_directory(
         (repo / "command-runs" / "new.log").write_text("new\n")
         return True
 
-    runner.check_security = add_file  # type: ignore[method-assign]
+    setattr(runner, "check_security", add_file)
     assert runner.run_pre_push_validation() is False
     report = next(e for e in runner.errors if "TRIPWIRE" in e)
     assert "new.log" in report and "old.log" not in report
@@ -583,7 +583,7 @@ def test_tripwire_trips_when_an_untracked_file_disappears(tmp_path: Path) -> Non
         (repo / "scratch.txt").unlink()
         return True
 
-    runner.check_security = remove  # type: ignore[method-assign]
+    setattr(runner, "check_security", remove)
     assert runner.run_pre_push_validation() is False
     assert any("scratch.txt" in e for e in runner.errors)
 
@@ -601,7 +601,7 @@ def test_tripwire_still_hashes_content_of_modified_tracked_files(
         (repo / "a.txt").write_text("dirty after\n")
         return True
 
-    runner.check_security = mutate_again  # type: ignore[method-assign]
+    setattr(runner, "check_security", mutate_again)
     assert runner.run_pre_push_validation() is False
     assert any("a.txt" in e and "TRIPWIRE" in e for e in runner.errors)
 
@@ -612,9 +612,13 @@ def test_status_parser_skips_rename_source_when_rename_is_in_second_column(
     repo = _make_repo(tmp_path, _PASSING_CONFIG)
     runner = _runner(repo)
     (repo / "new.txt").write_text("n\n")
-    runner._git_output = lambda args: (  # type: ignore[method-assign]
-        " R new.txt\0a-rather-long-rename-source.txt\0" if args[0] == "status" else ""
-    )
+
+    def fake_git_output(args: List[str]) -> str:
+        if args[0] == "status":
+            return " R new.txt\0a-rather-long-rename-source.txt\0"
+        return ""
+
+    setattr(runner, "_git_output", fake_git_output)
     keys = [k for k in runner._tree_snapshot() if k.startswith("file:")]
     assert keys == ["file:new.txt"]
 
@@ -999,17 +1003,19 @@ def test_git_environment_falls_back_to_the_builtin_list(
 # --- worktree creation is inside the cleanup scope ---------------------------
 
 
-def _create_then(runner: "local_validation.ValidationRunner", action: "object") -> None:
+def _create_then(
+    runner: "local_validation.ValidationRunner", action: Callable[[], None]
+) -> None:
     """After the real `git worktree add` succeeds, run ``action`` (e.g. raise)."""
     real = runner.run_command
 
-    def fake(cmd: List[str], *args: object, **kwargs: object) -> Tuple:
-        result = real(cmd, *args, **kwargs)  # type: ignore[arg-type]
+    def fake(cmd: List[str], *args: Any, **kwargs: Any) -> Tuple:
+        result = real(cmd, *args, **kwargs)
         if "worktree" in cmd and "add" in cmd:
-            action()  # type: ignore[operator]
+            action()
         return result
 
-    runner.run_command = fake  # type: ignore[method-assign]
+    setattr(runner, "run_command", fake)
 
 
 @needs_pre_commit
@@ -1036,15 +1042,15 @@ def test_cleanup_failure_does_not_mask_the_original_error(tmp_path: Path) -> Non
     runner = _runner(repo)
     real = runner.run_command
 
-    def fake(cmd: List[str], *args: object, **kwargs: object) -> Tuple:
+    def fake(cmd: List[str], *args: Any, **kwargs: Any) -> Tuple:
         if "worktree" in cmd and "remove" in cmd:
             raise OSError("cleanup exploded")
-        return real(cmd, *args, **kwargs)  # type: ignore[arg-type]
+        return real(cmd, *args, **kwargs)
 
     def boom() -> None:
         raise RuntimeError("original error")
 
-    runner.run_command = fake  # type: ignore[method-assign]
+    setattr(runner, "run_command", fake)
     _create_then(runner, boom)
     try:
         with pytest.raises(RuntimeError, match="original error"):
@@ -1298,7 +1304,7 @@ def test_concurrent_gate_calls_in_one_process_are_serialised(tmp_path: Path) -> 
     def watch(runner: "local_validation.ValidationRunner") -> None:
         real = runner.run_command
 
-        def wrapped(cmd: List[str], *args: object, **kwargs: object) -> Tuple:
+        def wrapped(cmd: List[str], *args: Any, **kwargs: Any) -> Tuple:
             if cmd[:3] == ["git", "worktree", "add"]:
                 paths.append(cmd[-2])
             if cmd and cmd[0] == "pre-commit":
@@ -1307,13 +1313,13 @@ def test_concurrent_gate_calls_in_one_process_are_serialised(tmp_path: Path) -> 
                     state["max"] = max(state["max"], state["active"])
                 time.sleep(0.4)
                 try:
-                    return real(cmd, *args, **kwargs)  # type: ignore[arg-type]
+                    return real(cmd, *args, **kwargs)
                 finally:
                     with lock:
                         state["active"] -= 1
-            return real(cmd, *args, **kwargs)  # type: ignore[arg-type]
+            return real(cmd, *args, **kwargs)
 
-        runner.run_command = wrapped  # type: ignore[method-assign]
+        setattr(runner, "run_command", wrapped)
 
     for runner in runners:
         watch(runner)

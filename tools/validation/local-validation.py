@@ -24,7 +24,7 @@ import sys
 import threading
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import argparse
 import time
 
@@ -218,10 +218,8 @@ class _SigtermScope:
         if not (self.active and self._installed):
             return
         previous = self._previous
-        signal.signal(
-            signal.SIGTERM,
-            signal.SIG_DFL if previous is None else previous,  # type: ignore[arg-type]
-        )
+        handler: Any = signal.SIG_DFL if previous is None else previous
+        signal.signal(signal.SIGTERM, handler)
         self._installed = False
         if self._deferred and previous != signal.SIG_IGN:
             os.kill(os.getpid(), signal.SIGTERM)  # pending until unblocked
