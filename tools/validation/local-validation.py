@@ -15,9 +15,10 @@ Usage:
 import ast
 import os
 import subprocess
+import hashlib
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 import argparse
 import time
 
@@ -28,12 +29,21 @@ import time
 #: gate on them blocks a legitimate push for no benefit.
 _SKIP_DIRS = frozenset({"tmp", "node_modules", "__pycache__", "venv", "build", "dist"})
 
+#: Paths whose git index entries must be byte-for-byte stable across a
+#: ``--pre-push`` run (verbatim assessment evidence).
+_PROTECTED_PATHS = ("research/poker-capstone",)
+
+#: Seconds allowed for the pre-commit gate; the first run in a fresh
+#: worktree may have to install every hook environment.
+_PRE_COMMIT_TIMEOUT = 1800
+
 
 class ValidationRunner:
     """Runs comprehensive local validation checks"""
 
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False, repo_root: Optional[Path] = None):
         self.verbose = verbose
+        self.repo_root = repo_root if repo_root is not None else Path.cwd()
         self.errors: List[str] = []
         self.warnings: List[str] = []
         self.start_time = time.time()
@@ -46,14 +56,18 @@ class ValidationRunner:
             print(f"[{timestamp}] {prefix.get(level, '')} {message}")
 
     def run_command(
-        self, cmd: List[str], description: str = ""
+        self,
+        cmd: List[str],
+        description: str = "",
+        cwd: Optional[Path] = None,
+        timeout: int = 300,
     ) -> Tuple[int, str, str]:
-        """Run shell command and capture output"""
+        """Run shell command and capture output (default 5 minute timeout)"""
         self.log(f"Running: {' '.join(cmd)}")
         try:
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=300
-            )  # 5 minute timeout
+                cmd, capture_output=True, text=True, timeout=timeout, cwd=cwd
+            )
             return result.returncode, result.stdout, result.stderr
         except subprocess.TimeoutExpired:
             error_msg = f"Command timed out: {' '.join(cmd)}"
@@ -113,22 +127,95 @@ class ValidationRunner:
             return True
 
     def check_pre_commit_hooks(self) -> bool:
-        """Run pre-commit hooks"""
-        self.log("🪝 Running pre-commit hooks...", "INFO")
+        """Run pre-commit hooks without mutating the working checkout.
 
-        returncode, stdout, stderr = self.run_command(
-            ["pre-commit", "run", "--all-files"]
+        Hooks such as black or pretty-format-json rewrite files in place, which
+        previously rewrote tracked files (including byte-identical evidence)
+        during ``--pre-push``. The hooks therefore run in a throwaway detached
+        worktree of HEAD and the worktree is always removed afterwards.
+
+        This validates the COMMITTED state (HEAD), not uncommitted edits:
+        commit first, then run the gate. Any non-zero exit or diff output is
+        a failure and the hook output is included in the report.
+        """
+        self.log(
+            "🪝 Running pre-commit hooks (HEAD, in a throwaway worktree)...", "INFO"
         )
 
-        if returncode != 0:
-            self.errors.append("Pre-commit hooks failed")
-            self.log("Pre-commit hooks failed", "ERROR")
-            if stderr:
-                self.log(stderr, "ERROR")
+        worktree = self.repo_root / "tmp" / f"prepush-gate-{os.getpid()}"
+        added, _, add_err = self.run_command(
+            ["git", "worktree", "add", "--detach", str(worktree), "HEAD"],
+            cwd=self.repo_root,
+        )
+        if added != 0:
+            self.errors.append(
+                f"Pre-commit hooks failed: cannot create worktree: {add_err}"
+            )
             return False
-        else:
-            self.log("Pre-commit hooks passed", "SUCCESS")
-            return True
+
+        try:
+            returncode, stdout, stderr = self.run_command(
+                ["pre-commit", "run", "--all-files", "--show-diff-on-failure"],
+                cwd=worktree,
+                timeout=_PRE_COMMIT_TIMEOUT,
+            )
+        finally:
+            self.run_command(
+                ["git", "worktree", "remove", "--force", str(worktree)],
+                cwd=self.repo_root,
+            )
+            self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
+
+        output = "\n".join(part for part in (stdout, stderr) if part)
+        if returncode != 0 or "diff --git" in output:
+            self.errors.append(f"Pre-commit hooks failed:\n{output}")
+            self.log("Pre-commit hooks failed", "ERROR")
+            if output:
+                self.log(output, "ERROR")
+            return False
+
+        self.log("Pre-commit hooks passed", "SUCCESS")
+        return True
+
+    def _git_output(self, args: List[str]) -> str:
+        result = subprocess.run(
+            ["git", *args], cwd=self.repo_root, capture_output=True, text=True
+        )
+        return result.stdout
+
+    def _tree_snapshot(self) -> Dict[str, str]:
+        """Capture the git state a validation run must not change."""
+        snapshot = {
+            "status": self._git_output(["status", "--porcelain"]),
+            "diff": hashlib.sha256(
+                self._git_output(["diff"]).encode("utf-8")
+            ).hexdigest(),
+        }
+        for path in _PROTECTED_PATHS:
+            snapshot[f"index:{path}"] = hashlib.sha256(
+                self._git_output(["ls-files", "-s", "--", path]).encode("utf-8")
+            ).hexdigest()
+        return snapshot
+
+    def _tripwire_report(
+        self, before: Dict[str, str], after: Dict[str, str]
+    ) -> List[str]:
+        """Describe how the tree changed between two snapshots (empty if none)."""
+        problems: List[str] = []
+        if before["status"] != after["status"]:
+            old = set(before["status"].splitlines())
+            new = set(after["status"].splitlines())
+            changed = sorted(old.symmetric_difference(new))
+            problems.append("git status changed: " + "; ".join(changed))
+        if before["diff"] != after["diff"]:
+            changed_files = self._git_output(["diff", "--name-only"]).split()
+            problems.append(
+                "tracked file contents changed: " + ", ".join(changed_files)
+            )
+        for key, value in before.items():
+            if key.startswith("index:") and after.get(key) != value:
+                problems.append(f"{key[6:]} index entries changed")
+        return problems
 
     def check_technical_debt(self) -> bool:
         """Check technical debt using framework tools"""
@@ -327,11 +414,21 @@ class ValidationRunner:
             ("Static Analysis", self.check_static_analysis),
         ]
 
+        before = self._tree_snapshot()
         all_passed = True
         for name, check_func in checks:
             self.log(f"Running {name}...", "INFO")
             if not check_func():
                 all_passed = False
+
+        problems = self._tripwire_report(before, self._tree_snapshot())
+        if problems:
+            all_passed = False
+            self.errors.append(
+                "TRIPWIRE: the pre-push run modified the working tree: "
+                + " | ".join(problems)
+            )
+            self.log(self.errors[-1], "ERROR")
 
         return all_passed
 
@@ -406,7 +503,7 @@ Examples:
     repo_root = Path(__file__).parent.parent.parent
     os.chdir(repo_root)
 
-    validator = ValidationRunner(verbose=args.verbose)
+    validator = ValidationRunner(verbose=args.verbose, repo_root=repo_root)
 
     try:
         if args.syntax:
