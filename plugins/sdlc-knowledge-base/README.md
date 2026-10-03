@@ -90,6 +90,7 @@ The plugin supports three usage modes depending on how much investment you want 
 - Use a deep research engine (Perplexity Pro, Gemini Deep Research, ChatGPT Deep Research) to commission 10-15 research prompts on the project's key topics
 - Synthesise the raw results into 10-20 library files via `/sdlc-knowledge-base:kb-ingest`
 - Run `/sdlc-knowledge-base:kb-rebuild-indexes` after each batch
+- Keep vendored dumps out of the index: list their library-relative directories in `library/.kb-index-ignore` (one per line; `raw/` is always excluded). A rebuild that would add 50+ entries and double the index is refused (exit 2) until you confirm with `--force`
 - Run `/sdlc-knowledge-base:kb-validate-citations` to spot obvious hallucinations
 - Run `/sdlc-knowledge-base:kb-lint` periodically (weekly or before major reviews)
 - **Use case**: a team or programme that wants the full research library pattern as developed by the original three production projects. This is the proven shape.

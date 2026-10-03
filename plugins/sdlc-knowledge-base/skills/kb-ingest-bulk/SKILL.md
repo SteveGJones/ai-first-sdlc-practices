@@ -91,6 +91,12 @@ from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
 ## Phase 4 — Finalize (once)
 
 8. Rebuild the shelf-index once via `build_shelf_index.main([library_path])`.
+   Directories listed in `<library>/.kb-index-ignore` (plus `raw/`) are excluded.
+   If it exits with code 2, the bulk-add safety rail refused the rebuild (>= 50
+   entries added and index >= 2x): neither `_shelf-index.md` nor `log.md` was
+   written. Show the user the per-directory breakdown (e.g. `iso20022/: 412 added`)
+   and **re-run with `--force` only after the user confirms** — never
+   automatically. Skip step 9 until the rebuild has actually succeeded.
 9. `write_log_entry(log_path, "## [<date>] ingest-bulk\n" + summarize_run(manifest, route.oversized))`.
 10. Print the summary table. If `--clean`, remove `extracts_dir`.
 

@@ -104,6 +104,13 @@ a. **Rebuild shelf-index** (one run):
 python3 -c "... from sdlc_knowledge_base_scripts.build_shelf_index import main; sys.exit(main(['<library_path>']))"
 ```
 
+If the rebuild exits with code 2, the bulk-add safety rail refused it (>= 50
+entries added and index >= 2x; directories can be excluded via
+`<library>/.kb-index-ignore`). Neither `_shelf-index.md` nor `log.md` was
+written. You MUST show the user the per-directory breakdown and re-run with
+`--force` **only after the user confirms** — never automatically. Do not write
+the log entry below until the rebuild has succeeded.
+
 b. **Write consolidated log.md entry**:
 ```markdown
 ## [YYYY-MM-DD] ingest-batch | <total>/<succeeded>/<failed>
