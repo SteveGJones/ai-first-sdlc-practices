@@ -1,0 +1,24 @@
+services:
+  # P7: Sonnet's P9 full-autonomy SERVER (own design, TypeScript/Node,
+  # WebSocket-primary + REST facade added post-hoc to the fixed contract)
+  # paired with the exemplar's own known-good CLIENT, to test whether
+  # P9's server implements HARNESS-CONTRACT.md's REST surface well
+  # enough for an independently-built, contract-compliant client to
+  # interoperate with it.
+  server:
+    build: ../../sonnet-only-2026-07-29/impl/server
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  client:
+    build: ./client
+    ports:
+      - "8081:80"
+    depends_on:
+      - server

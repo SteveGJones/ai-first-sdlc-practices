@@ -173,6 +173,7 @@ Load additional context based on task:
 | Quality standards | AGENTIC-TEAM-STANDARDS.md |
 | Progressive levels | CLAUDE-CONTEXT-levels.md |
 | Containerised workflows | CLAUDE-CONTEXT-workflows.md |
+| Knowledge base operations | CLAUDE-CONTEXT-knowledge-base.md |
 
 ## Quality Standards
 

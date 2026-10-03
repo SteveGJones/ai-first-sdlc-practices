@@ -1,0 +1,1 @@
+{"passed": false, "harness_error": "timeout: P9 client has no data-testid attributes at all — predates CLIENT-TEST-CONTRACT.md, which was authored later in this same session. Not informative as a design-quality signal, recorded for completeness."}

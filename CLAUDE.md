@@ -4,14 +4,17 @@ AI-First SDLC Practices framework for AI development (v1.8.0). Rules: **CONSTITU
 
 ## Active Work
 
-- **EPIC #188** — sdlc-assured v0.2.0 audit-readiness + carry-forward closure. **Merged** (PR #189, merge commit `1356ff3`, 2026-05-02). 7 phases A-G shipped on `feature/sdlc-assured-v020`. Closes F-001/F-007/F-008/F-009/F-010 + carry-forward items (F1/F4/D1/D2/D3/E1/E2/E3). All 6 Phase G hard gates PASS: granularity_match noise 0%, RTM gap 4.55% (was 68.18%), gap-typing 30/30, FAC FPR 0%, visibility runs cleanly, 594/594 tests. Architect review: AGREE-WITH-CONCERNS (no blockers; 4 v0.3.0 carry-forward items). **`sdlc-assured` is now audit-ready at the tooling layer** — corpus-policy formalisation (MANUAL_EVIDENCE_REQUIRED) and CI integration of REQ-quality linter are v0.3.0 work. See `retrospectives/188-v020-assured-improvements.md`. **Adoption surface (#190 → PR #191)** closed 2026-05-02 (merge commit `9f02122`): marketplace bumped 0.1.0 → 0.2.0; new `docs/METHODS-GUIDE.md`; `setup-team` step 3 asks the four-option SDLC method question; bundle READMEs gain Getting Started + audit-readiness narrative; `/sdlc-core:commission` (already shipped in #178) now surfaced in every skill table. See `retrospectives/190-v020-adoption-surface.md`.
-- **EPIC #178** — Joint Programme + Assured bundle delivery. **Merged** (PR #187, merge commit `e05e446`, 2026-05-01). 6 phases A-F plus G closure shipped on `feature/sdlc-programme-assured-bundles`. `sdlc-programme` v0.1.0 (Method 1) and `sdlc-assured` v0.1.0 (Method 2) are live and installable. Marketplace 12 → 14 plugins. Phase F recursive dogfood produced 10 findings (5 IMPORTANT + 5 MINOR) — all closed in EPIC #188.
-- **EPIC #164** — Cross-library query support for sdlc-knowledge-base. **Merged** (PR #177).
-- **EPIC #97** — Multi-Option Commissioned SDLC. Phase C (commissioning infrastructure #98) shipped as part of #178. Sub-features for Single-team / Solo bundles still pending.
-- **EPIC #142** — Curated technology registry. **Merged** (sub-features 0-8 all complete via PRs #152 + #153).
-- **EPIC #96** — Containerised Claude Code workers. **Merged.**
-- **EPIC #105** — sdlc-knowledge-base plugin. **Merged.** Sub-feature 13 (#118 codebase-index) is future work.
-- **KB feedback issues** — From Amkor engagement feedback (2026-04-23): #161 (batch ingestion), #162 (kb-stats), #163 (confidence metadata), #165 (lint auto-fix). Plus #166 (named plugin bundles for setup-team on sdlc-core).
+*Nothing is currently in flight. The items below are open but unstarted or
+partially landed — verify state before assuming.*
+
+- **EPIC #197** — sdlc-knowledge-base v0.3.0 operator experience + scale. **Phases A and B are on `main`** (PR #198 merged; `kb-layers`, `kb-stats`, `kb-prepare-batch`, `kb-ingest-batch` all present). **Phase C is what remains: #163 confidence metadata, #165 lint auto-fix.** Spec: `docs/superpowers/specs/2026-05-03-kb-v030-phase-b-design.md`. Note the old branch `feature/kb-v030-operator-experience` still exists on the remote — check whether it is stale before reusing it rather than branching from `main`.
+- **EPIC #97** — Multi-Option Commissioned SDLC. Sub-features for Single-team (#99) / Solo (#100) bundles still pending. Migration skill (#101) and docs (#102) also pending.
+
+### Recently completed — context, not work
+
+- **#237 — poker-capstone / `sdlc-model-council` assessment. CLOSED and merged** (PR #238 `798447d`, research note PR #239 `323732f`). Shipped the P1-P10 capability ladder, a local-model agentic harness, and an assessment-first reframing of the plugin. **Outcome: the local-model seat is closed** — both auditioned 4-bit models fail P1, the easiest phase. Two things to carry forward:
+  - **`research/poker-capstone/runs/` and `broken-variants/` are exempted from four validators** (flake8, CodeQL, technical-debt, logging). That is deliberate: they hold verbatim model output, some defective *on purpose* as a recorded result, and must stay byte-identical to be re-verifiable. **Do not "fix" lint findings in there.** Two of those validators auto-detect framework-vs-application context *by file ratio*, so a large new corpus can silently flip the whole repo onto strict rules.
+  - Open follow-ups are listed in memory `poker-capstone-p11-status` — the main integration gap is folding ladder results into the roster card format (`plugins/sdlc-model-council/scripts/council/roster.py`).
 
 ## Working in this repo — dogfood the skills we ship
 
@@ -96,7 +99,7 @@ Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
 - CLAUDE-CONTEXT-logging.md — logging standards
 - CLAUDE-CONTEXT-architecture.md — architecture docs
 - docs/METHODS-GUIDE.md — decision tree for the four SDLC methods (solo / single-team / programme / assured), comparison table, trade-offs, and migration notes (load when commissioning a project or advising on method choice)
-- AGENT-INDEX.md — 56 specialist agents across 14 plugins. `sdlc-programme` v0.1.0 + `sdlc-assured` v0.2.0 are **skill+validator bundles by design** — they provide structured SDLC delivery methodology (phase gates, traceability, decomposition), not new specialist agent roles, so they intentionally ship 0 agents.
+- AGENT-INDEX.md — 57 specialist agents across 15 plugins. `sdlc-programme` v0.1.0 + `sdlc-assured` v0.2.0 are **skill+validator bundles by design** — they provide structured SDLC delivery methodology (phase gates, traceability, decomposition), not new specialist agent roles, so they intentionally ship 0 agents.
 
 ## Plugin Installation (Recommended)
 
@@ -116,7 +119,10 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-core` | Rules, validators, enforcement, workflows (always install) |
 | `sdlc-team-common` | Cross-cutting architects, researchers, performance engineers |
 | `sdlc-team-ai` | AI/ML specialists (14 agents) |
-| `sdlc-team-fullstack` | Frontend, backend, API, DevOps (10 agents) |
+| `sdlc-team-fullstack` | Web full-stack — frontend, backend, API, data, DevOps, UX & integration (9 agents; **v2.0.0** — mobile agents split out) |
+| `sdlc-team-mobile` | Shared mobile base — cross-platform `mobile-architect` + `mobile-ux-architect` (2 agents; pairs with the platform plugins below) |
+| `sdlc-team-ios` | iOS/iPadOS — HIG, SwiftUI, release & performance (4 agents) + TestFlight/App Store skills & pre-flight checks (install with `sdlc-team-mobile`) |
+| `sdlc-team-android` | Android — MD3, Compose, app architecture, Gradle, Play release & performance (6 agents) + scaffold/signing/play-release skills & pre-flight checks (install with `sdlc-team-mobile`) |
 | `sdlc-team-cloud` | Cloud, containers, SRE (3 agents) |
 | `sdlc-team-security` | Security, compliance, privacy (5 agents) |
 | `sdlc-team-pm` | Agile coach, delivery manager, tracking (5 agents) |
@@ -124,7 +130,10 @@ Then configure your team: `/sdlc-core:setup-team`
 | `sdlc-knowledge-base` | Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint operations. Orthogonal to SDLC option choice. |
 | `sdlc-lang-python` | Python language expert agent |
 | `sdlc-lang-javascript` | JavaScript/TypeScript language expert agent |
+| `sdlc-lang-swift` | Swift language expert agent — idiomatic Swift 6.2, strict concurrency, generics, macros, SwiftPM (pairs with `sdlc-team-ios`) |
+| `sdlc-lang-kotlin` | Kotlin language expert agent — idiomatic Kotlin 2.x, coroutines & Flow, sealed/data/value classes, generics, KSP, KMP basics (pairs with `sdlc-team-android`) |
 | `sdlc-workflows` | Containerised delegation — Archon-orchestrated DAG workflows in isolated Docker containers (6 skills) |
+| `sdlc-model-council` | **Model assessment + cross-model delegation** — two halves, and the assessment half is what makes the other meaningful. **Assess**: measure what a model can actually do via two instruments — the standardized v1 item stack (`assessment/stack/`) for a cheap broad cut, and the poker-capstone capability ladder (`research/poker-capstone/`, P1-P10, run fail-fast) for the depth that actually separates models. Findings drive a **roster** (which model holds which seat, with evidence). **Delegate**: route work against that roster to locally installed peer agentic CLIs (codex, agy, opencode; extensible via one-directory adapters), with fan-out plays (v1: Diff+Synthesis) on a unified contract with graded permission postures. In-session and uncontainerised — no Archon, no Docker, no DAG, unlike `sdlc-workflows` (2 agents: delegation-runner, council-judge) |
 | `sdlc-programme` | Method 1 SDLC bundle for multi-team programme work — formal waterfall phase gates (requirements/design/test/code), 4 phase-gate validators, mandatory cross-phase review (5 skills, EPIC #178 v0.1.0) |
 | `sdlc-assured` | Method 2 SDLC bundle for regulated-industry work **or** complex agentic systems at scale (10+ bounded contexts) — positional namespace IDs, bidirectional traceability, DDD decomposition with visibility rules, KB-for-code annotations, standard-specific exports (DO-178C / IEC 62304 / ISO 26262 / FDA DHF). 8 skills. **v0.2.0 audit-ready at tooling layer** (EPIC #188) — typed evidence statuses, multi-format evidence model (Python/markdown/YAML/satisfies-by-existence), platform-neutral dependency extractor, indirect DES-mediated coverage, REQ-quality lint candidate. |
 

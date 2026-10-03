@@ -45,7 +45,38 @@ class TechnicalDebtDetector:
             ".idea",
             ".vscode",
             "plugins",
+            # Gitignored scratch. CLAUDE.md mandates ./tmp/ for all scratch
+            # work and .gitignore excludes it, so its contents can never be
+            # pushed — scanning it makes a local run disagree with CI and can
+            # block a push on files that are not part of the repo.
+            "tmp",
         }
+
+        # Repo-relative path prefixes to skip. Distinct from skip_dirs above,
+        # which matches a bare directory NAME at any depth — too blunt for
+        # these (a project may legitimately have its own "runs" directory).
+        #
+        # Same rationale as skipping `plugins` (which carries the council's
+        # assessment problem stack — original code with PLANTED defects that
+        # models are graded on finding): these hold ASSESSMENT ARTEFACTS, not
+        # application code we maintain.
+        #
+        #   research/poker-capstone/runs — VERBATIM submissions from the model
+        #     under test. Some are defective on purpose as a recorded result
+        #     (runs/haiku-p5-* is the implementation whose bug we graded as
+        #     that model's P5 FAIL). Debt here is a finding ABOUT THAT MODEL,
+        #     written up in the run's results; "fixing" it would corrupt the
+        #     artefact, and runs must stay byte-identical for re-verification.
+        #   research/poker-capstone/broken-variants — exemplar copies each
+        #     carrying one deliberately-injected bug, whose purpose is to prove
+        #     the harness fails on the SPECIFIC defect rather than silently.
+        #
+        # The assessment HARNESS and the EXEMPLAR reference implementation are
+        # our own code and are deliberately NOT skipped.
+        self.skip_path_prefixes = (
+            "research/poker-capstone/runs",
+            "research/poker-capstone/broken-variants",
+        )
 
         # File extensions to check
         self.code_extensions = {
@@ -73,6 +104,14 @@ class TechnicalDebtDetector:
 
         # Context-specific thresholds
         self.thresholds = self._get_thresholds()
+
+    def _is_skipped_path(self, path: Path) -> bool:
+        """True if ``path`` is under one of ``skip_path_prefixes``."""
+        try:
+            rel = path.resolve().relative_to(Path(self.project_root).resolve())
+        except ValueError:
+            return False
+        return rel.as_posix().startswith(self.skip_path_prefixes)
 
     def _get_thresholds(self) -> Dict[str, int]:
         """Get context-specific thresholds"""
@@ -146,7 +185,11 @@ class TechnicalDebtDetector:
 
         for root, dirs, files in os.walk(self.project_root):
             # Skip unwanted directories
-            dirs[:] = [d for d in dirs if d not in self.skip_dirs]
+            dirs[:] = [
+                d
+                for d in dirs
+                if d not in self.skip_dirs and not self._is_skipped_path(Path(root) / d)
+            ]
 
             for file in files:
                 file_path = Path(root) / file

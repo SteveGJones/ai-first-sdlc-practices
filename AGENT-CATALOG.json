@@ -1,29 +1,34 @@
 {
   "version": "1.0.0",
-  "generated": "2026-04-21T05:56:05.745671",
-  "total_agents": 128,
+  "generated": "2026-07-23T17:21:48.233214",
+  "total_agents": 158,
   "categories": {
     "ai-builders": 5,
     "ai-development": 9,
-    "core": 30,
+    "core": 41,
     "delegation": 1,
     "documentation": 2,
     "future": 1,
-    "knowledge-base": 2,
+    "knowledge-base": 4,
     "languages": 1,
     "project-management": 4,
-    "sdlc": 8,
+    "sdlc": 10,
     "general": 5,
     "testing": 4,
     "plugin:sdlc-core": 4,
-    "plugin:sdlc-knowledge-base": 2,
+    "plugin:sdlc-knowledge-base": 4,
     "plugin:sdlc-lang-javascript": 1,
+    "plugin:sdlc-lang-kotlin": 1,
     "plugin:sdlc-lang-python": 1,
+    "plugin:sdlc-lang-swift": 1,
     "plugin:sdlc-team-ai": 14,
+    "plugin:sdlc-team-android": 6,
     "plugin:sdlc-team-cloud": 3,
     "plugin:sdlc-team-common": 8,
     "plugin:sdlc-team-docs": 2,
-    "plugin:sdlc-team-fullstack": 10,
+    "plugin:sdlc-team-fullstack": 9,
+    "plugin:sdlc-team-ios": 4,
+    "plugin:sdlc-team-mobile": 2,
     "plugin:sdlc-team-pm": 5,
     "plugin:sdlc-team-security": 5,
     "plugin:sdlc-workflows": 1
@@ -628,6 +633,43 @@
       "description": "Builds production agents from research via 6-phase pipeline, archetype selection, and knowledge distillation. Use when creating or rebuilding agents."
     },
     {
+      "name": "android-app-architect",
+      "path": "agents/core/android-app-architect.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Android application architecture — Google's recommended UI/domain/data layering + UDF, lifecycle & process-death survival (ViewModel/SavedStateHandle), Hilt DI, Room/DataStore/Paging dat..."
+    },
+    {
+      "name": "android-performance-specialist",
+      "path": "agents/core/android-performance-specialist.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "ci",
+        "cloud",
+        "design",
+        "pipeline"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Android app performance & diagnostics — app startup (cold/warm/hot, TTID/TTFD, App Startup lib), Baseline Profiles & Macrobenchmark, rendering/jank (frame budgets, slow/frozen frames, Ja..."
+    },
+    {
       "name": "api-architect",
       "path": "agents/core/api-architect.md",
       "category": "core",
@@ -667,6 +709,26 @@
         "system-design"
       ],
       "description": "Expert in REST/GraphQL/gRPC API design, versioning strategies, security patterns, contract testing, and OpenAPI specifications. Consult for API design reviews, endpoint architecture, and integration c..."
+    },
+    {
+      "name": "apple-hig-architect",
+      "path": "agents/core/apple-hig-architect.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "cd",
+        "ci",
+        "design",
+        "test"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Apple's Human Interface Guidelines (HIG) for iOS/iPadOS — Liquid Glass (iOS 26), navigation & modality, SF Pro type scale & Dynamic Type, semantic colors & materials, SF Symbols, gesture..."
     },
     {
       "name": "backend-architect",
@@ -1232,6 +1294,115 @@
       "description": "Expert in GitHub platform features, Actions workflows, Advanced Security, branch protection, PR automation, and organization governance. Use for GitHub repository configuration, CI/CD design, security..."
     },
     {
+      "name": "gradle-build-specialist",
+      "path": "agents/core/gradle-build-specialist.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "ci",
+        "security"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Gradle & the Android Gradle Plugin (AGP) — Kotlin DSL, version catalogs (libs.versions.toml), convention plugins (build-logic vs buildSrc), build performance (configuration cache, build ..."
+    },
+    {
+      "name": "ios-performance-specialist",
+      "path": "agents/core/ios-performance-specialist.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "cd",
+        "ci",
+        "design",
+        "rest",
+        "test"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in iOS app performance & diagnostics — Instruments (Time Profiler, Allocations/Leaks, Animation Hitches, SwiftUI & Swift Concurrency, os_signpost), app launch (~400ms), hitches & hangs (250..."
+    },
+    {
+      "name": "ios-release-engineer",
+      "path": "agents/core/ios-release-engineer.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "cd",
+        "ci",
+        "cloud",
+        "design",
+        "jwt",
+        "python",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [
+        "'example",
+        "MyApp.app before uploading.\"",
+        "'example",
+        "name: \"App Store Connect\"",
+        "name: \"App Store Review Guidelines\""
+      ],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in iOS release engineering & App Store distribution — code signing & provisioning, capabilities/entitlements, the three privacy surfaces (nutrition labels, PrivacyInfo.xcprivacy manifest, r..."
+    },
+    {
+      "name": "jetpack-compose-architect",
+      "path": "agents/core/jetpack-compose-architect.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Jetpack Compose UI architecture (Android) — composition/recomposition, stability & strong skipping, state hoisting & UDF, side-effect APIs, custom layout/Modifier.Node, lazy lists, type-..."
+    },
+    {
+      "name": "material-design-3-architect",
+      "path": "agents/core/material-design-3-architect.md",
+      "category": "core",
+      "keywords": [
+        "angular",
+        "api",
+        "architecture",
+        "container",
+        "design",
+        "frontend",
+        "javascript",
+        "mcp",
+        "pipeline",
+        "quality",
+        "security"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Google Material Design 3 (M3 / Material You) — HCT/dynamic color, the md.ref/md.sys/md.comp token system, components, adaptive layout, tonal elevation, motion, and platform implementatio..."
+    },
+    {
       "name": "mobile-architect",
       "path": "agents/core/mobile-architect.md",
       "category": "core",
@@ -1269,6 +1440,28 @@
         "system-design"
       ],
       "description": "Expert in mobile app architecture (native iOS/Android, React Native, Flutter, KMP), cross-platform decisions, mobile performance optimization, mobile CI/CD, and platform-specific guidelines. Consult f..."
+    },
+    {
+      "name": "mobile-ux-architect",
+      "path": "agents/core/mobile-ux-architect.md",
+      "category": "core",
+      "keywords": [
+        "architecture",
+        "cd",
+        "ci",
+        "design",
+        "frontend",
+        "quality",
+        "react",
+        "security",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in platform-agnostic mobile-native interaction UX — thumb-zone ergonomics & reachability, touch targets & gestures, haptics, navigation patterns, onboarding, permission priming & notificati..."
     },
     {
       "name": "observability-specialist",
@@ -1346,6 +1539,28 @@
         "system-design"
       ],
       "description": "Unified entry point for agent creation pipeline. Routes web research or repo analysis, then delegates to agent-builder for construction."
+    },
+    {
+      "name": "play-store-release-specialist",
+      "path": "agents/core/play-store-release-specialist.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "ci",
+        "design",
+        "go",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in Google Play release & distribution — Play App Signing (two-key model), Android App Bundles (.aab)/bundletool/dynamic delivery, release tracks & staged rollout (halt/roll-forward), the Da..."
     },
     {
       "name": "repo-knowledge-distiller",
@@ -1569,6 +1784,28 @@
       "description": "Expert in SLO frameworks, incident response, chaos engineering, production reliability, and operational excellence. Use for defining SLIs/SLOs/error budgets, designing incident runbooks, implementing ..."
     },
     {
+      "name": "swiftui-architect",
+      "path": "agents/core/swiftui-architect.md",
+      "category": "core",
+      "keywords": [
+        "api",
+        "architecture",
+        "cd",
+        "ci",
+        "container",
+        "design",
+        "react",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "software-architecture",
+        "system-design"
+      ],
+      "description": "Specialist in modern iOS app architecture with SwiftUI (iOS 26 / Swift 6.2) — the Observation framework (@Observable), MV vs MVVM vs TCA, NavigationStack & deep linking, SwiftData persistence, structu..."
+    },
+    {
       "name": "test-manager",
       "path": "agents/core/test-manager.md",
       "category": "core",
@@ -1778,11 +2015,23 @@
       "keywords": [
         "architecture",
         "claude",
+        "devops",
         "quality"
       ],
       "capabilities": [],
       "domains": [],
       "description": "Proactively integrates new sources into a project knowledge base. Reads a raw source (file, URL, or conversation excerpt), identifies which existing library files it touches, updates them, creates new..."
+    },
+    {
+      "name": "knowledge-extractor",
+      "path": "agents/knowledge-base/knowledge-extractor.md",
+      "category": "knowledge-base",
+      "keywords": [
+        "python"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Read-only map-phase extractor for bulk knowledge-base ingest. Reads ONE source, emits a compact structured JSON extraction — findings, statistics, citations, confidence, and proposed target library fi..."
     },
     {
       "name": "research-librarian",
@@ -1806,6 +2055,20 @@
       ],
       "domains": [],
       "description": "Stateless retrieval-and-synthesis agent for project knowledge bases. Reads a hash-tracked shelf-index, identifies the 2-4 most relevant library files for a query, deep-reads only those, and returns st..."
+    },
+    {
+      "name": "synthesis-librarian",
+      "path": "agents/knowledge-base/synthesis-librarian.md",
+      "category": "knowledge-base",
+      "keywords": [
+        "architecture",
+        "auth",
+        "design",
+        "test"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Stateless cross-library synthesis agent. Receives pre-retrieved findings from multiple sources and produces a single attributed argument. Has NO file-reading tools — its only ground truth is the suppl..."
     },
     {
       "name": "python-expert",
@@ -2091,6 +2354,27 @@
       "description": "Expert in modern JavaScript/TypeScript, frontend/backend frameworks, build tooling, and JS ecosystem best practices. Use for framework selection, TypeScript config, bundle optimization, and Node.js de..."
     },
     {
+      "name": "language-kotlin-expert",
+      "path": "agents/sdlc/language-kotlin-expert.md",
+      "category": "sdlc",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "javascript",
+        "python",
+        "quality",
+        "rest",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "process-improvement",
+        "methodology"
+      ],
+      "description": "Expert in the Kotlin language (Kotlin 2.x, K2 compiler) — null-safety & scope functions, coroutines & structured concurrency, Flow (StateFlow/SharedFlow), the type system (data/sealed/value classes, d..."
+    },
+    {
       "name": "language-python-expert",
       "path": "agents/sdlc/language-python-expert.md",
       "category": "sdlc",
@@ -2132,6 +2416,27 @@
         "methodology"
       ],
       "description": "Expert in Python 3.12+ features, type systems (mypy/pyright), async patterns, testing (pytest/hypothesis), web frameworks (FastAPI/Django/Flask), AI/ML development, and packaging. Use for Python proje..."
+    },
+    {
+      "name": "language-swift-expert",
+      "path": "agents/sdlc/language-swift-expert.md",
+      "category": "sdlc",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "javascript",
+        "python",
+        "quality",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [
+        "process-improvement",
+        "methodology"
+      ],
+      "description": "Expert in the Swift language (Swift 6.2) — strict concurrency (async/await, actors, Sendable, Swift 6.2 approachable concurrency), value semantics & noncopyable types, typed throws, optionals/safety, ..."
     },
     {
       "name": "project-bootstrapper",
@@ -2670,11 +2975,23 @@
       "keywords": [
         "architecture",
         "claude",
+        "devops",
         "quality"
       ],
       "capabilities": [],
       "domains": [],
       "description": "Proactively integrates new sources into a project knowledge base. Reads a raw source (file, URL, or conversation excerpt), identifies which existing library files it touches, updates them, creates new..."
+    },
+    {
+      "name": "knowledge-extractor",
+      "path": "plugins/sdlc-knowledge-base/agents/knowledge-extractor.md",
+      "category": "plugin:sdlc-knowledge-base",
+      "keywords": [
+        "python"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Read-only map-phase extractor for bulk knowledge-base ingest. Reads ONE source, emits a compact structured JSON extraction — findings, statistics, citations, confidence, and proposed target library fi..."
     },
     {
       "name": "research-librarian",
@@ -2698,6 +3015,20 @@
       ],
       "domains": [],
       "description": "Stateless retrieval-and-synthesis agent for project knowledge bases. Reads a hash-tracked shelf-index, identifies the 2-4 most relevant library files for a query, deep-reads only those, and returns st..."
+    },
+    {
+      "name": "synthesis-librarian",
+      "path": "plugins/sdlc-knowledge-base/agents/synthesis-librarian.md",
+      "category": "plugin:sdlc-knowledge-base",
+      "keywords": [
+        "architecture",
+        "auth",
+        "design",
+        "test"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Stateless cross-library synthesis agent. Receives pre-retrieved findings from multiple sources and produces a single attributed argument. Has NO file-reading tools — its only ground truth is the suppl..."
     },
     {
       "name": "language-javascript-expert",
@@ -2734,6 +3065,24 @@
       ],
       "domains": [],
       "description": "Expert in modern JavaScript/TypeScript, frontend/backend frameworks, build tooling, and JS ecosystem best practices. Use for framework selection, TypeScript config, bundle optimization, and Node.js de..."
+    },
+    {
+      "name": "language-kotlin-expert",
+      "path": "plugins/sdlc-lang-kotlin/agents/language-kotlin-expert.md",
+      "category": "plugin:sdlc-lang-kotlin",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "javascript",
+        "python",
+        "quality",
+        "rest",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Expert in the Kotlin language (Kotlin 2.x, K2 compiler) — null-safety & scope functions, coroutines & structured concurrency, Flow (StateFlow/SharedFlow), the type system (data/sealed/value classes, d..."
     },
     {
       "name": "language-python-expert",
@@ -2774,6 +3123,24 @@
       ],
       "domains": [],
       "description": "Expert in Python 3.12+ features, type systems (mypy/pyright), async patterns, testing (pytest/hypothesis), web frameworks (FastAPI/Django/Flask), AI/ML development, and packaging. Use for Python proje..."
+    },
+    {
+      "name": "language-swift-expert",
+      "path": "plugins/sdlc-lang-swift/agents/language-swift-expert.md",
+      "category": "plugin:sdlc-lang-swift",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "javascript",
+        "python",
+        "quality",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Expert in the Swift language (Swift 6.2) — strict concurrency (async/await, actors, Sendable, Swift 6.2 approachable concurrency), value semantics & noncopyable types, typed throws, optionals/safety, ..."
     },
     {
       "name": "a2a-architect",
@@ -3320,6 +3687,105 @@
       ],
       "domains": [],
       "description": "RAG architecture specialist for vector databases, embeddings, chunking strategies, and retrieval optimization. Use for designing production RAG systems, selecting vector stores, or optimizing retrieva..."
+    },
+    {
+      "name": "android-app-architect",
+      "path": "plugins/sdlc-team-android/agents/android-app-architect.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Android application architecture — Google's recommended UI/domain/data layering + UDF, lifecycle & process-death survival (ViewModel/SavedStateHandle), Hilt DI, Room/DataStore/Paging dat..."
+    },
+    {
+      "name": "android-performance-specialist",
+      "path": "plugins/sdlc-team-android/agents/android-performance-specialist.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "ci",
+        "cloud",
+        "design",
+        "pipeline"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Android app performance & diagnostics — app startup (cold/warm/hot, TTID/TTFD, App Startup lib), Baseline Profiles & Macrobenchmark, rendering/jank (frame budgets, slow/frozen frames, Ja..."
+    },
+    {
+      "name": "gradle-build-specialist",
+      "path": "plugins/sdlc-team-android/agents/gradle-build-specialist.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "ci",
+        "security"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Gradle & the Android Gradle Plugin (AGP) — Kotlin DSL, version catalogs (libs.versions.toml), convention plugins (build-logic vs buildSrc), build performance (configuration cache, build ..."
+    },
+    {
+      "name": "jetpack-compose-architect",
+      "path": "plugins/sdlc-team-android/agents/jetpack-compose-architect.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "design",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Jetpack Compose UI architecture (Android) — composition/recomposition, stability & strong skipping, state hoisting & UDF, side-effect APIs, custom layout/Modifier.Node, lazy lists, type-..."
+    },
+    {
+      "name": "material-design-3-architect",
+      "path": "plugins/sdlc-team-android/agents/material-design-3-architect.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "angular",
+        "api",
+        "architecture",
+        "container",
+        "design",
+        "frontend",
+        "javascript",
+        "mcp",
+        "pipeline",
+        "quality",
+        "security"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Google Material Design 3 (M3 / Material You) — HCT/dynamic color, the md.ref/md.sys/md.comp token system, components, adaptive layout, tonal elevation, motion, and platform implementatio..."
+    },
+    {
+      "name": "play-store-release-specialist",
+      "path": "plugins/sdlc-team-android/agents/play-store-release-specialist.md",
+      "category": "plugin:sdlc-team-android",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "ci",
+        "design",
+        "go",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Google Play release & distribution — Play App Signing (two-key model), Android App Bundles (.aab)/bundletool/dynamic delivery, release tracks & staged rollout (halt/roll-forward), the Da..."
     },
     {
       "name": "cloud-architect",
@@ -4085,9 +4551,122 @@
       "description": "Expert in integration testing strategies, API contract testing (Pact, Spring Cloud Contract), service virtualization (WireMock, Mountebank), and E2E test orchestration. Use for designing multi-service..."
     },
     {
-      "name": "mobile-architect",
-      "path": "plugins/sdlc-team-fullstack/agents/mobile-architect.md",
+      "name": "ux-ui-architect",
+      "path": "plugins/sdlc-team-fullstack/agents/ux-ui-architect.md",
       "category": "plugin:sdlc-team-fullstack",
+      "keywords": [
+        "ai",
+        "angular",
+        "api",
+        "architecture",
+        "cd",
+        "ci",
+        "design",
+        "frontend",
+        "go",
+        "mcp",
+        "qa",
+        "react",
+        "rest",
+        "security",
+        "test",
+        "testing",
+        "typescript",
+        "vue"
+      ],
+      "capabilities": [
+        "name: \"Figma MCP Server\"",
+        "name: \"Storybook MCP Server\"",
+        "You are the UX/UI Architect, the specialist responsible for transforming user needs into intuitive, ..."
+      ],
+      "domains": [],
+      "description": "Expert in design systems, WCAG 2.2/3.0 accessibility, user research methods, and design-to-development handoff. Use for interface design, accessibility audits, and UX strategy."
+    },
+    {
+      "name": "apple-hig-architect",
+      "path": "plugins/sdlc-team-ios/agents/apple-hig-architect.md",
+      "category": "plugin:sdlc-team-ios",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "cd",
+        "ci",
+        "design",
+        "test"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in Apple's Human Interface Guidelines (HIG) for iOS/iPadOS — Liquid Glass (iOS 26), navigation & modality, SF Pro type scale & Dynamic Type, semantic colors & materials, SF Symbols, gesture..."
+    },
+    {
+      "name": "ios-performance-specialist",
+      "path": "plugins/sdlc-team-ios/agents/ios-performance-specialist.md",
+      "category": "plugin:sdlc-team-ios",
+      "keywords": [
+        "api",
+        "architecture",
+        "cd",
+        "ci",
+        "design",
+        "rest",
+        "test"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in iOS app performance & diagnostics — Instruments (Time Profiler, Allocations/Leaks, Animation Hitches, SwiftUI & Swift Concurrency, os_signpost), app launch (~400ms), hitches & hangs (250..."
+    },
+    {
+      "name": "ios-release-engineer",
+      "path": "plugins/sdlc-team-ios/agents/ios-release-engineer.md",
+      "category": "plugin:sdlc-team-ios",
+      "keywords": [
+        "api",
+        "architecture",
+        "auth",
+        "cd",
+        "ci",
+        "cloud",
+        "design",
+        "jwt",
+        "python",
+        "security",
+        "test",
+        "testing"
+      ],
+      "capabilities": [
+        "'example",
+        "MyApp.app before uploading.\"",
+        "'example",
+        "name: \"App Store Connect\"",
+        "name: \"App Store Review Guidelines\""
+      ],
+      "domains": [],
+      "description": "Specialist in iOS release engineering & App Store distribution — code signing & provisioning, capabilities/entitlements, the three privacy surfaces (nutrition labels, PrivacyInfo.xcprivacy manifest, r..."
+    },
+    {
+      "name": "swiftui-architect",
+      "path": "plugins/sdlc-team-ios/agents/swiftui-architect.md",
+      "category": "plugin:sdlc-team-ios",
+      "keywords": [
+        "api",
+        "architecture",
+        "cd",
+        "ci",
+        "container",
+        "design",
+        "react",
+        "test",
+        "testing"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Specialist in modern iOS app architecture with SwiftUI (iOS 26 / Swift 6.2) — the Observation framework (@Observable), MV vs MVVM vs TCA, NavigationStack & deep linking, SwiftData persistence, structu..."
+    },
+    {
+      "name": "mobile-architect",
+      "path": "plugins/sdlc-team-mobile/agents/mobile-architect.md",
+      "category": "plugin:sdlc-team-mobile",
       "keywords": [
         "ai",
         "api",
@@ -4121,36 +4700,23 @@
       "description": "Expert in mobile app architecture (native iOS/Android, React Native, Flutter, KMP), cross-platform decisions, mobile performance optimization, mobile CI/CD, and platform-specific guidelines. Consult f..."
     },
     {
-      "name": "ux-ui-architect",
-      "path": "plugins/sdlc-team-fullstack/agents/ux-ui-architect.md",
-      "category": "plugin:sdlc-team-fullstack",
+      "name": "mobile-ux-architect",
+      "path": "plugins/sdlc-team-mobile/agents/mobile-ux-architect.md",
+      "category": "plugin:sdlc-team-mobile",
       "keywords": [
-        "ai",
-        "angular",
-        "api",
         "architecture",
         "cd",
         "ci",
         "design",
         "frontend",
-        "go",
-        "mcp",
-        "qa",
+        "quality",
         "react",
-        "rest",
         "security",
-        "test",
-        "testing",
-        "typescript",
-        "vue"
+        "testing"
       ],
-      "capabilities": [
-        "name: \"Figma MCP Server\"",
-        "name: \"Storybook MCP Server\"",
-        "You are the UX/UI Architect, the specialist responsible for transforming user needs into intuitive, ..."
-      ],
+      "capabilities": [],
       "domains": [],
-      "description": "Expert in design systems, WCAG 2.2/3.0 accessibility, user research methods, and design-to-development handoff. Use for interface design, accessibility audits, and UX strategy."
+      "description": "Specialist in platform-agnostic mobile-native interaction UX — thumb-zone ergonomics & reachability, touch targets & gestures, haptics, navigation patterns, onboarding, permission priming & notificati..."
     },
     {
       "name": "agile-coach",
