@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Append-only JSONL logger for team_extend overrides.
 
 Each workflow run that uses ``team_extend`` logs one entry per extended

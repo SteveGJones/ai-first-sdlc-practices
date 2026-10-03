@@ -1,12 +1,30 @@
 """Tests for sdlc_knowledge_base_scripts.kb_ingest_bulk."""
 from __future__ import annotations
 
+import json as _json
 from pathlib import Path
 
 from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
     ExtractDispatchRequest,
     ReduceDispatchRequest,
     RouteResult,
+    build_bulk_manifest,
+    discover_sources,
+    estimate_tokens,
+    extract_path,
+    format_extract_prompt,
+    format_reduce_prompt,
+    mark_source_extracted,
+    mark_source_failed,
+    mark_target_failed,
+    mark_target_reduced,
+    normalize_slug,
+    persist_extract,
+    retry_failed,
+    route_extracts,
+    slug_for_source,
+    summarize_run,
+    write_log_entry,
 )
 
 
@@ -14,9 +32,6 @@ def test_module_imports() -> None:
     assert ExtractDispatchRequest is not None
     assert ReduceDispatchRequest is not None
     assert RouteResult is not None
-
-
-from sdlc_knowledge_base_scripts.kb_ingest_bulk import discover_sources
 
 
 def test_discover_sources_from_dir(tmp_path: Path) -> None:
@@ -48,11 +63,6 @@ def test_discover_sources_missing_path_skipped(tmp_path: Path) -> None:
     assert found == [f]
 
 
-from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
-    extract_path, persist_extract, slug_for_source,
-)
-
-
 def test_slug_for_source_readable_stable_and_collision_free() -> None:
     # readable base prefix preserved
     assert slug_for_source(Path("/x/02-03 Foo Bar.md")).startswith("02-03-foo-bar-")
@@ -73,11 +83,6 @@ def test_persist_extract_writes_json(tmp_path: Path) -> None:
 
 def test_extract_path() -> None:
     assert extract_path(Path("/lib/.extracts"), "a") == Path("/lib/.extracts/a.json")
-
-
-from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
-    build_bulk_manifest, mark_source_extracted, mark_source_failed,
-)
 
 
 def test_build_bulk_manifest_initial(tmp_path: Path) -> None:
@@ -107,11 +112,6 @@ def test_mark_source_failed_records_error(tmp_path: Path) -> None:
     assert m["sources"][str(s[0])]["error"] == "timeout"
 
 
-from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
-    mark_target_reduced, mark_target_failed, retry_failed,
-)
-
-
 def test_target_transitions(tmp_path: Path) -> None:
     m = build_bulk_manifest([tmp_path / "a.md"])
     m["targets"]["topic.md"] = {"status": "pending", "source_count": 2, "is_new": False, "error": None}
@@ -132,9 +132,6 @@ def test_retry_failed_requeues_both_phases(tmp_path: Path) -> None:
     assert m["targets"]["t.md"]["status"] == "pending"
 
 
-from sdlc_knowledge_base_scripts.kb_ingest_bulk import estimate_tokens, normalize_slug
-
-
 def test_normalize_slug_collapses_variants() -> None:
     assert normalize_slug("Carbon Accounting") == "carbon-accounting"
     assert normalize_slug("carbon_accounting") == "carbon-accounting"
@@ -145,9 +142,6 @@ def test_normalize_slug_collapses_variants() -> None:
 def test_estimate_tokens_chars_over_four() -> None:
     assert estimate_tokens("a" * 400) == 100
     assert estimate_tokens("") == 0
-
-
-from sdlc_knowledge_base_scripts.kb_ingest_bulk import route_extracts
 
 
 def _extract(source, targets):
@@ -215,11 +209,6 @@ def test_route_skips_target_with_no_identity() -> None:
     assert ".md" not in r.targets
 
 
-from sdlc_knowledge_base_scripts.kb_ingest_bulk import (
-    format_extract_prompt, format_reduce_prompt,
-)
-
-
 def test_format_extract_prompt_contains_contract() -> None:
     req = ExtractDispatchRequest(
         source_path="raw/a.md", library_path="library",
@@ -256,9 +245,6 @@ def test_format_reduce_prompt_new_file_flag() -> None:
     assert "create" in p.lower()
 
 
-from sdlc_knowledge_base_scripts.kb_ingest_bulk import summarize_run, write_log_entry
-
-
 def test_summarize_run_counts(tmp_path: Path) -> None:
     m = build_bulk_manifest([tmp_path / "a.md", tmp_path / "b.md", tmp_path / "c.md"])
     m = mark_source_extracted(m, str(tmp_path / "a.md"))
@@ -278,9 +264,6 @@ def test_write_log_entry_appends(tmp_path: Path) -> None:
     text = log.read_text()
     assert "ingest-bulk" in text
     assert text.startswith("# Log")
-
-
-import json as _json
 
 
 def _seed_library(tmp_path: Path) -> tuple[Path, Path, Path]:

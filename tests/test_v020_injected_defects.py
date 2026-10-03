@@ -11,14 +11,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List
 
-import pytest
-
 from sdlc_assured_scripts.assured.decomposition import (
     Decomposition,
     Module,
     Program,
     SubProgram,
-    VisibilityRule,
     forward_annotation_completeness,
     granularity_match,
     parse_programs_yaml,

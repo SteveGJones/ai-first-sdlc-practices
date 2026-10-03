@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for team_extend validation in workflow-team checker."""
 
 import json

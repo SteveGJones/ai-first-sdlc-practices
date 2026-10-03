@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from app import TaskTracker
+from app import TaskTracker  # noqa: E402
 
 
 def test_add_and_list() -> None:

@@ -7,7 +7,6 @@ from sdlc_assured_scripts.assured.dependency_extractor import (
     DependencyExtractor,
     ImportEdge,
     PythonAstExtractor,
-    GenericRegexExtractor,
     make_swift_extractor,
     render_dependency_edges,
     parse_dependency_edges,

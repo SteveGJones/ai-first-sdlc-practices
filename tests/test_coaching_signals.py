@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for coaching_signals — tiered coaching signal analysis."""
 
 from pathlib import Path

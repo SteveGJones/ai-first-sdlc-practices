@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Resolve plugin names to installed filesystem paths.
 
 Claude Code stores plugins at:

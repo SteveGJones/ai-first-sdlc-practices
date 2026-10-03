@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for generate_container_installed_json — host-to-container path rewriting."""
 
 import json

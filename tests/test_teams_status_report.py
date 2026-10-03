@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for teams_status_report — fleet status data generation."""
 
 from datetime import datetime, timezone

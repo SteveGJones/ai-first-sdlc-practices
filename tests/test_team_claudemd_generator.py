@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for team CLAUDE.md generator."""
 
 from pathlib import Path

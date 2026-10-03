@@ -378,7 +378,7 @@ def main() -> int:
             print(f"  OK       {rel}")
 
     print(f"\n{'='*60}")
-    print(f"Summary:")
+    print("Summary:")
     print(f"  {'Would change' if args.dry_run else 'Changed'}: {total_changed}")
     print(f"  Already OK:  {total_skipped}")
     if total_missing:

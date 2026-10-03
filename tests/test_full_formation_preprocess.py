@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Unit coverage for the §7.4 full-formation super-smoke.
 
 Runs the preprocessor over the real miniproject

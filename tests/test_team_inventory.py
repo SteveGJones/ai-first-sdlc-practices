@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for team_inventory — plugin agent and skill discovery."""
 
 import json

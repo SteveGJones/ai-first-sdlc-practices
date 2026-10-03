@@ -70,6 +70,7 @@ def _validate_image_tag(image: str, node_id: str | None = None) -> None:
     if not image.startswith(_ALLOWED_IMAGE_PREFIX):
         raise UnsafeImageError(image, node_id)
 
+
 # Resource defaults baked into every generated `docker run` command.
 # Override knob lives in the team manifest (future) — v1 is fixed.
 _DEFAULT_MEMORY = "4g"

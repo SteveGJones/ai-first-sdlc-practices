@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for resolve_credentials — three-tier credential fallback."""
 
 import json

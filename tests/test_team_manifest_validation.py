@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for validate_team_manifest — team manifest schema validation."""
 
 import json

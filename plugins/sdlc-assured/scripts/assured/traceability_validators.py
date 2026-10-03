@@ -46,7 +46,7 @@ def cited_ids_resolve(records: List[IdRecord]) -> ValidatorResult:  # implements
     return ValidatorResult(passed=not errors, errors=errors)
 
 
-def orphan_ids(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001, DES-assured-traceability-validators-005
+def orphan_ids(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001, DES-assured-traceability-validators-005  # noqa: E501
     # implements: DES-assured-traceability-validators-005
     """Warn when any declared ID is never cited by another record.
 

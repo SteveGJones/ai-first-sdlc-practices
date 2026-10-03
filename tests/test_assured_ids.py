@@ -8,7 +8,6 @@ from sdlc_assured_scripts.assured.ids import (
     IdParseError,
     IdRecord,
     ParsedId,
-    RemapResult,
     build_id_registry,
     format_id,
     is_positional,
