@@ -34,7 +34,7 @@ cannot change the working tree, and CI blocks on the same pinned hooks.
 
 ## Proposed Solution
 
-Eight commits on this branch (after `631a626`): the five steps below plus three review-round fix commits:
+Nine commits on this branch (after `631a626`; eight reviewed plus the fourth-round fix): the five steps below plus four review-round fix commits:
 
 1. **Corpus excludes and hook args** (`025aaca`). A top-level `exclude:` in
    `.pre-commit-config.yaml` makes every hook skip `research/poker-capstone/runs`,
@@ -157,3 +157,15 @@ retrospective.
   opens a PR and could not be verified locally; the black hook needs
   `python3.9` locally; the `noqa: E501` placement in
   `traceability_validators.py` depends on the `# implements:` parsing gap.
+
+## Fourth review round
+
+- **Gate worktree lifecycle**: each gate call owns a unique worktree
+  (`prepush-gate-<pid>-<8 hex>`); cleanup removes only that path and handles a
+  registration left LOCKED as `initializing` by a creation killed mid-checkout
+  (unlock, retry, delete the directory, prune). `repo_root` is resolved to an
+  absolute path. A second SIGTERM can no longer skip the cleanup or the signal
+  handler restore.
+- **Tests**: process markers in `tests/test_pre_push_gate.py` are unique per
+  invocation (the previous host-wide `sleep 31337` patterns made concurrent runs
+  interfere); waits are polling loops. The repo-env variable list is memoised.

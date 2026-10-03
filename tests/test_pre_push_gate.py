@@ -13,10 +13,14 @@ import importlib.util
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
+import threading
+import time
+import uuid
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Callable, Dict, Iterator, List, Tuple
 
 import pytest
 import yaml
@@ -66,6 +70,52 @@ def _isolate_git_config(monkeypatch: pytest.MonkeyPatch) -> None:
     """Also isolate the gate's own git calls, which inherit this environment."""
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", os.devnull)
     monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+
+
+@pytest.fixture(autouse=True)
+def _fresh_env_var_cache() -> "Iterator[None]":
+    """The variable list is memoised per process; tests that patch it need a clean slate."""
+    local_validation._repo_env_var_names.cache_clear()
+    yield
+    local_validation._repo_env_var_names.cache_clear()
+
+
+def _unique_marker(base: int) -> str:
+    """A sleep duration no other process on the host can share.
+
+    Tests identify the processes they spawned by this token (never by a
+    generic pattern), so concurrent test runs cannot see or kill each other's.
+    """
+    return f"{base}.{uuid.uuid4().int % 10**9:09d}"
+
+
+def _pids_with(marker: str) -> List[int]:
+    result = subprocess.run(
+        ["pgrep", "-f", f"sleep {marker}"], capture_output=True, text=True
+    )
+    return [int(p) for p in result.stdout.split()]
+
+
+def _kill_pids(pids: List[int]) -> None:
+    for pid in pids:
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            pass
+
+
+def _wait_until(predicate: "Callable[[], bool]", seconds: float = 120.0) -> bool:
+    """Poll ``predicate`` until true or the (generous) deadline passes."""
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(0.1)
+    return predicate()
+
+
+def _gone(marker: str, seconds: float = 30.0) -> bool:
+    return _wait_until(lambda: not _pids_with(marker), seconds)
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -373,10 +423,14 @@ def test_gate_reports_worktree_add_failure_and_leaves_no_worktree(
 
 
 @needs_pre_commit
-def test_gate_reports_worktree_remove_failure_with_path(tmp_path: Path) -> None:
+def test_gate_reports_worktree_remove_failure_with_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _make_repo(tmp_path, _PASSING_CONFIG)
     runner = _runner(repo)
     _intercepting_run_command(runner, ["worktree", "remove"], (1, "", "locked"))
+    # Removal must be impossible, including the directory-deletion fallback.
+    monkeypatch.setattr(local_validation.shutil, "rmtree", lambda *a, **k: None)
 
     try:
         assert runner.check_pre_commit_hooks() is False
@@ -391,11 +445,11 @@ def _leftover(repo: Path) -> List[str]:
 
 
 @needs_pre_commit
-def test_gate_survives_a_stale_registered_worktree_at_the_same_path(
+def test_gate_survives_a_stale_registration_whose_directory_is_gone(
     tmp_path: Path,
 ) -> None:
     repo = _make_repo(tmp_path, _PASSING_CONFIG)
-    stale = repo / "tmp" / f"prepush-gate-{os.getpid()}"
+    stale = repo / "tmp" / f"prepush-gate-{os.getpid()}-deadbeef"
     _git(repo, "worktree", "add", "--detach", str(stale), "HEAD")
     shutil.rmtree(stale)  # a killed run: registered in .git, gone from disk
     assert "prepush-gate-" in _git(repo, "worktree", "list")
@@ -414,18 +468,20 @@ repos:
     hooks:
       - id: sleeper
         name: sleeps far longer than the timeout
-        entry: sleep 31337
+        entry: sleep {marker}
         language: system
         pass_filenames: false
         always_run: true
 """
 
 
-def _sleepers() -> str:
-    result = subprocess.run(
-        ["pgrep", "-f", "sleep 31337"], capture_output=True, text=True
-    )
-    return result.stdout.strip()
+def _watch_for(marker: str, seen: List[int], stop: "threading.Event") -> None:
+    """Record every pid carrying ``marker`` until told to stop."""
+    while not stop.is_set():
+        for pid in _pids_with(marker):
+            if pid not in seen:
+                seen.append(pid)
+        stop.wait(0.05)
 
 
 @needs_pre_commit
@@ -434,17 +490,27 @@ def _sleepers() -> str:
 def test_gate_timeout_fails_removes_worktree_and_kills_grandchildren(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    repo = _make_repo(tmp_path, _SLEEP_CONFIG)
-    monkeypatch.setattr(local_validation, "_PRE_COMMIT_TIMEOUT", 5)
+    marker = _unique_marker(31337)
+    repo = _make_repo(tmp_path, _SLEEP_CONFIG.format(marker=marker))
+    monkeypatch.setattr(local_validation, "_PRE_COMMIT_TIMEOUT", 20)
     runner = _runner(repo)
+    seen: List[int] = []
+    stop = threading.Event()
+    watcher = threading.Thread(target=_watch_for, args=(marker, seen, stop))
+    watcher.start()
     try:
         assert runner.check_pre_commit_hooks() is False
-        assert any("timed out" in e for e in runner.errors)
+        stop.set()
+        watcher.join()
+        assert seen, "the hook never started, so the timeout proved nothing"
+        assert any("timed out" in e for e in runner.errors), runner.errors
         assert "prepush-gate-" not in _git(repo, "worktree", "list")
         assert not list((repo / "tmp").glob("prepush-gate-*"))
-        assert _sleepers() == "", "hook grandchild outlived the gate"
+        assert _gone(marker), "hook grandchild outlived the gate"
     finally:
-        subprocess.run(["pkill", "-f", "sleep 31337"], check=False)
+        stop.set()
+        watcher.join()
+        _kill_pids(seen + _pids_with(marker))
 
 
 # --- tripwire: untracked content is not hashed (the gate's own log may grow) --
@@ -606,40 +672,114 @@ except BaseException as exc:
 """
 
 
-@needs_pre_commit
-@pytest.mark.skipif(os.name == "nt", reason="signals and process groups are POSIX")
-@pytest.mark.skipif(shutil.which("pgrep") is None, reason="pgrep not available")
-def test_sigterm_to_the_gate_removes_worktree_and_kills_children(
-    tmp_path: Path,
-) -> None:
-    import signal
-    import time
-
-    repo = _make_repo(tmp_path, _SLEEP_CONFIG)
+def _start_gate(
+    tmp_path: Path, source: str, repo: Path, *extra: str
+) -> "subprocess.Popen[str]":
     script = tmp_path / "gate.py"
-    script.write_text(_GATE_SCRIPT)
+    script.write_text(source)
     env = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
-    proc = subprocess.Popen(
-        [sys.executable, str(script), str(_SCRIPT), str(repo)],
+    return subprocess.Popen(
+        [sys.executable, str(script), str(_SCRIPT), str(repo), *extra],
         stdout=subprocess.PIPE,
         text=True,
         env=env,
     )
+
+
+def _read_until(proc: "subprocess.Popen[str]", wanted: str) -> List[str]:
+    assert proc.stdout is not None
+    lines: List[str] = []
+    while True:
+        line = proc.stdout.readline()
+        if not line:
+            raise AssertionError(f"gate exited before printing {wanted!r}: {lines}")
+        lines.append(line.strip())
+        if line.strip() == wanted:
+            return lines
+
+
+posix_only = pytest.mark.skipif(os.name == "nt", reason="signals/groups are POSIX")
+needs_pgrep = pytest.mark.skipif(shutil.which("pgrep") is None, reason="no pgrep")
+
+
+@needs_pre_commit
+@posix_only
+@needs_pgrep
+def test_sigterm_to_the_gate_removes_worktree_and_kills_children(
+    tmp_path: Path,
+) -> None:
+    marker = _unique_marker(31337)
+    repo = _make_repo(tmp_path, _SLEEP_CONFIG.format(marker=marker))
+    proc = _start_gate(tmp_path, _GATE_SCRIPT, repo)
     try:
-        assert proc.stdout is not None
-        assert proc.stdout.readline().strip() == "READY"
-        deadline = time.time() + 60
-        while time.time() < deadline and not _sleepers():
-            time.sleep(0.2)
-        assert _sleepers(), "the hook never started"
+        _read_until(proc, "READY")
+        assert _wait_until(lambda: bool(_pids_with(marker))), "hook never started"
         proc.send_signal(signal.SIGTERM)
-        proc.wait(timeout=60)
+        proc.wait(timeout=120)
         assert "prepush-gate-" not in _git(repo, "worktree", "list")
         assert not list((repo / "tmp").glob("prepush-gate-*"))
-        assert _sleepers() == "", "hook grandchild survived SIGTERM"
+        assert _gone(marker), "hook grandchild survived SIGTERM"
     finally:
         proc.kill()
-        subprocess.run(["pkill", "-f", "sleep 31337"], check=False)
+        _kill_pids(_pids_with(marker))
+
+
+_DOUBLE_TERM_SCRIPT = """\
+import importlib.util, signal, sys, time
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("lv", sys.argv[1])
+lv = importlib.util.module_from_spec(spec)
+sys.modules["lv"] = lv
+spec.loader.exec_module(lv)
+runner = lv.ValidationRunner(verbose=False, repo_root=Path(sys.argv[2]))
+before = signal.getsignal(signal.SIGTERM)
+real = runner.run_command
+
+def slow_removal(cmd, *args, **kwargs):
+    if "worktree" in cmd and "remove" in cmd:
+        print("CLEANUP", flush=True)
+        time.sleep(1.5)  # a long window in which a second SIGTERM can land
+    return real(cmd, *args, **kwargs)
+
+runner.run_command = slow_removal
+print("READY", flush=True)
+try:
+    runner.check_pre_commit_hooks()
+except BaseException as exc:
+    print("INTERRUPTED", type(exc).__name__, flush=True)
+    print("RESTORED", signal.getsignal(signal.SIGTERM) is before, flush=True)
+    raise SystemExit(143)
+"""
+
+
+@needs_pre_commit
+@posix_only
+@needs_pgrep
+@pytest.mark.parametrize("second_signal_lands", ["immediately", "during_cleanup"])
+def test_a_second_sigterm_cannot_skip_cleanup_or_the_handler_restore(
+    tmp_path: Path, second_signal_lands: str
+) -> None:
+    marker = _unique_marker(31337)
+    repo = _make_repo(tmp_path, _SLEEP_CONFIG.format(marker=marker))
+    proc = _start_gate(tmp_path, _DOUBLE_TERM_SCRIPT, repo)
+    try:
+        _read_until(proc, "READY")
+        assert _wait_until(lambda: bool(_pids_with(marker))), "hook never started"
+        proc.send_signal(signal.SIGTERM)
+        if second_signal_lands == "during_cleanup":
+            _read_until(proc, "CLEANUP")
+        proc.send_signal(signal.SIGTERM)
+        assert proc.stdout is not None
+        output = proc.stdout.read()
+        assert proc.wait(timeout=120) == 143, output
+        assert "INTERRUPTED GateTerminated" in output
+        assert "RESTORED True" in output
+        assert "prepush-gate-" not in _git(repo, "worktree", "list")
+        assert not list((repo / "tmp").glob("prepush-gate-*"))
+        assert _gone(marker)
+    finally:
+        proc.kill()
+        _kill_pids(_pids_with(marker))
 
 
 # --- repository-selection variables must not leak into the gate's children ---
@@ -829,11 +969,13 @@ sys.modules["lv"] = lv
 spec.loader.exec_module(lv)
 runner = lv.ValidationRunner(verbose=False, repo_root=Path(sys.argv[2]))
 real = runner.run_command
+marker = sys.argv[3]
 
 def slow(cmd, *args, **kwargs):
     if "worktree" in cmd and "add" in cmd:
         # A slow git: registers the worktree, then lingers before returning.
-        wrapped = ["sh", "-c", 'git worktree add --detach "$0" HEAD; sleep 31338', cmd[-2]]
+        script = 'git worktree add --detach "$0" HEAD; sleep ' + marker
+        wrapped = ["sh", "-c", script, cmd[-2]]
         print("ADDING", flush=True)
         return real(wrapped, *args, **kwargs)
     return real(cmd, *args, **kwargs)
@@ -848,50 +990,245 @@ except BaseException as exc:
 """
 
 
-def _slow_adders() -> str:
-    result = subprocess.run(
-        ["pgrep", "-f", "sleep 31338"], capture_output=True, text=True
-    )
-    return result.stdout.strip()
-
-
 @needs_pre_commit
-@pytest.mark.skipif(os.name == "nt", reason="signals and process groups are POSIX")
-@pytest.mark.skipif(shutil.which("pgrep") is None, reason="pgrep not available")
+@posix_only
+@needs_pgrep
 def test_sigterm_during_worktree_creation_leaves_no_worktree_or_orphan(
     tmp_path: Path,
 ) -> None:
-    import signal
-    import time
-
+    marker = _unique_marker(31338)
     repo = _make_repo(tmp_path, _PASSING_CONFIG)
-    script = tmp_path / "slow_gate.py"
-    script.write_text(_SLOW_ADD_SCRIPT)
-    env = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
-    proc = subprocess.Popen(
-        [sys.executable, str(script), str(_SCRIPT), str(repo)],
-        stdout=subprocess.PIPE,
-        text=True,
-        env=env,
-    )
+    proc = _start_gate(tmp_path, _SLOW_ADD_SCRIPT, repo, marker)
     try:
-        assert proc.stdout is not None
-        assert proc.stdout.readline().strip() == "READY"
-        assert proc.stdout.readline().strip() == "ADDING"
-        deadline = time.time() + 60
-        while time.time() < deadline and not _slow_adders():
-            time.sleep(0.1)
-        assert _slow_adders(), "the slow worktree add never started"
-        deadline = time.time() + 30
-        while time.time() < deadline and "prepush-gate-" not in _git(
-            repo, "worktree", "list"
-        ):
-            time.sleep(0.1)
+        _read_until(proc, "ADDING")
+        assert _wait_until(lambda: bool(_pids_with(marker))), "slow add never started"
+        assert _wait_until(
+            lambda: "prepush-gate-" in _git(repo, "worktree", "list"), 60
+        )
         proc.send_signal(signal.SIGTERM)
-        proc.wait(timeout=60)
+        proc.wait(timeout=120)
         assert "prepush-gate-" not in _git(repo, "worktree", "list")
         assert not list((repo / "tmp").glob("prepush-gate-*"))
-        assert _slow_adders() == "", "slow git child survived SIGTERM"
+        assert _gone(marker), "slow git child survived SIGTERM"
     finally:
         proc.kill()
-        subprocess.run(["pkill", "-f", "sleep 31338"], check=False)
+        _kill_pids(_pids_with(marker))
+
+
+# --- F1: a creation killed mid-checkout leaves a LOCKED registration ---------
+
+
+def _add_worktree(repo: Path, path: Path) -> None:
+    _git(repo, "worktree", "add", "--detach", str(path), "HEAD")
+
+
+def _registered(repo: Path, path: Path) -> bool:
+    return os.path.realpath(path) in {
+        os.path.realpath(line[len("worktree ") :])
+        for line in _git(repo, "worktree", "list", "--porcelain").splitlines()
+        if line.startswith("worktree ")
+    }
+
+
+def test_cleanup_removes_a_worktree_locked_as_initializing(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    runner = _runner(repo)
+    path = repo / "tmp" / "prepush-gate-1-aaaaaaaa"
+    _add_worktree(repo, path)
+    _git(repo, "worktree", "lock", "--reason", "initializing", str(path))
+
+    assert runner._remove_worktree(path) is False
+    assert runner.errors == []
+    assert not _registered(repo, path)
+    assert not path.exists()
+
+
+def test_cleanup_removes_a_locked_registration_whose_directory_is_gone(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    runner = _runner(repo)
+    path = repo / "tmp" / "prepush-gate-1-bbbbbbbb"
+    _add_worktree(repo, path)
+    _git(repo, "worktree", "lock", "--reason", "initializing", str(path))
+    shutil.rmtree(path)
+
+    assert runner._remove_worktree(path) is False
+    assert not _registered(repo, path)
+
+
+_SMUDGE_ATTRIBUTES = "a.txt filter=slow\n"
+
+
+def _make_repo_with_slow_checkout(tmp_path: Path, marker: str, config: str) -> Path:
+    """A repo whose checkout (of a NEW worktree) blocks inside a smudge filter."""
+    repo = _make_repo(tmp_path, config)
+    (repo / ".gitattributes").write_text(_SMUDGE_ATTRIBUTES)
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "attributes")
+    # Configured only after the commit, so only the later checkout is slow.
+    _git(repo, "config", "filter.slow.smudge", f"sleep {marker}; cat")
+    return repo
+
+
+def _locks(repo: Path) -> List[Path]:
+    return list((repo / ".git" / "worktrees").glob("*/locked"))
+
+
+@needs_pre_commit
+@posix_only
+@needs_pgrep
+def test_sigkill_of_git_mid_checkout_leaves_a_locked_registration(
+    tmp_path: Path,
+) -> None:
+    """Reproduction of the premise: SIGKILL during `worktree add` leaves a lock."""
+    marker = _unique_marker(31339)
+    repo = _make_repo_with_slow_checkout(tmp_path, marker, _PASSING_CONFIG)
+    path = repo / "tmp" / "prepush-gate-1-cccccccc"
+    proc = subprocess.Popen(
+        ["git", "worktree", "add", "--detach", str(path), "HEAD"],
+        cwd=repo,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    try:
+        assert _wait_until(lambda: bool(_pids_with(marker))), "checkout never blocked"
+        assert _locks(repo), "git holds no lock while checking out"
+        os.killpg(proc.pid, signal.SIGKILL)  # git's own cleanup never runs
+        proc.wait(timeout=60)
+        _kill_pids(_pids_with(marker))
+        assert _locks(repo)[0].read_text().strip() == "initializing"
+        _git(repo, "worktree", "prune")
+        assert _registered(repo, path), "prune is expected to skip a locked entry"
+        refused = subprocess.run(
+            ["git", "worktree", "remove", "--force", str(path)],
+            cwd=repo,
+            capture_output=True,
+            text=True,
+        )
+        assert refused.returncode != 0, "a single remove --force must be refused"
+
+        runner = _runner(repo)
+        assert runner._remove_worktree(path) is False
+        assert not _registered(repo, path) and not path.exists()
+        assert not _locks(repo)
+    finally:
+        if proc.poll() is None:
+            os.killpg(proc.pid, signal.SIGKILL)
+        _kill_pids(_pids_with(marker))
+
+
+@needs_pre_commit
+@posix_only
+@needs_pgrep
+def test_sigterm_to_the_gate_during_checkout_leaves_no_locked_worktree(
+    tmp_path: Path,
+) -> None:
+    marker = _unique_marker(31339)
+    repo = _make_repo_with_slow_checkout(tmp_path, marker, _PASSING_CONFIG)
+    proc = _start_gate(tmp_path, _GATE_SCRIPT, repo)
+    try:
+        _read_until(proc, "READY")
+        assert _wait_until(lambda: bool(_pids_with(marker))), "checkout never blocked"
+        assert _locks(repo), "git holds no lock while checking out"
+        proc.send_signal(signal.SIGTERM)
+        proc.wait(timeout=120)
+        assert "prepush-gate-" not in _git(repo, "worktree", "list")
+        assert not list((repo / "tmp").glob("prepush-gate-*"))
+        assert not _locks(repo)
+        assert _gone(marker)
+    finally:
+        proc.kill()
+        _kill_pids(_pids_with(marker))
+
+
+# --- F2: every gate call owns a unique worktree ------------------------------
+
+
+def test_gate_worktree_paths_are_unique_per_call(tmp_path: Path) -> None:
+    runner = _runner(_make_repo(tmp_path, _PASSING_CONFIG))
+    paths = {runner._gate_worktree_path() for _ in range(50)}
+    assert len(paths) == 50
+    assert all(p.name.startswith(f"prepush-gate-{os.getpid()}-") for p in paths)
+
+
+@needs_pre_commit
+def test_concurrent_gate_calls_in_one_process_do_not_share_or_remove_worktrees(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    runners = [_runner(repo) for _ in range(3)]
+    results: List[bool] = []
+    barrier = threading.Barrier(len(runners))
+
+    def run(runner: "local_validation.ValidationRunner") -> None:
+        barrier.wait()
+        results.append(runner.check_pre_commit_hooks())
+
+    threads = [threading.Thread(target=run, args=(r,)) for r in runners]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert results == [True] * len(runners), [r.errors for r in runners]
+    assert "prepush-gate-" not in _git(repo, "worktree", "list")
+
+
+@needs_pre_commit
+def test_a_failed_add_never_touches_another_calls_live_worktree(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    live = repo / "tmp" / f"prepush-gate-{os.getpid()}-live0000"
+    _add_worktree(repo, live)
+    (live / "marker.txt").write_text("in use by another call\n")
+
+    runner = _runner(repo)
+    _intercepting_run_command(runner, ["worktree", "add"], (128, "", "fatal: boom"))
+    assert runner.check_pre_commit_hooks() is False
+
+    assert (live / "marker.txt").exists()
+    assert _registered(repo, live)
+
+
+# --- F3: a relative repo_root is made absolute -------------------------------
+
+
+@needs_pre_commit
+def test_relative_repo_root_creates_and_removes_the_worktree_in_the_repo(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target_root = tmp_path / "target"
+    target_root.mkdir()
+    repo = _make_repo(target_root, _PASSING_CONFIG)
+    monkeypatch.chdir(tmp_path)
+    runner = local_validation.ValidationRunner(
+        verbose=False, repo_root=Path("target") / "repo"
+    )
+    assert runner.repo_root.is_absolute()
+
+    assert runner.check_pre_commit_hooks() is True
+    assert runner.errors == []
+    assert not (repo / "repo").exists(), "worktree created relative to the wrong dir"
+    assert "prepush-gate-" not in _git(repo, "worktree", "list")
+    assert not list((repo / "tmp").glob("prepush-gate-*"))
+
+
+# --- F6: the repo-env variable list is discovered once per process -----------
+
+
+def test_repo_env_var_list_is_discovered_once_per_process(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: List[int] = []
+
+    def counting() -> List[str]:
+        calls.append(1)
+        return ["GIT_DIR"]
+
+    monkeypatch.setattr(local_validation, "_discover_repo_env_vars", counting)
+    for _ in range(3):
+        local_validation.sanitized_git_env()
+    assert len(calls) == 1

@@ -13,11 +13,14 @@ Usage:
 """
 
 import ast
+import functools
 import os
+import shutil
 import subprocess
 import hashlib
 import signal
 import sys
+import uuid
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import argparse
@@ -86,6 +89,20 @@ def _discover_repo_env_vars() -> Optional[List[str]]:
     return names or None
 
 
+@functools.lru_cache(maxsize=1)
+def _repo_env_var_names() -> frozenset:
+    """The variable names to strip, computed once per process.
+
+    The list is a property of the installed git, not of the call, so asking
+    git for it on every command would double the process count of the gate.
+    Tests that patch ``_discover_repo_env_vars`` must call
+    ``_repo_env_var_names.cache_clear()``.
+    """
+    return frozenset(_discover_repo_env_vars() or ()) | frozenset(
+        _FALLBACK_REPO_ENV_VARS
+    )
+
+
 def sanitized_git_env() -> Dict[str, str]:
     """The current environment minus repository-selection variables.
 
@@ -93,7 +110,7 @@ def sanitized_git_env() -> Dict[str, str]:
     worktree or repository; every git and pre-commit child of the gate gets
     this environment so ``cwd`` alone decides which repository is used.
     """
-    names = set(_discover_repo_env_vars() or ()) | set(_FALLBACK_REPO_ENV_VARS)
+    names = set(_repo_env_var_names())
     names -= _KEPT_GIT_ENV_VARS
     return {key: value for key, value in os.environ.items() if key not in names}
 
@@ -105,8 +122,25 @@ class GateTerminated(BaseException):
     """
 
 
+#: Set once the first SIGTERM has been turned into ``GateTerminated`` (or the
+#: cleanup has started). Further SIGTERMs are then only recorded: raising a
+#: second time from inside the ``finally`` would skip the worktree removal and
+#: the handler restore.
+_sigterm_handled = False
+
+
 def _raise_gate_terminated(signum: int, frame: object) -> None:
+    global _sigterm_handled
+    if _sigterm_handled:
+        return
+    _sigterm_handled = True
     raise GateTerminated(f"received signal {signum}")
+
+
+def _ignore_further_sigterm() -> None:
+    """From now on SIGTERM no longer raises (cleanup must run to completion)."""
+    global _sigterm_handled
+    _sigterm_handled = True
 
 
 class ValidationRunner:
@@ -114,7 +148,11 @@ class ValidationRunner:
 
     def __init__(self, verbose: bool = False, repo_root: Optional[Path] = None):
         self.verbose = verbose
-        self.repo_root = repo_root if repo_root is not None else Path.cwd()
+        # Absolute: git resolves paths against cwd=repo_root while Path.exists()
+        # resolves against the process cwd; a relative root would disagree.
+        self.repo_root = Path(
+            repo_root if repo_root is not None else Path.cwd()
+        ).resolve()
         self.errors: List[str] = []
         self.warnings: List[str] = []
         self.start_time = time.time()
@@ -251,15 +289,15 @@ class ValidationRunner:
             "🪝 Running pre-commit hooks (HEAD, in a throwaway worktree)...", "INFO"
         )
 
-        worktree = self.repo_root / "tmp" / f"prepush-gate-{os.getpid()}"
+        worktree = self._gate_worktree_path()
         returncode, stdout, stderr = 1, "", ""
         removal_failed = False
         # Handler first: SIGTERM during worktree creation must also clean up.
         previous_handler = self._install_sigterm_handler()
         try:
-            # A worktree registration left by a killed earlier run (same pid
-            # reuse, or a directory deleted by hand) makes `git worktree add`
-            # refuse.
+            # A registration left by a killed earlier run whose directory is
+            # gone would make `git worktree add` refuse; this call's path is
+            # unique, but prune keeps the registry tidy.
             self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
             added, _, add_err = self.run_command(
                 ["git", "worktree", "add", "--detach", str(worktree), "HEAD"],
@@ -276,8 +314,13 @@ class ValidationRunner:
                 timeout=_PRE_COMMIT_TIMEOUT,
             )
         finally:
-            removal_failed = self._remove_worktree(worktree)
-            self._restore_sigterm_handler(previous_handler)
+            # The restore is nested so it ALWAYS runs, even if the removal is
+            # interrupted (KeyboardInterrupt); further SIGTERMs are muted first.
+            try:
+                _ignore_further_sigterm()
+                removal_failed = self._remove_worktree(worktree)
+            finally:
+                self._restore_sigterm_handler(previous_handler)
 
         output = "\n".join(part for part in (stdout, stderr) if part)
         if returncode != 0 or "diff --git" in output:
@@ -293,26 +336,75 @@ class ValidationRunner:
         self.log("Pre-commit hooks passed", "SUCCESS")
         return True
 
+    def _gate_worktree_path(self) -> Path:
+        """A path unique to one gate call, so ownership is unambiguous.
+
+        The pid alone is shared by threads of one process, and a failed
+        ``add`` for one call must never remove another call's live worktree.
+        """
+        name = f"prepush-gate-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+        return self.repo_root / "tmp" / name
+
+    def _registered_worktrees(self) -> Optional[set]:
+        """Real paths git has registered as worktrees; None if git cannot say."""
+        returncode, stdout, _ = self.run_command(
+            ["git", "worktree", "list", "--porcelain"], cwd=self.repo_root
+        )
+        if returncode != 0:
+            return None
+        return {
+            os.path.realpath(line[len("worktree ") :])
+            for line in stdout.splitlines()
+            if line.startswith("worktree ")
+        }
+
     def _remove_worktree(self, worktree: Path) -> bool:
         """Remove whatever exists of the throwaway worktree; True if it failed.
 
-        Safe when creation was partial or never happened, and never raises:
-        it runs in ``finally`` and must not mask the error being propagated.
+        ``worktree`` must be a path this call chose. Handles creation that was
+        partial, interrupted, or never happened. A creation killed mid-checkout
+        leaves a registration LOCKED with the reason "initializing" (git's own
+        cleanup never ran), which a plain ``remove --force`` and ``prune``
+        both refuse, so on failure it unlocks, retries, then deletes the
+        directory and prunes. It never raises ``Exception`` (it runs in
+        ``finally`` and must not mask the error being propagated); a
+        ``KeyboardInterrupt`` can still propagate, which is why the caller
+        nests the signal-handler restore.
         """
         failed = False
         try:
-            if worktree.exists():
+            target = os.path.realpath(worktree)
+
+            def present() -> bool:
+                registered = self._registered_worktrees()
+                return worktree.exists() or (
+                    registered is not None and target in registered
+                )
+
+            if present():
                 removed, _, remove_err = self.run_command(
                     ["git", "worktree", "remove", "--force", str(worktree)],
                     cwd=self.repo_root,
                 )
                 if removed != 0:
-                    failed = True
-                    self.errors.append(
-                        f"Pre-commit hooks: could not remove throwaway worktree "
-                        f"{worktree}: {remove_err.strip()}"
+                    self.run_command(
+                        ["git", "worktree", "unlock", str(worktree)],
+                        cwd=self.repo_root,
                     )
-                    self.log(self.errors[-1], "ERROR")
+                    removed, _, remove_err = self.run_command(
+                        ["git", "worktree", "remove", "--force", str(worktree)],
+                        cwd=self.repo_root,
+                    )
+                if removed != 0:
+                    shutil.rmtree(worktree, ignore_errors=True)
+                    self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
+                    if present():
+                        failed = True
+                        self.errors.append(
+                            f"Pre-commit hooks: could not remove throwaway worktree "
+                            f"{worktree}: {remove_err.strip()}"
+                        )
+                        self.log(self.errors[-1], "ERROR")
             self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
         except Exception as exc:  # cleanup must not mask the original error
             failed = True
@@ -321,15 +413,17 @@ class ValidationRunner:
 
     @staticmethod
     def _install_sigterm_handler() -> Optional[object]:
-        """Turn SIGTERM into an exception so cleanup runs (POSIX, main thread).
+        """Turn the first SIGTERM into an exception so cleanup runs (POSIX, main thread).
 
         Children run in their own session, so without this a SIGTERM to the
         gate (CI cancel, outer timeout) would leave them running and the
         throwaway worktree in place. Returns the previous handler, or None
         when no handler could be installed.
         """
+        global _sigterm_handled
         if os.name == "nt":
             return None
+        _sigterm_handled = False
         try:
             return signal.signal(signal.SIGTERM, _raise_gate_terminated)
         except ValueError:  # not the main thread

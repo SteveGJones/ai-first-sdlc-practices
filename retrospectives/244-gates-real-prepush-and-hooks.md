@@ -8,7 +8,7 @@
 
 ## Summary
 
-Eight commits (seven reviewed plus the third-round fix) make the repository's hooks passable, stop `--pre-push` from
+Nine commits (eight reviewed plus the fourth-round fix) make the repository's hooks passable, stop `--pre-push` from
 mutating the tree, and make CI block on the pinned pre-commit hooks. A run of
 `pre-commit run --all-files --show-diff-on-failure` in a throwaway worktree of
 the pre-final HEAD exits 0 with all 15 hooks Passed and a clean
@@ -281,3 +281,74 @@ running the gate in its sandbox; they were reproduced and fixed here.
 - **B4: documentation.** Commit count (Eight, not Five) and the normalised
   Python file count (64, including the extensionless `mlx-chat`, not 63) were
   corrected in this retrospective and the feature proposal.
+
+## Fourth review round
+
+Codex returned a second **NO-GO** and Opus reviewed the third-round fix; a Haiku
+verification run, which happened to overlap an Opus run on the same machine,
+found a flaky test. The branch now has nine commits: eight reviewed plus this
+fourth-round fix.
+
+- **Locked "initializing" worktree (Codex, blocking).** While `git worktree add`
+  checks out, git holds a lock on the new registration (reason `initializing`).
+  If the gate is terminated then, its process-group cleanup SIGKILLs git, so
+  git's own cleanup never runs and the registration stays locked. A single
+  `git worktree remove --force` refuses it and `git worktree prune` skips
+  locked entries. Codex reasoned this from git's source; it was REPRODUCED here:
+  a repo whose new-worktree checkout blocks inside a smudge filter (configured
+  after the commit, so only the later checkout is slow) holds the lock
+  deterministically. SIGKILL of git leaves `locked` containing `initializing`,
+  prune keeps the entry, `remove --force` is refused. Fix: `_remove_worktree`
+  tries `remove --force`, then `worktree unlock` and a second remove, then
+  deletes the directory and prunes; it also detects a registration whose
+  directory is already gone (via `git worktree list --porcelain`). Tests that
+  FAILED first: cleanup of a worktree locked as initializing, the same with the
+  directory gone, the SIGKILL reproduction (its premises hold on the old code;
+  the cleanup assertion fails), and the end-to-end test (SIGTERM to the gate
+  during a blocked checkout; the old gate left a locked worktree).
+- **Three regressions from the previous fix (Opus).** (1) A second SIGTERM
+  during cleanup raised `GateTerminated` out of the `finally` before the
+  handler restore, leaking the worktree and leaving the handler installed. Now
+  further SIGTERMs only set a flag once the first was handled or cleanup began,
+  and the restore sits in its own nested `try/finally`. What is guaranteed is
+  stated precisely: cleanup never raises `Exception`; a second signal cannot
+  skip the removal or the restore; a `KeyboardInterrupt` can still propagate but
+  cannot skip the restore. The test with a second SIGTERM during a slowed
+  cleanup FAILED first (handler not restored, worktree leaked); the variant
+  with the signals sent back to back passed before the fix (characterisation).
+  (2) Cleanup force-removed any existing path, and threads of one process share
+  a pid and therefore a path. Each call now uses
+  `prepush-gate-<pid>-<8 hex of uuid4>` and cleans up only that path. Tests: unique
+  paths and concurrent gate calls in threads FAILED first (a shared path); the
+  "failed add does not touch another call's live worktree" test passed before
+  (characterisation; the old path never matched its name). (3) A relative
+  `repo_root` made `Path.exists()` disagree with git (the worktree was created
+  under `target/target/...` and leaked). `repo_root` is now resolved; the test
+  FAILED first.
+- **Flaky test (Haiku run + Opus).** `test_gate_timeout_fails_removes_worktree_and_
+  kills_grandchildren` failed on Python 3.12 (a surviving `sleep 31337`) and
+  3.13 (exit -15, no "timed out" message) while other agents ran the same tests.
+  Root cause, confirmed: the tests identified processes with host-wide patterns
+  (`pgrep -f "sleep 31337"`, `pkill -f "sleep 31337"`), so concurrent runs saw
+  and killed each other's processes. Reproduced both symptoms against the old
+  test: a `pkill` loop from outside makes the hook die early (hook fails with
+  a signal exit and no "timed out"; this is the 3.13 symptom, not a gate bug:
+  the timeout path was never reached), and a foreign `sleep 31337` makes the
+  "grandchild outlived the gate" assertion fail (the 3.12 symptom). The Haiku
+  report called this pre-existing; it was not, the test was added in this PR.
+  Fix: every marker process uses a per-invocation unique sleep duration, only
+  that token is matched, cleanup in `finally` kills only pids carrying it, the
+  timeout test records that the hook actually started, and fixed sleeps became
+  polling loops with generous deadlines.
+- **Nit.** `sanitized_git_env()` no longer runs `git rev-parse
+  --local-env-vars` per command; the list is memoised per process.
+- **Proof of reliability.** `tests/test_pre_push_gate.py` (53 tests) was run 20 times
+  on each of Python 3.11, 3.12 and 3.13 (60 runs, 0 failures) while three further
+  copies of the same file looped on the same machine (183 concurrent runs, 0
+  failures), alongside unrelated agents' work. Afterwards no `sleep <digits>`
+  process remained and `git worktree list` showed only the main checkout.
+- **Not reproduced / limits.** A SIGTERM landing in the few instructions between
+  the handler's entry and the flag assignment is not covered (nested handler
+  invocations in that window would still raise). A locked registration left by
+  an older run is not cleaned by later runs (their paths are unique); it is
+  harmless but remains until `git worktree unlock` and prune.
