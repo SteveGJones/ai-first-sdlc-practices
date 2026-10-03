@@ -6,19 +6,25 @@
     "version": "1.0.0"
   },
   "plugins": [
-    { "name": "sdlc-core", "source": "./plugins/sdlc-core", "description": "Core SDLC rules, validators, enforcement, and workflows", "version": "1.0.0" },
+    { "name": "sdlc-core", "source": "./plugins/sdlc-core", "description": "Core SDLC rules, validators, enforcement, and workflows", "version": "1.4.0" },
     { "name": "sdlc-team-common", "source": "./plugins/sdlc-team-common", "description": "Cross-cutting specialist agents — architects, researchers, performance engineers", "version": "1.0.0" },
     { "name": "sdlc-team-ai", "source": "./plugins/sdlc-team-ai", "description": "AI/ML specialist agents — architects, prompt engineers, RAG designers", "version": "1.0.0" },
-    { "name": "sdlc-team-fullstack", "source": "./plugins/sdlc-team-fullstack", "description": "Full-stack agents — frontend, backend, API, DevOps architects", "version": "1.0.0" },
+    { "name": "sdlc-team-fullstack", "source": "./plugins/sdlc-team-fullstack", "description": "Web full-stack agents — frontend, backend, API, data, DevOps, UX & integration architects", "version": "2.0.0" },
+    { "name": "sdlc-team-mobile", "source": "./plugins/sdlc-team-mobile", "description": "Shared mobile base — cross-platform mobile architecture and interaction UX agents (install with sdlc-team-ios and/or sdlc-team-android)", "version": "0.1.0" },
+    { "name": "sdlc-team-ios", "source": "./plugins/sdlc-team-ios", "description": "iOS/iPadOS development — Apple HIG, SwiftUI, release engineering & performance agents + TestFlight/App Store/scaffold skills & submission pre-flight checks (pairs with sdlc-team-mobile)", "version": "0.4.0" },
+    { "name": "sdlc-team-android", "source": "./plugins/sdlc-team-android", "description": "Android development — Material Design 3, Compose, app architecture, Gradle, Play release & performance agents + scaffold/signing/play-release skills & Play pre-flight checks (pairs with sdlc-team-mobile)", "version": "0.3.0" },
     { "name": "sdlc-team-cloud", "source": "./plugins/sdlc-team-cloud", "description": "Cloud infrastructure agents — cloud, container, SRE specialists", "version": "1.0.0" },
     { "name": "sdlc-team-security", "source": "./plugins/sdlc-team-security", "description": "Security agents — security, compliance, privacy specialists", "version": "1.0.0" },
     { "name": "sdlc-team-pm", "source": "./plugins/sdlc-team-pm", "description": "Project management agents — agile coach, delivery manager, progress tracking", "version": "1.0.0" },
     { "name": "sdlc-team-docs", "source": "./plugins/sdlc-team-docs", "description": "Documentation agents — technical writer, documentation architect", "version": "1.0.0" },
     { "name": "sdlc-lang-python", "source": "./plugins/sdlc-lang-python", "description": "Python-specific validation, patterns, and expert agents", "version": "1.0.0" },
     { "name": "sdlc-lang-javascript", "source": "./plugins/sdlc-lang-javascript", "description": "JavaScript/TypeScript-specific validation and patterns", "version": "1.0.0" },
-    { "name": "sdlc-knowledge-base", "source": "./plugins/sdlc-knowledge-base", "description": "Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, cross-library queries with priming + synthesis, audit log, ingest/query/lint operations", "version": "0.2.0" },
+    { "name": "sdlc-lang-swift", "source": "./plugins/sdlc-lang-swift", "description": "Swift language expert — idiomatic Swift 6.2, strict concurrency, value semantics, generics, macros, SwiftPM (pairs with sdlc-team-ios)", "version": "0.1.0" },
+    { "name": "sdlc-lang-kotlin", "source": "./plugins/sdlc-lang-kotlin", "description": "Kotlin language expert — idiomatic Kotlin 2.x, coroutines & structured concurrency, Flow, sealed/data/value classes, generics, KSP, KMP basics (pairs with sdlc-team-android)", "version": "0.1.0" },
+    { "name": "sdlc-knowledge-base", "source": "./plugins/sdlc-knowledge-base", "description": "Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, cross-library queries with priming + synthesis, audit log, parallel map-reduce bulk ingest, ingest/query/lint operations", "version": "0.3.1" },
     { "name": "sdlc-programme", "source": "./plugins/sdlc-programme", "description": "Programme SDLC bundle — formal waterfall phase gates with mandatory cross-phase review (Method 1 substrate)", "version": "0.1.0" },
     { "name": "sdlc-assured", "source": "./plugins/sdlc-assured", "description": "Regulated-industry SDLC bundle (Method 2): positional namespace IDs, bidirectional traceability, DDD decomposition, KB extension to code, standard-specific exports (DO-178C, IEC 62304, ISO 26262, FDA DHF). v0.2.0: audit-ready at the tooling layer — typed evidence statuses, multi-format evidence model, platform-neutral dependency extractor, indirect DES-mediated coverage", "version": "0.2.0", "category": "sdlc-bundle" },
-    { "name": "sdlc-workflows", "source": "./plugins/sdlc-workflows", "description": "Containerised delegated execution — Archon DAG workflows with team-scoped Docker containers, tiered termination, 4 bundled workflows, 6 skills", "version": "0.1.0" }
+    { "name": "sdlc-workflows", "source": "./plugins/sdlc-workflows", "description": "Containerised delegated execution — Archon DAG workflows with team-scoped Docker containers, tiered termination, 4 bundled workflows, 6 skills", "version": "0.1.0" },
+    { "name": "sdlc-model-council", "source": "./plugins/sdlc-model-council", "description": "Cross-model council — assess the models reachable via locally installed peer agentic CLIs (codex, agy, opencode) against a standardized problem stack, cast them into a roster, and run cross-model fan-out plays (v1: Diff+Synthesis) chosen per project. Built on a unified delegation contract with graded permission postures; in-session and uncontainerised, distinct from sdlc-workflows' Archon/Docker/DAG delegation", "version": "0.1.0" }
   ]
 }

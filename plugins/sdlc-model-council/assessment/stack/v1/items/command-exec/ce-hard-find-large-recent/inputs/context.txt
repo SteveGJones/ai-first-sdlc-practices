@@ -1,0 +1,3 @@
+$ ls /var/log
+app/  nginx/  postgresql/  syslog  wtmp
+# some files are large and old, some large and new, some small and new

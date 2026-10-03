@@ -1,0 +1,847 @@
+You are given the complete source of a Texas Hold'em poker
+server. Write thorough technical documentation of this implementation.
+
+Document what the code ACTUALLY does — its real behaviour, rules and edge
+cases — derived only from the source below. Do not speculate about intent, do
+not describe features that are not present, and do not assume it follows any
+particular external specification. Where the implementation makes a specific
+choice (ordering of validation, how a rule is applied, what happens in an
+unusual case), state that choice precisely.
+
+Write the documentation in Markdown. Output only the documentation.
+
+
+## `server/app/models.py`
+
+```python
+"""Data model — Card, Deck, Player, Pot, Table. See docs/design-server.md."""
+
+from __future__ import annotations
+
+import random
+from dataclasses import dataclass, field
+from enum import Enum
+
+RANK_NAMES = {
+    2: "2",
+    3: "3",
+    4: "4",
+    5: "5",
+    6: "6",
+    7: "7",
+    8: "8",
+    9: "9",
+    10: "10",
+    11: "J",
+    12: "Q",
+    13: "K",
+    14: "A",
+}
+SUITS = ("s", "h", "d", "c")  # spades, hearts, diamonds, clubs
+
+
+@dataclass(frozen=True)
+class Card:
+    rank: int  # 2..14, 14 = Ace
+    suit: str  # one of SUITS
+
+    def __str__(self) -> str:
+        return f"{RANK_NAMES[self.rank]}{self.suit}"
+
+    def to_dict(self) -> dict:
+        return {"rank": self.rank, "suit": self.suit}
+
+
+def full_deck() -> list[Card]:
+    return [Card(rank, suit) for rank in range(2, 15) for suit in SUITS]
+
+
+class Deck:
+    """Server-side only. Never expose card order/remaining cards to clients."""
+
+    def __init__(self, rng: random.Random | None = None) -> None:
+        self._rng = rng or random.Random()
+        self._cards = full_deck()
+        self._rng.shuffle(self._cards)
+
+    def deal(self, n: int) -> list[Card]:
+        if n > len(self._cards):
+            raise ValueError("deck exhausted")
+        dealt, self._cards = self._cards[:n], self._cards[n:]
+        return dealt
+
+
+class PlayerStatus(str, Enum):
+    ACTIVE = "active"
+    FOLDED = "folded"
+    ALL_IN = "all_in"
+    SITTING_OUT = "sitting_out"
+
+
+class BettingRound(str, Enum):
+    PREFLOP = "preflop"
+    FLOP = "flop"
+    TURN = "turn"
+    RIVER = "river"
+    SHOWDOWN = "showdown"
+
+
+@dataclass
+class Player:
+    seat: int
+    name: str
+    stack: int
+    hole_cards: list[Card] | None = None
+    # A newly-seated player is eligible for the next hand.
+    status: PlayerStatus = PlayerStatus.ACTIVE
+    current_bet: int = 0
+    total_committed: int = 0
+    has_acted_this_round: bool = False
+
+    def reset_for_new_hand(self) -> None:
+        self.hole_cards = None
+        self.current_bet = 0
+        self.total_committed = 0
+        self.has_acted_this_round = False
+        if self.status != PlayerStatus.SITTING_OUT:
+            self.status = PlayerStatus.ACTIVE
+
+    def public_dict(self, reveal_hole_cards: bool) -> dict:
+        return {
+            "seat": self.seat,
+            "name": self.name,
+            "stack": self.stack,
+            "status": self.status.value,
+            "current_bet": self.current_bet,
+            "total_committed": self.total_committed,
+            "hole_cards": (
+                [c.to_dict() for c in self.hole_cards]
+                if reveal_hole_cards and self.hole_cards
+                else None
+            ),
+        }
+
+
+@dataclass
+class Pot:
+    amount: int
+    eligible_seats: set[int]
+
+    def to_dict(self) -> dict:
+        return {"amount": self.amount, "eligible_seats": sorted(self.eligible_seats)}
+
+
+@dataclass
+class Table:
+    table_id: str
+    small_blind: int
+    big_blind: int
+    players: dict[int, Player] = field(default_factory=dict)
+    button_seat: int | None = None
+    community_cards: list[Card] = field(default_factory=list)
+    betting_round: BettingRound | None = None
+    pots: list[Pot] = field(default_factory=list)
+    current_bet: int = 0
+    min_raise: int = 0
+    current_actor: int | None = None
+    last_aggressor: int | None = None
+    deck: Deck | None = None
+    hand_in_progress: bool = False
+    last_action_log: list[str] = field(default_factory=list)
+    last_showdown: list[dict] = field(default_factory=list)
+
+    def seated_seats_in_order(self) -> list[int]:
+        return sorted(self.players.keys())
+
+    def active_seats(self) -> list[int]:
+        return [
+            s
+            for s in self.seated_seats_in_order()
+            if self.players[s].status in (PlayerStatus.ACTIVE, PlayerStatus.ALL_IN)
+        ]
+
+    def non_folded_seats(self) -> list[int]:
+        return [
+            s
+            for s in self.seated_seats_in_order()
+            if self.players[s].status != PlayerStatus.FOLDED
+        ]
+
+    def to_dict(self, viewer_seat: int | None) -> dict:
+        showdown = self.betting_round == BettingRound.SHOWDOWN
+        return {
+            "table_id": self.table_id,
+            "small_blind": self.small_blind,
+            "big_blind": self.big_blind,
+            "button_seat": self.button_seat,
+            "community_cards": [c.to_dict() for c in self.community_cards],
+            "betting_round": self.betting_round.value if self.betting_round else None,
+            "pots": [p.to_dict() for p in self.pots],
+            "current_bet": self.current_bet,
+            "min_raise": self.min_raise,
+            "current_actor": self.current_actor,
+            "hand_in_progress": self.hand_in_progress,
+            "players": [
+                self.players[s].public_dict(
+                    reveal_hole_cards=(s == viewer_seat or showdown)
+                )
+                for s in self.seated_seats_in_order()
+            ],
+            "last_action_log": self.last_action_log[-20:],
+            "last_showdown": self.last_showdown,
+        }
+
+```
+
+## `server/app/hand_eval.py`
+
+```python
+"""Best 5-of-7 Texas Hold'em hand evaluation. See docs/design-server.md
+"Hand evaluation" for the category table and tie-break rules this
+implements.
+"""
+
+from __future__ import annotations
+
+from collections import Counter
+from itertools import combinations
+
+from .models import Card
+
+# Category indices, low to high — the score tuple's first element.
+(
+    HIGH_CARD,
+    ONE_PAIR,
+    TWO_PAIR,
+    TRIPS,
+    STRAIGHT,
+    FLUSH,
+    FULL_HOUSE,
+    QUADS,
+    STRAIGHT_FLUSH,
+) = range(9)
+
+CATEGORY_NAMES = {
+    HIGH_CARD: "high_card",
+    ONE_PAIR: "one_pair",
+    TWO_PAIR: "two_pair",
+    TRIPS: "three_of_a_kind",
+    STRAIGHT: "straight",
+    FLUSH: "flush",
+    FULL_HOUSE: "full_house",
+    QUADS: "four_of_a_kind",
+    STRAIGHT_FLUSH: "straight_flush",
+}
+
+
+def _straight_high(ranks_desc: list[int]) -> int | None:
+    """ranks_desc: 5 distinct ranks, descending. Returns the straight's high
+    card rank if these 5 form a straight (wheel A-2-3-4-5 counts, high=5),
+    else None."""
+    if ranks_desc == [14, 5, 4, 3, 2]:
+        return 5
+    if all(ranks_desc[i] - ranks_desc[i + 1] == 1 for i in range(4)):
+        return ranks_desc[0]
+    return None
+
+
+def score_five(cards: tuple[Card, Card, Card, Card, Card]) -> tuple:
+    """Score exactly 5 cards. Returns (category, *tiebreak) — higher tuple wins."""
+    ranks = sorted((c.rank for c in cards), reverse=True)
+    suits = [c.suit for c in cards]
+    is_flush = len(set(suits)) == 1
+    distinct_ranks = sorted(set(ranks), reverse=True)
+    straight_high = _straight_high(distinct_ranks) if len(distinct_ranks) == 5 else None
+
+    if is_flush and straight_high is not None:
+        return (STRAIGHT_FLUSH, straight_high)
+
+    counts = Counter(ranks)
+    # groups: list of (count, rank) sorted by count desc, then rank desc
+    groups = sorted(counts.items(), key=lambda kv: (-kv[1], -kv[0]))
+    group_counts = [c for _, c in groups]
+
+    if group_counts == [4, 1]:
+        quad_rank = groups[0][0]
+        kicker = groups[1][0]
+        return (QUADS, quad_rank, kicker)
+
+    if group_counts == [3, 2]:
+        return (FULL_HOUSE, groups[0][0], groups[1][0])
+
+    if is_flush:
+        return (FLUSH, *ranks)
+
+    if straight_high is not None:
+        return (STRAIGHT, straight_high)
+
+    if group_counts == [3, 1, 1]:
+        trips_rank = groups[0][0]
+        kickers = sorted((r for r, c in groups[1:]), reverse=True)
+        return (TRIPS, trips_rank, *kickers)
+
+    if group_counts == [2, 2, 1]:
+        pair_ranks = sorted((r for r, c in groups if c == 2), reverse=True)
+        kicker = next(r for r, c in groups if c == 1)
+        return (TWO_PAIR, pair_ranks[0], pair_ranks[1], kicker)
+
+    if group_counts == [2, 1, 1, 1]:
+        pair_rank = groups[0][0]
+        kickers = sorted((r for r, c in groups[1:]), reverse=True)
+        return (ONE_PAIR, pair_rank, *kickers)
+
+    return (HIGH_CARD, *ranks)
+
+
+def best_hand(hole_cards: list[Card], community_cards: list[Card]) -> tuple:
+    """Best 5-card score from hole + community (2 + 5 = 7 for a full board,
+    fewer community cards supported for completeness though a real hand
+    always reaches showdown with all 5)."""
+    all_cards = list(hole_cards) + list(community_cards)
+    if len(all_cards) < 5:
+        raise ValueError("need at least 5 cards to score a hand")
+    return max(score_five(combo) for combo in combinations(all_cards, 5))
+
+
+def describe(score: tuple) -> str:
+    return CATEGORY_NAMES[score[0]]
+
+```
+
+## `server/app/game_engine.py`
+
+```python
+"""Turn state machine, betting rounds, blinds, side pots, showdown.
+See docs/design-server.md for the full spec this implements.
+"""
+
+from __future__ import annotations
+
+from .hand_eval import best_hand, describe
+from .models import BettingRound, Deck, Player, PlayerStatus, Pot, Table
+
+
+class ActionError(Exception):
+    """Raised for any illegal action request. The caller (API layer) turns
+    this into a 409 with {"error": str(exc)} and leaves state untouched —
+    game_engine functions never partially mutate state before raising."""
+
+
+def _hand_seats(table: Table) -> list[int]:
+    """Seats participating in THIS hand (i.e. not SITTING_OUT), in seat order."""
+    return [
+        s
+        for s in table.seated_seats_in_order()
+        if table.players[s].status != PlayerStatus.SITTING_OUT
+    ]
+
+
+def _next_seat(seats: list[int], from_seat: int) -> int:
+    idx = seats.index(from_seat)
+    return seats[(idx + 1) % len(seats)]
+
+
+def _first_actor_from(table: Table, seats: list[int], start_seat: int) -> int | None:
+    """First seat at/after start_seat (inclusive) whose status is ACTIVE
+    (can still act this round). None if no such seat exists."""
+    n = len(seats)
+    start_idx = seats.index(start_seat)
+    for i in range(n):
+        seat = seats[(start_idx + i) % n]
+        if table.players[seat].status == PlayerStatus.ACTIVE:
+            return seat
+    return None
+
+
+def start_new_hand(table: Table, deck: Deck | None = None) -> Table:
+    if table.hand_in_progress:
+        raise ActionError("a hand is already in progress")
+
+    for player in table.players.values():
+        if player.status == PlayerStatus.SITTING_OUT:
+            continue
+        if player.stack <= 0:
+            player.status = PlayerStatus.SITTING_OUT
+        else:
+            player.reset_for_new_hand()
+
+    seats = _hand_seats(table)
+    if len(seats) < 2:
+        raise ActionError("need at least 2 players with chips to start a hand")
+
+    if table.button_seat is None or table.button_seat not in seats:
+        table.button_seat = seats[0]
+    else:
+        table.button_seat = _next_seat(seats, table.button_seat)
+
+    table.community_cards = []
+    table.pots = []
+    table.last_action_log = []
+    table.last_showdown = []
+    # Fresh shuffled deck, unless a deck (e.g. a test double) is injected.
+    table.deck = deck if deck is not None else table.deck.__class__()
+    table.hand_in_progress = True
+    table.last_aggressor = None
+
+    heads_up = len(seats) == 2
+    if heads_up:
+        sb_seat = table.button_seat
+        bb_seat = _next_seat(seats, sb_seat)
+    else:
+        sb_seat = _next_seat(seats, table.button_seat)
+        bb_seat = _next_seat(seats, sb_seat)
+
+    _post_blind(table, sb_seat, table.small_blind)
+    _post_blind(table, bb_seat, table.big_blind)
+
+    for seat in seats:
+        table.players[seat].hole_cards = table.deck.deal(2)
+
+    table.betting_round = BettingRound.PREFLOP
+    table.current_bet = table.big_blind
+    table.min_raise = table.big_blind
+    first_to_act = _next_seat(seats, bb_seat)
+    table.current_actor = _first_actor_from(table, seats, first_to_act)
+    table.last_aggressor = bb_seat
+
+    _maybe_end_hand_early(table)
+    return table
+
+
+def _post_blind(table: Table, seat: int, amount: int) -> None:
+    player = table.players[seat]
+    add = min(amount, player.stack)
+    player.stack -= add
+    player.current_bet += add
+    player.total_committed += add
+    if player.stack == 0:
+        player.status = PlayerStatus.ALL_IN
+    table.last_action_log.append(f"seat {seat} posts blind {add}")
+
+
+def submit_action(
+    table: Table, seat: int, action: str, amount: int | None = None
+) -> Table:
+    if not table.hand_in_progress:
+        raise ActionError("no hand in progress")
+    if table.current_actor != seat:
+        raise ActionError("not your turn")
+
+    player = table.players[seat]
+    if player.status != PlayerStatus.ACTIVE:
+        raise ActionError("player cannot act")
+
+    to_call = table.current_bet - player.current_bet
+
+    if action == "fold":
+        player.status = PlayerStatus.FOLDED
+        table.last_action_log.append(f"seat {seat} folds")
+
+    elif action == "check":
+        if to_call != 0:
+            raise ActionError("cannot check, facing a bet")
+        table.last_action_log.append(f"seat {seat} checks")
+
+    elif action == "call":
+        if to_call <= 0:
+            raise ActionError("nothing to call, use check")
+        add = min(to_call, player.stack)
+        player.stack -= add
+        player.current_bet += add
+        player.total_committed += add
+        if player.stack == 0:
+            player.status = PlayerStatus.ALL_IN
+        table.last_action_log.append(f"seat {seat} calls {add}")
+
+    elif action == "bet":
+        if table.current_bet != 0:
+            raise ActionError("cannot bet, must call/raise/fold")
+        _apply_wager(table, player, amount, is_raise=False)
+        table.last_action_log.append(f"seat {seat} bets {player.current_bet}")
+
+    elif action == "raise":
+        if table.current_bet == 0:
+            raise ActionError("cannot raise, must bet")
+        _apply_wager(table, player, amount, is_raise=True)
+        table.last_action_log.append(f"seat {seat} raises to {player.current_bet}")
+
+    else:
+        raise ActionError(f"unknown action: {action}")
+
+    player.has_acted_this_round = True
+    _advance(table)
+    return table
+
+
+def _apply_wager(
+    table: Table, player: Player, amount: int | None, is_raise: bool
+) -> None:
+    if amount is None:
+        raise ActionError("amount required")
+
+    max_reachable = player.current_bet + player.stack
+    target = min(amount, max_reachable)
+    is_all_in = target == max_reachable and player.stack > 0
+
+    if not is_raise:
+        min_target = min(table.big_blind, max_reachable)
+        if target < min_target:
+            raise ActionError(f"bet below minimum {min_target}")
+    else:
+        min_target = min(table.current_bet + table.min_raise, max_reachable)
+        if target < min_target:
+            raise ActionError(f"raise below minimum {min_target}")
+
+    increment = target - player.current_bet
+    if increment <= 0:
+        raise ActionError("wager must increase current bet")
+
+    player.stack -= increment
+    player.current_bet = target
+    player.total_committed += increment
+    if player.stack == 0:
+        player.status = PlayerStatus.ALL_IN
+
+    raise_size = target - table.current_bet
+    full_raise = raise_size >= table.min_raise
+    if raise_size > 0:
+        if full_raise or not is_all_in:
+            table.min_raise = max(table.min_raise, raise_size)
+            table.current_bet = target
+            table.last_aggressor = player.seat
+            _reset_acted_except(table, player.seat)
+        else:
+            # Short all-in raise (design-server.md "Short all-in raise"):
+            # does not reopen action for players who already matched the
+            # previous current_bet, and does not raise min_raise. It DOES
+            # raise current_bet so later-to-act players still owe up to it.
+            table.current_bet = target
+    elif not is_raise:
+        # first bet this round (table.current_bet was 0)
+        table.current_bet = target
+        table.min_raise = max(table.big_blind, target)
+        table.last_aggressor = player.seat
+        _reset_acted_except(table, player.seat)
+
+
+def _reset_acted_except(table: Table, seat: int) -> None:
+    for s, p in table.players.items():
+        if s != seat and p.status == PlayerStatus.ACTIVE:
+            p.has_acted_this_round = False
+
+
+def _betting_round_complete(table: Table) -> bool:
+    for player in table.players.values():
+        if player.status != PlayerStatus.ACTIVE:
+            continue
+        if not player.has_acted_this_round:
+            return False
+        if player.current_bet != table.current_bet:
+            return False
+    return True
+
+
+def _advance(table: Table) -> None:
+    if _maybe_end_hand_early(table):
+        return
+
+    if not _betting_round_complete(table):
+        seats = _hand_seats(table)
+        nxt = _next_seat(seats, table.current_actor)
+        table.current_actor = _first_actor_from(table, seats, nxt)
+        if table.current_actor is None:
+            _advance_betting_round(table)
+        return
+
+    _advance_betting_round(table)
+
+
+def _maybe_end_hand_early(table: Table) -> bool:
+    remaining = table.non_folded_seats()
+    if len(remaining) <= 1:
+        _finish_hand(table, awarded_seats=remaining)
+        return True
+    return False
+
+
+def _count_can_still_act(table: Table) -> int:
+    return sum(1 for p in table.players.values() if p.status == PlayerStatus.ACTIVE)
+
+
+def _advance_betting_round(table: Table) -> None:
+    for p in table.players.values():
+        p.current_bet = 0
+        p.has_acted_this_round = False
+    table.current_bet = 0
+    table.min_raise = table.big_blind
+
+    order = {
+        BettingRound.PREFLOP: BettingRound.FLOP,
+        BettingRound.FLOP: BettingRound.TURN,
+        BettingRound.TURN: BettingRound.RIVER,
+        BettingRound.RIVER: BettingRound.SHOWDOWN,
+    }
+    deal_counts = {BettingRound.FLOP: 3, BettingRound.TURN: 1, BettingRound.RIVER: 1}
+
+    next_round = order[table.betting_round]
+    if next_round in deal_counts:
+        table.community_cards.extend(table.deck.deal(deal_counts[next_round]))
+    table.betting_round = next_round
+    table.last_action_log.append(f"-- {next_round.value} --")
+
+    if next_round == BettingRound.SHOWDOWN:
+        _finish_hand(table, awarded_seats=None)
+        return
+
+    if _count_can_still_act(table) < 2:
+        # Everyone remaining is all-in (or only one can act): deal out the
+        # rest of the board with no further betting, straight to showdown.
+        table.current_actor = None
+        _advance_betting_round(table)
+        return
+
+    # First ACTIVE seat strictly after the button.
+    seats = _hand_seats(table)
+    nxt = _next_seat(seats, table.button_seat)
+    table.current_actor = _first_actor_from(table, seats, nxt)
+
+
+def _side_pots(table: Table) -> list[Pot]:
+    """See docs/design-server.md "Side-pot allocation algorithm"."""
+    contributions = {
+        s: p.total_committed for s, p in table.players.items() if p.total_committed > 0
+    }
+    if not contributions:
+        return []
+    levels = sorted(set(contributions.values()))
+    pots: list[Pot] = []
+    previous_level = 0
+    for level in levels:
+        layer_players = [s for s, c in contributions.items() if c >= level]
+        layer_amount = (level - previous_level) * len(layer_players)
+        if layer_amount > 0:
+            eligible = {
+                s
+                for s in layer_players
+                if table.players[s].status != PlayerStatus.FOLDED
+            }
+            pots.append(Pot(amount=layer_amount, eligible_seats=eligible))
+        previous_level = level
+    return pots
+
+
+def _finish_hand(table: Table, awarded_seats: list[int] | None = None) -> None:
+    table.pots = _side_pots(table)
+    table.last_showdown = []
+
+    if awarded_seats is not None:
+        # Fold-out: the sole remaining player wins every pot outright.
+        winner = awarded_seats[0] if awarded_seats else None
+        for pot in table.pots:
+            if winner is not None:
+                table.players[winner].stack += pot.amount
+        if winner is not None:
+            table.last_action_log.append(
+                f"seat {winner} wins {sum(p.amount for p in table.pots)} (all others folded)"
+            )
+    else:
+        scores: dict[int, tuple] = {}
+        for seat in table.non_folded_seats():
+            player = table.players[seat]
+            score = best_hand(player.hole_cards, table.community_cards)
+            scores[seat] = score
+            table.last_showdown.append(
+                {
+                    "seat": seat,
+                    "hole_cards": [c.to_dict() for c in player.hole_cards],
+                    "hand_category": describe(score),
+                }
+            )
+
+        for pot in table.pots:
+            eligible = [s for s in pot.eligible_seats if s in scores]
+            if not eligible:
+                continue
+            best_score = max(scores[s] for s in eligible)
+            winners = sorted(s for s in eligible if scores[s] == best_score)
+            share = pot.amount // len(winners)
+            remainder = pot.amount - share * len(winners)
+            # Odd chips go to the first winning seat clockwise from the
+            # button (design-server.md), approximated here by seat order
+            # starting from the button — deterministic tie-break.
+            seats = _hand_seats(table)
+            ordered_winners = sorted(
+                winners,
+                key=lambda s: (seats.index(s) - seats.index(table.button_seat))
+                % len(seats),
+            )
+            for i, w in enumerate(ordered_winners):
+                table.players[w].stack += share + (remainder if i == 0 else 0)
+            table.last_action_log.append(
+                f"pot of {pot.amount} won by seat(s) {ordered_winners}"
+            )
+
+    table.hand_in_progress = False
+    table.betting_round = BettingRound.SHOWDOWN
+    table.current_actor = None
+
+```
+
+## `server/app/main.py`
+
+```python
+"""FastAPI app implementing the REST + WebSocket API contract in
+docs/design-server.md "API contract". In-memory table store — no
+database, no auth, no persistence across restarts (out of scope per
+docs/architecture.md "Multi-table / multi-game scope")."""
+
+from __future__ import annotations
+
+import uuid
+from typing import Any
+
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from .game_engine import ActionError, start_new_hand, submit_action
+from .models import Deck, Player, Table
+
+app = FastAPI(title="poker-capstone-exemplar")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+TABLES: dict[str, Table] = {}
+# table_id -> {websocket: seat}. A dict keyed by the socket (rather than
+# stashing the seat as a dynamic attribute on the WebSocket object) needs no
+# type-ignore for an attribute the WebSocket type stub doesn't declare.
+CONNECTIONS: dict[str, dict[WebSocket, int | None]] = {}
+
+
+def _get_table(table_id: str) -> Table:
+    table = TABLES.get(table_id)
+    if table is None:
+        raise HTTPException(status_code=404, detail="table not found")
+    return table
+
+
+async def _broadcast(table: Table) -> None:
+    sockets = CONNECTIONS.get(table.table_id, {})
+    stale: list[WebSocket] = []
+    for ws, seat in sockets.items():
+        try:
+            await ws.send_json(table.to_dict(viewer_seat=seat))
+        except Exception:
+            stale.append(ws)
+    for ws in stale:
+        del sockets[ws]
+
+
+class CreateTableRequest(BaseModel):
+    small_blind: int = 1
+    big_blind: int = 2
+
+
+class SeatPlayerRequest(BaseModel):
+    name: str
+    buy_in: int
+
+
+class ActionRequest(BaseModel):
+    seat: int
+    action: str
+    amount: int | None = None
+
+
+@app.post("/tables")
+def create_table(req: CreateTableRequest) -> dict[str, str]:
+    if req.small_blind <= 0 or req.big_blind <= 0 or req.big_blind < req.small_blind:
+        raise HTTPException(status_code=400, detail="invalid blinds")
+    table_id = uuid.uuid4().hex[:12]
+    TABLES[table_id] = Table(
+        table_id=table_id,
+        small_blind=req.small_blind,
+        big_blind=req.big_blind,
+        deck=Deck(),
+    )
+    CONNECTIONS[table_id] = {}
+    return {"table_id": table_id}
+
+
+@app.post("/tables/{table_id}/players")
+def seat_player(table_id: str, req: SeatPlayerRequest) -> dict[str, int]:
+    table = _get_table(table_id)
+    if req.buy_in <= 0:
+        raise HTTPException(status_code=400, detail="buy_in must be positive")
+    if table.hand_in_progress:
+        raise HTTPException(status_code=409, detail="cannot seat mid-hand")
+    seat = 0
+    while seat in table.players:
+        seat += 1
+    table.players[seat] = Player(seat=seat, name=req.name, stack=req.buy_in)
+    return {"seat": seat}
+
+
+@app.post("/tables/{table_id}/start")
+async def start_hand(table_id: str) -> dict[str, Any]:
+    table = _get_table(table_id)
+    try:
+        start_new_hand(table)
+    except ActionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    await _broadcast(table)
+    return table.to_dict(viewer_seat=None)
+
+
+@app.post("/tables/{table_id}/actions")
+async def post_action(table_id: str, req: ActionRequest) -> dict[str, Any]:
+    table = _get_table(table_id)
+    try:
+        submit_action(table, req.seat, req.action, req.amount)
+    except ActionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    await _broadcast(table)
+    return table.to_dict(viewer_seat=req.seat)
+
+
+@app.get("/tables/{table_id}/state")
+def get_state(table_id: str, seat: int | None = None) -> dict[str, Any]:
+    table = _get_table(table_id)
+    return table.to_dict(viewer_seat=seat)
+
+
+@app.websocket("/tables/{table_id}/ws")
+async def table_ws(
+    websocket: WebSocket, table_id: str, seat: int | None = None
+) -> None:
+    table = TABLES.get(table_id)
+    if table is None:
+        await websocket.close(code=4404)
+        return
+    await websocket.accept()
+    CONNECTIONS.setdefault(table_id, {})[websocket] = seat
+    try:
+        await websocket.send_json(table.to_dict(viewer_seat=seat))
+        while True:
+            # This socket is push-only from the server's side; the client
+            # never sends game commands over it (those go through REST —
+            # see docs/architecture.md "Why WebSocket + REST"). We still
+            # need to await something to detect disconnects.
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        conns = CONNECTIONS.get(table_id, {})
+        conns.pop(websocket, None)
+
+
+@app.get("/healthz")
+def healthz() -> dict[str, str]:
+    return {"status": "ok"}
+
+```

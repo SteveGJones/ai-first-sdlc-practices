@@ -1,0 +1,38 @@
+[
+  {
+    "id": "d1",
+    "file": "rate_limiter.py",
+    "line": 28,
+    "line_window": 3,
+    "match_any": [
+      "KeyError",
+      "del self\\.calls\\[key\\]",
+      "unknown key.*(raise|error)",
+      "reset.*(missing|unseen|unknown) key"
+    ]
+  },
+  {
+    "id": "d2",
+    "file": "rate_limiter.py",
+    "line": 32,
+    "line_window": 3,
+    "match_any": [
+      "RuntimeError",
+      "mutat(e|ing).*(dict|iterat)",
+      "dictionary changed size",
+      "iterat(e|ing).*while.*delet"
+    ]
+  },
+  {
+    "id": "d3",
+    "file": "rate_limiter.py",
+    "line": 40,
+    "line_window": 3,
+    "match_any": [
+      "ValueError",
+      "min\\(\\).*empty",
+      "empty (sequence|list|history)",
+      "no (call )?history"
+    ]
+  }
+]

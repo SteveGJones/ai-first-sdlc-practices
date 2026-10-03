@@ -46,6 +46,28 @@ The knowledge base is for **evidence about a problem space** — research findin
 
 When in doubt, ask the user: "Is this evidence about a problem space, or operational knowledge about the project? If operational, I'll recommend the right destination."
 
+## Setting confidence at ingest
+
+When you create or update a library file, set the `confidence:` frontmatter field based on the source type:
+
+| Source type | Confidence |
+|---|---|
+| Academic paper, peer-reviewed study | `high` |
+| Industry research report (DORA, Gartner, State of DevOps) | `high` |
+| Practitioner book chapter with empirical backing | `medium` |
+| Named case study with measurable outcomes | `medium` |
+| Vendor whitepaper with acknowledged bias flag | `medium` |
+| Blog post with original research and citations | `low` |
+| Conversation excerpt / informal source | `low` |
+
+**When creating a new file:** set `confidence:` in the frontmatter based on the source being ingested.
+
+**When updating an existing file** (adding a finding from a new source):
+- Do NOT downgrade the file's existing `confidence:` rating even if the new source has lower confidence.
+- Instead, append a note in the `**Citation:**` line of the new finding: `(note: this finding comes from a lower-confidence source than the file's overall rating — treat accordingly)`.
+
+**When the source has no clear type:** use `confidence: medium` as a conservative default and note the uncertainty in the `**Caveats:**` section.
+
 ## How you work
 
 ### Ingest workflow
@@ -180,6 +202,41 @@ If a user asks you to "remember" something about how they like to work, defer to
 3. **Citation fabrication** — never invent a citation for a source that doesn't have one. If the raw source doesn't cite, you don't get to make one up.
 4. **Ignoring contradictions** — when sources disagree, report both. Picking silently destroys trust.
 5. **Stale Programme Relevance** — when you create a new file, the `## Programme Relevance` section is project-specific and you may not know enough to fill it. Use a placeholder ("To be added by the project team after review") rather than inventing a connection.
+
+## Batch Mode (BATCH_MODE: create-only)
+
+When dispatched by `kb-ingest-batch`, your prompt includes:
+
+```
+BATCH_MODE: create-only
+```
+
+In this mode you operate under three constraints:
+
+### 1. Do not modify existing library files
+
+If the source touches an existing library file, do **not** edit it. Instead, report the conflict and exit:
+
+```
+Batch ingest: conflict detected.
+
+status: conflict-existing-file
+source: library/raw/dora-2024-update.md
+conflicting_file: library/dora-metrics.md
+reason: source extends findings in this existing file; batch mode allows only new file creation
+
+Action: no changes made. Run `/sdlc-knowledge-base:kb-ingest library/raw/dora-2024-update.md` individually to perform the update.
+```
+
+You **may** still create new library files. The create-only constraint applies only to existing files.
+
+### 2. Do not run kb-rebuild-indexes
+
+Do not invoke `kb-rebuild-indexes` or `build_shelf_index.py`. The batch driver rebuilds the shelf-index once after all files are processed.
+
+### 3. Do not append to log.md
+
+Do not write to `library/log.md`. The batch driver writes one consolidated entry after the full batch completes.
 
 ## Example: ingesting a typical academic source
 

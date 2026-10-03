@@ -1,0 +1,99 @@
+# Material Design 3 — Curated technology registry entry
+# Covers: Google's Material Design 3 (M3 / Material You) design system across
+# web (@material/web), Compose, and Flutter. Maps to our material-design-3-architect agent.
+
+display_name: Material Design 3
+category: design-system
+description: >
+  Google's Material Design 3 ("Material You") design language — HCT/dynamic
+  colour, the md.ref/md.sys/md.comp three-tier token system, adaptive layout,
+  tonal elevation, and Material 3 Expressive (2025). Realised per platform by
+  Jetpack Compose Material3 (androidx.compose.material3), Material Components for
+  Android (com.google.android.material), Material Web (@material/web, in
+  maintenance mode), and Flutter (useMaterial3). Detection here is npm-based;
+  Android (Gradle) and Flutter (pubspec) usage is common but not auto-scanned by
+  the setup registry — surface the agent manually for those projects.
+
+section_a:
+  - name: Material Theme Builder (web tool)
+    type: design-tool
+    package: material-theme-builder
+    source: https://m3.material.io/theme-builder
+    publisher: Google (material-foundation)
+    publisher_verified: true
+    description: >
+      Generate a full accessible M3 scheme (tonal palettes + role assignments,
+      light/dark, Standard/Medium/High contrast) from a seed colour and export
+      Compose (Color.kt/Theme.kt), Android XML, Flutter, Web CSS
+      (--md-sys-color-*), and JSON design tokens. Also a Figma plugin.
+    verified_date: 2026-07-22
+
+section_b:
+  - name: Material Web
+    package: "@material/web"
+    ecosystem: npm
+    source: https://www.npmjs.com/package/@material/web
+    publisher: Google (material-components)
+    description: >
+      M3 web components (Lit custom elements, e.g. <md-filled-button>). NOTE —
+      in maintenance mode (GitHub Discussion #5642): stable, but no new features
+      and PRs generally not accepted. Theme via --md-sys-* CSS custom properties.
+    usage: "import '@material/web/button/filled-button.js'"
+    docs: https://material-web.dev
+    verified_date: 2026-07-22
+
+  - name: Material Color Utilities
+    package: "@material/material-color-utilities"
+    ecosystem: npm
+    source: https://www.npmjs.com/package/@material/material-color-utilities
+    publisher: Google (material-foundation)
+    description: >
+      Algorithmic core of M3 dynamic colour — HCT colour space, image quantize,
+      score, tonal palettes, and scheme generation. Powers every seed→scheme
+      generator across platforms.
+    usage: "import { Hct, themeFromSourceColor } from '@material/material-color-utilities'"
+    docs: https://github.com/material-foundation/material-color-utilities
+    verified_date: 2026-07-22
+
+  - name: Material Components for the Web (legacy)
+    package: material-components-web
+    ecosystem: npm
+    source: https://www.npmjs.com/package/material-components-web
+    publisher: Google (material-components)
+    description: >
+      The older MDC-Web (Material 2-era) foundation/component library. Presence
+      often signals a codebase that should be assessed for M2→M3 migration.
+    verified_date: 2026-07-22
+
+section_c: []
+
+our_agents:
+  - agent: material-design-3-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Primary specialist. M3 tokens, HCT/dynamic colour, components, adaptive
+      layout, tonal elevation, motion, Material 3 Expressive, and platform
+      implementation (Compose Material3 / Material Web / Flutter), plus M2→M3
+      migration.
+  - agent: ux-ui-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Framework-agnostic UX strategy, user research, information architecture,
+      and cross-design-system accessibility governance. Owns the open
+      build-vs-buy / which-design-system question; defers M3 fidelity to
+      material-design-3-architect.
+  - agent: mobile-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Native Android / Flutter / cross-platform app architecture around the M3
+      UI layer (Compose Material3, Flutter useMaterial3).
+
+trusted_sources:
+  - url: https://m3.material.io
+    type: vendor-docs
+  - url: https://github.com/material-components/material-web
+    type: github-org
+  - url: https://github.com/material-foundation/material-color-utilities
+    type: github-org
+  - url: https://developer.android.com/develop/ui/compose/designsystems/material3
+    type: vendor-docs

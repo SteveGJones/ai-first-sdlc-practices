@@ -1,0 +1,4 @@
+10:00:02 ERROR db query failed id=42
+10:00:02 DEBUG  retrying with backoff=200ms
+10:00:03 DEBUG  connection reset by peer
+10:00:03 DEBUG  giving up after 3 attempts
