@@ -116,6 +116,8 @@ def _kill_pids(pids: List[int], marker: str) -> None:
         try:
             os.kill(pid, signal.SIGKILL)
         except (ProcessLookupError, PermissionError):
+            # The marker process already exited (or is not ours): nothing to
+            # kill, which is the outcome the cleanup wants.
             pass
 
 

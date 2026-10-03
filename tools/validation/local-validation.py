@@ -330,6 +330,8 @@ class ValidationRunner:
             else:
                 os.killpg(proc.pid, signal.SIGKILL)
         except (ProcessLookupError, PermissionError):
+            # The group has already exited (or is not ours to signal): there
+            # is nothing left to kill, which is the outcome we want.
             pass
 
     def check_python_syntax(self) -> bool:
@@ -405,7 +407,7 @@ class ValidationRunner:
             self.errors.append(f"Pre-commit hooks failed: {tmp_error}")
             return False
         worktree = self._gate_worktree_path()
-        returncode, stdout, stderr = 1, "", ""
+        hook_result: Optional[Tuple[int, str, str]] = None
         removal_failed = False
         claimed = False
         scope = _SigtermScope()
@@ -433,7 +435,7 @@ class ValidationRunner:
                     f"Pre-commit hooks failed: cannot create worktree: {add_err}"
                 )
                 return False
-            returncode, stdout, stderr = self.run_command(
+            hook_result = self.run_command(
                 ["pre-commit", "run", "--all-files", "--show-diff-on-failure"],
                 cwd=worktree,
                 timeout=_PRE_COMMIT_TIMEOUT,
@@ -457,6 +459,12 @@ class ValidationRunner:
                     finally:
                         scope.unblock()
 
+        if hook_result is None:
+            # Every early exit above returns, so this is unreachable today;
+            # fail closed rather than read an unassigned result.
+            self.errors.append("Pre-commit hooks failed: the hooks did not run")
+            return False
+        returncode, stdout, stderr = hook_result
         output = "\n".join(part for part in (stdout, stderr) if part)
         if returncode != 0 or "diff --git" in output:
             self.errors.append(f"Pre-commit hooks failed:\n{output}")
