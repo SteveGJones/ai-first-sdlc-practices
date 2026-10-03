@@ -17,6 +17,8 @@ Exit codes:
     1 -- validation errors found
 """
 
+from __future__ import annotations
+
 import argparse
 import logging
 import sys
