@@ -34,7 +34,7 @@ cannot change the working tree, and CI blocks on the same pinned hooks.
 
 ## Proposed Solution
 
-Nine commits on this branch (after `631a626`; eight reviewed plus the fourth-round fix): the five steps below plus four review-round fix commits:
+Ten commits on this branch (after `631a626`; nine reviewed plus the fifth-round fix): the five steps below plus five review-round fix commits:
 
 1. **Corpus excludes and hook args** (`025aaca`). A top-level `exclude:` in
    `.pre-commit-config.yaml` makes every hook skip `research/poker-capstone/runs`,
@@ -169,3 +169,29 @@ retrospective.
 - **Tests**: process markers in `tests/test_pre_push_gate.py` are unique per
   invocation (the previous host-wide `sleep 31337` patterns made concurrent runs
   interfere); waits are polling loops. The repo-env variable list is memoised.
+
+## Fifth review round
+
+Opus verified a swallowed-SIGTERM regression introduced by the previous round, a
+thread bug in the shared mute flag, and an unguarded deletion (it deleted a whole
+throwaway checkout); Codex returned a second NO-GO (deletion safety,
+concurrency). The branch now has ten commits: nine reviewed plus this fix.
+
+- **Signal handling replaced, not patched again.** No module-level signal state.
+  A module lock serialises gate calls; the SIGTERM handler is installed only in
+  the main thread on POSIX; the handler blocks further SIGTERM then raises
+  `GateTerminated`; cleanup blocks SIGTERM, kills the hook's process group,
+  removes the worktree, restores the previous handler, then unblocks, so a
+  SIGTERM that arrives during cleanup (even a plain one) is delivered to the
+  original disposition afterwards and is never dropped. A previous `SIG_IGN`
+  stays ignored by the caller's choice. The earlier statement that further
+  SIGTERMs were "recorded" was wrong: they were dropped.
+- **Residual window**: a signal handled between the end of the `try` body and the
+  first statement of the `finally` still raises from inside the `finally` and
+  would skip that call's cleanup. Nothing more is claimed.
+- **Deletion guard**: `_remove_worktree` only touches a non-symlink path directly
+  under the real `<repo>/tmp`, named `prepush-gate-<pid>-<8 hex>`, minted by this
+  call; creation refuses a symlinked `tmp`. Anything else is refused with an
+  error naming the failed check.
+- **Tests**: new tests for each of the above, each seen to fail first; the timeout
+  test re-verifies the marker before killing recorded pids.

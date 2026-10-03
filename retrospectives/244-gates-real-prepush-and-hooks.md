@@ -8,7 +8,7 @@
 
 ## Summary
 
-Nine commits (eight reviewed plus the fourth-round fix) make the repository's hooks passable, stop `--pre-push` from
+Ten commits (nine reviewed plus the fifth-round fix) make the repository's hooks passable, stop `--pre-push` from
 mutating the tree, and make CI block on the pinned pre-commit hooks. A run of
 `pre-commit run --all-files --show-diff-on-failure` in a throwaway worktree of
 the pre-final HEAD exits 0 with all 15 hooks Passed and a clean
@@ -258,7 +258,8 @@ running the gate in its sandbox; they were reproduced and fixed here.
   git runs in its own session and survives; a registered worktree could leak).
   Fix: the handler is installed first, creation and use share one
   `try/finally`, and cleanup (`_remove_worktree`) removes only what exists,
-  always prunes, and never raises. Proof: a subprocess test runs a slow `git
+  always prunes. (An earlier draft said it "never raises"; it catches
+  `Exception` only, see the fifth round.) Proof: a subprocess test runs a slow `git
   worktree add` and sends SIGTERM mid-creation; it FAILED before (worktree
   leaked, `sleep` orphan survived) and passes after. A unit test that an
   exception raised right after creation still removes the worktree FAILED
@@ -286,8 +287,8 @@ running the gate in its sandbox; they were reproduced and fixed here.
 
 Codex returned a second **NO-GO** and Opus reviewed the third-round fix; a Haiku
 verification run, which happened to overlap an Opus run on the same machine,
-found a flaky test. The branch now has nine commits: eight reviewed plus this
-fourth-round fix.
+found a flaky test. The branch then had nine commits: eight reviewed plus this
+fourth-round fix (the fifth-round fix below makes ten).
 
 - **Locked "initializing" worktree (Codex, blocking).** While `git worktree add`
   checks out, git holds a lock on the new registration (reason `initializing`).
@@ -309,9 +310,11 @@ fourth-round fix.
 - **Three regressions from the previous fix (Opus).** (1) A second SIGTERM
   during cleanup raised `GateTerminated` out of the `finally` before the
   handler restore, leaking the worktree and leaving the handler installed. Now
-  further SIGTERMs only set a flag once the first was handled or cleanup began,
-  and the restore sits in its own nested `try/finally`. What is guaranteed is
-  stated precisely: cleanup never raises `Exception`; a second signal cannot
+  further SIGTERMs were made to `return` from the handler once the first was
+  handled or cleanup began (CORRECTION: this was written up as "only set a flag"
+  / "recorded", but nothing recorded them: they were DROPPED, which the fifth
+  round shows is a regression), and the restore sits in its own nested
+  `try/finally`. What was claimed at the time: cleanup does not raise `Exception`; a second signal cannot
   skip the removal or the restore; a `KeyboardInterrupt` can still propagate but
   cannot skip the restore. The test with a second SIGTERM during a slowed
   cleanup FAILED first (handler not restored, worktree leaked); the variant
@@ -352,3 +355,101 @@ fourth-round fix.
   invocations in that window would still raise). A locked registration left by
   an older run is not cleaned by later runs (their paths are unique); it is
   harmless but remains until `git worktree unlock` and prune.
+
+## Fifth review round
+
+Opus reviewed the fourth-round fix and Codex returned a second **NO-GO**. The
+branch now has ten commits: nine reviewed plus this fifth-round fix.
+
+- **A swallowed SIGTERM (Opus, verified, serious regression from the previous
+  round).** `_ignore_further_sigterm()` muted SIGTERM on the SUCCESS path too and
+  nothing recorded or re-delivered it. A SIGTERM arriving during normal cleanup
+  (no earlier signal) was dropped: the gate returned True and the script exited
+  0, where the pre-fix version terminated. A CI cancel or outer timeout landing
+  in that window would have been lost and a push could have gone ahead. The
+  earlier statements in this document that further SIGTERMs "only set a flag" and
+  were "recorded" were wrong: they were dropped.
+- **Module-level flag shared across threads (Opus + Codex, verified).**
+  `_sigterm_handled` was process-wide state: a worker thread's gate call
+  finishing muted the main thread's SIGTERM (the main gate ran to its timeout and
+  exited 0), and a worker could clear it during the main call's cleanup.
+- **Unguarded deletion (Opus + Codex, verified).** `_remove_worktree` deleted
+  whatever it was given: `_remove_worktree(repo_root)` on a throwaway repo
+  deleted the whole checkout including `.git` and returned success. Codex also
+  showed that a pre-existing symlink at the chosen path, or a symlinked `tmp`,
+  could make git or `rmtree` act on a different worktree or path. Codex's
+  concurrency concerns (shared process-wide signal disposition and `tmp/`
+  between concurrent calls) are the same root cause as the flag.
+- **Design change: mask-based, flag-free handling.** The patched flag design is
+  replaced, not patched again. (a) A module-level `threading.Lock` is held for
+  the whole of `check_pre_commit_hooks`, so concurrent calls queue. (b) A SIGTERM
+  handler is installed only in the main thread on POSIX (`pthread_sigmask`
+  available); otherwise nothing is installed. All handler state lives in a
+  per-call `_SigtermScope`, none at module level. (c) The handler blocks further
+  SIGTERM for the thread (`pthread_sigmask`) before raising `GateTerminated`, so
+  a second signal stays pending in the kernel instead of interrupting the
+  unwinding. (d) Cleanup runs in a fixed order, each step nested so a failure
+  cannot skip a later one: block SIGTERM, kill the hook's process group if still
+  running, remove the worktree, restore the PREVIOUS handler, unblock. Because
+  the previous handler is back before the unblock, a SIGTERM that arrived at any
+  point in cleanup, including a plain one with no earlier signal, is delivered to
+  the original disposition afterwards (normally terminating the process). It is
+  honoured after cleanup, never dropped. If the caller's own previous disposition
+  was `SIG_IGN` it stays ignored, so a pending SIGTERM is then discarded by that
+  choice. Installation blocks SIGTERM while swapping the handler, so no signal
+  lands between the swap and the bookkeeping.
+- **Containment guard on deletion.** Before any `git worktree remove`, `unlock` or
+  `rmtree`, `_remove_worktree` requires: the path's real parent equals the real
+  `<repo_root>/tmp` (itself not a symlink); the name matches
+  `^prepush-gate-\d+-[0-9a-f]{8}$`; the path is not a symlink and is not, or an
+  ancestor of, the repo root; and the path is one this runner minted via
+  `_gate_worktree_path()`. Otherwise nothing is touched and an error naming the
+  path and the failed check is recorded. Creation refuses a symlinked `tmp` (or a
+  `tmp` that resolves outside the repo) and a path that already exists, and only
+  a path that creation actually claimed is ever removed.
+- **Residual window, stated honestly.** A SIGTERM whose Python handler runs after
+  the `try` body ends but before the first statement of the `finally` raises
+  `GateTerminated` from inside the `finally` before the block is in place, which
+  skips that call's cleanup. The cleanup is the first statement of the `finally`
+  so this is a single bytecode boundary, but it is not closed. Children spawned
+  during cleanup (the git removal commands) inherit the blocked SIGTERM mask. A
+  `KeyboardInterrupt` is not handled by this scheme.
+- **Tests.** Tests that FAILED first (each run against the old code): SIGTERM
+  during normal cleanup is honoured (old: exit 0 and `STILL ALIVE`); a worker
+  thread's gate call does not mute the main-thread gate (old: the SIGTERM was
+  swallowed and the gate ran on to its timeout); two SIGTERMs separated by a
+  confirmed delay still clean up, restore the handler and end the process by
+  signal (old: exit 143, second signal dropped); concurrent gate calls serialise
+  (old: all three overlapped); and six refusal tests (repo root, a path outside
+  `tmp`, a non-matching name, a matching name this call did not choose, a symlink
+  at the chosen path, a symlinked `tmp`), each asserting file bytes intact.
+  The timeout test's cleanup now re-verifies that a recorded pid still carries
+  the unique marker before SIGKILL (a hardening change, not a failing test). The
+  `second_sigterm[immediately]` case was removed: two back-to-back SIGTERMs merge
+  into one signal, so it could not detect a regression. Three tests that called
+  `_remove_worktree` with hand-made paths now use a path the runner minted.
+
+## Process incident: unexplained reset of the working files (fifth round)
+
+While the fifth-round fix agent was running reliability loops against the main
+checkout, its four edited files (`tools/validation/local-validation.py`,
+`tests/test_pre_push_gate.py`, this retrospective and the feature proposal)
+were reset to `HEAD` at 19:54:55 local time. All four files carry the same
+modification time to the second and no other file was touched, which is the
+signature of one bulk checkout or restore of the modified files rather than of
+an editor or of the agent's own writes. The agent had not run such a command;
+the stash list was empty and the reflog showed no reset. Several other agents
+(reviewers and verification runs) were active in the same repository at the
+time, so the cause could not be attributed and is not claimed here.
+
+The work survived because the agent had already committed it in a throwaway
+worktree (commit 698cd5b) and saved a patch. It was re-applied to the clean
+tree, shown to be byte-identical to the verified commit (an empty diff against
+698cd5b), and committed immediately. This is the second time files in this
+checkout were reverted under a running agent (the first, Part A reverting
+Part B's work, is described above and was attributable).
+
+Lessons recorded for future work: give every parallel agent its own throwaway
+worktree for BOTH editing and verification (not just for running hooks);
+have agents commit to a throwaway branch early; and treat the main checkout as
+read-only for everything except the final integration step.

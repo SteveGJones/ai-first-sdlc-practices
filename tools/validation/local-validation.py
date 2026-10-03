@@ -18,8 +18,10 @@ import os
 import shutil
 import subprocess
 import hashlib
+import re
 import signal
 import sys
+import threading
 import uuid
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -122,25 +124,96 @@ class GateTerminated(BaseException):
     """
 
 
-#: Set once the first SIGTERM has been turned into ``GateTerminated`` (or the
-#: cleanup has started). Further SIGTERMs are then only recorded: raising a
-#: second time from inside the ``finally`` would skip the worktree removal and
-#: the handler restore.
-_sigterm_handled = False
+#: Held for the whole of ``check_pre_commit_hooks`` so concurrent gate calls
+#: in one process queue instead of interleaving (they would otherwise share
+#: the process-wide SIGTERM disposition and the ``tmp/`` directory).
+_GATE_LOCK = threading.Lock()
+
+#: The only names the gate ever deletes: ``tmp/prepush-gate-<pid>-<8 hex>``.
+_GATE_WORKTREE_NAME = re.compile(r"^prepush-gate-\d+-[0-9a-f]{8}$")
 
 
-def _raise_gate_terminated(signum: int, frame: object) -> None:
-    global _sigterm_handled
-    if _sigterm_handled:
-        return
-    _sigterm_handled = True
-    raise GateTerminated(f"received signal {signum}")
+class _SigtermScope:
+    """SIGTERM handling for ONE gate call; holds no module-level state.
 
+    POSIX main thread only: elsewhere (Windows, worker threads) it installs
+    nothing and every method is a no-op. The scheme is mask-based, not
+    flag-based:
 
-def _ignore_further_sigterm() -> None:
-    """From now on SIGTERM no longer raises (cleanup must run to completion)."""
-    global _sigterm_handled
-    _sigterm_handled = True
+    * the handler blocks further SIGTERM for the thread, then raises
+      ``GateTerminated`` so ``finally`` blocks run; a second signal stays
+      pending in the kernel instead of interrupting the unwinding;
+    * cleanup blocks SIGTERM first, restores the PREVIOUS handler, and only
+      then unblocks, so a SIGTERM that arrived at any point in cleanup
+      (including one with no earlier signal) is delivered to the original
+      disposition afterwards and is never dropped. The one exception is the
+      caller's own choice: if the previous disposition was SIG_IGN it stays
+      ignored, so a pending SIGTERM is discarded by that choice.
+
+    Residual window: a SIGTERM whose Python handler runs after the ``try``
+    body ends but before the first statement of the ``finally`` raises
+    ``GateTerminated`` from inside the ``finally`` before the block is in
+    place, which would skip that call's cleanup. The cleanup is therefore the
+    very first statement of the ``finally``. Children spawned during cleanup
+    inherit the blocked mask.
+    """
+
+    def __init__(self) -> None:
+        self.active = (
+            os.name != "nt"
+            and hasattr(signal, "pthread_sigmask")
+            and threading.current_thread() is threading.main_thread()
+        )
+        self._previous: object = signal.SIG_DFL
+        self._installed = False
+        self._was_blocked = False
+        self._cleaning = False
+        self._deferred = False
+
+    def _handler(self, signum: int, frame: object) -> None:
+        signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGTERM})
+        if self._cleaning:
+            # Raised too late to be useful (cleanup already began): keep it
+            # for delivery to the original disposition after the restore.
+            self._deferred = True
+            return
+        raise GateTerminated(f"received signal {signum}")
+
+    def install(self) -> None:
+        if not self.active:
+            return
+        # Blocked while swapping so no signal can land between the swap and
+        # the bookkeeping; it is delivered (to our handler) on unblock.
+        old_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGTERM})
+        self._was_blocked = signal.SIGTERM in old_mask
+        try:
+            self._previous = signal.signal(signal.SIGTERM, self._handler)
+            self._installed = True
+        finally:
+            if not self._was_blocked:
+                signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGTERM})
+
+    def begin_cleanup(self) -> None:
+        if not self.active:
+            return
+        self._cleaning = True
+        signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGTERM})
+
+    def restore_handler(self) -> None:
+        if not (self.active and self._installed):
+            return
+        previous = self._previous
+        signal.signal(
+            signal.SIGTERM,
+            signal.SIG_DFL if previous is None else previous,  # type: ignore[arg-type]
+        )
+        self._installed = False
+        if self._deferred and previous != signal.SIG_IGN:
+            os.kill(os.getpid(), signal.SIGTERM)  # pending until unblocked
+
+    def unblock(self) -> None:
+        if self.active and not self._was_blocked:
+            signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGTERM})
 
 
 class ValidationRunner:
@@ -156,6 +229,8 @@ class ValidationRunner:
         self.errors: List[str] = []
         self.warnings: List[str] = []
         self.start_time = time.time()
+        self._owned_worktrees: set = set()
+        self._live_procs: List["subprocess.Popen[str]"] = []
 
     def log(self, message: str, level: str = "INFO") -> None:
         """Log messages with timestamps"""
@@ -196,6 +271,16 @@ class ValidationRunner:
             self.errors.append(error_msg)
             return 1, "", error_msg
 
+        self._live_procs.append(proc)
+        try:
+            return self._communicate(proc, cmd, timeout)
+        finally:
+            if proc in self._live_procs:
+                self._live_procs.remove(proc)
+
+    def _communicate(
+        self, proc: "subprocess.Popen[str]", cmd: List[str], timeout: int
+    ) -> Tuple[int, str, str]:
         try:
             stdout, stderr = proc.communicate(timeout=timeout)
             return proc.returncode, stdout, stderr
@@ -213,6 +298,15 @@ class ValidationRunner:
         except BaseException:
             self._kill_process_group(proc)
             raise
+
+    def _kill_live_children(self) -> None:
+        """Kill the process group of any child still running (cleanup step)."""
+        for proc in list(self._live_procs):
+            try:
+                if proc.poll() is None:
+                    self._kill_process_group(proc)
+            except Exception:  # cleanup must continue to the worktree removal
+                pass
 
     @staticmethod
     def _kill_process_group(proc: "subprocess.Popen[str]") -> None:
@@ -289,12 +383,30 @@ class ValidationRunner:
             "🪝 Running pre-commit hooks (HEAD, in a throwaway worktree)...", "INFO"
         )
 
+        with _GATE_LOCK:
+            return self._run_gate_locked()
+
+    def _run_gate_locked(self) -> bool:
+        tmp_error = self._tmp_dir_error()
+        if tmp_error:
+            self.errors.append(f"Pre-commit hooks failed: {tmp_error}")
+            return False
         worktree = self._gate_worktree_path()
         returncode, stdout, stderr = 1, "", ""
         removal_failed = False
-        # Handler first: SIGTERM during worktree creation must also clean up.
-        previous_handler = self._install_sigterm_handler()
+        claimed = False
+        scope = _SigtermScope()
         try:
+            # Inside the try: a SIGTERM delivered when install() unblocks must
+            # still reach the cleanup below.
+            scope.install()
+            if os.path.lexists(worktree):
+                self.errors.append(
+                    f"Pre-commit hooks failed: {worktree} already exists; "
+                    "refusing to use it"
+                )
+                return False
+            claimed = True
             # A registration left by a killed earlier run whose directory is
             # gone would make `git worktree add` refuse; this call's path is
             # unique, but prune keeps the registry tidy.
@@ -314,13 +426,21 @@ class ValidationRunner:
                 timeout=_PRE_COMMIT_TIMEOUT,
             )
         finally:
-            # The restore is nested so it ALWAYS runs, even if the removal is
-            # interrupted (KeyboardInterrupt); further SIGTERMs are muted first.
+            # Order matters and is fixed: block SIGTERM, kill the hook's
+            # process group, remove the worktree, restore the previous handler,
+            # unblock. Each step is nested so a failure cannot skip a later one.
+            scope.begin_cleanup()
             try:
-                _ignore_further_sigterm()
-                removal_failed = self._remove_worktree(worktree)
+                self._kill_live_children()
             finally:
-                self._restore_sigterm_handler(previous_handler)
+                try:
+                    if claimed:
+                        removal_failed = self._remove_worktree(worktree)
+                finally:
+                    try:
+                        scope.restore_handler()
+                    finally:
+                        scope.unblock()
 
         output = "\n".join(part for part in (stdout, stderr) if part)
         if returncode != 0 or "diff --git" in output:
@@ -336,14 +456,46 @@ class ValidationRunner:
         self.log("Pre-commit hooks passed", "SUCCESS")
         return True
 
+    def _tmp_dir_error(self) -> Optional[str]:
+        """Why ``<repo>/tmp`` cannot safely hold the worktree, or None."""
+        tmp = self.repo_root / "tmp"
+        if os.path.islink(tmp):
+            return f"{tmp} is a symlink; refusing to create a worktree outside the repo"
+        if os.path.lexists(tmp) and os.path.realpath(tmp) != os.path.join(
+            os.path.realpath(self.repo_root), "tmp"
+        ):
+            return f"{tmp} resolves outside the repo (symlinked ancestor); refusing"
+        return None
+
     def _gate_worktree_path(self) -> Path:
-        """A path unique to one gate call, so ownership is unambiguous.
+        """A resolved path unique to one gate call, recorded as owned by it.
 
         The pid alone is shared by threads of one process, and a failed
         ``add`` for one call must never remove another call's live worktree.
+        Only paths minted here are ever deleted by ``_remove_worktree``.
         """
         name = f"prepush-gate-{os.getpid()}-{uuid.uuid4().hex[:8]}"
-        return self.repo_root / "tmp" / name
+        path = Path(os.path.realpath(self.repo_root)) / "tmp" / name
+        self._owned_worktrees.add(str(path))
+        return path
+
+    def _removal_refusal(self, worktree: Path) -> Optional[str]:
+        """Which safety check ``worktree`` fails, or None if deletion is allowed."""
+        repo = os.path.realpath(self.repo_root)
+        tmp = os.path.join(repo, "tmp")
+        path = os.path.abspath(worktree)
+        if os.path.islink(path):
+            return "it is a symlink"
+        if os.path.realpath(os.path.dirname(path)) != tmp or os.path.islink(tmp):
+            return f"it is not directly under the repo's own tmp/ ({tmp})"
+        if not _GATE_WORKTREE_NAME.match(os.path.basename(path)):
+            return "its name does not match prepush-gate-<pid>-<8 hex>"
+        real = os.path.realpath(path)
+        if real == repo or repo.startswith(real + os.sep):
+            return "it is, or contains, the repository root"
+        if path not in self._owned_worktrees:
+            return "it was not the path chosen by this gate call (ownership)"
+        return None
 
     def _registered_worktrees(self) -> Optional[set]:
         """Real paths git has registered as worktrees; None if git cannot say."""
@@ -361,16 +513,25 @@ class ValidationRunner:
     def _remove_worktree(self, worktree: Path) -> bool:
         """Remove whatever exists of the throwaway worktree; True if it failed.
 
-        ``worktree`` must be a path this call chose. Handles creation that was
+        ``worktree`` must be a path this call chose under ``<repo>/tmp`` with the
+        gate's name pattern and not a symlink; otherwise nothing is touched and
+        True is returned with an error. Handles creation that was
         partial, interrupted, or never happened. A creation killed mid-checkout
         leaves a registration LOCKED with the reason "initializing" (git's own
         cleanup never ran), which a plain ``remove --force`` and ``prune``
         both refuse, so on failure it unlocks, retries, then deletes the
-        directory and prunes. It never raises ``Exception`` (it runs in
-        ``finally`` and must not mask the error being propagated); a
-        ``KeyboardInterrupt`` can still propagate, which is why the caller
-        nests the signal-handler restore.
+        directory and prunes. It catches ``Exception`` (it runs in ``finally``
+        and must not mask the error being propagated); a ``KeyboardInterrupt``
+        can still propagate, which is why the caller nests the later steps.
         """
+        refusal = self._removal_refusal(worktree)
+        if refusal:
+            self.errors.append(
+                f"Pre-commit hooks: refusing to remove {worktree}: {refusal}; "
+                "nothing was touched"
+            )
+            self.log(self.errors[-1], "ERROR")
+            return True
         failed = False
         try:
             target = os.path.realpath(worktree)
@@ -410,33 +571,6 @@ class ValidationRunner:
             failed = True
             self.errors.append(f"Pre-commit hooks: worktree cleanup failed: {exc}")
         return failed
-
-    @staticmethod
-    def _install_sigterm_handler() -> Optional[object]:
-        """Turn the first SIGTERM into an exception so cleanup runs (POSIX, main thread).
-
-        Children run in their own session, so without this a SIGTERM to the
-        gate (CI cancel, outer timeout) would leave them running and the
-        throwaway worktree in place. Returns the previous handler, or None
-        when no handler could be installed.
-        """
-        global _sigterm_handled
-        if os.name == "nt":
-            return None
-        _sigterm_handled = False
-        try:
-            return signal.signal(signal.SIGTERM, _raise_gate_terminated)
-        except ValueError:  # not the main thread
-            return None
-
-    @staticmethod
-    def _restore_sigterm_handler(previous: Optional[object]) -> None:
-        if previous is None:
-            return
-        try:
-            signal.signal(signal.SIGTERM, previous)  # type: ignore[arg-type]
-        except ValueError:
-            pass
 
     def _git_output(self, args: List[str]) -> str:
         result = subprocess.run(
