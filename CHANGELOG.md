@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **sdlc-assured 0.2.0 — audit-ready at the tooling layer (EPIC #188, PR #189, 2026-05-02)**
+  - Typed evidence statuses: `Evidence-Status` field replaces untyped boolean traceability with `LINKED`, `MANUAL_EVIDENCE_REQUIRED`, and `CONFIGURATION_ARTIFACT` outcomes; gap-typing 30/30 across the bundle's own corpus
+  - Multi-format evidence model: a single requirement can be satisfied by Python `# implements:` annotations, markdown evidence tables, YAML satisfies-blocks, or satisfies-by-existence (file presence as evidence) — all consumed by a unified `EvidenceIndexEntry` API
+  - Platform-neutral dependency extractor: `GenericRegexExtractor` + `PythonAstExtractor` shared interface; non-Python projects no longer need Python AST to participate in coverage analysis
+  - Indirect DES-mediated coverage: requirements satisfied through DES (design) intermediaries are now correctly counted in RTM rather than reported as gaps; RTM source-code gap improved from 68.18% to 4.55% across the bundle's own 44-REQ corpus
+  - REQ-quality linter (`tools/validation/check-req-quality.py`): advisory by default, `--strict` opt-in for CI; detects DRIFTER requirements (open with implementation detail rather than user-visible capability)
+  - Spec refresh: `design-spec.md` and `test-spec.md` updated to match implemented API surfaces (`EvidenceIndexEntry`, `RequirementMetadata`, `RemapResult`); spec drift treated as closure-blocking for audit-readiness work
+  - 6 hard gates pass at close: granularity_match noise 0%, RTM gap 4.55%, gap-typing 30/30, FAC false-positive rate 0%, visibility_rule_enforcement clean, 594/594 tests passing
+  - Architect review verdict: AGREE-WITH-CONCERNS (no blockers; 4 v0.3.0 carry-forward items)
+  - v0.3.0 carry-forward (not in v0.2.0): formalise MANUAL_EVIDENCE_REQUIRED corpus policy in CI, wire `check-req-quality.py --strict` into the pre-push pipeline, refactor `GenericRegexExtractor` / `PythonAstExtractor` coupling, address 6 deferred F-010 drifter requirements
+- **sdlc-programme 0.1.0 — Method 1 substrate (EPIC #178, PR #187, 2026-05-01)**
+  - 5 skills: `commission-programme`, `phase-init`, `phase-gate`, `phase-review`, `traceability-export`
+  - 4 phase-gate validators enforcing requirements → design → test → code progression
+  - Mandatory cross-phase review for design and test phases
+  - Constitution overlay (Articles 12–14) enforcing phase discipline and reference integrity
+  - Skill+validator bundle with 0 agents by design — provides delivery methodology, not new specialist roles
+- **sdlc-assured 0.1.0 — Method 2 initial release (EPIC #178, PR #187, 2026-05-01)**
+  - 8 skills: `commission-assured`, `req-add`, `req-link`, `code-annotate`, `module-bound-check`, `kb-codeindex`, `change-impact-annotate`, `traceability-render`
+  - Positional namespace IDs (`P1.SP2.M3.REQ-007`) for decomposed projects with parent registry tracking
+  - Bidirectional traceability (forward links REQ→artefact + backward coverage)
+  - DDD decomposition declared in `programmes.yaml` with module visibility rules
+  - KB-for-code: inline `# implements:` annotations parsed into `library/_code-index.md` (shelf-index-shaped)
+  - Standard-specific export templates for DO-178C / IEC 62304 / ISO 26262 / FDA DHF
+  - 5 traceability validators + 5 module-bound validators
+  - **v0.1.0 was not audit-ready** — Phase F dogfood produced 10 findings (5 IMPORTANT + 5 MINOR) seeding v0.2.0; consumers should install 0.2.0 (current) rather than 0.1.0
+- **`/sdlc-core:commission` skill — four-option SDLC commissioning (EPIC #178 Phase C, PR #187)**
+  - Walks projects through commissioning to one of four SDLC options: solo (1–2 people, fast iteration), single-team (3–10, current default), programme (11–50, formal phase gates), assured (regulated industries with traceability)
+  - Records decision in `.sdlc/team-config.json` for downstream skills to consult
+  - Bundle-side wrappers (`commission-programme`, `commission-assured`) delegate to this skill with appropriate `--option` and `--bundle-dir` arguments
+- **sdlc-knowledge-base 0.2.0 — cross-library query support (EPIC #164, PR #177)**
+  - Cross-library querying across local + activated corporate asset libraries via the `LibrarySource` abstraction (filesystem v1; remote-agent type schema-reserved for v2+)
+  - Two-tier registry: user-scope `~/.sdlc/global-libraries.json` + per-project `.sdlc/libraries.json` activation
+  - Priming bundle — local CLAUDE.md `[Knowledge Base]` content + local shelf-index Terms — passed to every external librarian dispatch. Empirically functions as a framing/reasoning-attribution layer (output framing changes every time; file selection changes only when topical matching has genuine ambiguity). See design spec §3.4.
+  - Cross-library synthesis via dedicated `synthesis-librarian` agent (`tools: []`); structural `check_synthesis_attribution` post-check with `valid_handles` whitelist guarantees no fabricated citations ship
+  - Project-scope audit log (`library/audit.log`) for confidentiality events: attribution drops, synthesis aborts, dispatcher failures, cross-library promotions
+  - 4-field shelf-index header (`format_version`, `last_rebuilt`, `library_handle`, `domain`) for library evolution
+  - 5 new/updated skills: `kb-register-library`, `kb-audit-query`, `kb-setup-consulting` (with `--verify-only`), enhanced `kb-query`, enhanced `kb-promote-answer-to-library` (now supports `--target` for cross-library promotion)
+  - 1 new agent: `synthesis-librarian` (separate from `research-librarian`, with `tools: []`)
+  - 109 kb tests across 7 test modules
+- **Plugin READMEs**: All 12 plugins now have README.md with agent tables, skill tables, usage guidance, and "when to use" sections (#160)
+- **Plugin Consumer Guide**: New `docs/PLUGIN-CONSUMER-GUIDE.md` explaining how plugins, agents, skills, and validation work for end users
+- **Prerequisites section** in README.md (Claude Code, Python 3.10+, Git, optional Docker/gh)
+
+### Changed
+- **Mobile plugin split (EPIC #217, Phase 1) — BREAKING for `sdlc-team-fullstack`.** The four mobile agents were split out of `sdlc-team-fullstack` (2.0.0) into focused plugins so mobile teams aren't wading through web/backend specialists:
+  - `mobile-architect` and `mobile-ux-architect` → new **`sdlc-team-mobile`** (0.1.0) shared base (cross-platform; not duplicated per platform)
+  - `apple-hig-architect` → new **`sdlc-team-ios`** (0.1.0)
+  - `material-design-3-architect` → new **`sdlc-team-android`** (0.1.0)
+  - `sdlc-team-fullstack` is now a 9-agent web bundle (2.0.0). **Migration:** if you build for mobile, install `sdlc-team-ios`/`sdlc-team-android` + `sdlc-team-mobile` (run `/sdlc-core:setup-team`, which now offers iOS/Android/cross-platform project types). Agents are invoked by name, so cross-references still resolve — only packaging changed. Callers using the qualified name `sdlc-team-fullstack:<mobile-agent>` must update to the new plugin. Agent *sources* did not move (`agents/core/`); this was a `release-mapping.yaml` re-map, no content duplication.
+  - `sdlc-core` → 1.2.0 (`setup-team` gained iOS/Android/cross-platform project types + mobile recommendation matrix)
+- **README.md**: Expanded plugin table to 12 entries with agent/skill counts, expanded skills section to 22 skills across 3 plugins, expanded agents section with per-plugin breakdown, linked CHANGELOG.md
+- **CLAUDE.md**: EPIC #96 marked merged, agent count corrected to 56 across 12 plugins, added rules skill to skills table
+- **docs/HOWTO.md**: Complete rewrite from legacy setup-smart.py workflow to plugin/skill-based workflow
+- **docs/QUICK-REFERENCE.md**: Complete rewrite with all 22 skills, correct tool paths, validation pipeline check names
+- **AGENT-INDEX.md**: Regenerated from current plugin + source structure with explanatory note on 128 source vs 56 published agents
+- **docs/README.md**: Added redirect notice to root README, fixed broken archive link
+
+### Fixed
+- **sdlc-knowledge-base README**: Corrected "Skills (10)" to "Skills (8)" (pre-existing error)
+- **sdlc-team-security README**: Fixed wrong plugin attribution for database-architect (was sdlc-team-fullstack, corrected to sdlc-team-common)
+
+### Deprecated
+- 19 legacy docs moved to `docs/archive/` (START-HERE.md, quick-start.md, Billy Wright coaching docs, and other pre-plugin content)
+
 ## [1.8.0] - 2026-02-10
 
 ### Added

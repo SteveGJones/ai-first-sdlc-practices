@@ -1,0 +1,104 @@
+name: sdlc-commissioned-pipeline
+description: |
+  Full autonomous SDLC pipeline with approval gates.
+  Use when: Commissioned feature development that should run end-to-end
+  with human checkpoints at key decision points.
+  Input: Feature spec, PRD, or issue description.
+  Output: PR ready for merge with completed review.
+
+  Workflow:
+  1. Plan: create detailed implementation plan
+  2. Approve plan: human reviews and approves the plan
+  3. Implement: loop until tests pass
+  4. Validate: full SDLC validation pipeline
+  5. Review: parallel specialist review
+  6. Synthesise: unified review summary
+  7. Approve review: human reviews findings
+  8. Create PR: push branch and create pull request
+
+  This workflow connects to EPIC #97 (Commissioned SDLC). Different
+  SDLC options would customise the node set and approval gates.
+
+provider: claude
+
+nodes:
+  - id: plan
+    command: sdlc-plan
+    context: fresh
+    model: claude-opus-4-6[1m]
+
+  - id: approve-plan
+    depends_on: [plan]
+    approval:
+      prompt: |
+        Review the implementation plan above. The plan decomposes the
+        feature into file-partitioned tasks with estimated complexity.
+
+        Approve to proceed with implementation, or provide feedback
+        to revise the plan.
+      timeout: 86400
+
+  - id: implement
+    depends_on: [approve-plan]
+    command: sdlc-implement
+    context: fresh
+    model: claude-opus-4-6[1m]
+    loop:
+      until: ALL_TASKS_COMPLETE
+      max_iterations: 15
+      fresh_context: true
+
+  - id: validate
+    depends_on: [implement]
+    command: sdlc-validate
+    context: fresh
+
+  - id: security-review
+    depends_on: [validate]
+    command: sdlc-security-review
+    context: fresh
+
+  - id: architecture-review
+    depends_on: [validate]
+    command: sdlc-architecture-review
+    context: fresh
+
+  - id: code-quality-review
+    depends_on: [validate]
+    command: sdlc-code-quality-review
+    context: fresh
+
+  - id: synthesise
+    command: sdlc-synthesise-reviews
+    depends_on: [security-review, architecture-review, code-quality-review]
+    trigger_rule: one_success
+    context: fresh
+
+  - id: approve-review
+    depends_on: [synthesise]
+    approval:
+      prompt: |
+        Review the synthesis of all specialist reviews above.
+
+        If there are Critical or High findings, request fixes before
+        approving. If all findings are Medium or below, approve to
+        proceed with PR creation.
+      timeout: 86400
+
+  - id: create-pr
+    depends_on: [approve-review]
+    prompt: |
+      Push the current branch and create a pull request.
+
+      Use the synthesised review as the PR description body.
+      Include the plan summary, implementation summary, and
+      review findings.
+
+      ```bash
+      git push -u origin HEAD
+      gh pr create --title "feat: $plan.output.title" --body "$(cat <<'EOF'
+      $synthesise.output
+      EOF
+      )"
+      ```
+    context: fresh

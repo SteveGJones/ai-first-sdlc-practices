@@ -1,0 +1,18 @@
+name: programme-bundle-review
+description: |
+  Independent containerised architect review of the Programme bundle (Phase D
+  deliverable). Load-bearing artefact: Phase E (Assured bundle) layers on top
+  of Method 1's phase-gate substrate, so getting Programme right matters.
+
+  Reuses the sdlc-worker:decomposition-review team image built in Phase B
+  and reused in Phase C task 10.
+
+provider: claude
+
+nodes:
+  - id: programme-review
+    command: programme-bundle-review
+    context: fresh
+    effort: high
+    image: sdlc-worker:decomposition-review
+    timeout: 600000

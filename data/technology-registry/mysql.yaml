@@ -1,0 +1,86 @@
+# MySQL — Curated technology registry entry
+# Covers: MCP server (community), Python/Node drivers, administration gaps
+
+display_name: MySQL
+category: database
+description: >
+  Popular open-source relational database known for reliability, ease of use,
+  and broad hosting support. Widely used for web applications, e-commerce,
+  and content management systems. Backed by Oracle.
+
+section_a:
+  - name: "@benborla29/mcp-server-mysql"
+    type: mcp-server-npm
+    package: "@benborla29/mcp-server-mysql"
+    source: https://github.com/benborla/mcp-server-mysql
+    publisher: Ben Borla
+    publisher_verified: false
+    description: >
+      MySQL MCP server — schema inspection, query execution, SSH tunnel
+      support, multi-project setup. 1.3k stars, most established MySQL MCP.
+      No official Oracle MCP server exists.
+    env:
+      - name: MYSQL_HOST
+        description: MySQL server hostname
+        example: "localhost"
+      - name: MYSQL_PORT
+        description: MySQL server port
+        example: "3306"
+      - name: MYSQL_USER
+        description: MySQL username
+      - name: MYSQL_PASSWORD
+        description: MySQL password
+      - name: MYSQL_DATABASE
+        description: Default database name
+    verified_date: 2026-04-10
+
+section_b:
+  - name: mysql-connector-python
+    package: mysql-connector-python
+    ecosystem: pip
+    source: https://pypi.org/project/mysql-connector-python/
+    publisher: Oracle
+    description: Official MySQL connector for Python
+    usage: "import mysql.connector"
+    docs: https://dev.mysql.com/doc/connector-python/en/
+    verified_date: 2026-04-10
+
+  - name: mysql2
+    package: mysql2
+    ecosystem: npm
+    source: https://www.npmjs.com/package/mysql2
+    publisher: Andrey Sidorov
+    description: MySQL client for Node.js with prepared statements and streaming
+    usage: 'const mysql = require("mysql2")'
+    docs: https://sidorares.github.io/node-mysql2/docs
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: MySQL administration and performance
+    slug: mysql-admin-expert
+    why: >
+      No official vendor MCP server. Community servers lack slow query analysis,
+      replication monitoring, user/privilege auditing, and migration orchestration.
+    agent_would_know: >
+      MySQL performance tuning, replication architectures, user/privilege
+      management, migration strategies.
+    research_scope:
+      - Slow query analysis and optimization
+      - Replication (source-replica, group replication)
+      - User/privilege auditing
+      - Migration orchestration
+      - InnoDB tuning
+    create_command: "@pipeline-orchestrator create a mysql-admin-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: database-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Schema design, query optimization, indexing strategy.
+
+trusted_sources:
+  - url: https://github.com/mysql
+    type: github-org
+  - url: https://dev.mysql.com/doc/
+    type: vendor-docs

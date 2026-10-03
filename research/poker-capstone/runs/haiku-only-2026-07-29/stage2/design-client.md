@@ -1,0 +1,1222 @@
+# Texas Hold'em Poker Client — Stage 2 Design
+
+## Executive Summary
+
+The client is a thin, stateless web UI that mirrors server state and submits player actions. It has no game logic — the server is the single source of truth. The client's primary responsibilities are:
+
+1. **Fetch and display** server state via REST polling
+2. **Mirror state in DOM attributes** for automated test verification (CLIENT-TEST-CONTRACT.md)
+3. **Gate action controls** based on whose turn it is and game state
+4. **Maintain hole-card privacy** — never render or store another seat's cards
+5. **Support deep-linking** directly to a table+seat without lobby navigation
+
+This design decomposes into four layers: **URL routing**, **state fetching**, **state mirroring**, and **action submission**.
+
+---
+
+## Part 1: View Structure & URL Deep-Linking
+
+### Views / Screens
+
+The client exposes two views:
+
+#### View 1: Lobby / Landing Page (Optional, Human-Facing Only)
+
+- **URL**: `GET /`
+- **Purpose**: Optional welcome/lobby UI for humans to create tables or discover games
+- **Test Harness Interaction**: None — the harness never uses this view
+- **Implementation**: Entirely free-form; can be a simple link to deep-link a known table, or a full UI listing tables from a directory API (not part of the fixed contract)
+
+#### View 2: Table View (Required)
+
+- **URL**: `GET /?table={table_id}&seat={seat}`
+- **Purpose**: Display a single table, formatted for one specific player seat
+- **Test Harness Interaction**: The harness uses ONLY this view; it deep-links here after calling `POST /tables` and `POST /tables/{id}/players` via REST
+- **Behavior**:
+  - On load, parse `table_id` and `seat` from query params
+  - Fetch initial state via `GET /tables/{table_id}/state?seat={seat}`
+  - Render the table UI and DOM test-contract attributes
+  - Begin polling for state updates
+  - Allow player to submit actions (fold, check/call, bet/raise)
+  - Update UI and attributes on each new state
+
+### Deep-Link URL Semantics
+
+**Query Parameters**
+
+- `table` (required): The table ID, a string. Must be passed to all server REST calls.
+- `seat` (required): The player's seat number, 0-indexed integer. Must be passed to `GET /state?seat={seat}` to filter hole cards.
+
+**Example**: `GET /?table=abc123&seat=2`
+- Loads player at seat 2 into table abc123
+- Fetches state with `GET /tables/abc123/state?seat=2` to see own hole cards, others' as null
+- Player can now take actions only when `current_actor == 2`
+
+**No Fallback to Lobby**: If `table` or `seat` is missing, the client may either:
+- Show an error / prompt to enter them, or
+- Redirect to a lobby UI where the user can create/join a table
+
+The test harness always supplies both params, so missing-param handling is not graded.
+
+---
+
+## Part 2: State Synchronization & Update Mechanism
+
+### Polling Strategy
+
+The client uses **simple HTTP polling** to keep state in sync with the server, not WebSocket or other push mechanisms.
+
+#### Polling Interval
+
+- **Default interval**: 200ms (20 updates per second)
+- **Rationale**: 
+  - Test harness needs to observe state changes quickly without real-time socket latency
+  - 200ms is fast enough to detect state transitions (fold, new actor, new round) within a single test frame
+  - Simple to implement; no connection management overhead
+  - Aligns with typical human reaction time (~500ms), so 200ms polling exceeds UI responsiveness needs
+
+#### Polling Loop Implementation
+
+```
+On page load:
+  1. Parse ?table and ?seat from URL
+  2. Fetch initial state via GET /tables/{table}/state?seat={seat}
+  3. Render UI and update DOM attributes
+  4. Start polling timer
+
+On polling timer (every 200ms):
+  1. Fetch GET /tables/{table}/state?seat={seat}
+  2. If 200 OK:
+     - Compare fetched state to previous state
+     - For any changed fields, update DOM attributes and UI
+     - Do NOT re-render entire table; only update changed fields
+  3. If 4xx error (e.g., table not found):
+     - Show error, stop polling
+  4. If network error:
+     - Retry on next timer tick (simple retry)
+     - After N consecutive failures, show "connection lost" warning
+```
+
+### Out-of-Order & Missed Updates
+
+Since HTTP polling is not transactional, updates may arrive out of order or be missed if:
+- A new state arrives while a previous one is being processed
+- Network latency causes a fetch to be delayed
+- Player submits an action that changes state, but polling misses an intermediate state
+
+**Resolution Strategy**: **Last-Known-State Wins**
+
+- Always overwrite the previous state with the most recent fetched state
+- Do not attempt to reconstruct intermediate states or merge updates
+- Rationale:
+  - The server is the single source of truth; the latest fetch is always correct
+  - Merging or replaying intermediate states risks inconsistency if the client's logic diverges from the server's
+  - Polling is fast enough (200ms) that missing intermediate states is visually imperceptible; user sees "old state" → "new state" in quick succession
+
+**Specific Scenarios**
+
+1. **Action in flight, new state arrives before response**
+   - Client submits action X
+   - While waiting for response, polling fetch returns state S1
+   - Action response returns state S2
+   - Client uses S2 (action response is fresher than polling fetch)
+   - Rationale: Action response is causally related to the action; trust it over an intermediate poll
+
+2. **Polling misses a betting round**
+   - Preflop ends, flop begins, between two polling ticks
+   - Client polls, gets flop state directly (skipping the "end preflop" intermediate state)
+   - Render flop state; omit animation of the preflop→flop transition
+   - Rationale: Test harness doesn't require animation; correctness of final state is all that matters
+
+3. **Multiple players fold rapidly**
+   - Player A folds, Player B folds, between two polling ticks
+   - Client polls, gets a state with both folded
+   - Render both as folded; no per-fold animation
+   - Rationale: Same as above
+
+### State Freshness & Idle Behavior
+
+- Polling continues even when player is not acting (others' turns)
+- This ensures the UI is always up-to-date with community cards, pots, fold events, etc.
+- No idle-timeout or standby mode; client stays synchronized continuously
+
+---
+
+## Part 3: Data-Attribute Mirror & DOM Structure
+
+### Purpose of the Test-Contract Mirror
+
+The test harness (Playwright driver) reads DOM attributes, not rendered text. The mirror provides a machine-readable snapshot of the last-known server state, in parallel with whatever visual UI the client renders. This allows the harness to verify:
+- State consistency (does the DOM match the REST response?)
+- Privacy (are the right hole cards visible?)
+- Turn enforcement (are action buttons enabled correctly?)
+
+### DOM Structure Overview
+
+```html
+<div id="app">
+  <!-- Table-level state mirror -->
+  <div data-testid="table" 
+       data-hand-in-progress="true|false"
+       data-current-actor="0|1|2|..."
+       data-current-bet="50"
+       data-button-seat="0">
+    
+    <!-- Per-seat state mirrors -->
+    <div data-testid="seat-0"
+         data-seat="0"
+         data-status="active|folded|all_in|sitting_out"
+         data-stack="1000"
+         data-current-bet="50"
+         data-total-committed="100">
+      
+      <!-- Hole cards for seat 0 -->
+      <div data-testid="seat-0-hole-card-0"
+           data-hidden="false"     <!-- Only false for viewing seat -->
+           data-rank="14"           <!-- Ace -->
+           data-suit="s">           <!-- Spades -->
+      
+      <div data-testid="seat-0-hole-card-1"
+           data-hidden="false"
+           data-rank="12"           <!-- Queen -->
+           data-suit="h">           <!-- Hearts -->
+    </div>
+    
+    <div data-testid="seat-1" ...>
+      <div data-testid="seat-1-hole-card-0"
+           data-hidden="true"       <!-- Opponent's cards hidden -->
+           data-rank="0"            <!-- Omitted; filled only when visible -->
+           data-suit="">
+      
+      <div data-testid="seat-1-hole-card-1" ...>
+    </div>
+    
+    <!-- Remaining seats... -->
+    
+    <!-- Community cards (only present once dealt) -->
+    <div data-testid="community-card-0"
+         data-rank="8"
+         data-suit="d">             <!-- Flop card 1 -->
+    <div data-testid="community-card-1"
+         data-rank="10"
+         data-suit="c">             <!-- Flop card 2 -->
+    <div data-testid="community-card-2"
+         data-rank="3"
+         data-suit="h">             <!-- Flop card 3 -->
+    <!-- Turn and river only present if dealt -->
+    
+    <!-- Pots -->
+    <div data-testid="pot-0" data-amount="100">
+    <div data-testid="pot-1" data-amount="250">   <!-- Side pot -->
+    
+    <!-- Action buttons (always present, disabled attribute set based on turn) -->
+    <button data-testid="action-fold" disabled>Fold</button>
+    <button data-testid="action-check-call">Check / Call</button>
+    <button data-testid="action-bet-raise">Bet / Raise</button>
+    <input data-testid="bet-amount-input" type="number" value="50">
+    <button data-testid="start-hand" disabled>Start Hand</button>
+  </div>
+</div>
+```
+
+### Attribute Update Strategy
+
+**Update on Every Poll**: After fetching new state from `GET /state?seat={seat}`, immediately update ALL mirror attributes to match the REST response, regardless of which fields changed.
+
+```typescript
+function updateMirrorFromState(state: ServerState, viewingSeat: number) {
+  // Table-level attributes
+  const tableEl = document.querySelector('[data-testid="table"]');
+  tableEl.setAttribute('data-hand-in-progress', String(state.hand_in_progress));
+  tableEl.setAttribute('data-current-actor', state.current_actor !== null ? String(state.current_actor) : '');
+  tableEl.setAttribute('data-current-bet', String(state.current_bet));
+  tableEl.setAttribute('data-button-seat', String(state.button_seat));
+  
+  // Per-seat attributes
+  for (const player of state.players) {
+    const seatEl = document.querySelector(`[data-testid="seat-${player.seat}"]`);
+    seatEl.setAttribute('data-seat', String(player.seat));
+    seatEl.setAttribute('data-status', player.status);
+    seatEl.setAttribute('data-stack', String(player.stack));
+    seatEl.setAttribute('data-current-bet', String(player.current_bet));
+    seatEl.setAttribute('data-total-committed', String(player.total_committed));
+    
+    // Hole cards
+    for (let i = 0; i < 2; i++) {
+      const cardEl = document.querySelector(`[data-testid="seat-${player.seat}-hole-card-${i}"]`);
+      const isVisible = (player.seat === viewingSeat) || (state.betting_round === 'showdown');
+      cardEl.setAttribute('data-hidden', String(!isVisible));
+      
+      if (isVisible && player.hole_cards) {
+        const card = player.hole_cards[i];
+        cardEl.setAttribute('data-rank', String(card.rank));
+        cardEl.setAttribute('data-suit', card.suit);
+      } else {
+        // Hidden cards have rank="0" and no suit (or empty suit)
+        cardEl.setAttribute('data-rank', '0');
+        cardEl.setAttribute('data-suit', '');
+      }
+    }
+  }
+  
+  // Community cards (only update if dealt)
+  for (let i = 0; i < state.community_cards.length; i++) {
+    const card = state.community_cards[i];
+    let cardEl = document.querySelector(`[data-testid="community-card-${i}"]`);
+    if (!cardEl) {
+      cardEl = document.createElement('div');
+      cardEl.setAttribute('data-testid', `community-card-${i}`);
+      tableEl.appendChild(cardEl);
+    }
+    cardEl.setAttribute('data-rank', String(card.rank));
+    cardEl.setAttribute('data-suit', card.suit);
+  }
+  
+  // Pots
+  for (let i = 0; i < state.pots.length; i++) {
+    const pot = state.pots[i];
+    let potEl = document.querySelector(`[data-testid="pot-${i}"]`);
+    if (!potEl) {
+      potEl = document.createElement('div');
+      potEl.setAttribute('data-testid', `pot-${i}`);
+      tableEl.appendChild(potEl);
+    }
+    potEl.setAttribute('data-amount', String(pot.amount));
+  }
+}
+```
+
+### Visibility vs. Presence
+
+**Critical Contract Detail**: The test harness checks `data-hidden="true|false"`, not the presence/absence of the element itself. This means:
+
+- Hole-card elements ALWAYS exist in the DOM (all 2 × num_players elements)
+- `data-hidden="true"` means the card value is concealed (set data-rank and data-suit to empty/0)
+- `data-hidden="false"` means the card value is visible (set data-rank and data-suit to actual values)
+
+This design allows the harness to assert on concealment directly:
+```javascript
+const cardEl = document.querySelector('[data-testid="seat-2-hole-card-0"]');
+assert(cardEl.getAttribute('data-hidden') === 'true');  // Card is hidden
+assert(cardEl.getAttribute('data-rank') === '0');       // Rank is redacted
+```
+
+### Attribute Consistency Rules
+
+1. **Every attribute always has a value** (never null, never missing)
+2. **data-hidden=true implies data-rank="0" and data-suit=""**
+3. **data-hidden=false implies data-rank and data-suit have actual card values**
+4. **Table-level attributes must always be present** (even if empty):
+   - `data-current-actor=""` if null
+   - `data-button-seat=""` if null (rare, only before first hand)
+5. **Community cards elements are created/removed as cards are dealt**
+   - No pre-created empty slots; only create element when card is actually dealt
+   - But DO NOT remove elements on fold-out (flop is dealt even if someone folds later)
+
+---
+
+## Part 4: Action Submission & Turn Gating
+
+### Action Control Elements
+
+The client always renders five action controls:
+
+1. **Fold button** (`data-testid="action-fold"`)
+2. **Check/Call button** (`data-testid="action-check-call"`)
+   - Label changes based on game state, but single control
+   - `Check` when `current_bet == 0` or `current_bet == player.current_bet`
+   - `Call` when player must match a higher bet
+3. **Bet/Raise button** (`data-testid="action-bet-raise"`)
+   - Label changes based on context
+   - `Bet` when initiating a new bet
+   - `Raise` when raising an existing bet
+4. **Bet amount input** (`data-testid="bet-amount-input"`)
+   - Type: `number`
+   - User enters desired bet/raise amount
+   - Initial default: `min_raise` from server state
+5. **Start Hand button** (`data-testid="start-hand"`)
+   - Only enabled when `hand_in_progress == false` AND player is seated
+
+### Turn Gating & Disabled State
+
+The `disabled` HTML attribute is set based on game state. The test harness checks `.isDisabled()` to verify turn enforcement.
+
+#### Fold Button
+
+```javascript
+// Enabled when:
+// 1. A hand is in progress
+// 2. Player is the current actor
+// 3. Player has not already folded
+const foldBtn = document.querySelector('[data-testid="action-fold"]');
+const canFold = state.hand_in_progress &&
+                state.current_actor === viewingSeat &&
+                playerState.status === 'active';
+foldBtn.disabled = !canFold;
+```
+
+#### Check/Call Button
+
+```javascript
+// Enabled when:
+// 1. A hand is in progress
+// 2. Player is the current actor
+// 3. Player has chips remaining (not all-in yet)
+// 4. Legal action for this round (check when no bet, call when bet exists)
+const checkCallBtn = document.querySelector('[data-testid="action-check-call"]');
+const playerCanAct = state.hand_in_progress &&
+                     state.current_actor === viewingSeat &&
+                     playerState.status === 'active';
+// Check is legal when current_bet == player.current_bet (or both 0)
+// Call is legal when current_bet > player.current_bet
+const hasCheckOption = state.current_bet === playerState.current_bet;
+const hasCallOption = state.current_bet > playerState.current_bet;
+checkCallBtn.disabled = !playerCanAct || (!hasCheckOption && !hasCallOption);
+```
+
+#### Bet/Raise Button
+
+```javascript
+// Enabled when:
+// 1. A hand is in progress
+// 2. Player is the current actor
+// 3. Player has chips to bet/raise
+// 4. Bet amount is valid (>= min_raise + current_bet, if raising)
+const betRaiseBtn = document.querySelector('[data-testid="action-bet-raise"]');
+const playerCanAct = state.hand_in_progress &&
+                     state.current_actor === viewingSeat &&
+                     playerState.status === 'active';
+const betAmount = parseInt(document.querySelector('[data-testid="bet-amount-input"]').value);
+const minBet = state.current_bet + state.min_raise;
+const playerHasChips = playerState.stack > 0;
+betRaiseBtn.disabled = !playerCanAct || !playerHasChips || betAmount < minBet;
+```
+
+#### Start Hand Button
+
+```javascript
+// Enabled only when:
+// 1. No hand in progress (betting_round is null)
+// 2. Player is seated (in players array)
+// 3. At least one other player is seated
+const startBtn = document.querySelector('[data-testid="start-hand"]');
+const playerIsSeated = state.players.some(p => p.seat === viewingSeat);
+const enoughPlayers = state.players.length >= 2;
+startBtn.disabled = state.hand_in_progress || !playerIsSeated || !enoughPlayers;
+```
+
+### Action Submission Flow
+
+**User clicks an action button:**
+
+1. **Validate locally** (sanity check):
+   - Required params are present (seat, action, amount if bet/raise)
+   - Bet amount is an integer >= 0
+   
+2. **Disable all buttons** (prevent double-submit):
+   - Set all action buttons to `disabled=true` while awaiting response
+   
+3. **Submit action via REST**:
+   ```javascript
+   POST /tables/{table_id}/actions
+   {
+     "seat": viewingSeat,
+     "action": "fold" | "check" | "call" | "bet" | "raise",
+     "amount": betAmount  // Only for bet/raise; omit for fold/check/call
+   }
+   ```
+   
+4. **Handle response**:
+   - **200 OK**: Action was accepted and executed
+     - Response body contains new state
+     - Update DOM attributes and UI immediately
+     - Re-enable buttons for the next actor (or disable if turn passed elsewhere)
+   - **4xx error**: Action was rejected (illegal move)
+     - Response body contains `{"detail": "reason"}` or `{"error": "reason"}`
+     - Show error message to player (e.g., "Invalid bet amount")
+     - State is unchanged on server
+     - Do NOT update state; keep UI as-is
+     - Re-enable buttons for this player to try again
+   - **5xx error**: Server error
+     - Show "Server error" message
+     - Re-enable buttons
+   - **Network error**: Connection lost
+     - Show "Network error" message
+     - Retry on next polling cycle (which will update state if server processed the action)
+     - Re-enable buttons
+
+5. **Wait for polling to confirm**:
+   - Even after successful 200 response, do not assume the next actor's turn is yours
+   - Continue polling; state will converge to the server's true state
+   - If your action was stale (you had already acted), the next poll will show the new actor
+
+### Preventing Double-Submit & Race Conditions
+
+**Problem**: Player clicks Fold, network is slow, player clicks Fold again before response returns.
+
+**Solution**: Disable all action buttons while a request is in flight.
+
+```javascript
+async function submitAction(action, amount) {
+  // Disable all buttons immediately
+  setButtonsDisabled(true);
+  
+  try {
+    const response = await fetch(`/tables/${tableId}/actions`, {
+      method: 'POST',
+      body: JSON.stringify({ seat: viewingSeat, action, amount }),
+    });
+    
+    if (response.ok) {
+      const newState = await response.json();
+      updateMirror(newState);
+    } else {
+      const error = await response.json();
+      showError(error.detail || error.error);
+    }
+  } catch (err) {
+    showError('Network error: ' + err.message);
+  } finally {
+    // Re-enable buttons based on new state
+    updateButtonStates();
+  }
+}
+```
+
+### Action Type Mapping
+
+The client interprets button clicks and translates them to action names:
+
+| User Action | REST Action | Amount | Context |
+|-------------|-------------|--------|---------|
+| Fold button clicked | `"fold"` | omitted | Anytime during hand |
+| Check/Call button clicked, no bet owed | `"check"` | omitted | Check round (current_bet == player.current_bet) |
+| Check/Call button clicked, bet owed | `"call"` | omitted | Call round (current_bet > player.current_bet); amount is implicit |
+| Bet/Raise button clicked, no prior bet | `"bet"` | user input | Bet amount (total this round) |
+| Bet/Raise button clicked, prior bet exists | `"raise"` | user input | Raise amount (total this round) |
+| Start Hand button clicked | POST `/start` | n/a | No request body; start new hand |
+
+---
+
+## Part 5: Hole-Card Privacy & Security
+
+### Privacy Invariant
+
+**Never render or store another seated player's hole cards, except at showdown.**
+
+This is enforced at two layers:
+
+#### Layer 1: Server (Primary Protection)
+
+The server filters hole cards in `GET /state?seat={seat}`:
+- Only the requesting seat sees their own hole cards
+- At showdown, all seats' cards are visible
+- Other seats' cards are null
+
+**Client cannot recover hidden cards** even if it wanted to — they're not in the REST response.
+
+#### Layer 2: Client (Defense in Depth)
+
+Even though the server controls the data, the client should:
+1. Never access `player.hole_cards` for a seat other than the viewing seat
+2. Never store other players' cards in local state
+3. Always set `data-hidden="true"` for non-visible hole cards
+4. Always set `data-rank="0"` and `data-suit=""` for hidden cards
+
+### How the Client Honors Privacy
+
+**On state fetch**:
+
+```javascript
+function updateHoleCards(state, viewingSeat) {
+  for (const player of state.players) {
+    for (let i = 0; i < 2; i++) {
+      const cardEl = document.querySelector(`[data-testid="seat-${player.seat}-hole-card-${i}"]`);
+      
+      // Determine if this card is visible to the viewing player
+      const isViewingOwnCards = (player.seat === viewingSeat);
+      const isShowdown = (state.betting_round === 'showdown');
+      const cardIsVisible = isViewingOwnCards || isShowdown;
+      
+      cardEl.setAttribute('data-hidden', String(!cardIsVisible));
+      
+      if (cardIsVisible && player.hole_cards) {
+        // Card is visible; render the actual value
+        cardEl.setAttribute('data-rank', String(player.hole_cards[i].rank));
+        cardEl.setAttribute('data-suit', player.hole_cards[i].suit);
+      } else {
+        // Card is hidden; redact the value
+        cardEl.setAttribute('data-rank', '0');
+        cardEl.setAttribute('data-suit', '');
+      }
+    }
+  }
+}
+```
+
+### Privacy-by-Design Patterns
+
+1. **No client-side caching of all-seats' cards**: After each poll, compute visibility based on current `betting_round` and `viewingSeat`, not cached data from previous polls.
+
+2. **No indexing of other players' cards**: Do not build a data structure like:
+   ```javascript
+   const allHoleCards = {};
+   for (const player of state.players) {
+     allHoleCards[player.seat] = player.hole_cards;  // ❌ Tempting but wrong
+   }
+   ```
+   Instead, access cards only in the context of updating the specific seat's element.
+
+3. **Rendering is read-only at showdown**: When the hand reaches showdown, the server sends all cards. The client renders them; it does not "compute" or "infer" another player's cards.
+
+4. **No network requests for hidden cards**: The client never tries to fetch another player's hole cards via a separate API call or parameter manipulation (e.g., `GET /state?seat=0` to peek at player 0's cards from player 1's view).
+
+### Test Harness Verification
+
+The test harness will verify privacy by:
+
+1. Deep-linking player A into a table at seat 0
+2. Checking that `seat-0-hole-card-0` has `data-hidden="false"` and actual rank/suit
+3. Checking that `seat-1-hole-card-0` has `data-hidden="true"` and `data-rank="0"`, `data-suit=""`
+4. Deep-linking player B into a table at seat 1
+5. Checking that `seat-1-hole-card-0` now has `data-hidden="false"` and actual rank/suit
+6. Checking that `seat-0-hole-card-0` is now `data-hidden="true"`
+
+This verifies that the client re-derives visibility based on the query parameter `?seat`, not cached state.
+
+---
+
+## Part 6: Component Architecture & Implementation Details
+
+### High-Level Component Structure
+
+```
+App (React/Preact functional component or vanilla JS module)
+├─ URL Router
+│  └─ Parse ?table and ?seat
+├─ StateManager
+│  ├─ Fetch initial state from GET /state?seat
+│  ├─ Polling loop (every 200ms)
+│  └─ Compare and detect changes
+├─ MirrorUpdater
+│  ├─ Update table-level attributes
+│  ├─ Update per-seat attributes
+│  ├─ Update hole-card visibility
+│  ├─ Update community cards
+│  ├─ Update pots
+│  └─ Enable/disable action buttons
+├─ UI Renderer (Optional, can be separate from mirror)
+│  ├─ Render table visualization (SVG table layout, seat positions)
+│  ├─ Render player info (stack, current bet, status)
+│  ├─ Render action controls and bet input
+│  └─ Render action log
+└─ ActionSubmitter
+   ├─ Validate action locally
+   ├─ Disable buttons
+   ├─ POST to /actions
+   ├─ Handle 200 OK (update state)
+   ├─ Handle 4xx error (show error, retry)
+   └─ Handle network error (retry on next poll)
+```
+
+### State Shape (Client-side In-Memory)
+
+The client maintains a mirror of the REST response state in memory:
+
+```typescript
+interface ClientState {
+  table_id: string;
+  small_blind: number;
+  big_blind: number;
+  button_seat: number | null;
+  betting_round: 'preflop' | 'flop' | 'turn' | 'river' | 'showdown' | null;
+  community_cards: Card[];
+  pots: Pot[];
+  current_bet: number;
+  min_raise: number;
+  current_actor: number | null;
+  hand_in_progress: boolean;
+  last_action_log: string[];
+  last_showdown: ShowdownResult[];
+  players: PlayerState[];
+}
+
+interface PlayerState {
+  seat: number;
+  stack: number;
+  status: 'active' | 'folded' | 'all_in' | 'sitting_out';
+  current_bet: number;
+  total_committed: number;
+  hole_cards: Card[] | null;  // null unless visible to viewing seat
+}
+
+interface Card {
+  rank: number;  // 2-14 (14 = Ace)
+  suit: string;  // 's', 'h', 'd', 'c' or equivalent
+}
+```
+
+### Polling Implementation (Pseudocode)
+
+```javascript
+class PokerClient {
+  constructor(table_id, seat, pollingInterval = 200) {
+    this.table_id = table_id;
+    this.seat = seat;
+    this.pollingInterval = pollingInterval;
+    this.state = null;
+    this.pollingTimer = null;
+    this.failureCount = 0;
+    this.maxFailures = 10;
+  }
+  
+  async init() {
+    // Fetch initial state
+    this.state = await this.fetchState();
+    this.render();
+    
+    // Start polling
+    this.startPolling();
+  }
+  
+  async fetchState() {
+    try {
+      const response = await fetch(
+        `/tables/${this.table_id}/state?seat=${this.seat}`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      this.failureCount = 0;
+      return await response.json();
+    } catch (err) {
+      this.failureCount++;
+      if (this.failureCount >= this.maxFailures) {
+        this.showError('Connection lost. Retrying...');
+      }
+      // Return previous state to avoid breaking the UI
+      return this.state;
+    }
+  }
+  
+  startPolling() {
+    this.pollingTimer = setInterval(() => {
+      this.poll();
+    }, this.pollingInterval);
+  }
+  
+  async poll() {
+    const newState = await this.fetchState();
+    if (newState !== this.state) {
+      this.state = newState;
+      this.render();
+    }
+  }
+  
+  render() {
+    this.updateMirror(this.state);
+    this.updateUI(this.state);
+  }
+  
+  updateMirror(state) {
+    // Update all data-* attributes
+    // (See Part 3 for detailed implementation)
+  }
+  
+  updateUI(state) {
+    // Render visual table, buttons, etc.
+  }
+  
+  async submitAction(action, amount) {
+    this.setButtonsDisabled(true);
+    try {
+      const response = await fetch(`/tables/${this.table_id}/actions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seat: this.seat,
+          action,
+          amount
+        })
+      });
+      
+      if (response.ok) {
+        this.state = await response.json();
+        this.render();
+      } else {
+        const error = await response.json();
+        this.showError(error.detail || error.error);
+      }
+    } catch (err) {
+      this.showError('Network error: ' + err.message);
+    } finally {
+      this.setButtonsDisabled(false);
+      this.updateButtonStates();
+    }
+  }
+  
+  setButtonsDisabled(disabled) {
+    document.querySelectorAll('[data-testid^="action-"], [data-testid="start-hand"], [data-testid="bet-amount-input"]')
+      .forEach(btn => btn.disabled = disabled);
+  }
+  
+  updateButtonStates() {
+    // Recompute enabled/disabled for each button based on current state
+    // (See Part 4 for logic)
+  }
+  
+  showError(msg) {
+    console.error(msg);
+    // Render error message to user (optional; test harness doesn't verify this)
+  }
+}
+
+// On page load:
+const url = new URL(window.location);
+const table_id = url.searchParams.get('table');
+const seat = parseInt(url.searchParams.get('seat'));
+
+const client = new PokerClient(table_id, seat);
+client.init();
+```
+
+### Framework Choice: Vanilla JS vs. React/Preact
+
+**Recommended: Vanilla JavaScript** (or Preact for minimal state management)
+
+- No framework overhead
+- Clear, direct DOM manipulation
+- Easy to verify correctness of data-attribute updates
+- Test harness reads attributes, not React virtual state
+
+**If using React/Preact**:
+- Store state in component state or a hook
+- Render both visual UI and test-contract attributes
+- Example:
+  ```jsx
+  export function TableView({ table_id, seat }) {
+    const [state, setState] = useState(null);
+    
+    useEffect(() => {
+      fetchAndSetState();
+      const timer = setInterval(fetchAndSetState, 200);
+      return () => clearInterval(timer);
+    }, []);
+    
+    async function fetchAndSetState() {
+      const res = await fetch(`/tables/${table_id}/state?seat=${seat}`);
+      if (res.ok) setState(await res.json());
+    }
+    
+    if (!state) return <div>Loading...</div>;
+    
+    return (
+      <div data-testid="table"
+           data-hand-in-progress={String(state.hand_in_progress)}
+           data-current-actor={state.current_actor ?? ''}>
+        {state.players.map(player => (
+          <div key={player.seat}
+               data-testid={`seat-${player.seat}`}
+               data-status={player.status}>
+            {/* Hole cards */}
+            {[0, 1].map(i => (
+              <div key={i}
+                   data-testid={`seat-${player.seat}-hole-card-${i}`}
+                   data-hidden={String(isHidden(player.seat, seat, state))}>
+                {/* Visual rendering */}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  ```
+
+---
+
+## Part 7: Error Handling & Edge Cases
+
+### Network Errors
+
+- **Timeout**: Retry on next polling cycle
+- **Connection refused**: Retry; show warning after N failures
+- **CORS error**: Check server CORS headers; may indicate misconfiguration
+- **4xx client error**: Show to user; usually an invalid action attempt
+- **5xx server error**: Retry; may be transient
+
+### Stale Actions
+
+**Scenario**: Player submits an action, but by the time the response arrives, another player has acted.
+
+**Behavior**: The server's response to the player's action action includes the new state after that action. If that state's `current_actor` is not the player who just acted, the client knows that the turn passed. Buttons are re-enabled/disabled based on the new `current_actor`.
+
+### All-In Scenarios
+
+- When a player goes all-in, `status` changes to `"all_in"`
+- All-in players cannot submit further actions (buttons remain disabled)
+- Betting continues among active players
+- No special client-side logic needed; server enforces all-in rules
+
+### Showdown & Hand End
+
+- When betting round reaches `"showdown"`, all players' hole cards become visible
+- Client sets `data-hidden="false"` for all seats' hole cards
+- After showdown, `hand_in_progress` becomes `false`
+- `start_hand` button becomes enabled again
+
+### Empty Table / Disconnected Player
+
+- If a player's seat is removed from the `players` array, that player is no longer seated
+- Client shows "you have been removed from the table" or similar
+- Stops polling (or continues polling to wait for re-seating)
+
+---
+
+## Part 8: Testing & Verification Strategy
+
+### Client-Side Unit Tests (Not Graded)
+
+Optional for development; not part of stage-4 harness:
+
+```javascript
+// Test privacy enforcement
+test('hole cards for other seats are hidden', () => {
+  const state = {
+    betting_round: 'preflop',
+    players: [
+      { seat: 0, hole_cards: [{ rank: 14, suit: 's' }, ...] },
+      { seat: 1, hole_cards: [{ rank: 10, suit: 'h' }, ...] }
+    ]
+  };
+  
+  updateMirror(state, viewingSeat=0);
+  
+  const myCard = document.querySelector('[data-testid="seat-0-hole-card-0"]');
+  assert(myCard.getAttribute('data-hidden') === 'false');
+  assert(myCard.getAttribute('data-rank') === '14');
+  
+  const otherCard = document.querySelector('[data-testid="seat-1-hole-card-0"]');
+  assert(otherCard.getAttribute('data-hidden') === 'true');
+  assert(otherCard.getAttribute('data-rank') === '0');
+});
+
+// Test turn gating
+test('fold button is enabled only for current actor', () => {
+  const state = {
+    hand_in_progress: true,
+    current_actor: 0,
+    players: [
+      { seat: 0, status: 'active' },
+      { seat: 1, status: 'active' }
+    ]
+  };
+  
+  updateButtonStates(state, viewingSeat=0);
+  assert(document.querySelector('[data-testid="action-fold"]').disabled === false);
+  
+  // Different seat's turn
+  state.current_actor = 1;
+  updateButtonStates(state, viewingSeat=0);
+  assert(document.querySelector('[data-testid="action-fold"]').disabled === true);
+});
+```
+
+### Integration Tests with Harness (Stage 4)
+
+The stage-4 harness will:
+
+1. Create a table via `POST /tables`
+2. Add players via `POST /tables/{id}/players`
+3. Deep-link clients via `GET /?table={table_id}&seat={seat}`
+4. Verify that each client's DOM mirrors the correct state
+5. Submit actions and verify state transitions
+6. Verify that hole cards are visible/hidden correctly per-seat
+7. Verify that action buttons' `disabled` attribute tracks `current_actor`
+8. Verify that showdown reveals all cards
+
+---
+
+## Part 9: Deployment & Docker Integration
+
+### Docker Compose Service (if Client is Submitted)
+
+```yaml
+services:
+  server:
+    build: ./server
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  client:
+    build: ./client
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    environment:
+      - SERVER_URL=http://server:8000
+```
+
+### Client Dockerfile
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+Or for vanilla JS:
+
+```dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY . .
+RUN pip install http.server
+EXPOSE 3000
+CMD ["python", "-m", "http.server", "3000"]
+```
+
+### CORS & Fetch
+
+The client must be able to fetch the server API from a different port (client on 3000, server on 8000). This requires:
+- Server sends `Access-Control-Allow-Origin: *`
+- Client uses `fetch()` without special headers (defaults to simple CORS)
+
+---
+
+## Summary: Key Client Invariants
+
+1. **Server is authoritative**: Client never invents or caches game logic; all state comes from REST
+2. **Polling is continuous**: Every 200ms, fetch `GET /state?seat={seat}` to stay current
+3. **Last-known-state wins**: Use the most recent fetch; do not merge or reconstruct intermediate states
+4. **DOM attributes always match state**: Every poll triggers an update to data-testid attributes
+5. **Hole-card privacy is strict**: Never render or store another seat's cards except at showdown
+6. **Turn gating is button-level**: All action buttons are disabled outside the current actor's turn
+7. **Actions are submitted via REST**: `POST /tables/{id}/actions {seat, action, amount?}`
+8. **No double-submit**: Disable buttons while request is in flight
+9. **Errors are handled gracefully**: 4xx shows error; 5xx/network retry on next poll
+10. **Deep-linking works**: `?table={id}&seat={n}` is the only way to enter the table view
+
+---
+
+## Appendix A: Example State Flow
+
+**Scenario: Two-player hand, player at seat 0 folds**
+
+### Step 1: Initial state (preflop, player 0's turn)
+
+```json
+{
+  "table_id": "abc123",
+  "hand_in_progress": true,
+  "betting_round": "preflop",
+  "current_actor": 0,
+  "current_bet": 10,
+  "min_raise": 10,
+  "button_seat": 1,
+  "players": [
+    {
+      "seat": 0,
+      "stack": 990,
+      "status": "active",
+      "current_bet": 10,
+      "total_committed": 10,
+      "hole_cards": [{"rank": 14, "suit": "s"}, {"rank": 13, "suit": "s"}]
+    },
+    {
+      "seat": 1,
+      "stack": 990,
+      "status": "active",
+      "current_bet": 0,
+      "total_committed": 5,
+      "hole_cards": null  // Hidden from seat 0's view
+    }
+  ],
+  "community_cards": [],
+  "pots": [{"amount": 15, "eligible_seats": [0, 1]}],
+  "last_action_log": ["Seat 0: posted big blind 10"]
+}
+```
+
+**Client (seat 0) renders**:
+- Table-level: `data-current-actor="0"`, `data-current-bet="10"`, `data-hand-in-progress="true"`
+- Seat 0: hole cards visible (`data-hidden="false"`)
+- Seat 1: hole cards hidden (`data-hidden="true"`)
+- Fold/Check/Call/Bet buttons: **enabled**
+
+### Step 2: Player 0 clicks Fold
+
+**Client submits**:
+```json
+POST /tables/abc123/actions
+{
+  "seat": 0,
+  "action": "fold"
+}
+```
+
+**Server returns 200 OK with new state**:
+```json
+{
+  "table_id": "abc123",
+  "hand_in_progress": false,  // Changed: hand ended
+  "betting_round": null,
+  "current_actor": null,
+  "current_bet": 0,
+  "min_raise": 0,
+  "button_seat": 1,
+  "players": [
+    {
+      "seat": 0,
+      "stack": 990,
+      "status": "folded",  // Changed: status now folded
+      "current_bet": 0,
+      "total_committed": 10,
+      "hole_cards": [{"rank": 14, "suit": "s"}, {"rank": 13, "suit": "s"}]  // Still visible (ended hand)
+    },
+    {
+      "seat": 1,
+      "stack": 1005,  // Changed: won the pot
+      "status": "active",
+      "current_bet": 0,
+      "total_committed": 5,
+      "hole_cards": [{"rank": 10, "suit": "h"}, {"rank": 9, "suit": "h"}]  // Now visible at showdown (hand ended)
+    }
+  ],
+  "community_cards": [],
+  "pots": [],
+  "last_action_log": ["Seat 0: posted big blind 10", "Seat 0: folded"],
+  "last_showdown": []  // Empty: no showdown (opponent won by fold)
+}
+```
+
+**Client updates DOM**:
+- Table-level: `data-hand-in-progress="false"`, `data-current-actor=""`
+- Seat 0: `data-status="folded"`, `current_bet="0"`
+- Seat 1: `data-status="active"`, `stack="1005"`
+- Fold/Check/Call/Bet buttons: **disabled** (no hand in progress)
+- Start Hand button: **enabled**
+
+---
+
+## Appendix B: Pseudo-Code for Critical Functions
+
+### Update All DOM Attributes
+
+```javascript
+function updateAllAttributes(state, viewingSeat) {
+  // Table
+  const tableEl = qs('[data-testid="table"]');
+  tableEl.setAttribute('data-hand-in-progress', state.hand_in_progress);
+  tableEl.setAttribute('data-current-actor', state.current_actor ?? '');
+  tableEl.setAttribute('data-current-bet', state.current_bet);
+  tableEl.setAttribute('data-button-seat', state.button_seat ?? '');
+  
+  // Per-seat
+  for (const player of state.players) {
+    const seatEl = qs(`[data-testid="seat-${player.seat}"]`);
+    if (!seatEl) continue;  // Seat not rendered yet
+    
+    seatEl.setAttribute('data-seat', player.seat);
+    seatEl.setAttribute('data-status', player.status);
+    seatEl.setAttribute('data-stack', player.stack);
+    seatEl.setAttribute('data-current-bet', player.current_bet);
+    seatEl.setAttribute('data-total-committed', player.total_committed);
+    
+    // Hole cards
+    const isVisible = player.seat === viewingSeat || state.betting_round === 'showdown';
+    for (let i = 0; i < 2; i++) {
+      const cardEl = qs(`[data-testid="seat-${player.seat}-hole-card-${i}"]`);
+      if (!cardEl) continue;
+      
+      cardEl.setAttribute('data-hidden', !isVisible);
+      if (isVisible && player.hole_cards) {
+        cardEl.setAttribute('data-rank', player.hole_cards[i].rank);
+        cardEl.setAttribute('data-suit', player.hole_cards[i].suit);
+      } else {
+        cardEl.setAttribute('data-rank', '0');
+        cardEl.setAttribute('data-suit', '');
+      }
+    }
+  }
+  
+  // Community cards
+  for (let i = 0; i < state.community_cards.length; i++) {
+    const card = state.community_cards[i];
+    let cardEl = qs(`[data-testid="community-card-${i}"]`);
+    if (!cardEl) {
+      cardEl = document.createElement('div');
+      cardEl.setAttribute('data-testid', `community-card-${i}`);
+      tableEl.appendChild(cardEl);
+    }
+    cardEl.setAttribute('data-rank', card.rank);
+    cardEl.setAttribute('data-suit', card.suit);
+  }
+  
+  // Pots
+  for (let i = 0; i < state.pots.length; i++) {
+    const pot = state.pots[i];
+    let potEl = qs(`[data-testid="pot-${i}"]`);
+    if (!potEl) {
+      potEl = document.createElement('div');
+      potEl.setAttribute('data-testid', `pot-${i}`);
+      tableEl.appendChild(potEl);
+    }
+    potEl.setAttribute('data-amount', pot.amount);
+  }
+}
+```
+
+### Compute Button Enabled/Disabled
+
+```javascript
+function updateButtons(state, viewingSeat) {
+  const player = state.players.find(p => p.seat === viewingSeat);
+  if (!player) {
+    setAllDisabled(true);
+    return;
+  }
+  
+  const isCurrentActor = state.current_actor === viewingSeat && state.hand_in_progress;
+  const isActive = player.status === 'active';
+  const canAct = isCurrentActor && isActive;
+  
+  // Fold: can act
+  qs('[data-testid="action-fold"]').disabled = !canAct;
+  
+  // Check/Call: can act, and either no bet owed (check) or bet owed (call)
+  const needsCall = state.current_bet > player.current_bet;
+  qs('[data-testid="action-check-call"]').disabled = !canAct || (
+    state.current_bet > 0 && player.current_bet >= state.current_bet
+  );
+  
+  // Bet/Raise: can act, and bet amount is valid
+  const betInput = qs('[data-testid="bet-amount-input"]');
+  const betAmount = parseInt(betInput.value) || 0;
+  const minBet = state.current_bet + state.min_raise;
+  qs('[data-testid="action-bet-raise"]').disabled = !canAct || betAmount < minBet;
+  
+  // Start Hand: not in progress, player seated, >= 2 players
+  const enoughPlayers = state.players.length >= 2;
+  qs('[data-testid="start-hand"]').disabled = state.hand_in_progress || !enoughPlayers;
+}
+```
+
+---
+
+**End of Design Document**
+
+This design provides a complete blueprint for implementing a client that:
+- Fetches server state via REST polling every 200ms
+- Mirrors state in DOM attributes matching CLIENT-TEST-CONTRACT.md
+- Enforces turn-gating on action buttons
+- Maintains hole-card privacy at all times
+- Handles errors gracefully
+- Supports deep-linking via `?table={id}&seat={n}`

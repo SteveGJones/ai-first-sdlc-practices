@@ -1,0 +1,38 @@
+[
+  {
+    "id": "d1",
+    "file": "text_report.py",
+    "line": 17,
+    "line_window": 3,
+    "match_any": [
+      "KeyError",
+      "freqs\\[w\\] = freqs\\[w\\]",
+      "\\.get\\(w",
+      "defaultdict"
+    ]
+  },
+  {
+    "id": "d2",
+    "file": "text_report.py",
+    "line": 24,
+    "line_window": 3,
+    "match_any": [
+      "reverse=True",
+      "ascending.*(instead|not)",
+      "least frequent",
+      "sort.*wrong (order|direction)"
+    ]
+  },
+  {
+    "id": "d3",
+    "file": "text_report.py",
+    "line": 32,
+    "line_window": 3,
+    "match_any": [
+      "ZeroDivisionError",
+      "divi(de|sion).*(zero|empty)",
+      "empty (text|words|list)",
+      "no words"
+    ]
+  }
+]

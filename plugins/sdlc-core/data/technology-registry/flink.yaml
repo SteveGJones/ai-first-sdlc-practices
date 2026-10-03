@@ -1,0 +1,92 @@
+# Apache Flink — Curated technology registry entry
+# Covers: Confluent MCP (Flink SQL), self-hosted MCP, PyFlink, stream architecture gaps
+
+display_name: Apache Flink
+category: messaging
+description: >
+  Distributed stream processing framework for stateful computations over
+  bounded and unbounded data streams. Supports SQL, Table API, and DataStream
+  API. Used for real-time analytics, ETL, event-driven applications, and
+  complex event processing.
+
+section_a:
+  - name: Confluent MCP (Flink SQL)
+    type: mcp-server-npm
+    package: "@confluentinc/mcp-confluent"
+    source: https://github.com/confluentinc/mcp-confluent
+    publisher: Confluent Inc.
+    publisher_verified: true
+    description: >
+      Flink SQL tools via Confluent Cloud — statement execution, compute pool
+      management. Covers Flink SQL when FLINK_API_KEY/FLINK_API_SECRET env
+      vars are set. For Confluent Cloud.
+    env:
+      - name: FLINK_API_KEY
+        description: Confluent Cloud Flink API key
+      - name: FLINK_API_SECRET
+        description: Confluent Cloud Flink API secret
+    install_override: "npx -y @confluentinc/mcp-confluent -e /path/to/.env"
+    verified_date: 2026-04-10
+
+  - name: flink-mcp (self-hosted)
+    type: mcp-server-pip
+    package: flink-mcp
+    source: https://github.com/cledar/flink-mcp
+    publisher: cledar
+    publisher_verified: false
+    description: >
+      MCP for self-hosted Flink SQL Gateway — session management, DDL,
+      streaming queries.
+    env:
+      - name: SQL_GATEWAY_API_BASE_URL
+        description: Flink SQL Gateway base URL
+        example: "http://localhost:8083"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: apache-flink
+    package: apache-flink
+    ecosystem: pip
+    source: https://pypi.org/project/apache-flink/
+    publisher: Apache Software Foundation
+    description: >
+      Full PyFlink API — Table API + DataStream API. Requires Java runtime.
+    usage: "from pyflink.datastream import StreamExecutionEnvironment"
+    docs: https://nightlies.apache.org/flink/flink-docs-stable/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Flink stream processing architecture
+    slug: flink-stream-architect
+    why: >
+      SQL-only MCP coverage. No tool helps design DataStream topologies,
+      windowing/watermark strategies, state management, exactly-once semantics,
+      or connector configuration.
+    agent_would_know: >
+      DataStream API topology design, windowing and watermark strategies, state
+      management and schema evolution, checkpointing, connector configuration.
+    research_scope:
+      - DataStream API topology design
+      - Windowing and watermark strategies
+      - State management and schema evolution
+      - Exactly-once semantics and checkpointing
+      - Connector configuration (Kafka, JDBC, Elasticsearch)
+    create_command: "@pipeline-orchestrator create a flink-stream-architect agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Stream processing topology design, exactly-once semantics, state
+      management strategy.
+  - agent: performance-engineer
+    plugin: sdlc-team-common
+    relevance: >
+      Parallelism optimization, memory tuning, backpressure analysis.
+
+trusted_sources:
+  - url: https://github.com/apache/flink
+    type: github-org
+  - url: https://flink.apache.org/documentation/
+    type: vendor-docs

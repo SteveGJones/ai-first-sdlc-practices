@@ -1,0 +1,226 @@
+# Amazon Web Services — Curated technology registry entry
+# Covers: Official MCP servers (curated top 8 of 84+), SDKs, architecture gaps
+#
+# Full AWS MCP server catalog (84+ servers):
+#   https://awslabs.github.io/mcp/
+# All servers follow the pattern: uvx awslabs.<name>@latest
+
+display_name: Amazon Web Services
+category: cloud
+description: >
+  Comprehensive cloud platform with 200+ services spanning compute, storage,
+  databases, networking, machine learning, analytics, security, and developer
+  tools. The dominant public cloud provider by market share.
+
+# NOTE: AWS publishes 84+ official MCP servers at https://awslabs.github.io/mcp/
+# The section below curates the most commonly needed ones. Consult the full
+# catalog for specialized services (e.g., Bedrock, SageMaker, Aurora DSQL,
+# CodePipeline, Neptune, Valkey, etc.).
+section_a:
+  - name: AWS Documentation MCP Server
+    type: mcp-server-pip
+    package: awslabs.aws-documentation-mcp-server
+    source: https://pypi.org/project/awslabs.aws-documentation-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      Fetch AWS docs as markdown, search documentation, get recommendations.
+      No AWS credentials needed.
+    install_override: "uvx awslabs.aws-documentation-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: AWS API MCP Server
+    type: mcp-server-pip
+    package: awslabs.aws-api-mcp-server
+    source: https://pypi.org/project/awslabs.aws-api-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      Interact with AWS services via CLI commands with security controls.
+    env:
+      - name: AWS_REGION
+        description: AWS region for API calls
+        example: "us-east-1"
+      - name: AWS_API_MCP_PROFILE_NAME
+        description: AWS CLI profile name
+        example: "default"
+    install_override: "uvx awslabs.aws-api-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: AWS IaC MCP Server
+    type: mcp-server-pip
+    package: awslabs.aws-iac-mcp-server
+    source: https://pypi.org/project/awslabs.aws-iac-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      CloudFormation/CDK validation, compliance checking, deployment
+      troubleshooting. Supersedes cdk/cfn/ccapi servers.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+    install_override: "uvx awslabs.aws-iac-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: AWS Serverless MCP Server
+    type: mcp-server-pip
+    package: awslabs.aws-serverless-mcp-server
+    source: https://pypi.org/project/awslabs.aws-serverless-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      Lambda, DynamoDB, API Gateway, ACM, Route 53 — init, deploy, monitor,
+      troubleshoot.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+      - name: AWS_REGION
+        description: AWS region for API calls
+    install_override: "uvx awslabs.aws-serverless-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: AWS Billing and Cost Management MCP Server
+    type: mcp-server-pip
+    package: awslabs.billing-cost-management-mcp-server
+    source: https://pypi.org/project/awslabs.billing-cost-management-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      Cost Explorer, Cost Optimization Hub, Savings Plans, Budgets, S3 Storage
+      Lens, Cost Anomaly Detection.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+      - name: AWS_REGION
+        description: AWS region for API calls
+    install_override: "uvx awslabs.billing-cost-management-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: Amazon CloudWatch MCP Server
+    type: mcp-server-pip
+    package: awslabs.cloudwatch-mcp-server
+    source: https://pypi.org/project/awslabs.cloudwatch-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      AI-powered root cause analysis using CloudWatch metrics, alarms, and logs.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+    install_override: "uvx awslabs.cloudwatch-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: IAM MCP Server
+    type: mcp-server-pip
+    package: awslabs.iam-mcp-server
+    source: https://pypi.org/project/awslabs.iam-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      IAM users, roles, groups, policies, access keys with security simulation.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+      - name: AWS_REGION
+        description: AWS region for API calls
+    install_override: "uvx awslabs.iam-mcp-server@latest"
+    verified_date: 2026-04-10
+
+  - name: Amazon EKS MCP Server
+    type: mcp-server-pip
+    package: awslabs.eks-mcp-server
+    source: https://pypi.org/project/awslabs.eks-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      EKS cluster management and application deployment.
+    env:
+      - name: AWS_PROFILE
+        description: AWS CLI profile name
+      - name: AWS_REGION
+        description: AWS region for API calls
+    install_override: "uvx awslabs.eks-mcp-server@latest"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: boto3
+    package: boto3
+    ecosystem: pip
+    source: https://pypi.org/project/boto3/
+    publisher: Amazon Web Services
+    description: Official AWS SDK for Python
+    usage: "import boto3"
+    docs: https://aws.amazon.com/sdk-for-python/
+    verified_date: 2026-04-10
+
+  - name: AWS SDK v3 (JavaScript)
+    package: "@aws-sdk/client-s3"
+    ecosystem: npm
+    source: https://www.npmjs.com/package/@aws-sdk/client-s3
+    publisher: Amazon Web Services
+    description: >
+      Official AWS SDK v3 for JavaScript (modular per-service packages).
+      v2 is end-of-support.
+    usage: 'import { S3Client } from "@aws-sdk/client-s3"'
+    docs: https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: AWS multi-account and organizations strategy
+    slug: aws-organizations-expert
+    why: >
+      No MCP server addresses AWS Organizations, Control Tower, Service Control
+      Policies, or multi-account landing zone design.
+    agent_would_know: >
+      Multi-account strategy, landing zone patterns, SCP design, Organization
+      Unit hierarchy.
+    research_scope:
+      - AWS Organizations best practices
+      - Control Tower landing zones
+      - SCP design patterns
+      - Cross-account access patterns
+      - Consolidated billing optimization
+    create_command: "@pipeline-orchestrator create an aws-organizations-expert agent"
+    verified_date: 2026-04-10
+
+  - topic: AWS application architecture patterns
+    slug: aws-application-architect
+    why: >
+      Existing servers are service-oriented but don't provide opinionated guidance
+      on event-driven architectures, CQRS, saga patterns, microservice
+      decomposition, or domain-driven design on AWS.
+    agent_would_know: >
+      Event-driven architecture on AWS, microservice patterns, DDD with AWS
+      services, Well-Architected Framework application.
+    research_scope:
+      - Event-driven architecture patterns (EventBridge/SNS/SQS)
+      - Microservice decomposition strategies
+      - CQRS and saga patterns on AWS
+      - Domain-driven design with AWS services
+      - Well-Architected Framework (all 6 pillars)
+    create_command: "@pipeline-orchestrator create an aws-application-architect agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      End-to-end AWS solution design, service selection, cost-performance
+      trade-off analysis.
+  - agent: observability-specialist
+    plugin: sdlc-team-common
+    relevance: >
+      CloudWatch, X-Ray, and OpenTelemetry integration for AWS-hosted
+      applications.
+
+trusted_sources:
+  - url: https://github.com/aws
+    type: github-org
+  - url: https://github.com/awslabs
+    type: github-org
+  - url: https://www.npmjs.com/~aws-sdk
+    type: npm-scope
+  - url: https://pypi.org/user/awslabs-mcp/
+    type: pypi-publisher
+  - url: https://awslabs.github.io/mcp/
+    type: vendor-docs

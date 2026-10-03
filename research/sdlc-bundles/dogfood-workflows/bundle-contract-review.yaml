@@ -1,0 +1,30 @@
+name: bundle-contract-review
+description: |
+  Independent containerised architect review of the option bundle contract
+  (Phase C task 1 deliverable, refined in tasks 2-9 by validator semantics).
+  Load-bearing artefact: Phase D (#103, Programme bundle) and Phase E (#104,
+  Assured bundle) both build bundles against this contract — getting schema
+  decisions wrong here propagates expensively.
+
+  Reuses the sdlc-worker:decomposition-review team image built in Phase B
+  (decomposition spike review). The team image has the sdlc-team-common
+  plugin installed, providing the solution-architect agent.
+
+  Single-node workflow: one architect review, no fan-out, no synthesis.
+  Captures the review verbatim for audit; integrates findings inline if
+  warranted, or notes "no actionable findings" in the Phase C retrospective.
+
+  Input: docs/architecture/option-bundle-contract.md and required-context
+  files (METHODS.md, decomposition-spike.md, library/regulatory-*.md,
+  library/decomposition-*.md, agents/core/sdlc-enforcer.md).
+  Output: research/sdlc-bundles/dogfood-workflows/bundle-contract-review-output.md
+
+provider: claude
+
+nodes:
+  - id: contract-review
+    command: bundle-contract-review
+    context: fresh
+    effort: high
+    image: sdlc-worker:decomposition-review
+    timeout: 600000  # 10 minutes (in ms — Archon timeout is milliseconds)

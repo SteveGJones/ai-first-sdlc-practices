@@ -1,0 +1,20 @@
+name: v020-design-decisions-review
+description: |
+  Independent containerised architect review of the v0.2.0 Phase A
+  design-decisions addendum. Validates / refines the locked directions
+  (F-008 indirect coverage, F-001 EvidenceIndexEntry, F-002 named anchors,
+  F-005 split severity-mixed REQs) and resolves the 4 open architectural
+  questions (F-007 interface, E2 scope, D1 skip-rules, F-002/F-003 fit).
+
+  Reuses the sdlc-worker:decomposition-review team image used in Phase B,
+  Phase C task 10, Phase D task 14, Phase E task 41.
+
+provider: claude
+
+nodes:
+  - id: v020-design-decisions-review
+    command: v020-design-decisions-review
+    context: fresh
+    effort: high
+    image: sdlc-worker:decomposition-review
+    timeout: 600000

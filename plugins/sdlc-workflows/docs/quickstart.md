@@ -1,0 +1,283 @@
+# Containerised Workers — Quickstart
+
+Get from zero to a working containerised workflow in 5 minutes.
+
+## How this fits together
+
+```
+  you (on host)                           containers (one per node)
+  -------------                           -------------------------
+  /sdlc-workflows:workflows-run my-pipeline
+           │
+           ▼
+  preprocess_workflow.py  ── rewrites image: nodes to bash: docker run
+           │                  (archon never sees image: — it only sees
+           ▼                   its native bash: nodes)
+  archon workflow run my-pipeline
+           │
+           ├── node "implement"  ──►  docker run sdlc-worker:my-team
+           └── node "review"     ──►  docker run sdlc-worker:my-team
+```
+
+The host needs Archon to orchestrate the DAG. Each node's real work
+happens inside an `sdlc-worker:<team>` container — Claude Code,
+plugins, and the team's agents are all baked in.
+
+## Prerequisites
+
+- **Docker Desktop** running (verify: `docker info`)
+- **Claude Code** authenticated on this machine (verify: `claude -p "say ok"`)
+- **Archon on host PATH** (verify: `archon --help`) — installed by
+  `/sdlc-workflows:workflows-setup`
+- **This repository** cloned with the sdlc-workflows plugin installed
+
+## Step 1: Build Base Images
+
+```bash
+# From the repository root:
+bash plugins/sdlc-workflows/docker/build-base.sh
+bash plugins/sdlc-workflows/docker/build-full.sh
+```
+
+This builds two images:
+- `sdlc-worker:base` — toolchain (Node.js, Claude Code, Archon, Python, git)
+- `sdlc-worker:full` — base + all installed plugins (source layer for team images)
+
+Build takes ~3-5 minutes on first run, seconds on rebuild.
+
+## Step 2: Create a Team
+
+Teams are defined by manifests in `.archon/teams/`. Each manifest specifies which plugins, agents, and skills the team has access to.
+
+Create `.archon/teams/my-team.yaml`:
+
+```yaml
+schema_version: "1.0"
+name: my-team
+description: >
+  My first team — has access to code review and enforcement agents.
+status: active
+
+plugins:
+  - sdlc-core
+
+agents:
+  - sdlc-core:verification-enforcer
+  - sdlc-core:sdlc-enforcer
+
+skills:
+  - sdlc-core:validate
+
+context:
+  - CONSTITUTION.md
+```
+
+Build the team image:
+
+```bash
+bash plugins/sdlc-workflows/docker/build-team.sh my-team
+```
+
+This validates the manifest, generates a team-specific CLAUDE.md with role framing, and builds `sdlc-worker:my-team`.
+
+## Step 3: Create a Workflow
+
+Workflows define a DAG of nodes. Each node runs in a container with the specified team image.
+
+Create `.archon/workflows/my-pipeline.yaml`:
+
+```yaml
+name: my-pipeline
+description: |
+  Simple implement-then-review pipeline.
+
+provider: claude
+
+nodes:
+  - id: implement
+    command: my-implement
+    image: sdlc-worker:my-team
+
+  - id: review
+    command: my-review
+    image: sdlc-worker:my-team
+    depends_on: [implement]
+```
+
+Create the command prompts in `.archon/commands/`:
+
+**`.archon/commands/my-implement.md`**:
+```markdown
+You are implementing a change at /workspace.
+
+<Describe the task here — what to read, what to change, what to create.>
+
+After making changes, commit:
+  cd /workspace && git add -A && git commit -m "feat: description"
+```
+
+**`.archon/commands/my-review.md`**:
+```markdown
+You are reviewing changes at /workspace.
+
+Read the recent commits: cd /workspace && git log --oneline -5
+
+Review for correctness, edge cases, and test coverage.
+
+Write your review to /workspace/review.md with ## Summary, ## Issues, ## Recommendation.
+Then commit: cd /workspace && git add -A && git commit -m "review: findings"
+```
+
+## Step 4: Run the Workflow
+
+Use the skill:
+
+```
+/sdlc-workflows:workflows-run my-pipeline
+```
+
+Or use the CLI directly:
+
+```bash
+# Resolve credentials
+CRED_JSON=$(python3 plugins/sdlc-workflows/scripts/resolve_credentials.py --json)
+CRED_MOUNT=$(echo "$CRED_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['mount_args'])")
+
+# Preprocess workflow (transforms image: nodes to docker run commands).
+# Writes the preprocessed copy to .generated/ -- the source YAML is never
+# overwritten, so the run is idempotent (repeat safely).
+mkdir -p .archon/workflows/.generated
+python3 plugins/sdlc-workflows/scripts/preprocess_workflow.py \
+    .archon/workflows/my-pipeline.yaml \
+    --output .archon/workflows/.generated/my-pipeline.yaml \
+    --workspace "$(pwd)" \
+    --cred-mount "$CRED_MOUNT" \
+    --commands-dir "$(pwd)/.archon/commands"
+
+# Run via Archon. Archon resolves workflows by the `name:` field and
+# scans `.archon/workflows/.generated/` for preprocessed copies — the
+# source YAML under `.archon/workflows/` is left untouched, so repeat
+# runs are idempotent.
+archon workflow run my-pipeline --no-worktree
+```
+
+## Step 4.5: Watch It Run (Archon-native monitoring)
+
+Archon ships four monitoring surfaces — use whichever fits. None
+require anything beyond what `workflows-setup` already installed.
+
+**Live per-node output** — already in your terminal:
+
+```
+[implement] Started
+[implement] Completed (2m 14s)
+[review]    Started
+[review]    Completed (46s)
+```
+
+**Archon web UI** — the richest view:
+
+```bash
+archon serve          # in another terminal
+open http://localhost:3090
+```
+
+First run downloads the UI (Archon bundles it); subsequent `archon
+serve` calls start in seconds. The dashboard lists every run,
+per-node events, durations, status, and the raw logs.
+
+**CLI snapshot** — no server needed:
+
+```bash
+archon workflow status         # what's live right now
+archon isolation list          # per-run worktrees / environments
+/sdlc-workflows:workflows-status --recent 10
+/sdlc-workflows:workflows-status --run-id <prefix>   # full event log
+```
+
+`workflows-status` works whether `archon serve` is up (uses REST) or
+not (falls back to the SQLite state DB).
+
+**Container-level detail** — for what Claude printed inside a node:
+
+```bash
+docker ps --filter name=sdlc-worker
+docker logs -f <container-id>
+```
+
+**Recovery from a failed run:**
+
+```bash
+archon workflow run my-pipeline --resume    # pick up where it failed
+```
+
+## Step 5: Verify Results
+
+```bash
+git log --oneline -5       # See commits from each container
+ls *.md                     # See generated review files
+```
+
+## Credential Tiers
+
+| Environment | Setup | How it works |
+|-------------|-------|-------------|
+| **Mac** | None (automatic) | Credentials extracted from macOS Keychain |
+| **Linux** | Run `plugins/sdlc-workflows/scripts/login.sh` | Creates Docker volume `sdlc-claude-credentials` |
+| **Custom** | Create `.archon/credentials.yaml` | Point to credential file path |
+
+Check your current tier:
+```bash
+python3 plugins/sdlc-workflows/scripts/resolve_credentials.py
+```
+
+## Or Use the Authoring Skill
+
+Instead of writing workflow YAML by hand, ask Claude Code:
+
+```
+/sdlc-workflows:author-workflow
+```
+
+This interactive skill asks what you want to build, generates the workflow YAML, command prompts, and validates everything.
+
+## Reference Implementation
+
+Want to see every step above wired together and actually executed? The
+end-to-end smoke test is a working reference implementation:
+
+```
+tests/integration/workforce-smoke/run-e2e.sh
+```
+
+It builds base + full + team images, resolves credentials, preprocesses
+the workflow (no Archon schema patches — the preprocessor rewrites
+`image:` nodes to `bash: docker run` before Archon sees them), launches
+team containers through a real workflow (parallel fan-out + synthesis),
+and asserts the expected commits landed in the workspace. Treat it as
+the canonical "how should this look when it works" — when something in
+the quickstart diverges, diff against this script.
+
+## Tiered Termination (important)
+
+Every workflow node has three kill mechanisms to prevent both runaway
+work and lost output:
+
+1. **Budget cap** (`budget: 2.0`) — kills if model burns >$2 of tokens
+   (spiral detection). Primary defence against loops.
+2. **Inner timeout** (automatic) — SIGTERM to Claude 60s before hard
+   kill. Partial output written to `/workspace/reports/`.
+3. **Outer timeout** (`timeout: 600000`) — hard kill backstop (ms).
+
+Always set both `timeout:` and `budget:` on every node. The bundled
+workflows ship with recommended values. See "Tiered Termination Model"
+in `CLAUDE-CONTEXT-workflows.md` for the full reference with empirical
+data.
+
+## Next Steps
+
+- Read `CLAUDE-CONTEXT-workflows.md` for the full schema reference
+- Use `/sdlc-workflows:manage-teams` to manage team lifecycle, and
+  `/sdlc-workflows:manage-teams --review` for fleet visibility
+  (add `--team <name>` for a single-team detail view)
+- See `plugins/sdlc-workflows/docs/troubleshooting.md` if something goes wrong

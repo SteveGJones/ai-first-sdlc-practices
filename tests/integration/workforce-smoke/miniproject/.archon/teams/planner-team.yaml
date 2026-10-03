@@ -1,0 +1,21 @@
+schema_version: "1.0"
+name: planner-team
+description: >
+  Planning team — scopes features, writes acceptance criteria,
+  produces task briefs for the dev-team to implement.
+status: active
+created: "2026-04-17T12:00:00"
+updated: "2026-04-17T12:00:00"
+
+plugins:
+  - sdlc-core
+
+agents:
+  - sdlc-core:sdlc-enforcer
+  - local:.archon/agents/project-context.md
+
+skills:
+  - sdlc-core:rules
+
+context:
+  - CONSTITUTION.md

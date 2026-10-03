@@ -1,0 +1,117 @@
+# PostgreSQL — Curated technology registry entry
+# Covers: MCP servers (Crystal DBA, AWS Aurora, HenkDz), Python/Node drivers, operations gaps
+
+display_name: PostgreSQL
+category: database
+description: >
+  Advanced open-source relational database with extensibility, ACID compliance,
+  rich SQL support, and a mature ecosystem. Widely used for web applications,
+  geospatial (PostGIS), vector search (pgvector), and enterprise workloads.
+
+section_a:
+  - name: Postgres MCP Pro
+    type: mcp-server-pip
+    package: postgres-mcp
+    source: https://github.com/crystaldba/postgres-mcp
+    publisher: Crystal DBA
+    publisher_verified: false
+    description: >
+      PostgreSQL MCP with read/write access, index tuning (Anytime Algorithm),
+      health checks, explain plans with hypothetical index support. Supports
+      PostgreSQL 15-17.
+    install_override: "uvx postgres-mcp"
+    verified_date: 2026-04-10
+
+  - name: AWS Aurora PostgreSQL
+    type: mcp-server-pip
+    package: awslabs.postgres-mcp-server
+    source: https://pypi.org/project/awslabs.postgres-mcp-server/
+    publisher: Amazon Web Services
+    publisher_verified: true
+    description: >
+      Connect to Aurora PostgreSQL via RDS Data API or direct pgwire.
+      IAM auth support.
+    install_override: "uvx awslabs.postgres-mcp-server@latest"
+    env:
+      - name: AWS_PROFILE
+        description: AWS profile for authentication
+      - name: AWS_REGION
+        description: AWS region for the Aurora cluster
+    verified_date: 2026-04-10
+
+  - name: "@henkey/postgres-mcp-server"
+    type: mcp-server-npm
+    package: "@henkey/postgres-mcp-server"
+    source: https://github.com/HenkDz/postgresql-mcp-server
+    publisher: HenkDz
+    publisher_verified: false
+    description: >
+      14 database management tools — analyze, debug, schema info, create/alter
+      tables, export/import data, copy between databases.
+    verified_date: 2026-04-10
+
+section_b:
+  - name: psycopg (psycopg3)
+    package: psycopg
+    ecosystem: pip
+    source: https://pypi.org/project/psycopg/
+    publisher: Daniele Varrazzo / psycopg.org
+    description: Modern PostgreSQL adapter for Python 3 with async support
+    usage: "import psycopg"
+    docs: https://www.psycopg.org/psycopg3/docs/
+    verified_date: 2026-04-10
+
+  - name: asyncpg
+    package: asyncpg
+    ecosystem: pip
+    source: https://pypi.org/project/asyncpg/
+    publisher: MagicStack
+    description: Fast async PostgreSQL client for Python
+    usage: "import asyncpg"
+    docs: https://magicstack.github.io/asyncpg/
+    verified_date: 2026-04-10
+
+  - name: pg (node-postgres)
+    package: pg
+    ecosystem: npm
+    source: https://www.npmjs.com/package/pg
+    publisher: Brian Carlson
+    description: PostgreSQL client for Node.js
+    usage: 'const { Client } = require("pg")'
+    docs: https://node-postgres.com/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: PostgreSQL operations and migration management
+    slug: postgresql-operations-expert
+    why: >
+      No MCP server handles migration orchestration (Alembic/Flyway), replication
+      monitoring, backup/restore coordination, connection pool tuning, or
+      extension management (PostGIS, pg_vector).
+    agent_would_know: >
+      PostgreSQL migration strategies, replication topologies, backup
+      coordination, extension-aware schema advice.
+    research_scope:
+      - Migration management (Alembic, Flyway)
+      - Replication monitoring and failover
+      - Backup and restore strategies
+      - Connection pooling (PgBouncer)
+      - Extension management (PostGIS, pg_vector, pg_stat_statements)
+    create_command: "@pipeline-orchestrator create a postgresql-operations-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: database-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Schema design, query optimization, index strategy.
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Connection pooling, transaction management, migration orchestration.
+
+trusted_sources:
+  - url: https://github.com/postgres
+    type: github-org
+  - url: https://www.postgresql.org/docs/
+    type: vendor-docs

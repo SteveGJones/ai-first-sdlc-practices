@@ -1,0 +1,18 @@
+{
+  "scores": {"completeness": 2, "turn_enforcement_soundness": 2, "edge_case_awareness": 1, "internal_consistency": 1},
+  "verification_note": "Spot-checked the two most substantive gap claims directly against the candidate document: no mention of a max=player-stack ceiling on the bet/raise input anywhere, and no explicit min-bet-when-current_bet==0 handling (only a Check-vs-Call branch condition at that point, not a bet-floor rule). Both confirmed present as described; verdict accepted without correction.",
+  "gaps": [
+    "The reference specifies WebSocket push with an explicit re-fetch-then-resubscribe reconnection sequence; the candidate substitutes 200ms polling, a legitimate alternative, but never directly weighs the latency/staleness trade-off against push (a human player's turn-start could be missed for up to 200ms).",
+    "The reference explicitly notes side-pot eligible_seats is available-but-non-essential UI; the candidate's pot mirror covers `data-amount` but never mentions eligible_seats at all, not even as an intentional omission.",
+    "The reference's action-bar min/max derivation is explicit: min = current_bet + min_raise, or big_blind when current_bet == 0; max = player's stack. The candidate's minBet calculation never handles the current_bet == 0 case distinctly and never enforces or mentions a max = stack ceiling on the bet input client-side — confirmed absent from the document.",
+    "No mention of the dealer-button visual marker or a highlighted border on the current actor's seat (a cosmetic but explicitly-required reference convention).",
+    "The candidate's reconnection story ('retry on next timer tick') sidesteps the reference's explicit re-fetch-before-resubscribe requirement via continuous polling, an arguably-equivalent approach whose equivalence is never actually argued."
+  ],
+  "superior_choices": [
+    "The DOM data-attribute test-contract (Part 3) is a materially more rigorous, machine-verifiable interface than the reference's prose description of the table view.",
+    "Deep-linking via ?table&seat query params for direct harness automation is a concrete, testable mechanism beyond the reference's lobby-first flow.",
+    "Explicit action-response-vs-poll race resolution ('action response is fresher than polling fetch, trust it') is a precise tie-breaking rule strengthening the candidate's chosen model.",
+    "The privacy section's 'no indexing of other players' cards' anti-pattern callout and explicit re-derivation-per-poll requirement is a sharper defense-in-depth articulation than the reference's single paragraph."
+  ],
+  "summary": "The candidate is a thorough, engineering-precise redesign that trades the reference's WebSocket-push model for HTTP polling, a legitimate alternative it defends reasonably though without directly weighing the latency trade-off. It matches or exceeds the reference on structural completeness (URL/deep-linking, DOM test-contract, action gating, privacy) and is more implementation-ready thanks to concrete pseudocode and an explicit DOM attribute contract, but has confirmed loose ends: no client-side max-bet-vs-stack ceiling, no explicit big_blind-when-current_bet-zero floor, no dealer-button visual convention, and under-treatment of side-pot eligible_seats and post-reconnect resync semantics. None break the design, but they are exactly the kind of decision a later implementation stage would have to resolve unilaterally."
+}

@@ -1,0 +1,8 @@
+#!/bin/sh
+# mock-sleep <pidfile> <duration> — tiny CLI stand-in for
+# test-turn-supervisor.sh: records its own pid, then sleeps untrapped, so
+# a default-disposition TERM/KILL kills it immediately — matching the
+# real codex/agy mocks' behavior under signals (they don't trap TERM
+# either). No API quota, no real CLI involved.
+printf '%s' "$$" > "$1"
+sleep "$2"

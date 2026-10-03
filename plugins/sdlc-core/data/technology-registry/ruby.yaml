@@ -1,0 +1,71 @@
+# Ruby — Curated technology registry entry
+# Covers: MCP server (rails-mcp-server), gem libraries, dev patterns gap
+
+display_name: Ruby
+category: language
+description: >
+  Dynamic, object-oriented language designed for developer happiness. Convention
+  over configuration philosophy, powerful metaprogramming, and the Rails
+  framework. Powers Shopify, GitHub, Basecamp, and a large SaaS ecosystem.
+
+section_a:
+  - name: rails-mcp-server
+    type: mcp-server-binary
+    package: rails-mcp-server
+    source: https://github.com/maquina-app/rails-mcp-server
+    publisher: maquina-app
+    publisher_verified: false
+    description: >
+      Rails MCP — exposes Rails app as AI-accessible interface. Auth, rate
+      limiting, tools system. Production-ready with sandboxed environments.
+    install_override: "gem install rails-mcp-server"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: Rails
+    package: rails
+    ecosystem: gem
+    source: https://rubygems.org/gems/rails
+    publisher: Rails Core Team
+    description: Full-stack Ruby web framework
+    usage: 'gem "rails", "~> 8.1"'
+    docs: https://rubyonrails.org/
+    verified_date: 2026-04-10
+
+  - name: RSpec
+    package: rspec
+    ecosystem: gem
+    source: https://rubygems.org/gems/rspec
+    publisher: RSpec Team
+    description: BDD testing framework for Ruby
+    usage: 'gem "rspec-rails"'
+    docs: https://rspec.info/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Ruby and Rails development patterns
+    slug: ruby-rails-expert
+    why: >
+      Weakest MCP ecosystem of all languages. No RuboCop/RSpec/Bundler MCP
+      exists. Rails-mcp-server exposes apps but doesn't provide dev tool
+      integration.
+    agent_would_know: >
+      Rails conventions (ActiveRecord, concerns, service objects), Ruby
+      metaprogramming patterns, RSpec DSL and testing strategies, Ruby
+      concurrency with Ractor and Fiber scheduler, and gem authoring.
+    research_scope:
+      - Rails conventions (ActiveRecord, concerns, service objects)
+      - Ruby metaprogramming patterns
+      - Testing (RSpec DSL, factories, shared examples)
+      - Ruby concurrency (Ractor, Fiber scheduler)
+      - Gem authoring
+    create_command: "@pipeline-orchestrator create a ruby-rails-expert agent"
+    verified_date: 2026-04-10
+
+trusted_sources:
+  - url: https://github.com/rails
+    type: github-org
+  - url: https://rubygems.org/
+    type: other
+  - url: https://rubyonrails.org/
+    type: vendor-docs

@@ -1,0 +1,27 @@
+name: parallel-review-pipeline
+description: |
+  Parallel review pipeline for smoke testing.
+  Implement → parallel security + architecture reviews → synthesise.
+
+provider: claude
+
+nodes:
+  - id: implement
+    command: sdlc-implement
+    image: sdlc-worker:dev-team
+
+  - id: security-review
+    command: sdlc-security-review
+    image: sdlc-worker:review-team
+    depends_on: [implement]
+
+  - id: architecture-review
+    command: sdlc-architecture-review
+    image: sdlc-worker:review-team
+    depends_on: [implement]
+
+  - id: synthesise
+    command: sdlc-synthesise
+    image: sdlc-worker:dev-team
+    depends_on: [security-review, architecture-review]
+    trigger_rule: all_success

@@ -1,0 +1,19 @@
+name: feature-pipeline
+description: |
+  Feature development pipeline for the task tracker.
+  Implement node uses the dev team, review node uses the review team.
+  The review node extends with verification-enforcer for extra rigour.
+
+provider: claude
+
+nodes:
+  - id: implement
+    command: sdlc-implement
+    image: sdlc-worker:dev-team
+    context: fresh
+
+  - id: review
+    command: sdlc-review
+    image: sdlc-worker:review-team
+    depends_on: [implement]
+    context: fresh

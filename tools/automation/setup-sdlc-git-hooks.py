@@ -105,6 +105,26 @@ if [ -f ".sdlc/tools/validation/local-validation.py" ]; then
     echo "✅ Quick validation passed"
 fi
 
+# Run logging compliance check
+if [ -f "tools/validation/check-logging-compliance.py" ]; then
+    echo "Running logging compliance check..."
+    python tools/validation/check-logging-compliance.py . --threshold 0
+    if [ $? -ne 0 ]; then
+        echo "❌ Logging compliance check failed!"
+        echo "Ensure all mandatory logging points are present."
+        exit 1
+    fi
+    echo "✅ Logging compliance passed"
+elif [ -f ".sdlc/tools/validation/check-logging-compliance.py" ]; then
+    echo "Running logging compliance check..."
+    python .sdlc/tools/validation/check-logging-compliance.py . --threshold 0
+    if [ $? -ne 0 ]; then
+        echo "❌ Logging compliance check failed!"
+        exit 1
+    fi
+    echo "✅ Logging compliance passed"
+fi
+
 # Check for feature proposal
 if [[ "$current_branch" == feature/* ]]; then
     proposal_name=${current_branch#feature/}

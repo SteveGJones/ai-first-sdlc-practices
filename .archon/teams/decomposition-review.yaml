@@ -1,0 +1,23 @@
+schema_version: "1.0"
+name: decomposition-review
+description: |
+  Architect-only team for reviewing design specs and decomposition spikes.
+  Used by EPIC #178's containerised architect-review-spike workflow to
+  produce reproducible architectural reviews of design artefacts.
+status: active
+
+plugins:
+  - sdlc-core
+  - sdlc-team-common
+
+agents:
+  - sdlc-team-common:solution-architect
+
+skills:
+  - sdlc-core:validate
+
+context:
+  - research/sdlc-bundles/METHODS.md
+  - research/sdlc-bundles/decomposition-spike.md
+  - library/decomposition-ddd-bazel.md
+  - library/decomposition-failure-modes.md

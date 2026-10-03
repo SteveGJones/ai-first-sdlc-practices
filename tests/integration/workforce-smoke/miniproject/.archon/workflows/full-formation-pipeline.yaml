@@ -1,0 +1,45 @@
+name: full-formation-pipeline
+description: |
+  Multi-team, multi-node, multi-phase super-smoke.
+  Exercises: serial hand-off, parallel fan-out, all_success trigger,
+  per-node timeout override, per-node model override, and a mixed
+  non-image finalise node to prove image and non-image nodes coexist.
+
+provider: claude
+
+nodes:
+  - id: plan
+    command: sdlc-plan
+    image: sdlc-worker:planner-team
+    model: claude-sonnet-4-6
+
+  - id: implement
+    command: sdlc-implement
+    image: sdlc-worker:dev-team
+    depends_on: [plan]
+    timeout: 600000
+    model: claude-sonnet-4-6
+
+  - id: qa-security
+    command: sdlc-security-review
+    image: sdlc-worker:qa-team
+    depends_on: [implement]
+    model: claude-sonnet-4-6
+
+  - id: qa-architecture
+    command: sdlc-architecture-review
+    image: sdlc-worker:qa-team
+    depends_on: [implement]
+    model: claude-sonnet-4-6
+
+  - id: synthesise
+    command: sdlc-synthesise
+    image: sdlc-worker:synth-team
+    depends_on: [qa-security, qa-architecture]
+    trigger_rule: all_success
+    model: claude-sonnet-4-6
+
+  - id: finalise
+    prompt: |
+      Formation run complete.  No container dispatch for this node —
+      it proves image and non-image nodes coexist in one workflow.

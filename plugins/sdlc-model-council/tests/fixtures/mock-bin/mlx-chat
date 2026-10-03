@@ -1,0 +1,56 @@
+#!/bin/bash
+# Mock `mlx-chat` client for extdel.sh's mlx-resume test. Understands just
+# enough of the real client's flag surface (see scripts/adapters/mlx/mlx-chat)
+# to round-trip a turn without a running mlx_lm.server or any model weights —
+# so the behavioral test never needs Apple-Silicon hardware, weights, or a
+# server. Never invoke the real client or a real server from tests.
+#
+# Env knobs read by this mock:
+#   MOCK_MLX_SLEEP    — seconds to sleep before responding (timeout tests)
+#   MOCK_MLX_FAIL     — "1" => exit 1 after an error line (FAILURE path)
+#   MOCK_MLX_EMPTY    — "1" => exit 0 but write an EMPTY -o file (DF2:
+#                       exit-0-but-empty must report NO_OUTPUT, not SUCCESS)
+set -eu
+
+# --version / --probe short-circuit before any turn work.
+for a in "$@"; do
+  case "$a" in
+    --version) echo "mlx-chat 0.0.0-mock"; exit 0 ;;
+    --probe)   exit 0 ;;
+  esac
+done
+
+out=""
+turn="1"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -o|--output) out="$2"; shift 2 ;;
+    --turn) turn="$2"; shift 2 ;;
+    --model|--base-url|--stop|--history-dir|--max-tokens|--temperature) shift 2 ;;
+    *) shift ;;
+  esac
+done
+
+prompt=$(cat)
+
+if [ -n "${MOCK_MLX_SLEEP:-}" ]; then
+  sleep "$MOCK_MLX_SLEEP"
+fi
+
+if [ "${MOCK_MLX_FAIL:-0}" = "1" ]; then
+  echo "mock mlx-chat: induced failure" >&2
+  exit 1
+fi
+
+if [ "${MOCK_MLX_EMPTY:-0}" = "1" ]; then
+  # DF2: exit 0, but the -o file the real client always writes is empty
+  # (e.g. the server returned empty content).
+  [ -n "$out" ] && : > "$out"
+  echo "mlx-chat: ok (empty)"
+  exit 0
+fi
+
+answer="mock answer for: $prompt (turn $turn)"
+[ -n "$out" ] && printf '%s' "$answer" > "$out"
+echo "mlx-chat: ok chars=${#answer}"
+exit 0

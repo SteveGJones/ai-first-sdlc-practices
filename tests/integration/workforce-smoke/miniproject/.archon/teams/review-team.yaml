@@ -1,0 +1,22 @@
+schema_version: "1.0"
+name: review-team
+description: >
+  Code review team for the task tracker project.
+  Handles security review, architecture review, and goal verification.
+status: active
+created: "2026-04-10T12:00:00"
+updated: "2026-04-11T12:00:00"
+
+plugins:
+  - sdlc-core
+
+agents:
+  - sdlc-core:code-review-specialist
+  - sdlc-core:critical-goal-reviewer
+  - local:.archon/agents/project-context.md
+
+skills:
+  - sdlc-core:rules
+
+context:
+  - CONSTITUTION.md

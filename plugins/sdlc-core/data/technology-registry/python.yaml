@@ -1,0 +1,73 @@
+# Python — Curated technology registry entry
+# Covers: pip libraries (pytest, ruff, mypy), async/typing patterns gap
+#
+# NOTE: No mature Python-specific MCP server recommended. mcp_python_toolbox
+# exists but uses older tools (Black/Pylint, not Ruff). Python's native
+# execution in Claude Code reduces the need for MCP tool wrappers.
+
+display_name: Python
+category: language
+description: >
+  High-level, dynamically typed language emphasizing readability and
+  rapid development. Dominant in data science, machine learning, web backends,
+  and scripting. Rich ecosystem via PyPI with 500k+ packages. Modern Python
+  (3.12+) includes improved error messages, per-interpreter GIL, and type
+  parameter syntax.
+
+section_b:
+  - name: pytest
+    package: pytest
+    ecosystem: pip
+    source: https://pypi.org/project/pytest/
+    publisher: pytest-dev
+    description: Python testing framework
+    usage: "import pytest"
+    docs: https://docs.pytest.org/
+    verified_date: 2026-04-10
+
+  - name: Ruff
+    package: ruff
+    ecosystem: pip
+    source: https://pypi.org/project/ruff/
+    publisher: Astral
+    description: Fast Python linter and formatter
+    usage: "ruff check . && ruff format ."
+    docs: https://docs.astral.sh/ruff/
+    verified_date: 2026-04-10
+
+  - name: mypy
+    package: mypy
+    ecosystem: pip
+    source: https://pypi.org/project/mypy/
+    publisher: Python/mypy team
+    description: Static type checker for Python
+    usage: "mypy ."
+    docs: https://mypy.readthedocs.io/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Python async and typing patterns
+    slug: python-patterns-expert
+    why: >
+      No Ruff/pytest/mypy MCP servers. Python benefits from Claude Code's
+      native execution but advanced patterns (async, typing, packaging) need
+      expert guidance.
+    agent_would_know: >
+      Async patterns with asyncio and TaskGroups, advanced typing with TypeVar
+      and Protocol, modern packaging with pyproject.toml, and pytest fixture
+      design.
+    research_scope:
+      - Async patterns (asyncio, TaskGroups, structured concurrency)
+      - Advanced typing (TypeVar, Protocol, ParamSpec)
+      - Packaging (pyproject.toml, src layout)
+      - Testing (pytest fixtures, parametrize, conftest)
+    create_command: "@pipeline-orchestrator create a python-patterns-expert agent"
+    verified_date: 2026-04-10
+
+trusted_sources:
+  - url: https://github.com/python
+    type: github-org
+  - url: https://docs.python.org/
+    type: vendor-docs
+  - url: https://pypi.org/
+    type: other

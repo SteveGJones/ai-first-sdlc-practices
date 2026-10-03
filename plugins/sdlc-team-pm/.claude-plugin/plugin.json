@@ -1,0 +1,9 @@
+{
+  "name": "sdlc-team-pm",
+  "version": "1.0.0",
+  "description": "Project management agents — agile coach, delivery manager, progress tracking",
+  "author": {
+    "name": "SteveGJones"
+  },
+  "keywords": ["sdlc", "project-management", "agile", "delivery", "tracking"]
+}

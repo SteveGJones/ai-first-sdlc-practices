@@ -1,0 +1,161 @@
+#!/bin/bash
+# Mock `agy` CLI for extdel.sh's agy-resume tests. Understands just enough
+# of the real `agy --print` / `agy --conversation ID --print` / `agy
+# --version` / `agy --gemini_dir DIR` surface (per the design doc's §9.14
+# live-probe findings and §9.15 permission-model findings, DF1/DF2 of
+# issue #232) to exercise submit_agy_turn without spending real API quota.
+# Never invoke the real codex/agy CLIs from tests — this fixture exists so
+# we don't have to.
+#
+# Conversation-id state (DF1): when --gemini_dir DIR is given (extdel.sh
+# now passes it on every invocation), writes into
+# DIR/antigravity-cli/cache/last_conversations.json — the per-handle
+# ISOLATED cache extdel.sh now reads id-capture from — exactly the way
+# real agy does (a flat {"<abs cwd>": "<uuid>"} map, §9.14 #3). Falls back
+# to $HOME/.gemini/antigravity-cli/cache/... only if no --gemini_dir was
+# given (defensive; extdel.sh always passes one after DF1). Tests redirect
+# HOME to a throwaway directory regardless, so the real ~/.gemini is never
+# touched either way.
+#
+# Permission simulation (DF2, §9.15 ground truth): real agy in headless
+# --print mode auto-denies every tool permission unless it's pre-listed in
+# the (here, --gemini_dir-scoped) settings.json permissions.allow, or
+# --dangerously-skip-permissions was passed. MOCK_AGY_ACTION selects which
+# permission the simulated delegated task would need to exercise:
+#   read  (default) — needs read_file(*), present in EVERY posture this
+#                      build writes (read-only/workspace/dangerous all
+#                      grant reads) — so every pre-existing test in this
+#                      suite (which never sets this knob) is unaffected.
+#   write            — needs write_file(*), present only in
+#                       workspace/dangerous — a read-only-posture write
+#                       attempt is denied: exit 0, empty stdout, and a
+#                       stderr line matching extdel.sh's
+#                       permission_denial_hint pattern, mirroring the real
+#                       "no output produced ... auto-denied" wording.
+# MOCK_AGY_EMPTY_LEGIT=1 simulates a genuinely empty-but-legitimate answer
+# (exit 0, blank stdout, NO permission-shaped stderr at all) — the DF2
+# case that must still report NO_OUTPUT but WITHOUT a permission hint.
+#
+# Deliberately no `set -e`: `[ -f X ] && ...` idioms below are bare
+# statements, not if-conditions, and would abort the script under -e
+# whenever the test is false — not what we want from a mock that must
+# tolerate a not-yet-existing cache file.
+set -u
+
+if [ "${1:-}" = "--version" ]; then
+  echo "agy-cli 0.0.0-mock (antigravity)"
+  exit 0
+fi
+
+conversation_id=""
+prompt=""
+saw_print=0
+gemini_dir=""
+skip_permissions=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --conversation) conversation_id="$2"; shift 2 ;;
+    --gemini_dir) gemini_dir="$2"; shift 2 ;;
+    --model|--effort|--agent|--add-dir|--print-timeout|--log-file|--mode)
+      shift 2 ;;
+    --sandbox)
+      shift ;;
+    --dangerously-skip-permissions)
+      skip_permissions=1
+      shift ;;
+    --print)
+      prompt="$2"
+      saw_print=1
+      shift 2
+      ;;
+    *)
+      shift ;;
+  esac
+done
+
+if [ "$saw_print" -ne 1 ]; then
+  echo "mock agy: no --print flag given: unsupported invocation" >&2
+  exit 2
+fi
+
+if [ -n "$gemini_dir" ]; then
+  cache_dir="$gemini_dir/antigravity-cli/cache"
+  settings_file="$gemini_dir/antigravity-cli/settings.json"
+else
+  cache_dir="$HOME/.gemini/antigravity-cli/cache"
+  settings_file="$HOME/.gemini/antigravity-cli/settings.json"
+fi
+cache_file="$cache_dir/last_conversations.json"
+
+cwd_norm=$(pwd -P)
+
+if [ -z "$conversation_id" ]; then
+  # Turn 1 (no --conversation given): mint a new conversation id.
+  conversation_id="${MOCK_AGY_SESSION_ID:-00000000-0000-4000-8000-000000000001}"
+fi
+
+if [ "${MOCK_AGY_NO_ID_WRITE:-0}" = "1" ]; then
+  # Simulates "the cache parses fine but has no entry for THIS cwd" (id
+  # capture rc=2, extdel.sh's more specific failure message) rather than
+  # "the cache file doesn't exist at all" (rc=1) — still create the
+  # per-handle cache dir/file (a real agy run always creates its own
+  # --gemini_dir cache), just withhold the cwd->id write.
+  mkdir -p "$cache_dir" 2>/dev/null
+  [ -f "$cache_file" ] || printf '{}' > "$cache_file"
+else
+  mkdir -p "$cache_dir" 2>/dev/null
+  existing="{}"
+  if [ -f "$cache_file" ]; then
+    existing=$(cat "$cache_file" 2>/dev/null)
+    [ -n "$existing" ] || existing="{}"
+  fi
+  printf '%s' "$existing" \
+    | jq --arg k "$cwd_norm" --arg v "$conversation_id" '.[$k] = $v' > "$cache_file.tmp.$$" 2>/dev/null \
+    && mv "$cache_file.tmp.$$" "$cache_file"
+fi
+
+if [ -n "${MOCK_AGY_SLEEP:-}" ]; then
+  sleep "$MOCK_AGY_SLEEP"
+fi
+
+if [ "${MOCK_AGY_AUTH_FAIL:-0}" = "1" ]; then
+  echo "mock agy: not signed in — please sign in interactively (unauthorized)" >&2
+  exit 1
+fi
+
+if [ "${MOCK_AGY_FAIL:-0}" = "1" ]; then
+  echo "mock agy: induced failure" >&2
+  exit 1
+fi
+
+if [ "${MOCK_AGY_EMPTY_LEGIT:-0}" = "1" ]; then
+  # A genuinely empty-but-legitimate answer: exit 0, nothing on stdout,
+  # nothing permission-shaped on stderr either.
+  exit 0
+fi
+
+# DF1/DF2 permission simulation: which rule would the simulated delegated
+# task need? Default 'read' matches every pre-existing test (none of which
+# set this knob) since read_file(*) is present in every posture's
+# allow-list this build writes.
+action="${MOCK_AGY_ACTION:-read}"
+case "$action" in
+  write) required_rule="write_file(*)" ;;
+  *) required_rule="read_file(*)" ;;
+esac
+
+allowed=0
+if [ "$skip_permissions" -eq 1 ]; then
+  allowed=1
+elif [ -f "$settings_file" ] && jq -e --arg r "$required_rule" '(.permissions.allow // []) | index($r) != null' "$settings_file" >/dev/null 2>&1; then
+  allowed=1
+fi
+
+if [ "$allowed" -ne 1 ]; then
+  echo "mock agy: no output produced — the '$required_rule' permission was auto-denied (add it to permissions.allow via --gemini_dir, or pass --dangerously-skip-permissions)" >&2
+  exit 0
+fi
+
+echo "mock agy answer for: $prompt"
+exit 0

@@ -1,0 +1,73 @@
+# Terraform — Curated technology registry entry
+# Covers: Official HashiCorp MCP server, state/module patterns gap
+#
+# NOTE: CDKTF (CDK for Terraform) was deprecated and archived by HashiCorp
+# in December 2025. Section B is omitted as Terraform uses HCL, and no
+# direct SDK in the ecosystem enum (pip/npm/cargo/go/gem) is the primary
+# integration path.
+
+display_name: Terraform
+category: devops
+description: >
+  Infrastructure as Code tool for provisioning and managing cloud resources
+  declaratively. HCL configuration language, state management, provider
+  ecosystem (3000+ providers), and module registry. Created by HashiCorp,
+  now under the BSL license with OpenTofu as the open-source fork.
+
+section_a:
+  - name: Terraform MCP Server (Official HashiCorp)
+    type: mcp-server-binary
+    package: "hashicorp/terraform-mcp-server"
+    source: https://github.com/hashicorp/terraform-mcp-server
+    publisher: HashiCorp
+    publisher_verified: true
+    description: >
+      Official Terraform MCP — Registry data (provider schemas, modules),
+      HCP Terraform workspace management. Docker image available.
+    env:
+      - name: TFE_TOKEN
+        description: HCP Terraform API token
+      - name: TFE_ADDRESS
+        description: HCP Terraform address
+        example: "https://app.terraform.io"
+    install_override: |
+      claude mcp add terraform -s user -t stdio -- docker run -i --rm -e TFE_TOKEN hashicorp/terraform-mcp-server:0.5.1
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Terraform patterns and state management
+    slug: terraform-patterns-expert
+    why: >
+      MCP server covers Registry and Cloud workspaces but not state
+      management, module design, drift detection, multi-environment strategy,
+      or import/migration patterns.
+    agent_would_know: >
+      State management and migration strategies, module composition patterns,
+      drift detection and remediation, multi-environment approaches, and
+      policy-as-code with Sentinel and OPA.
+    research_scope:
+      - State management and migration
+      - Module composition patterns
+      - Drift detection and remediation
+      - Multi-environment strategy (workspaces vs directories)
+      - Import and brownfield adoption
+      - Policy-as-code (Sentinel, OPA)
+    create_command: "@pipeline-orchestrator create a terraform-patterns-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: devops-specialist
+    plugin: sdlc-team-fullstack
+    relevance: >
+      IaC pipeline design, state management strategy, module composition.
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Infrastructure architecture, multi-environment strategy, cost
+      optimization.
+
+trusted_sources:
+  - url: https://github.com/hashicorp
+    type: github-org
+  - url: https://developer.hashicorp.com/terraform
+    type: vendor-docs

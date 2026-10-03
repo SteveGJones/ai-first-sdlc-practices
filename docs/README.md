@@ -38,6 +38,8 @@
 
 # Documentation Index
 
+> **Note:** The primary entry point for the framework is the [root README.md](../README.md), which covers plugin installation, available skills, and the full agent roster. This index covers supplementary documentation. For the plugin consumer guide, see [PLUGIN-CONSUMER-GUIDE.md](PLUGIN-CONSUMER-GUIDE.md).
+
 Complete documentation for the AI-First SDLC Practices framework.
 
 ## 📚 Core Documentation
@@ -93,7 +95,7 @@ Complete documentation for the AI-First SDLC Practices framework.
 ## 👥 Team Dynamics
 
 ### Coaching Systems
-- [Billy Wright Coaching System](BILLY-WRIGHT-COACHING-SYSTEM.md) - Team-first development
+- [Billy Wright Coaching System](archive/BILLY-WRIGHT-COACHING-SYSTEM.md) - Team-first development (archived)
 - [Billy Wright Dream Team Meeting](archive/meeting-notes/BILLY-WRIGHT-DREAM-TEAM-MEETING.md) - Team formation (archived)
 - [Constitution](../CONSTITUTION.md) - Zero-tolerance quality enforcement
 

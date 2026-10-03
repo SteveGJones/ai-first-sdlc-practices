@@ -1,0 +1,3 @@
+max_iterations: 5
+sigil: LOOP_COMPLETE
+prompt_file: PROMPT.md

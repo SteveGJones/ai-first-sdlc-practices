@@ -1,0 +1,86 @@
+# Elasticsearch — Curated technology registry entry
+# Covers: MCP server (community), Python/Node clients, search engineering gaps
+
+display_name: Elasticsearch
+category: search
+description: >
+  Distributed search and analytics engine built on Apache Lucene. Used for
+  full-text search, log analytics, application monitoring, and vector/kNN
+  search. Part of the Elastic Stack (ELK).
+
+section_a:
+  - name: elasticsearch-mcp-server
+    type: mcp-server-pip
+    package: elasticsearch-mcp-server
+    source: https://github.com/cr7258/elasticsearch-mcp-server
+    publisher: cr7258
+    publisher_verified: false
+    description: >
+      Full-featured MCP for Elasticsearch and OpenSearch — index CRUD, search
+      (query DSL), data streams, text analysis, arbitrary API calls. Most
+      active community MCP for Elasticsearch.
+    env:
+      - name: ELASTICSEARCH_HOST
+        description: Elasticsearch cluster URL
+      - name: ELASTICSEARCH_API_KEY
+        description: API key for authentication (alternative to username/password)
+      - name: ELASTICSEARCH_USERNAME
+        description: Username for basic authentication
+      - name: ELASTICSEARCH_PASSWORD
+        description: Password for basic authentication
+    install_override: "uvx elasticsearch-mcp-server"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: elasticsearch (Python)
+    package: elasticsearch
+    ecosystem: pip
+    source: https://pypi.org/project/elasticsearch/
+    publisher: Elastic
+    description: Official Python client for Elasticsearch
+    usage: "from elasticsearch import Elasticsearch"
+    docs: https://www.elastic.co/docs/reference/elasticsearch/clients/python
+    verified_date: 2026-04-10
+
+  - name: "@elastic/elasticsearch (Node.js)"
+    package: "@elastic/elasticsearch"
+    ecosystem: npm
+    source: https://www.npmjs.com/package/@elastic/elasticsearch
+    publisher: Elastic
+    description: Official Node.js client for Elasticsearch
+    usage: 'const { Client } = require("@elastic/elasticsearch")'
+    docs: https://www.elastic.co/docs/reference/elasticsearch/clients/javascript
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Elasticsearch search engineering
+    slug: elasticsearch-search-engineer
+    why: >
+      MCP servers cover basic CRUD and search but not ILM policy design, ingest
+      pipeline orchestration, relevance tuning, or vector/kNN search
+      configuration.
+    agent_would_know: >
+      Elasticsearch ILM policies, ingest pipelines, relevance tuning workflows,
+      vector search configuration.
+    research_scope:
+      - Index lifecycle management (ILM)
+      - Ingest pipeline design
+      - Relevance tuning (analyzers, boosting)
+      - Vector/kNN search configuration
+      - Mapping design and conflict resolution
+    create_command: "@pipeline-orchestrator create a elasticsearch-search-engineer agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: database-architect
+    plugin: sdlc-team-common
+    relevance: >
+      Index design, mapping strategy, search architecture.
+
+trusted_sources:
+  - url: https://github.com/elastic
+    type: github-org
+  - url: https://www.npmjs.com/~elastic
+    type: npm-scope
+  - url: https://www.elastic.co/docs/
+    type: vendor-docs

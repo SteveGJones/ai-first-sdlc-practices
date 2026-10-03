@@ -1,0 +1,16 @@
+schema_version: 1
+programs:
+  - id: P1
+    name: Auth Platform
+    sub_programs:
+      - id: SP1
+        name: Identity
+        modules:
+          - id: M1
+            name: OAuth
+            paths: [src/auth/oauth/]
+            granularity: requirement
+            structure: flat
+visibility:
+  - from: P1.SP1.M1
+    to: []

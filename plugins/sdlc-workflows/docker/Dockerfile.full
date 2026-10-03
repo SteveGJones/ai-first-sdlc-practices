@@ -1,0 +1,20 @@
+# Full image: base toolchain + all host plugins.
+# Used as the source layer for team-specific images that cherry-pick plugins.
+# This image is NOT intended to be run directly — team images are.
+FROM sdlc-worker:base
+
+ARG PLUGINS_DIR=plugins
+
+# Copy all host plugins into the image
+COPY ${PLUGINS_DIR}/ /home/sdlc/.claude/plugins/
+
+# Fix ownership (COPY resets to root)
+USER root
+RUN chown -R sdlc:sdlc /home/sdlc/.claude/plugins/
+USER sdlc
+
+WORKDIR /workspace
+
+# This image is a source layer, not a runnable container.
+# Team-specific Dockerfiles should FROM sdlc-worker:full and add their own entrypoint.
+ENTRYPOINT ["/bin/sh", "-c", "echo 'ERROR: sdlc-worker:full is a source image. Build a team image instead.' && exit 1"]

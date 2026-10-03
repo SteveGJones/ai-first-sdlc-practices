@@ -1,5 +1,159 @@
-# CLAUDE.md
+# CLAUDE.md — AI Development Instructions
 
-All rules are in **CONSTITUTION.md**. Core instructions are in **CLAUDE-CORE.md**.
+AI-First SDLC Practices framework for AI development (v1.8.0). Rules: **CONSTITUTION.md**. Full instructions: **CLAUDE-CORE.md**.
 
-This file exists for CI compatibility. Do not add content here.
+## Active Work
+
+*Nothing is currently in flight. The items below are open but unstarted or
+partially landed — verify state before assuming.*
+
+- **EPIC #197** — sdlc-knowledge-base v0.3.0 operator experience + scale. **Phases A and B are on `main`** (PR #198 merged; `kb-layers`, `kb-stats`, `kb-prepare-batch`, `kb-ingest-batch` all present). **Phase C is what remains: #163 confidence metadata, #165 lint auto-fix.** Spec: `docs/superpowers/specs/2026-05-03-kb-v030-phase-b-design.md`. Note the old branch `feature/kb-v030-operator-experience` still exists on the remote — check whether it is stale before reusing it rather than branching from `main`.
+- **EPIC #97** — Multi-Option Commissioned SDLC. Sub-features for Single-team (#99) / Solo (#100) bundles still pending. Migration skill (#101) and docs (#102) also pending.
+
+### Recently completed — context, not work
+
+- **#237 — poker-capstone / `sdlc-model-council` assessment. CLOSED and merged** (PR #238 `798447d`, research note PR #239 `323732f`). Shipped the P1-P10 capability ladder, a local-model agentic harness, and an assessment-first reframing of the plugin. **Outcome: the local-model seat is closed** — both auditioned 4-bit models fail P1, the easiest phase. Two things to carry forward:
+  - **`research/poker-capstone/runs/` and `broken-variants/` are exempted from four validators** (flake8, CodeQL, technical-debt, logging). That is deliberate: they hold verbatim model output, some defective *on purpose* as a recorded result, and must stay byte-identical to be re-verifiable. **Do not "fix" lint findings in there.** Two of those validators auto-detect framework-vs-application context *by file ratio*, so a large new corpus can silently flip the whole repo onto strict rules.
+  - Open follow-ups are listed in memory `poker-capstone-p11-status` — the main integration gap is folding ladder results into the roster card format (`plugins/sdlc-model-council/scripts/council/roster.py`).
+
+## Working in this repo — dogfood the skills we ship
+
+This repo *is* the plugin family. When working here, treat the skills
+and agents we ship as tools in your toolbox, not output artefacts:
+
+- **Before scope decisions** → invoke `superpowers:brainstorming`.
+  Do this especially when a task description might be wrong ("SSE
+  live streaming in workflows-run" turned out to be mis-scoped on
+  2026-04-19 because the CLI already streams to stderr).
+- **Before multi-file implementation** → invoke
+  `superpowers:writing-plans-and-specs` or the `Plan` subagent.
+- **When writing new code with tests** → invoke
+  `superpowers:test-driven-development`. Tests first, not after.
+- **After any logical chunk lands** → invoke
+  `superpowers:code-reviewer` or `sdlc-core:code-review-specialist`
+  on the commit before moving on.
+- **Independent subtasks (different files, different subsystems)** →
+  dispatch them in parallel via `superpowers:dispatching-parallel-agents`.
+  Don't serialise work that shares nothing.
+- **Design-level decisions** → dispatch to specialist agents:
+  - `sdlc-team-common:solution-architect` for architecture choices
+  - `sdlc-team-fullstack:backend-architect` for data-layer decisions
+  - `sdlc-team-common:observability-specialist` for monitoring design
+  - `sdlc-team-security:security-architect` for auth/secrets/hardening
+- **Dogfood the shipping skills** — if you just wrote
+  `/sdlc-workflows:workflows-status`, actually invoke it on this
+  session's runs before claiming it works. Same for every skill in
+  the plugin family.
+
+If this list feels long, that's the point: these tools exist so we
+don't keep making the same mistakes, and we only know they work if
+we use them ourselves.
+
+## Essential Workflow
+
+```
+specify → architect → implement → review
+```
+
+Git workflow: feature branches only; **never push directly to main**; never commit to main directly. Full rules in CONSTITUTION.md Article 1. **Never use `--admin`, `--force`, or any branch-protection bypass when a merge is blocked** — report the block and ask the user whether to override.
+
+1. Feature proposal (`docs/feature-proposals/XX-name.md`) + retrospective (`retrospectives/XX-name.md`)
+2. Feature branch (`feature/name`) — never commit to main directly
+3. Implement with zero technical debt, validate continuously
+4. PR with complete retrospective — CI must pass
+
+## Validation (run after every change)
+
+```bash
+python tools/validation/local-validation.py --syntax       # After writing code (this repo)
+python tools/validation/local-validation.py --quick        # Before commits (this repo)
+python tools/validation/local-validation.py --pre-push     # Before PR (this repo)
+```
+
+For plugin consumers (projects using the plugins, not this repo):
+```
+/sdlc-core:validate --syntax       # After writing code
+/sdlc-core:validate --quick        # Before commits
+/sdlc-core:validate --pre-push     # Before PR
+```
+
+Pre-push runs 10 checks: syntax, ruff lint, ruff format, technical debt, tests, import check, type safety, security, smoke test.
+
+## Key Validators
+
+```bash
+python tools/validation/check-technical-debt.py --threshold 0
+python tools/validation/check-logging-compliance.py . --threshold 0
+python tools/validation/validate-architecture.py --strict
+python tools/validation/check-broken-references.py
+```
+
+## Code Quality
+
+No TODOs, no `any` types, no commented-out code. Use `./tmp/` not `/tmp/`. 10 mandatory logging points for application code (see CONSTITUTION.md Article 7). Never log secrets or PII.
+
+## Context Loading
+
+Load additional context per task — see table in CLAUDE-CORE.md. Key modules:
+- CONSTITUTION.md — all rules (11 articles, progressive levels)
+- CLAUDE-CONTEXT-logging.md — logging standards
+- CLAUDE-CONTEXT-architecture.md — architecture docs
+- docs/METHODS-GUIDE.md — decision tree for the four SDLC methods (solo / single-team / programme / assured), comparison table, trade-offs, and migration notes (load when commissioning a project or advising on method choice)
+- AGENT-INDEX.md — 57 specialist agents across 15 plugins. `sdlc-programme` v0.1.0 + `sdlc-assured` v0.2.0 are **skill+validator bundles by design** — they provide structured SDLC delivery methodology (phase gates, traceability, decomposition), not new specialist agent roles, so they intentionally ship 0 agents.
+
+## Plugin Installation (Recommended)
+
+Install the SDLC plugin family for skills, agents, and automated enforcement:
+
+```bash
+/plugin marketplace add SteveGJones/ai-first-sdlc-practices
+/plugin install sdlc-core@ai-first-sdlc
+```
+
+Then configure your team: `/sdlc-core:setup-team`
+
+### Plugin Family
+
+| Plugin | Description |
+|--------|-------------|
+| `sdlc-core` | Rules, validators, enforcement, workflows (always install) |
+| `sdlc-team-common` | Cross-cutting architects, researchers, performance engineers |
+| `sdlc-team-ai` | AI/ML specialists (14 agents) |
+| `sdlc-team-fullstack` | Web full-stack — frontend, backend, API, data, DevOps, UX & integration (9 agents; **v2.0.0** — mobile agents split out) |
+| `sdlc-team-mobile` | Shared mobile base — cross-platform `mobile-architect` + `mobile-ux-architect` (2 agents; pairs with the platform plugins below) |
+| `sdlc-team-ios` | iOS/iPadOS — HIG, SwiftUI, release & performance (4 agents) + TestFlight/App Store skills & pre-flight checks (install with `sdlc-team-mobile`) |
+| `sdlc-team-android` | Android — MD3, Compose, app architecture, Gradle, Play release & performance (6 agents) + scaffold/signing/play-release skills & pre-flight checks (install with `sdlc-team-mobile`) |
+| `sdlc-team-cloud` | Cloud, containers, SRE (3 agents) |
+| `sdlc-team-security` | Security, compliance, privacy (5 agents) |
+| `sdlc-team-pm` | Agile coach, delivery manager, tracking (5 agents) |
+| `sdlc-team-docs` | Technical writer, documentation architect |
+| `sdlc-knowledge-base` | Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, ingest/query/lint operations. Orthogonal to SDLC option choice. |
+| `sdlc-lang-python` | Python language expert agent |
+| `sdlc-lang-javascript` | JavaScript/TypeScript language expert agent |
+| `sdlc-lang-swift` | Swift language expert agent — idiomatic Swift 6.2, strict concurrency, generics, macros, SwiftPM (pairs with `sdlc-team-ios`) |
+| `sdlc-lang-kotlin` | Kotlin language expert agent — idiomatic Kotlin 2.x, coroutines & Flow, sealed/data/value classes, generics, KSP, KMP basics (pairs with `sdlc-team-android`) |
+| `sdlc-workflows` | Containerised delegation — Archon-orchestrated DAG workflows in isolated Docker containers (6 skills) |
+| `sdlc-model-council` | **Model assessment + cross-model delegation** — two halves, and the assessment half is what makes the other meaningful. **Assess**: measure what a model can actually do via two instruments — the standardized v1 item stack (`assessment/stack/`) for a cheap broad cut, and the poker-capstone capability ladder (`research/poker-capstone/`, P1-P10, run fail-fast) for the depth that actually separates models. Findings drive a **roster** (which model holds which seat, with evidence). **Delegate**: route work against that roster to locally installed peer agentic CLIs (codex, agy, opencode; extensible via one-directory adapters), with fan-out plays (v1: Diff+Synthesis) on a unified contract with graded permission postures. In-session and uncontainerised — no Archon, no Docker, no DAG, unlike `sdlc-workflows` (2 agents: delegation-runner, council-judge) |
+| `sdlc-programme` | Method 1 SDLC bundle for multi-team programme work — formal waterfall phase gates (requirements/design/test/code), 4 phase-gate validators, mandatory cross-phase review (5 skills, EPIC #178 v0.1.0) |
+| `sdlc-assured` | Method 2 SDLC bundle for regulated-industry work **or** complex agentic systems at scale (10+ bounded contexts) — positional namespace IDs, bidirectional traceability, DDD decomposition with visibility rules, KB-for-code annotations, standard-specific exports (DO-178C / IEC 62304 / ISO 26262 / FDA DHF). 8 skills. **v0.2.0 audit-ready at tooling layer** (EPIC #188) — typed evidence statuses, multi-format evidence model (Python/markdown/YAML/satisfies-by-existence), platform-neutral dependency extractor, indirect DES-mediated coverage, REQ-quality lint candidate. |
+
+### Available Skills
+
+| Skill | Description |
+|-------|-------------|
+| `/sdlc-core:validate` | Run 10-check validation pipeline (syntax/lint/tests/security/smoke) |
+| `/sdlc-core:new-feature` | Create feature proposal, retrospective, and branch |
+| `/sdlc-core:commit` | Validated commit with test execution |
+| `/sdlc-core:pr` | Full validation + PR creation |
+| `/sdlc-core:setup-team` | Configure team formation; asks the four-option SDLC method question |
+| `/sdlc-core:commission` | Commission a project to one of the four SDLC options (solo / single-team / programme / assured) |
+| `/sdlc-core:setup-ci` | Generate GitHub Actions workflow |
+| `/sdlc-core:release-plugin` | Package source into plugins |
+| `/sdlc-core:rules` | AI-First SDLC compliance rules and standards |
+| `/sdlc-knowledge-base:kb-*` | Knowledge base operations (init, ingest, query, lint, rebuild-indexes, validate-citations, promote-answer, staleness-check) — installed by `sdlc-knowledge-base` plugin |
+| `/sdlc-workflows:workflows-setup` | First-time setup: install Archon, build sdlc-worker base + full Docker images, scaffold `.archon/` dirs |
+| `/sdlc-workflows:deploy-team` | Build a team image from a manifest YAML |
+| `/sdlc-workflows:author-workflow` | Interactive workflow author — generates workflow YAML + command briefs |
+| `/sdlc-workflows:workflows-run` | Execute a named SDLC workflow via Archon |
+| `/sdlc-workflows:workflows-status` | Check running/recent workflow status |
+| `/sdlc-workflows:manage-teams` | Guided coaching for team lifecycle (create, update, delete, review — fleet and single-team views) |

@@ -1,0 +1,56 @@
+# Streamlit — Curated technology registry entry
+# Covers: Streamlit library, application patterns gap (no MCP tooling exists)
+
+display_name: Streamlit
+category: framework
+description: >
+  Python framework for building data apps with minimal boilerplate. Unique
+  re-execution model turns scripts into interactive web applications. Owned
+  by Snowflake. Popular for dashboards, ML demos, and internal tools.
+
+section_b:
+  - name: Streamlit
+    package: streamlit
+    ecosystem: pip
+    source: https://pypi.org/project/streamlit/
+    publisher: Snowflake Inc
+    description: Framework for data apps with Python
+    usage: "import streamlit as st"
+    docs: https://docs.streamlit.io/
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Streamlit application patterns
+    slug: streamlit-patterns-expert
+    why: >
+      No MCP tooling at all. Streamlit's unique re-execution model, session
+      state, caching (@st.cache_data/resource), multi-page structure, and
+      deployment patterns need expert guidance.
+    agent_would_know: >
+      Session state management, callback patterns, caching strategies,
+      multi-page app architecture, custom component development, and
+      deployment to Streamlit Community Cloud or Docker.
+    research_scope:
+      - Session state and callback patterns
+      - Caching strategies (@st.cache_data, @st.cache_resource)
+      - Multi-page app architecture
+      - Custom component development
+      - Deployment (Community Cloud, Docker, st.secrets)
+    create_command: "@pipeline-orchestrator create a streamlit-patterns-expert agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: backend-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Application architecture, data flow patterns.
+  - agent: language-python-expert
+    plugin: sdlc-lang-python
+    relevance: >
+      Python code quality, packaging, type checking for Streamlit apps.
+
+trusted_sources:
+  - url: https://github.com/streamlit
+    type: github-org
+  - url: https://docs.streamlit.io/
+    type: vendor-docs

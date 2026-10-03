@@ -1,0 +1,40 @@
+name: smoke-parallel-review
+description: |
+  Minimal delegation smoke test. Two review agents run in parallel.
+  Validates: Archon executes, nodes run concurrently, outputs captured,
+  synthesis works.
+
+provider: claude
+
+nodes:
+  - id: review-structure
+    command: smoke-review-a
+    context: fresh
+
+  - id: review-tests
+    command: smoke-review-b
+    context: fresh
+
+  - id: synthesise
+    depends_on: [review-structure, review-tests]
+    trigger_rule: one_success
+    prompt: |
+      Two parallel reviews have completed. Synthesise their findings.
+
+      Review A (structure): $review-structure.output
+      Review B (tests): $review-tests.output
+
+      Output a JSON object with your synthesis:
+      {"issues_found": <number>, "review_a_completed": <bool>, "review_b_completed": <bool>, "summary": "<one sentence>"}
+    output_format:
+      type: object
+      properties:
+        issues_found:
+          type: number
+        review_a_completed:
+          type: boolean
+        review_b_completed:
+          type: boolean
+        summary:
+          type: string
+      required: [issues_found, review_a_completed, review_b_completed, summary]

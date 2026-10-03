@@ -1,0 +1,52 @@
+name: SDLC Validation
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup virtual environment
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+
+      - name: Install dependencies
+        run: |
+          source .venv/bin/activate
+          pip install -r requirements.txt
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Lint
+        run: |
+          source .venv/bin/activate
+          ruff check .
+          ruff format --check .
+
+      - name: Type check
+        run: |
+          source .venv/bin/activate
+          mypy . --ignore-missing-imports
+
+      - name: Test
+        run: |
+          source .venv/bin/activate
+          pytest -v --tb=short
+
+      - name: Security scan
+        run: |
+          source .venv/bin/activate
+          bandit -r . --exclude ./.venv -q

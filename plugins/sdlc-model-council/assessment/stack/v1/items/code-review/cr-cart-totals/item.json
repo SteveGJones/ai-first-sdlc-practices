@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "cr-cart-totals",
+  "dimension": "code-review",
+  "version": 1,
+  "difficulty": "easy",
+  "timeout_s": 90,
+  "min_context_tokens": 600,
+  "est_prompt_tokens": 420,
+  "est_output_tokens": 200,
+  "answer_contract": "findings-json",
+  "scorer": {
+    "type": "planted-defects",
+    "line_window": 3,
+    "max_findings_counted": 8
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "sdlc-team-common",
+  "version": "1.0.0",
+  "description": "Cross-cutting specialist agents — architects, researchers, performance engineers",
+  "author": {
+    "name": "SteveGJones"
+  },
+  "keywords": ["sdlc", "common", "architect", "research", "performance"]
+}

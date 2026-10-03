@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdlc-core-scripts"
+version = "0.1.0"
+description = "Internal utility scripts for the sdlc-core plugin (test importability)."
+requires-python = ">=3.10"
+dependencies = [
+  "pyyaml",
+]
+
+[tool.setuptools]
+packages = ["sdlc_core_scripts", "sdlc_core_scripts.commission"]
+
+[tool.setuptools.package-dir]
+sdlc_core_scripts = "scripts"
+"sdlc_core_scripts.commission" = "scripts/commission"

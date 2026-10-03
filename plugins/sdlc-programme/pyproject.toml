@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdlc-programme-scripts"
+version = "0.1.0"
+description = "Python helpers shipped with sdlc-programme plugin"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["scripts"]
+include = ["*"]
+
+[tool.setuptools.package-dir]
+"" = "scripts"

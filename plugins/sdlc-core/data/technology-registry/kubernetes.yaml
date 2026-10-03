@@ -1,0 +1,68 @@
+# Kubernetes — Curated technology registry entry
+# Covers: Red Hat-backed MCP server, Python client, architecture patterns gap
+
+display_name: Kubernetes
+category: devops
+description: >
+  Open-source container orchestration platform for automating deployment,
+  scaling, and management of containerized applications. Declarative
+  configuration, self-healing, service discovery, and rolling updates.
+  The industry standard for production container workloads.
+
+section_a:
+  - name: kubernetes-mcp-server (Red Hat-backed)
+    type: mcp-server-npm
+    package: kubernetes-mcp-server
+    source: https://github.com/containers/kubernetes-mcp-server
+    publisher: Red Hat / containers org
+    publisher_verified: true
+    description: >
+      Native Go Kubernetes MCP (not kubectl wrapper). Kubernetes + OpenShift.
+      Toolsets: core, config, helm, tekton, kcp, kiali, kubevirt. Read-only
+      mode, destructive-ops toggle.
+    install_override: "npx -y kubernetes-mcp-server@latest"
+    verified_date: 2026-04-10
+
+section_b:
+  - name: kubernetes (Python)
+    package: kubernetes
+    ecosystem: pip
+    source: https://pypi.org/project/kubernetes/
+    publisher: Kubernetes project
+    description: Official Python client for Kubernetes
+    usage: 'from kubernetes import client, config'
+    docs: https://github.com/kubernetes-client/python
+    verified_date: 2026-04-10
+
+section_c:
+  - topic: Kubernetes architecture and operations
+    slug: kubernetes-architect
+    why: >
+      MCP tools cover resource management but not manifest generation best
+      practices, network policy design, CRD patterns, cluster upgrade
+      planning, or cost optimization.
+    agent_would_know: >
+      Manifest best practices (resource limits, PDB, affinity), network
+      policy design, CRD and operator patterns, cluster upgrade planning,
+      and cost optimization with right-sizing and spot instances.
+    research_scope:
+      - Manifest best practices (resource limits, PDB, affinity)
+      - Network policy design
+      - CRD and operator patterns
+      - Cluster upgrade planning
+      - Cost optimization (right-sizing, spot/preemptible)
+    create_command: "@pipeline-orchestrator create a kubernetes-architect agent"
+    verified_date: 2026-04-10
+
+our_agents:
+  - agent: solution-architect
+    plugin: sdlc-team-common
+    relevance: >
+      End-to-end Kubernetes solution design, service mesh, deployment
+      strategy.
+
+trusted_sources:
+  - url: https://github.com/kubernetes
+    type: github-org
+  - url: https://kubernetes.io/docs/
+    type: vendor-docs

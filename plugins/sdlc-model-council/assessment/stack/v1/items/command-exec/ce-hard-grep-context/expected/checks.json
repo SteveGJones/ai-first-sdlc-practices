@@ -1,0 +1,35 @@
+{
+  "field_checks": [
+    {
+      "field": "commands",
+      "regex": "\\b(grep|egrep|fgrep|rg|ag|awk|sed|perl)\\b",
+      "flags": "i",
+      "desc": "uses a line filter"
+    },
+    {
+      "field": "commands",
+      "regex": "(-A[ =]?3|--after-context[ =]?3)",
+      "desc": "asks for 3 lines of after-context (grep form; exec mode is authoritative)"
+    },
+    {
+      "field": "commands",
+      "regex": "ERROR",
+      "desc": "matches ERROR lines"
+    },
+    {
+      "field": "commands",
+      "regex": "app\\.log",
+      "desc": "targets app.log"
+    },
+    {
+      "field": "commands",
+      "not_regex": "\\brm\\b|>\\s*app\\.log|truncate",
+      "desc": "does not modify the file"
+    },
+    {
+      "field": "reason",
+      "regex": ".+",
+      "desc": "gives a reason"
+    }
+  ]
+}

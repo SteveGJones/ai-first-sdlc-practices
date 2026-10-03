@@ -1,0 +1,26 @@
+services:
+  # P8: the exemplar's own known-good SERVER paired with Sonnet's P9
+  # full-autonomy CLIENT (own design, React/Vite), to test whether P9's
+  # client can drive a contract-compliant server correctly. Caveat: P9's
+  # client predates CLIENT-TEST-CONTRACT.md entirely (that contract was
+  # authored later in this same session) so it carries no data-testid
+  # attributes at all — this pairing is expected to fail non-informatively
+  # on that basis alone, recorded for completeness rather than as a
+  # design-quality signal.
+  server:
+    build: ../../../exemplar/server
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  client:
+    build: ../../sonnet-only-2026-07-29/impl/client
+    ports:
+      - "8081:80"
+    depends_on:
+      - server

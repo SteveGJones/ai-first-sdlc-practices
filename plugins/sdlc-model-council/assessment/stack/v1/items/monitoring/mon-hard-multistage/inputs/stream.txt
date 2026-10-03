@@ -1,0 +1,5 @@
+[deploy] Stage 1/3: database migration
+[deploy] ✔ Database migration succeeded (0 errors)
+[deploy] Stage 2/3: building frontend assets
+[deploy] webpack: compiling...
+[deploy] webpack: 47% building modules

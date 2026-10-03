@@ -1,0 +1,67 @@
+# Rust — Curated technology registry entry
+# Covers: MCP servers (cargo-mcp, rust-analyzer-mcp), ownership/async patterns gap
+
+display_name: Rust
+category: language
+description: >
+  Systems programming language focused on safety, concurrency, and performance.
+  Ownership model eliminates data races at compile time. Zero-cost abstractions,
+  no garbage collector, and a rich type system. Powers Firefox, Dropbox, Cloudflare,
+  and an expanding share of cloud-native tooling.
+
+section_a:
+  - name: cargo-mcp
+    type: mcp-server-binary
+    package: cargo-mcp
+    source: https://github.com/jbr/cargo-mcp
+    publisher: Jacob Rothstein
+    publisher_verified: false
+    description: >
+      Safe Cargo operations — check, clippy, format, build, bench, add/remove
+      deps, whitelisted operations.
+    install_override: "cargo install cargo-mcp"
+    verified_date: 2026-04-10
+
+  - name: rust-analyzer-mcp
+    type: mcp-server-binary
+    package: rust-analyzer-mcp
+    source: https://github.com/zeenix/rust-analyzer-mcp
+    publisher: zeenix
+    publisher_verified: false
+    description: >
+      rust-analyzer LSP integration — symbol discovery, go-to-definition,
+      references, hover, completion, diagnostics, code actions.
+    install_override: "cargo install rust-analyzer-mcp"
+    verified_date: 2026-04-10
+
+# Section B omitted: Rust uses cargo (in ecosystem enum), but Rust crates are
+# typically added via cargo-mcp or Cargo.toml directly. Detection patterns in
+# _index.yaml handle Rust crate discovery (tokio, axum, actix-web, etc.).
+
+section_c:
+  - topic: Rust ownership and async patterns
+    slug: rust-patterns-expert
+    why: >
+      Rich MCP tooling for cargo/analyzer but no architectural guidance on
+      ownership patterns, async Rust (Pin/Future), error handling design, trait
+      patterns, or unsafe boundaries.
+    agent_would_know: >
+      Ownership and lifetime design, async Rust with Pin and Future,
+      cancellation safety, error handling strategies, trait object vs generic
+      trade-offs, and unsafe Rust/FFI boundaries.
+    research_scope:
+      - Ownership and lifetime patterns
+      - Async Rust (Pin, Future, cancellation safety)
+      - Error handling (thiserror vs anyhow)
+      - Trait design (objects vs generics)
+      - Unsafe Rust and FFI boundaries
+    create_command: "@pipeline-orchestrator create a rust-patterns-expert agent"
+    verified_date: 2026-04-10
+
+trusted_sources:
+  - url: https://github.com/rust-lang
+    type: github-org
+  - url: https://doc.rust-lang.org/
+    type: vendor-docs
+  - url: https://crates.io/
+    type: other

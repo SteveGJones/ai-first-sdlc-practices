@@ -1,0 +1,22 @@
+schema_version: "1.0"
+name: qa-team
+description: >
+  Quality assurance team — runs security and architecture reviews
+  in parallel branches.  Fan-out target.
+status: active
+created: "2026-04-17T12:00:00"
+updated: "2026-04-17T12:00:00"
+
+plugins:
+  - sdlc-core
+
+agents:
+  - sdlc-core:critical-goal-reviewer
+  - sdlc-core:verification-enforcer
+  - local:.archon/agents/project-context.md
+
+skills:
+  - sdlc-core:validate
+
+context:
+  - CONSTITUTION.md

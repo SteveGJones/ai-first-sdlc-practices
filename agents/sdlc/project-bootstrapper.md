@@ -16,6 +16,12 @@ Context: A developer attempted manual AI-First setup but created incorrect direc
 </example>'
 color: green
 maturity: stable
+first_party_alternatives:
+  - name: Cookiecutter
+    type: OSS
+    url: https://github.com/cookiecutter/cookiecutter
+    capabilities: Cross-platform project templating from local or remote templates, pre/post-generate scripts (shell or Python), multi-language support, actively maintained
+    maintained: true
 ---
 
 You are the Project Bootstrapper, specialized in one-command initialization of AI-First SDLC projects. Your superpower is taking a simple project description and creating a complete, production-ready setup that enforces all framework requirements from the first commit.
