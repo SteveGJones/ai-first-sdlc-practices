@@ -317,10 +317,19 @@ def resolve_dispatch_list(
     Prepends an implicit `local` source when project_library_path exists.
     Skips unknown names with warnings. Skips remote-agent types with
     warnings (deferred to future EPIC). Returns is_empty_error=True when
-    no sources resolve at all (callers should emit the kb-init recommendation).
+    no sources resolve at all. For an empty result, if any warning starts with
+    `Local library:`, `Source '` or `Activated source '`, the cause is in those
+    warnings and callers should show them instead of the kb-init advice; the
+    kb-init recommendation applies only to an empty result with none of those
+    warnings.
     """
     warnings: list[str] = []
     sources: list[LibrarySource] = []
+
+    # Normalise a relative path (e.g. Path('library')) against the cwd. absolute()
+    # rather than resolve() so validate_library_path still performs its own strict
+    # symlink resolution and denylist check on the real path.
+    project_library_path = project_library_path.absolute()
 
     # Implicit local source if library directory exists — validate same as external sources
     if project_library_path.exists() and project_library_path.is_dir():

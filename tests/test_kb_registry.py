@@ -1,6 +1,9 @@
 """Unit tests for sdlc_knowledge_base_scripts.registry."""
 import json
 from pathlib import Path
+
+import pytest
+
 from sdlc_knowledge_base_scripts.registry import (
     DispatchList,
     GlobalRegistry,
@@ -472,3 +475,76 @@ def test_resolve_local_source_validates_path(tmp_path: Path) -> None:
     # Local should be skipped because resolved path contains /.aws/ denylist fragment
     assert not any(s.name == "local" for s in result.sources)
     assert any("denylist" in w.lower() or ".aws" in w for w in result.warnings)
+
+
+# ---------------------------------------------------------------------------
+# Issue #212: relative project library path (kb-query passes Path('library'))
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_relative_local_library_is_normalised(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    lib = tmp_path / "library"
+    lib.mkdir()
+    (lib / "_shelf-index.md").write_text("# Shelf\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = resolve_dispatch_list(
+        _make_global([]), _make_activation([]), Path("library")
+    )
+
+    local = [s for s in result.sources if s.name == "local"]
+    assert len(local) == 1
+    assert local[0].path is not None
+    assert Path(local[0].path).is_absolute()
+    assert result.is_empty_error is False
+    assert result.warnings == []
+
+
+def test_resolve_relative_local_library_symlink_to_denylist_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = tmp_path / ".ssh"
+    target.mkdir()
+    (target / "_shelf-index.md").write_text("# Shelf\n")
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "library").symlink_to(target, target_is_directory=True)
+    monkeypatch.chdir(project)
+
+    result = resolve_dispatch_list(
+        _make_global([]), _make_activation([]), Path("library")
+    )
+
+    assert not any(s.name == "local" for s in result.sources)
+    assert any(w.startswith("Local library:") and ".ssh" in w for w in result.warnings)
+    assert not any("absolute" in w.lower() for w in result.warnings)
+
+
+def test_resolve_relative_local_library_without_shelf_index_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "library").mkdir()
+    monkeypatch.chdir(tmp_path)
+
+    result = resolve_dispatch_list(
+        _make_global([]), _make_activation([]), Path("library")
+    )
+
+    assert result.sources == []
+    assert result.is_empty_error is True
+    assert any("shelf-index" in w.lower() for w in result.warnings)
+    assert not any("absolute" in w.lower() for w in result.warnings)
+
+
+def test_kb_query_skill_resolves_library_path_and_mirror_matches() -> None:
+    root = Path(__file__).resolve().parents[1]
+    source = root / "skills" / "kb-query" / "SKILL.md"
+    mirror = (
+        root / "plugins" / "sdlc-knowledge-base" / "skills" / "kb-query" / "SKILL.md"
+    )
+    text = source.read_text()
+    assert "Path('library').resolve()" in text
+    assert "Local library:" in text
+    assert source.read_bytes() == mirror.read_bytes()

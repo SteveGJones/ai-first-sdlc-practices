@@ -88,7 +88,7 @@ import json, os
 
 global_reg = load_global_registry(Path(os.path.expanduser('~/.sdlc/global-libraries.json')))
 activation = load_project_activation(Path('.sdlc/libraries.json'))
-dispatch = resolve_dispatch_list(global_reg, activation, Path('library'))
+dispatch = resolve_dispatch_list(global_reg, activation, Path('library').resolve())
 
 print(json.dumps({
   'sources': [{'name': s.name, 'path': s.path} for s in dispatch.sources],
@@ -98,13 +98,15 @@ print(json.dumps({
 "
 ```
 
-If `is_empty_error` is true, print:
+If `is_empty_error` is true and any warning starts with `Local library:`, `Source '` or `Activated source '`, show ALL such warnings to the user (a library exists or was activated but was rejected, so the cause is in the warnings) and stop. Do NOT print the `kb-init` advice in that case.
+
+Otherwise, if `is_empty_error` is true, print:
 
 > No knowledge base available. Run `/sdlc-knowledge-base:kb-init` to create a local library, or register and activate an external library with `/sdlc-knowledge-base:kb-register-library`.
 
 and stop.
 
-Print all warnings from the helper to stderr (not to user-facing output).
+When `is_empty_error` is true, warnings starting `Local library:`, `Source '` or `Activated source '` are shown to the user as above. In every other case, and when some sources succeed, print all warnings from the helper (including those) to stderr (not to user-facing output).
 
 ### 2. Build the priming bundle
 
