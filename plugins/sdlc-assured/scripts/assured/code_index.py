@@ -120,7 +120,7 @@ def render_code_index(
         terms = ", ".join(e.terms) if e.terms else ""
         lines.append(f"## {n}. {e.file_path}:{e.line}")
         lines.append("")
-        lines.append(f"**Terms:** {terms}")
+        lines.append(f"**Terms:** {terms}".rstrip())
         if e.facts:
             lines.append("**Facts:**")
             for fact in e.facts:

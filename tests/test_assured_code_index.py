@@ -153,3 +153,18 @@ def test_render_spec_findings_emits_per_req_related_when_metadata_provided() -> 
     assert "Related:" not in section_001
     section_003 = out.split("REQ-foo-003")[1]
     assert "Related:" not in section_003
+
+
+def test_render_code_index_empty_terms_has_no_trailing_space() -> None:
+    entries = [
+        CodeIndexEntry(
+            file_path="src/a.py",
+            line=3,
+            cited_ids=["REQ-a-001"],
+            terms=[],
+            facts=[],
+        ),
+    ]
+    output = render_code_index(entries, library_handle="local-project")
+    assert "**Terms:**\n" in output
+    assert all(line == line.rstrip() for line in output.splitlines())
