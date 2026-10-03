@@ -16,6 +16,7 @@ import ast
 import os
 import subprocess
 import hashlib
+import signal
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -62,21 +63,51 @@ class ValidationRunner:
         cwd: Optional[Path] = None,
         timeout: int = 300,
     ) -> Tuple[int, str, str]:
-        """Run shell command and capture output (default 5 minute timeout)"""
+        """Run shell command and capture output (default 5 minute timeout).
+
+        On POSIX the child runs in its own session, and on timeout (or any
+        interruption) the WHOLE process group is killed, so grandchildren such
+        as pre-commit hook processes cannot outlive the command or the
+        worktree it was running in.
+        """
         self.log(f"Running: {' '.join(cmd)}")
         try:
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=timeout, cwd=cwd
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                cwd=cwd,
+                start_new_session=os.name != "nt",
             )
-            return result.returncode, result.stdout, result.stderr
-        except subprocess.TimeoutExpired:
-            error_msg = f"Command timed out: {' '.join(cmd)}"
-            self.errors.append(error_msg)
-            return 1, "", error_msg
         except Exception as e:
             error_msg = f"Command failed: {' '.join(cmd)} - {str(e)}"
             self.errors.append(error_msg)
             return 1, "", error_msg
+
+        try:
+            stdout, stderr = proc.communicate(timeout=timeout)
+            return proc.returncode, stdout, stderr
+        except subprocess.TimeoutExpired:
+            self._kill_process_group(proc)
+            proc.communicate()
+            error_msg = f"Command timed out: {' '.join(cmd)}"
+            self.errors.append(error_msg)
+            return 1, "", error_msg
+        except BaseException:
+            self._kill_process_group(proc)
+            raise
+
+    @staticmethod
+    def _kill_process_group(proc: "subprocess.Popen[str]") -> None:
+        """Kill the child and, on POSIX, every process in its group."""
+        try:
+            if os.name == "nt":
+                proc.kill()
+            else:
+                os.killpg(proc.pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            pass
 
     def check_python_syntax(self) -> bool:
         """Check Python syntax using AST parsing"""
@@ -143,6 +174,9 @@ class ValidationRunner:
         )
 
         worktree = self.repo_root / "tmp" / f"prepush-gate-{os.getpid()}"
+        # A worktree registration left by a killed earlier run (same pid reuse,
+        # or a directory deleted by hand) makes `git worktree add` refuse.
+        self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
         added, _, add_err = self.run_command(
             ["git", "worktree", "add", "--detach", str(worktree), "HEAD"],
             cwd=self.repo_root,
@@ -153,6 +187,7 @@ class ValidationRunner:
             )
             return False
 
+        removal_failed = False
         try:
             returncode, stdout, stderr = self.run_command(
                 ["pre-commit", "run", "--all-files", "--show-diff-on-failure"],
@@ -160,10 +195,17 @@ class ValidationRunner:
                 timeout=_PRE_COMMIT_TIMEOUT,
             )
         finally:
-            self.run_command(
+            removed, _, remove_err = self.run_command(
                 ["git", "worktree", "remove", "--force", str(worktree)],
                 cwd=self.repo_root,
             )
+            if removed != 0:
+                removal_failed = True
+                self.errors.append(
+                    f"Pre-commit hooks: could not remove throwaway worktree "
+                    f"{worktree}: {remove_err.strip()}"
+                )
+                self.log(self.errors[-1], "ERROR")
             self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
 
         output = "\n".join(part for part in (stdout, stderr) if part)
@@ -172,6 +214,9 @@ class ValidationRunner:
             self.log("Pre-commit hooks failed", "ERROR")
             if output:
                 self.log(output, "ERROR")
+            return False
+
+        if removal_failed:
             return False
 
         self.log("Pre-commit hooks passed", "SUCCESS")
@@ -184,13 +229,36 @@ class ValidationRunner:
         return result.stdout
 
     def _tree_snapshot(self) -> Dict[str, str]:
-        """Capture the git state a validation run must not change."""
-        snapshot = {
-            "status": self._git_output(["status", "--porcelain"]),
-            "diff": hashlib.sha256(
-                self._git_output(["diff"]).encode("utf-8")
-            ).hexdigest(),
-        }
+        """Capture the git state a validation run must not change.
+
+        Records, for every path git reports as modified, staged or untracked
+        (``--untracked-files=all`` so a new file inside an already-untracked
+        directory is seen individually), its status code and a content hash,
+        plus the index entries of the protected evidence paths.
+
+        Limits: gitignored files are not covered (``tmp/`` scratch is
+        deliberately allowed), and the tripwire cannot tell WHO changed the
+        tree, so a concurrent writer to the same checkout (an editor, another
+        agent) during the run would be blamed on the gate.
+        """
+        snapshot: Dict[str, str] = {}
+        raw = self._git_output(["status", "--porcelain", "-z", "--untracked-files=all"])
+        records = raw.split("\0")
+        i = 0
+        while i < len(records):
+            record = records[i]
+            i += 1
+            if len(record) < 4:
+                continue
+            code, path = record[:2], record[3:]
+            if code[0] in "RC":
+                i += 1  # the following record is the rename/copy source
+            target = self.repo_root / path
+            if target.is_file():
+                digest = hashlib.sha256(target.read_bytes()).hexdigest()
+            else:
+                digest = "-"
+            snapshot[f"file:{path}"] = f"{code}:{digest}"
         for path in _PROTECTED_PATHS:
             snapshot[f"index:{path}"] = hashlib.sha256(
                 self._git_output(["ls-files", "-s", "--", path]).encode("utf-8")
@@ -200,18 +268,19 @@ class ValidationRunner:
     def _tripwire_report(
         self, before: Dict[str, str], after: Dict[str, str]
     ) -> List[str]:
-        """Describe how the tree changed between two snapshots (empty if none)."""
+        """Describe how the tree changed between two snapshots (empty if none).
+
+        Only the DIFFERENCE is reported: files that were already dirty before
+        the run and are unchanged are not mentioned.
+        """
         problems: List[str] = []
-        if before["status"] != after["status"]:
-            old = set(before["status"].splitlines())
-            new = set(after["status"].splitlines())
-            changed = sorted(old.symmetric_difference(new))
-            problems.append("git status changed: " + "; ".join(changed))
-        if before["diff"] != after["diff"]:
-            changed_files = self._git_output(["diff", "--name-only"]).split()
-            problems.append(
-                "tracked file contents changed: " + ", ".join(changed_files)
-            )
+        changed_files = sorted(
+            key[5:]
+            for key in set(before) | set(after)
+            if key.startswith("file:") and before.get(key) != after.get(key)
+        )
+        if changed_files:
+            problems.append("files changed during the run: " + ", ".join(changed_files))
         for key, value in before.items():
             if key.startswith("index:") and after.get(key) != value:
                 problems.append(f"{key[6:]} index entries changed")

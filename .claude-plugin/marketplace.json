@@ -102,7 +102,7 @@
       "name": "sdlc-knowledge-base",
       "source": "./plugins/sdlc-knowledge-base",
       "description": "Filesystem-based project knowledge base — librarian agent, hash-tracked indexes, cross-library queries with priming + synthesis, audit log, parallel map-reduce bulk ingest, ingest/query/lint operations",
-      "version": "0.3.2"
+      "version": "0.3.3"
     },
     {
       "name": "sdlc-programme",

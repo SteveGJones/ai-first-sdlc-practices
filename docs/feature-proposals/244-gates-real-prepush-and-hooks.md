@@ -103,6 +103,30 @@ Five commits on this branch (after `631a626`):
 ## Out of Scope
 
 - Raising the Python floor.
-- Fixing the latent `# implements:` parsing gap and the `build_shelf_index.py`
-  empty-`**Terms:**` trailing space (see the retrospective).
+- Fixing the latent `# implements:` parsing gap (see the retrospective). The
+  `build_shelf_index.py` empty-`**Terms:**` trailing space was originally listed
+  here and was fixed in the review round.
 - Any change to `Framework Tools` or `Tests (...)` jobs.
+
+## Review round
+
+An Opus review added the following to the scope; details are in the
+retrospective.
+
+- The statement above that `--no-ensure-ascii` stops the JSON hook undoing the
+  catalog generator was only half true: the encoding matched but the generator
+  omitted the final newline. `agent-catalog-update.yml` commits the regenerated
+  `AGENT-CATALOG.json` and `AGENT-INDEX.md` to `main`, so with the hooks
+  blocking it would have turned the next unrelated PR red. The generator now
+  emits exactly one trailing newline in both files (tested).
+- The `build_shelf_index.py` trailing space after an empty `**Terms:**` /
+  `**Links:**` is fixed (previously deferred), `kb_stats` no longer lets its
+  Terms/Links regexes cross a newline on an empty value, and the
+  `sdlc-knowledge-base` plugin is bumped 0.3.2 -> 0.3.3.
+- Gate hardening: `git worktree prune` before the add, a failed worktree removal
+  is an error, a timeout kills the whole process group, and the tripwire
+  reports only the before/after difference and sees new files in untracked
+  directories (documented limits: gitignored files, concurrent writers).
+- Known limits recorded, not acted on: the `black` hook needs a `python3.9`
+  interpreter locally, and the `# noqa: E501` at `traceability_validators.py`
+  would be swallowed by the `# implements:` regex if that parsing gap is fixed.

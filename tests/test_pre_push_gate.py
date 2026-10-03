@@ -10,12 +10,13 @@ hooks with ``language: system`` so nothing is downloaded. They still need the
 """
 
 import importlib.util
+import os
 import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import pytest
 import yaml
@@ -55,9 +56,25 @@ repos:
 """
 
 
+#: Make every git call in these tests immune to the developer's own config
+#: (commit signing, global hooks, templates, ...).
+_GIT_ISOLATION = ["-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null"]
+
+
+@pytest.fixture(autouse=True)
+def _isolate_git_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Also isolate the gate's own git calls, which inherit this environment."""
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", os.devnull)
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+
+
 def _git(repo: Path, *args: str) -> str:
     result = subprocess.run(
-        ["git", *args], cwd=repo, capture_output=True, text=True, check=True
+        ["git", *_GIT_ISOLATION, *args],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=True,
     )
     return result.stdout
 
@@ -234,3 +251,197 @@ def test_setup_cfg_flake8_excludes_corpora() -> None:
         "research/sdlc-bundles/outputs",
     ):
         assert fragment in exclude_line
+
+
+# --- tripwire: reports the DIFFERENCE, sees new files in untracked dirs ------
+
+
+def test_tripwire_reports_only_what_the_run_changed(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    (repo / "b.txt").write_text("b\n")
+    _git(repo, "add", "b.txt")
+    _git(repo, "commit", "-q", "-m", "add b")
+    (repo / "a.txt").write_text("already dirty before the run\n")
+
+    runner = _runner(repo)
+    _stub_all_checks(runner)
+
+    def mutate() -> bool:
+        (repo / "b.txt").write_text("changed by a check\n")
+        return True
+
+    runner.check_technical_debt = mutate  # type: ignore[method-assign]
+    assert runner.run_pre_push_validation() is False
+    report = next(e for e in runner.errors if "TRIPWIRE" in e)
+    assert "b.txt" in report
+    assert "a.txt" not in report
+
+
+def test_tripwire_sees_new_file_inside_existing_untracked_directory(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    (repo / "scratch").mkdir()
+    (repo / "scratch" / "first.txt").write_text("1")
+
+    runner = _runner(repo)
+    _stub_all_checks(runner)
+
+    def add_file() -> bool:
+        (repo / "scratch" / "second.txt").write_text("2")
+        return True
+
+    runner.check_security = add_file  # type: ignore[method-assign]
+    assert runner.run_pre_push_validation() is False
+    assert any("second.txt" in e for e in runner.errors)
+
+
+def _make_repo_with_corpus(tmp_path: Path) -> Path:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    corpus = repo / "research" / "poker-capstone" / "runs"
+    corpus.mkdir(parents=True)
+    (corpus / "x.txt").write_text("verbatim model output\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "corpus")
+    return repo
+
+
+def test_tripwire_reports_protected_corpus_bytes_changing(tmp_path: Path) -> None:
+    repo = _make_repo_with_corpus(tmp_path)
+    runner = _runner(repo)
+    _stub_all_checks(runner)
+
+    def rewrite() -> bool:
+        (repo / "research/poker-capstone/runs/x.txt").write_text("rewritten\n")
+        return True
+
+    runner.check_type_safety = rewrite  # type: ignore[method-assign]
+    assert runner.run_pre_push_validation() is False
+    assert any("research/poker-capstone/runs/x.txt" in e for e in runner.errors)
+
+
+def test_tripwire_reports_protected_corpus_index_entry_changing(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo_with_corpus(tmp_path)
+    runner = _runner(repo)
+    _stub_all_checks(runner)
+
+    def stage_rewrite() -> bool:
+        target = repo / "research/poker-capstone/runs/x.txt"
+        target.write_text("rewritten and staged\n")
+        _git(repo, "add", str(target))
+        return True
+
+    runner.check_type_safety = stage_rewrite  # type: ignore[method-assign]
+    assert runner.run_pre_push_validation() is False
+    assert any(
+        "research/poker-capstone" in e and "index entries changed" in e
+        for e in runner.errors
+    )
+
+
+# --- worktree lifecycle failure paths ---------------------------------------
+
+
+def _intercepting_run_command(
+    runner: "local_validation.ValidationRunner", needle: List[str], result: Tuple
+) -> None:
+    """Make run_command return ``result`` for commands containing ``needle``."""
+    real = runner.run_command
+
+    def fake(cmd: List[str], *args: object, **kwargs: object) -> Tuple:
+        if all(part in cmd for part in needle):
+            return result
+        return real(cmd, *args, **kwargs)  # type: ignore[arg-type]
+
+    runner.run_command = fake  # type: ignore[method-assign]
+
+
+@needs_pre_commit
+def test_gate_reports_worktree_add_failure_and_leaves_no_worktree(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    runner = _runner(repo)
+    _intercepting_run_command(runner, ["worktree", "add"], (128, "", "fatal: boom"))
+
+    assert runner.check_pre_commit_hooks() is False
+    assert any("cannot create worktree" in e and "boom" in e for e in runner.errors)
+    assert "prepush-gate-" not in _git(repo, "worktree", "list")
+    assert not list((repo / "tmp").glob("prepush-gate-*"))
+
+
+@needs_pre_commit
+def test_gate_reports_worktree_remove_failure_with_path(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    runner = _runner(repo)
+    _intercepting_run_command(runner, ["worktree", "remove"], (1, "", "locked"))
+
+    try:
+        assert runner.check_pre_commit_hooks() is False
+        removal = [e for e in runner.errors if "could not remove" in e]
+        assert removal and "prepush-gate-" in removal[0] and "locked" in removal[0]
+    finally:
+        _git(repo, "worktree", "remove", "--force", *_leftover(repo))
+
+
+def _leftover(repo: Path) -> List[str]:
+    return [str(p) for p in (repo / "tmp").glob("prepush-gate-*")][:1]
+
+
+@needs_pre_commit
+def test_gate_survives_a_stale_registered_worktree_at_the_same_path(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    stale = repo / "tmp" / f"prepush-gate-{os.getpid()}"
+    _git(repo, "worktree", "add", "--detach", str(stale), "HEAD")
+    shutil.rmtree(stale)  # a killed run: registered in .git, gone from disk
+    assert "prepush-gate-" in _git(repo, "worktree", "list")
+
+    runner = _runner(repo)
+    assert runner.check_pre_commit_hooks() is True
+    assert runner.errors == []
+    assert "prepush-gate-" not in _git(repo, "worktree", "list")
+
+
+# --- timeout kills the whole process group ----------------------------------
+
+_SLEEP_CONFIG = """\
+repos:
+  - repo: local
+    hooks:
+      - id: sleeper
+        name: sleeps far longer than the timeout
+        entry: sleep 31337
+        language: system
+        pass_filenames: false
+        always_run: true
+"""
+
+
+def _sleepers() -> str:
+    result = subprocess.run(
+        ["pgrep", "-f", "sleep 31337"], capture_output=True, text=True
+    )
+    return result.stdout.strip()
+
+
+@needs_pre_commit
+@pytest.mark.skipif(os.name == "nt", reason="process groups are POSIX-only")
+@pytest.mark.skipif(shutil.which("pgrep") is None, reason="pgrep not available")
+def test_gate_timeout_fails_removes_worktree_and_kills_grandchildren(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_repo(tmp_path, _SLEEP_CONFIG)
+    monkeypatch.setattr(local_validation, "_PRE_COMMIT_TIMEOUT", 5)
+    runner = _runner(repo)
+    try:
+        assert runner.check_pre_commit_hooks() is False
+        assert any("timed out" in e for e in runner.errors)
+        assert "prepush-gate-" not in _git(repo, "worktree", "list")
+        assert not list((repo / "tmp").glob("prepush-gate-*"))
+        assert _sleepers() == "", "hook grandchild outlived the gate"
+    finally:
+        subprocess.run(["pkill", "-f", "sleep 31337"], check=False)

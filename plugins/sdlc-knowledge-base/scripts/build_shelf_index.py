@@ -270,15 +270,18 @@ def _render_entry(n: int, entry: IndexEntry) -> str:
         if entry.facts
         else "- (no structured findings)"
     )
-    links_str = ", ".join(entry.links) if entry.links else ""
+    # An empty value must not leave a trailing space after the colon: the
+    # committed index is checked by the (blocking) trailing-whitespace hook.
+    terms_line = " ".join(filter(None, ["**Terms:**", ", ".join(entry.terms)]))
+    links_line = " ".join(filter(None, ["**Links:**", ", ".join(entry.links)]))
     return (
         f"## {n}. {entry.file_path}\n\n"
         f"**Hash:** {entry.hash}\n"
         f"**Layer:** {entry.layer}\n"
         f"**Confidence:** {entry.confidence}\n"
-        f"**Terms:** {', '.join(entry.terms)}\n"
+        f"{terms_line}\n"
         f"**Facts:**\n{facts_block}\n"
-        f"**Links:** {links_str}\n"
+        f"{links_line}\n"
     )
 
 
@@ -302,7 +305,9 @@ def _build_index_content(
         "---\n\n"
     )
     entries_block = "\n".join(_render_entry(n, e) for n, e in enumerate(entries, 1))
-    return header + entries_block
+    # Exactly one trailing newline (end-of-file-fixer): an index with no entries
+    # would otherwise end with the header's blank line.
+    return (header + entries_block).rstrip("\n") + "\n"
 
 
 def _append_to_log(log_path: Path, stats: RebuildStats, full: bool) -> None:
@@ -318,7 +323,9 @@ def _append_to_log(log_path: Path, stats: RebuildStats, full: bool) -> None:
         f"Files removed: {stats.removed}\n"
     )
     existing = log_path.read_text(encoding="utf-8")
-    log_path.write_text(existing + entry, encoding="utf-8")
+    # Normalise the join so the entry always follows one blank line and the
+    # file ends with exactly one newline, whatever the previous tail was.
+    log_path.write_text(existing.rstrip("\n") + "\n" + entry, encoding="utf-8")
 
 
 def _rail_tripped(added: int, new_count: int, existing_count: int) -> bool:

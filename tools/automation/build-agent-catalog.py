@@ -218,7 +218,7 @@ def build_catalog():
     # Write catalog
     output_path = Path("AGENT-CATALOG.json")
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(catalog, f, indent=2, ensure_ascii=False)
+        f.write(json.dumps(catalog, indent=2, ensure_ascii=False) + "\n")
 
     print(
         f"Successfully created AGENT-CATALOG.json with {catalog['total_agents']} agents"
@@ -264,9 +264,13 @@ def create_readable_index(catalog: Dict[str, Any]):
                     output.append(f"  - {cap}\n")
             output.append("\n")
 
-    # Write index
+    # Write index. The workflow commits this file to main, so it must already
+    # satisfy the whitespace hooks: no trailing whitespace on any line and
+    # exactly one newline at the end of the file.
+    lines = "".join(output).splitlines()
+    text = "\n".join(line.rstrip() for line in lines).rstrip("\n") + "\n"
     with open("AGENT-INDEX.md", "w", encoding="utf-8") as f:
-        f.write("".join(output))
+        f.write(text)
 
     print("Also created AGENT-INDEX.md for human reference")
 
