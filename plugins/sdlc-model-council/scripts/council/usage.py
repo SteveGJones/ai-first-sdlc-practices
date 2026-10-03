@@ -208,9 +208,7 @@ def sum_agy(handle_dir):
             tokens_out += len(fh.read()) // 4
 
     tokens_in = 0
-    for prompt_path in sorted(
-        glob.glob(os.path.join(handle_dir, "turn-*.prompt.txt"))
-    ):
+    for prompt_path in sorted(glob.glob(os.path.join(handle_dir, "turn-*.prompt.txt"))):
         with open(prompt_path, "r", encoding="utf-8") as fh:
             tokens_in += len(fh.read()) // 4
 
@@ -230,12 +228,16 @@ def summarize(handle_dir, pricing, family_override, priors_families=None):
         # meta.model like "default" never substring-matches "openai-gpt5", so
         # the old path priced live codex/agy at $0 (defeating the budget cap).
         import priors as priors_mod
+
         model = meta.get("model") or ""
         address = ("%s:%s" % (cli, model)) if cli else model
         fam = priors_mod.resolve_family(address, families=priors_families)
         pricing_ref = priors_families.get(fam, {}).get("pricing_ref", fam)
-        family = (pricing_ref if pricing_ref in families
-                  else resolve_family(meta.get("model"), families))
+        family = (
+            pricing_ref
+            if pricing_ref in families
+            else resolve_family(meta.get("model"), families)
+        )
     else:
         family = resolve_family(meta.get("model"), families)
 
@@ -269,7 +271,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Summarize actual token/cost usage for one extdel.sh handle dir."
     )
-    parser.add_argument("handle_dir", help="path to the ./tmp/model-council/<handle> dir")
+    parser.add_argument(
+        "handle_dir", help="path to the ./tmp/model-council/<handle> dir"
+    )
     parser.add_argument(
         "--pricing", default=None, help="path to pricing.json (optional)"
     )
@@ -282,7 +286,7 @@ def main(argv=None):
         "--priors-dir",
         default=None,
         help="priors dir; resolve family from the adapter:model address via the "
-             "priors matches map (same as the roster/assess layer)",
+        "priors matches map (same as the roster/assess layer)",
     )
     args = parser.parse_args(argv)
 
@@ -290,6 +294,7 @@ def main(argv=None):
     priors_families = None
     if args.priors_dir:
         import priors as priors_mod
+
         priors_families = priors_mod.load_priors(args.priors_dir)
     result = summarize(args.handle_dir, pricing, args.family, priors_families)
     print(json.dumps(result))

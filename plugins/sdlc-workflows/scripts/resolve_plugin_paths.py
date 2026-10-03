@@ -144,7 +144,10 @@ def resolve_all(
 
     logger.info(
         "Resolving plugin paths (bulk)",
-        extra={"plugin_count": len(plugin_names), "installed_json": str(installed_json)},
+        extra={
+            "plugin_count": len(plugin_names),
+            "installed_json": str(installed_json),
+        },
     )
     plugins = _load_installed(installed_json)
     lookup = _build_name_lookup(plugins)

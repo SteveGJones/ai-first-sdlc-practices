@@ -46,45 +46,53 @@ def analyse_team(team: dict) -> list[dict]:
     )
 
     if stale == "not_built" and wf_count > 0:
-        signals.append({
-            "type": "not_built",
-            "tier": "critical",
-            "team": name,
-            "message": (
-                f"{name} is referenced by {wf_count} workflow(s) "
-                "but has no image built"
-            ),
-        })
+        signals.append(
+            {
+                "type": "not_built",
+                "tier": "critical",
+                "team": name,
+                "message": (
+                    f"{name} is referenced by {wf_count} workflow(s) "
+                    "but has no image built"
+                ),
+            }
+        )
     elif stale == "not_built":
-        signals.append({
-            "type": "not_built",
-            "tier": "critical",
-            "team": name,
-            "message": f"{name} has no image built",
-        })
+        signals.append(
+            {
+                "type": "not_built",
+                "tier": "critical",
+                "team": name,
+                "message": f"{name} has no image built",
+            }
+        )
 
     if stale == "stale":
-        signals.append({
-            "type": "stale_image",
-            "tier": "advisory",
-            "team": name,
-            "message": (
-                f"{name} image is stale (manifest updated "
-                f"{team.get('updated', '?')}, image built "
-                f"{team.get('image_built', '?')})"
-            ),
-        })
+        signals.append(
+            {
+                "type": "stale_image",
+                "tier": "advisory",
+                "team": name,
+                "message": (
+                    f"{name} image is stale (manifest updated "
+                    f"{team.get('updated', '?')}, image built "
+                    f"{team.get('image_built', '?')})"
+                ),
+            }
+        )
 
     if wf_count == 0 and stale != "not_built":
-        signals.append({
-            "type": "unused_team",
-            "tier": "advisory",
-            "team": name,
-            "message": (
-                f"{name} is not referenced by any workflow — "
-                "consider deleting or assigning to a workflow"
-            ),
-        })
+        signals.append(
+            {
+                "type": "unused_team",
+                "tier": "advisory",
+                "team": name,
+                "message": (
+                    f"{name} is not referenced by any workflow — "
+                    "consider deleting or assigning to a workflow"
+                ),
+            }
+        )
 
     return signals
 
@@ -167,18 +175,20 @@ def analyse_overrides(
                 extra={"agent": agent, "count": count, "threshold": threshold},
             )
             team_names = ", ".join(sorted(teams_for_agent.get(agent, set())))
-            signals.append({
-                "type": "frequent_override",
-                "tier": "informational",
-                "agent": agent,
-                "count": count,
-                "teams": team_names,
-                "message": (
-                    f"{agent} has been added via team_extend {count} times "
-                    f"(on teams: {team_names}) — consider promoting to "
-                    "a standing team member"
-                ),
-            })
+            signals.append(
+                {
+                    "type": "frequent_override",
+                    "tier": "informational",
+                    "agent": agent,
+                    "count": count,
+                    "teams": team_names,
+                    "message": (
+                        f"{agent} has been added via team_extend {count} times "
+                        f"(on teams: {team_names}) — consider promoting to "
+                        "a standing team member"
+                    ),
+                }
+            )
 
     return signals
 
@@ -188,7 +198,9 @@ def main() -> None:
     import argparse
     import sys as _sys
 
-    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s"
+    )
     logger.info("coaching_signals CLI start")
 
     _scripts_dir = Path(__file__).resolve().parent
@@ -198,13 +210,19 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Coaching signal analysis")
     parser.add_argument(
-        "--teams-dir", type=Path, default=Path(".archon/teams"),
+        "--teams-dir",
+        type=Path,
+        default=Path(".archon/teams"),
     )
     parser.add_argument(
-        "--workflows-dir", type=Path, default=Path(".archon/workflows"),
+        "--workflows-dir",
+        type=Path,
+        default=Path(".archon/workflows"),
     )
     parser.add_argument(
-        "--overrides", type=Path, default=Path(".archon/logs/overrides.jsonl"),
+        "--overrides",
+        type=Path,
+        default=Path(".archon/logs/overrides.jsonl"),
     )
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     args = parser.parse_args()

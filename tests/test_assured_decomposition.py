@@ -623,7 +623,9 @@ def _decomp_for_path(src_dir: Path) -> Decomposition:
         paths_sections=[],
     )
     sub_program = SubProgram(id="SP1", name="Test sub-program", modules=[module])
-    program = Program(id="P1", name="Test program", description=None, sub_programs=[sub_program])
+    program = Program(
+        id="P1", name="Test program", description=None, sub_programs=[sub_program]
+    )
     return Decomposition(programs=[program], visibility=[])
 
 
@@ -633,9 +635,7 @@ def test_forward_annotation_completeness_passes_when_all_public_functions_annota
     f = tmp_path / "src" / "auth.py"
     f.parent.mkdir(parents=True)
     f.write_text(
-        "def login(token):\n"
-        "    # implements: DES-auth-001\n"
-        "    return token\n"
+        "def login(token):\n" "    # implements: DES-auth-001\n" "    return token\n"
     )
     decomp = _decomp_for_path(tmp_path / "src")
     result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
@@ -647,10 +647,7 @@ def test_forward_annotation_completeness_fails_when_public_function_missing_anno
 ) -> None:
     f = tmp_path / "src" / "auth.py"
     f.parent.mkdir(parents=True)
-    f.write_text(
-        "def login(token):\n"
-        "    return token\n"
-    )
+    f.write_text("def login(token):\n" "    return token\n")
     decomp = _decomp_for_path(tmp_path / "src")
     result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
     assert result.passed is False
@@ -680,10 +677,7 @@ def test_forward_annotation_completeness_skips_test_files(
 ) -> None:
     f = tmp_path / "src" / "test_auth.py"
     f.parent.mkdir(parents=True)
-    f.write_text(
-        "def test_login():\n"
-        "    assert True\n"
-    )
+    f.write_text("def test_login():\n" "    assert True\n")
     decomp = _decomp_for_path(tmp_path / "src")
     result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
     assert result.passed is True
@@ -729,9 +723,7 @@ def test_forward_annotation_completeness_skips_pass_only_body(
     """Functions with a single `pass` body are non-substantive and must be skipped."""
     f = tmp_path / "src" / "p.py"
     f.parent.mkdir(parents=True)
-    f.write_text(
-        "def noop():\n    pass\n"
-    )
+    f.write_text("def noop():\n    pass\n")
     decomp = _decomp_for_path(tmp_path / "src")
     result = forward_annotation_completeness(source_paths=[f], decomp=decomp)
     assert result.passed is True

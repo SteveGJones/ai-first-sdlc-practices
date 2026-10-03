@@ -27,7 +27,13 @@ import yaml
 logger = logging.getLogger(__name__)
 
 _PRESERVED_FIELDS = {
-    "id", "depends_on", "trigger_rule", "when", "timeout", "retry", "budget",
+    "id",
+    "depends_on",
+    "trigger_rule",
+    "when",
+    "timeout",
+    "retry",
+    "budget",
 }
 
 # Patterns that indicate a command brief writes to the shared workspace
@@ -293,9 +299,7 @@ def _build_docker_run(
         timeout_env = f" -e {shlex.quote(f'CLAUDE_TIMEOUT={inner_seconds}')}"
     else:
         timeout_env = ""
-    model_env = (
-        f" -e {shlex.quote(f'CLAUDE_MODEL={model}')}" if model else ""
-    )
+    model_env = f" -e {shlex.quote(f'CLAUDE_MODEL={model}')}" if model else ""
     # Tier 1 spiral detection: cost-based cap.  If the model loops and
     # burns tokens without progress, the budget kills it before the time
     # cap fires.  Passed as env var; entrypoint forwards to --max-budget-usd.
@@ -383,9 +387,7 @@ def _transform_multistage_loop(
             f"loop.max_iterations must be an integer (node {node.get('id')!r})"
         ) from exc
     if max_iter < 1:
-        raise ValueError(
-            f"loop.max_iterations must be >= 1 (node {node.get('id')!r})"
-        )
+        raise ValueError(f"loop.max_iterations must be >= 1 (node {node.get('id')!r})")
 
     result: dict = {}
     for field in _PRESERVED_FIELDS:
@@ -467,9 +469,7 @@ def transform_node(
     """
     loop_cfg = node.get("loop")
     if isinstance(loop_cfg, dict) and "stages" in loop_cfg:
-        return _transform_multistage_loop(
-            node, workspace, cred_mount, commands_dir
-        )
+        return _transform_multistage_loop(node, workspace, cred_mount, commands_dir)
 
     if "image" not in node:
         return node
@@ -507,11 +507,11 @@ def transform_node(
         signal_q = shlex.quote(str(until_signal))
         result["bash"] = (
             f"for i in $(seq 1 {max_iter}); do\n"
-            f"  echo \"Iteration $i/{max_iter}\"\n"
+            f'  echo "Iteration $i/{max_iter}"\n'
             f"  OUTPUT=$({docker_cmd})\n"
-            f"  echo \"$OUTPUT\"\n"
-            f"  if echo \"$OUTPUT\" | grep -q {signal_q}; then\n"
-            f"    echo \"LOOP_COMPLETE: signal detected at iteration $i\"\n"
+            f'  echo "$OUTPUT"\n'
+            f'  if echo "$OUTPUT" | grep -q {signal_q}; then\n'
+            f'    echo "LOOP_COMPLETE: signal detected at iteration $i"\n'
             f"    break\n"
             f"  fi\n"
             f"done"
@@ -621,20 +621,30 @@ def main() -> None:
     """CLI entry point — preprocess a workflow YAML."""
     import argparse
 
-    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s"
+    )
     logger.info("preprocess_workflow CLI start")
 
-    parser = argparse.ArgumentParser(description="Preprocess workflow for containerised execution")
+    parser = argparse.ArgumentParser(
+        description="Preprocess workflow for containerised execution"
+    )
     parser.add_argument("input", type=Path, help="Input workflow YAML")
     parser.add_argument("--output", type=Path, required=True, help="Output path")
     parser.add_argument("--workspace", required=True, help="Host workspace directory")
-    parser.add_argument("--cred-mount", required=True, help="Docker -v argument for credentials")
+    parser.add_argument(
+        "--cred-mount", required=True, help="Docker -v argument for credentials"
+    )
     parser.add_argument("--commands-dir", default=".archon/commands")
     args = parser.parse_args()
 
     try:
         result = preprocess(
-            args.input, args.output, args.workspace, args.cred_mount, args.commands_dir,
+            args.input,
+            args.output,
+            args.workspace,
+            args.cred_mount,
+            args.commands_dir,
         )
     except ParallelGitWriteError as exc:
         # Exit code 3 distinguishes guardrail rejection from generic

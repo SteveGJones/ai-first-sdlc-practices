@@ -118,7 +118,9 @@ def _parse_shelf_index(content: str) -> list[_ShelfEntry]:
         layer = layer_match.group(1).strip().lower() if layer_match else "uncategorized"
 
         confidence_match = _CONFIDENCE_RE.search(section)
-        confidence = confidence_match.group(1).strip().lower() if confidence_match else "unknown"
+        confidence = (
+            confidence_match.group(1).strip().lower() if confidence_match else "unknown"
+        )
 
         terms_match = _TERMS_RE.search(section)
         domains = _parse_domains_from_terms(terms_match.group(1)) if terms_match else []

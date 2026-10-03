@@ -303,4 +303,3 @@ The synthesis is well-grounded. The source research is authoritative on sphinx-n
 **Weaker areas:** The research is thinner on "what patterns to leave as plugins." The category-level critiques (requirements rot, compliance theatre, Conway's Law) represent practitioner experience, not empirical measurement. ReqIF data-loss is documented but relies on practitioner blogs, not formal specifications.
 
 **Overall confidence:** HIGH (85%). The core claims (adopt sphinx-needs patterns, avoid DOORS patterns, maintain filesystem-first architecture) are backed by strong evidence. The scope changes to METHODS.md are grounded in the research and do not require leaps. The open questions are genuine gaps in the research, not failures of the synthesis.
-

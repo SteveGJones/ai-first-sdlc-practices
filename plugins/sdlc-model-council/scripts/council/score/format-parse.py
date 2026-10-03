@@ -27,6 +27,7 @@ def _load_extract_answer():
     if council_dir not in sys.path:
         sys.path.insert(0, council_dir)
     import extract_answer
+
     return extract_answer
 
 
@@ -100,9 +101,7 @@ def check_schema(obj, schema):
 
 def main(argv):
     if len(argv) != 4:
-        sys.stderr.write(
-            "usage: format-parse.py <item-dir> <answer-file> <workdir>\n"
-        )
+        sys.stderr.write("usage: format-parse.py <item-dir> <answer-file> <workdir>\n")
         sys.exit(2)
 
     item_dir, answer_file, workdir = argv[1], argv[2], argv[3]
@@ -118,7 +117,11 @@ def main(argv):
                 workdir,
                 0.0,
                 "contract-fail",
-                {"satisfied": 0, "total": 0, "failed_constraints": ["not-a-json-object"]},
+                {
+                    "satisfied": 0,
+                    "total": 0,
+                    "failed_constraints": ["not-a-json-object"],
+                },
             )
             sys.exit(0)
 

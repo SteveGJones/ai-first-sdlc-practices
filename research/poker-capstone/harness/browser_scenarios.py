@@ -150,7 +150,9 @@ def _open_seat_pages(
         # CLIENT-TEST-CONTRACT.md: "the visible page can look like
         # anything" — the mirror element only has to be present in the
         # DOM with correct data-* attributes, not CSS-visible.
-        page.wait_for_selector('[data-testid="table"]', state="attached", timeout=10_000)
+        page.wait_for_selector(
+            '[data-testid="table"]', state="attached", timeout=10_000
+        )
         pages[seat] = page
     return pages
 

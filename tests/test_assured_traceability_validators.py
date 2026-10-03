@@ -99,7 +99,9 @@ def test_orphan_ids_warns_for_orphan_test_leaf() -> None:
 def test_orphan_ids_widened_warns_on_orphan_test() -> None:
     """E1: orphan_ids now also reports orphan TEST/CODE IDs, not just REQ/DES."""
     records = [
-        IdRecord(id="TEST-foo-001", kind="TEST", source="t.md", satisfies=["DES-foo-001"]),
+        IdRecord(
+            id="TEST-foo-001", kind="TEST", source="t.md", satisfies=["DES-foo-001"]
+        ),
     ]
     result = orphan_ids(records)
     # No CODE record cites TEST-foo-001 → orphan warning
@@ -220,7 +222,9 @@ def test_index_regenerability_fails_when_drift(tmp_path: Path) -> None:
     assert any("not idempotent" in e.lower() for e in result.errors)
 
 
-def test_annotation_format_integrity_passes_on_valid_annotations(tmp_path: Path) -> None:
+def test_annotation_format_integrity_passes_on_valid_annotations(
+    tmp_path: Path,
+) -> None:
     f = tmp_path / "login.py"
     f.write_text("def login():\n" "    # implements: REQ-auth-001\n" "    pass\n")
     result = annotation_format_integrity([f], declared_ids={"REQ-auth-001"})
@@ -235,7 +239,9 @@ def test_annotation_format_integrity_fails_on_unknown_id(tmp_path: Path) -> None
     assert any("REQ-auth-999" in e for e in result.errors)
 
 
-def test_annotation_format_integrity_fails_on_malformed_annotation(tmp_path: Path) -> None:
+def test_annotation_format_integrity_fails_on_malformed_annotation(
+    tmp_path: Path,
+) -> None:
     f = tmp_path / "login.py"
     f.write_text("def login():\n" "    # implements: not_an_id\n" "    pass\n")
     result = annotation_format_integrity([f], declared_ids={"REQ-auth-001"})

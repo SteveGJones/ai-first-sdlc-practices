@@ -35,7 +35,9 @@ def load_manifests(teams_dir: Path) -> list[dict]:
     """
     logger.debug("Loading team manifests", extra={"teams_dir": str(teams_dir)})
     if not teams_dir.is_dir():
-        logger.info("Teams directory does not exist", extra={"teams_dir": str(teams_dir)})
+        logger.info(
+            "Teams directory does not exist", extra={"teams_dir": str(teams_dir)}
+        )
         return []
     manifests: list[dict] = []
     for yaml_file in sorted(teams_dir.glob("*.yaml")):
@@ -160,10 +162,12 @@ def workflow_usage(
             _, _, team_name = str(image).partition(":")
             if team_name == "base":
                 continue
-            usage.setdefault(team_name, []).append({
-                "workflow": str(wf_name),
-                "node": str(node.get("id", "<unknown>")),
-            })
+            usage.setdefault(team_name, []).append(
+                {
+                    "workflow": str(wf_name),
+                    "node": str(node.get("id", "<unknown>")),
+                }
+            )
 
     logger.info(
         "Workflow usage map built",
@@ -200,23 +204,23 @@ def fleet_report(
     for manifest in manifests:
         name = str(manifest.get("name", "unknown"))
         refs = usage.get(name, [])
-        teams.append({
-            "name": name,
-            "status": str(manifest.get("status", "unknown")),
-            "agent_count": _count_list(manifest, "agents"),
-            "skill_count": _count_list(manifest, "skills"),
-            "staleness": staleness(manifest),
-            "workflow_count": len(refs),
-            "workflow_refs": refs,
-            "updated": manifest.get("updated"),
-            "image_built": manifest.get("image_built"),
-        })
+        teams.append(
+            {
+                "name": name,
+                "status": str(manifest.get("status", "unknown")),
+                "agent_count": _count_list(manifest, "agents"),
+                "skill_count": _count_list(manifest, "skills"),
+                "staleness": staleness(manifest),
+                "workflow_count": len(refs),
+                "workflow_refs": refs,
+                "updated": manifest.get("updated"),
+                "image_built": manifest.get("image_built"),
+            }
+        )
 
-    workflow_count = len(set(
-        ref["workflow"]
-        for t in teams
-        for ref in t["workflow_refs"]
-    ))
+    workflow_count = len(
+        set(ref["workflow"] for t in teams for ref in t["workflow_refs"])
+    )
     logger.info(
         "Fleet report assembled",
         extra={"team_count": len(teams), "workflow_count": workflow_count},
@@ -232,20 +236,27 @@ def main() -> None:
     """CLI entry point for teams_status_report."""
     import argparse
 
-    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s"
+    )
     logger.info("teams_status_report CLI start")
 
     parser = argparse.ArgumentParser(description="Generate fleet status report")
     parser.add_argument(
-        "--teams-dir", type=Path, default=Path(".archon/teams"),
+        "--teams-dir",
+        type=Path,
+        default=Path(".archon/teams"),
     )
     parser.add_argument(
-        "--workflows-dir", type=Path, default=Path(".archon/workflows"),
+        "--workflows-dir",
+        type=Path,
+        default=Path(".archon/workflows"),
     )
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     args = parser.parse_args()
 
     import json as json_mod
+
     report = fleet_report(args.teams_dir, args.workflows_dir)
     if args.json:
         print(json_mod.dumps(report, indent=2, default=str))

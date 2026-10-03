@@ -140,12 +140,29 @@ def test_render_spec_findings_omits_last_rebuilt_by_default() -> None:
 
 def test_render_spec_findings_emits_per_req_related_when_metadata_provided() -> None:
     records = [
-        IdRecord(id="REQ-foo-001", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
-        IdRecord(id="REQ-foo-002", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
-        IdRecord(id="REQ-foo-003", kind="REQ", source="docs/specs/foo/requirements-spec.md", satisfies=[]),
+        IdRecord(
+            id="REQ-foo-001",
+            kind="REQ",
+            source="docs/specs/foo/requirements-spec.md",
+            satisfies=[],
+        ),
+        IdRecord(
+            id="REQ-foo-002",
+            kind="REQ",
+            source="docs/specs/foo/requirements-spec.md",
+            satisfies=[],
+        ),
+        IdRecord(
+            id="REQ-foo-003",
+            kind="REQ",
+            source="docs/specs/foo/requirements-spec.md",
+            satisfies=[],
+        ),
     ]
     metadata = {
-        "REQ-foo-002": RequirementMetadata(req_id="REQ-foo-002", related=["REQ-foo-001"]),
+        "REQ-foo-002": RequirementMetadata(
+            req_id="REQ-foo-002", related=["REQ-foo-001"]
+        ),
     }
     out = render_spec_findings(records, library_handle="x", metadata=metadata)
     assert "**Related:** REQ-foo-001" in out

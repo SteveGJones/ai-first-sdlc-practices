@@ -437,8 +437,7 @@ def _is_single_line_getter_setter(node: ast.FunctionDef) -> bool:
 def _is_property_single_line(node: ast.FunctionDef) -> bool:
     """Return True if the function has a @property decorator and a single-statement body."""
     has_property = any(
-        isinstance(d, ast.Name) and d.id == "property"
-        for d in node.decorator_list
+        isinstance(d, ast.Name) and d.id == "property" for d in node.decorator_list
     )
     if not has_property:
         return False
@@ -537,9 +536,7 @@ def forward_annotation_completeness(
             start_line = node.lineno - 1  # 0-indexed
             end_line = node.end_lineno  # exclusive upper bound (0-indexed)
             func_source_lines = source_lines[start_line:end_line]
-            has_annotation = any(
-                "# implements:" in line for line in func_source_lines
-            )
+            has_annotation = any("# implements:" in line for line in func_source_lines)
             if not has_annotation:
                 errors.append(f"{src}:{node.lineno} {node.name}")
 

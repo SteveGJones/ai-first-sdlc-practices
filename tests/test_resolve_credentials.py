@@ -16,9 +16,7 @@ class TestKeychainTier:
         """Tier 1: macOS Keychain extraction succeeds."""
         cred_json = json.dumps({"claudeAiOauth": {"accessToken": "test"}})
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout=cred_json, stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=0, stdout=cred_json, stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -44,6 +42,7 @@ class TestVolumeTier:
     def test_volume_found(self, tmp_path: Path) -> None:
         """Tier 2: Docker volume exists and has credentials."""
         with patch("subprocess.run") as mock_run:
+
             def side_effect(*args, **kwargs):
                 cmd = args[0] if args else kwargs.get("args", [])
                 if "security" in cmd:
@@ -53,6 +52,7 @@ class TestVolumeTier:
                 if "docker" in cmd and "run" in cmd:
                     return MagicMock(returncode=0, stdout="exists", stderr="")
                 return MagicMock(returncode=1, stdout="", stderr="")
+
             mock_run.side_effect = side_effect
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
@@ -80,13 +80,9 @@ class TestConfigTier:
         cred_file.write_text('{"claudeAiOauth": {}}')
         config_dir = tmp_path / ".archon"
         config_dir.mkdir()
-        (config_dir / "credentials.yaml").write_text(
-            f"credential_path: {cred_file}\n"
-        )
+        (config_dir / "credentials.yaml").write_text(f"credential_path: {cred_file}\n")
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=1, stdout="", stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -102,9 +98,7 @@ class TestConfigTier:
             "credential_path: /nonexistent/path.json\n"
         )
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=1, stdout="", stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -116,9 +110,7 @@ class TestNoneTier:
     def test_all_tiers_fail(self, tmp_path: Path) -> None:
         """All tiers fail → tier=none with instructions."""
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=1, stdout="", stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -144,9 +136,7 @@ class TestCleanupContract:
         """Keychain tier: cleanup points to the temp file that actually exists."""
         cred_json = json.dumps({"claudeAiOauth": {"accessToken": "t"}})
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout=cred_json, stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=0, stdout=cred_json, stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -165,13 +155,9 @@ class TestCleanupContract:
         cred_file.write_text('{"claudeAiOauth": {}}')
         config_dir = tmp_path / ".archon"
         config_dir.mkdir()
-        (config_dir / "credentials.yaml").write_text(
-            f"credential_path: {cred_file}\n"
-        )
+        (config_dir / "credentials.yaml").write_text(f"credential_path: {cred_file}\n")
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=1, stdout="", stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -182,9 +168,7 @@ class TestCleanupContract:
     def test_none_tier_cleanup_is_none(self, tmp_path: Path) -> None:
         """tier=none: nothing to clean up."""
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=1, stdout="", stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -199,9 +183,7 @@ class TestCleanupContract:
         """
         cred_json = json.dumps({"claudeAiOauth": {"accessToken": "t"}})
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout=cred_json, stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=0, stdout=cred_json, stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -226,14 +208,13 @@ class TestCredentialFreshness:
 
     def test_expired_token_returns_stale_tier(self, tmp_path: Path) -> None:
         import time as _time
+
         past_ms = int((_time.time() - 3600) * 1000)  # expired 1 hour ago
         cred_json = json.dumps(
             {"claudeAiOauth": {"accessToken": "t", "expiresAt": past_ms}}
         )
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout=cred_json, stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=0, stdout=cred_json, stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -245,14 +226,13 @@ class TestCredentialFreshness:
 
     def test_near_expiry_token_carries_warning(self, tmp_path: Path) -> None:
         import time as _time
+
         soon_ms = int((_time.time() + 60) * 1000)  # 60 seconds remaining
         cred_json = json.dumps(
             {"claudeAiOauth": {"accessToken": "t", "expiresAt": soon_ms}}
         )
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout=cred_json, stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=0, stdout=cred_json, stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -264,14 +244,13 @@ class TestCredentialFreshness:
 
     def test_fresh_token_no_warning(self, tmp_path: Path) -> None:
         import time as _time
+
         far_ms = int((_time.time() + 7200) * 1000)  # 2 hours remaining
         cred_json = json.dumps(
             {"claudeAiOauth": {"accessToken": "t", "expiresAt": far_ms}}
         )
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout=cred_json, stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=0, stdout=cred_json, stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,
@@ -283,9 +262,7 @@ class TestCredentialFreshness:
         """Older credential files without expiresAt must still resolve."""
         cred_json = json.dumps({"claudeAiOauth": {"accessToken": "t"}})
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout=cred_json, stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=0, stdout=cred_json, stderr="")
             result = resolve_credentials.resolve(
                 work_dir=tmp_path,
                 project_dir=tmp_path,

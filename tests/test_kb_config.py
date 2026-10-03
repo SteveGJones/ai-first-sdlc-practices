@@ -18,7 +18,9 @@ from sdlc_knowledge_base_scripts.kb_config import (
 # ---------------------------------------------------------------------------
 
 
-def _write_md(path: Path, frontmatter: str | None = None, body: str = "Content") -> None:
+def _write_md(
+    path: Path, frontmatter: str | None = None, body: str = "Content"
+) -> None:
     """Write a markdown file, optionally with YAML frontmatter."""
     if frontmatter is not None:
         path.write_text(f"---\n{frontmatter}\n---\n{body}\n")
@@ -130,7 +132,9 @@ def test_check_layer_compliance_flags_missing_layer(tmp_path: Path) -> None:
     assert "missing" in msg.lower()
 
 
-def test_check_layer_compliance_flags_missing_layer_no_frontmatter(tmp_path: Path) -> None:
+def test_check_layer_compliance_flags_missing_layer_no_frontmatter(
+    tmp_path: Path,
+) -> None:
     """File with no frontmatter at all → flagged as missing layer."""
     lib = tmp_path / "library"
     lib.mkdir()
@@ -149,7 +153,11 @@ def test_check_layer_compliance_flags_invalid_layer(tmp_path: Path) -> None:
     violations = check_layer_compliance(lib, DEFAULT_LAYERS)
     assert len(violations) == 1
     _, msg = violations[0]
-    assert "invalid" in msg.lower() or "not in" in msg.lower() or "nonexistent" in msg.lower()
+    assert (
+        "invalid" in msg.lower()
+        or "not in" in msg.lower()
+        or "nonexistent" in msg.lower()
+    )
 
 
 def test_check_layer_compliance_accepts_custom_layer(tmp_path: Path) -> None:

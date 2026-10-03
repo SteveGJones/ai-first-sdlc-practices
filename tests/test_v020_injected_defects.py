@@ -52,8 +52,7 @@ def _abs_decomp(fixture_root: Path) -> Decomposition:
             modules: List[Module] = []
             for m in sp.modules:
                 abs_paths = [
-                    str(fixture_root / path.rstrip("/")) + "/"
-                    for path in m.paths
+                    str(fixture_root / path.rstrip("/")) + "/" for path in m.paths
                 ]
                 modules.append(
                     Module(
@@ -97,9 +96,7 @@ def test_f008_no_des_evidence_fires_granularity_warning() -> None:
     spec_module_lookup = {"REQ-fix8-001": "P1.SP1.M1", "DES-fix8-001": "P1.SP1.M1"}
 
     # satisfies_graph: DES-fix8-001 satisfies REQ-fix8-001
-    satisfies_graph = {
-        r.id: list(r.satisfies) for r in records if r.kind == "DES"
-    }
+    satisfies_graph = {r.id: list(r.satisfies) for r in records if r.kind == "DES"}
 
     # No annotations: source file has no # implements: annotation at all.
     annotations: list = []
@@ -112,9 +109,9 @@ def test_f008_no_des_evidence_fires_granularity_warning() -> None:
         satisfies_graph=satisfies_graph,
     )
     # Validator returns warnings (not errors) for under-specified REQs.
-    assert any("REQ-fix8-001" in w for w in result.warnings), (
-        f"Expected warning mentioning REQ-fix8-001; got warnings: {result.warnings}"
-    )
+    assert any(
+        "REQ-fix8-001" in w for w in result.warnings
+    ), f"Expected warning mentioning REQ-fix8-001; got warnings: {result.warnings}"
 
 
 # ---------------------------------------------------------------------------
@@ -177,17 +174,17 @@ def test_f009_not_applicable_no_justification_captured_in_metadata() -> None:
     fx = _FIXTURES / "f-009-not-applicable-no-justification"
     registry = build_requirement_metadata_registry(fx)
 
-    assert "REQ-fix9-001" in registry, (
-        f"Expected REQ-fix9-001 in metadata registry; got keys: {list(registry.keys())}"
-    )
+    assert (
+        "REQ-fix9-001" in registry
+    ), f"Expected REQ-fix9-001 in metadata registry; got keys: {list(registry.keys())}"
     meta = registry["REQ-fix9-001"]
-    assert meta.evidence_status == EvidenceStatus.NOT_APPLICABLE, (
-        f"Expected NOT_APPLICABLE; got {meta.evidence_status}"
-    )
+    assert (
+        meta.evidence_status == EvidenceStatus.NOT_APPLICABLE
+    ), f"Expected NOT_APPLICABLE; got {meta.evidence_status}"
     # The defect: no justification field present
-    assert not meta.justification, (
-        f"Expected justification to be absent/empty (the defect); got {meta.justification!r}"
-    )
+    assert (
+        not meta.justification
+    ), f"Expected justification to be absent/empty (the defect); got {meta.justification!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -265,10 +262,11 @@ def test_d2_whitespace_only_section_fires_requirements_gate_error() -> None:
 
     result = requirements_gate(feature_dir=feature_dir, feature_id=feature_id)
 
-    assert not result.passed, "Expected requirements_gate to fail for whitespace Motivation"
+    assert (
+        not result.passed
+    ), "Expected requirements_gate to fail for whitespace Motivation"
     assert any(
-        "Motivation" in e and ("whitespace" in e or "empty" in e)
-        for e in result.errors
+        "Motivation" in e and ("whitespace" in e or "empty" in e) for e in result.errors
     ), (
         f"Expected error about whitespace-only Motivation section; "
         f"got errors: {result.errors}"

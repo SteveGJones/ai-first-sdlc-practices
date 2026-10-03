@@ -61,9 +61,7 @@ def parse_family_map(value):
         return result
     for pair in _split_csv(value):
         if "=" not in pair:
-            raise ValueError(
-                "--family-map entries must be addr=family, got: %r" % pair
-            )
+            raise ValueError("--family-map entries must be addr=family, got: %r" % pair)
         key, _, fam = pair.partition("=")
         result[key.strip()] = fam.strip()
     return result
@@ -101,6 +99,7 @@ def resolve_family(address, families, family_map, priors_families=None):
 
     if priors_families:
         import priors as priors_mod
+
         fam = priors_mod.resolve_family(address, families=priors_families)
         if fam in families:
             return fam, False
@@ -120,14 +119,13 @@ def rates_for(family, families):
     return rates.get("input_per_mtok", 0.0), rates.get("output_per_mtok", 0.0)
 
 
-def build_estimate(pricing, stack, stack_path, models, dims, k, family_map,
-                   priors_families=None):
+def build_estimate(
+    pricing, stack, stack_path, models, dims, k, family_map, priors_families=None
+):
     families = pricing.get("families", {})
     dims_set = set(dims)
     items = [it for it in stack.get("items", []) if it.get("dimension") in dims_set]
-    item_tokens = [
-        (it, load_item_tokens(stack_path, it["path"])) for it in items
-    ]
+    item_tokens = [(it, load_item_tokens(stack_path, it["path"])) for it in items]
 
     per_model = {}
     total_usd = 0.0
@@ -150,7 +148,9 @@ def build_estimate(pricing, stack, stack_path, models, dims, k, family_map,
             "flagged": flagged,
         }
         total_usd += est_usd
-        table_rows.append((model, family or "unknown", len(item_tokens), est_usd, flagged))
+        table_rows.append(
+            (model, family or "unknown", len(item_tokens), est_usd, flagged)
+        )
 
     return per_model, round(total_usd, 6), table_rows
 
@@ -194,7 +194,7 @@ def main(argv=None):
         "--priors-dir",
         default="",
         help="priors dir; when given, families resolve via the priors "
-             "address->family map (same resolution as the roster/assess layer)",
+        "address->family map (same resolution as the roster/assess layer)",
     )
     args = parser.parse_args(argv)
 
@@ -207,7 +207,10 @@ def main(argv=None):
     try:
         pricing = load_json(args.pricing)
     except (OSError, json.JSONDecodeError) as exc:
-        print("error: could not read pricing %r: %s" % (args.pricing, exc), file=sys.stderr)
+        print(
+            "error: could not read pricing %r: %s" % (args.pricing, exc),
+            file=sys.stderr,
+        )
         return 2
 
     try:
@@ -222,11 +225,11 @@ def main(argv=None):
     priors_families = None
     if args.priors_dir:
         import priors as priors_mod
+
         priors_families = priors_mod.load_priors(args.priors_dir)
 
     per_model, total_usd, table_rows = build_estimate(
-        pricing, stack, args.stack, models, dims, args.k, family_map,
-        priors_families
+        pricing, stack, args.stack, models, dims, args.k, family_map, priors_families
     )
 
     print_table(table_rows, args.k, total_usd)

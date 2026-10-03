@@ -18,7 +18,9 @@ def test_list_users_returns_json(client):
 
 
 def test_create_user(client):
-    response = client.post("/users", json={"name": "Alice", "email": "alice@example.com"})
+    response = client.post(
+        "/users", json={"name": "Alice", "email": "alice@example.com"}
+    )
     assert response.status_code == 201
 
 

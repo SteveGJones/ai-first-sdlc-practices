@@ -36,7 +36,9 @@ from pathlib import Path
 
 
 ARCHON_DEFAULT_URL = "http://localhost:3090"
-ARCHON_DB_PATH = Path(os.environ.get("ARCHON_HOME", Path.home() / ".archon")) / "archon.db"
+ARCHON_DB_PATH = (
+    Path(os.environ.get("ARCHON_HOME", Path.home() / ".archon")) / "archon.db"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -70,7 +72,9 @@ def fetch_via_rest(base_url: str, timeout: float) -> list[dict] | None:
         return data
     if isinstance(data, dict) and "runs" in data:
         return data["runs"]
-    raise RuntimeError(f"Unexpected REST response shape from {base_url}: {type(data)!r}")
+    raise RuntimeError(
+        f"Unexpected REST response shape from {base_url}: {type(data)!r}"
+    )
 
 
 def fetch_run_detail_via_rest(
@@ -108,13 +112,23 @@ def fetch_run_detail_via_rest(
 
 
 _EXPECTED_RUNS_COLUMNS = {
-    "id", "conversation_id", "workflow_name", "status",
-    "current_step_index", "started_at", "completed_at",
-    "last_activity_at", "working_path",
+    "id",
+    "conversation_id",
+    "workflow_name",
+    "status",
+    "current_step_index",
+    "started_at",
+    "completed_at",
+    "last_activity_at",
+    "working_path",
 }
 _EXPECTED_EVENTS_COLUMNS = {
-    "workflow_run_id", "event_type", "step_index", "step_name",
-    "data", "created_at",
+    "workflow_run_id",
+    "event_type",
+    "step_index",
+    "step_name",
+    "data",
+    "created_at",
 }
 
 
@@ -280,7 +294,9 @@ def _short(val: str | None, n: int = 8) -> str:
 def format_table(runs: list[dict]) -> str:
     if not runs:
         return "(no workflow runs found)"
-    header = f"{'RUN ID':<10} {'WORKFLOW':<30} {'STATUS':<12} {'STARTED':<20} {'STEP':<5}"
+    header = (
+        f"{'RUN ID':<10} {'WORKFLOW':<30} {'STATUS':<12} {'STARTED':<20} {'STEP':<5}"
+    )
     lines = [header, "-" * len(header)]
     for r in runs:
         lines.append(
@@ -328,7 +344,9 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     group = p.add_mutually_exclusive_group()
     group.add_argument("--running", action="store_true", help="Only active runs")
-    group.add_argument("--recent", type=int, metavar="N", help="Latest N runs (default 20)")
+    group.add_argument(
+        "--recent", type=int, metavar="N", help="Latest N runs (default 20)"
+    )
     group.add_argument("--run-id", help="Detail for one run")
     p.add_argument(
         "--url",
@@ -353,7 +371,10 @@ def main() -> int:
         # so users naturally paste those into --run-id. Skip if the argument
         # is already 32 hex chars (no point in an extra DB round-trip).
         resolved_id = args.run_id
-        if not (len(args.run_id) == 32 and all(c in "0123456789abcdef" for c in args.run_id.lower())):
+        if not (
+            len(args.run_id) == 32
+            and all(c in "0123456789abcdef" for c in args.run_id.lower())
+        ):
             full_id, err = resolve_run_id_prefix(args.run_id)
             if full_id is not None:
                 resolved_id = full_id
@@ -410,7 +431,9 @@ def main() -> int:
     if args.json:
         print(json.dumps({"source": source, "runs": runs}, indent=2, default=str))
     else:
-        print(f"Source: {source}  ({'archon serve' if source == 'rest' else str(ARCHON_DB_PATH)})")
+        print(
+            f"Source: {source}  ({'archon serve' if source == 'rest' else str(ARCHON_DB_PATH)})"
+        )
         print(format_table(runs))
     return 0
 

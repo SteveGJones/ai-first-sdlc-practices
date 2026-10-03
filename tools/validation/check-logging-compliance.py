@@ -246,12 +246,22 @@ class LoggingComplianceChecker:
         except ValueError:
             relative_path = str(file_path)
         framework_patterns = [
-            "tools/", "templates/", "examples/", "setup.py",
-            "setup-smart.py", "migrate-", "fix-", ".github/",
-            "docs/", "retrospectives/", "agent_prompts/",
+            "tools/",
+            "templates/",
+            "examples/",
+            "setup.py",
+            "setup-smart.py",
+            "migrate-",
+            "fix-",
+            ".github/",
+            "docs/",
+            "retrospectives/",
+            "agent_prompts/",
         ]
-        if any(relative_path.startswith(p) or f"/{p}" in relative_path
-               for p in framework_patterns):
+        if any(
+            relative_path.startswith(p) or f"/{p}" in relative_path
+            for p in framework_patterns
+        ):
             return "framework"
         return "application"
 
@@ -680,8 +690,10 @@ class LoggingComplianceChecker:
         if self.context == "auto":
             if application_files == 0 or framework_files > application_files:
                 self.context = "framework"
-                print(f"Auto-detected: Framework repo ({framework_files} framework, "
-                      f"{application_files} application files)")
+                print(
+                    f"Auto-detected: Framework repo ({framework_files} framework, "
+                    f"{application_files} application files)"
+                )
                 print("Framework tools exempt from application logging requirements.\n")
                 # Clear violations from framework files
                 self.violations.clear()

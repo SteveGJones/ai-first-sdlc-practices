@@ -8,7 +8,12 @@ from pathlib import Path
 import pytest
 
 # Load the script as a module
-_SCRIPT = Path(__file__).resolve().parents[1] / "tools" / "validation" / "check-req-quality.py"
+_SCRIPT = (
+    Path(__file__).resolve().parents[1]
+    / "tools"
+    / "validation"
+    / "check-req-quality.py"
+)
 spec = importlib.util.spec_from_file_location("check_req_quality", _SCRIPT)
 check_req_quality = importlib.util.module_from_spec(spec)
 sys.modules["check_req_quality"] = check_req_quality
@@ -146,14 +151,11 @@ def test_main_returns_zero_with_no_flags_in_either_mode(tmp_path: Path) -> None:
     )
     assert check_req_quality.main(["check-req-quality.py", str(tmp_path)]) == 0
     assert (
-        check_req_quality.main(["check-req-quality.py", str(tmp_path), "--strict"])
-        == 0
+        check_req_quality.main(["check-req-quality.py", str(tmp_path), "--strict"]) == 0
     )
 
 
 def test_main_returns_two_when_root_does_not_exist(tmp_path: Path) -> None:
     """Missing root: exit 2 (configuration error, neither mode)."""
-    rc = check_req_quality.main(
-        ["check-req-quality.py", str(tmp_path / "no-such-dir")]
-    )
+    rc = check_req_quality.main(["check-req-quality.py", str(tmp_path / "no-such-dir")])
     assert rc == 2

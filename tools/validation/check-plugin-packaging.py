@@ -101,9 +101,7 @@ def check_plugin(plugin_name: str, plugin_config: dict, verbose: bool) -> list[s
 
             src_abs = REPO_ROOT / source
             if not src_abs.exists():
-                errors.append(
-                    f"[{plugin_name}] source file missing: {source}"
-                )
+                errors.append(f"[{plugin_name}] source file missing: {source}")
                 continue
 
             expected_dest = source_to_plugin_dest(source, dest_override, plugin_name)
@@ -176,14 +174,18 @@ def main() -> int:
 
     if all_errors:
         print()
-        print(f"Plugin packaging check FAILED — {len(all_errors)} error(s) across "
-              f"{plugin_count} plugin(s):")
+        print(
+            f"Plugin packaging check FAILED — {len(all_errors)} error(s) across "
+            f"{plugin_count} plugin(s):"
+        )
         print()
         for error in all_errors:
             print(f"  - {error}")
         print()
-        print("To fix: run /sdlc-core:release-plugin to sync source files into "
-              "their plugin directories, then re-run this check.")
+        print(
+            "To fix: run /sdlc-core:release-plugin to sync source files into "
+            "their plugin directories, then re-run this check."
+        )
         return 1
 
     print(f"Plugin packaging check PASSED — {plugin_count} plugin(s) verified.")

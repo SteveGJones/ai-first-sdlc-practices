@@ -81,6 +81,10 @@ def read_overrides(log_path: Path) -> list[dict]:
             continue
     logger.info(
         "Override log read complete",
-        extra={"log_path": str(log_path), "entries": len(entries), "malformed": malformed},
+        extra={
+            "log_path": str(log_path),
+            "entries": len(entries),
+            "malformed": malformed,
+        },
     )
     return entries

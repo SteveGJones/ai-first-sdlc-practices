@@ -107,7 +107,5 @@ class TestOverrideSignals:
         assert signals == []
 
     def test_missing_log_file(self, tmp_path: Path) -> None:
-        signals = coaching_signals.analyse_overrides(
-            tmp_path / "nonexistent.jsonl"
-        )
+        signals = coaching_signals.analyse_overrides(tmp_path / "nonexistent.jsonl")
         assert signals == []

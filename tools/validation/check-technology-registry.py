@@ -77,7 +77,14 @@ TRUSTED_SOURCE_TYPES = {
 
 TOP_LEVEL_REQUIRED = {"display_name", "category", "description", "trusted_sources"}
 
-SECTION_A_REQUIRED = {"name", "type", "package", "source", "description", "verified_date"}
+SECTION_A_REQUIRED = {
+    "name",
+    "type",
+    "package",
+    "source",
+    "description",
+    "verified_date",
+}
 
 SECTION_B_REQUIRED = {
     "name",
@@ -315,7 +322,9 @@ def validate_index(
 
     # Every .yaml file (except _index.yaml) is in the manifest
     manifest_files = {
-        tech_info.get("file") for tech_info in manifest.values() if tech_info.get("file")
+        tech_info.get("file")
+        for tech_info in manifest.values()
+        if tech_info.get("file")
     }
     for filepath in sorted(REGISTRY_DIR.glob("*.yaml")):
         if filepath.name == "_index.yaml":
@@ -464,8 +473,10 @@ def main() -> int:
         return 0
 
     if all_errors:
-        print(f"\nTechnology registry validation FAILED — "
-              f"{len(all_errors)} error(s):\n")
+        print(
+            f"\nTechnology registry validation FAILED — "
+            f"{len(all_errors)} error(s):\n"
+        )
         for error in all_errors:
             print(f"  - {error}")
         print()

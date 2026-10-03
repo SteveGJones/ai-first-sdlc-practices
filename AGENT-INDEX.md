@@ -1243,4 +1243,3 @@
 - **Keywords**: ai, api, architecture, aws, azure, cd, ci, cloud, container, database
 - **Key Capabilities**:
   - name: Grafana k6
-

@@ -390,7 +390,7 @@ P4-0 (preprocessor) ── P4-1 ────┤                                 
                        (loops)   │                              P4-8 (E2E parallel)
                                  │
 P4-4 (workspace mgmt) ──────────┘
-                                 
+
 P4-6 (health check) ── standalone, can run anytime after P4-2
 ```
 

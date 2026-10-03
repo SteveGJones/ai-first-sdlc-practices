@@ -20,7 +20,9 @@ class ValidatorResult:
     warnings: List[str] = field(default_factory=list)
 
 
-def id_uniqueness(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001
+def id_uniqueness(
+    records: List[IdRecord],
+) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001
     # implements: DES-assured-traceability-validators-001
     counts = Counter(r.id for r in records)
     duplicates = [id_ for id_, n in counts.items() if n > 1]
@@ -34,7 +36,9 @@ def id_uniqueness(records: List[IdRecord]) -> ValidatorResult:  # implements: DE
     return ValidatorResult(passed=False, errors=errors)
 
 
-def cited_ids_resolve(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001
+def cited_ids_resolve(
+    records: List[IdRecord],
+) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001
     declared = {r.id for r in records}
     errors: List[str] = []
     for r in records:
@@ -46,7 +50,11 @@ def cited_ids_resolve(records: List[IdRecord]) -> ValidatorResult:  # implements
     return ValidatorResult(passed=not errors, errors=errors)
 
 
-def orphan_ids(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-001, DES-assured-traceability-validators-005  # noqa: E501
+def orphan_ids(
+    records: List[IdRecord],
+) -> (
+    ValidatorResult
+):  # implements: DES-assured-traceability-validators-001, DES-assured-traceability-validators-005  # noqa: E501
     # implements: DES-assured-traceability-validators-005
     """Warn when any declared ID is never cited by another record.
 
@@ -65,7 +73,9 @@ def orphan_ids(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-a
     return ValidatorResult(passed=True, warnings=warnings)
 
 
-def forward_link_integrity(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-002
+def forward_link_integrity(
+    records: List[IdRecord],
+) -> ValidatorResult:  # implements: DES-assured-traceability-validators-002
     # implements: DES-assured-traceability-validators-002
     """Verify every DES cites at least one REQ; every TEST cites at least one DES; targets resolve."""
     declared = {r.id: r for r in records}
@@ -85,7 +95,9 @@ def forward_link_integrity(records: List[IdRecord]) -> ValidatorResult:  # imple
     return ValidatorResult(passed=not errors, errors=errors)
 
 
-def backward_coverage(records: List[IdRecord]) -> ValidatorResult:  # implements: DES-assured-traceability-validators-002
+def backward_coverage(
+    records: List[IdRecord],
+) -> ValidatorResult:  # implements: DES-assured-traceability-validators-002
     """Verify every REQ is covered by a DES; every DES is covered by a TEST."""
     cited_by: dict[str, List[str]] = {r.id: [] for r in records}
     for r in records:

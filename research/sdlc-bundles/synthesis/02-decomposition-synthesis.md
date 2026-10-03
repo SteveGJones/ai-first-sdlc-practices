@@ -13,7 +13,7 @@
 
 **Source quality**: HIGH confidence overall. The research surveyed eight decomposition patterns across diverse domains (build systems, runtime frameworks, domain modeling, distributed systems, formal methodologies, avionics, automotive). Pattern sources are authoritative (e.g., Evans' DDD book, Armstrong's Erlang thesis, official standards from OMG/ARINC/AUTOSAR) and/or peer-reviewed. Failure-mode and counter-argument citations span both academic (Brooks' "No Silver Bullet," Conway's Law) and practitioner evidence (Newman's microservices books, Segment's monolith reversal case study, MBSE/SysML adoption studies). No vendor-only sourcing for criticism; negative claims are grounded in published academic or standard-setting sources.
 
-**Caveats**: 
+**Caveats**:
 - The research is strongest on the conceptual mapping between patterns and the framework's markdown-first constraints. It is less detailed on the specifics of validator implementation (e.g., the exact form of visibility-rule checkers or the mechanics of dependency-graph visualization). Implementation design deferred to coding stage.
 - One boundary case: the research cites practitioner case studies (Segment, Netflix, Amazon microservices reversals) via blogs and conference talks rather than refereed journals. The lesson (premature decomposition is costlier than premature consolidation) is cited well and appears in multiple independent sources ([20]), so the claim is solid despite the source type.
 
@@ -394,4 +394,3 @@ The synthesis is **HIGH confidence overall**. The research output is densely cit
 ---
 
 **End of Synthesis**
-

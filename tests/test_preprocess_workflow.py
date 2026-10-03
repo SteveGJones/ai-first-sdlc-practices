@@ -145,9 +145,7 @@ class TestLoopNodeTransform:
                     {
                         "id": "review",
                         "image": "sdlc-worker:review-team",
-                        "prompt": (
-                            "Review. If acceptable, output: READY_TO_SHIP"
-                        ),
+                        "prompt": ("Review. If acceptable, output: READY_TO_SHIP"),
                     },
                 ],
                 "until": "READY_TO_SHIP",
@@ -225,9 +223,7 @@ class TestLoopNodeTransform:
         except ValueError as exc:
             assert "missing required field: image" in str(exc)
         else:
-            raise AssertionError(
-                "Expected ValueError for stage missing image"
-            )
+            raise AssertionError("Expected ValueError for stage missing image")
 
     def test_multistage_loop_rejects_empty_stages_list(self) -> None:
         node = {
@@ -479,10 +475,9 @@ class TestShellEscapeHygiene:
         # A per-invocation sentinel has a hex suffix — the bare literal
         # alone is not used as a heredoc terminator.
         import re
+
         sentinels = re.findall(r"SDLC_PROMPT_EOF_[0-9a-f]{16}", bash)
-        assert len(sentinels) == 2, (
-            "Heredoc must open and close with a nonce sentinel"
-        )
+        assert len(sentinels) == 2, "Heredoc must open and close with a nonce sentinel"
         assert sentinels[0] == sentinels[1]
 
     def test_heredoc_sentinels_differ_across_invocations(self) -> None:
@@ -495,6 +490,7 @@ class TestShellEscapeHygiene:
         a = self._transform(node)["bash"]
         b = self._transform(node)["bash"]
         import re
+
         sa = re.findall(r"SDLC_PROMPT_EOF_[0-9a-f]{16}", a)[0]
         sb = re.findall(r"SDLC_PROMPT_EOF_[0-9a-f]{16}", b)[0]
         assert sa != sb
@@ -554,7 +550,7 @@ class TestModelPassthrough:
             "model": "claude-opus-4-6[1m]",
         }
         result = self._transform(node)
-        assert 'CLAUDE_MODEL=claude-opus-4-6[1m]' in result["bash"]
+        assert "CLAUDE_MODEL=claude-opus-4-6[1m]" in result["bash"]
 
     def test_model_field_preserved_in_prompt_node(self) -> None:
         node = {
@@ -671,7 +667,9 @@ class TestParallelWorkspaceContract:
             cred_mount="/tmp/c.json:/home/sdlc/.claude-creds/.credentials.json:ro",
             commands_dir=".archon/commands",
         )
-        branch_nodes = [n for n in transformed["nodes"] if n["id"].startswith("review-")]
+        branch_nodes = [
+            n for n in transformed["nodes"] if n["id"].startswith("review-")
+        ]
         assert len(branch_nodes) == 2
         for n in branch_nodes:
             # shlex.quote leaves the safe ':' path unwrapped, so the
@@ -752,15 +750,20 @@ class TestParallelGitWriteGuardrail:
             "nodes": [
                 {"id": "seed", "image": "sdlc-worker:dev", "prompt": "hi"},
                 {
-                    "id": "fork-a", "image": "sdlc-worker:dev",
-                    "depends_on": ["seed"], "prompt": a_prompt,
+                    "id": "fork-a",
+                    "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"],
+                    "prompt": a_prompt,
                 },
                 {
-                    "id": "fork-b", "image": "sdlc-worker:dev",
-                    "depends_on": ["seed"], "prompt": b_prompt,
+                    "id": "fork-b",
+                    "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"],
+                    "prompt": b_prompt,
                 },
                 {
-                    "id": "join", "image": "sdlc-worker:dev",
+                    "id": "join",
+                    "image": "sdlc-worker:dev",
                     "depends_on": ["fork-a", "fork-b"],
                     "prompt": "cd /workspace && git add -A && git commit -m merge",
                 },
@@ -769,13 +772,16 @@ class TestParallelGitWriteGuardrail:
 
     def test_rejects_parallel_git_commit(self) -> None:
         import pytest
+
         wf = self._parallel_workflow_with_prompts(
             "cd /workspace && git add -A && git commit -m a",
             "write /workspace/reports/fork-b/out.md",
         )
         with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
             preprocess_workflow.transform_workflow(
-                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                wf,
+                workspace="/host/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
         ids = {nid for nid, _ in exc_info.value.offenders}
@@ -783,13 +789,16 @@ class TestParallelGitWriteGuardrail:
 
     def test_rejects_multiple_offenders(self) -> None:
         import pytest
+
         wf = self._parallel_workflow_with_prompts(
             "cd /workspace && git commit -m a",
             "cd /workspace && git add -A && git commit -m b",
         )
         with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
             preprocess_workflow.transform_workflow(
-                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                wf,
+                workspace="/host/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
         ids = {nid for nid, _ in exc_info.value.offenders}
@@ -803,7 +812,9 @@ class TestParallelGitWriteGuardrail:
         )
         # join has `git add -A && git commit -m merge` but is not parallel
         preprocess_workflow.transform_workflow(
-            wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+            wf,
+            workspace="/host/ws",
+            cred_mount=CRED_MOUNT,
             commands_dir=".archon/commands",
         )
 
@@ -811,26 +822,38 @@ class TestParallelGitWriteGuardrail:
         """No fan-out ⇒ guardrail silent even if every node commits."""
         wf = {
             "nodes": [
-                {"id": "a", "image": "sdlc-worker:dev",
-                 "prompt": "cd /workspace && git commit -m a"},
-                {"id": "b", "image": "sdlc-worker:dev", "depends_on": ["a"],
-                 "prompt": "cd /workspace && git commit -m b"},
+                {
+                    "id": "a",
+                    "image": "sdlc-worker:dev",
+                    "prompt": "cd /workspace && git commit -m a",
+                },
+                {
+                    "id": "b",
+                    "image": "sdlc-worker:dev",
+                    "depends_on": ["a"],
+                    "prompt": "cd /workspace && git commit -m b",
+                },
             ],
         }
         preprocess_workflow.transform_workflow(
-            wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+            wf,
+            workspace="/host/ws",
+            cred_mount=CRED_MOUNT,
             commands_dir=".archon/commands",
         )
 
     def test_error_message_cites_pattern_doc(self) -> None:
         import pytest
+
         wf = self._parallel_workflow_with_prompts(
             "git add -A && git commit -m a",
             "hi",
         )
         with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
             preprocess_workflow.transform_workflow(
-                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                wf,
+                workspace="/host/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
         msg = str(exc_info.value)
@@ -839,6 +862,7 @@ class TestParallelGitWriteGuardrail:
 
     def test_scans_command_files_when_root_provided(self, tmp_path) -> None:
         import pytest
+
         cmds = tmp_path / ".archon/commands"
         cmds.mkdir(parents=True)
         (cmds / "racey.md").write_text(
@@ -850,18 +874,33 @@ class TestParallelGitWriteGuardrail:
         wf = {
             "nodes": [
                 {"id": "seed", "image": "sdlc-worker:dev", "prompt": "hi"},
-                {"id": "a", "image": "sdlc-worker:dev",
-                 "depends_on": ["seed"], "command": "racey"},
-                {"id": "b", "image": "sdlc-worker:dev",
-                 "depends_on": ["seed"], "command": "safe"},
-                {"id": "join", "image": "sdlc-worker:dev",
-                 "depends_on": ["a", "b"], "prompt": "merge"},
+                {
+                    "id": "a",
+                    "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"],
+                    "command": "racey",
+                },
+                {
+                    "id": "b",
+                    "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"],
+                    "command": "safe",
+                },
+                {
+                    "id": "join",
+                    "image": "sdlc-worker:dev",
+                    "depends_on": ["a", "b"],
+                    "prompt": "merge",
+                },
             ],
         }
         with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
             preprocess_workflow.transform_workflow(
-                wf, workspace=str(tmp_path), cred_mount=CRED_MOUNT,
-                commands_dir=".archon/commands", commands_root=cmds,
+                wf,
+                workspace=str(tmp_path),
+                cred_mount=CRED_MOUNT,
+                commands_dir=".archon/commands",
+                commands_root=cmds,
             )
         ids = {nid for nid, _ in exc_info.value.offenders}
         assert ids == {"a"}
@@ -879,50 +918,73 @@ class TestParallelGitWriteGuardrail:
         wf = {
             "nodes": [
                 {"id": "seed", "image": "sdlc-worker:dev", "prompt": "hi"},
-                {"id": "a", "image": "sdlc-worker:dev",
-                 "depends_on": ["seed"], "command": "does-not-exist"},
-                {"id": "b", "image": "sdlc-worker:dev",
-                 "depends_on": ["seed"], "command": "also-absent"},
+                {
+                    "id": "a",
+                    "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"],
+                    "command": "does-not-exist",
+                },
+                {
+                    "id": "b",
+                    "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"],
+                    "command": "also-absent",
+                },
             ],
         }
         # Should not raise
         preprocess_workflow.transform_workflow(
-            wf, workspace=str(tmp_path), cred_mount=CRED_MOUNT,
-            commands_dir=".archon/commands", commands_root=cmds,
+            wf,
+            workspace=str(tmp_path),
+            cred_mount=CRED_MOUNT,
+            commands_dir=".archon/commands",
+            commands_root=cmds,
         )
 
     def test_detects_git_push(self) -> None:
         import pytest
+
         wf = self._parallel_workflow_with_prompts(
             "git push origin HEAD",
             "hi",
         )
         with pytest.raises(preprocess_workflow.ParallelGitWriteError):
             preprocess_workflow.transform_workflow(
-                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                wf,
+                workspace="/host/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
 
     def test_loop_prompt_is_scanned(self) -> None:
         import pytest
+
         wf = {
             "nodes": [
                 {"id": "seed", "image": "sdlc-worker:dev", "prompt": "hi"},
                 {
-                    "id": "fork-a", "image": "sdlc-worker:dev",
+                    "id": "fork-a",
+                    "image": "sdlc-worker:dev",
                     "depends_on": ["seed"],
-                    "loop": {"prompt": "cd /workspace && git commit -m x",
-                             "until": "DONE", "max_iterations": 3},
+                    "loop": {
+                        "prompt": "cd /workspace && git commit -m x",
+                        "until": "DONE",
+                        "max_iterations": 3,
+                    },
                 },
                 {
-                    "id": "fork-b", "image": "sdlc-worker:dev",
-                    "depends_on": ["seed"], "prompt": "hi",
+                    "id": "fork-b",
+                    "image": "sdlc-worker:dev",
+                    "depends_on": ["seed"],
+                    "prompt": "hi",
                 },
             ],
         }
         with pytest.raises(preprocess_workflow.ParallelGitWriteError) as exc_info:
             preprocess_workflow.transform_workflow(
-                wf, workspace="/host/ws", cred_mount=CRED_MOUNT,
+                wf,
+                workspace="/host/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
         ids = {nid for nid, _ in exc_info.value.offenders}
@@ -936,7 +998,9 @@ class TestBudgetCap:
 
     def _transform(self, node: dict) -> dict:
         return preprocess_workflow.transform_node(
-            node, workspace="/ws", cred_mount=self._CRED_MOUNT,
+            node,
+            workspace="/ws",
+            cred_mount=self._CRED_MOUNT,
             commands_dir=".archon/commands",
         )
 
@@ -967,7 +1031,9 @@ class TestImageTagAllowlist:
     def test_sdlc_worker_base_accepted(self) -> None:
         node = {"id": "n", "image": "sdlc-worker:base", "prompt": "hi"}
         result = preprocess_workflow.transform_node(
-            node, workspace="/ws", cred_mount=CRED_MOUNT,
+            node,
+            workspace="/ws",
+            cred_mount=CRED_MOUNT,
             commands_dir=".archon/commands",
         )
         assert "bash" in result
@@ -975,7 +1041,9 @@ class TestImageTagAllowlist:
     def test_sdlc_worker_team_name_accepted(self) -> None:
         node = {"id": "n", "image": "sdlc-worker:security-review-team", "prompt": "hi"}
         result = preprocess_workflow.transform_node(
-            node, workspace="/ws", cred_mount=CRED_MOUNT,
+            node,
+            workspace="/ws",
+            cred_mount=CRED_MOUNT,
             commands_dir=".archon/commands",
         )
         assert "sdlc-worker:security-review-team" in result["bash"]
@@ -983,17 +1051,22 @@ class TestImageTagAllowlist:
     def test_sdlc_worker_full_accepted(self) -> None:
         node = {"id": "n", "image": "sdlc-worker:full", "prompt": "hi"}
         result = preprocess_workflow.transform_node(
-            node, workspace="/ws", cred_mount=CRED_MOUNT,
+            node,
+            workspace="/ws",
+            cred_mount=CRED_MOUNT,
             commands_dir=".archon/commands",
         )
         assert "bash" in result
 
     def test_arbitrary_registry_rejected(self) -> None:
         import pytest
+
         node = {"id": "n", "image": "evil.example.com/pwn:latest", "prompt": "hi"}
         with pytest.raises(preprocess_workflow.UnsafeImageError) as exc_info:
             preprocess_workflow.transform_node(
-                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                node,
+                workspace="/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
         assert "evil.example.com/pwn:latest" in str(exc_info.value)
@@ -1001,15 +1074,19 @@ class TestImageTagAllowlist:
 
     def test_bare_image_name_rejected(self) -> None:
         import pytest
+
         node = {"id": "n", "image": "ubuntu:latest", "prompt": "hi"}
         with pytest.raises(preprocess_workflow.UnsafeImageError):
             preprocess_workflow.transform_node(
-                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                node,
+                workspace="/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
 
     def test_multistage_loop_validates_stage_images(self) -> None:
         import pytest
+
         node = {
             "id": "loop",
             "loop": {
@@ -1023,13 +1100,16 @@ class TestImageTagAllowlist:
         }
         with pytest.raises(preprocess_workflow.UnsafeImageError) as exc_info:
             preprocess_workflow.transform_node(
-                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                node,
+                workspace="/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
         assert "malicious:thing" in str(exc_info.value)
 
     def test_workflow_level_rejects_bad_image(self) -> None:
         import pytest
+
         wf = {
             "name": "test",
             "nodes": [
@@ -1039,16 +1119,21 @@ class TestImageTagAllowlist:
         }
         with pytest.raises(preprocess_workflow.UnsafeImageError):
             preprocess_workflow.transform_workflow(
-                wf, workspace="/ws", cred_mount=CRED_MOUNT,
+                wf,
+                workspace="/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
 
     def test_error_message_suggests_prefix(self) -> None:
         import pytest
+
         node = {"id": "n", "image": "nginx:latest", "prompt": "hi"}
         with pytest.raises(preprocess_workflow.UnsafeImageError) as exc_info:
             preprocess_workflow.transform_node(
-                node, workspace="/ws", cred_mount=CRED_MOUNT,
+                node,
+                workspace="/ws",
+                cred_mount=CRED_MOUNT,
                 commands_dir=".archon/commands",
             )
         assert "sdlc-worker:" in str(exc_info.value)

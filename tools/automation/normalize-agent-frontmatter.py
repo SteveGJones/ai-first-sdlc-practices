@@ -121,7 +121,7 @@ def split_frontmatter(text: str) -> tuple[str | None, str]:
         return None, text
 
     frontmatter_raw = rest[: m.start()]
-    body = rest[m.end():]
+    body = rest[m.end() :]
     # body starts just after the closing ---, keep leading newline if present
     return frontmatter_raw, body
 
@@ -234,9 +234,7 @@ def build_frontmatter(fields: dict[str, str]) -> str:
     return "\n".join(lines)
 
 
-def normalize_file(
-    file_path: Path, dry_run: bool = False
-) -> tuple[bool, list[str]]:
+def normalize_file(file_path: Path, dry_run: bool = False) -> tuple[bool, list[str]]:
     """Normalize a single agent file.
 
     Returns (changed: bool, changes: list[str]).
@@ -277,7 +275,9 @@ def normalize_file(
         # Normalize existing tools value
         normalized_tools = normalize_tools(fields["tools"])
         if normalized_tools != fields["tools"]:
-            changes.append(f"normalize tools: {fields['tools']!r} -> {normalized_tools!r}")
+            changes.append(
+                f"normalize tools: {fields['tools']!r} -> {normalized_tools!r}"
+            )
         fields["tools"] = normalized_tools
 
     # Build the normalized fields dict (only kept fields)
@@ -359,7 +359,11 @@ def main() -> int:
     total_missing = 0
 
     for file_path in targets:
-        rel = file_path.relative_to(repo_root) if file_path.is_relative_to(repo_root) else file_path
+        rel = (
+            file_path.relative_to(repo_root)
+            if file_path.is_relative_to(repo_root)
+            else file_path
+        )
         if not file_path.exists():
             print(f"  MISSING  {rel}")
             total_missing += 1

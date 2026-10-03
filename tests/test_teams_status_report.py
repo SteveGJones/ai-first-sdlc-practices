@@ -110,9 +110,7 @@ class TestStalenessCheck:
         }
         assert teams_status_report.staleness(manifest) == "stale"
 
-    def test_current_when_generated_claude_md_missing(
-        self, tmp_path: Path
-    ) -> None:
+    def test_current_when_generated_claude_md_missing(self, tmp_path: Path) -> None:
         """No generated CLAUDE.md = fall back to manifest/updated comparison."""
         manifest_path = tmp_path / "team-a.yaml"
         manifest_path.write_text("name: team-a\n")

@@ -13,7 +13,8 @@ from sdlc_workflows_scripts import validate_team_manifest
 # Helpers
 # ---------------------------------------------------------------------------
 
-VALID_MANIFEST = textwrap.dedent("""\
+VALID_MANIFEST = textwrap.dedent(
+    """\
     schema_version: "1.0"
     name: full-stack-team
     description: A full-stack development team.
@@ -28,7 +29,8 @@ VALID_MANIFEST = textwrap.dedent("""\
       - sdlc-core@ai-first-sdlc:validate
     context:
       - CLAUDE.md
-""")
+"""
+)
 
 
 def make_installed_plugins(
@@ -116,13 +118,15 @@ class TestValidManifest:
         project_root = tmp_path / "project"
         project_root.mkdir()
 
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: minimal-team
             status: active
             plugins:
               - sdlc-core@ai-first-sdlc
-        """)
+        """
+        )
         manifest_path = write_manifest(project_root, content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -183,7 +187,9 @@ class TestRequiredFields:
 
     def test_wrong_schema_version(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = VALID_MANIFEST.replace('schema_version: "1.0"', 'schema_version: "2.0"')
+        content = VALID_MANIFEST.replace(
+            'schema_version: "1.0"', 'schema_version: "2.0"'
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -208,8 +214,12 @@ class TestNameValidation:
             errors = validate_team_manifest.validate(
                 manifest_path, installed_json, project_root
             )
-            name_errors = [e for e in errors if "name" in e.lower() and "docker" in e.lower()]
-            assert name_errors == [], f"Name {name!r} should be valid but got: {name_errors}"
+            name_errors = [
+                e for e in errors if "name" in e.lower() and "docker" in e.lower()
+            ]
+            assert (
+                name_errors == []
+            ), f"Name {name!r} should be valid but got: {name_errors}"
 
     def test_uppercase_rejected(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
@@ -290,14 +300,16 @@ class TestPluginResolution:
         project_root.mkdir()
         (project_root / "CLAUDE.md").write_text("# Gateway")
 
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
             plugins:
               - sdlc-core@ai-first-sdlc
               - nonexistent@marketplace
-        """)
+        """
+        )
         manifest_path = write_manifest(project_root, content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -315,7 +327,8 @@ class TestOrphanDetection:
 
     def test_agent_referencing_unlisted_plugin(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -323,16 +336,21 @@ class TestOrphanDetection:
               - sdlc-core@ai-first-sdlc
             agents:
               - sdlc-team-common@ai-first-sdlc:researcher
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
         )
-        assert any("sdlc-team-common@ai-first-sdlc" in e and "orphan" in e.lower() for e in errors)
+        assert any(
+            "sdlc-team-common@ai-first-sdlc" in e and "orphan" in e.lower()
+            for e in errors
+        )
 
     def test_skill_referencing_unlisted_plugin(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -340,19 +358,24 @@ class TestOrphanDetection:
               - sdlc-core@ai-first-sdlc
             skills:
               - sdlc-team-common@ai-first-sdlc:deploy
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
         )
-        assert any("sdlc-team-common@ai-first-sdlc" in e and "orphan" in e.lower() for e in errors)
+        assert any(
+            "sdlc-team-common@ai-first-sdlc" in e and "orphan" in e.lower()
+            for e in errors
+        )
 
     def test_local_agent_not_flagged_as_orphan(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
         local_agent = project_root / "agents" / "custom.md"
         local_agent.parent.mkdir(parents=True)
         local_agent.write_text("# Custom agent")
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -360,7 +383,8 @@ class TestOrphanDetection:
               - sdlc-core@ai-first-sdlc
             agents:
               - local:agents/custom.md
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -379,7 +403,8 @@ class TestLocalPaths:
 
     def test_local_agent_file_missing(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -387,7 +412,8 @@ class TestLocalPaths:
               - sdlc-core@ai-first-sdlc
             agents:
               - local:agents/missing.md
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -396,7 +422,8 @@ class TestLocalPaths:
 
     def test_local_skill_file_missing(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -404,7 +431,8 @@ class TestLocalPaths:
               - sdlc-core@ai-first-sdlc
             skills:
               - local:skills/missing.md
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -416,7 +444,8 @@ class TestLocalPaths:
         local_agent = project_root / "agents" / "custom.md"
         local_agent.parent.mkdir(parents=True)
         local_agent.write_text("# Custom agent")
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -424,7 +453,8 @@ class TestLocalPaths:
               - sdlc-core@ai-first-sdlc
             agents:
               - local:agents/custom.md
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -435,7 +465,8 @@ class TestLocalPaths:
     def test_local_agent_path_traversal_rejected(self, tmp_path: Path) -> None:
         """CR-M-1: ``local: ../../etc/passwd`` must be rejected."""
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -443,7 +474,8 @@ class TestLocalPaths:
               - sdlc-core@ai-first-sdlc
             agents:
               - local:../../etc/passwd
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -455,7 +487,8 @@ class TestLocalPaths:
     def test_local_skill_path_traversal_rejected(self, tmp_path: Path) -> None:
         """CR-M-1: path traversal also rejected for skills."""
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -463,7 +496,8 @@ class TestLocalPaths:
               - sdlc-core@ai-first-sdlc
             skills:
               - local:../secrets/private
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -473,7 +507,8 @@ class TestLocalPaths:
     def test_context_path_traversal_rejected(self, tmp_path: Path) -> None:
         """CR-M-1: context files also validated for traversal."""
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -481,7 +516,8 @@ class TestLocalPaths:
               - sdlc-core@ai-first-sdlc
             context:
               - ../../../../etc/shadow
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -499,7 +535,8 @@ class TestContextFiles:
 
     def test_context_file_missing(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -507,7 +544,8 @@ class TestContextFiles:
               - sdlc-core@ai-first-sdlc
             context:
               - NONEXISTENT.md
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -517,7 +555,8 @@ class TestContextFiles:
     def test_context_file_exists(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
         (project_root / "CLAUDE.md").write_text("# Gateway")
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
@@ -525,12 +564,15 @@ class TestContextFiles:
               - sdlc-core@ai-first-sdlc
             context:
               - CLAUDE.md
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
         )
-        context_errors = [e for e in errors if "context" in e.lower() and "CLAUDE.md" in e]
+        context_errors = [
+            e for e in errors if "context" in e.lower() and "CLAUDE.md" in e
+        ]
         assert context_errors == []
 
 
@@ -544,14 +586,16 @@ class TestReservedFields:
 
     def test_group_string_accepted_without_error(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
             plugins:
               - sdlc-core@ai-first-sdlc
             group: platform-engineering
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -560,14 +604,16 @@ class TestReservedFields:
 
     def test_group_empty_string_rejected(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
             plugins:
               - sdlc-core@ai-first-sdlc
             group: "   "
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -576,14 +622,16 @@ class TestReservedFields:
 
     def test_group_non_string_rejected(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
             plugins:
               - sdlc-core@ai-first-sdlc
             group: 42
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -609,7 +657,9 @@ class TestReturnType:
     def test_error_items_are_strings(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
         # Force errors
-        content = VALID_MANIFEST.replace('schema_version: "1.0"', 'schema_version: "9.9"')
+        content = VALID_MANIFEST.replace(
+            'schema_version: "1.0"', 'schema_version: "9.9"'
+        )
         manifest_path.write_text(content)
         result = validate_team_manifest.validate(
             manifest_path, installed_json, project_root
@@ -646,12 +696,14 @@ class TestEdgeCases:
 
     def test_plugins_not_a_list(self, tmp_path: Path) -> None:
         manifest_path, installed_json, project_root = setup_valid_env(tmp_path)
-        content = textwrap.dedent("""\
+        content = textwrap.dedent(
+            """\
             schema_version: "1.0"
             name: test-team
             status: active
             plugins: not-a-list
-        """)
+        """
+        )
         manifest_path.write_text(content)
         errors = validate_team_manifest.validate(
             manifest_path, installed_json, project_root

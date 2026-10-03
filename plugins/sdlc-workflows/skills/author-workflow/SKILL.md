@@ -286,7 +286,7 @@ the user these questions and design accordingly:
    - **Tier 1: Budget** (`budget: 2.0`) — kills if the model burns >$2 of tokens (spiral detection)
    - **Tier 2: Inner timeout** (computed automatically: timeout_ms/1000 - 60s) — Claude gets SIGTERM, writes partial output
    - **Tier 3: Outer timeout** (`timeout: 600000`) — hard kill if inner timeout failed
-   
+
    The save window (60s between tier 2 and 3) means partial output survives.
    Command prompts instruct agents to write findings incrementally to
    `/workspace/reports/<node-id>/findings.md`.

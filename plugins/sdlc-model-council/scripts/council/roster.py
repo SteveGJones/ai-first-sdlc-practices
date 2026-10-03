@@ -64,8 +64,7 @@ def _dimension_stat(rows, address, dimension, families):
     """Compute the §4.1 stat block for one (model, dimension)."""
     scores = [float(r["score"]) for r in rows]
     n = len(scores)
-    family, prior = priors_mod.prior_for_address(
-        address, dimension, families=families)
+    family, prior = priors_mod.prior_for_address(address, dimension, families=families)
     if n == 0:
         raw_mean = 0.0
         posterior = prior
@@ -79,9 +78,13 @@ def _dimension_stat(rows, address, dimension, families):
         else:
             ci95 = None
     judge_scored = dimension in JUDGE_DIMS or any(
-        r.get("details", {}).get("judge_scored") for r in rows)
-    provisional = (ci95 is None) or (ci95 > CI95_PROVISIONAL_WIDTH) or any(
-        _row_flags_disagreement(r) for r in rows)
+        r.get("details", {}).get("judge_scored") for r in rows
+    )
+    provisional = (
+        (ci95 is None)
+        or (ci95 > CI95_PROVISIONAL_WIDTH)
+        or any(_row_flags_disagreement(r) for r in rows)
+    )
     return {
         "n": n,
         "raw_mean": round(raw_mean, 4),
@@ -98,7 +101,8 @@ def _dimension_stat(rows, address, dimension, families):
 def _review_precision(rows):
     """Mean of details.precision across code-review observation rows, or None."""
     precisions = [
-        float(r["details"]["precision"]) for r in rows
+        float(r["details"]["precision"])
+        for r in rows
         if isinstance(r.get("details"), dict) and "precision" in r["details"]
     ]
     if not precisions:
@@ -108,6 +112,7 @@ def _review_precision(rows):
 
 def _roles(dims, review_precision, free, mean_cost, all_dims):
     """Fixed role rules (contract §4.2). Returns a sorted list of role names."""
+
     def post(dim):
         return dims.get(dim, {}).get("posterior", 0.0) if dim in dims else 0.0
 
@@ -119,8 +124,11 @@ def _roles(dims, review_precision, free, mean_cost, all_dims):
     if implementer:
         roles.append("implementer")
 
-    if post("code-review") >= GRADE_B and review_precision is not None \
-            and review_precision >= 0.5:
+    if (
+        post("code-review") >= GRADE_B
+        and review_precision is not None
+        and review_precision >= 0.5
+    ):
         roles.append("reviewer")
 
     if post("bug-fix") >= GRADE_B and post("instruction-format") >= GRADE_B:
@@ -139,8 +147,14 @@ def _roles(dims, review_precision, free, mean_cost, all_dims):
     return sorted(set(roles))
 
 
-def build_roster(rows, families, pricing=None, now="1970-01-01T00:00:00Z",
-                 extra_models=None, extra_dims=None):
+def build_roster(
+    rows,
+    families,
+    pricing=None,
+    now="1970-01-01T00:00:00Z",
+    extra_models=None,
+    extra_dims=None,
+):
     # extra_models / extra_dims let a skip-audition commission (design §5.2 step
     # 4) render a priors-only roster: models with no observation rows appear
     # with n=0 → posterior=prior, all provisional, across the requested dims.
@@ -161,44 +175,52 @@ def build_roster(rows, families, pricing=None, now="1970-01-01T00:00:00Z",
         free = False
         if pricing is not None:
             free = bool(
-                pricing.get("families", {}).get(pricing_ref, {}).get("free", False))
+                pricing.get("families", {}).get(pricing_ref, {}).get("free", False)
+            )
 
         dims = {}
         for dimension in all_dims:
             dim_rows = [r for r in model_rows if r["dimension"] == dimension]
-            dims[dimension] = _dimension_stat(
-                dim_rows, address, dimension, families)
+            dims[dimension] = _dimension_stat(dim_rows, address, dimension, families)
 
         costs = [float(r.get("cost_usd", 0.0)) for r in model_rows]
-        latencies = [float(r.get("latency_s", 0.0)) for r in model_rows
-                     if r.get("latency_s") is not None]
+        latencies = [
+            float(r.get("latency_s", 0.0))
+            for r in model_rows
+            if r.get("latency_s") is not None
+        ]
         mean_cost = round(sum(costs) / len(costs), 6) if costs else 0.0
         p50_latency = round(statistics.median(latencies), 3) if latencies else 0.0
 
         review_precision = _review_precision(
-            [r for r in model_rows if r["dimension"] == "code-review"])
+            [r for r in model_rows if r["dimension"] == "code-review"]
+        )
         roles = _roles(dims, review_precision, free, mean_cost, set(all_dims))
 
         flags = []
         if family == "unknown":
             flags.append("no-prior")
 
-        models_out.append({
-            "model": address,
-            "family": family,
-            "reachable": True,
-            "pricing_ref": pricing_ref,
-            "free": free,
-            "dimensions": dims,
-            "mean_cost_usd_per_item": mean_cost,
-            "p50_latency_s": p50_latency,
-            "roles": roles if roles else ["benched"],
-            "flags": flags,
-        })
+        models_out.append(
+            {
+                "model": address,
+                "family": family,
+                "reachable": True,
+                "pricing_ref": pricing_ref,
+                "free": free,
+                "dimensions": dims,
+                "mean_cost_usd_per_item": mean_cost,
+                "p50_latency_s": p50_latency,
+                "roles": roles if roles else ["benched"],
+                "flags": flags,
+            }
+        )
 
-    source = "priors+audition" if any(
-        d["n"] > 0 for m in models_out for d in m["dimensions"].values()
-    ) else "priors"
+    source = (
+        "priors+audition"
+        if any(d["n"] > 0 for m in models_out for d in m["dimensions"].values())
+        else "priors"
+    )
     return {
         "schema_version": 1,
         "stack_version": rows[0]["stack_version"] if rows else "v1",
@@ -218,8 +240,9 @@ def render_md(roster):
         "",
     ]
     dims = sorted({d for m in roster["models"] for d in m["dimensions"]})
-    header = "| model | family | " + " | ".join(dims) + \
-        " | cost/item | p50 lat | roles |"
+    header = (
+        "| model | family | " + " | ".join(dims) + " | cost/item | p50 lat | roles |"
+    )
     sep = "|" + "---|" * (len(dims) + 5)
     lines.append(header)
     lines.append(sep)
@@ -230,11 +253,14 @@ def render_md(roster):
             mark = "*" if stat.get("provisional") else ""
             cells.append(
                 f"{stat.get('grade', '-')} {stat.get('posterior', 0):.2f}"
-                f"(n{stat.get('n', 0)}){mark}")
+                f"(n{stat.get('n', 0)}){mark}"
+            )
         lines.append(
-            f"| `{m['model']}` | {m['family']} | " + " | ".join(cells) +
-            f" | {m['mean_cost_usd_per_item']} | {m['p50_latency_s']} |"
-            f" {', '.join(m['roles'])} |")
+            f"| `{m['model']}` | {m['family']} | "
+            + " | ".join(cells)
+            + f" | {m['mean_cost_usd_per_item']} | {m['p50_latency_s']} |"
+            f" {', '.join(m['roles'])} |"
+        )
     lines.append("")
     lines.append("_`*` = provisional (wide CI, n<2, or judge-disagreement)._")
     return "\n".join(lines) + "\n"
@@ -242,18 +268,25 @@ def render_md(roster):
 
 def _main(argv):
     parser = argparse.ArgumentParser(description="Build the council roster")
-    parser.add_argument("--results",
-                        help="results.jsonl; omit for a priors-only (skip "
-                             "audition) roster built from --models + --dims")
+    parser.add_argument(
+        "--results",
+        help="results.jsonl; omit for a priors-only (skip "
+        "audition) roster built from --models + --dims",
+    )
     parser.add_argument("--priors-dir", required=True)
     parser.add_argument("--pricing")
     parser.add_argument("--now", default="1970-01-01T00:00:00Z")
-    parser.add_argument("--models", default="",
-                        help="comma-separated addresses to include even with "
-                             "no observations (priors-only entries)")
-    parser.add_argument("--dims", default="",
-                        help="comma-separated dimensions to render for "
-                             "priors-only models")
+    parser.add_argument(
+        "--models",
+        default="",
+        help="comma-separated addresses to include even with "
+        "no observations (priors-only entries)",
+    )
+    parser.add_argument(
+        "--dims",
+        default="",
+        help="comma-separated dimensions to render for " "priors-only models",
+    )
     parser.add_argument("--out-json")
     parser.add_argument("--out-md")
     args = parser.parse_args(argv)
@@ -269,8 +302,14 @@ def _main(argv):
         with open(args.pricing, encoding="utf-8") as handle:
             pricing = json.load(handle)
 
-    roster = build_roster(rows, families, pricing=pricing, now=args.now,
-                          extra_models=extra_models, extra_dims=extra_dims)
+    roster = build_roster(
+        rows,
+        families,
+        pricing=pricing,
+        now=args.now,
+        extra_models=extra_models,
+        extra_dims=extra_dims,
+    )
     payload = json.dumps(roster, indent=2, sort_keys=True)
     if args.out_json:
         with open(args.out_json, "w", encoding="utf-8") as handle:

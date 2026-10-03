@@ -33,10 +33,7 @@ def _register_scripts_package(plugin_dir_name: str, package_name: str) -> None:
     if package_name in sys.modules:
         return
     scripts_dir = (
-        Path(__file__).resolve().parent.parent
-        / "plugins"
-        / plugin_dir_name
-        / "scripts"
+        Path(__file__).resolve().parent.parent / "plugins" / plugin_dir_name / "scripts"
     )
     init_py = scripts_dir / "__init__.py"
     spec = importlib.util.spec_from_file_location(

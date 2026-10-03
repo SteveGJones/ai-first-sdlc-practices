@@ -40,7 +40,7 @@ def _strip_inline_code_around_identifier(line: str) -> str:
     # only strip leading backticks of the form `<ident>(...)`
     m = re.match(r"^`([a-z_][a-z0-9_]*\s*\([^`]*\))`\s*", line)
     if m:
-        return m.group(1) + line[m.end():]
+        return m.group(1) + line[m.end() :]
     return line
 
 
@@ -77,26 +77,38 @@ def lint_file(path: Path) -> List[Flag]:
         if first_content:
             opening = _strip_inline_code_around_identifier(first_content)
             if _FUNCTION_OPENING_RE.match(opening):
-                flags.append(Flag(
-                    file=path, line=heading_line, req_id=req_id,
-                    rule="function-shaped opening",
-                    snippet=first_content[:80],
-                ))
+                flags.append(
+                    Flag(
+                        file=path,
+                        line=heading_line,
+                        req_id=req_id,
+                        rule="function-shaped opening",
+                        snippet=first_content[:80],
+                    )
+                )
         # check body for 'function' / 'method' outside backticks
         body_joined = "\n".join(body_lines)
         body_no_code = _strip_backticks(body_joined)
         if _FUNCTION_WORD_RE.search(body_no_code):
-            flags.append(Flag(
-                file=path, line=heading_line, req_id=req_id,
-                rule="implementation vocabulary 'function'",
-                snippet=first_content[:80] if first_content else "",
-            ))
+            flags.append(
+                Flag(
+                    file=path,
+                    line=heading_line,
+                    req_id=req_id,
+                    rule="implementation vocabulary 'function'",
+                    snippet=first_content[:80] if first_content else "",
+                )
+            )
         if _METHOD_WORD_RE.search(body_no_code):
-            flags.append(Flag(
-                file=path, line=heading_line, req_id=req_id,
-                rule="implementation vocabulary 'method'",
-                snippet=first_content[:80] if first_content else "",
-            ))
+            flags.append(
+                Flag(
+                    file=path,
+                    line=heading_line,
+                    req_id=req_id,
+                    rule="implementation vocabulary 'method'",
+                    snippet=first_content[:80] if first_content else "",
+                )
+            )
         i = j
     return flags
 

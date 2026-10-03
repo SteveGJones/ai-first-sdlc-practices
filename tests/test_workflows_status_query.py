@@ -14,7 +14,9 @@ from unittest.mock import patch
 
 import pytest
 
-SCRIPT_DIR = Path(__file__).resolve().parent.parent / "plugins" / "sdlc-workflows" / "scripts"
+SCRIPT_DIR = (
+    Path(__file__).resolve().parent.parent / "plugins" / "sdlc-workflows" / "scripts"
+)
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import workflows_status_query as wsq  # noqa: E402
@@ -311,7 +313,9 @@ def test_rest_fetch_5xx_raises():
 
 
 def test_rest_run_detail(monkeypatch):
-    payload = json.dumps({"id": "r1", "workflow_name": "x", "status": "running", "events": []})
+    payload = json.dumps(
+        {"id": "r1", "workflow_name": "x", "status": "running", "events": []}
+    )
     with patch.object(
         wsq.urllib.request,
         "urlopen",
@@ -338,7 +342,11 @@ def test_rest_run_detail_wrapped_in_run_key(monkeypatch):
             },
             "events": [
                 {"event_type": "workflow_started", "created_at": "2026-04-19 23:29:01"},
-                {"event_type": "node_started", "step_name": "implement", "created_at": "2026-04-19 23:29:01"},
+                {
+                    "event_type": "node_started",
+                    "step_name": "implement",
+                    "created_at": "2026-04-19 23:29:01",
+                },
             ],
         }
     )

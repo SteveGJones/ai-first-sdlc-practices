@@ -163,7 +163,9 @@ def scenario_basic_multihand(
         state = _post_ok(base_url, f"/tables/{table_id}/start")
         hand_reports.append(_drive_hand(base_url, table_id, pre_hand_stacks, state))
 
-    final_status, final_state = _request(base_url, "GET", f"/tables/{table_id}/state?seat=0")
+    final_status, final_state = _request(
+        base_url, "GET", f"/tables/{table_id}/state?seat=0"
+    )
     total_after_all = sum(p["stack"] for p in final_state["players"])
     chip_conservation_ok = total_after_all == total_before_all
     payouts_ok = all(r["ok"] for r in hand_reports)

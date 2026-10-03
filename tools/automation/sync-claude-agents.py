@@ -53,7 +53,9 @@ def sync_agents(dry_run: bool = False):
             unchanged += 1
 
     prefix = "[DRY RUN] " if dry_run else ""
-    print(f"\n{prefix}Sync complete: {added} added, {updated} updated, {unchanged} unchanged")
+    print(
+        f"\n{prefix}Sync complete: {added} added, {updated} updated, {unchanged} unchanged"
+    )
     print(f"Total agents in source: {len(source_files)}")
     return 0
 
@@ -61,7 +63,9 @@ def sync_agents(dry_run: bool = False):
 def main():
     parser = argparse.ArgumentParser(description="Sync agents/ to .claude/agents/")
     parser.add_argument(
-        "--dry-run", action="store_true", help="Show what would change without modifying files"
+        "--dry-run",
+        action="store_true",
+        help="Show what would change without modifying files",
     )
     args = parser.parse_args()
     sys.exit(sync_agents(dry_run=args.dry_run))

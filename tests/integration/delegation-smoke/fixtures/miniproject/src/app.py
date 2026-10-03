@@ -15,7 +15,9 @@ def get_db():
 
 def init_db():
     db = get_db()
-    db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)")
+    db.execute(
+        "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)"
+    )
     db.commit()
     db.close()
 
@@ -36,7 +38,9 @@ def create_user():
     data = request.get_json()
     # DELIBERATE ISSUE: No input validation
     db = get_db()
-    db.execute("INSERT INTO users (name, email) VALUES (?, ?)", (data["name"], data["email"]))
+    db.execute(
+        "INSERT INTO users (name, email) VALUES (?, ?)", (data["name"], data["email"])
+    )
     db.commit()
     db.close()
     return jsonify({"status": "created"}), 201
