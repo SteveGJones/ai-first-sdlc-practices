@@ -21,9 +21,9 @@ from pathlib import Path
 
 import yaml
 
+from .library_files import discover_library_files
+
 _FRONTMATTER_RE = re.compile(r"^(---[ \t]*\r?\n)(.*?)(\r?\n---[ \t]*\r?\n)", re.DOTALL)
-_EXCLUDED_NAMES = frozenset({"_shelf-index.md", "_index.md", "log.md"})
-_EXCLUDED_DIRS = frozenset({"raw"})
 
 
 @dataclass
@@ -32,20 +32,6 @@ class FixResult:
     fields_added: int = 0
     files_skipped: int = 0
     errors: list[str] = field(default_factory=list)
-
-
-def _is_library_file(path: Path, library_path: Path) -> bool:
-    if path.name in _EXCLUDED_NAMES:
-        return False
-    try:
-        rel = path.relative_to(library_path)
-    except ValueError:
-        return False
-    if not rel.parts:
-        return False
-    if rel.parts[0] in _EXCLUDED_DIRS:
-        return False
-    return path.suffix == ".md"
 
 
 def _write_atomic(path: Path, content: str) -> None:
@@ -119,10 +105,7 @@ def fix_missing_fields(library_path: Path, dry_run: bool = False) -> FixResult:
     """
     result = FixResult()
 
-    for md_file in sorted(library_path.rglob("*.md")):
-        if not _is_library_file(md_file, library_path):
-            continue
-
+    for md_file in discover_library_files(library_path):
         try:
             text = md_file.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError) as exc:

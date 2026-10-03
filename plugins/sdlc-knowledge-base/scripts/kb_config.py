@@ -19,14 +19,13 @@ from typing import Optional
 
 import yaml
 
+from .library_files import discover_library_files
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
 DEFAULT_LAYERS: list[str] = ["methodology", "evidence", "domain", "development"]
-
-_EXCLUDED_NAMES: frozenset[str] = frozenset({"_shelf-index.md", "_index.md", "log.md"})
-_EXCLUDED_DIRS: frozenset[str] = frozenset({"raw"})
 
 _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 _LIST_ITEM_RE = re.compile(r"^\s*-\s+")
@@ -148,27 +147,14 @@ def _parse_frontmatter(text: str) -> dict[str, object]:
 # ---------------------------------------------------------------------------
 
 
-def _is_excluded(path: Path, library_path: Path) -> bool:
-    """Return True if path should be skipped during compliance checking."""
-    if path.name in _EXCLUDED_NAMES:
-        return True
-    # Check if top-level directory (relative to library_path) is in _EXCLUDED_DIRS
-    try:
-        rel = path.relative_to(library_path)
-    except ValueError:
-        return False
-    if rel.parts[0] in _EXCLUDED_DIRS:
-        return True
-    return False
-
-
 def check_layer_compliance(
     library_path: Path,
     allowed: list[str],
 ) -> list[tuple[str, str]]:
     """Scan library .md files for layer: frontmatter violations.
 
-    Excluded files: _shelf-index.md, log.md, _index.md, any file under raw/.
+    Excluded files: _shelf-index.md, log.md, _index.md, any file under raw/ or a
+    directory listed in .kb-index-ignore.
 
     Returns a list of (relative_path, error_message) tuples, one per violation.
     A violation is either:
@@ -177,10 +163,7 @@ def check_layer_compliance(
     """
     violations: list[tuple[str, str]] = []
 
-    for md_file in sorted(library_path.rglob("*.md")):
-        if _is_excluded(md_file, library_path):
-            continue
-
+    for md_file in discover_library_files(library_path):
         rel = str(md_file.relative_to(library_path))
         text = md_file.read_text(encoding="utf-8")
         fm = _parse_frontmatter(text)
@@ -227,7 +210,9 @@ def main(args: Optional[list[str]] = None) -> int:
     project_dir: Path = parsed.project_dir
 
     if not library_path.is_dir():
-        print(f"ERROR: library_path is not a directory: {library_path}", file=sys.stderr)
+        print(
+            f"ERROR: library_path is not a directory: {library_path}", file=sys.stderr
+        )
         return 1
 
     allowed = allowed_layers(project_dir)
