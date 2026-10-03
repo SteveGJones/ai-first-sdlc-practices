@@ -109,18 +109,24 @@ jobs:
       with:
         python-version: '3.9'
 
+    # The pre-commit hooks pin their own tool versions (flake8 7.0.0, black
+    # 23.12.1), so only pre-commit itself is installed here. An unpinned
+    # flake8 in CI would disagree with the pinned hook. The former standalone
+    # flake8 step and its informational complexity report are dropped: the
+    # pinned hook is the single source of lint truth.
     - name: Install quality tools
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pre-commit
+        pip install pre-commit
 
-    - name: Flake8 Linting
-      run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=15 --max-line-length=127 --statistics
+    - name: Cache pre-commit environments
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ runner.os }}-py3.9-${{ hashFiles('.pre-commit-config.yaml') }}
 
     - name: Pre-commit Hooks
-      run: pre-commit run --all-files || echo "::warning::Pre-commit checks failed"
+      run: pre-commit run --all-files --show-diff-on-failure
 
   # Job 3: Framework Tool Testing (Python matrix)
   test-framework-tools:
@@ -251,7 +257,7 @@ jobs:
         echo "| Check | Status |" >> summary.md
         echo "|-------|--------|" >> summary.md
         echo "| SDLC Compliance | ${{ needs.sdlc-validation.result == 'success' && 'Pass' || 'Fail' }} |" >> summary.md
-        echo "| Code Quality | ${{ needs.code-quality.result == 'success' && 'Pass' || 'Warn' }} |" >> summary.md
+        echo "| Code Quality | ${{ needs.code-quality.result == 'success' && 'Pass' || 'Fail' }} |" >> summary.md
         echo "| Framework Tools | ${{ needs.test-framework-tools.result == 'success' && 'Pass' || 'Warn' }} |" >> summary.md
         echo "| KB Compliance | ${{ needs.kb-compliance.result == 'success' && 'Pass' || 'Fail' }} |" >> summary.md
         echo "| Tests | ${{ needs.tests.result == 'success' && 'Pass' || 'Fail' }} |" >> summary.md
@@ -259,6 +265,12 @@ jobs:
         if [[ "${{ needs.sdlc-validation.result }}" == "failure" ]]; then
           echo "" >> summary.md
           echo "**SDLC validation failed. Review logs above.**" >> summary.md
+          exit 1
+        fi
+
+        if [[ "${{ needs.code-quality.result }}" != "success" ]]; then
+          echo "" >> summary.md
+          echo "**Code quality (pre-commit hooks) did not pass (result: ${{ needs.code-quality.result }}). Review the Code Quality Analysis job.**" >> summary.md
           exit 1
         fi
 
