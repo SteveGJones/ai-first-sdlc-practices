@@ -7,7 +7,12 @@ Extracts metadata, keywords, and capabilities for searchable discovery.
 import json
 import re
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+
+#: Hand-maintained prose that belongs in AGENT-INDEX.md but cannot be derived
+#: from the agent files. Included verbatim after the header; the placeholders
+#: {{published}}, {{plugins}} and {{shipping}} are filled from the catalog.
+NOTES_PATH = Path(__file__).resolve().parent / "agent-index-notes.md"
 
 try:
     import yaml
@@ -226,15 +231,54 @@ def build_catalog():
     print(f"Categories: {catalog['categories']}")
 
     # Also create a human-readable index
-    create_readable_index(catalog)
+    create_readable_index(catalog, count_plugins(plugins_dir))
 
 
-def create_readable_index(catalog: Dict[str, Any]):
+def count_plugins(plugins_dir: Path) -> int:
+    """Number of published plugins (directories holding a plugin manifest)."""
+    if not plugins_dir.is_dir():
+        return 0
+    return sum(
+        1
+        for d in plugins_dir.iterdir()
+        if (d / ".claude-plugin" / "plugin.json").is_file()
+    )
+
+
+def catalog_counts(catalog: Dict[str, Any], plugin_count: int) -> Dict[str, int]:
+    """Counts shown in the index header, derived from the catalog entries."""
+    plugin_categories = {c for c in catalog["categories"] if c.startswith("plugin:")}
+    published = sum(catalog["categories"][c] for c in plugin_categories)
+    return {
+        "total": catalog["total_agents"],
+        "source": catalog["total_agents"] - published,
+        "published": published,
+        "plugins": plugin_count,
+        "shipping": len(plugin_categories),
+    }
+
+
+def render_notes(counts: Dict[str, int], notes_path: Optional[Path] = None) -> str:
+    """The hand-maintained notes, verbatim, with the count placeholders filled."""
+    text = (notes_path or NOTES_PATH).read_text(encoding="utf-8").strip("\n")
+    for key in ("published", "plugins", "shipping"):
+        text = text.replace("{{" + key + "}}", str(counts[key]))
+    return text
+
+
+def create_readable_index(catalog: Dict[str, Any], plugin_count: int = 0):
     """Create a human-readable AGENT-INDEX.md file."""
 
+    counts = catalog_counts(catalog, plugin_count)
     output = ["# Agent Catalog Index\n"]
     output.append(f"*Generated: {catalog['generated']}*\n")
-    output.append(f"*Total Agents: {catalog['total_agents']}*\n\n")
+    output.append(
+        f"*Total catalog entries: {counts['total']} | "
+        f"{counts['source']} in the `agents/` source directory | "
+        f"{counts['published']} published in plugins "
+        f"(across {counts['plugins']} plugins; {counts['shipping']} ship agents)*\n\n"
+    )
+    output.append(render_notes(counts) + "\n\n")
 
     # Group by category
     by_category = {}

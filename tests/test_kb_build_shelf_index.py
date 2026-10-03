@@ -994,3 +994,14 @@ def test_append_to_log_adds_missing_final_newline_before_entry(
     text = log.read_text(encoding="utf-8")
     assert text.startswith("# Log\n\n## [")
     _assert_hook_clean(text)
+
+
+def test_append_to_log_on_empty_log_does_not_start_with_blank_lines(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "log.md"
+    log.write_text("", encoding="utf-8")
+    _bsi._append_to_log(log, _bsi.RebuildStats(), full=False)
+    text = log.read_text(encoding="utf-8")
+    assert text.startswith("## [")
+    _assert_hook_clean(text)

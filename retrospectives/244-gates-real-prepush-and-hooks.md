@@ -153,3 +153,76 @@ An Opus review of the PR found the following; all but the last two were acted on
 - The `# noqa: E501` in `traceability_validators.py` sits after the unparsed
   `# implements:` IDs. If that parsing gap is ever fixed, the `.+$` in the
   regex would swallow the `noqa` comment.
+
+## Second review round
+
+A second review found the following. The pytest suite is now 935 tests.
+
+- **Tripwire blamed the gate for its own log (Important).** The tripwire hashed
+  the CONTENT of every untracked file, so `--pre-push --verbose | tee
+  command-runs/cmd-3.log` (an untracked, non-ignored file inside the repo)
+  grew during the run and the gate reported `TRIPWIRE: files changed during the
+  run`. Untracked files are now compared by PATH SET only (paths that newly
+  appear or disappear); content and status hashing is kept for tracked files
+  and the protected-corpus index entries. Documented limits: untracked content
+  and gitignored files are not covered, and a concurrent writer that adds or
+  removes untracked paths, or edits tracked files, during the run would be
+  blamed on the gate. Tracked files are now hashed in 1 MiB chunks, and the
+  status parser skips the rename/copy source record when `R`/`C` is in either
+  status column.
+- **AGENT-INDEX.md finding (Important), resolved.** The committed
+  `AGENT-INDEX.md` carried hand-written content the generator did not emit (a
+  "manual notes re-added" header, a richer counts line, a `Note` paragraph and
+  an "SDLC method bundles" paragraph). It had already been wiped by one
+  regeneration and re-added by hand on 2026-07-23, and merging this PR would
+  trigger `agent-catalog-update.yml` again (the script is in its `paths:`).
+  Decision: lose nothing. The two paragraphs now live in
+  `tools/automation/agent-index-notes.md` and the generator includes them
+  verbatim; the three counts inside the `Note` paragraph are placeholders filled
+  from the data. The counts line is computed (total entries; entries in the
+  `agents/` source directory; entries published in plugins; plugins with a
+  manifest; plugins that ship agents), giving 160 / 87 / 73 / 20 / 18 on the
+  current tree, equal to the committed numbers. The notes file is added to the
+  workflow's `paths:`. Both committed outputs were regenerated in a throwaway
+  worktree; the committed catalog was stale (158 entries; the two
+  `sdlc-model-council` agents were missing from the JSON, and the keywords of
+  `play-store-release-specialist` lacked `python`). A second generator run
+  differs only by the timestamp line.
+- **SIGTERM, decode and post-kill hardening.** `start_new_session=True` meant a
+  SIGTERM to the gate (CI cancel, outer timeout) left the children running and
+  the worktree in place. `check_pre_commit_hooks` now installs a SIGTERM handler
+  (POSIX, main thread, restored afterwards) that raises `GateTerminated`, so the
+  existing `finally` kills the process group and removes the worktree.
+  `run_command` decodes with `errors="replace"` (a `UnicodeDecodeError` used to
+  traceback instead of failing the check), and after killing the group on
+  timeout waits at most 10 seconds for the pipes before giving up.
+- **Output-only fixes.** `render_code_index` emitted `**Links:** ` with a
+  trailing space when `cited_ids` was empty; `_append_to_log` on an EMPTY
+  `log.md` started the file with two blank lines. Both fixed with tests.
+
+### Version bumps
+
+Formatting- and mode-only changes to plugin files (`sdlc-workflows`,
+`sdlc-model-council`, `sdlc-assured`, black re-wraps, the `plugin.json`
+reformat) are intentionally NOT version-bumped: behaviour is unchanged.
+`sdlc-knowledge-base` IS bumped to 0.3.3 because its behaviour changed
+(`kb_stats` parsing and `build_shelf_index.py` output). The `sdlc-assured`
+`code_index.py` trailing-space change only affects generated output whitespace
+and is NOT bumped.
+
+### Known limits (all of those promised by the previous commit message)
+
+- **AGENT-INDEX.md hand-written content:** resolved above (the generator now
+  emits it). The `Note` and bundle paragraphs remain hand-maintained text in
+  `agent-index-notes.md`, including the versions and skill counts in the bundle
+  paragraph, which can go stale.
+- **`documentation.yml`:** its third-party `toc-generator` action opens a PR;
+  it could not be run or verified locally and its output is not checked against
+  the hooks.
+- **black / python3.9:** the black hook needs a `python3.9` interpreter locally
+  (works here only because `/usr/bin/python3` is 3.9.6; CI uses `setup-python`
+  3.9).
+- **`noqa` placement:** the `# noqa: E501` in `traceability_validators.py` sits
+  after the unparsed `# implements:` IDs and would be swallowed by the `.+$` in
+  the regex if that parsing gap is ever fixed.
+- Untracked file content and gitignored files are not covered by the tripwire.

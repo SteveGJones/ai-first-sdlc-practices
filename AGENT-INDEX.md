@@ -1,5 +1,5 @@
 # Agent Catalog Index
-*Generated: 2026-07-23T17:21:48.233214 (with manual notes re-added 2026-07-23 for SDLC method bundles)*
+*Generated: 2026-10-03T18:03:19.098974*
 *Total catalog entries: 160 | 87 in the `agents/` source directory | 73 published in plugins (across 20 plugins; 18 ship agents)*
 
 > **Note:** This catalog indexes agent files in the `agents/` source directory AND the `plugins/*/agents/` directories (73 agents packaged into the 20 published plugins; 18 of them ship agents). Many source agents appear in both a source category and a plugin category, so the total-entries figure counts them twice. The agents in the `Plugin:*` sections below are what users get when they install the plugins. Source-only agents include templates, variants, and agents not yet packaged into plugins.
@@ -334,7 +334,7 @@
 #### `play-store-release-specialist`
 - **Path**: `agents/core/play-store-release-specialist.md`
 - **Description**: Specialist in Google Play release & distribution — Play App Signing (two-key model), Android App Bundles (.aab)/bundletool/dynamic delivery, release tracks & staged rollout (halt/roll-forward), the Da...
-- **Keywords**: api, architecture, auth, ci, design, go, security, test, testing
+- **Keywords**: api, architecture, auth, ci, design, go, python, security, test, testing
 
 #### `repo-knowledge-distiller`
 - **Path**: `agents/core/repo-knowledge-distiller.md`
@@ -621,8 +621,7 @@
 
 #### `council-judge`
 - **Path**: `plugins/sdlc-model-council/agents/council-judge.md`
-- **Description**: Synthesises a cross-model fan-out into one attributed verdict for the Diff+Synthesis play — reads the anonymised (blind-labelled) response bundle from disk and returns Convergent / Divergent(attributed) / Adjudication / Confidence / Baseline-delta...
-- **Keywords**: claude, review, synthesis
+- **Description**: Synthesises a cross-model fan-out into one attributed verdict for the Diff+Synthesis play (and future consensus/best-of-N/gen↔verify plays) of the sdlc-model-council plugin. Reads the anonymised respo...
 
 #### `delegation-runner`
 - **Path**: `plugins/sdlc-model-council/agents/delegation-runner.md`
@@ -778,7 +777,7 @@
 #### `play-store-release-specialist`
 - **Path**: `plugins/sdlc-team-android/agents/play-store-release-specialist.md`
 - **Description**: Specialist in Google Play release & distribution — Play App Signing (two-key model), Android App Bundles (.aab)/bundletool/dynamic delivery, release tracks & staged rollout (halt/roll-forward), the Da...
-- **Keywords**: api, architecture, auth, ci, design, go, security, test, testing
+- **Keywords**: api, architecture, auth, ci, design, go, python, security, test, testing
 
 ### Plugin:Sdlc Team Cloud (3 agents)
 

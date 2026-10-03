@@ -36,10 +36,23 @@ Demo body about python and testing.
 """
 
 
+def _make_plugin(root: Path, name: str, with_agent: bool) -> None:
+    plugin = root / "plugins" / name
+    (plugin / ".claude-plugin").mkdir(parents=True)
+    (plugin / ".claude-plugin" / "plugin.json").write_text("{}\n")
+    if with_agent:
+        (plugin / "agents").mkdir()
+        (plugin / "agents" / f"{name}-agent.md").write_text(_AGENT)
+
+
 def _generate(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Tuple[str, str]:
     agent_dir = tmp_path / "agents" / "core"
     agent_dir.mkdir(parents=True)
     (agent_dir / "demo-agent.md").write_text(_AGENT)
+    (agent_dir / "second-agent.md").write_text(_AGENT)
+    _make_plugin(tmp_path, "plug-a", with_agent=True)
+    _make_plugin(tmp_path, "plug-b", with_agent=False)
+    _make_plugin(tmp_path, "plug-c", with_agent=True)
     monkeypatch.chdir(tmp_path)
     build_agent_catalog.build_catalog()
     return (
@@ -69,3 +82,65 @@ def test_index_markdown_is_a_fixed_point_of_the_whitespace_hooks(
     _, index = _generate(tmp_path, monkeypatch)
     assert "demo-agent" in index
     _assert_hook_clean(index)
+
+
+def _notes() -> str:
+    return build_agent_catalog.NOTES_PATH.read_text(encoding="utf-8")
+
+
+def test_index_contains_both_hand_written_notes_verbatim(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, index = _generate(tmp_path, monkeypatch)
+    note, bundles = _notes().strip("\n").split("\n\n")
+    assert note.startswith("> **Note:** This catalog indexes agent files")
+    assert bundles.startswith("> **SDLC method bundles")
+    # The placeholders are filled; everything else is byte-for-byte the source.
+    assert "{{" not in index
+    expected_note = (
+        note.replace("{{published}}", "2")
+        .replace("{{plugins}}", "3")
+        .replace("{{shipping}}", "2")
+    )
+    assert expected_note in index
+    assert bundles in index
+    assert index.index(expected_note) < index.index(bundles)
+    assert index.index(bundles) < index.index("## Agents by Category")
+
+
+def test_index_counts_line_matches_the_catalog_data(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    text, index = _generate(tmp_path, monkeypatch)
+    catalog = json.loads(text)
+    assert catalog["total_agents"] == 4
+    assert (
+        "*Total catalog entries: 4 | 2 in the `agents/` source directory | "
+        "2 published in plugins (across 3 plugins; 2 ship agents)*"
+    ) in index.splitlines()
+    assert "*Generated: " + catalog["generated"] + "*" in index.splitlines()
+    assert "Total Agents" not in index
+    assert "manual notes re-added" not in index
+
+
+def test_catalog_json_is_exactly_the_hook_format(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    text, _ = _generate(tmp_path, monkeypatch)
+    obj = json.loads(text)
+    assert text == json.dumps(obj, indent=2, ensure_ascii=False) + "\n"
+
+
+def test_index_has_single_trailing_newline_and_no_trailing_whitespace(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, index = _generate(tmp_path, monkeypatch)
+    _assert_hook_clean(index)
+    assert index.endswith("\n") and not index.endswith("\n\n")
+
+
+def test_committed_index_notes_match_the_notes_source() -> None:
+    """The committed AGENT-INDEX.md carries the notes the generator emits."""
+    index = (_REPO / "AGENT-INDEX.md").read_text(encoding="utf-8")
+    _, bundles = _notes().strip("\n").split("\n\n")
+    assert bundles in index

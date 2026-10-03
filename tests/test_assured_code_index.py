@@ -185,3 +185,11 @@ def test_render_code_index_empty_terms_has_no_trailing_space() -> None:
     output = render_code_index(entries, library_handle="local-project")
     assert "**Terms:**\n" in output
     assert all(line == line.rstrip() for line in output.splitlines())
+
+
+def test_render_code_index_has_no_trailing_space_when_entry_has_no_links() -> None:
+    entries = [CodeIndexEntry(file_path="a.py", line=1, cited_ids=[])]
+    output = render_code_index(entries, library_handle="local-project")
+    for line in output.splitlines():
+        assert line == line.rstrip(), f"trailing whitespace: {line!r}"
+    assert "**Links:**" in output

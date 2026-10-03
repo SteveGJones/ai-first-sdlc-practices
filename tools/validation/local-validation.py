@@ -38,6 +38,21 @@ _PROTECTED_PATHS = ("research/poker-capstone",)
 #: worktree may have to install every hook environment.
 _PRE_COMMIT_TIMEOUT = 1800
 
+#: Seconds to wait for output to drain after a timed-out command's process
+#: group has been killed, before giving up on it.
+_POST_KILL_TIMEOUT = 10
+
+
+class GateTerminated(BaseException):
+    """Raised from the SIGTERM handler so ``finally`` blocks clean up.
+
+    Derives from BaseException so no ``except Exception`` swallows it.
+    """
+
+
+def _raise_gate_terminated(signum: int, frame: object) -> None:
+    raise GateTerminated(f"received signal {signum}")
+
 
 class ValidationRunner:
     """Runs comprehensive local validation checks"""
@@ -77,6 +92,8 @@ class ValidationRunner:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 cwd=cwd,
                 start_new_session=os.name != "nt",
             )
@@ -90,7 +107,12 @@ class ValidationRunner:
             return proc.returncode, stdout, stderr
         except subprocess.TimeoutExpired:
             self._kill_process_group(proc)
-            proc.communicate()
+            try:
+                proc.communicate(timeout=_POST_KILL_TIMEOUT)
+            except subprocess.TimeoutExpired:
+                # A descendant that called setsid (or the Windows fallback)
+                # can keep the pipes open after the kill; give up cleanly.
+                pass
             error_msg = f"Command timed out: {' '.join(cmd)}"
             self.errors.append(error_msg)
             return 1, "", error_msg
@@ -188,6 +210,7 @@ class ValidationRunner:
             return False
 
         removal_failed = False
+        previous_handler = self._install_sigterm_handler()
         try:
             returncode, stdout, stderr = self.run_command(
                 ["pre-commit", "run", "--all-files", "--show-diff-on-failure"],
@@ -207,6 +230,7 @@ class ValidationRunner:
                 )
                 self.log(self.errors[-1], "ERROR")
             self.run_command(["git", "worktree", "prune"], cwd=self.repo_root)
+            self._restore_sigterm_handler(previous_handler)
 
         output = "\n".join(part for part in (stdout, stderr) if part)
         if returncode != 0 or "diff --git" in output:
@@ -222,24 +246,63 @@ class ValidationRunner:
         self.log("Pre-commit hooks passed", "SUCCESS")
         return True
 
+    @staticmethod
+    def _install_sigterm_handler() -> Optional[object]:
+        """Turn SIGTERM into an exception so cleanup runs (POSIX, main thread).
+
+        Children run in their own session, so without this a SIGTERM to the
+        gate (CI cancel, outer timeout) would leave them running and the
+        throwaway worktree in place. Returns the previous handler, or None
+        when no handler could be installed.
+        """
+        if os.name == "nt":
+            return None
+        try:
+            return signal.signal(signal.SIGTERM, _raise_gate_terminated)
+        except ValueError:  # not the main thread
+            return None
+
+    @staticmethod
+    def _restore_sigterm_handler(previous: Optional[object]) -> None:
+        if previous is None:
+            return
+        try:
+            signal.signal(signal.SIGTERM, previous)  # type: ignore[arg-type]
+        except ValueError:
+            pass
+
     def _git_output(self, args: List[str]) -> str:
         result = subprocess.run(
             ["git", *args], cwd=self.repo_root, capture_output=True, text=True
         )
         return result.stdout
 
+    @staticmethod
+    def _hash_file(path: Path) -> str:
+        """SHA-256 of a file, read in chunks."""
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1 << 20), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+
     def _tree_snapshot(self) -> Dict[str, str]:
         """Capture the git state a validation run must not change.
 
-        Records, for every path git reports as modified, staged or untracked
+        For every path git reports as modified or staged (tracked), records
+        its status code and a content hash. For UNTRACKED paths
         (``--untracked-files=all`` so a new file inside an already-untracked
-        directory is seen individually), its status code and a content hash,
-        plus the index entries of the protected evidence paths.
+        directory is seen individually) only the path is recorded, not the
+        content: the gate's own output may legitimately be redirected into an
+        untracked file inside the repo (``... | tee command-runs/x.log``) and
+        that file grows during the run. The index entries of the protected
+        evidence paths are hashed too.
 
-        Limits: gitignored files are not covered (``tmp/`` scratch is
-        deliberately allowed), and the tripwire cannot tell WHO changed the
-        tree, so a concurrent writer to the same checkout (an editor, another
-        agent) during the run would be blamed on the gate.
+        Limits: untracked file CONTENT and gitignored files are not covered
+        (``tmp/`` scratch is deliberately allowed), and the tripwire cannot
+        tell WHO changed the tree, so a concurrent writer to the same checkout
+        (an editor, another agent) that adds or removes untracked paths, or
+        edits tracked files, during the run would be blamed on the gate.
         """
         snapshot: Dict[str, str] = {}
         raw = self._git_output(["status", "--porcelain", "-z", "--untracked-files=all"])
@@ -251,13 +314,13 @@ class ValidationRunner:
             if len(record) < 4:
                 continue
             code, path = record[:2], record[3:]
-            if code[0] in "RC":
+            if code[0] in "RC" or code[1] in "RC":
                 i += 1  # the following record is the rename/copy source
+            if code == "??":
+                snapshot[f"untracked:{path}"] = "present"
+                continue
             target = self.repo_root / path
-            if target.is_file():
-                digest = hashlib.sha256(target.read_bytes()).hexdigest()
-            else:
-                digest = "-"
+            digest = self._hash_file(target) if target.is_file() else "-"
             snapshot[f"file:{path}"] = f"{code}:{digest}"
         for path in _PROTECTED_PATHS:
             snapshot[f"index:{path}"] = hashlib.sha256(
@@ -281,6 +344,16 @@ class ValidationRunner:
         )
         if changed_files:
             problems.append("files changed during the run: " + ", ".join(changed_files))
+        changed_untracked = sorted(
+            key[10:]
+            for key in set(before) | set(after)
+            if key.startswith("untracked:") and before.get(key) != after.get(key)
+        )
+        if changed_untracked:
+            problems.append(
+                "untracked files appeared or disappeared during the run: "
+                + ", ".join(changed_untracked)
+            )
         for key, value in before.items():
             if key.startswith("index:") and after.get(key) != value:
                 problems.append(f"{key[6:]} index entries changed")

@@ -5,6 +5,7 @@ on:
     paths:
       - 'agents/**/*.md'
       - 'tools/automation/build-agent-catalog.py'
+      - 'tools/automation/agent-index-notes.md'
     branches:
       - main
       - 'feature/**'
@@ -12,6 +13,7 @@ on:
     paths:
       - 'agents/**/*.md'
       - 'tools/automation/build-agent-catalog.py'
+      - 'tools/automation/agent-index-notes.md'
   workflow_dispatch:
 
 jobs:

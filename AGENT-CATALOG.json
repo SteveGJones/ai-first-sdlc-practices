@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "generated": "2026-07-23T17:21:48.233214",
-  "total_agents": 158,
+  "generated": "2026-10-03T18:03:19.098974",
+  "total_agents": 160,
   "categories": {
     "ai-builders": 5,
     "ai-development": 9,
@@ -21,6 +21,7 @@
     "plugin:sdlc-lang-kotlin": 1,
     "plugin:sdlc-lang-python": 1,
     "plugin:sdlc-lang-swift": 1,
+    "plugin:sdlc-model-council": 2,
     "plugin:sdlc-team-ai": 14,
     "plugin:sdlc-team-android": 6,
     "plugin:sdlc-team-cloud": 3,
@@ -1551,6 +1552,7 @@
         "ci",
         "design",
         "go",
+        "python",
         "security",
         "test",
         "testing"
@@ -3143,6 +3145,28 @@
       "description": "Expert in the Swift language (Swift 6.2) — strict concurrency (async/await, actors, Sendable, Swift 6.2 approachable concurrency), value semantics & noncopyable types, typed throws, optionals/safety, ..."
     },
     {
+      "name": "council-judge",
+      "path": "plugins/sdlc-model-council/agents/council-judge.md",
+      "category": "plugin:sdlc-model-council",
+      "keywords": [],
+      "capabilities": [],
+      "domains": [],
+      "description": "Synthesises a cross-model fan-out into one attributed verdict for the Diff+Synthesis play (and future consensus/best-of-N/gen↔verify plays) of the sdlc-model-council plugin. Reads the anonymised respo..."
+    },
+    {
+      "name": "delegation-runner",
+      "path": "plugins/sdlc-model-council/agents/delegation-runner.md",
+      "category": "plugin:sdlc-model-council",
+      "keywords": [
+        "auth",
+        "gpt",
+        "react"
+      ],
+      "capabilities": [],
+      "domains": [],
+      "description": "Delegates a scoped sub-problem to an external agentic CLI backend (`codex` — OpenAI/GPT, `agy` — Antigravity/Gemini, and any future backend registered as a one-directory adapter under scripts/adapters..."
+    },
+    {
       "name": "a2a-architect",
       "path": "plugins/sdlc-team-ai/agents/a2a-architect.md",
       "category": "plugin:sdlc-team-ai",
@@ -3779,6 +3803,7 @@
         "ci",
         "design",
         "go",
+        "python",
         "security",
         "test",
         "testing"

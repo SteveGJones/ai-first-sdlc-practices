@@ -445,3 +445,196 @@ def test_gate_timeout_fails_removes_worktree_and_kills_grandchildren(
         assert _sleepers() == "", "hook grandchild outlived the gate"
     finally:
         subprocess.run(["pkill", "-f", "sleep 31337"], check=False)
+
+
+# --- tripwire: untracked content is not hashed (the gate's own log may grow) --
+
+
+def test_tripwire_ignores_a_preexisting_untracked_file_that_grows(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    (repo / "command-runs").mkdir()
+    log = repo / "command-runs" / "cmd.log"
+    log.write_text("start\n")
+
+    runner = _runner(repo)
+    _stub_all_checks(runner)
+
+    def keep_logging() -> bool:
+        with log.open("a") as handle:
+            handle.write("the gate's own output, tee'd into the repo\n")
+        return True
+
+    runner.check_security = keep_logging  # type: ignore[method-assign]
+    assert runner.run_pre_push_validation() is True
+    assert runner.errors == []
+
+
+def test_tripwire_trips_on_a_new_untracked_file_in_an_untracked_directory(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    (repo / "command-runs").mkdir()
+    (repo / "command-runs" / "old.log").write_text("old\n")
+
+    runner = _runner(repo)
+    _stub_all_checks(runner)
+
+    def add_file() -> bool:
+        (repo / "command-runs" / "new.log").write_text("new\n")
+        return True
+
+    runner.check_security = add_file  # type: ignore[method-assign]
+    assert runner.run_pre_push_validation() is False
+    report = next(e for e in runner.errors if "TRIPWIRE" in e)
+    assert "new.log" in report and "old.log" not in report
+
+
+def test_tripwire_trips_when_an_untracked_file_disappears(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    (repo / "scratch.txt").write_text("x")
+
+    runner = _runner(repo)
+    _stub_all_checks(runner)
+
+    def remove() -> bool:
+        (repo / "scratch.txt").unlink()
+        return True
+
+    runner.check_security = remove  # type: ignore[method-assign]
+    assert runner.run_pre_push_validation() is False
+    assert any("scratch.txt" in e for e in runner.errors)
+
+
+def test_tripwire_still_hashes_content_of_modified_tracked_files(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    (repo / "a.txt").write_text("dirty before\n")
+
+    runner = _runner(repo)
+    _stub_all_checks(runner)
+
+    def mutate_again() -> bool:
+        (repo / "a.txt").write_text("dirty after\n")
+        return True
+
+    runner.check_security = mutate_again  # type: ignore[method-assign]
+    assert runner.run_pre_push_validation() is False
+    assert any("a.txt" in e and "TRIPWIRE" in e for e in runner.errors)
+
+
+def test_status_parser_skips_rename_source_when_rename_is_in_second_column(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, _PASSING_CONFIG)
+    runner = _runner(repo)
+    (repo / "new.txt").write_text("n\n")
+    runner._git_output = lambda args: (  # type: ignore[method-assign]
+        " R new.txt\0a-rather-long-rename-source.txt\0" if args[0] == "status" else ""
+    )
+    keys = [k for k in runner._tree_snapshot() if k.startswith("file:")]
+    assert keys == ["file:new.txt"]
+
+
+# --- run_command hardening ---------------------------------------------------
+
+
+def test_run_command_survives_undecodable_output(tmp_path: Path) -> None:
+    runner = _runner(tmp_path)
+    code, out, _ = runner.run_command(
+        [
+            sys.executable,
+            "-c",
+            "import sys; sys.stdout.buffer.write(b'ok \\xff\\xfe end')",
+        ]
+    )
+    assert code == 0
+    assert out.startswith("ok ") and out.endswith(" end")
+
+
+class _HungProc:
+    """Popen stand-in whose pipes never close, even after the kill."""
+
+    pid = 2**22 + 1
+    returncode = None
+
+    def __init__(self) -> None:
+        self.timeouts: List[object] = []
+
+    def communicate(self, timeout: object = None) -> Tuple[str, str]:
+        self.timeouts.append(timeout)
+        raise subprocess.TimeoutExpired("x", 0)
+
+
+def test_run_command_gives_up_if_pipes_stay_open_after_kill(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    proc = _HungProc()
+    monkeypatch.setattr(local_validation.subprocess, "Popen", lambda *a, **k: proc)
+    monkeypatch.setattr(
+        local_validation.ValidationRunner,
+        "_kill_process_group",
+        staticmethod(lambda p: None),
+    )
+    runner = _runner(tmp_path)
+    code, _, err = runner.run_command(["whatever"], timeout=1)
+    assert code == 1
+    assert "timed out" in err
+    assert len(proc.timeouts) == 2 and proc.timeouts[1] is not None
+
+
+# --- SIGTERM to the gate cleans up ------------------------------------------
+
+_GATE_SCRIPT = """\
+import importlib.util, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("lv", sys.argv[1])
+lv = importlib.util.module_from_spec(spec)
+sys.modules["lv"] = lv
+spec.loader.exec_module(lv)
+runner = lv.ValidationRunner(verbose=False, repo_root=Path(sys.argv[2]))
+print("READY", flush=True)
+try:
+    runner.check_pre_commit_hooks()
+except BaseException as exc:
+    print("INTERRUPTED", type(exc).__name__, flush=True)
+    raise SystemExit(143)
+"""
+
+
+@needs_pre_commit
+@pytest.mark.skipif(os.name == "nt", reason="signals and process groups are POSIX")
+@pytest.mark.skipif(shutil.which("pgrep") is None, reason="pgrep not available")
+def test_sigterm_to_the_gate_removes_worktree_and_kills_children(
+    tmp_path: Path,
+) -> None:
+    import signal
+    import time
+
+    repo = _make_repo(tmp_path, _SLEEP_CONFIG)
+    script = tmp_path / "gate.py"
+    script.write_text(_GATE_SCRIPT)
+    env = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
+    proc = subprocess.Popen(
+        [sys.executable, str(script), str(_SCRIPT), str(repo)],
+        stdout=subprocess.PIPE,
+        text=True,
+        env=env,
+    )
+    try:
+        assert proc.stdout is not None
+        assert proc.stdout.readline().strip() == "READY"
+        deadline = time.time() + 60
+        while time.time() < deadline and not _sleepers():
+            time.sleep(0.2)
+        assert _sleepers(), "the hook never started"
+        proc.send_signal(signal.SIGTERM)
+        proc.wait(timeout=60)
+        assert "prepush-gate-" not in _git(repo, "worktree", "list")
+        assert not list((repo / "tmp").glob("prepush-gate-*"))
+        assert _sleepers() == "", "hook grandchild survived SIGTERM"
+    finally:
+        proc.kill()
+        subprocess.run(["pkill", "-f", "sleep 31337"], check=False)

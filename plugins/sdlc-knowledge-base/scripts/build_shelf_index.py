@@ -325,7 +325,12 @@ def _append_to_log(log_path: Path, stats: RebuildStats, full: bool) -> None:
     existing = log_path.read_text(encoding="utf-8")
     # Normalise the join so the entry always follows one blank line and the
     # file ends with exactly one newline, whatever the previous tail was.
-    log_path.write_text(existing.rstrip("\n") + "\n" + entry, encoding="utf-8")
+    head = existing.rstrip("\n")
+    if not head:
+        # An empty log has no previous content to separate the entry from.
+        log_path.write_text(entry.lstrip("\n"), encoding="utf-8")
+        return
+    log_path.write_text(head + "\n" + entry, encoding="utf-8")
 
 
 def _rail_tripped(added: int, new_count: int, existing_count: int) -> bool:

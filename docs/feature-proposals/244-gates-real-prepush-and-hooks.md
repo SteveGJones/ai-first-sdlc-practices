@@ -130,3 +130,30 @@ retrospective.
 - Known limits recorded, not acted on: the `black` hook needs a `python3.9`
   interpreter locally, and the `# noqa: E501` at `traceability_validators.py`
   would be swallowed by the `# implements:` regex if that parsing gap is fixed.
+
+## Second review round
+
+- **Tripwire**: untracked files are compared by path set only (new/removed
+  paths trip it), not by content, because the gate's own output may be
+  redirected into an untracked file inside the repo and grow during the run.
+  Tracked files and the protected-corpus index entries keep content hashing.
+  Untracked content and gitignored files are not covered.
+- **AGENT-INDEX.md**: the committed index carried hand-written notes that the
+  generator did not emit and a regeneration would wipe (it already did once).
+  The notes now live in `tools/automation/agent-index-notes.md` and are emitted
+  verbatim by `build-agent-catalog.py`; the counts line is computed; both
+  committed outputs were regenerated (a second run changes only the timestamp).
+- **Gate hardening**: SIGTERM raises so the process group is killed and the
+  worktree removed; undecodable output no longer raises; the post-kill drain has
+  a 10 second limit.
+- **Output-only fixes**: no trailing space after an empty `**Links:**` in
+  `code_index.py`; no leading blank lines when appending to an empty `log.md`.
+- **Versions**: formatting/mode-only plugin changes (`sdlc-workflows`,
+  `sdlc-model-council`, `sdlc-assured`, black re-wraps, `plugin.json` reformat)
+  are intentionally not bumped; `sdlc-knowledge-base` is bumped to 0.3.3
+  because its behaviour changed; the `sdlc-assured` `code_index.py` whitespace
+  change is output-only and not bumped.
+- **Known limits**: `documentation.yml`'s third-party `toc-generator` action
+  opens a PR and could not be verified locally; the black hook needs
+  `python3.9` locally; the `noqa: E501` placement in
+  `traceability_validators.py` depends on the `# implements:` parsing gap.

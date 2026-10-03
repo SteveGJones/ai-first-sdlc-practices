@@ -127,7 +127,7 @@ def render_code_index(
                 lines.append(f"- {fact}")
         else:
             lines.append("**Facts:**")
-        lines.append(f"**Links:** {', '.join(e.cited_ids)}")
+        lines.append(f"**Links:** {', '.join(e.cited_ids)}".rstrip())
         lines.append("")
     return "\n".join(lines)
 
