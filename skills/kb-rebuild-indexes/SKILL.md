@@ -2,10 +2,12 @@
 name: kb-rebuild-indexes
 description: Rebuild the knowledge base shelf-index with hash-based change detection. Incremental by default — only re-extracts files whose content has changed since the last index. Use after ingesting new sources, after editing library files, or whenever the librarian agent reports a stale index.
 disable-model-invocation: false
-argument-hint: "[--full]"
+argument-hint: "[--full] [--dry-run] [--force]"
 ---
 
 # Rebuild Knowledge Base Indexes
+
+> **Script-based**: This skill runs `build_shelf_index.py` via Bash — no agent dispatch needed and no library file content loaded into session context.
 
 Rebuild the shelf-index for the knowledge base. Incremental by default: compares each library file's content hash against the recorded hash in the index, and only re-extracts entries whose hash has changed.
 
@@ -17,6 +19,23 @@ Rebuild the shelf-index for the knowledge base. Incremental by default: compares
   - You're starting from a deleted or corrupted index
 
   Without this flag, the rebuild is incremental and skips unchanged files.
+- `--dry-run` — Report what would change (including the `Scanned:` / `Excluded:` breakdown) without writing `_shelf-index.md` or `log.md`.
+- `--force` — Override the bulk-add safety rail (see "Safety rail" below). **Never pass this on your own initiative** — only after the user has seen the breakdown and confirmed.
+
+## Excluding directories: `.kb-index-ignore`
+
+The rebuild indexes every `.md` file under the library, except the top-level `raw/` directory (always excluded). To keep other directories out of the index — vendored dumps, scraped reference material, anything that is not a curated library file — create `<library_path>/.kb-index-ignore`:
+
+```
+# one library-relative directory per line
+iso20022/
+vendor/standards
+```
+
+- One directory path per line, relative to the library root; a trailing `/` is optional.
+- A path matches that directory and everything under it. No globs.
+- `#` comments and blank lines are ignored.
+- Absolute paths and `..` entries are rejected. An entry that matches nothing produces a warning.
 
 ## Preflight
 
@@ -25,241 +44,129 @@ Verify the project has a knowledge base. The `[Knowledge Base]` section in `CLAU
 - `library_path` — default `library/`
 - `shelf_index_path` — default `library/_shelf-index.md`
 
-If `CLAUDE.md` does not contain a `[Knowledge Base]` section, report: "No knowledge base configured. Add a `[Knowledge Base]` section to CLAUDE.md (see plugins/sdlc-knowledge-base/templates/claude-md-section.md) before running this skill."
+If `CLAUDE.md` does not contain a `[Knowledge Base]` section, report: "No knowledge base configured. Add a `[Knowledge Base]` section to CLAUDE.md (see `plugins/sdlc-knowledge-base/skills/kb-init/templates/claude-md-section.md`) before running this skill."
 
-If the library path does not exist, report: "Library directory `<path>` does not exist. Create it before running this skill."
+If the library path does not exist, report: "Library directory `<path>` does not exist. Create it or run `/sdlc-knowledge-base:kb-init` before running this skill."
 
 ## Steps
 
-### 1. Read the existing shelf-index (if any)
+### 1. Read knowledge base configuration
 
-If `shelf_index_path` exists, parse it. Each entry has the structure:
+Read `CLAUDE.md` and locate the `[Knowledge Base]` section. Extract:
+- `library_path` — default `library/`
+- `shelf_index_path` — default `library/_shelf-index.md`
 
-```markdown
-## N. <relative-path-from-library-root>
+Stop with the preflight errors above if either check fails.
 
-**Hash:** <sha256-hex>
-**Terms:** <comma-separated keywords>
-**Facts:** <bulleted statistics with citations>
-**Links:** <cross-references and project links>
-```
-
-Build an in-memory map: `{file_path → recorded_hash}` from the existing index.
-
-If the file does not exist, treat the existing index as empty (this is the first build).
-
-### 2. Discover library files
-
-Use Glob to find all `.md` files under `library_path` excluding the index files themselves and the `raw/` directory:
-
-```
-library/**/*.md
-```
-
-Exclude:
-- `library/_shelf-index.md` (this file)
-- `library/_index.md` (master index, if present)
-- `library/raw/**` (raw sources, not synthesised library files)
-- `library/log.md` (log, not a library file)
-
-The remaining files are the library entries.
-
-### 3. Compute current hashes
-
-Use Bash to compute SHA-256 hashes for all discovered library files in one pass:
+### 2. Verify build_shelf_index module importable
 
 ```bash
-find library -name "*.md" \
-  ! -name "_shelf-index.md" \
-  ! -name "_index.md" \
-  ! -name "log.md" \
-  ! -path "library/raw/*" \
-  -exec sha256sum {} \;
+python3 -c "
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts', INIT,
+        submodule_search_locations=[SCRIPTS])
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = module
+        spec.loader.exec_module(module)
+try:
+    import sdlc_knowledge_base_scripts.build_shelf_index  # noqa: F401
+    print('OK')
+except ImportError:
+    print('MISSING')
+"
 ```
 
-Each line is `<hash>  <path>`. Build an in-memory map: `{file_path → current_hash}`.
+If output is `MISSING`: report "build_shelf_index module not found. Update the sdlc-knowledge-base plugin." and stop.
 
-### 4. Classify each file
+### 3. Run the rebuild script
 
-For each file in the current set, classify it:
-
-| Recorded hash | Current hash | Classification | Action |
-|---|---|---|---|
-| Missing | Present | **Added** | Extract entry, add to index |
-| Present | Matches | **Unchanged** | Skip (or re-extract if `--full`) |
-| Present | Differs | **Modified** | Re-extract entry, update index |
-| Present | Missing | **Removed** | Remove entry from index |
-
-### 5. Extract entries for added and modified files
-
-For each file that needs extraction (added or modified, plus all files if `--full`), read the file and produce a shelf-index entry.
-
-Extraction is judgment-based — read the library file's content and produce four fields:
-
-#### Hash
+Construct the argument list from Step 1 and the skill argument (`--full` if provided):
 
 ```bash
-sha256sum <file> | cut -d' ' -f1
+python3 -c "
+import sys, os, importlib.util
+PLUGIN_ROOT = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
+SCRIPTS = os.path.join(PLUGIN_ROOT, 'scripts')
+INIT = os.path.join(SCRIPTS, '__init__.py')
+if os.path.isfile(INIT) and 'sdlc_knowledge_base_scripts' not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        'sdlc_knowledge_base_scripts', INIT,
+        submodule_search_locations=[SCRIPTS])
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['sdlc_knowledge_base_scripts'] = module
+        spec.loader.exec_module(module)
+from sdlc_knowledge_base_scripts.build_shelf_index import main
+args = ['<library_path>', '--shelf-index-path', '<shelf_index_path>']
+# Append flags the skill was called with:
+# args.append('--full')       # skill argument --full
+# args.append('--dry-run')    # skill argument --dry-run
+# args.append('--force')      # ONLY on the re-run after the user confirms a safety-rail refusal
+sys.exit(main(args))
+"
 ```
 
-#### Terms (20-30 keywords)
+Replace `<library_path>` and `<shelf_index_path>` with the values from Step 1. Uncomment each `args.append(...)` line that applies: `--full` and `--dry-run` when the skill argument included them, and `--force` only on the re-run after the user has confirmed a safety-rail refusal (see below). Never add `--force` on the first run.
 
-Identify the 20-30 most distinctive terms from the file. Sources of good terms:
+### 4. Report results
 
-- The `title` and `domain` from the frontmatter
-- Section headings (especially the `## Key Question`)
-- Names of frameworks, methodologies, authors, organisations mentioned in `## Frameworks Reviewed` and `## Key References`
-- Specific metrics, thresholds, and units from `## Actionable Thresholds`
-- Domain-specific vocabulary the file uses repeatedly
-
-Aim for terms a future query would actually contain. Generic words ("research", "study", "framework") are useless — they'll match every file. Specific terms ("DORA cycle time", "TLA+ model checker", "PKCE flow") narrow the search effectively.
-
-#### Facts (3-5 headline statistics with citations)
-
-Identify the 3-5 most important findings from the `## Core Findings` section. Each fact should be:
-
-- A specific claim (not a general statement)
-- A specific number, threshold, or sample size
-- A citation in compact form: `(author, year, n=sample_size)` or `(study name, year)`
-
-Example facts:
-- "Elite teams have cycle time <1 hour, n=39000 (DORA 2024)"
-- "TDD reduces defect density by 40-50% (Madeyski 2010)"
-- "TLA+ caught 6 critical bugs in DynamoDB before launch (AWS 2018)"
-
-If the file has more than 5 strong facts, pick the 5 most distinctive.
-
-#### Links (cross-references and project links)
-
-Two kinds:
-
-- Cross-references to other library files: extract from the `cross_references` frontmatter field
-- Project-specific links: extract from the `## Programme Relevance` section if present, listing any project artifacts (issue numbers, ADRs, design docs) the file connects to
-
-Format as a comma-separated list.
-
-### 6. Write the updated shelf-index
-
-Construct the updated shelf-index from the entries: keep unchanged entries as-is, add new ones, replace modified ones, drop removed ones. Sort by file path for stability.
-
-### Mandatory shelf-index header
-
-Every generated shelf-index MUST begin with these four HTML-comment header lines, in this order:
+Print the script output directly to the user. Expected format:
 
 ```
-<!-- format_version: 1 -->
-<!-- last_rebuilt: <ISO-8601 UTC timestamp at rebuild time> -->
-<!-- library_handle: <handle from registry, or empty if unregistered> -->
-<!-- library_description: <one-line description, or empty> -->
+Shelf-index rebuilt: library/_shelf-index.md
+
+  Mode: incremental
+  Files scanned: 22
+  Unchanged:    18  (skipped)
+  Modified:     3  (re-extracted)
+  Added:        1  (new entries)
+  Removed:      0  (entries dropped)
+
+  Index entries: 22
+  Scanned:
+    domain/: 21
+    ./: 1
+  Excluded:
+    iso20022/
+    raw/
+
+Warnings — 1 exclusion issue(s):
+  - .kb-index-ignore: entry 'Domain' differs only in case from the real directory 'domain'; entries are case-sensitive, so use 'domain' (entry not applied)
 ```
 
-These four breadcrumbs are the library's evolution metadata:
+`Scanned:` lists indexed files per top-level directory (`./` is the library root). `Excluded:` names the directories skipped by `raw/` or `.kb-index-ignore`; they are not walked, so no file counts are shown. The `Warnings` block appears only when an ignore entry is unsafe, matches no directory, differs from the real directory name only in case, is a symlink, or cannot be read; such entries are warned about and not applied. Check these lines when the file count looks wrong.
 
-- `format_version` — schema version of the shelf-index
-- `last_rebuilt` — when this skill last regenerated the index; used by kb-query to surface staleness caveats
-- `library_handle` — the handle this library is registered under (if any); used by kb-setup-consulting and kb-audit-query
-- `library_description` — human-readable note for operator reference
+If the script exits with code 2, the **safety rail** refused the rebuild — see below. If it exits with code 1, surface the error and recommend:
+- `/sdlc-knowledge-base:kb-init` — if the library directory is missing
+- `/sdlc-knowledge-base:kb-ingest` — if the library exists but is empty
 
-If this library is registered (its path appears in `~/.sdlc/global-libraries.json`), preserve the existing `library_handle` and `library_description` from the previous header on rebuild. If they differ from the registry entry, refuse to rebuild and emit a clear error: "shelf-index handle does not match registry; refusing to overwrite. Either correct the registry or rebuild with explicit `--handle <name>`."
+## Safety rail (exit code 2)
 
-If `library_handle` and `library_description` are not yet set (new library), leave them as empty strings (do not omit the lines).
+A rebuild that adds 50 or more entries **and** would grow the index to 2x or more of its current size is almost always an un-ignored dump, not a real ingest. In that case the script writes **neither** `_shelf-index.md` nor `log.md` and exits with code 2, naming the top-level directories responsible (for example `iso20022/: 412 added`). A first build with no index (or an empty one) is exempt.
 
-Write to `shelf_index_path` using the format:
+When this happens you MUST:
 
-```markdown
-<!-- format_version: 1 -->
-<!-- last_rebuilt: <ISO-8601 UTC timestamp> -->
-<!-- library_handle: <handle or empty> -->
-<!-- library_description: <description or empty> -->
-# Knowledge Base Shelf-Index
+1. Show the user the per-directory breakdown from the script output.
+2. Ask whether those files really belong in the index. If not, add the directories to `.kb-index-ignore` and re-run.
+3. Re-run with `--force` **only after the user explicitly confirms** the large addition is intended. Never add `--force` automatically or to "get past" the refusal.
 
-Generated by `/sdlc-knowledge-base:kb-rebuild-indexes`. This file is the librarian agent's first-read on every query — it identifies which library files are relevant before deep-reading them.
+## Hash strategy
 
-**Do not edit this file by hand.** Run `/sdlc-knowledge-base:kb-rebuild-indexes` after editing library files to update.
-
----
-
-## 1. <first-file-path>
-
-**Hash:** <sha256-hex>
-**Terms:** <comma-separated keywords>
-**Facts:**
-- <fact 1>
-- <fact 2>
-- <fact 3>
-**Links:** <cross-references and project links>
-
-## 2. <second-file-path>
-
-**Hash:** <sha256-hex>
-**Terms:** <comma-separated keywords>
-**Facts:**
-- <fact 1>
-- <fact 2>
-**Links:** <cross-references and project links>
-
-...
-```
-
-Numbering is sequential by sorted file path. Numbers can change between rebuilds — that's fine, the file path is the canonical identifier.
-
-### 7. Append to log.md (if present)
-
-If `library/log.md` exists, append an entry:
-
-```markdown
-## [YYYY-MM-DD] rebuild-indexes | <unchanged>/<modified>/<added>/<removed>
-
-Mode: <incremental|full>
-Files unchanged: N
-Files updated: M
-Files added: K
-Files removed: J
-```
-
-Use today's date in ISO format. If `log.md` does not exist, skip silently — the user has not opted into chronological logging.
-
-### 8. Report results
-
-Print a summary:
-
-```
-Shelf-index rebuilt: <shelf_index_path>
-
-  Mode: incremental (or full)
-  Files scanned: <total>
-  Unchanged:    <N>  (skipped)
-  Modified:     <M>  (re-extracted)
-  Added:        <K>  (new entries)
-  Removed:      <J>  (entries dropped)
-
-  Index entries: <total in updated index>
-  Index size:    <line count> lines
-```
-
-If any extraction failed (file unreadable, frontmatter malformed, etc.), report the failure and skip that file rather than aborting the whole rebuild.
-
-## Error handling
-
-- **Library path missing** — fail with the preflight error from above
-- **Shelf-index path is in a directory that doesn't exist** — create the directory, then write the file
-- **A library file has malformed frontmatter** — log a warning, skip extraction for that file, leave its existing index entry intact (or omit it if it's new)
-- **Bash command fails** — fall back to per-file hashing one at a time
-- **`sha256sum` not available** — try `shasum -a 256` (macOS); if neither, fail with "Install coreutils or use macOS shasum"
-
-## Notes on the hash strategy
-
-- Hash is SHA-256 over the **raw file content**, including frontmatter. Any change to the file (even whitespace) produces a new hash and triggers re-extraction. This is intentional — we want false positives (re-extract slightly more often than strictly necessary) over false negatives (missing real changes).
-- The hash lives **inline in each shelf-index entry**, not in a separate header block. This makes each entry self-contained and removing an entry doesn't leave dangling state.
-- Hashes are stored as hex strings. The full 64-char SHA-256 is used; we don't truncate.
+SHA-256 over raw file content, stored per-entry in the shelf-index. Any file change (including whitespace) triggers re-extraction on the next incremental run. See `build_shelf_index.py` for the full implementation.
 
 ## What this skill does NOT do
 
-- **It does not invoke the librarian.** That's `kb:query`.
-- **It does not ingest new sources.** That's `kb:ingest`.
-- **It does not validate citations.** That's `kb:validate-citations`.
-- **It does not check for logical drift** (contradictions, orphans). That's `kb:lint`.
-- **It does not rebuild the codebase-index.** The codebase-index is sub-feature 13, future branch.
+- **It does not invoke the librarian.** That's `kb-query`.
+- **It does not ingest new sources.** That's `kb-ingest`.
+- **It does not validate citations.** That's `kb-validate-citations`.
+- **It does not check for logical drift** (contradictions, orphans). That's `kb-lint`.
+- **It does not rebuild the codebase-index.** The codebase-index is a future feature.
 
 This skill only manages the shelf-index for the curated library files.
 
@@ -271,12 +178,15 @@ This skill only manages the shelf-index for the curated library files.
 Shelf-index rebuilt: library/_shelf-index.md
 
   Mode: incremental
-  Files scanned: 22
-  Unchanged:    18  (skipped)
-  Modified:      3  (re-extracted)
-  Added:         1  (new entries)
-  Removed:       0  (entries dropped)
+  Files scanned: 3
+  Unchanged:    1  (skipped)
+  Modified:     1  (re-extracted)
+  Added:        1  (new entries)
+  Removed:      1  (entries dropped)
 
-  Index entries: 22
-  Index size:    178 lines
+  Index entries: 3
+  Scanned:
+    domain/: 3
+  Excluded:
+    (none)
 ```

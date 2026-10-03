@@ -1,0 +1,78 @@
+# Apple HIG / iOS — Curated technology registry entry
+# Covers: Apple Human Interface Guidelines (iOS/iPadOS) UX design and, more broadly,
+# mobile UX. Maps to apple-hig-architect (iOS) + mobile-ux-architect (cross-platform).
+
+display_name: Apple HIG / iOS
+category: design-system
+description: >
+  Apple's Human Interface Guidelines (HIG) for iOS/iPadOS — the design language
+  behind native Apple-platform apps, currently Liquid Glass (iOS 26). Native iOS
+  is built with SwiftUI/UIKit (Swift Package Manager / CocoaPods / Xcode), which
+  this npm/pip-oriented registry cannot auto-scan — so detection here relies on
+  aliases and on cross-platform JS toolchains (React Native / Expo) that target
+  iOS. Surface apple-hig-architect manually for native Swift/SwiftUI projects.
+
+section_a: []
+
+section_b:
+  - name: React Native
+    package: react-native
+    ecosystem: npm
+    source: https://www.npmjs.com/package/react-native
+    publisher: Meta
+    description: >
+      Cross-platform mobile framework targeting iOS and Android from JS/TS.
+      iOS builds should follow Apple HIG; both platforms benefit from
+      cross-platform mobile-UX patterns.
+    usage: "import { View, Pressable } from 'react-native'"
+    docs: https://reactnative.dev
+    verified_date: 2026-07-22
+
+  - name: Expo
+    package: expo
+    ecosystem: npm
+    source: https://www.npmjs.com/package/expo
+    publisher: Expo
+    description: >
+      Toolchain and runtime for React Native apps (iOS/Android). Same HIG +
+      cross-platform mobile-UX considerations apply.
+    usage: "import * as Expo from 'expo'"
+    docs: https://docs.expo.dev
+    verified_date: 2026-07-22
+
+section_c: []
+
+our_agents:
+  - agent: apple-hig-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Primary specialist for iOS/iPadOS UX to Apple's Human Interface Guidelines —
+      Liquid Glass (iOS 26), navigation & modality, SF typography & Dynamic Type,
+      materials, SF Symbols, gestures/haptics, iOS platform features
+      (permissions/ATT, notifications, Widgets, Live Activities/Dynamic Island,
+      share sheet, Sign in with Apple), accessibility, and SwiftUI mapping.
+  - agent: mobile-ux-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Platform-agnostic mobile-native interaction UX — thumb-zone reachability,
+      touch targets & gestures, permission priming, onboarding, mobile forms,
+      offline/empty/error states, mobile accessibility, and cross-platform
+      strategy/metrics. Applies to iOS, Android, and React Native/Expo.
+  - agent: mobile-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      Mobile app architecture (native iOS/Android, React Native, Flutter, KMP),
+      state management, performance, mobile CI/CD, and security around the UI layer.
+  - agent: material-design-3-architect
+    plugin: sdlc-team-fullstack
+    relevance: >
+      The Android/Material Design 3 counterpart for the Android side of a
+      cross-platform app.
+
+trusted_sources:
+  - url: https://developer.apple.com/design/human-interface-guidelines
+    type: vendor-docs
+  - url: https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass
+    type: vendor-docs
+  - url: https://reactnative.dev
+    type: vendor-docs

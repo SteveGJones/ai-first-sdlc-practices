@@ -7,6 +7,8 @@ argument-hint: "[--since <ISO-date>] [--until <ISO-date>] [--event-type <type>] 
 
 # Audit Log Query
 
+> **Lightweight**: This skill reads only index metadata (timestamps / audit log entries). Inline execution is acceptable.
+
 Filter and summarise events from `library/audit.log` for the current project. The audit log is project-scope (lives in the project's library directory) and append-only; this skill is read-only.
 
 ## Arguments

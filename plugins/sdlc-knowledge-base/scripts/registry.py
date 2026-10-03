@@ -39,7 +39,7 @@ def _coerce_version(
     like "1"), so callers can see when the schema is being loose.
     """
     try:
-        version = int(raw_version)  # type: ignore[arg-type]
+        version = int(raw_version)
     except (TypeError, ValueError):
         warnings.append(
             f"{context_label}: version field must be an integer, "

@@ -131,7 +131,7 @@ def generate(
         The generated Markdown content.
     """
     name: str = str(manifest.get("name", "unnamed-team"))
-    raw_description: str | None = manifest.get("description")  # type: ignore[assignment]
+    raw_description: str | None = manifest.get("description")
     description = sanitise_description(raw_description)
     if raw_description and description != raw_description:
         logger.warning(
@@ -139,8 +139,8 @@ def generate(
             extra={"team": name},
         )
 
-    agents: list[str] = list(manifest.get("agents", []))  # type: ignore[arg-type]
-    skills: list[str] = list(manifest.get("skills", []))  # type: ignore[arg-type]
+    agents: list[str] = list(manifest.get("agents", []))
+    skills: list[str] = list(manifest.get("skills", []))
     logger.info(
         "Generating team CLAUDE.md",
         extra={"team": name, "agent_count": len(agents), "skill_count": len(skills)},

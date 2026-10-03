@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "scenarios": [
+    {
+      "name": "hole_card_privacy",
+      "passed": true,
+      "details": {
+        "mismatches": []
+      }
+    },
+    {
+      "name": "turn_gated_controls",
+      "passed": true,
+      "details": {
+        "current_actor": 1,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "action_propagates",
+      "passed": true,
+      "details": {
+        "acted_seat": 1,
+        "to_call_was": 1,
+        "before": {
+          "hand_in_progress": true,
+          "current_actor": 1,
+          "current_bet": 2,
+          "button_seat": 1
+        },
+        "after_per_seat": {
+          "0": {
+            "hand_in_progress": true,
+            "current_actor": 0,
+            "current_bet": 2,
+            "button_seat": 1
+          },
+          "1": {
+            "hand_in_progress": true,
+            "current_actor": 0,
+            "current_bet": 2,
+            "button_seat": 1
+          }
+        },
+        "all_pages_agree": true,
+        "turn_advanced_everywhere": true
+      }
+    }
+  ]
+}

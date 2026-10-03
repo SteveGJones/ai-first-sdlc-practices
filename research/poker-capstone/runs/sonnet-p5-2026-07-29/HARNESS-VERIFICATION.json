@@ -1,0 +1,75 @@
+{
+  "passed": true,
+  "scenarios": [
+    {
+      "name": "turn_enforcement",
+      "passed": true,
+      "details": {
+        "status": 403,
+        "body": {
+          "detail": "not your turn"
+        },
+        "state_unchanged": true
+      }
+    },
+    {
+      "name": "basic_multihand",
+      "passed": true,
+      "details": {
+        "chip_conservation_ok": true,
+        "total_before": 300,
+        "total_after": 300,
+        "hands": [
+          {
+            "ok": true,
+            "detail": {}
+          },
+          {
+            "ok": true,
+            "detail": {}
+          },
+          {
+            "ok": true,
+            "detail": {}
+          },
+          {
+            "ok": true,
+            "detail": {}
+          },
+          {
+            "ok": true,
+            "detail": {}
+          }
+        ]
+      }
+    },
+    {
+      "name": "short_all_in_side_pot",
+      "passed": true,
+      "details": {
+        "cross_validation": {
+          "ok": true,
+          "detail": {}
+        },
+        "side_pot_created": true,
+        "pots": [
+          {
+            "amount": 15,
+            "eligible_seats": [
+              0,
+              1,
+              2
+            ]
+          },
+          {
+            "amount": 60,
+            "eligible_seats": [
+              1,
+              2
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

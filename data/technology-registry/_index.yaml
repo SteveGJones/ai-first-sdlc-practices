@@ -43,6 +43,26 @@ aliases:
   hcl: terraform
   # Services
   gh-actions: github-actions
+  # Design systems
+  m3: material-design-3
+  material3: material-design-3
+  "material design": material-design-3
+  "material design 3": material-design-3
+  "material you": material-design-3
+  materialyou: material-design-3
+  mdc: material-design-3
+  "@material/web": material-design-3
+  ios: apple-hig
+  ipados: apple-hig
+  iphone: apple-hig
+  hig: apple-hig
+  "human interface guidelines": apple-hig
+  swiftui: apple-hig
+  uikit: apple-hig
+  "liquid glass": apple-hig
+  "react native": apple-hig
+  react-native: apple-hig
+  expo: apple-hig
 
 # --- Detection patterns ---
 # Maps package names, Docker images, and env vars to technology keys.
@@ -116,6 +136,13 @@ detection:
     next: nextjs
     react: react
     vue: vue
+    # Design systems
+    "@material/web": material-design-3
+    "@material/material-color-utilities": material-design-3
+    material-components-web: material-design-3
+    # Mobile / Apple HIG (cross-platform JS toolchains targeting iOS)
+    react-native: apple-hig
+    expo: apple-hig
     # Services
     stripe: stripe
     "@supabase/supabase-js": supabase

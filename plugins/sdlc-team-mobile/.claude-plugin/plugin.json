@@ -1,0 +1,9 @@
+{
+  "name": "sdlc-team-mobile",
+  "version": "0.1.0",
+  "description": "Shared mobile base — cross-platform mobile architecture and interaction UX agents. Install alongside sdlc-team-ios and/or sdlc-team-android.",
+  "author": {
+    "name": "SteveGJones"
+  },
+  "keywords": ["sdlc", "mobile", "cross-platform", "ux", "agents"]
+}

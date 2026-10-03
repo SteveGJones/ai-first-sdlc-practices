@@ -1,0 +1,30 @@
+{
+  "field_checks": [
+    {
+      "field": "commands",
+      "regex": "\\b(grep|egrep|fgrep|rg|ag|awk|sed)\\b",
+      "flags": "i",
+      "desc": "uses a text/field filter (grep/awk/sed/rg)"
+    },
+    {
+      "field": "commands",
+      "regex": "access\\.log",
+      "desc": "targets access.log"
+    },
+    {
+      "field": "commands",
+      "regex": "500",
+      "desc": "filters for status 500"
+    },
+    {
+      "field": "commands",
+      "not_regex": "rm\\s|>\\s*access\\.log|truncate|--delete",
+      "desc": "does not modify or truncate the file"
+    },
+    {
+      "field": "reason",
+      "regex": ".+",
+      "desc": "gives a reason"
+    }
+  ]
+}

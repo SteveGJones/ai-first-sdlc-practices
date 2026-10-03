@@ -1,0 +1,7 @@
+{
+  "name": "sdlc-model-council",
+  "version": "0.1.0",
+  "description": "Cross-model council: onboard the AI models reachable via locally installed peer agentic CLIs (codex, agy, opencode; extensible via one-directory adapters) by assessing them against a standardized problem stack, cast them into roles (a roster), and run cross-model fan-out plays (diff+synthesis, consensus, best-of-N, generator↔verifier) chosen per project. Built on a unified delegation contract with graded permission postures. In-session and uncontainerised — distinct from sdlc-workflows (Archon/Docker/DAG).",
+  "author": { "name": "SteveGJones" },
+  "keywords": ["sdlc", "model-council", "cross-model", "fan-out", "orchestration", "delegation", "assessment", "roster", "codex", "agy", "opencode", "token-optimization"]
+}

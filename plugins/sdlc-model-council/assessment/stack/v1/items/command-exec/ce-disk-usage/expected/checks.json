@@ -1,0 +1,29 @@
+{
+  "field_checks": [
+    {
+      "field": "commands",
+      "regex": "\\bdu\\b",
+      "desc": "uses du to measure size"
+    },
+    {
+      "field": "commands",
+      "regex": "/var/log",
+      "desc": "targets /var/log"
+    },
+    {
+      "field": "commands",
+      "regex": "sort",
+      "desc": "sorts by size"
+    },
+    {
+      "field": "commands",
+      "not_regex": "\\brm\\b|--delete|unlink",
+      "desc": "read-only, no deletion"
+    },
+    {
+      "field": "reason",
+      "regex": ".+",
+      "desc": "gives a reason"
+    }
+  ]
+}
