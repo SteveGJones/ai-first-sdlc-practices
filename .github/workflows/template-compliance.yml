@@ -138,7 +138,7 @@ jobs:
     steps:
       - name: Comment on PR
         if: failure()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.issues.createComment({
@@ -177,7 +177,7 @@ jobs:
 
       - name: Success Comment
         if: success()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.issues.createComment({
