@@ -12,7 +12,7 @@ pytest-cov>=7.1.0
 black>=23.7.0
 flake8>=6.1.0
 mypy>=1.19.1
-pre-commit>=3.5.0
+pre-commit>=4.6.2
 
 # Security scanning
 safety>=2.3.0
